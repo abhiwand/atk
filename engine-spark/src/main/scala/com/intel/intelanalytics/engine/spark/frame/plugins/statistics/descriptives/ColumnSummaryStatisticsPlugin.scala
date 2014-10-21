@@ -53,7 +53,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate summary statistics of a column.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Column summary statistics.",
     extendedSummary = Some("""
                            |    Calculate summary statistics of a column.
                            |
@@ -63,8 +63,10 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
                            |        The column to be statistically summarized.
                            |        Must contain numerical data; all NaNs and infinite values are excluded
                            |        from the calculation.
+                           |
                            |    weights_column_name : str (optional)
                            |        Name of column holding weights of column values
+                           |
                            |    use_population_variance : bool (optional)
                            |        If true, the variance is calculated as the population variance.
                            |        If false, the variance calculated as the sample variance.
@@ -75,73 +77,71 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
                            |
                            |    Returns
                            |    -------
-                           |    summary : Dict
+                           |    dict
                            |        Dictionary containing summary statistics in the following entries:
                            |
-                           |        | mean:
-                           |        |     Arithmetic mean of the data.
-                           |        |
-                           |        | geometric_mean:
-                           |        |     Geometric mean of the data.
-                           |        |     None when there is a data element <= 0, 1.0 when there are no
-                           |        |     data elements.
-                           |        |
-                           |        | variance:
-                           |        |     None when there are <= 1 many data elements.
-                           |        |     Sample variance is the weighted sum of the squared distance of
-                           |        |     each data element from the weighted mean, divided by the total
-                           |        |     weight minus 1.
-                           |        |     None when the sum of the weights is <= 1.
-                           |        |     Population variance is the weighted sum of the squared distance
-                           |        |     of each data element from the weighted mean, divided by the total
-                           |        |     weight.
-                           |        |
-                           |        | standard_deviation:
-                           |        |     The square root of the variance. None when  sample variance
-                           |        |     is being used and the sum of weights is <= 1.
-                           |        |
-                           |        | valid_data_count:
-                           |        |     The count of all data elements that are finite numbers.
-                           |        |     (In other words, after excluding NaNs and infinite values.)
-                           |        |
-                           |        | minimum:
-                           |        |     Minimum value in the data.
-                           |        |     None when there are no data elements.
-                           |        |
-                           |        | maximum:
-                           |        |     Maximum value in the data. None when there are no data elements.
-                           |        |
-                           |        | mean_confidence_lower:
-                           |        |     Lower limit of the 95% confidence interval about the mean.
-                           |        |     Assumes a Gaussian distribution.
-                           |        |     None when there are no elements of positive weight.
-                           |        |
-                           |        | mean_confidence_upper:
-                           |        |     Upper limit of the 95% confidence interval about the mean.
-                           |        |     Assumes a Gaussian distribution.
-                           |        |     None when there are no elements of positive weight.
-                           |        |
-                           |        | bad_row_count : The number of rows containing a NaN or infinite value
-                           |        |     in either the data or weights column.
-                           |        |
-                           |        | good_row_count : The number of rows not containing a NaN or infinite
-                           |        |     value in either the data or weights column.
-                           |        |
-                           |        | positive_weight_count : The number of valid data elements with
-                           |        |     weight > 0.
-                           |        |     This is the number of entries used in the statistical calculation.
-                           |        |
-                           |        | non_positive_weight_count : The number valid data elements with
-                           |        |     finite weight <= 0.
+                           |    mean : [ double | None ]
+                           |        Arithmetic mean of the data.
                            |
-                           |        Notes
-                           |        -----
-                           |        Return Types
-                           |            | valid_data_count returns a Long.
-                           |            | All other values are returned as Doubles or None.
+                           |    geometric_mean : [ double | None ]
+                           |        Geometric mean of the data.
+                           |        None when there is a data element <= 0, 1.0 when there are no
+                           |        data elements.
                            |
-                           |        Sample Variance
-                           |            Sample Variance is computed by the following formula:
+                           |    variance : [ double | None ]
+                           |        None when there are <= 1 many data elements.
+                           |        Sample variance is the weighted sum of the squared distance of
+                           |        each data element from the weighted mean, divided by the total
+                           |        weight minus 1.
+                           |        None when the sum of the weights is <= 1.
+                           |        Population variance is the weighted sum of the squared distance
+                           |        of each data element from the weighted mean, divided by the total
+                           |        weight.
+                           |
+                           |    standard_deviation : [ double | None ]
+                           |        The square root of the variance. None when  sample variance
+                           |        is being used and the sum of weights is <= 1.
+                           |
+                           |    valid_data_count : long
+                           |        The count of all data elements that are finite numbers.
+                           |        (In other words, after excluding NaNs and infinite values.)
+                           |
+                           |    minimum : [ double | None ]
+                           |        Minimum value in the data.
+                           |        None when there are no data elements.
+                           |
+                           |    maximum : [ double | None ]
+                           |        Maximum value in the data. None when there are no data elements.
+                           |
+                           |    mean_confidence_lower : [ double | None ]
+                           |        Lower limit of the 95% confidence interval about the mean.
+                           |        Assumes a Gaussian distribution.
+                           |        None when there are no elements of positive weight.
+                           |
+                           |    mean_confidence_upper : [ double | None ]
+                           |        Upper limit of the 95% confidence interval about the mean.
+                           |        Assumes a Gaussian distribution.
+                           |        None when there are no elements of positive weight.
+                           |
+                           |    bad_row_count : [ double | None ]
+                           |        The number of rows containing a NaN or infinite value
+                           |        in either the data or weights column.
+                           |
+                           |    good_row_count : [ double | None ]
+                           |        The number of rows not containing a NaN or infinite
+                           |        value in either the data or weights column.
+                           |
+                           |    positive_weight_count : [ double | None ]
+                           |        The number of valid data elements with weight > 0.
+                           |        This is the number of entries used in the statistical calculation.
+                           |
+                           |    non_positive_weight_count : [ double | None ]
+                           |        The number valid data elements with finite weight <= 0.
+                           |
+                           |    Notes
+                           |    -----
+                           |    Sample Variance
+                           |        Sample Variance is computed by the following formula:
                            |
                            |        .. math::
                            |
@@ -151,8 +151,8 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
                            |        where :math:`W` is sum of weights over valid elements of positive
                            |        weight, and :math:`M` is the weighted mean.
                            |
-                           |        Population Variance
-                           |            Population Variance is computed by the following formula:
+                           |    Population Variance
+                           |        Population Variance is computed by the following formula:
                            |
                            |        .. math::
                            |
@@ -162,35 +162,36 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
                            |        where :math:`W` is sum of weights over valid elements of positive
                            |        weight, and :math:`M` is the weighted mean.
                            |
-                           |        Standard Deviation
-                           |            The square root of the variance.
+                           |    Standard Deviation
+                           |        The square root of the variance.
                            |
-                           |        Logging Invalid Data
-                           |            A row is bad when it contains a NaN or infinite value in either
-                           |            its data or weights column.
-                           |            In this case, it contributes to bad_row_count; otherwise it
-                           |            contributes to good row count.
+                           |    Logging Invalid Data
+                           |        A row is bad when it contains a NaN or infinite value in either
+                           |        its data or weights column.
+                           |        In this case, it contributes to bad_row_count; otherwise it
+                           |        contributes to good row count.
                            |
                            |        A good row can be skipped because the value in its weight 
-                           |        column is <=0.
+                           |        column is less than or equal to 0.
                            |        In this case, it contributes to non_positive_weight_count, otherwise
-                           |        (when the weight is > 0) it contributes to valid_data_weight_pair_count.
+                           |        (when the weight is greater than 0) it contributes to
+                           |        valid_data_weight_pair_count.
                            |
-                           |        Equations
-                           |            bad_row_count + good_row_count = # rows in the frame
-                           |            positive_weight_count + non_positive_weight_count = good_row_count
+                           |    Equations
+                           |        bad_row_count + good_row_count = # rows in the frame
+                           |        positive_weight_count + non_positive_weight_count = good_row_count
                            |
                            |        In particular, when no weights column is provided and all weights
                            |        are 1.0, non_positive_weight_count = 0 and
                            |        positive_weight_count = good_row_count
                            |
-                           |        Examples
-                           |        --------
-                           |        ::
+                           |    Examples
+                           |    --------
+                           |    ::
                            |
-                           |            stats = frame.column_summary_statistics('data column', 'weight column')
+                           |        stats = frame.column_summary_statistics('data column', 'weight column')
                            |
-                           |        .. versionadded:: 0.8
+                           |    .. versionadded:: 0.8
                            |
                             """.stripMargin)))
 
