@@ -49,7 +49,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
     // call  Pregel
 
     IATPregel(graph,
-      None.asInstanceOf[Option[Map[Long, Vector[Double]]]],
+      Map().asInstanceOf[Map[Long, Vector[Double]]],
       initialReporter,
       superStepReporter,
       maxIterations = maxIterations,

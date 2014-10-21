@@ -24,7 +24,6 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
