@@ -129,10 +129,12 @@ class PregelBeliefPropagation(val maxIterations: Int,
 
     val statesUNPosteriors = stateRange.zip(reducedMessages)
 
-    val message = stateRange.map(i => statesUNPosteriors.map({
+    val unnormalizedMessage = stateRange.map(i => statesUNPosteriors.map({
       case (j, x: Double) =>
         x * Math.exp(edgePotential(i, j, edgeWeight))
     }).reduce(_ + _))
+
+    val message = VectorMath.l1Normalize(unnormalizedMessage)
 
     Map(sender -> message)
   }

@@ -245,17 +245,22 @@ class VertexRule(Rule):
         uniquely identifying property for the vertex.
     id_value: BigColumn source
         vertex value; the unique value to identify this vertex
-    properties: dictionary (optional)
-        vertex properties of the form property_name:property_value
-        property_name is a string, and property_value is a literal value
-        or a BigColumn source, which must be from same BigFrame as value arg
+    properties: dictionary {'vertex_type': ['L|R'] [, property_name:property_value]}
+        vertex properties of the form property_name:property_value.
+        The property_name (the key) is a string, and property_value is a literal value
+        or a BigColumn source, which must be from the same BigFrame as the id_key and id_value arguments.
+
+    Notes
+    -----
+    Vertex rules must include the property 'vertex_type':'L' for left-side, or 'vertex_type':'R' for
+    right-side, for the ALS and CGD (and other) algorithms to work properly.
 
     Examples
     --------
     ::
 
-        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
-        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre'], 'vertex_type':'L'})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1'], 'vertex_type':'R'})
 
     .. versionadded:: 0.8
 
@@ -322,8 +327,8 @@ class EdgeRule(Rule):
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    bidirectional : bool
-        indicates the edge is bidirectional
+    bidirectional : bool (Optional)
+        indicates the edge is bidirectional. The default value is false.
 
     Examples
     --------
@@ -448,8 +453,8 @@ class TitanGraph(CommandLoadableTitanGraph):
 
     Examples
     --------
-    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices connected by
-    'rating' edges::
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices
+    connected by 'rating' edges::
 
         # create a frame as the source for a graph
         csv = ia.CsvFile("/movie.csv", schema= [('user', int32),

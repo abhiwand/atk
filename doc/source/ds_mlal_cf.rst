@@ -4,7 +4,7 @@ Collaborative Filtering
 
 Collaborative filtering is a technique that is widely used in recommendation systems to suggest items (for example, products, movies,
 articles) to potential users based on historical records of items that users have purchased, rated, or viewed.
-The Intel Analytics Toolkit provides two different implementations of collaborative filtering, which differ only in their optimization method,
+The |IA| Toolkit provides two different implementations of collaborative filtering, which differ only in their optimization method,
 either Alternative Least Squares (ALS) or Conjugate Gradient Descent (CGD).
 Both methods optimize the cost function found in Y. Koren,
 `Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model`_
@@ -46,3 +46,5 @@ should only be used in cases when memory required for ALS is prohibitively high.
 
 .. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
 .. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
+
+.. |IA| replace:: Intel Analytics

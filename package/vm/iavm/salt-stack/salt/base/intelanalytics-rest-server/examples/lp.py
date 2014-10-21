@@ -15,7 +15,7 @@ csv = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame 'lp'"
 
-frame = BigFrame(csv, "lp")
+frame = Frame(csv, "lp")
 
 print "Done building data frame"
 
@@ -27,11 +27,11 @@ source = VertexRule("source", frame.source, {"input_value" : frame.input_value})
 
 target = VertexRule("target", frame.target, {"input_value" : frame.input_value})
 
-edge = EdgeRule("edge", source, target, {'weight': frame.weight})
+edge = EdgeRule("edge", source, target, {'weight': frame.weight}, bidirectional=True)
 
 print "Creating graph 'lp_graph'"
 
-graph = BigGraph([source, target, edge], "lp_graph")
+graph = TitanGraph([source, target, edge], "lp_graph")
 
 print "Running Label Propagation on Graph 'lp_graph'"
 

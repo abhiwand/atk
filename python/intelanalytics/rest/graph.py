@@ -171,6 +171,15 @@ class JsonRules(object):
     @staticmethod
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
+        #validate the input frames
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+
+        try:
+            frame_backend.get_frame_by_id(uri)
+        except:
+            raise ValueError("Frame provided to establish VertexRule is no longer available.")
+
         try:
             frame = frames_dict[uri]
         except KeyError:

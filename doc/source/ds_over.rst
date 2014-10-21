@@ -9,5 +9,4 @@ User Manual
     ds_db
     ds_dflw
     ds_ml
-    ds_apic
     ds_bkm
