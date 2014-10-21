@@ -44,6 +44,7 @@ class CsvFile(DataFile):
         It is a list of tuples which describe each field, (field name, field type),
         where the field name is a string, and file is a supported type,
         (See data_types from the iatypes module).
+        Unicode characters should not be used in the column name.
         The type ``ignore`` may also be used if the field should be ignored on loads.
     delimiter : string (optional)
         string indicator of the delimiter for the fields
@@ -79,7 +80,8 @@ class CsvFile(DataFile):
         csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
 
     The standard delimiter in a csv file is the comma.
-    If the columns of data were separated by a character other than comma, we need to add the appropriate delimiter.
+    If the columns of data were separated by a character other than comma, we need to add the appropriate
+    delimiter.
     For example if the data columns were separated by the colon character, the instruction would be::
 
         csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, ':')
