@@ -64,20 +64,23 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Column Shannon entropy.",
     extendedSummary = Some("""
+                           |    Extended Summary
+                           |    ----------------
                            |    Calculate the Shannon entropy of a column.
                            |    The column can be weighted.
                            |    All data elements of weight <= 0 are excluded from the calculation, as are
                            |    all data elements whose weight is NaN or infinite.
-                           |    If there are no data elements of finite weight > 0, the entropy is zero.
+                           |    If there are no data elements with a finite weight greater than 0,
+                           |    the entropy is zero.
                            |
                            |    Parameters
                            |    ----------
                            |    data_column : str
                            |        The column whose entropy is to be calculated
                            |
-                           |    weights_column : str (Optional)
+                           |    weights_column : str (optional)
                            |        The column that provides weights (frequencies) for the entropy
                            |        calculation.
                            |        Must contain numerical data.
