@@ -44,6 +44,16 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
+  final override def execute(invocation: Invocation, arguments: Argument, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+    execute(invocation.asInstanceOf[SparkInvocation], arguments, returnValue)(user, executionContext)
+  }
+
+  /**
+   * Operation plugins must implement this method to do the work requested by the user.
+   * @param invocation information about the user and the circumstances at the time of the call
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
   final override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
   }
@@ -56,6 +66,16 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: SparkInvocation, arguments: Argument, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
+    execute(invocation, arguments)
 
+  /**
+   * Plugins must implement this method to do the work requested by the user.
+   * @param invocation information about the user and the circumstances at the time of the call,
+   *                   as well as a function that can be called to produce a SparkContext that
+   *                   can be used during this invocation.
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
+  def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
 }

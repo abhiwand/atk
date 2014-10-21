@@ -41,7 +41,7 @@ import scala.concurrent.ExecutionContext
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
 sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
-    extends ((Invocation, Any) => Return)
+    extends ((Invocation, Any, Option[Any]) => Return)
     with Plugin
     with ClassLoaderAware {
 
@@ -85,13 +85,21 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: Invocation, arguments: Arguments, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
+    execute(invocation, arguments)
 
+  /**
+   * Operation plugins must implement this method to do the work requested by the user.
+   * @param invocation information about the user and the circumstances at the time of the call
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
+  def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
    */
-  final override def apply(invocation: Invocation, arguments: Any): Return = {
+  final override def apply(invocation: Invocation, arguments: Any, previousReturn: Option[Any]): Return = {
     require(invocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
 
@@ -99,7 +107,7 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      val result = execute(invocation, arguments.asInstanceOf[Arguments])(invocation.user, invocation.executionContext)
+      val result = execute(invocation, arguments.asInstanceOf[Arguments], previousReturn.map(r => r.asInstanceOf[Return]))(invocation.user, invocation.executionContext)
       if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
       result
     }
@@ -122,6 +130,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * Convert the given object to a JsObject
    */
   def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
+
+  /**
+   * Convert the given JsObject to an instance of the Return type
+   */
+  def parseReturn(js: JsObject) = js.convertTo[Return]
 
   /**
    * Number of jobs needs to be known to give a single progress bar

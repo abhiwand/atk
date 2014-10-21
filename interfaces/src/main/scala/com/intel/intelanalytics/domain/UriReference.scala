@@ -59,6 +59,14 @@ trait ReferenceResolver {
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
   def resolve(uri: String): Try[UriReference]
+
+ /**
+   * Returns a (possibly updated) reference.
+   */
+  def resolve(reference: UriReference): Try[UriReference] = {
+    resolve(reference.uri)
+  }
+
 }
 
 /**
@@ -176,6 +184,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     val resolved = resolver(id)
     resolved
   }
+
 }
 
 /**

@@ -32,12 +32,12 @@ package com.intel.intelanalytics.domain
 case class EntityName(name: String, plural: String)
 
 trait HasMetaData {
-  type MetaData
-  def meta: MetaData
+  type Meta
+  def meta: Meta
 }
 
 class NoMetaData extends HasMetaData {
-  override type MetaData = Unit
+  override type Meta = Unit
   val meta = ()
 }
 

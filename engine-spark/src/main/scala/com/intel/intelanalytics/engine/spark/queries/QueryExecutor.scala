@@ -128,9 +128,9 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                 import com.intel.intelanalytics.domain.DomainJsonProtocol._
                 val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = null)
+                  sparkContext = context, commandStorage = null, resolver =null) //TODO: resolver for queries
 
-                val funcResult = query(invocation, arguments)
+                val funcResult = query(invocation, arguments, None)
 
                 val rdd: RDD[Any] = funcResult.asInstanceOf[RDD[Any]]
 

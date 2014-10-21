@@ -90,7 +90,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameDropColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: FrameDropColumns, returnValue: Option[DataFrame])(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val ctx = invocation.sparkContext

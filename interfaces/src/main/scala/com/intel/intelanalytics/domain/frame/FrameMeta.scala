@@ -21,12 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.engine.Rows.Row
+/**
+ * A FrameReference with metadata
+ */
+class FrameMeta(frame: DataFrame) extends FrameReference(frame.id, Some(true)) {
 
-sealed abstract class Alteration {}
+  type Meta = DataFrame
 
-case class RemoveColumn[T](name: String) extends Alteration
+  val meta = frame
 
-case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
+}

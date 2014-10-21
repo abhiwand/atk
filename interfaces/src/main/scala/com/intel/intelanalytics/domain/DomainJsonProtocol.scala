@@ -116,7 +116,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameReference)
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameReferenceManagement)
+  implicit val singleFrameReferenceFormat = jsonFormat1(SingleReference[FrameReference])
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
@@ -181,7 +182,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphReference)
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphReferenceManagement)
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 

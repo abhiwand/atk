@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
+import com.intel.intelanalytics.domain.ReferenceResolver
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
@@ -49,4 +50,5 @@ case class SparkInvocation(engine: SparkEngine,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
                            sparkContext: SparkContext,
-                           commandStorage: SparkCommandStorage) extends Invocation
+                           commandStorage: SparkCommandStorage,
+                           resolver: ReferenceResolver) extends Invocation
