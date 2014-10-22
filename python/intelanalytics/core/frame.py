@@ -82,15 +82,16 @@ class Frame(CommandLoadableFrame):
 
     Parameters
     ----------
-    source : CsvFile, BigFrame, or BigColumn(s)
-        A source of initial data
+    source : [ CsvFile | BigFrame | BigColumn(s) ]
+        A source of initial data.
+
     name : string
-        The name of the newly created frame
+        The name of the newly created frame.
 
     Returns
     -------
     BigFrame
-        An object with access to the frame
+        An object with access to the frame.
 
     Notes
     -----
@@ -209,7 +210,8 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         frame : BigFrame
-            A BigFrame object
+            A BigFrame object.
+
         """
 
         def __init__(self, frame):
@@ -324,7 +326,7 @@ class Frame(CommandLoadableFrame):
     @api
     def row_count(self):
         """
-        Returns number of rows.
+        Number of rows.
 
         Returns
         -------
@@ -399,14 +401,19 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         label_column : str
-            the name of the column containing the correct label for each instance
+            The name of the column containing the correct label for each instance.
+
         pred_column : str
-            the name of the column containing the predicted label for each instance
+            The name of the column containing the predicted label for each instance.
 
         Returns
         -------
         float64
-            the accuracy measure for the classifier
+            The accuracy measure for the classifier.
+
+        Notes
+        -----
+        This function has been deprecated.  Use the **classification_metrics** function instead.
 
         Examples
         --------
@@ -417,10 +424,10 @@ class Frame(CommandLoadableFrame):
 
               a:unicode   b:int32   labels:int32  predictions:int32
             /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
+               red         1              0                  0
+               blue        3              1                  0
+               blue        1              0                  0
+               green       0              1                  1
 
             frame.accuracy('labels', 'predictions')
 
@@ -447,18 +454,20 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         func : row function
-            function which takes the values in the row and produces a value
-            or collection of values for the new cell(s)
-        schema : tuple or list of tuples
-            the schema for the results of the functions, indicating the new
+            Function which takes the values in the row and produces a value
+            or collection of values for the new cell(s).
+
+        schema : [ tuple | list of tuples ]
+            The schema for the results of the functions, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type and is of the form (str, type).
 
         Notes
         -----
-        The row function ('func') must return a value in the same format as specified by the schema.
-        See :doc:`ds_apir`.
-        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
+        1)  The row function ('func') must return a value in the same format as specified by the schema.
+            See :doc:`ds_apir`.
+        #)  Unicode in column names is not supported and will likely cause the drop_frames() function
+            (and others) to fail!
 
         Examples
         --------
@@ -533,7 +542,8 @@ class Frame(CommandLoadableFrame):
 
         Parameters
         ----------
-            data : a BigFrame accessing the data being added
+        data : BigFrame
+            A BigFrame accessing the data being added.
 
         Examples
         --------
@@ -563,69 +573,74 @@ class Frame(CommandLoadableFrame):
         """
         Group by value.
 
+        Summarize rows of data based on the value in a single column.
         Two types of binning are provided: `equalwidth` and `equaldepth`.
 
-        Equal width binning places column values into bins such that the values in each bin fall within the
-        same interval and the interval width for each bin is equal.
+        *   Equal width binning places column values into bins such that the values in each bin fall within
+            the same interval and the interval width for each bin is equal.
+        *   Equal depth binning attempts to place column values into bins such that each bin contains the
+            same number of elements.
+            For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
 
-        Equal depth binning attempts to place column values into bins such that each bin contains the same
-        number of elements.
-        For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
+            .. math::
 
-        .. math::
+                ceiling \\left( n * \\frac {f(C)}{m} \\right)
 
-            ceiling \\left( n * \\frac {f(C)}{m} \\right)
-
-        where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
-        If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the average
-        of their ordered rank values.
-
-        The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
-        With equal depth binning, for example, if the column to be binned has 10 elements with
-        only 2 distinct values and num_bins > 2, then the number of actual bins will only be 2.
-        This is due to a restriction that elements with an identical value must belong to the same bin.
-        The type of the new column will be int32 and the bin numbers start at 1.
+            where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
+            If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the
+            average of their ordered rank values.
 
         Parameters
         ----------
         column_name : str
-            The column whose values are to be binned
+            The column whose values are to be binned.
+
         num_bins : int
-            The requested number of bins
+            The maximum number of bins.
+
         bin_type : str (optional)
-            The binning algorithm to use
-            ['equalwidth' | 'equaldepth']
+            The binning algorithm to use ['equalwidth' | 'equaldepth'].
+
         bin_column_name : str (optional)
-            The name for the new binned column
+            The name for the new binned column.
 
         Returns
         -------
         BigFrame
             A BigFrame accessing a new frame, with a bin column appended to the original frame structure
+            The type of the new column will be int32 and the bin numbers start at 1.
 
         Notes
         -----
-        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
+        1)  Unicode in column names is not supported and will likely cause the drop_frames() function
+            (and others) to fail!
+        #)  The num_bins parameter is considered to be the maximum permissible number of bins because the
+            data may dictate fewer bins.
+            With equal depth binning, for example, if the column to be binned has 10 elements with
+            only 2 distinct values and the *num_bins* parameter is greater than 2, then the number of
+            actual number of bins will only be 2.
+            This is due to a restriction that elements with an identical value must belong to the same bin.
+
 
         Examples
         --------
-        For this example, we will use a frame with column *a* and a BigFrame *my_frame* accessing it::
+        For this example, we will use a frame with column *a* accessed by a BigFrame object *my_frame*::
 
             my_frame.inspect( n=11 )
 
               a:int32
             /---------/
-              1
-              1
-              2
-              3
-              5
-              8
-             13
-             21
-             34
-             55
-             89
+                1
+                1
+                2
+                3
+                5
+                8
+               13
+               21
+               34
+               55
+               89
 
         Create a new frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
@@ -635,17 +650,17 @@ class Frame(CommandLoadableFrame):
 
               a:int32     aEWBinned:int32
             /-----------------------------/
-              1                   1
-              1                   1
-              2                   1
-              3                   1
-              5                   1
-              8                   1
-             13                   1
-             21                   2
-             34                   2
-             55                   4
-             89                   5
+               1                   1
+               1                   1
+               2                   1
+               3                   1
+               5                   1
+               8                   1
+              13                   1
+              21                   2
+              34                   2
+              55                   4
+              89                   5
 
         Create a new frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
@@ -656,17 +671,17 @@ class Frame(CommandLoadableFrame):
 
               a:int32     aEDBinned:int32
             /-----------------------------/
-              1                   1
-              1                   1
-              2                   1
-              3                   2
-              5                   2
-              8                   3
-             13                   3
-             21                   4
-             34                   4
-             55                   5
-             89                   5
+               1                   1
+               1                   1
+               2                   1
+               3                   2
+               5                   2
+               8                   3
+              13                   3
+              21                   4
+              34                   4
+              55                   5
+              89                   5
 
         .. versionadded:: 0.8
 
@@ -683,15 +698,21 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         label_column : str
-            the name of the column containing the correct label for each instance
+            The name of the column containing the correct label for each instance.
+
         pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional)
-            the value to be interpreted as a positive instance
+            The name of the column containing the predicted label for each instance.
+
+        pos_label : [ int | str ] (optional)
+            The value to be interpreted as a positive instance.
 
         Returns
         -------
         Formatted confusion matrix
+
+        Notes
+        -----
+        This function has been deprecated.  Use the **classification_metrics** function instead.
 
         Examples
         --------
@@ -702,10 +723,10 @@ class Frame(CommandLoadableFrame):
 
               a:unicode   b:int32   labels:int32  predictions:int32
             /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
+               red         1              0                  0
+               blue        3              1                  0
+               blue        1              0                  0
+               green       0              1                  1
 
             print(frame.confusion_matrix('labels', 'predictions'))
 
@@ -731,14 +752,15 @@ class Frame(CommandLoadableFrame):
 
         Parameters
         ----------
-        columns : str, list, or dict (optional)
-            If not None, the copy will only include the columns specified.  If a dictionary is used, the
-            string pairs represent a column renaming, {source_column_name: destination_column_name}
+        columns : [ str | list of str | dict ] (optional)
+            If not None, the copy will only include the columns specified.
+            If a dictionary is used, the string pairs represent a column renaming,
+            {source_column_name: destination_column_name}.
 
         Returns
         -------
         BigFrame
-            A new frame object which is a copy of the currently active BigFrame
+            A new frame object which is a copy of the currently active BigFrame.
 
         Examples
         --------
@@ -801,7 +823,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         predicate : function
-            function or :term:`lambda` which takes a row argument and evaluates to a boolean value
+            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
 
         Examples
         --------
@@ -832,9 +854,9 @@ class Frame(CommandLoadableFrame):
 
         Parameters
         ----------
-        columns : str OR list of str
-            column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data
-            identical.
+        columns : [ str | list of str ]
+            Column name(s) to identify duplicates.
+            If empty, the function will remove duplicates that have the whole row of data identical.
 
         Examples
         --------
@@ -874,12 +896,12 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         sample_col : str
-            the name of the column containing sample
+            The name of the column containing sample.
 
         Returns
         -------
         list
-            list of tuples containing each distinct value in the sample and its corresponding ecdf value
+            List of tuples containing each distinct value in the sample and its corresponding ecdf value.
 
         Examples
         --------
@@ -922,7 +944,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         predicate : function
-            function definition or lambda which takes a row argument and evaluates to a boolean value
+            Function definition or lambda which takes a row argument and evaluates to a boolean value.
 
         Examples
         --------
@@ -935,9 +957,9 @@ class Frame(CommandLoadableFrame):
 
             my_frame.filter(my_filter)
 
-        The frame now only has data about lizards and frogs
+        The frame now only has data about lizards and frogs.
 
-        More information on row functions can be found at :doc:`ds_apir`
+        More information on row functions can be found at :doc:`ds_apir`.
 
 
 
@@ -960,12 +982,12 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         column_name : str
-            The column to be flattened
+            The column to be flattened.
 
         Returns
         -------
         BigFrame
-            A BigFrame object proxy for the new flattened frame
+            A BigFrame object proxy for the new flattened frame.
 
         Examples
         --------
@@ -1033,7 +1055,8 @@ class Frame(CommandLoadableFrame):
         then:
 
         .. math::
-            F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
+            F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\
+            \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
             \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
 
         For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average
@@ -1044,19 +1067,26 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         label_column : str
-            the name of the column containing the correct label for each instance
+            The name of the column containing the correct label for each instance.
+
         pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+            The name of the column containing the predicted label for each instance.
+
+        pos_label : [ int | str ] (optional)
+            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
+
         beta : float, (optional)
-            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be
-            greater than zero
+            Beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be
+            greater than zero.
 
         Returns
         -------
         float64
-            the :math:`F_{\\beta}` measure for the classifier
+            The :math:`F_{\\beta}` measure for the classifier.
+
+        Notes
+        -----
+        This function has been deprecated.  Use the **classification_metrics** function instead.
 
         Examples
         --------
@@ -1098,8 +1128,8 @@ class Frame(CommandLoadableFrame):
         """
         Frame with errors.
 
-        When a frame is loaded, parse errors go into a separate data frame so they can be
-        inspected.  No error frame is created if there were no parse errors.
+        When a frame is loaded, parse errors go into a separate data frame so they can be inspected.
+        No error frame is created if there were no parse errors.
 
         Returns
         -------
@@ -1121,16 +1151,17 @@ class Frame(CommandLoadableFrame):
 
         Parameters
         ----------
-        group_by_columns : str
-            column name or list of column names
+        group_by_columns : [ str | list of str ]
+            Column name or list of column names.
+
         aggregation_arguments
-            aggregation function based on entire row, and/or
-            dictionaries (one or more) of { column name string : aggregation function(s) }
+            Aggregation function based on entire row, and/or
+            dictionaries (one or more) of { column name string : aggregation function(s) }.
 
         Returns
         -------
         BigFrame
-            A new object accessing a new aggregated frame
+            A new object accessing a new aggregated frame.
 
         Notes
         -----
@@ -1233,18 +1264,20 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         n : int
-            The number of rows to print
+            The number of rows to print.
+
         offset : int
-            The number of rows to skip before printing
-        columns : String or iterable of string
+            The number of rows to skip before printing.
+
+        columns : [ String | iterable of string ]
             Specify the columns to be included in the result. By default all the columns
-            are to be included
+            are to be included.
 
 
         Returns
         -------
         data
-            Formatted for ease of human inspection
+            Formatted for ease of human inspection.
 
         Examples
         --------
@@ -1290,19 +1323,22 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         right : BigFrame
-            Another frame to join with
+            Another frame to join with.
+
         left_on : str
             Name of the column in the left frame used to match up the two frames.
+
         right_on : str (optional)
             Name of the column in the right frame used to match up the two frames.
             If not provided, then the column name used must be the same in both frames.
+
         how : str (optional)
-            ['left' | 'right' | 'inner']
+            ['left' | 'right' | 'inner'].
 
         Returns
         -------
         BigFrame
-            A new object accessing a new joined frame
+            A new object accessing a new joined frame.
 
         Notes
         -----
@@ -1368,16 +1404,23 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         label_column : str
-            the name of the column containing the correct label for each instance
+            The name of the column containing the correct label for each instance.
+
         pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+            The name of the column containing the predicted label for each instance.
+
+        pos_label : [ int | str ] (optional)
+            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
+            The default is 1.
 
         Returns
         -------
         float64
-            the precision measure for the classifier
+            The precision measure for the classifier.
+
+        Notes
+        -----
+        This function has been deprecated.  Use the **classification_metrics** function instead.
 
         Examples
         --------
@@ -1430,16 +1473,22 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         label_column : str
-            the name of the column containing the correct label for each instance
+            The name of the column containing the correct label for each instance.
+
         pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+            The name of the column containing the predicted label for each instance.
+
+        pos_label : [ int | str ] (optional)
+            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
 
         Returns
         -------
         float64
             the recall measure for the classifier
+
+        Notes
+        -----
+        This function has been deprecated.  Use the **classification_metrics** function instead.
 
         Examples
         --------
@@ -1482,11 +1531,12 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         column_names : dictionary of str pairs
-            The name pair (existing name, new name)
+            The name pair (existing name, new name).
 
         Notes
         -----
-        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
+        Unicode in column names is not supported and will likely cause the drop_frames() function
+        (and others) to fail!
 
         Examples
         --------
@@ -1514,10 +1564,12 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         n : int
-            The number of rows to copy from the currently active BigFrame
+            The number of rows to copy from the currently active BigFrame.
+
         offset : int
-            The number of rows to skip before copying
-        columns : String or iterable of string
+            The number of rows to skip before copying.
+
+        columns : [ str | iterable of str ]
             Specify the columns to be included in the result.
             By default all the columns are to be included.
 
@@ -1529,7 +1581,7 @@ class Frame(CommandLoadableFrame):
         Returns
         -------
         BigFrame
-            A new frame object accessing a new frame containing copies of a subset of the original frame
+            A new frame object accessing a new frame containing copies of a subset of the original frame.
 
         Examples
         --------
