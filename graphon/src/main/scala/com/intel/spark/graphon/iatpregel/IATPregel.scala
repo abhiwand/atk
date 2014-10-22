@@ -89,13 +89,6 @@ object IATPregel {
         g = g.outerJoinVertices(newVerts) { (vid, old, newOpt) => newOpt.getOrElse(old) }
         g.cache()
 
-        // update the status
-        // we use the new verts to avoid contributions from vertices that did not change
-        val status = superStepStatusGenerator.generateSuperStepStatus(i, numberOfVertices, newVerts.map({ case (vid, vdata) => vdata }))
-
-        log.++=(status.log)
-        earlyTermination = status.earlyTermination
-
         val oldMessages = messages
         // Send new messages. Vertices that didn't get any messages don't appear in newVerts, so don't
         // get to send messages. We must cache messages so it can be materialized on the next line,
@@ -106,15 +99,20 @@ object IATPregel {
         // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
         activeMessages = messages.count()
 
-        // Unpersist the RDDs hidden by newly-materialized RDDs
+        // update the status -- we use the new verts to avoid contributions from vertices that did not change
 
+        val status = superStepStatusGenerator.generateSuperStepStatus(i, numberOfVertices, newVerts.map({ case (vid, vdata) => vdata }))
+
+        // count the iteration and update the log
+        i += 1
+        log.++=(status.log)
+        earlyTermination = status.earlyTermination
+
+        // Unpersist the RDDs hidden by newly-materialized RDDs
         oldMessages.unpersist(blocking = false)
         newVerts.unpersist(blocking = false)
         prevG.unpersistVertices(blocking = false)
         prevG.edges.unpersist(blocking = false)
-        // count the iteration
-        i += 1
-
       }
 
       log.++=("\nTotal number of iterations: " + (i - 1))
