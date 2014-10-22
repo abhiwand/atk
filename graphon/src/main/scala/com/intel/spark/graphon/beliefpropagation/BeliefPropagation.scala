@@ -84,6 +84,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
     extendedSummary = Some("""
+
     Extended Summary
     ----------------
 
