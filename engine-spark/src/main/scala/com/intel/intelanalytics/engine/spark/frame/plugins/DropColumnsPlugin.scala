@@ -55,24 +55,30 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns from the frame.",
     extendedSummary = Some("""
-    Remove columns from the frame.  They are deleted.
-
-    Parameters
-    ----------
-    columns: str OR list of str
-        column name OR list of column names to be removed from the frame
-
-    Notes
-    -----
-    Deleting the last column in a frame leaves the frame empty.
-
-    Examples
-    --------
-    For this example, BigFrame object * my_frame * accesses a frame with columns * column_a *, * column_b *, * column_c * and * column_d *.
-    Eliminate columns * column_b * and * column_d *::
-    my_frame.drop_columns([column_b, column_d])
-    Now the frame only has the columns * column_a * and * column_c *.
-    For further examples, see: ref: `example_frame.drop_columns`""")))
+                           |    Remove columns from the frame.
+                           |    They are deleted.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    columns: str OR list of str
+                           |        column name OR list of column names to be removed from the frame
+                           |
+                           |    Notes
+                           |    -----
+                           |    Deleting the last column in a frame leaves the frame empty.
+                           |
+                           |    Examples
+                           |    --------
+                           |    For this example, BigFrame object *my_frame* accesses a frame with
+                           |    columns *column_a*, *column_b*, *column_c* and *column_d*.
+                           |    Eliminate columns *column_b* and *column_d*::
+                           |
+                           |        my_frame.drop_columns([column_b, column_d])
+                           |
+                           |    Now the frame only has the columns *column_a* and *column_c*.
+                           |    For further examples, see: ref: `example_frame.drop_columns`.
+                           |
+                            """)))
 
   /**
    * Remove columns from a frame.

@@ -76,6 +76,20 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>tar-gz-rest-server</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>${basedir}/config/intelanalytics-rest-server-tar/package.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>zip-rest-server</id>
                                 <phase>package</phase>
                                 <goals>

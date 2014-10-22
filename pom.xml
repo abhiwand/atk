@@ -621,10 +621,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scalariform-maven-plugin</artifactId>
             </plugin>
 
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>

@@ -9,7 +9,7 @@ Plugin Authoring Guide
 Introduction
 ------------
 
-The Intel Analytics Toolkit provides an extensibility framework that allows new commands and algorithms to be added to the system at runtime,
+The |IA| Toolkit provides an extensibility framework that allows new commands and algorithms to be added to the system at runtime,
 without need of possessing the source code, nor recompiling the application.
 
 Plug-ins should be easy to write, and should not require the author to have a deep understanding of the REST server, the execution engine,
@@ -19,7 +19,7 @@ marshaling of data to and from JSON, etc.
 
 Plug-ins should also be isolated from the application as a whole, as well as from other plug-ins.
 Each plug-in should be allowed to use whatever libraries it needs, without concern for conflicts with the libraries that the
-Intel Analytics Toolkit uses for its own needs.
+|IA| Toolkit uses for its own needs.
   
 ----------------
 Types of Plugins
@@ -35,7 +35,7 @@ Queries are also initiated by users, but their purpose is to return data to a cl
 The interfaces that command and query plug-ins implement are very similar, but it is important to use the correct interface so that
 the system can preserve the expected performance and semantics.
 
-The outputs of commands and queries, and the processing of them, are monitored by the Intel Analytics processing engine.
+The outputs of commands and queries, and the processing of them, are monitored by the |IA| processing engine.
 
 ----------------------
 When to Write a Plugin
@@ -65,7 +65,7 @@ Pagination
 ==========
 
 Query plugins (plugins that are subclasses of QueryPlugin) that need to return large amounts of data to the user will be automatically
-paged in the same way that other Intel Analytics components handle pagination.
+paged in the same way that other |IA| components handle pagination.
 
 Logging and Error Handling
 ==========================
@@ -275,3 +275,5 @@ This setting is built into the reference.conf that is embedded in the engine arc
 For your installation, you can control this list using the application.conf file.
 
 Once this setting has been updated, restart the server to activate the changes.
+
+.. |IA| replace:: Intel Analytics
