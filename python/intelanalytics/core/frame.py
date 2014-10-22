@@ -82,10 +82,10 @@ class Frame(CommandLoadableFrame):
 
     Parameters
     ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ]
+    source : [ CsvFile | BigFrame | BigColumn(s) ] (optional)
         A source of initial data.
 
-    name : string
+    name : string (optional)
         The name of the newly created frame.
 
     Returns
@@ -114,7 +114,7 @@ class Frame(CommandLoadableFrame):
     Name the frame "my_frame".
     Create a BigFrame *g* to access the data::
 
-        g = ia.BigFrame(my_csv_schema, "my_frame")
+        g = ia.Frame(my_csv_schema, "my_frame")
 
     A BigFrame object has been created and *g* is its proxy.
     It brought in the data described by *my_csv_schema*.
@@ -122,7 +122,7 @@ class Frame(CommandLoadableFrame):
 
     Create an empty frame; name it "your_frame"::
 
-        h = ia.BigFrame(name='your_frame')
+        h = ia.Frame(name='your_frame')
 
     A frame has been created and BigFrame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
