@@ -110,12 +110,12 @@ def drop_graphs(graphs):
 
     Parameters
     ----------
-    graphs : string or Graph
+    graphs : [ str | Graph ]
         Either the name of the Graph object to delete or the Graph object itself
 
     Returns
     -------
-    string
+    str
         The name of the graph you erased
 
     Examples
