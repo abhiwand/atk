@@ -23,6 +23,8 @@
 
 package com.intel.event
 
+import org.apache.commons.configuration.ConfigurationFactory
+
 import scala.util.control.NonFatal
 import com.intel.event.adapter.SLF4JLogAdapter
 
@@ -32,14 +34,20 @@ import com.intel.event.adapter.SLF4JLogAdapter
 trait EventLogging {
 
   /**
-   * Sets the event logging to SLF4J otherwise we will default to STDOUT logger
+   * If true, events will be dumped directly to stdout. Otherwise (the default),
+   * the events will be further processed with some logging system such as SLF4j.
    */
-  val setEventLog: EventLog = {
-    if (EventLogger.getImplementation == null) {
-      EventLogger.setImplementation(new SLF4JLogAdapter())
+  def raw: Boolean = EventLogger.getImplementation == null
+
+  def raw_=(value: Boolean) = {
+    if (raw != value) {
+      value match {
+        case true => EventLogger.setImplementation(null)
+        case false => EventLogger.setImplementation(new SLF4JLogAdapter)
+      }
     }
-    EventLogger.getImplementation
   }
+
   /**
    * Starts a new event context. Usually this method is not the one you want,
    * more likely you're looking for [[withContext(String)]], which will manage
