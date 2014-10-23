@@ -20,9 +20,6 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Frame
-"""
 
 import logging
 
@@ -44,6 +41,7 @@ def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:
@@ -1531,7 +1529,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         column_names : dictionary of str pairs
-            The name pair (existing name, new name).
+            The name pair ({existing name: new name}).
 
         Notes
         -----
