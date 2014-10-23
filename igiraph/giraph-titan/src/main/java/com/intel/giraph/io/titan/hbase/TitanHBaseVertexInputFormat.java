@@ -22,9 +22,11 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexInputFormat;
@@ -36,6 +38,8 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 import java.io.IOException;
 import java.util.List;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 
 /**
  * Abstract class that uses TitanHBaseInputFormat to read Titan/Hadoop (i.e., Faunus) vertices from HBase.
@@ -72,7 +76,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     @Override
     public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
         super.setConf(conf);
-        GiraphTitanUtils.setupHBase(conf);
+        GiraphTitanUtils.sanityCheckInputParameters(conf);
         vertexBuilder = new TitanHBaseVertexBuilder(conf);
     }
 
@@ -88,6 +92,10 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     @Override
     public List<InputSplit> getSplits(JobContext context, int minSplitCountHint) throws IOException,
             InterruptedException {
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                GIRAPH_TITAN.get(context.getConfiguration()));
+        Configuration configuration = getConf();
+
         INPUT_FORMAT.setConf(getConf());
         return INPUT_FORMAT.getSplits(context);
     }

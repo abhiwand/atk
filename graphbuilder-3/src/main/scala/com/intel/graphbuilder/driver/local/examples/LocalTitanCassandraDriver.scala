@@ -25,15 +25,15 @@ package com.intel.graphbuilder.driver.local.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{Edge, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.schema.InferSchemaFromRules
-import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
+import com.intel.graphbuilder.write.dao.{EdgeDAO, VertexDAO}
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
-import com.intel.graphbuilder.write.{ EdgeWriter, VertexWriter }
+import com.intel.graphbuilder.write.{EdgeWriter, VertexWriter}
 import com.thinkaurelius.titan.core.TitanGraph
 import org.apache.commons.configuration.BaseConfiguration
 
@@ -115,7 +115,7 @@ object LocalTitanCassandraDriver {
     titanConfig.setProperty("storage.hostname", "127.0.0.1")
     titanConfig.setProperty("storage.keyspace", "titan")
     val titanConnector = new TitanGraphConnector(titanConfig)
-    var graph = titanConnector.connect()
+    val graph = titanConnector.connect()
 
     try {
 
@@ -139,8 +139,8 @@ object LocalTitanCassandraDriver {
       })
 
       // Results
-      println(graph.getEdges.iterator().toList.size)
-      println(graph.getVertices.iterator().toList.size)
+      println(graph.getEdges.toList.size)
+      println(TitanGraphConnector.getVertices(graph).toList.size) //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
     }
     finally {

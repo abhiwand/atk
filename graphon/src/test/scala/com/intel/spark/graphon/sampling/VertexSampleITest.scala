@@ -210,7 +210,7 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
       titanGraph = titanConnector.connect()
 
       titanGraph.getEdges.size shouldEqual 20
-      titanGraph.getVertices.size shouldEqual 8
+      TitanGraphConnector.getVertices(titanGraph).size shouldEqual 8 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
       cleanupTitan()
     }
 
