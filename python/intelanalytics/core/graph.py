@@ -344,8 +344,7 @@ class EdgeRule(Rule):
     def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
         self.bidirectional = bool(bidirectional)
         if is_directed is not None:
-            raise_deprecation_warning("EdgeRule", "bool parameter 'is_directed' is now called"
-                                                  "'bidirectional' and has opposite polarity.")
+            raise_deprecation_warning("EdgeRule", "Parameter 'is_directed' is now called bidirectional' and has opposite polarity.")
             self.bidirectional = not is_directed
 
         self.label = label
