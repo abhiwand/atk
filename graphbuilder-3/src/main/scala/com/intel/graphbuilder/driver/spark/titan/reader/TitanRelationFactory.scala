@@ -137,7 +137,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
       None
     }
     else {
-      Option(new Vertex(vertexId, Property(gbId, vertexId), vertexProperties.toSeq))
+      Option(new Vertex(vertexId, Property(gbId, vertexId), vertexProperties.toSet))
     }
   }
 
@@ -162,7 +162,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
       case Direction.OUT =>
         val srcVertexId = vertexId
         val destVertexId = otherVertexID
-        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSeq
+        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSet
 
         Option(new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties))
       case _ => None

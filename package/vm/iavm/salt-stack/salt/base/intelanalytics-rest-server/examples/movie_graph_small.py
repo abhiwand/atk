@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 from intelanalytics import *
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
@@ -13,7 +14,7 @@ csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = BigFrame(csv_file)
+frame = Frame(csv_file)
 
 print "Done building frame"
 
@@ -33,10 +34,10 @@ user = VertexRule("user_id", frame["user_id"], {"vertex_type": "L"})
 
 movie = VertexRule("movie_id", frame.movie_id)
 
-rates = EdgeRule("rating", user, movie, {"splits": frame.splits}, is_directed=True)
+rates = EdgeRule("rating", user, movie, {"splits": frame.splits}, bidirectional=False)
 
 # Create a graph
 print "creating graph"
-graph = BigGraph([user, movie, rates])
+graph = TitanGraph([user, movie, rates])
 
 

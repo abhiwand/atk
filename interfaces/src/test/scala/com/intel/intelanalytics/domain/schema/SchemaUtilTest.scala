@@ -28,6 +28,44 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class SchemaUtilTest extends FlatSpec with Matchers {
+
+  "SchemaUtil" should "be able to resolve name conflicts when they exist" in {
+    val leftColumns: List[(String, DataType)] = List(("same", DataTypes.int32), ("bar", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List(("same", DataTypes.int32), ("foo", DataTypes.string))
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+
+    result.length shouldBe 4
+    result(0)._1 shouldBe "same_L"
+    result(1)._1 shouldBe "bar"
+    result(2)._1 shouldBe "same_R"
+    result(3)._1 shouldBe "foo"
+  }
+
+  it should "not do anything to resolve conflicts when they don't exist" in {
+    val leftColumns: List[(String, DataType)] = List(("left", DataTypes.int32), ("bar", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List(("right", DataTypes.int32), ("foo", DataTypes.string))
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+
+    result.length shouldBe 4
+    result(0)._1 shouldBe "left"
+    result(1)._1 shouldBe "bar"
+    result(2)._1 shouldBe "right"
+    result(3)._1 shouldBe "foo"
+  }
+
+  it should "handle empty column lists" in {
+    val leftColumns: List[(String, DataType)] = List(("left", DataTypes.int32), ("bar", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List()
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+
+    result.length shouldBe 2
+    result(0)._1 shouldBe "left"
+    result(1)._1 shouldBe "bar"
+  }
+
   "convertSchema" should "return the same data if schema does not change" in {
     val columns: List[(String, DataType)] = List(("name", DataTypes.string), ("age", DataTypes.int32))
     val data = Array("Frank", 48)

@@ -1,4 +1,4 @@
-     ##############################################################################
+##############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -29,74 +29,29 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
+from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
-
-
-def execute_update_graph_command(command_name, arguments, graph):
-    #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('graph'):
-        command_name = 'graph/' + command_name
-    command = CommandRequest(command_name, arguments=arguments)
-    command_info = executor.issue(command)
-    if (command_info.result.has_key('value') and len(command_info.result) == 1):
-        return command_info.result.get('value')
-    else:
-        return command_info.result
-
-execute_new_graph_command = execute_update_graph_command
 
 
 def initialize_graph(graph, graph_info):
     """Initializes a graph according to given graph_info"""
     graph._id = graph_info.id_number
     graph._name = graph_info.name
+    graph._ia_uri = graph_info.ia_uri
     graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
     return graph
 
-class GraphBackendRest(object):
 
-    commands_loaded = {}
+class GraphBackendRest(object):
 
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
-        if not self.__class__.commands_loaded:
-            self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
-                                                                                 execute_update_graph_command,
-                                                                                execute_new_graph_command))
-            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            BigGraph._commands = self.__class__.commands_loaded
-
-    def get_graph_names(self):
-        logger.info("REST Backend: get_graph_names")
-        r = self.rest_http.get('graphs')
-        payload = r.json()
-        return [f['name'] for f in payload]
-
-    def get_graph(self,name):
-        logger.info("REST Backend: get_graph")
-        r = self.rest_http.get('graphs?name='+name)
-        graph_info = GraphInfo(r.json())
-        return BigGraph(graph_info)
-
-    def delete_graph(self,graph):
-        if isinstance(graph,BigGraph):
-            return self._delete_graph(graph)
-        elif isinstance(graph, basestring):
-            #delete by name
-            return self._delete_graph(self.get_graph(graph))
-        else:
-            raise TypeError('Expected argument of type BigGraph or the graph name')
-
-    def _delete_graph(self, graph):
-        logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
-        r=self.rest_http.delete("graphs/"+str(graph._id))
-        return None
 
     def create(self, graph,rules,name):
         logger.info("REST Backend: create graph with name %s: " % name)
+        if isinstance(rules, dict):
+            rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
             return  # Early exit here
@@ -111,14 +66,14 @@ class GraphBackendRest(object):
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
-            initialized_graph=initialize_graph(graph,graph_info)
+            initialized_graph=initialize_graph(graph, graph_info)
             if rules:
                 frame_rules = JsonRules(rules)
                 if logger.level == logging.DEBUG:
                     import json
                     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                     logger.debug("REST Backend: create graph payload: " + payload_json)
-                self.load(initialized_graph,frame_rules, append= False)
+                initialized_graph.load(frame_rules, append=False)
             return graph_info.name
     
     def _get_new_graph_name(self,source=None):
@@ -128,12 +83,8 @@ class GraphBackendRest(object):
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
 
-    def rename_graph(self, graph, name):
-        arguments = {'graph': self._get_graph_full_uri(graph), "new name": name}
-        execute_update_graph_command('rename_graph', arguments,graph)
-
-    def get_name(self, graph):
-        return self._get_graph_info(graph).name
+    def get_ia_uri(self, graph):
+        return self._get_graph_info(graph).ia_uri
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
@@ -149,61 +100,7 @@ class GraphBackendRest(object):
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
-        self.load(graph, frame_rules, append=True)
-
-    # def _get_uri(self, payload):
-    #     links = payload['links']
-    #     for link in links:
-    #         if link['rel'] == 'self':
-    #             return link['uri']
-    #     return "we don't know"
-    #     # TODO - bring exception back
-    #     #raise Exception('Unable to find uri for graph')
-
-    def als(self, graph, *args, **kwargs):
-        logger.info("REST Backend: run als on graph " + graph.name)
-        payload = JsonAlsPayload(graph, *args, **kwargs)
-        if logger.level == logging.DEBUG:
-            import json
-            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
-            logger.debug("REST Backend: run als payload: " + payload_json)
-        r = http.post('commands', payload)
-        logger.debug("REST Backend: run als response: " + r.text)
-
-    def recommend(self, graph, vertex_id):
-        logger.info("REST Backend: als query on graph " + graph.name)
-        cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
-        cmd = cmd_format.format(graph._id, vertex_id)
-        logger.debug("REST Backend: als query cmd: " + cmd)
-        r = http.get(cmd)
-        json = r.json()
-        logger.debug("REST Backend: run als response: " + json)
-        return json
-
-
-class JsonAlsPayload(object):
-    def __new__(cls,
-                graph,
-                input_edge_property_list,
-                input_edge_label,
-                output_vertex_property_list,
-                vertex_type,
-                edge_type):
-        return {
-            "name": "graph/ml/als",
-            "arguments" : {
-                "graph": graph.uri,
-                "lambda": 0.1,
-                "max_supersteps": 20,
-                "converge_threshold": 0,
-                "feature_dimension": 1,
-                "input_edge_property_list": input_edge_property_list,
-                "input_edge_label": input_edge_label,
-                "output_vertex_property_list": output_vertex_property_list,
-                "vertex_type": vertex_type,
-                "edge_type": edge_type,
-            }
-        }
+        graph.load(frame_rules, append=True)
 
 
 # GB JSON Payload objects:
@@ -238,7 +135,7 @@ class JsonEdgeRule(object):
                 'head': JsonProperty(JsonValue(rule.head.id_key), JsonValue(rule.head.id_value)),
                 'properties': [JsonProperty(JsonValue(k), JsonValue(v))
                                for k, v in rule.properties.items()],
-                'bidirectional': not rule.is_directed}
+                'bidirectional': rule.bidirectional}
 
 
 class JsonFrame(object):
@@ -274,12 +171,22 @@ class JsonRules(object):
     @staticmethod
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
+        #validate the input frames
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+
+        try:
+            frame_backend.get_frame_by_id(uri)
+        except:
+            raise ValueError("Frame provided to establish VertexRule is no longer available.")
+
         try:
             frame = frames_dict[uri]
         except KeyError:
             frame = JsonFrame(uri)
             frames_dict[uri] = frame
         return frame
+
 
 class GraphInfo(object):
     """
@@ -303,8 +210,12 @@ class GraphInfo(object):
         return self._payload['name']
 
     @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
+
+    @property
     def links(self):
-        return self._links['links']
+        return self._payload['links']
 
     def update(self,payload):
         if self._payload and self.id_number != payload['id']:

@@ -27,16 +27,57 @@ Rules of thumb:
     |       If you choose a number way too high then more time will be spent scheduling than executing
             10,000 would be way too big for a 4 node cluster
 
-.. ifconfig:: internal_docs
-
-    Notes:
-        |   Graph builder could not complete 1GB Netflix graph with less than 60 partitions - about 90 was optimal
-            (larger needed for large data)
-        |   Graph builder ran into issues with partition size larger than 2000 on 4 node cluster with larger data sizes
-
 ------
 Python
 ------
+
+Server Connection
+=================
+
+Ping the server::
+
+    >>> import intelanalytics as ia
+    >>> ia.server.ping()
+    Successful ping to Intel Analytics at http://localhost:9099/info
+
+View and edit the server connection::
+
+    >>> print ia.server
+    host:    localhost
+    port:    9099
+    scheme:  http
+    version: v1
+
+    >>> ia.server.host
+    'localhost'
+
+    >>> ia.server.host = '10.54.99.99'
+    >>> ia.server.port = None
+    >>> print ia.server
+    host:    10.54.99.99
+    port:    None
+    scheme:  http
+    version: v1
+
+Reset configuration back to defaults::
+
+    >>> ia.server.reset()
+    >>> print ia.server
+    host:    localhost
+    port:    9099
+    scheme:  http
+    version: v1
+
+Errors
+======
+
+By default the toolkit does not print the full stack trace when exceptions occur.  To see the full python stack trace of the last (i.e. most recent) exception::
+
+    >>> print ia.errors.last
+
+To enable always printing the full python stack trace, set the 'show_details' property::
+
+    >>> ia.errors.show_details = True
 
 Tab Completion
 ==============
@@ -163,3 +204,4 @@ Spark Docs
 Nice thread on how Shuffle works in Spark,
     http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
 
+.. |IA| replace:: Intel Analytics

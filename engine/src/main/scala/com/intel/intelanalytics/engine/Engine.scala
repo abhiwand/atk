@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine
 
 import akka.actor.Actor
-import com.intel.intelanalytics.shared.EventLogging
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.intel.event.EventLogging
 
 ///** This is the Akka interface to the engine */
 //class EngineActor extends Actor with EventLogging { this: EngineComponent =>

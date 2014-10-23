@@ -30,4 +30,4 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param data data from the query
  * @param schema schema to describe the data
  */
-case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema])
+case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema]) extends QueryResult(schema)

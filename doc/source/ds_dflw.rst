@@ -74,8 +74,11 @@ Each column has a unique name and holds a specific data type.
 Each row holds a set of data.
 
 To import CSV data you need a :term:`schema` defining the structure of your data.
-Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being composed of a string and a data type.
-The string is the name of the column (see :ref:`Valid Data Types <valid_data_types>`).
+Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being
+composed of a string and a data type.
+The string is the name of the column, and the data type must be valid (see :ref:`Valid Data Types <valid_data_types>`).
+Unicode in column names will likely cause the drop_frames() function (and others) to fail, and it is not
+supported.
 The order of the columns in the schema must match the order of columns in the data.
 
 Let's start with a file *Data.csv* whose contents look like this::
@@ -97,9 +100,10 @@ When `defining schemas`, if the parser should ignore the field, the type is assi
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
 The delimiter can be declared using the key word ``delimiter``.
-This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for tab-delimited records.
-If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be passed in with
-the ``skip_header_lines`` parameter.
+This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for
+tab-delimited records.
+If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be
+passed in with the ``skip_header_lines`` parameter.
 
 Now we use the schema and the file name to create objects used to define the data layouts::
 
@@ -116,89 +120,14 @@ Now we use the schema and the file name to create objects used to define the dat
                    skip_header_lines=2)
 
 
-.. TODO:: Other import data formats
-
-    JSON File
-
-
-    Example:
-
-    >>> {
-           "firstName": "John",
-           "lastName": "Smith",
-           "age": 25,
-           "address": {
-               "streetAddress": "21 2nd Street",
-               "city": "New York",
-               "state": "NY",
-               "postalCode": "10021"
-           },
-           "phoneNumber": [
-               {
-                   "type": "home",
-                   "number": "212 555-1239"
-               },
-               {
-                   "type": "fax",
-                   "number": "646 555-4567"
-               }
-           ],
-           "gender":{
-                "type":"male"
-           }
-        }
-
-    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
-
-    >>> from intelanalytics.core.files import JsonFile
-        my_json = JsonFile(my_data_file.json)
-
-    XML File
-
-    Example:
-
-    >>> <person>
-          <firstName>John</firstName>
-          <lastName>Smith</lastName>
-          <age>25</age>
-          <address>
-            <streetAddress>21 2nd Street</streetAddress>
-            <city>New York</city>
-            <state>NY</state>
-            <postalCode>10021</postalCode>
-          </address>
-          <phoneNumbers>
-            <phoneNumber type="home">212 555-1234</phoneNumber>
-            <phoneNumber type="fax">646 555-4567</phoneNumber>
-          </phoneNumbers>
-          <gender>
-            <type>male</type>
-          </gender>
-        </person>
-
-    The primitive values can also get encoded using attributes instead of tags:
-
-    >>> <person firstName="John" lastName="Smith" age="25">
-          <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
-          <phoneNumbers>
-             <phoneNumber type="home" number="212 555-1234"/>
-             <phoneNumber type="fax"  number="646 555-4567"/>
-          </phoneNumbers>
-          <gender type="male"/>
-        </person>
-
-    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
-
-    >>> from intelanalytics.core.files import XmlFile
-        my_xml = XmlFile(my_data_file.xml)
-
 .. _example_frame.bigframe:
 
 --------
 BigFrame
 --------
 
-A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing "big data".
+A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing
+"big data".
 The frame is visualized as a table structure of rows and columns.
 It can handle large volumes of data, because it is designed to work with data spread over multiple clusters.
 
@@ -216,16 +145,18 @@ To create an empty frame and a BigFrame object, *f*, to access it::
 
     f = BigFrame()
 
-To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a BigFrame object, *my_frame*, to access it::
+To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a
+BigFrame object, *my_frame*, to access it::
 
     my_frame = BigFrame(my_csv, 'bf')
 
-To create a new frame, identical to the frame named *bf* (except for the name, because the name must always be unique),
-and create a BigFrame object *f2* to access it::
+To create a new frame, identical to the frame named *bf* (except for the name, because the name must always
+be unique), and create a BigFrame object *f2* to access it::
 
     f2 = BigFrame(my_frame)
 
-To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame object as *f3*::
+To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame
+object as *f3*::
 
     f3 = BigFrame(my_frame[['a', 'c']])
 
@@ -286,7 +217,12 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
+<<<<<<< HEAD
+IAT provides several functions that allow you to inspect your data, including attributes, .inspect(), and
+.take().
+=======
 IAT provides several functions that allow you to inspect your data, including .count(), .len(), .inspect(), and .take().
+>>>>>>> sprint_20
 
 Examples
 --------
@@ -335,7 +271,7 @@ so when using some Python libraries, be aware that some of them are not designed
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
 
-.. _example_frame.drop:
+.. _example_frame.drop_rows:
 
 Drop Rows:
 ----------
@@ -347,15 +283,15 @@ Examples:
 
 To drop all rows where column *b* contains a negative number::
 
-    my_frame.drop(lambda row: row['b'] < 0)
+    my_frame.drop_rows(lambda row: row['b'] < 0)
 
 To drop all rows where column *a* is empty::
 
-    my_frame.drop(lambda row: row['a'] is None)
+    my_frame.drop_rows(lambda row: row['a'] is None)
 
 To drop all rows where any column is empty::
 
-    my_frame.drop(lambda row: any([cell is None for cell in row]))
+    my_frame.drop_rows(lambda row: any([cell is None for cell in row]))
 
 .. _example_frame.filter:
 
@@ -392,7 +328,7 @@ Drop any rows where the data matches some previously-implemented evaluation row 
 .. _example_frame.drop_columns:
 
 Drop Columns:
----------------
+-------------
 
 Columns can be dropped either with a string matching the column name or a list of strings::
 
@@ -405,12 +341,13 @@ Rename Columns:
 ---------------
 
 Columns can be renamed by giving the existing column name and the new name, in the form of a dictionary.
+Unicode characters should not be used for column names.
 
-Rename column *a* to *id*::
+Rename column *a* to "id"::
 
     my_frame.rename_columns(('a': 'id'))
 
-Rename column *b* to *author* and *c* to *publisher*::
+Rename column *b* to "author" and *c* to "publisher"::
 
     my_frame.rename_columns(('b': 'author', 'c': 'publisher'))
 
@@ -481,6 +418,16 @@ Create multiple columns at once by making a function return a list of values for
 
     my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
 
+.. _ds_dflw_frame_examine:
+
+Examining the Data
+==================
+
+Let's say we want to get some standard statistical information about *my_frame*.
+We can use the frame function *column_summary_statistics*::
+
+    my_frame.column_summary_statistics()
+
 .. _example_frame.group_by:
 
 Group_by (and Aggregate):
@@ -523,7 +470,6 @@ Aggregation based on columns:
             * *d_sum*
 
 Aggregation based on full row:
-
     Given a frame with columns *a*, and *b*;
     Create a new frame and a Bigframe *gr_data* to access it;
     Group by unique values in columns *a* and *b*;
@@ -535,7 +481,6 @@ Aggregation based on full row:
         agg.count is the only full row aggregation function supported at this time
 
 Aggregation based on both column and row together:
-
     Given a frame with columns *a*, *b*, *c*, and *d*;
     Group by unique values in columns *a* and *b*;
     Count the number of rows in each group and put that value in column *count*:
@@ -563,47 +508,6 @@ Aggregation based on both column and row together:
     * sum
     * :term:`variance <Bias-variance tradeoff>`
     * distinct
-
-
-.. ifconfig:: internal_docs
-
-    (Follows GraphLab's SFrame:
-    http://graphlab.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate)
-
-    And then from IAT Product Defn:  (any must-haves for 0.8?)
-
-    Mean, Median, Mode, Sum, Geom Mean
-    Skewness, Kurtosis, Cumulative Sum, Cumulative Count, Sum, Count
-    Minimum, Maximum, Range, Variance, Standard Deviation, Mean Standard Error, Mean Confidence Interval, Outliers
-    Count Distinct, Distribution
-    Possibly others I missed
-
-
-    Stuff to consider for >= 1.0
-
-    Use a 'stats' builtin to get all the basic statistical calculations::
-
-        f.group_by(['a', 'b'], { 'c': stats, 'd': stats })
-        f.group_by(['a', 'b'], stats)  # on all columns besides the group_by columns
-
-    Use lambdas for custom group_by operations --i.e. first parameter can be a lambda
-
-    Customer reducers::
-
-        f.group_by(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-
-    Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
-
-    Mixed-combo::
-
-        f.group_by(['a', 'b'],
-                  stats,
-                  ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-                  { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
-                    'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
-
-    Produces a frame with several columns:
-    ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
 
 
 .. _example_frame.join:
@@ -764,6 +668,8 @@ For the examples below, we will use a BigFrame *my_frame*, which accesses an arb
     | 00004     | ringo     | 00001     | 2         |
     +-----------+-----------+-----------+-----------+
 
+.. _ds_dflw_building_rules:
+
 Building Rules
 ==============
 
@@ -774,15 +680,15 @@ Vertex Rule:
 
 To create a rule for :term:`vertices`, one needs to define:
 
-1. The label for the vertices, for example, the string “empID”.
-#. The identification value of each vertex, for example, the column “emp_id” of our frame.
-#. The properties of the vertex.
+1.  The label for the vertices, for example, the string "empID".
+#.  The identification value of each vertex, for example, the column "emp_id" of our frame.
+#.  The properties of the vertex.
 
 Note:
     The properties of a vertex:
 
-    1. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
-    #. Are optional, which means a vertex might have zero or more properties.
+    1.  Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
+    #.  Are optional, which means a vertex might have zero or more properties.
 
 Vertex Rule Example:
 ~~~~~~~~~~~~~~~~~~~~
@@ -822,38 +728,39 @@ Edge Rule Example:
 Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
 defined *employee* and *manager* rules, and link them together::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”] })
+    reports = EdgeRule("worksUnder", employee, manager, { "years": my_frame[“years”] })
 
 This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property
 with the value from the frame column *years*.
 
-Rule of directed/non-directed edge:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+Use of bidirectional:
+~~~~~~~~~~~~~~~~~~~~~
 In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
 
 In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
 This edge is considered “directed” since an employee reports to a manager but not vice versa.
-To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
-as shown in example below::
+The bidirectional flag will create an extra edge going in the opposite direction for every edge.  To enable use the
+parameter ``bidirectional`` in the edge rule and set it to ``True``, as shown in example below::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
-        is_directed = True)
+        bidirectional = True)
 
-Building A Graph
-================
+.. _ds_dflw_building_a_graph:
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the
-name “employee_graph”::
+Building a Graph From a Set of Rules
+====================================
+
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
+We will give the graph the name “employee_graph”::
 
     my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The graph is then created in the underlying graph database structure and the access control information is saved into the
-BigGraph object *my_graph*.
-The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example,
-the use of :term:`machine learning` algorithms.
+The graph is then created in the underlying graph database structure and
+the access control information is saved into the BigGraph object *my_graph*.
+The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the BigGraph API.
 
-Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
+Similar to what was discussed for BigFrame, what gets returned is not all the data,
+but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
 
 --------------
@@ -862,5 +769,9 @@ Error Handling
 
 Examples:
 
-    >>> ia.errors.last  # full exception stack trace and message of the last exception raised at the API layer
-    >>> ia.errors.show_details  # toggle setting to show full stack trace, False by default
+    ia.errors.last  # full exception stack trace and message of the last exception
+        raised at the API layer
+    ia.errors.show_details  # toggle setting to show full stack trace, False by default
+
+The above commands may have been split for enhanced readability in some medias.
+

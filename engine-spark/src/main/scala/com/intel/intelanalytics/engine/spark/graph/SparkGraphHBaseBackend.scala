@@ -1,9 +1,9 @@
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.GraphBackendStorage
+import com.intel.event.EventLogging
 
 /**
  * Implements graph backend storage in HBase for Spark.

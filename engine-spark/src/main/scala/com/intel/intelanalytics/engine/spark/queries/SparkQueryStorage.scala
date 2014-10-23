@@ -28,16 +28,17 @@ import java.nio.file.Paths
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.QueryPluginResults
-import com.intel.intelanalytics.engine.spark.{ SparkOps, HdfsFileStorage, SparkEngineConfig }
+import com.intel.intelanalytics.engine.spark.{ HdfsFileStorage, SparkEngineConfig }
 import com.intel.intelanalytics.engine.{ ProgressInfo, QueryStorage }
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.util.{ Failure, Success, Try }
 import org.apache.hadoop.fs.Path
+import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
+import com.intel.event.EventLogging
 
 /**
  * Class Responsible for coordinating Query Storage with Spark
@@ -76,7 +77,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
     if (totalPages == 1)
       rdd.collect()
     else
-      SparkOps.getRows[Array[Any]](rdd, pageId * pageSize, pageSize, pageSize)
+      MiscFrameFunctions.getRows[Array[Any]](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   /**

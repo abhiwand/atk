@@ -27,6 +27,6 @@ import com.intel.intelanalytics.algorithm.Quantile
 
 /**
  * The result object for quantile calculation
- * @param quantiles value for the percentiles
+ * @param quantiles value for the quantiles
  */
 case class QuantileValues(quantiles: List[Quantile])

@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 from intelanalytics import *
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
@@ -14,7 +15,7 @@ csv = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame 'myframe'"
 
-frame = BigFrame(csv, "myframe")
+frame = Frame(csv, "myframe")
 
 print "Done building data frame 'myframe'"
 
@@ -26,20 +27,20 @@ source = VertexRule("source", frame.source, {"vertex_type": frame.vertex_type, "
 
 target = VertexRule("target", frame.target, {"vertex_type": frame.vertex_type, "value": frame.value})
 
-edge = EdgeRule("edge", target, source, {'weight': frame.weight})
+edge = EdgeRule("edge", target, source, {'weight': frame.weight}, bidirectional=True)
 
 print "Creating Graph 'mygraph'"
 
-graph = BigGraph([target, source, edge], "mygraph")
+graph = TitanGraph([target, source, edge], "mygraph")
 
 print "Running Loopy Belief Propagation on Graph mygraph"
 
-print graph.ml.loopy_belief_propagation(vertex_value_property_list="value",
-                                        edge_value_property_list="weight",
-                                        input_edge_label_list="edge",
-                                        output_vertex_property_list="lbp_posterior",
-                                        vertex_type_property_key="vertex_type",
-                                        vector_value="true",
+print graph.ml.loopy_belief_propagation(vertex_value_property_list=["value"],
+                                        edge_value_property_list=["weight"],
+                                        input_edge_label_list=["edge"],
+                                        output_vertex_property_list=["lbp_posterior"],
+                                        vertex_type="vertex_type",
+                                        vector_value=True,
                                         max_supersteps=10,
                                         convergence_threshold=0.0,
                                         anchor_threshold=0.9,

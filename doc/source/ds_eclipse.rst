@@ -12,10 +12,10 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client and required dependencies
+- |IA| Python Rest Client and required dependencies
 - Eclipse Standard
 
-The Intel Analytics Toolkit should work with any version of Eclipse but these instructions were tested with Eclipse Standard Version 4.4 Luna.
+The |IA| Toolkit should work with any version of Eclipse but these instructions were tested with Eclipse Standard Version 4.4 Luna.
 
 If you are on a corporate network, you may need to configure proxy settings in Eclipse before beginning (see Eclipse Help).
 
@@ -74,7 +74,7 @@ Setup
 
     #)  Choose "Add source folder" button
 
-    #)  Browse for the Intel Analytics Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
+    #)  Browse for the |IA| Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose the "OK" button
 
@@ -106,3 +106,4 @@ Setup
 
 #)  Next take a look at the included examples
 
+.. |IA| replace:: Intel Analytics

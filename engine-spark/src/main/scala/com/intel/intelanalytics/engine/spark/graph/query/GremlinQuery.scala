@@ -49,67 +49,85 @@ case class QueryArgs(graph: GraphReference, gremlin: String)
  */
 case class QueryResult(results: Iterable[JsValue], run_time_seconds: Double)
 
+/** Json conversion for arguments and return value case classes */
+object GremlinQueryFormat {
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  implicit val queryArgsFormat = jsonFormat2(QueryArgs)
+  implicit val queryResultFormat = jsonFormat2(QueryResult)
+}
+
+import GremlinQueryFormat._
+
 /**
  * Command plugin for executing Gremlin queries.
  */
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val queryArgsFormat = jsonFormat2(QueryArgs)
-  implicit val queryResultFormat = jsonFormat2(QueryResult)
-
   val gremlinExecutor = new GremlinGroovyScriptEngine()
   var titanGraphs = Map[String, TitanGraph]()
 
+  /**
+   * The name of the command, e.g. graph/sampling/vertex_sample
+   */
+  override def name: String = "graph:titan/query/gremlin"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Executes a Gremlin query.",
     extendedSummary = Some("""
-    Extended Summary
-    ----------------
-    Executes a Gremlin query on an existing graph.
-
-    The query returns a list of results in GraphSON format(for vertices or edges)
-    or JSON (for other results like counts). GraphSON is a JSON-based format for
-    property graphs which uses reserved keys that begin with underscores to
-    encode vertex and edge metadata.
-
-    Parameters
-    ----------
-    gremlin: String
-        The Gremlin script to execute.
-        At present, the query does not support pagination so the results of query
-        should be limited using the Gremlin range filter [i..j], e.g., g.V[0..9]
-        to return the first 10 vertices.
-
-    Raises
-    ------
-    RuntimeException
-      	If the Gremlin script could not be executed due to invalid syntax.
-
-    Returns
-    -------
-    Dictionary
-        Query results and runtime in seconds.
-
-
-    Examples
-    --------
-    Get the first two outgoing edges of the vertex whose source equals 5767244
-      	mygraph = BigGraph(...)
-      	results = mygraph.query.gremlin("g.V('source', 5767244).outE[0..1]")
-      	print results["results"]
-
-    The expected output is a list of edges in GraphSON format:
-    	  [{u'_label': u'edge', u'_type': u'edge', u'_inV': 1381202500, u'weight': 1, u'_outV': 1346400004, u'_id': u'fDEQC9-1t7m96-1U'},
-    	  {u'_label': u'edge', u'_type': u'edge', u'_inV': 1365600772, u'weight': 1, u'_outV': 1346400004, u'_id': u'frtzv9-1t7m96-1U'}]
-
-    Get the count of incoming edges for a vertex.
-    	results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
-    	print results["results"]
-
-    The expected output is:
-    	[4]
-""")))
+                           |    Extended Summary
+                           |    ----------------
+                           |    Executes a Gremlin query on an existing graph.
+                           |    The query returns a list of results in GraphSON format(for vertices or
+                           |    edges) or JSON (for other results like counts).
+                           |    GraphSON is a JSON-based format for
+                           |    property graphs which uses reserved keys that begin with underscores to
+                           |    encode vertex and edge metadata.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    gremlin : String
+                           |        The Gremlin script to execute.
+                           |        At present, the query does not support pagination so the results of query
+                           |        should be limited using the Gremlin range filter [i..j], e.g., g.V[0..9]
+                           |        to return the first 10 vertices.
+                           |
+                           |    Raises
+                           |    ------
+                           |    RuntimeException
+                           |        If the Gremlin script could not be executed due to invalid syntax.
+                           |
+                           |    Returns
+                           |    -------
+                           |    Dictionary
+                           |        Query results and runtime in seconds.
+                           |
+                           |
+                           |    Examples
+                           |    --------
+                           |    Get the first two outgoing edges of the vertex whose source equals 5767244::
+                           |
+                           |        mygraph = BigGraph(...)
+                           |        results = mygraph.query.gremlin("g.V('source', 5767244).outE[0..1]")
+                           |        print results["results"]
+                           |
+                           |    The expected output is a list of edges in GraphSON format::
+                           |
+                           |        [{u'_label': u'edge', u'_type': u'edge', u'_inV': 1381202500, u'weight': 1, u'_outV': 1346400004, u'_id': u'fDEQC9-1t7m96-1U'},
+                           |        {u'_label': u'edge', u'_type': u'edge', u'_inV': 1365600772, u'weight': 1, u'_outV': 1346400004, u'_id': u'frtzv9-1t7m96-1U'}]
+                           |
+                           |     Get the count of incoming edges for a vertex::
+                           |
+                           |        results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
+                           |        print results["results"]
+                           |
+                           |     The expected output is::
+                           |
+                           |        [4]
+                            """.stripMargin)))
 
   /**
    * Executes a Gremlin query.
@@ -148,20 +166,6 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     QueryResult(resultIterator, runtimeInSeconds)
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[QueryArgs]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: QueryResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   */
-  override def name: String = "graphs/query/gremlin"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: QueryArgs): JsObject = arguments.toJson.asJsObject()
-
   /**
    * Execute gremlin query.
    *
@@ -172,6 +176,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   def executeGremlinQuery(titanGraph: TitanGraph, gremlinScript: String,
                           bindings: Bindings,
                           graphSONMode: GraphSONMode = GraphSONMode.NORMAL): Iterable[JsValue] = {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
     val results = Try(gremlinExecutor.eval(gremlinScript, bindings)).getOrElse({
       throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
     })

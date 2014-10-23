@@ -5,14 +5,19 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>testutils</artifactId>
     <packaging>jar</packaging>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.6-SNAPSHOT</version>
     <name>IntelAnalytics Common Test Utilities</name>
+
+    <description>
+        This module contains test utility code that needs to be shared between modules to prevent duplication.
+        For example, multiple modules need to test using temporary SparkContexts.
+    </description>
 
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <profiles>
@@ -57,6 +62,12 @@
     </profiles>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>

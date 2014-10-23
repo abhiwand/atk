@@ -26,6 +26,15 @@ package com.intel.intelanalytics.domain.schema
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
+ * Column Info - this is a nicer wrapper for columns than just tuples
+ *
+ * @param index the index
+ * @param name the column name
+ * @param dataType the type
+ */
+case class ColumnInfo(index: Int, name: String, dataType: DataType)
+
+/**
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
@@ -45,13 +54,45 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
   def columnIndex(columnNames: Seq[String]): Seq[Int] = {
     if (columnNames.isEmpty)
       (0 to (columns.length - 1)).toList
-    else
-      columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
+    else {
+      columnNames.map(col => {
+        val index = columns.indexWhere(columnTuple => columnTuple._1 == col)
+        if (index == -1)
+          throw new IllegalArgumentException(s"Invalid column name(s) provided. Check schema : $columnNames")
+        else
+          index
+      })
+    }
   }
 
   /**
    * get column datatype by column name
    * @param columnName name of the column
    */
-  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).headOption.getOrElse(throw new IllegalArgumentException("No column named $columnName"))._2
+  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).headOption.getOrElse(throw new IllegalArgumentException(s"No column named $columnName"))._2
+
+  /**
+   * Get all of the info about a column - this is a nicer wrapper than tuples
+   *
+   * @param columnName the name of the column
+   * @return complete column info
+   */
+  def column(columnName: String): ColumnInfo = {
+    ColumnInfo(columnIndex(columnName), columnName, columnDataType(columnName))
+  }
+
+  /**
+   * Convenience method for optionally getting a Column.
+   *
+   * This is helpful when specifying a columnName was optional for the user.
+   *
+   * @param columnName the name of the column
+   * @return complete column info, if a name was provided
+   */
+  def column(columnName: Option[String]): Option[ColumnInfo] = {
+    columnName match {
+      case Some(name) => Some(column(name))
+      case None => None
+    }
+  }
 }

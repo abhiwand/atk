@@ -26,8 +26,8 @@ package com.intel.intelanalytics.engine.spark.context
 import com.typesafe.config.Config
 import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.event.EventLogging
 
 /**
  * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
