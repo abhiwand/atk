@@ -26,10 +26,10 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

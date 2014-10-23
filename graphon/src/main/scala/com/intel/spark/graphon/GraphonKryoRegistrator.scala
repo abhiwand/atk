@@ -21,7 +21,7 @@ class GraphonKryoRegistrator extends KryoRegistrator {
 
     // IATPregel Logging Classes
 
-    kryo.register(classOf[SuperStepCountNetDelta])
+    kryo.register(classOf[SuperStepNetDelta])
 
     // Belief propagation classes
     kryo.register(classOf[VertexState])
