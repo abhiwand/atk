@@ -50,7 +50,7 @@ public class GiraphToTitanGraphFactory {
      */
     public static BaseConfiguration generateTitanConfiguration(final Configuration config, final String prefix) {
 
-        final BaseConfiguration titanconfig = new BaseConfiguration();
+        final BaseConfiguration titanConfig = new BaseConfiguration();
         final Iterator<Map.Entry<String, String>> itty = config.iterator();
         while (itty.hasNext()) {
             final Map.Entry<String, String> entry = itty.next();
@@ -58,42 +58,16 @@ public class GiraphToTitanGraphFactory {
             final String value = entry.getValue();
 
             if (key.startsWith(prefix)) {
-                titanconfig.setProperty(key.substring(prefix.length() + 1), value);
+                titanConfig.setProperty(key.substring(prefix.length() + 1), value);
             }
 
             //make sure batch-loading is OFF for read
             final String key1 = GIRAPH_TITAN_STORAGE_BATCH_LOADING.getKey();
-            titanconfig.setProperty(key1.substring(prefix.length() + 1), "false");
+            titanConfig.setProperty(key1.substring(prefix.length() + 1), "false"); //GIRAPH_TITAN_STORAGE_BATCH_LOADING.getDefaultValue();
         }
-        return titanconfig;
+        return titanConfig;
     }
 
 
-    /**
-     * generateTitanWriteConfiguration from Giraph configuration
-     * enable batch-loading for write
-     *
-     * @param config : Giraph configuration
-     * @param prefix : prefix to remove for Titan
-     * @return BaseConfiguration
-     */
-    public static BaseConfiguration generateTitanWriteConfiguration(final Configuration config, final String prefix) {
 
-        final BaseConfiguration titanconfig = new BaseConfiguration();
-        final Iterator<Map.Entry<String, String>> itty = config.iterator();
-        while (itty.hasNext()) {
-            final Map.Entry<String, String> entry = itty.next();
-            final String key = entry.getKey();
-            final String value = entry.getValue();
-
-            if (key.startsWith(prefix)) {
-                titanconfig.setProperty(key.substring(prefix.length() + 1), value);
-            }
-            //make sure batch-loading is ON for write
-            final String key1 = GIRAPH_TITAN_STORAGE_BATCH_LOADING.getKey();
-            final String value1 =  GIRAPH_TITAN_STORAGE_BATCH_LOADING.getDefaultValue();
-            titanconfig.setProperty(key1.substring(prefix.length() + 1), value1);
-        }
-        return titanconfig;
-    }
 }

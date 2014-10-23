@@ -109,15 +109,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
-        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.ititan.version>0.5.1-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.1</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections.version>0.9.9-RC1</dep.reflections.version>
         <!-- END TITAN -->
 
         <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
         <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
-
+        <dep.zookeeper.version>3.4.5-cdh5.1.2</dep.zookeeper.version>
         <dep.mahout.version>0.9</dep.mahout.version>
 
         <dep.spark.version>1.0.0-cdh5.1.2</dep.spark.version>
@@ -129,7 +129,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
-        <scala.long.version>2.10.4</scala.long.version>
+        <scala.long.version>2.10.3</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
         <scalatest.version>2.2.2</scalatest.version>
 
@@ -777,6 +777,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hadoop-2</artifactId>
                 <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -787,6 +793,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hbase</artifactId>
                 <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -835,7 +847,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
-                <version>3.3.3</version>
+                <version>${dep.zookeeper.version}</version>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
@@ -1013,6 +1025,19 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-testing-util</artifactId>
+                <version>${dep.hbase.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--commons-->

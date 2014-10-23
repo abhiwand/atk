@@ -149,48 +149,6 @@ public class GiraphTitanUtils {
         }
     }
 
-    /**
-     * Writes the given scan into a Base64 encoded string.
-     *
-     * @param scan The scan to write out.
-     * @return The scan saved in a Base64 encoded string.
-     * @throws IOException When writing the scan fails.
-     */
-    public static String convertScanToString(Scan scan) throws IOException {
-        ClientProtos.Scan proto = ProtobufUtil.toScan(scan);
-        return Base64.encodeBytes(proto.toByteArray());
-    }
-
-
-    /**
-     * Configure HBase for Titan input.
-     *
-     * @param conf Giraph configuration
-     * @throws IOException When writing the scan fails.
-     */
-    public static void configHBase(ImmutableClassesGiraphConfiguration conf) throws IOException {
-        conf.set(TableInputFormat.INPUT_TABLE, GIRAPH_TITAN_STORAGE_TABLENAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_QUORUM, GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_CLIENT_PORT, GIRAPH_TITAN_STORAGE_PORT.get(conf));
-
-        Scan scan = new Scan();
-        scan.addFamily(Backend.EDGESTORE_NAME.getBytes(Charset.forName("UTF-8")));
-        conf.set(TableInputFormat.SCAN, convertScanToString(scan));
-    }
-
-    /**
-     * set up configuration for Titan/HBase.
-     *
-     * @param conf : Giraph configuration
-     */
-    public static void setupHBase(ImmutableClassesGiraphConfiguration conf) {
-        try {
-            sanityCheckInputParameters(conf);
-            configHBase(conf);
-        } catch (IOException e) {
-            LOG.error("IO exception when configure HBase!");
-        }
-    }
 
     /**
      * @param conf : Giraph configuration

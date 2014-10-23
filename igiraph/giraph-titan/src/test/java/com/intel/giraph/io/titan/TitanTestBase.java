@@ -76,7 +76,7 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
 
     protected void setHbaseProperties() {
         GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
+        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "gao-ws9.hf.intel.com");
         GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan_test");
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");

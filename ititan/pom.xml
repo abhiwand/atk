@@ -25,8 +25,8 @@
     </description>
 
     <properties>
-        <dep.aurelius.version>0.5.0</dep.aurelius.version>
-        <titan.version>0.5.0-SNAPSHOT</titan.version>
+        <dep.aurelius.version>0.5.1</dep.aurelius.version>
+        <titan.version>0.5.1-SNAPSHOT</titan.version>
     </properties>
 
 
@@ -53,12 +53,12 @@
         </dependency>
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-hadoop-parent</artifactId>
+            <artifactId>titan-hadoop-2</artifactId>
             <version>${dep.aurelius.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-hbase-parent</artifactId>
+            <artifactId>titan-hbase</artifactId>
             <version>${dep.aurelius.version}</version>
         </dependency>
         <dependency>
@@ -81,11 +81,7 @@
             <artifactId>titan-all</artifactId>
             <version>${dep.aurelius.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-dist</artifactId>
-            <version>${dep.aurelius.version}</version>
-        </dependency>
+
     </dependencies>
 
 

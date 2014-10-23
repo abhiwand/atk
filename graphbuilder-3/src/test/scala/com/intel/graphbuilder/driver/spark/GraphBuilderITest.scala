@@ -93,7 +93,8 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
       // Validate
       titanGraph.getEdges.size shouldBe 5
-      titanGraph.getVertices.size shouldBe 5
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 5 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
+
 
       // need to shutdown because only one connection can be open at a time
       titanGraph.shutdown()
@@ -115,7 +116,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       // Validate
       titanGraph = titanConnector.connect()
       titanGraph.getEdges.size shouldBe 7
-      titanGraph.getVertices.size shouldBe 7
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 7
 
     }
 
@@ -164,7 +165,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       gb.build(inputRdd)
 
       // Validate
-      titanGraph.getVertices.size shouldBe 6
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 6 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
       titanGraph.getEdges.size shouldBe 10
 
       val obama = titanGraph.getVertices("userId", 1001L).iterator().next()
@@ -217,7 +218,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val titanConnector = new TitanGraphConnector(titanConfig)
       titanGraph = titanConnector.connect()
       titanGraph.getEdges.size shouldBe 20
-      titanGraph.getVertices.size shouldBe 8
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 8 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
       val vertexOne = titanGraph.getVertices("userId", "1").iterator().next()
       vertexOne.getProperty("location").asInstanceOf[String] shouldBe "Oregon"
