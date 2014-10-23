@@ -21,10 +21,15 @@
 // must be express and approved by Intel in writing.
 ////////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.pagerank
+package com.intel.spark.graphon.trianglecount
 
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
@@ -45,61 +50,45 @@ import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
 
 /**
- * Parameters for executing page rank.
- * @param graph Reference to the graph object on which to compute pagerank.
- * @param output_property Name of the property to which pagerank value will be stored on vertex and edge.
- * @param output_graph_name Name of output graph. If None, pagerank values will be appended to original graph
- * @param input_edge_labels List of edge labels to consider for pagerank computation. If None, all edges are considered.
- * @param max_iterations Optional Integer. The maximum number of iterations that will be invoked. Defaults to 20.
- * @param reset_probability Optional Double. Random reset probability
- * @param convergence_tolerance Optional Double. Tolerance allowed at convergence
- *                             (smaller values tend to yield accurate results)
+ * Parameters for executing triangle count.
+ * @param graph Reference to the graph object on which to compute triangle count.
+ * @param output_property Name of the property to which triangle count value will be stored on vertex.
+ * @param output_graph_name Name of output graph.
+ * @param input_edge_labels List of edge labels to consider for computation. If None, all edges are considered.
  */
-case class PageRankArgs(graph: GraphReference,
-                        output_property: String,
-                        output_graph_name: String,
-                        input_edge_labels: Option[List[String]] = None,
-                        max_iterations: Option[Int] = None,
-                        reset_probability: Option[Double] = None,
-                        convergence_tolerance: Option[Double] = None)
-
-/**
- * Companion object holds the default values.
- */
-object PageRankDefaults {
-  val maxIterationsDefault = 20
-  val resetProbabilityDefault = 0.15d
-  val convergenceToleranceDefault = 0.001d
-}
+case class TriangleCountArgs(graph: GraphReference,
+                             output_property: String,
+                             output_graph_name: String,
+                             input_edge_labels: Option[List[String]] = None)
 
 /**
  * The result object
  * @param graph Name of the output graph
  */
-case class PageRankResult(graph: String)
+case class TriangleCountResult(graph: String)
 
 /** Json conversion for arguments and return value case classes */
-object PageRankJsonFormat {
+object TriangleCountJsonFormat {
   import DomainJsonProtocol._
-  implicit val PRFormat = jsonFormat7(PageRankArgs)
-  implicit val PRResultFormat = jsonFormat1(PageRankResult)
+  implicit val TCFormat = jsonFormat4(TriangleCountArgs)
+  implicit val TCResultFormat = jsonFormat1(TriangleCountResult)
 }
 
-import PageRankJsonFormat._
+import TriangleCountJsonFormat._
 
 /**
- * PageRank plugin implements the pagerank computation on a graph by invoking graphx pagerank.
+ * TriangleCount plugin implements the triangle count computation on a graph by invoking graphx TriangleCount.
  *
- * Pulls graph from underlying store, sends it off to the PageRankRunner, and then writes the output graph
+ * Pulls graph from underlying store, sends it off to the TriangleCountRunner, and then writes the output graph
  * back to the underlying store.
  *
  * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
  */
-class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
+class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
-  override def name: String = "graph:titan/ml/graphx_pr"
+  override def name: String = "graph:titan/ml/graphx_triangle_count"
 
-  override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
+  override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
                              |    The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
                              |
@@ -110,22 +99,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |    output_graph_name : string
                              |        The name of output graph to be created (original graph will be left unmodified)
                              |    input_edge_labels : list of string (optional)
-                             |        The name of edge labels to be considered for pagerank
+                             |        The name of edge labels to be considered for triangle count
                              |        If None, all edges are considered
-                             |    max_iterations : integer (optional)
-                             |        The maximum number of iterations that the algorithm will execute.
-                             |        The valid value range is all positive integer.
-                             |        The default value is 20.
-                             |    convergence_tolerance : float (optional)
-                             |        The amount of change in cost function that will be tolerated at
-                             |        convergence. If this parameter is specified, max_iterations is no longer
-                             |        considered as a stopping condition.
-                             |        If the change is less than this threshold, the algorithm exits earlier.
-                             |        The valid value range is all Float and zero.
-                             |        The default value is 0.001.
-                             |    reset_probability : float (optional)
-                             |        The probability that the random walk of a page is reset.
-                             |        The default value is 0.15.
                              |
                              |    Returns
                              |    -------
@@ -134,16 +109,17 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |
                              |    Examples
                              |    --------
-                             |        g.ml.graphx_pr(output_property = "pr_result", output_graph_name = "pr_graph")
+                             |        g.ml.graphx_triangle_count(output_property = "tc_result",
+                             |                                   output_graph_name = "tc_graph")
                              |
                              |    The expected output is like this::
                              |
-                             |        {u'graph': u'pr_graph'}
+                             |        {u'graph': u'tc_graph'}
                              |
                              |    To query::
                              |
-                             |        pr_graph = get_graph('pr_graph')
-                             |        pr_graph.query.gremlin("g.V [0..4]")
+                             |        tc_graph = get_graph('tc_graph')
+                             |        tc_graph.query.gremlin("g.V [0..4]")
                              |
                              |        {u'results':[{u'_id':4,u'_type':u'vertex',u'pr_result':0.787226,
                              |        u'titanPhysicalId':133200148,u'user_id':7665,u'vertex_type':u'L'},{u'_id':8,
@@ -158,7 +134,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |
                            """.stripMargin)))
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: PageRankArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): PageRankResult = {
+  override def execute(sparkInvocation: SparkInvocation, arguments: TriangleCountArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): TriangleCountResult = {
 
     sparkInvocation.sparkContext.stop
 
@@ -190,14 +166,11 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
       val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
-        arguments.input_edge_labels,
-        arguments.max_iterations,
-        arguments.reset_probability,
-        arguments.convergence_tolerance)
+      val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
+        arguments.input_edge_labels)
 
-      // Call PageRankRunner to kick off PageRank computation on RDDs
-      val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
+      // Call TriangleCountRunner to kick off Triangle Count computation on RDDs
+      val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
 
       val newGraphName = arguments.output_graph_name
       val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
@@ -210,7 +183,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
       newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
       writeToTitan(newTitanConfig, outVertices, outEdges)
 
-      PageRankResult(newGraphName)
+      TriangleCountResult(newGraphName)
     }
 
     finally {
