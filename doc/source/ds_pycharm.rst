@@ -14,10 +14,10 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client and required dependencies
+- |IA| Python Rest Client and required dependencies
 - `PyCharm <http://www.jetbrains.com/pycharm/>`_
 
-The Intel Analytics Toolkit should work with any version of PyCharm but these instructions were tested with PyCharm
+The |IA| Toolkit should work with any version of PyCharm but these instructions were tested with PyCharm
 Community Edition 3.4.1.
 
 -----
@@ -46,7 +46,7 @@ Setup
 
     a)  Choose "Project Structure"
 
-    #)  Choose "Add Content Root" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat or Centos
+    #)  Choose "Add Content Root" and browse to the |IA| Python Rest Client libraries.  On RedHat or Centos
         these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose "Apply" button
@@ -76,3 +76,4 @@ Setup
 
 #)  Next take a look at the included examples
 
+.. |IA| replace:: Intel Analytics

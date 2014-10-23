@@ -27,7 +27,6 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import spray.json._
@@ -41,6 +40,7 @@ import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
+import com.intel.event.EventLogging
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -130,10 +130,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     val commandId = cmd.id
     val commandName = cmd.name
     val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
-    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
-    val progressPrinter = new ProgressPrinter(listener)
-    context.addSparkListener(listener)
-    context.addSparkListener(progressPrinter)
+    try {
+      val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
+      val progressPrinter = new ProgressPrinter(listener)
+      context.addSparkListener(listener)
+      context.addSparkListener(progressPrinter)
+    }
+    catch {
+      // exception only shows up here due to dev error, but it is hard to debug without this logging
+      case e: Exception => error("could not create progress listeners", exception = e)
+    }
     commandIdContextMapping += (commandId -> context)
     context
   }

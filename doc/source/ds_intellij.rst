@@ -12,13 +12,13 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client and required dependencies
+- |IA| Python Rest Client and required dependencies
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
 Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
 
-The Intel Analytics Toolkit should work with any version of IntelliJ IDEA but these instructions were tested
+The |IA| Toolkit should work with any version of IntelliJ IDEA but these instructions were tested
 with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
@@ -61,7 +61,7 @@ Setup
 
     #)  Choose the plus sign "+"
 
-    #)  Choose "Java" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
+    #)  Choose "Java" and browse to the |IA| Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose "classes"
 
@@ -88,3 +88,4 @@ Setup
 
 #)  Next take a look at the included examples
 
+.. |IA| replace:: Intel Analytics

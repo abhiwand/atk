@@ -14,7 +14,7 @@ Modeling data as a graph captures relations – friendship ties between social n
 Analyzing the community structure of the graph reveals collections of entities that are more likely to interact amongst each
 other – for example, a community of friends in a social network or the “community” of highly interacting proteins of a cellular process.
 
-The Intel Analytics Toolkit (IAT) version 0.8.x provides community detection using the k-Clique percolation method first proposed by
+The |IA| Toolkit (IAT) version 0.8.x provides community detection using the k-Clique percolation method first proposed by
 Palla et. al. [1]_ that has been widely used in many contexts.
 Other community detection algorithms may be offered in future releases of the IAT.
 
@@ -75,15 +75,15 @@ The algorithm updates the input graph vertex with updated property named in “c
 
     Example::
     
-        from intelanalytics import *
+        import intelanalytics as ia
         dataset = r"datasets/kclique_edges.csv"
         schema= [("source", int64), ("target", int64)]
-        csvfile = CsvFile(dataset, schema)
-        f = BigFrame(csvfile)
-        source = VertexRule("source", f.source)
-        target = VertexRule("target", f.target)
-        edge = EdgeRule("edge", target, source)
-        g = BigGraph([target, source, edge], "mygraph")
+        csvfile = ia.CsvFile(dataset, schema)
+        f = ia.BigFrame(csvfile)
+        source = ia.VertexRule("source", f.source)
+        target = ia.VertexRule("target", f.target)
+        edge = ia.EdgeRule("edge", target, source)
+        g = ia.BigGraph([target, source, edge], "mygraph")
         g.ml.kclique_percolation(cliqueSize = 3, communityPropertyDefaultLabel = "Community")
 
 .. rubric:: Footnotes
@@ -96,3 +96,5 @@ The algorithm updates the input graph vertex with updated property named in “c
     Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
     "Distributed Clique Percolation based community detection on social networks using MapReduce,"
     Information and Knowledge Technology (IKT), 2013 5th Conference on , vol., no., pp.478,483, 28-30 May 2013
+
+.. |IA| replace:: Intel Analytics

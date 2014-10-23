@@ -1,4 +1,3 @@
-# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -32,17 +31,18 @@ from collections import defaultdict, namedtuple
 import json
 import sys
 
-from intelanalytics.core.frame import BigFrame
+from intelanalytics.core.frame import Frame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.metaprog import load_loadable
 from intelanalytics.core.deprecate import raise_deprecation_warning
+from intelanalytics.core.namedobj import add_named_object_support
 
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
+from intelanalytics.rest.command import CommandRequest, executor, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
@@ -53,66 +53,42 @@ schema contains only columns baed on user specified columns
 the data type under schema is also coverted to IA types
 """
 
-class FrameBackendRest(object):
-    """REST plumbing for BigFrame"""
 
-    commands_loaded = {}
+class FrameBackendRest(object):
+    """REST plumbing for Frame"""
 
     def __init__(self, http_methods=None):
         self.rest_http = http_methods or http
-        # use global connection, auth, etc.  This client does not support
-        # multiple connection contexts
-        if not self.__class__.commands_loaded:
-            # New way
-            logger.info("Loading Frame commands")
-            commands = get_commands()
-            load_loadable(BigFrame, commands, execute_command)
-
-            # Old way - keep doing old way for static methods for now, incremental switch-over
-            self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
-                                                                                 execute_update_frame_command,
-                                                                                 execute_new_frame_command))
-            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-
-    def get_frame_names(self):
-        logger.info("REST Backend: get_frame_names")
-        r = self.rest_http.get('dataframes')
-        payload = r.json()
-        return [f['name'] for f in payload]
-
-    def get_frame(self, name):
-        logger.info("REST Backend: get_frame")
-        r = self.rest_http.get('dataframes?name='+name)
-        frame_info = FrameInfo(r.json())
-        return BigFrame(frame_info)
 
     def get_frame_by_id(self, id):
         logger.info("REST Backend: get_frame_by_id")
         if id is None:
             return None
         else:
-            r = self.rest_http.get('dataframes/' + str(id))
+            r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = BigFrame()
+            frame = Frame()
             initialize_frame(frame, FrameInfo(payload))
             return frame
 
     def delete_frame(self, frame):
-        if isinstance(frame, BigFrame):
+        if isinstance(frame, Frame):
             return self._delete_frame(frame)
         elif isinstance(frame, basestring):
             # delete by name
             return self._delete_frame(self.get_frame(frame))
         else:
-            raise TypeError("Excepted argument of type BigFrame or the frame name")
+            raise TypeError("Excepted argument of type Frame or the frame name")
 
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = self.rest_http.delete("dataframes/" + str(frame._id))
+        r = self.rest_http.delete("frames/" + str(frame._id))
         return None
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
             return  # early exit here
@@ -120,7 +96,7 @@ class FrameBackendRest(object):
         new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
 
         # TODO - change project such that server creates the new frame, instead of passing one in
-        if isinstance(source, BigFrame):
+        if isinstance(source, Frame):
             self.project_columns(source, frame, source.column_names)
         elif isinstance(source, BigColumn):
             self.project_columns(source.frame, frame, source.name)
@@ -135,7 +111,7 @@ class FrameBackendRest(object):
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
-        r = self.rest_http.post('dataframes', payload)
+        r = self.rest_http.post('frames', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         frame_info = FrameInfo(r.json())
         initialize_frame(frame, frame_info)
@@ -150,9 +126,12 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
+        return "\n".join(['Frame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
                          ["  %s:%s" % (name, data_type)
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
@@ -161,7 +140,7 @@ class FrameBackendRest(object):
         return FrameInfo(response.json())
 
     def _get_frame_full_uri(self, frame):
-        return self.rest_http.create_full_uri('dataframes/%d' % frame._id)
+        return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
     def _get_load_arguments(self, frame, data):
         if isinstance(data, CsvFile):
@@ -181,10 +160,10 @@ class FrameBackendRest(object):
                         }
                     }
             }
-        if isinstance(data, BigFrame):
-            return {'source': { 'source_type': 'dataframe',
+        if isinstance(data, Frame):
+            return {'source': { 'source_type': 'frame',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -222,7 +201,7 @@ class FrameBackendRest(object):
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
@@ -243,26 +222,10 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int):
-            quantiles = [quantiles]
-
-        invalid_quantiles = []
-        for p in quantiles:
-            if p > 100 or p < 0:
-                invalid_quantiles.append(str(p))
-
-        if len(invalid_quantiles) > 0:
-            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
-
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        command = CommandRequest("dataframe/quantiles", arguments)
-        return executor.issue(command)
-
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
@@ -276,7 +239,7 @@ class FrameBackendRest(object):
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
@@ -296,7 +259,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -377,8 +340,8 @@ class FrameBackendRest(object):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame': self._get_frame_full_uri(frame),
-                     'projected_frame': self._get_frame_full_uri(projected_frame),
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'projected_frame': self.get_ia_uri(projected_frame),
                      'columns': columns,
                      'new_column_names': new_names}
         execute_update_frame_command('project', arguments, projected_frame)
@@ -411,44 +374,40 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
         return execute_new_frame_command("group_by", arguments)
 
-    def rename_columns(self, frame, column_names, new_names):
-        if new_names is not None:
-            raise_deprecation_warning("rename_columns with old parameter syntax",
-                                      "New parameter syntax is to pass a dictionary of name pairs, (old, new)")
-            if isinstance(column_names, basestring) and isinstance(new_names, basestring):
-                column_names = [column_names]
-                new_names = [new_names]
-            if len(column_names) != len(new_names):
-                raise ValueError("Old-style rename_columns requires name lists of equal length")
-        else:
-            if not isinstance(column_names, dict):
-                raise ValueError("rename_columns requires a dictionary of string pairs")
-            new_names = column_names.values()
-            column_names = column_names.keys()
+    def rename_columns(self, frame, column_names):
+        if not isinstance(column_names, dict):
+            raise ValueError("rename_columns requires a dictionary of string pairs")
+        new_names = column_names.values()
+        column_names = column_names.keys()
 
-        current_names = frame.column_names
-        for nn in new_names:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
-    def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
-        execute_update_frame_command('rename_frame', arguments, frame)
-
     def take(self, frame, n, offset, columns):
-        if n==0:
-            return []
-        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        result = executor.query(url)
+        def get_take_result():
+            data = []
+            schema = None
+            while len(data) < n:
+                url = 'frames/{0}/data?offset={2}&count={1}'.format(frame._id,n + len(data), offset + len(data))
+                result = executor.query(url)
+                if not schema:
+                    schema = result.schema
+                if len(result.data) == 0:
+                    break
+                data.extend(result.data)
+            return TakeResult(data, schema)
+
+        if n == 0:
+            return TakeResult([], frame.schema)
+        result = get_take_result()
+
         schema = FrameSchema.from_strings_to_types(result.schema)
 
         if isinstance(columns, basestring):
@@ -511,7 +470,7 @@ class FrameBackendRest(object):
 
 class FrameInfo(object):
     """
-    JSON-based Server description of a BigFrame
+    JSON-based Server description of a Frame
     """
     def __init__(self, frame_json_payload):
         self._payload = frame_json_payload
@@ -522,19 +481,24 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
         return self._payload['id']
-
+    
     @property
     def name(self):
         return self._payload['name']
+    
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -610,14 +574,15 @@ class FrameData:
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
+    frame._ia_uri = frame_info.ia_uri
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
     #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('dataframe'):
-        command_name = 'dataframe/' + command_name
+    if not command_name.startswith('frame'):
+        command_name = 'frame:/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
@@ -629,19 +594,19 @@ def execute_update_frame_command(command_name, arguments, frame):
 
 
 def execute_new_frame_command(command_name, arguments):
-    """Executes command and creates a new BigFrame object from server response"""
+    """Executes command and creates a new Frame object from server response"""
     #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('dataframe'):
-        command_name = 'dataframe/' + command_name
+    if not command_name.startswith('frame'):
+        command_name = 'frame:/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
-    return BigFrame(frame_info)
+    return Frame(frame_info)
 
 
 def get_command_output(command_name, arguments):
     """Executes command and returns the output"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_request = CommandRequest('frame:/' + command_name, arguments)
     command_info = executor.issue(command_request)
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
         return command_info.result.get('value')

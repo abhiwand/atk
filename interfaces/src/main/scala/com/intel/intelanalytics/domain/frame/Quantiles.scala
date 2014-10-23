@@ -25,8 +25,8 @@ package com.intel.intelanalytics.domain.frame
 
 /**
  * Command for calculating percentiles values
- * @param frameId id of the data frame
- * @param quantiles the percentiles to calculate value for
+ * @param frame id of the data frame
  * @param columnName name of the column to find percentiles
+ * @param quantiles the percentiles to calculate value for
  */
-case class Quantiles(frameId: Long, quantiles: List[Int], columnName: String)
+case class Quantiles(frame: FrameReference, columnName: String, quantiles: List[Double])

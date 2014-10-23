@@ -48,13 +48,11 @@ Built-in Databases
 The Analytics Toolkit stores data as either traditional table-based format, or in a graph database,
 and it provides the tools to allow data scientists to easily manipulate data in either of these data formats.
 
-*The following is new for release 0.8.2.*
-
 ---------------
 Script Examples
 ---------------
 
-Intel Analytics ships with example scripts and data sets that exercise the various features of the platform.
+|IA| ships with example scripts and data sets that exercise the various features of the platform.
 The example scripts can be found in the iauser's home directory usually /home/iauser.
 
 The examples are located in /home/iauser/examples::
@@ -70,17 +68,16 @@ The examples are located in /home/iauser/examples::
 
 The datasets are located in /home/iauser/examples/datasets and hdfs://user/iauser/datasets/::
 
-    -rw-r--r--   ...        122 2014-08-01 00:53 /user/iauser/datasets/README
-    -rw-r--r--   ...     617816 2014-08-01 00:53 /user/iauser/datasets/apl.csv
-    -rw-r--r--   ...    8162836 2014-08-01 00:53 /user/iauser/datasets/lbp_edge.csv
-    -rw-r--r--   ...     188470 2014-08-01 00:53 /user/iauser/datasets/lp_edge.csv
-    -rw-r--r--   ...    5017848 2014-08-01 00:53 /user/iauser/datasets/movie_sample_data_5mb.csv
-    -rw-r--r--   ...       1492 2014-08-01 00:53 /user/iauser/datasets/movie_sample_data_small.csv
-    -rw-r--r--   ...    5017858 2014-08-01 00:53 /user/iauser/datasets/recommendation_raw_input.csv
-    -rw-r--r--   ...  311641390 2014-08-01 00:53 /user/iauser/datasets/test_lda.csv
+    -rw-r--r--   ...        122 2014-08-01 /user/iauser/datasets/README
+    -rw-r--r--   ...     617816 2014-08-01 /user/iauser/datasets/apl.csv
+    -rw-r--r--   ...    8162836 2014-08-01 /user/iauser/datasets/lbp_edge.csv
+    -rw-r--r--   ...     188470 2014-08-01 /user/iauser/datasets/lp_edge.csv
+    -rw-r--r--   ...    5017848 2014-08-01 /user/iauser/datasets/movie_sample_data_5mb.csv
+    -rw-r--r--   ...       1492 2014-08-01 /user/iauser/datasets/movie_sample_data_small.csv
+    -rw-r--r--   ...    5017858 2014-08-01 /user/iauser/datasets/recommendation_raw_input.csv
+    -rw-r--r--   ...  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
-The datasets in /home/iauser/examples/datasets are for reference the actual data that is being used by the python examples and
-the intelanalytics server is in hdfs://user/iauser/datasets.
+The datasets in /home/iauser/examples/datasets are for reference the actual data that is being used by the python examples and the intelanalytics server is in hdfs://user/iauser/datasets.
 
 To run any of the python example scripts type::
 
@@ -105,8 +102,6 @@ If you need to debug changes to the scripts or peak behind the curtain, the log 
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-*End of new for release 0.8.2*
-
 .. rubric:: footnotes
 
 .. [*] Other names and brands may be claimed as the property of others.
@@ -115,3 +110,5 @@ If you need to debug changes to the scripts or peak behind the curtain, the log 
 .. _Apache Hadoop: http://hadoop.apache.org/docs/current/index.html 
 .. _Apache Giraph: http://giraph.apache.org/ 
 .. _Gremlin: https://github.com/tinkerpop/gremlin/wiki
+
+.. |IA| replace:: Intel Analytics

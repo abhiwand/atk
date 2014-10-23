@@ -7,29 +7,29 @@ intelanalytics-rest-server:
       - pkg: yum-s3
 #      - sls: gaoPrivateRepo
 
+ls -l /etc/intelanalytics/rest-server:
+  cmd.run:
+    - required:
+      - pkg: intelanalytics-rest-server
+
+chmod +x config:
+  cmd.run:
+    - required:
+      - pkg: intelanalytics-rest-server
+    - cwd: /etc/intelanalytics/rest-server/
+
+config --host localhost --port 7180 --username cloudera --password cloudera --cluster "Cloudera QuickStart - C5" --restart yes --python python --db-host localhost --db-port 5432 --db ia_metastore --db-username iauser --db-password iauser --db-skip-reconfig no:
+  cmd.run:
+    - required:
+      - pkg: intelanalytics-rest-server
+    - cwd: /etc/intelanalytics/rest-server/
+
 
 /etc/intelanalytics/rest-server/application.conf:
   file.managed:
     - source: salt://intelanalytics-rest-server/application.conf
     - required: 
       - pkg: intelanalytics-rest-server
-
-ls -l /etc/intelanalytics/rest-server:
-  cmd.run:
-    - required:
-      - pkg: intelanalytics-rest-server
-
-chmod +x config.py:
-  cmd.run:
-    - required:
-      - pkg: intelanalytics-rest-server
-    - cwd: /etc/intelanalytics/rest-server/
-
-python config.py --host localhost --port 7180 --username cloudera --password cloudera --cluster "Cloudera QuickStart - C5" --restart yes:
-  cmd.run:
-    - required:
-      - pkg: intelanalytics-rest-server
-    - cwd: /etc/intelanalytics/rest-server/
 
 /etc/security/limits.conf:
   file.managed:

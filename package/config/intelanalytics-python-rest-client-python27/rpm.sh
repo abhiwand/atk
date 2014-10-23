@@ -13,10 +13,11 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
+GROUP="Intel Analytics Client"
 LICENSE="Confidential"
 #SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python27, python27-setuptools, python27-pip, python27-ordereddict, python27-numpy >= 1.8.1, python27-bottle >= 0.12, python27-requests >= 2.2.1"
+REQUIRES="python27, python27-setuptools, python27-pip, python27-ordereddict, python27-numpy >= 1.8.1, python27-bottle >= 0.12, python27-requests >= 2.2.1, python27-decorator >= 3.4.0"
 
 POST="
  #sim link to python sites packages
