@@ -24,12 +24,14 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
+import com.typesafe.config.ConfigFactory
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 import com.intel.event.EventLogging
 
 class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
+  raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
