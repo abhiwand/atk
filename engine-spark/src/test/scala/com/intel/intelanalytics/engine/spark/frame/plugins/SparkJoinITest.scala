@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
+import org.scalatest.Matchers
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, RDDJoinParam }
 
 class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
@@ -89,12 +89,12 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](5, 50))
     val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"), Array[Any](4, "Oman"))
 
-    val countryCode = sparkContext.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val countryNames = sparkContext.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryCode = sparkContext.parallelize(id_country_codes).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sparkContext.parallelize(id_country_names).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
-    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
+    val result = MiscFrameFunctions.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
     result.count shouldBe 5
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(5)
@@ -111,13 +111,13 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     val id_country_codes = List[Array[Any]]()
     val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"), Array[Any](4, "Oman"))
 
-    val countryCode = sparkContext.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val countryNames = sparkContext.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryCode = sparkContext.parallelize(id_country_codes).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sparkContext.parallelize(id_country_names).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
-    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
+    val result = MiscFrameFunctions.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
     result.count shouldBe 4
 
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(2))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(2))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
@@ -132,13 +132,13 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](5, 50))
     val id_country_names = List[Array[Any]]()
 
-    val countryCode = sparkContext.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val countryNames = sparkContext.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryCode = sparkContext.parallelize(id_country_codes).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sparkContext.parallelize(id_country_names).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
-    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
+    val result = MiscFrameFunctions.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
     result.count shouldBe 4
 
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
@@ -153,10 +153,10 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     val oneToMillon = (1 to 1000000).map(i => Array[Any](i))
     val fiveHundredThousandsToOneFiftyThousands = (500001 to 1500000).map(i => Array[Any](i))
 
-    val rddOneToMillon = sparkContext.parallelize(oneToMillon).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val rddFiveHundredThousandsToOneFiftyThousands = sparkContext.parallelize(fiveHundredThousandsToOneFiftyThousands).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val rddOneToMillon = sparkContext.parallelize(oneToMillon).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val rddFiveHundredThousandsToOneFiftyThousands = sparkContext.parallelize(fiveHundredThousandsToOneFiftyThousands).map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
-    val rddFullOuterJoin = SparkOps.joinRDDs(RDDJoinParam(rddOneToMillon, 1), RDDJoinParam(rddFiveHundredThousandsToOneFiftyThousands, 1), "outer")
+    val rddFullOuterJoin = MiscFrameFunctions.joinRDDs(RDDJoinParam(rddOneToMillon, 1), RDDJoinParam(rddFiveHundredThousandsToOneFiftyThousands, 1), "outer")
     rddFullOuterJoin.count shouldBe 1500000
   }
 
