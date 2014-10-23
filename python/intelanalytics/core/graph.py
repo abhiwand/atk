@@ -39,6 +39,8 @@ from intelanalytics.core.column import BigColumn
 from intelanalytics.core.deprecate import raise_deprecation_warning
 
 
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
+
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
     return get_graph_backend()
@@ -110,12 +112,12 @@ def drop_graphs(graphs):
 
     Parameters
     ----------
-    graphs : string or Graph
+    graphs : [ str | Graph ]
         Either the name of the Graph object to delete or the Graph object itself
 
     Returns
     -------
-    string
+    str
         The name of the graph you erased
 
     Examples
@@ -315,20 +317,20 @@ class EdgeRule(Rule):
     Parameters
     ----------
     label: str or BigColumn source
-        edge label, can be constant string or pulled from BigColumn.
+        Edge label, can be constant string or pulled from BigColumn.
     tail: VertexRule
-        tail vertex ('from' vertex); must be from same BigFrame as head,
-        label and any properties
+        Tail vertex ('from' vertex); must be from same BigFrame as head,
+        label and any properties.
     head: VertexRule
-        head vertex ('to' vertex); must be from same BigFrame as tail,
-        label and any properties
+        Head vertex ('to' vertex); must be from same BigFrame as tail,
+        label and any properties.
     properties: dict
-        edge properties of the form property_name:property_value
+        Edge properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
-        tail and label
-    bidirectional : bool (Optional)
-        indicates the edge is bidirectional. The default value is false.
+        tail and label.
+    bidirectional : bool (optional)
+        Indicates the edge is bidirectional. The default value is false.
 
     Examples
     --------
