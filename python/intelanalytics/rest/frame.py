@@ -407,8 +407,6 @@ class FrameBackendRest(object):
 
         if n == 0:
             return TakeResult([], frame.schema)
-        if n == -1:
-            n = 500
         result = get_take_result()
 
         schema = FrameSchema.from_strings_to_types(result.schema)
