@@ -32,7 +32,7 @@ import org.apache.spark.{ SparkConf, SparkContext }
 class SparkContextFactoryManager() extends EventLogging {
   //TODO read the strategy from the config file
 
-  def getContext(user: String, description: String): SparkContext = withContext("engine.SparkContextManager") {
+  def getContext(user: String, description: String): SparkContext = withContext("engine.SparkContextFactoryManager") {
 
     val jarPath = Boot.getJar("engine-spark")
     val sparkConf = new SparkConf()
