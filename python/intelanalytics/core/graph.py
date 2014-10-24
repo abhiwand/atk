@@ -45,96 +45,6 @@ def _get_backend():
     from intelanalytics.core.config import get_graph_backend
     return get_graph_backend()
 
-@api
-def get_graph_names():
-    """
-    Get graph names.
-
-    Gets the names of BigGraph objects available for retrieval.
-
-    Returns
-    -------
-    list of string
-        A list comprised of the graph names
-
-    Examples
-    --------
-    We have these graphs defined: movies, incomes, virus.
-    Get the graph names::
-
-        my_names = ia.get_graph_names()
-
-    my_names is now ["incomes", "movies", "virus"]
-
-    .. versionadded:: 0.8
-
-    """
-    # TODO - Review docstring
-    return _get_backend().get_graph_names()
-
-@api
-def get_graph(name):
-    """
-    Get graph access.
-
-    Creates a Graph access point to the named graph.
-
-    Parameters
-    ----------
-    name : string
-        The name of the graph you are obtaining
-
-    Returns
-    -------
-    graph
-        A Graph object
-
-    Examples
-    --------
-    We have these graphs defined: movies, incomes, virus.
-    Get access to the graph *virus*::
-
-        my_graph = ia.get_graph("virus")
-
-    my_graph is now a Graph object with access to the graph *virus*.
-
-    .. versionadded:: 0.8
-
-    """
-    # TODO - Review docstring
-    return _get_backend().get_graph(name)
-
-
-@api
-def drop_graphs(graphs):
-    """
-    Deletes graphs from backing store.
-
-    Parameters
-    ----------
-    graphs : [ str | Graph ]
-        Either the name of the Graph object to delete or the Graph object itself
-
-    Returns
-    -------
-    str
-        The name of the graph you erased
-
-    Examples
-    --------
-    We have these graphs defined: movies, incomes, virus.
-    Delete the graph *incomes*::
-
-        my_gone = ia.drop_graphs("incomes")
-
-    my_gone is now a string with the value "incomes"
-
-    .. versionchanged:: 0.8.5
-
-    """
-    # TODO - Review docstring
-    return _get_backend().delete_graph(graphs)
-
 
 class RuleWithDifferentFramesError(ValueError):
     # TODO - Add docstring if this is really a user-desired function
@@ -408,39 +318,208 @@ class EdgeRule(Rule):
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-#
-# class Graph(DocStubsGraph):
-#     pass
-#
-
-
-# BaseGraph
+# _BaseGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsBaseGraph as CommandLoadableBaseGraph
+    from intelanalytics.core.docstubs import DocStubsBaseGraph
     doc_stubs_import.success(logger, "DocStubsBaseGraph")
 except Exception as e:
     doc_stubs_import.failure(logger, "DocStubsBaseGraph", e)
-    CommandLoadableBaseGraph = CommandLoadable
-
-
-class BaseGraph(CommandLoadableBaseGraph):
-    def __init__(self):
-        CommandLoadableBaseGraph.__init__(self)
+    class DocStubsBaseGraph(object): pass
 
 
 # TitanGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsTitanGraph as CommandLoadableTitanGraph
+    from intelanalytics.core.docstubs import DocStubsTitanGraph
     doc_stubs_import.success(logger, "DocStubsTitanGraph")
 except Exception as e:
     doc_stubs_import.failure(logger, "DocStubsTitanGraph", e)
-    CommandLoadableTitanGraph = BaseGraph
+    class DocStubsTitanGraph(object): pass
+
+
+# Graph
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsGraph
+    doc_stubs_import.success(logger, "DocStubsGraph")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsGraph", e)
+    class DocStubsGraph(object): pass
+
 
 @api
-@name_support('graph')  # TODO - move name_support for BaseGraph when time is right
-class TitanGraph(CommandLoadableTitanGraph):
+@name_support('graph')
+class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
+    _command_prefix = 'graph'
+    def __init__(self):
+        CommandLoadable.__init__(self)
+
+    def __repr__(self):
+        try:
+            return self._backend.get_repr(self)
+        except:
+            return super(_BaseGraph, self).__repr__() + " (Unable to collect metadata from server)"
+
+
+@api
+class Graph(DocStubsGraph, _BaseGraph):
+    """
+    Creates a graph.
+
+    This graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
+    operations against graph data.  Many frame methods are available against vertices and edges.
+    Vertex and Edge properties are stored as columns.
+
+    Graph is better suited for bulk OLAP-type operations whereas TitanGraph is better suited to OLTP.
+
+    Examples
+    --------
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices
+    connected by 'rating' edges::
+
+        # create a frame as the source for a graph
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('rating', str)])
+        frame = ia.BigFrame(csv)
+
+        # create a graph
+        graph = ia.Graph()
+
+        # define the types of vertices and edges this graph will be made of
+        graph.define_vertex_type('users')
+        graph.define_vertex_type('movies')
+        graph.define_edge_type('ratings','users','movies',directed=True)
+
+        # add data to the graph
+        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name'])
+        graph.vertices['movies].add_vertices(frame, 'movie_id', ['movie_title])
+        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+
+        # append additional data to the graph from another frame
+        graph.vertices['users'].add_vertices(frame2, 'user_id', ['user_name'])
+
+        # get basic information about the graph
+        graph.vertex_count()
+        graph.edge_count()
+        graph.vertices['users'].inspect(20)
+
+
+    This example uses a multiple source data frames and creates a graph of 'user' and 'movie' vertices
+    connected by 'rating' edges::
+
+        # create a frame as the source for a graph
+        userFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('age', int32)]))
+
+        movieFrame = ia.BigFrame(ia.CsvFile("/movie.csv", schema= [('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('year', str)]))
+
+        ratingsFrame = ia.BigFrame(ia.CsvFile("/ratings.csv", schema= [('user_id', int32),
+                                            ('movie_id', int32),
+                                            ('rating', str)]))
+
+        # create a graph
+        graph = ia.Graph()
+
+        # define the types of vertices and edges this graph will be made of
+        graph.define_vertex_type('users')
+        graph.define_vertex_type('movies')
+        graph.define_edge_type('ratings','users','movies',directed=True)
+
+        # add data to the graph
+        graph.vertices['users'].add_vertices(userFrame, 'user_id', ['user_name', 'age'])
+        graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
+        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+    """
+    _command_prefix = 'graph:'
+
+    def __init__(self, source=None, name=''):
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+        from intelanalytics.rest.graph import GraphInfo
+        if isinstance(source, dict):
+            source = GraphInfo(source)
+        if isinstance(source, GraphInfo):
+            self._id = source.id_number
+        elif source is None:
+            self._id = self._backend.create(self, None, name, 'ia/frame')
+        else:
+            raise ValueError("Invalid source value of type %s, expected")
+
+        self.vertices = GraphFrameCollection(self.get_vertex_frame, self.get_vertex_frames)
+        self.edges = GraphFrameCollection(self.get_edge_frame, self.get_edge_frames)
+
+        _BaseGraph.__init__(self)
+
+    def get_vertex_frame(self, label):
+        """
+        return a VertexFrame for the associated label
+        :param label: the label of the frame to return
+        """
+        return self._backend.get_vertex_frame(self._id, label)
+
+    def get_vertex_frames(self):
+        """
+        return all VertexFrames for this graph
+        """
+        return self._backend.get_vertex_frames(self._id)
+
+    def get_edge_frame(self, label):
+        """
+        return an EdgeFrame for the associated label
+        :param label: the label of the frame to return
+        """
+        return self._backend.get_edge_frame(self._id, label)
+
+    def get_edge_frames(self):
+        """
+        return all EdgeFrames for this graph
+        """
+        return self._backend.get_edge_frames(self._id)
+
+
+class GraphFrameCollection(object):
+    """
+    This class represents a collection of frames that make up either the edge or vertex types of a graph
+    """
+
+    def __init__(self, get_frame_func, get_frames_func):
+        """
+        :param get_frame_func: method to call to return a single frame in the collection
+        :param get_frames_func: method to call to return all of the frames in the collection
+        """
+        self.get_frame_func = get_frame_func
+        self.get_frames_func = get_frames_func
+
+    def __getitem__(self, item):
+        """
+        Retrieve a single frame from the collection
+        :param item:
+        """
+        return self.get_frame_func(item)
+
+    def __iter__(self):
+        """
+        iterator for all of the frames in the collection. will call the server
+        """
+        for frame in self.get_frames_func():
+            yield frame
+
+    def __repr__(self):
+        """
+        printable representation of object
+        """
+        return repr(self.get_frames_func())
+
+
+@api
+class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     """
     Creates a big graph.
 
@@ -485,9 +564,9 @@ class TitanGraph(CommandLoadableTitanGraph):
             self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
-            CommandLoadableTitanGraph.__init__(self)
-            new_graph_name= self._backend.create(self, rules, name)
-            logger.info('Created new graph "%s"', new_graph_name)
+            _BaseGraph.__init__(self)
+            self._id = self._backend.create(self, rules, name, 'hbase/titan')
+            # logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
 

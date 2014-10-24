@@ -82,7 +82,7 @@ class _Api(object):
         if not _Api.is_loaded():
             from intelanalytics.rest.connection import http
             from intelanalytics.rest.jsonschema import get_command_def
-            from intelanalytics.core.metaprog import install_command_defs
+            from intelanalytics.core.metaprog import install_command_defs, delete_docstubs
             logger.info("Requesting available commands from server")
             response = http.get("commands/definitions")
             commands_json_schema = response.json()
@@ -90,6 +90,7 @@ class _Api(object):
             _Api.__commands_from_backend = [get_command_def(c) for c in commands_json_schema]
             try:
                 install_command_defs(_Api.__commands_from_backend)
+                delete_docstubs()
                 from intelanalytics import _refresh_api_namespace
                 _refresh_api_namespace()
             except Exception as e:

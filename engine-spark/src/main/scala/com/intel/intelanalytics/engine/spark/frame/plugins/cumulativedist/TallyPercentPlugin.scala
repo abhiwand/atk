@@ -47,7 +47,7 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/tally_percent"
+  override def name: String = "frame/tally_percent"
 
   /**
    * User documentation exposed in Python.
@@ -140,7 +140,7 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_tally_percent")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
     frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))

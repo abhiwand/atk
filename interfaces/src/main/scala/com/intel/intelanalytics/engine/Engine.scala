@@ -101,6 +101,14 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
+  def getVertex(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+
+  def getVertices(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
+
+  def getEdge(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+
+  def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
+
   def deleteGraph(graph: Graph): Future[Unit]
 
   /**

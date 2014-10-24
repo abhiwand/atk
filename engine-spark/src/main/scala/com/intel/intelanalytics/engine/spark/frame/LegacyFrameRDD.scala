@@ -71,7 +71,7 @@ class LegacyFrameRDD(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](ro
    * @return A FrameRDD made of this schema and the rows RDD converted to a SchemaRDD
    */
   def toFrameRDD(): FrameRDD = {
-    new FrameRDD(this.schema, this.rows)
+    FrameRDD.toFrameRDD(this.schema, this.rows)
   }
 }
 

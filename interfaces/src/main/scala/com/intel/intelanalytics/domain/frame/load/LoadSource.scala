@@ -1,6 +1,7 @@
 package com.intel.intelanalytics.domain.frame.load
 
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
 
 /**
@@ -61,4 +62,18 @@ case class LineParser(name: String, arguments: LineParserArguments)
  * @param schema Schema of Row created in file
  * @param skip_rows number of lines to skip in the file
  */
-case class LineParserArguments(separator: Char, schema: Schema, skip_rows: Option[Int])
+case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int])
+
+/**
+ * Schema arguments for the LineParserArguments -
+ * these are arguments supplied by the user rather than our own internal schema representation.
+ */
+case class SchemaArgs(columns: List[(String, DataType)]) {
+
+  /**
+   * Convert args to our internal format
+   */
+  def schema: Schema = {
+    new Schema(columns)
+  }
+}

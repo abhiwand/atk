@@ -39,7 +39,7 @@ except Exception as e:
     del e
 
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, Frame
+from intelanalytics.core.frame import BigFrame, Frame, VertexFrame
 from intelanalytics.core.graph import BigGraph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.rest.connection import server
 connect = server.connect
