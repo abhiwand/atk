@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.{FrameReferenceManagement, FrameReference}
-import com.intel.intelanalytics.domain.graph.{GraphReferenceManagement, GraphReference}
+import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameReference }
+import com.intel.intelanalytics.domain.graph.{ GraphReferenceManagement, GraphReference }
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.{ Success, Try }

@@ -56,7 +56,7 @@ case class DataFrame(id: Long,
                      materializedOn: Option[DateTime] = None,
                      materializationComplete: Option[DateTime] = None,
                      errorFrameId: Option[Long] = None,
-                     parent: Option[Long] = None)  extends HasId {
+                     parent: Option[Long] = None) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")

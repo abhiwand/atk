@@ -66,7 +66,8 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns, returnValue: Option[DataFrame])(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
 

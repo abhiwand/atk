@@ -6,9 +6,9 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
+import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 
-import java.util.{ArrayList => JArrayList, List => JList}
+import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -27,13 +27,11 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param user current user
    * @return the RDD
    */
-  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)
-                     (implicit user: UserPrincipal): EnginePythonRDD[String] = {
+  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
       PythonRDDStorage.createPythonRDD(frames.loadFrameData(ctx, frameId), py_expression)
     }
   }
-
 
   /**
    * Persists a PythonRDD after python computation is complete to HDFS
@@ -64,8 +62,7 @@ object PythonRDDStorage extends ClassLoaderAware {
    * @param user current user
    * @return the RDD
    */
-  def createPythonRDD(frame: FrameRDD, py_expression: String)
-                     (implicit user: UserPrincipal): EnginePythonRDD[String] = {
+  def createPythonRDD(frame: FrameRDD, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
@@ -94,7 +91,7 @@ object PythonRDDStorage extends ClassLoaderAware {
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
-    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c}
+    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
     new sun.misc.BASE64Decoder().decodeBuffer(corrected)
   }
 
@@ -106,8 +103,7 @@ object PythonRDDStorage extends ClassLoaderAware {
    * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
    * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
    */
-  def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any])
-  : FrameRDD = {
+  def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): FrameRDD = {
     withMyClassLoader {
 
       val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map {

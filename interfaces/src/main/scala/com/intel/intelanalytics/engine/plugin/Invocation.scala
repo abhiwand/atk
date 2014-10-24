@@ -23,12 +23,14 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.domain.ReferenceResolver
+import com.intel.intelanalytics.domain.{UriReference, ReferenceResolver}
 import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * Provides context for an invocation of a command or query.
@@ -69,4 +71,9 @@ trait Invocation {
    * Reference resolver to enable dereferencing of UriReference objects
    */
   def resolver: ReferenceResolver
+
+  /**
+   * Convenience method for resolving references
+   */
+  def resolve[T <: UriReference : TypeTag](reference: UriReference) : T = resolver.resolve(reference).get
 }

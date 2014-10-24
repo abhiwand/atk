@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
-import com.intel.intelanalytics.engine.spark.frame.{SparkFrameData, FrameRDD, PythonRDDStorage}
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.plugin.Transformation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -41,7 +41,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference] {
+class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference]
+  with Transformation[FrameAddColumns, FrameReference] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -70,38 +71,19 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    */
   override def execute(invocation: SparkInvocation,
                        arguments: FrameAddColumns,
-                       returnValue: Option[FrameReference])
-                      (implicit user: UserPrincipal,
-                       executionContext: ExecutionContext): FrameReference = {
-
-    val columnNames = arguments.columnNames
-    val columnTypes = arguments.columnTypes
-    val expression = arguments.expression // Python Wrapper containing lambda expression
-    val frame = invocation.resolver.resolve(arguments.frame).get.asInstanceOf[SparkFrameData]
-    val frameMeta = frame.meta
-    val schema = frameMeta.schema
-
-    // run the operation and save results
-    var newColumns = schema.columns
-    for {
-      i <- 0 until columnNames.size
-    } {
-      val columnName = columnNames(i)
-      val columnType = columnTypes(i)
-
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == columnName) >= 0)
-        throw new IllegalArgumentException(s"Duplicate column name: $columnName")
-
-      // Update the schema
-      newColumns = newColumns :+ (columnName, DataTypes.toDataType(columnType))
-    }
+                       returnValue: FrameReference)(implicit user: UserPrincipal,
+                                                            executionContext: ExecutionContext): FrameReference = {
+    val frame = invocation.resolve[SparkFrameData](arguments.frame)
+    val oldSchema = frame.meta.schema
+    val newColumns = arguments.columnNames.zip(
+                              arguments.columnTypes.map(DataTypes.toDataType)).toList
+    val newSchema = oldSchema.addColumns(newColumns)
 
     // Update the data
-    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, expression)
+    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, arguments.expression)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    val newSchema: Schema = schema.copy(columns = newColumns)
     val rdd = PythonRDDStorage.pyRDDToFrameRDD(newSchema, pyRdd, converter)
-    val ret = returnValue.get.asInstanceOf[FrameMeta]
+    val ret = invocation.resolve[FrameMeta](returnValue)
     new SparkFrameData(ret.meta.copy(schema = newSchema), rdd)
   }
 }

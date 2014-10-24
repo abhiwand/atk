@@ -24,14 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.frame.{FrameMeta, DataFrame, FrameReference}
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrame, FrameReference }
 
 /**
  * A FrameReference with metadata and a Spark RDD representing the data in the frame
  */
 class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
-  extends FrameMeta(frame)
-  with HasData {
+    extends FrameMeta(frame)
+    with HasData {
 
   type Data = FrameRDD
 
