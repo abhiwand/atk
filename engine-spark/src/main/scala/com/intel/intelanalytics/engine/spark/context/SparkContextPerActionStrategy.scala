@@ -23,18 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
-
-import scala.collection.mutable
-import org.apache.spark.SparkContext
-import com.intel.event.EventLogging
-
 /**
  * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
  * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
  * create in the order of hundreds of SparkContetxs pre JVM
  */
-object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
+/*object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
 
   //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
 
@@ -47,3 +41,4 @@ object SparkContextPerActionStrategy extends SparkContextManagementStrategy with
     sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
   }
 }
+*/ 

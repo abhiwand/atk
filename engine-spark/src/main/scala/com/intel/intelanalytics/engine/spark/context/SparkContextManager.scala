@@ -23,17 +23,31 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
+import com.intel.event.EventLogging
+import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
-import org.apache.spark.SparkContext
+import org.apache.spark.{ SparkConf, SparkContext }
 
-class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
+class SparkContextManager() extends EventLogging {
   //TODO read the strategy from the config file
-  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerActionStrategy
-  contextManagementStrategy.configuration = conf
-  contextManagementStrategy.sparkContextFactory = factory
 
-  def getContext(user: String, description: String): SparkContext = contextManagementStrategy.getContext(user, description)
+  def getContext(user: String, description: String): SparkContext = withContext("engine.SparkContextManager") {
+
+    val jarPath = Boot.getJar("engine-spark")
+    val sparkConf = new SparkConf()
+      .setMaster(SparkEngineConfig.sparkMaster)
+      .setSparkHome(SparkEngineConfig.sparkHome)
+      .setAppName(s"intel-analytics:$user:$description")
+      .setJars(Seq(jarPath.getPath))
+
+    sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
+
+    info("SparkConf settings: " + sparkConf.toDebugString)
+
+    new SparkContext(sparkConf)
+  }
+
   def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
     throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
 }
