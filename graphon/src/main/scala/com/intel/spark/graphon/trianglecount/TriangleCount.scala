@@ -90,7 +90,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
-                             |    The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
+                             |    Triangle Count.
                              |
                              |    Parameters
                              |    ----------
@@ -109,7 +109,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
                              |
                              |    Examples
                              |    --------
-                             |        g.ml.graphx_triangle_count(output_property = "tc_result",
+                             |        g.ml.graphx_triangle_count(output_property = "triangle_count",
                              |                                   output_graph_name = "tc_graph")
                              |
                              |    The expected output is like this::
@@ -121,16 +121,14 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
                              |        tc_graph = get_graph('tc_graph')
                              |        tc_graph.query.gremlin("g.V [0..4]")
                              |
-                             |        {u'results':[{u'_id':4,u'_type':u'vertex',u'pr_result':0.787226,
-                             |        u'titanPhysicalId':133200148,u'user_id':7665,u'vertex_type':u'L'},{u'_id':8,
-                             |        u'_type':u'vertex',u'pr_result':1.284043,u'movie_id':7080,u'titanPhysicalId':85200356,
-                             |        u'vertex_type':u'R'},{u'_id':12,u'_type':u'vertex',u'pr_result':0.186911,
-                             |        u'movie_id':8904,u'titanPhysicalId':15600404,u'vertex_type':u'R'},{u'_id':16,
-                             |        u'_type':u'vertex',u'pr_result':0.384138,u'movie_id':6836,u'titanPhysicalId':105600396,
-                             |        u'vertex_type': u'R'},{u'_id':20,u'_type':u'vertex',u'pr_result':0.822977,
-                             |        u'titanPhysicalId':68400136,u'user_id':3223,u'vertex_type':u'L'}],
-                             |        u'run_time_seconds':1.489}
-                             |
+                             |        {u'results':[{u'_id':4,u'_type':u'vertex',u'b':3603376,u'pr':0.967054,
+                             |        u'titanPhysicalId':363016,u'triangle_count':1},{u'_id':8,u'_type':u'vertex',u'a':
+                             |        3118124,u'pr':0.967054,u'titanPhysicalId':343201000,u'triangle_count':1},
+                             |        {u'_id':12,u'_type':u'vertex',u'a':3063711,u'pr':0.967054,u'titanPhysicalId':43068
+                             |        ,u'triangle_count':1},{u'_id':16,u'_type':u'vertex',u'c':899225,u'pr':0.967054,
+                             |        u'titanPhysicalId':202800088,u'triangle_count':1},{u'_id':20,u'_type':u'vertex',
+                             |        u'c':1493990,u'pr':0.967054,u'titanPhysicalId':268188,u'triangle_count':1}],
+                             |        u'run_time_seconds':0.271}
                              |
                            """.stripMargin)))
 

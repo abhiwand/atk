@@ -45,10 +45,10 @@ import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
 
 /**
- * Parameters for executing page rank.
- * @param graph Reference to the graph object on which to compute pagerank.
- * @param output_property Name of the property to which pagerank value will be stored on vertex and edge.
- * @param output_graph_name Name of output graph. If None, pagerank values will be appended to original graph
+ * Parameters for executing connected components.
+ * @param graph Reference to the graph object on which to compute connected components.
+ * @param output_property Name of the property to which connected components value will be stored on vertex and edge.
+ * @param output_graph_name Name of output graph.
  */
 case class ConnectedComponentsArgs(graph: GraphReference,
                                    output_property: String,
@@ -70,7 +70,7 @@ object ConnectedComponentsJsonFormat {
 import ConnectedComponentsJsonFormat._
 
 /**
- * ConnectedComponent plugin implements the pagerank computation on a graph by invoking graphx pagerank.
+ * ConnectedComponent plugin implements the connected components computation on a graph by invoking graphx api.
  *
  * Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault, and then writes the output graph
  * back to the underlying store.
@@ -83,7 +83,42 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""
+                             |    Connected components.
                              |
+                             |    Parameters
+                             |    ----------
+                             |    output_property : string
+                             |        The name of output property to be added to vertex/edge upon completion
+                             |    output_graph_name : string
+                             |        The name of output graph to be created (original graph will be left unmodified)
+                             |
+                             |    Returns
+                             |    -------
+                             |    graph: String
+                             |        Name of the output graph. Call get_graph(graph) to get the handle to the new graph
+                             |
+                             |    Examples
+                             |    --------
+                             |        g.ml.graphx_connected_components(output_property = "ccId", output_graph_name = "cc_graph")
+                             |
+                             |    The expected output is like this::
+                             |
+                             |        {u'graph': u'cc_graph'}
+                             |
+                             |    To query::
+                             |
+                             |        cc_graph = get_graph('cc_graph')
+                             |        cc_graph.query.gremlin("g.V [0..4]")
+                             |
+                             |        {u'results':[{u'_id':4,u'_type':u'vertex',u'b':2335244,u'ccId':278456,
+                             |        u'pr':0.967054,u'titanPhysicalId':363016,u'triangle_count':1},{u'_id':8,
+                             |        u'_type':u'vertex',u'a':4877684,u'ccId':413036,u'pr':0.967054,
+                             |        u'titanPhysicalId':66001228,u'triangle_count':1},{u'_id':12,u'_type':u'vertex',
+                             |        u'b':1530344,u'ccId':34280,u'pr':0.967054,u'titanPhysicalId':9912,
+                             |        u'triangle_count':1},{u'_id':16,u'_type':u'vertex',u'b':3664209,u'ccId':206980,
+                             |        u'pr':0.967054,u'titanPhysicalId':229200900,u'triangle_count':1},{u'_id':20,
+                             |        u'_type':u'vertex',u'b':663159,u'ccId':268188,u'pr':0.967054,u'titanPhysicalId':
+                             |        268188,u'triangle_count':1}],u'run_time_seconds':0.254}
                              |
                            """.stripMargin)))
 
