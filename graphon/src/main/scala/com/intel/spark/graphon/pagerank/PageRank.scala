@@ -97,7 +97,7 @@ import PageRankJsonFormat._
  */
 class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
-  override def name: String = "graph:titan/ml/graphx_pr"
+  override def name: String = "graph:titan/ml/graphx_pagerank"
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
     extendedSummary = Some("""
@@ -134,7 +134,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |
                              |    Examples
                              |    --------
-                             |        g.ml.graphx_pr(output_property = "pr_result", output_graph_name = "pr_graph")
+                             |        g.ml.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
                              |
                              |    The expected output is like this::
                              |
