@@ -20,18 +20,16 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Frame
-"""
 
 import logging
+
 
 logger = logging.getLogger(__name__)
 from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
 from intelanalytics.core.userfunction import has_python_user_function_arg
-
+from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.namedobj import name_support
@@ -44,6 +42,7 @@ def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:
@@ -82,10 +81,10 @@ class Frame(CommandLoadableFrame):
 
     Parameters
     ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ]
+    source : [ CsvFile | BigFrame | BigColumn(s) ] (optional)
         A source of initial data.
 
-    name : string
+    name : string (optional)
         The name of the newly created frame.
 
     Returns
@@ -114,7 +113,7 @@ class Frame(CommandLoadableFrame):
     Name the frame "my_frame".
     Create a BigFrame *g* to access the data::
 
-        g = ia.BigFrame(my_csv_schema, "my_frame")
+        g = ia.Frame(my_csv_schema, "my_frame")
 
     A BigFrame object has been created and *g* is its proxy.
     It brought in the data described by *my_csv_schema*.
@@ -122,7 +121,7 @@ class Frame(CommandLoadableFrame):
 
     Create an empty frame; name it "your_frame"::
 
-        h = ia.BigFrame(name='your_frame')
+        h = ia.Frame(name='your_frame')
 
     A frame has been created and BigFrame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
@@ -811,6 +810,61 @@ class Frame(CommandLoadableFrame):
         copied_frame = Frame()
         self._backend.project_columns(self, copied_frame, column_names, new_names)
         return copied_frame
+
+    def download(self, count=100, offset=0, columns=None):
+        """
+        Download a frame from the server into client workspace.
+
+        Copies an intelanalytics Frame into a Pandas DataFrame
+
+        Parameters
+        ----------
+        count : int (optional)
+            The number of rows to copy from the currently active intelanalytics Frame. By default returns 100 rows
+        offset: int (optional)
+            The number of rows to skip before copying.By default skips no rows
+        columns: String or iterable of string (optional)
+            Specify the columns to be included in the result.
+            By default all the columns are to be included.
+
+        Returns
+        -------
+        Pandas Data Frame
+            A new pandas data frame object containing copies of all or subset of the original frame
+
+        Examples
+        --------
+        Frame *my_frame* accesses a frame with millions of rows of data.
+        Get a sample of 500 rows::
+
+            pandas_frame = my_frame.download( 500 )
+
+        We now have a separate frame accessed by a pandas DataFrame *pandas_frame* with a copy of the first 500 rows of the original frame.
+
+        If we use the function with an offset like::
+
+            pandas_frame = my_frame.take( 500, 100 )
+
+        We end up with a new frame accessed by the pandas DataFrame *pandas_frame* again, but this time it has a copy of
+        rows 101 to 600 of the original frame.
+
+        .. versionadded:: 0.8
+
+        """
+        import pandas as pd
+        result = self._backend.take(self, count, offset, columns)
+        headers = []
+        data_types = []
+        for key, val in result.schema:
+            headers.append(key)
+            data_types.append(val)
+
+        pandas_df = pd.DataFrame(result.data, columns=headers)
+
+        for i in range (len(data_types)):
+            pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(valid_data_types.to_string(data_types[i]))
+        return pandas_df
+
 
     @api
     @has_python_user_function_arg
@@ -1531,7 +1585,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         column_names : dictionary of str pairs
-            The name pair (existing name, new name).
+            The name pair ({existing name: new name}).
 
         Notes
         -----
