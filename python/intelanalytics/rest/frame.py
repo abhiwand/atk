@@ -390,6 +390,7 @@ class FrameBackendRest(object):
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
+
     def take(self, frame, n, offset, columns):
         def get_take_result():
             data = []
