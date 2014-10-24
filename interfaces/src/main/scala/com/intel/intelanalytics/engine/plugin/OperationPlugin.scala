@@ -85,16 +85,8 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Arguments, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
-    execute(invocation, arguments)
-
-  /**
-   * Operation plugins must implement this method to do the work requested by the user.
-   * @param invocation information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
-   */
-  def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: Invocation, arguments: Arguments)
+             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
@@ -102,16 +94,23 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
   final override def apply(invocation: Invocation, arguments: Any, previousReturn: Option[Any]): Return = {
     require(invocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
+    require(previousReturn != null, "Return value required")
 
     //We call execute rather than letting plugin authors directly implement
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      val result = execute(invocation, arguments.asInstanceOf[Arguments], previousReturn.map(r => r.asInstanceOf[Return]))(invocation.user, invocation.executionContext)
+      val result = previousReturn match {
+        case Some(prev) => execute(invocation, arguments.asInstanceOf[Arguments],
+                                    prev.asInstanceOf[Return])(invocation.user, invocation.executionContext)
+        case _ =>
+          execute(invocation, arguments.asInstanceOf[Arguments])(invocation.user, invocation.executionContext)
+      }
       if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
       result
     }
   }
+
 }
 
 import scala.reflect.runtime.{ universe => ru }
@@ -119,7 +118,8 @@ import ru._
 /**
  * Base trait for command plugins
  */
-abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
+abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag,
+                              Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] {
 
   val argumentManifest = implicitly[ClassManifest[Arguments]]
@@ -142,6 +142,23 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments): Int = 1
+
+  /**
+   * Transforms must implement this method to do the work requested by the user.
+   *
+   * This is different from other plugins' execute methods in that an instance of the
+   * return type that was created by the lazy execution engine will be passed in. This
+   * pre-created return instance will contain, for example, the UriReferences that
+   * were pre-created, and so the Transform instance should re-use those UriReferences
+   * in the return object that it returns to avoid creating duplicate frames and other
+   * entities.
+   *
+   * @param invocation information about the user and the circumstances at the time of the call
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
+  def execute(invocation: Invocation, arguments: Arguments, returnValue: Return)
+             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
 }
 
 /**
@@ -150,9 +167,26 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
 abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
   extends OperationPlugin[Arguments, Any] {}
 
+///**
+// * Marker trait for commands that force execution. Users should use 'with Action'  to
+// * mark any plugin that performs a shuffle operation, returns data directly back to the
+// * user, etc.
+// */
+//trait Action[Arguments, Return] { self : CommandPlugin[Arguments, Return] =>
+//}
+
 /**
- * Marker trait for commands that force execution. Users should use 'with Action'  to
- * mark any plugin that performs a shuffle operation, returns data directly back to the
- * user, etc.
+ * Transforms are command plugins that work lazily - they are only executed when
+ * the things they produce are needed. For example, a command that takes a frame
+ * reference and returns a frame reference. The lazy execution system will create
+ * a new (empty) frame and assign an ID to it when this command is called, but
+ * the command's execute method will not be called until the frame that was created
+ * is actually inspected, exported to a file, or materialized. At that time, the
+ * engine will invoke the Transform.
  */
-trait Action {}
+trait Transformation[Arguments <: Product, Return <: Product] extends CommandPlugin[Arguments, Return] {
+
+  final override def execute(invocation: Invocation, arguments: Arguments)
+             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
+    throw new IllegalArgumentException("Transformation called as an action")
+}

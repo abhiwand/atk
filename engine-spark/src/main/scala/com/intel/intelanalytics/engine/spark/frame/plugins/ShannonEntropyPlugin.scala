@@ -112,7 +112,8 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: Entropy, returnValue: Option[EntropyReturn])(implicit user: UserPrincipal, executionContext: ExecutionContext): EntropyReturn = {
+  override def execute(invocation: SparkInvocation, arguments: Entropy)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext): EntropyReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val ctx = invocation.sparkContext

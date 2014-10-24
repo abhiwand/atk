@@ -35,7 +35,8 @@ import ru._
 /**
  * Function commands that work with Spark
  */
-class SparkFunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag](
+class SparkFunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: TypeTag,
+                            Return <: Product: JsonFormat: ClassManifest: TypeTag](
   name: String,
   function: (Arguments, UserPrincipal, SparkInvocation) => Return,
   numberOfJobsFunc: Arguments => Int,
@@ -51,7 +52,8 @@ class SparkFunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: Type
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: Arguments, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  override def execute(invocation: SparkInvocation, arguments: Arguments)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     //Since the function may come from any class loader, we use the function's
     //class loader, not our own
     withLoader(function.getClass.getClassLoader) {

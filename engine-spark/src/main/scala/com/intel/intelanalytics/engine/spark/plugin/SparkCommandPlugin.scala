@@ -44,7 +44,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  final override def execute(invocation: Invocation, arguments: Argument, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  final override def execute(invocation: Invocation, arguments: Argument, returnValue: Option[Return])
+                            (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments, returnValue)(user, executionContext)
   }
 
@@ -54,7 +55,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  final override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  final override def execute(invocation: Invocation, arguments: Argument)
+                            (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
   }
 
@@ -66,8 +68,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: SparkInvocation, arguments: Argument, returnValue: Option[Return])(implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
-    execute(invocation, arguments)
+  def execute(invocation: SparkInvocation, arguments: Argument, returnValue: Return)
+             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
 
   /**
    * Plugins must implement this method to do the work requested by the user.
@@ -77,5 +79,6 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
+  def execute(invocation: SparkInvocation, arguments: Argument)
+             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
 }
