@@ -71,13 +71,13 @@ object PageRankRunner extends Serializable {
 
     // Only select edges as specified in inputEdgeLabels
     val filteredEdges: RDD[GBEdge] = inputEdgeLabels match {
-      case None => inEdges
-      case _ => inEdges.filter(edge => inputEdgeLabels.get.contains(edge.label))
+      case None => inEdges.cache()
+      case _ => inEdges.cache().filter(edge => inputEdgeLabels.get.contains(edge.label))
     }
 
     // convert to graphX vertices
     val graphXVertices: RDD[(Long, Null)] =
-      inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
+      inVertices.cache().map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
     val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => createGraphXEdgeFromGBEdge(edge))
 
@@ -93,10 +93,10 @@ object PageRankRunner extends Serializable {
     // extract vertices and edges from graphx graph instance
     val intermediateVertices: RDD[(Long, Property)] = newGraph.vertices.map({
       case (physicalId, pageRank) => (physicalId, Property(outputPropertyLabel, pageRank))
-    })
+    }).cache()
 
     val intermediateEdges: RDD[(EdgeSrcDestPair, Property)] =
-      newGraph.edges.map(edge => ((edge.srcId, edge.dstId), Property(outputPropertyLabel, edge.attr)))
+      newGraph.edges.map(edge => ((edge.srcId, edge.dstId), Property(outputPropertyLabel, edge.attr))).cache()
 
     // Join the intermediate vertex/edge rdds with input vertex/edge rdd's to append the pagerank attribute
     val outVertices: RDD[GBVertex] = inVertices
