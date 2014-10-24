@@ -48,7 +48,7 @@ import java.util.UUID
  * Parameters for executing page rank.
  * @param graph Reference to the graph object on which to compute pagerank.
  * @param output_property Name of the property to which pagerank value will be stored on vertex and edge.
- * @param output_graph_name Name of output graph. If None, pagerank values will be appended to original graph
+ * @param output_graph_name Name of output graph.
  * @param input_edge_labels List of edge labels to consider for pagerank computation. If None, all edges are considered.
  * @param max_iterations Optional Integer. The maximum number of iterations that will be invoked. Defaults to 20.
  * @param reset_probability Optional Double. Random reset probability
