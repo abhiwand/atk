@@ -115,7 +115,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
                            |
                            |    .. versionadded:: 0.8
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Computes a cumulative count
