@@ -25,7 +25,7 @@ package com.intel.spark.graphon.trianglecount
 
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.{StorageFormats, DomainJsonProtocol}
+import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
@@ -171,7 +171,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
       val newGraphName = arguments.output_graph_name
       val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName,StorageFormats.HBaseTitan)),
+      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
         config.getInt("default-timeout") seconds)
 
       // create titan config copy for newGraph write-back
