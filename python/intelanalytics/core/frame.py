@@ -20,9 +20,6 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Frame
-"""
 
 import logging
 import pandas as pd
@@ -45,6 +42,7 @@ def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:
@@ -83,10 +81,10 @@ class Frame(CommandLoadableFrame):
 
     Parameters
     ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ]
+    source : [ CsvFile | BigFrame | BigColumn(s) ] (optional)
         A source of initial data.
 
-    name : string
+    name : string (optional)
         The name of the newly created frame.
 
     Returns
@@ -115,7 +113,7 @@ class Frame(CommandLoadableFrame):
     Name the frame "my_frame".
     Create a BigFrame *g* to access the data::
 
-        g = ia.BigFrame(my_csv_schema, "my_frame")
+        g = ia.Frame(my_csv_schema, "my_frame")
 
     A BigFrame object has been created and *g* is its proxy.
     It brought in the data described by *my_csv_schema*.
@@ -123,7 +121,7 @@ class Frame(CommandLoadableFrame):
 
     Create an empty frame; name it "your_frame"::
 
-        h = ia.BigFrame(name='your_frame')
+        h = ia.Frame(name='your_frame')
 
     A frame has been created and BigFrame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
@@ -1586,7 +1584,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         column_names : dictionary of str pairs
-            The name pair (existing name, new name).
+            The name pair ({existing name: new name}).
 
         Notes
         -----

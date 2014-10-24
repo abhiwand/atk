@@ -53,14 +53,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns from the frame.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns.",
     extendedSummary = Some("""
                            |    Remove columns from the frame.
                            |    They are deleted.
                            |
                            |    Parameters
                            |    ----------
-                           |    columns: str OR list of str
+                           |    columns: [ str | list of str ]
                            |        column name OR list of column names to be removed from the frame
                            |
                            |    Notes
@@ -78,7 +78,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
                            |    Now the frame only has the columns *column_a* and *column_c*.
                            |    For further examples, see: ref: `example_frame.drop_columns`.
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Remove columns from a frame.

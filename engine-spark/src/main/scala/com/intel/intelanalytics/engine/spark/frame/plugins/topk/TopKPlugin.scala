@@ -119,7 +119,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
                            | 
                            |    .. versionadded:: 0.8
                            | 
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
