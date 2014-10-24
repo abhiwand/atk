@@ -6,7 +6,7 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import scala.concurrent.duration._
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
 import org.apache.spark.SparkContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.intel.intelanalytics.security.UserPrincipal
@@ -33,7 +33,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val cmd: Command = Command(1, "command", None, None, List(), false, None, null, null, None)
     when(commandStorage.create(any(classOf[CommandTemplate]))).thenReturn(cmd)
     when(commandStorage.lookup(anyLong())).thenReturn(Some(cmd))
-    val contextManager = mock[SparkContextManager]
+    val contextManager = mock[SparkContextFactoryManager]
     val sc = mock[SparkContext]
     when(contextManager.context(any(classOf[UserPrincipal]), anyString())).thenReturn(sc)
 

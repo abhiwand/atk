@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
@@ -64,7 +64,7 @@ import com.intel.event.EventLogging
  * @param commands a command storage that the executor can use for audit logging command execution
  * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextFactoryManager)
     extends EventLogging
     with ClassLoaderAware {
 
