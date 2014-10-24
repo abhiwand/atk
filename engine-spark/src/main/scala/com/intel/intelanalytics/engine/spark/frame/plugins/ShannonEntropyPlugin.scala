@@ -101,7 +101,7 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
                            |
                            |    ..versionadded :: 0.8
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Calculate Shannon entropy of a column.
