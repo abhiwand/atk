@@ -23,22 +23,31 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-/**
- * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
- * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
- * create in the order of hundreds of SparkContetxs pre JVM
- */
-/*object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
+import com.intel.event.EventLogging
+import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.{ SparkConf, SparkContext }
 
-  //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
+class SparkContextFactoryManager() extends EventLogging {
+  //TODO read the strategy from the config file
 
-  //TODO: how to run jobs as a particular user
-  //TODO: Decide on spark context life cycle - should it be torn down after every operation,
-  //or left open for some time, and reused if a request from the same user comes in?
-  //Is there some way of sharing a context across two different Engine instances?
+  def getContext(user: String, description: String): SparkContext = withContext("engine.SparkContextManager") {
 
-  override def getContext(user: String, description: String): SparkContext = {
-    sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
+    val jarPath = Boot.getJar("engine-spark")
+    val sparkConf = new SparkConf()
+      .setMaster(SparkEngineConfig.sparkMaster)
+      .setSparkHome(SparkEngineConfig.sparkHome)
+      .setAppName(s"intel-analytics:$user:$description")
+      .setJars(Seq(jarPath.getPath))
+
+    sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
+
+    info("SparkConf settings: " + sparkConf.toDebugString)
+
+    new SparkContext(sparkConf)
   }
+
+  def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
+    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
 }
-*/ 

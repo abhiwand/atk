@@ -54,7 +54,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
 import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,7 +117,7 @@ object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(sparkContextManager: SparkContextManager,
+class SparkEngine(sparkContextManager: SparkContextFactoryManager,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,

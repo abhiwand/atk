@@ -1,17 +1,17 @@
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
 import org.mockito.Mockito._
 import org.scalatest.WordSpec
 import org.scalatest.mock.MockitoSugar
 
-class SparkContextManagerTest extends WordSpec with MockitoSugar {
+class SparkContextFactoryManagerTest extends WordSpec with MockitoSugar {
 
-  def createMockSparkContextManager(): SparkContextManager = {
+  def createMockSparkContextManager(): SparkContextFactoryManager = {
     val config = mock[Config]
-    val sparkContextManager = new SparkContextManager()
+    val sparkContextManager = new SparkContextFactoryManager()
 
     val mockSparkContext_1 = mock[SparkContext]
     val mockSparkContext_2 = mock[SparkContext]
