@@ -22,7 +22,7 @@
 ##############################################################################
 
 import logging
-import pandas as pd
+
 
 logger = logging.getLogger(__name__)
 from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
@@ -851,6 +851,7 @@ class Frame(CommandLoadableFrame):
         .. versionadded:: 0.8
 
         """
+        import pandas as pd
         result = self._backend.take(self, count, offset, columns)
         headers = []
         data_types = []
