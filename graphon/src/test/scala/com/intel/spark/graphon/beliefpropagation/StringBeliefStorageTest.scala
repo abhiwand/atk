@@ -25,10 +25,10 @@ class StringBeliefStorageTest extends FlatSpec with Matchers with TestingSparkCo
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = Some(true),
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }
