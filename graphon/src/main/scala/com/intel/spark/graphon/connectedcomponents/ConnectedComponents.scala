@@ -27,7 +27,7 @@ import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge, Pro
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.{StorageFormats, DomainJsonProtocol}
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
@@ -168,7 +168,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
       val newGraphName = arguments.output_graph_name
       val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName)),
+      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName,StorageFormats.HBaseTitan)),
         config.getInt("default-timeout") seconds)
 
       // create titan config copy for newGraph write-back

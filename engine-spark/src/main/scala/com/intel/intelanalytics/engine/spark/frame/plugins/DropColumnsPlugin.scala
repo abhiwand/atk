@@ -105,14 +105,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
     val columnIndices = {
       for {
         col <- columns
-        columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+        columnIndex = schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == col)
       } yield columnIndex
     }.sorted.distinct
 
     val resultRDD = columnIndices match {
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
-      case allColumns if allColumns.length == schema.columns.length =>
+      case allColumns if allColumns.length == schema.columnTuples.length =>
         frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
       case singleColumn if singleColumn.length == 1 =>
         frames.loadLegacyFrameRdd(ctx, frameMeta)

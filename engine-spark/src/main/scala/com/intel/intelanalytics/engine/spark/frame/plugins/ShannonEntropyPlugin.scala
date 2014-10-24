@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ EntropyReturn, Entropy, DataFrame }
-import com.intel.intelanalytics.domain.schema.ColumnInfo
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
@@ -57,7 +57,7 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/entropy"
+  override def name: String = "frame/entropy"
 
   /**
    * User documentation exposed in Python.
@@ -156,7 +156,7 @@ private[spark] object EntropyRDDFunctions extends Serializable {
    */
   def shannonEntropy(frameRDD: RDD[Row],
                      dataColumnIndex: Int,
-                     weightsColumnOption: Option[ColumnInfo] = None): Double = {
+                     weightsColumnOption: Option[Column] = None): Double = {
     require(dataColumnIndex >= 0, "column index must be greater than or equal to zero")
 
     val dataWeightPairs =

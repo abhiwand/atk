@@ -48,7 +48,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/assign_sample"
+  override def name: String = "frame/assign_sample"
 
   /**
    * User documentation exposed in Python.
@@ -123,7 +123,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
     val frame = frames.expectFrame(frameID)
     val splitPercentages = arguments.sample_percentages.toArray
     val outputColumn = arguments.output_column.getOrElse("sample_bin")
-    if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
+    if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
       throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
     val seed = arguments.random_seed.getOrElse(0)
 
@@ -143,7 +143,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
     val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
-    val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
+    val allColumns = frame.schema.columnTuples :+ (outputColumn, DataTypes.string)
 
     // save results
     frames.saveLegacyFrame(frame, new LegacyFrameRDD(new Schema(allColumns), splitRDD))

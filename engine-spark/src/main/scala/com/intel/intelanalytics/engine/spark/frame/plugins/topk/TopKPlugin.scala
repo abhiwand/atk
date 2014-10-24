@@ -49,7 +49,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/top_k"
+  override def name: String = "frame/top_k"
 
   /**
    * User documentation exposed in Python.
@@ -149,7 +149,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
 
     // run the operation
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
-    val valueDataType = frame.schema.columns(columnIndex)._2
+    val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val newFrameName = frames.generateFrameName()
     val newFrame = frames.create(DataFrameTemplate(newFrameName, None))
@@ -157,7 +157,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
-    val newSchema = Schema(List(
+    val newSchema = new Schema(List(
       (arguments.columnName, valueDataType),
       ("count", DataTypes.float64)
     ))
@@ -183,7 +183,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val (columnIndexOption, dataTypeOption) = columnName match {
       case Some(columnIndex) => {
         val weightsColumnIndex = frame.schema.columnIndex(columnIndex)
-        (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+        (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
       }
       case None => (None, None)
     }

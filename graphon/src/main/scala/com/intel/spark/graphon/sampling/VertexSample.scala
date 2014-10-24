@@ -28,7 +28,7 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.{StorageFormats, DomainJsonProtocol}
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json._
 import scala.concurrent._
@@ -160,7 +160,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
     val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = new SerializableBaseConfiguration()

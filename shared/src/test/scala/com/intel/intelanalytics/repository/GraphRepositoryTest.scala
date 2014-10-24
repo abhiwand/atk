@@ -13,7 +13,7 @@ class GraphRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val name = "my-name"
 
         // create a graph
-        val graph = graphRepo.insert(new GraphTemplate(name))
+        val graph = graphRepo.insert(new GraphTemplate(name, "hbase/titan"))
         graph.get should not be null
 
         // look it up and validate expected values
