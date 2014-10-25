@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
@@ -59,7 +58,7 @@ public class TitanGraphWriter {
      * @return TitanGraph Titan graph to which Giraph write results
      */
     public static TitanGraph open(TaskAttemptContext context) throws IOException {
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.createTitanBaseConfiguration(context.getConfiguration(),
                 GIRAPH_TITAN.get(context.getConfiguration()));
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
 
@@ -78,7 +77,7 @@ public class TitanGraphWriter {
      * @return TitanGraph Titan graph to which Giraph write results
      */
     public static TitanGraph open(ImmutableClassesGiraphConfiguration config) throws IOException {
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(config,
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.createTitanBaseConfiguration(config,
                 GIRAPH_TITAN.get(config));
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
 

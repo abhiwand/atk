@@ -129,7 +129,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
         edges[10].setProperty("weight", "4.0");
         edges[11] = nodes[4].addEdge("edge", nodes[2]);
         edges[11].setProperty("weight", "4.0");
-
+        graph.commit();
         graph.shutdown();
 
 

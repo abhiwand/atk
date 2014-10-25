@@ -103,7 +103,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
          * @throws IOException
          */
         public PropertyGraph4LBPVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+            super(split, context);
         }
 
         /**

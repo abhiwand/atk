@@ -67,6 +67,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LP extends
      */
     public VertexReader<LongWritable, VertexData4LPWritable, DoubleWritable> createVertexReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
+
         return new PropertyGraph4LPVertexReader(split, context);
     }
 
@@ -90,7 +91,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LP extends
          * @throws IOException
          */
         public PropertyGraph4LPVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+            super(split, context);
         }
 
         /**
