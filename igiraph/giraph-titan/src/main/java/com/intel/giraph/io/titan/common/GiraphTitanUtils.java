@@ -24,20 +24,12 @@ package com.intel.giraph.io.titan.common;
 
 import com.intel.giraph.io.titan.TitanGraphWriter;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
-import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
-import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
-import org.apache.hadoop.hbase.util.Base64;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
@@ -62,7 +54,7 @@ public class GiraphTitanUtils {
      *
      * @param conf : Giraph configuration
      */
-    public static void sanityCheckInputParameters(ImmutableClassesGiraphConfiguration conf) {
+    public static void sanityCheckInputParameters(Configuration conf) {
         String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
 
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
@@ -169,7 +161,7 @@ public class GiraphTitanUtils {
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
 
         // TODO: Need locks?
-        TitanManagement graphManager =  graph.getManagementSystem();
+        TitanManagement graphManager = graph.getManagementSystem();
 
         for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {
             if (!graphManager.containsRelationType(vertexValuePropertyKeyList[i])) {
@@ -203,4 +195,6 @@ public class GiraphTitanUtils {
         createTitanKeys(conf);
         disableSpeculativeExe(conf);
     }
+
+
 }

@@ -95,7 +95,6 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       titanGraph.getEdges.size shouldBe 5
       TitanGraphConnector.getVertices(titanGraph).size shouldBe 5 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
-
       // need to shutdown because only one connection can be open at a time
       titanGraph.shutdown()
 

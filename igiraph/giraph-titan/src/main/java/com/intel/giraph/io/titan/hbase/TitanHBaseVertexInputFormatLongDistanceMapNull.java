@@ -80,7 +80,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
          * @throws IOException
          */
         public LongDistanceMapNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+            super(split, context);
         }
 
         /**

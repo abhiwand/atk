@@ -58,11 +58,11 @@ public class TitanHBaseVertexInputFormatLongDoubleNull extends
      * @param context Giraph task context
      * @return VertexReader Vertex reader for Giraph vertices
      * @throws IOException
-     * @throws RuntimeException
      */
     @Override
     public VertexReader<LongWritable, DoubleWritable, NullWritable> createVertexReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
+
         return new LongDoubleNullVertexReader(split, context);
     }
 
@@ -74,20 +74,18 @@ public class TitanHBaseVertexInputFormatLongDoubleNull extends
         private Vertex<LongWritable, DoubleWritable, NullWritable> giraphVertex = null;
 
         /**
-         * Constructs Giraph vertex reader
-         * <p/>
-         * Reads Giraph vertex from Titan/HBase table.
+         * Constructs Giraph vertex reader to read Giraph vertices from Titan/HBase table.
          *
          * @param split   Input split from HBase table
          * @param context Giraph task context
          * @throws IOException
          */
         public LongDoubleNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+            super(split, context);
         }
 
         /**
-         * Gets the next Giraph vertex from the input split.
+         * Gets the next LongDoubleNullVertex Giraph vertex from the input split.
          *
          * @return boolean Returns True, if more vertices available
          * @throws IOException
@@ -95,19 +93,21 @@ public class TitanHBaseVertexInputFormatLongDoubleNull extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
-            boolean hasMoreVertices = false;
-            giraphVertex = null;
 
-            if (getRecordReader().nextKeyValue()) {
-                giraphVertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                hasMoreVertices = true;
+            while (getRecordReader().nextKeyValue()) {
+                Vertex<LongWritable, DoubleWritable, NullWritable> tempGiraphVertex =
+                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                if (tempGiraphVertex != null) {
+                    this.giraphVertex = tempGiraphVertex;
+                    return true;
+                }
             }
 
-            return hasMoreVertices;
+            return false;
         }
 
         /**
-         * Get current Giraph vertex.
+         * Get current the current Giraph vertex.
          *
          * @return Giraph vertex
          * @throws IOException
@@ -116,7 +116,7 @@ public class TitanHBaseVertexInputFormatLongDoubleNull extends
         @Override
         public Vertex<LongWritable, DoubleWritable, NullWritable> getCurrentVertex() throws IOException,
                 InterruptedException {
-            return giraphVertex;
+            return this.giraphVertex;
         }
 
         /**
@@ -130,18 +130,18 @@ public class TitanHBaseVertexInputFormatLongDoubleNull extends
                 final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
 
             // Initialize Giraph vertex
-            Vertex<LongWritable, DoubleWritable, NullWritable> vertex = conf.createVertex();
-            vertex.initialize(new LongWritable(faunusVertex.getLongId()), new DoubleWritable(0));
+            Vertex<LongWritable, DoubleWritable, NullWritable> newGiraphVertex = conf.createVertex();
+            newGiraphVertex.initialize(new LongWritable(faunusVertex.getLongId()), new DoubleWritable(0));
 
             // Add vertex properties
             Iterator<TitanProperty> titanProperties = vertexBuilder.buildTitanProperties(faunusVertex);
-            vertex.setValue(getDoubleWritableProperty(titanProperties));
+            newGiraphVertex.setValue(getDoubleWritableProperty(titanProperties));
 
             // Add edges
             Iterator<TitanEdge> titanEdges = vertexBuilder.buildTitanEdges(faunusVertex);
-            addGiraphEdges(vertex, faunusVertex, titanEdges);
+            addGiraphEdges(newGiraphVertex, faunusVertex, titanEdges);
 
-            return (vertex);
+            return (newGiraphVertex);
         }
 
         /**

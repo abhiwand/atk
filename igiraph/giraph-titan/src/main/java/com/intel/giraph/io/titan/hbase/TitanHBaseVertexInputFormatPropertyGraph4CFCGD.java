@@ -103,7 +103,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGD extends
          * @throws IOException
          */
         public PropertyGraph4CFCGDVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+            super(split, context);
         }
 
         /**

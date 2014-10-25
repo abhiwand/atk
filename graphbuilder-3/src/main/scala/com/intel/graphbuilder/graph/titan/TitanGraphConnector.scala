@@ -31,7 +31,7 @@ import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfigur
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
 import com.tinkerpop.blueprints.Graph
-import org.apache.commons.configuration.{Configuration, PropertiesConfiguration}
+import org.apache.commons.configuration.{ Configuration, PropertiesConfiguration }
 
 import scala.collection.JavaConversions._
 
