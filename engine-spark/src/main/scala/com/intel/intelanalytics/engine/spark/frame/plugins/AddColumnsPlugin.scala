@@ -41,8 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference]
-  with Transformation[FrameAddColumns, FrameReference] {
+class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -70,8 +69,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    * @return a value of type declared as the Return type.
    */
   override def execute(invocation: SparkInvocation,
-                       arguments: FrameAddColumns,
-                       returnValue: FrameReference)(implicit user: UserPrincipal,
+                       arguments: FrameAddColumns)(implicit user: UserPrincipal,
                                                             executionContext: ExecutionContext): FrameReference = {
     val frame = invocation.resolve[SparkFrameData](arguments.frame)
     val oldSchema = frame.meta.schema
@@ -83,7 +81,8 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
     val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, arguments.expression)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
     val rdd = PythonRDDStorage.pyRDDToFrameRDD(newSchema, pyRdd, converter)
-    val ret = invocation.resolve[FrameMeta](returnValue)
-    new SparkFrameData(ret.meta.copy(schema = newSchema), rdd)
+    ???
+    ///val ret = invocation.resolve[FrameMeta](returnValue)
+    ///new SparkFrameData(ret.meta.copy(schema = newSchema), rdd)
   }
 }

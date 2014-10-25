@@ -25,11 +25,42 @@ package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 import spray.json._
 
 import scala.concurrent.ExecutionContext
+
+abstract case class Op[Context, Arguments <: Product : JsonFormat, Return](context: Context = null)
+  extends (Arguments => Return)
+  with Plugin
+  with ClassLoaderAware
+{
+  final def apply(arguments: Arguments) : Return = {
+    require(arguments != null, "Arguments required")
+
+    //We call execute rather than letting plugin authors directly implement
+    //apply so that if we ever need to put additional actions before or
+    //after the plugin code, we can.
+    withMyClassLoader {
+      execute(arguments)
+    }
+  }
+
+  def execute(arguments: Arguments) : Return
+
+}
+
+case class Foo(ret: Option[FrameReference])
+
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+class test extends Op[Foo, FrameReference, FrameReference] {
+  override def execute(arguments: FrameReference): FrameReference = {
+    context.ret.get
+  }
+}
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -40,7 +71,7 @@ import scala.concurrent.ExecutionContext
  *           the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
+abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
     extends ((Invocation, Any, Option[Any]) => Return)
     with Plugin
     with ClassLoaderAware {
@@ -101,8 +132,6 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
     //after the plugin code, we can.
     withMyClassLoader {
       val result = previousReturn match {
-        case Some(prev) => execute(invocation, arguments.asInstanceOf[Arguments],
-                                    prev.asInstanceOf[Return])(invocation.user, invocation.executionContext)
         case _ =>
           execute(invocation, arguments.asInstanceOf[Arguments])(invocation.user, invocation.executionContext)
       }
