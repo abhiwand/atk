@@ -134,7 +134,7 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
             vertex.setValue(getLongWritableProperty(titanProperties));
 
             // Add edges
-            Iterator<TitanEdge> titanEdges = vertexBuilder.buildTitanEdges(faunusVertex);
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
             addGiraphEdges(vertex, faunusVertex, titanEdges);
 
             return (vertex);

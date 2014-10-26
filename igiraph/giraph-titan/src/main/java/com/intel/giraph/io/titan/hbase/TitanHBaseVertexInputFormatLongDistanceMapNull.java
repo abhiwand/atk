@@ -130,7 +130,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
             vertex.initialize(new LongWritable(faunusVertex.getLongId()), new DistanceMapWritable());
 
             // Add egdes to Giraph vertex
-            Iterator<TitanEdge> titanEdges = vertexBuilder.buildTitanEdges(faunusVertex);
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
             addGiraphEdges(vertex, faunusVertex, titanEdges);
 
             return (vertex);

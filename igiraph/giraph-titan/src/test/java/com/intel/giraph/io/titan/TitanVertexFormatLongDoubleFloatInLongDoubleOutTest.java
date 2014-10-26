@@ -24,9 +24,9 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.pr.PageRankComputation;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull;
-import com.thinkaurelius.titan.core.EdgeLabel;
 import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.TitanVertex;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -36,9 +36,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
+
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -93,14 +94,15 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
 
 
         TitanManagement graphManager = graph.getManagementSystem();
-        PropertyKey weight = graphManager.makePropertyKey("weight").dataType(String.class).make();
+        graphManager.makePropertyKey("weight").dataType(String.class).make();
         graphManager.makeEdgeLabel("edge").make();
         graphManager.commit();
 
+        TitanTransaction tx = graph.newTransaction();
         int numVertices = 5;
         TitanVertex[] nodes = new TitanVertex[numVertices];
         for (int i = 0; i < numVertices; i++) {
-            nodes[i] = graph.addVertex(null);
+            nodes[i] = tx.addVertex();
         }
 
         //graph.commit();
@@ -129,33 +131,32 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
         edges[10].setProperty("weight", "4.0");
         edges[11] = nodes[4].addEdge("edge", nodes[2]);
         edges[11].setProperty("weight", "4.0");
-        graph.commit();
-        graph.shutdown();
-
+        tx.commit();
 
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
 
-        //startNewTransaction();
+        TitanTransaction tx1 = graph.newTransaction();
         long[] nid;
-        /*PropertyKey resultKey;
+        PropertyKey resultKey;
         String keyName = "rank";
         nid = new long[5];
         //check keys are generated for Titan
-        assertTrue(tx.containsRelationType(keyName));
-        resultKey = tx.getPropertyKey(keyName);
+        assertTrue(tx1.containsRelationType(keyName));
+        resultKey = tx1.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
 
         for (int i = 0; i < 5; i++) {
             nid[i] = nodes[i].getLongId();
-            assertTrue(tx.containsVertex(nid[i]));
-            nodes[i] = tx.getVertex(nid[i]);
+            assertTrue(tx1.containsVertex(nid[i]));
+            nodes[i] = tx1.getVertex(nid[i]);
 
             assertEquals(expectedValues[i], Double.parseDouble(nodes[i].getProperty(resultKey).toString()), 0.01d);
 
-        }   */
+        }
+        tx1.commit();
     }
 }

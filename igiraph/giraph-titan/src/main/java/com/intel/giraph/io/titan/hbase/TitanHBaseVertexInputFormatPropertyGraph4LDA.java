@@ -22,21 +22,16 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.EdgeData4CFWritable;
-import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.mahout.math.DoubleWithVectorWritable;
-import com.thinkaurelius.titan.core.EdgeLabel;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
-import com.tinkerpop.blueprints.Direction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -192,7 +187,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
             setVertexProperties(vertex, vertexType, titanProperties);
 
             // Add edges
-            Iterator<TitanEdge> titanEdges = vertexBuilder.buildTitanEdges(faunusVertex);
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
             addGiraphEdges(vertex, faunusVertex, titanEdges);
 
             return (vertex);

@@ -207,30 +207,16 @@ public class TitanHBaseVertexBuilder {
      * @param faunusVertex Titan/Hadoop (faunus) vertex
      * @return Titan edges filtered by edge label
      */
-    public Iterator<TitanEdge> buildTitanEdges(FaunusVertex faunusVertex) {
+    public Iterator<TitanEdge> buildBlueprintsEdges(FaunusVertex faunusVertex) {
 
         if (edgeLabelKeys != null) {
-            EdgeLabel[] edgeLabelList = getTitanEdgeLabels(faunusVertex);
-            return(faunusVertex.getTitanEdges(Direction.OUT, edgeLabelList).iterator());
+            String[] edgeLabels = edgeLabelKeys.keySet().toArray(new String[edgeLabelKeys.keySet().size()]);
+            Iterable<TitanEdge> titanEdges = faunusVertex.query().direction(Direction.OUT).labels(edgeLabels).titanEdges();
+            return(titanEdges.iterator());
         }
         else {
             return(Collections.<TitanEdge>emptyList().iterator());
         }
-    }
-
-    /**
-     * Get Titan edge labels using the edge labels specified in the Giraph configuration.
-     *
-     * @param faunusVertex Titan/Hadoop (faunus) vertex
-     * @return Titan edge labels in the Giraph configuration
-     */
-    private EdgeLabel[] getTitanEdgeLabels(FaunusVertex faunusVertex) {
-        ArrayList<EdgeLabel> edgeLabels = new ArrayList<>();
-        for (final String edgeLabelKey : edgeLabelKeys.keySet()) {
-            EdgeLabel edgeLabel = faunusVertex.tx().getEdgeLabel(edgeLabelKey);
-            edgeLabels.add(edgeLabel);
-        }
-        return edgeLabels.toArray(new EdgeLabel[edgeLabels.size()]);
     }
 
     /**
