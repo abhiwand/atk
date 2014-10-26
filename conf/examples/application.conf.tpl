@@ -145,7 +145,6 @@ intel.analytics {
         storage {
           backend = "hbase"
           # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          hostname = "invalid-titan-host"
           port = "2181"
 
           # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
