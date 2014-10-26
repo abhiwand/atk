@@ -41,14 +41,14 @@ case class ColumnInfo(index: Int, name: String, dataType: DataType)
 case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
   require(columns != null, "columns must not be null")
   require({
-    val distinct = columns.map{case (name,_) => name}.distinct
+    val distinct = columns.map { case (name, _) => name }.distinct
     distinct.length == columns.length
   }, "invalid schema, duplicate column names")
 
   /**
    * Returns a new schema with the new columns appended.
    */
-  def addColumns(newColumns: List[(String, DataType)]) : Schema = {
+  def addColumns(newColumns: List[(String, DataType)]): Schema = {
     this.copy(columns = this.columns ++ newColumns)
   }
 

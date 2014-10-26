@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -67,18 +68,17 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: GraphLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
+  override def execute(arguments: GraphLoad)(implicit invocation: Invocation): Graph = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = invocation.engine.graphs
-    val frames = invocation.engine.frames
+    val graphs = engine.graphs
+    val frames = engine.frames
 
     // validate arguments
     arguments.frame_rules.foreach(frule => frames.expectFrame(frule.frame))
 
     // run the operation and save results
-    graphs.loadGraph(arguments, invocation)(user)
+    graphs.loadGraph(arguments, invocation)
   }
 }

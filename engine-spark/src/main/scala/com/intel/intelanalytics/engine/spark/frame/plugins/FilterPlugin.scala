@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -70,13 +71,11 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FilterPredicate)
-                      (implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: FilterPredicate)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val frames = engine.frames
     val pythonRDDStorage = new PythonRDDStorage(frames)
 
     // validate arguments
@@ -84,7 +83,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
 
     // run the operation and save results
-    val pyRdd = pythonRDDStorage.createPythonRDD(arguments.frame.id, arguments.predicate, invocation.sparkContext)
+    val pyRdd = pythonRDDStorage.createPythonRDD(arguments.frame.id, arguments.predicate, sc)
     val schema = frameMeta.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     pythonRDDStorage.persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)

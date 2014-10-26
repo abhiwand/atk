@@ -25,6 +25,7 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -122,7 +123,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
                            |    .. versionadded:: 0.8
                             """)))
 
-  override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
+  override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
     // Titan Settings
     val config = configuration
     val titanConfigInput = config.getConfig("titan.load")
@@ -135,10 +136,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // get the input graph object
     import scala.concurrent.duration._
-    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // get SparkContext and add the graphon jar
-    val sc = invocation.sparkContext
     sc.addJar(Boot.getJar("graphon").getPath)
 
     // convert graph name and get the graph vertex and edge RDDs
@@ -160,7 +160,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
     val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = new SerializableBaseConfiguration()

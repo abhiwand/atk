@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameReference, Quanti
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -126,13 +127,12 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: Quantiles)(implicit user: UserPrincipal, executionContext: ExecutionContext): QuantileValues = {
+  override def execute(arguments: Quantiles)(implicit invocation: Invocation): QuantileValues = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId: FrameReference = arguments.frame

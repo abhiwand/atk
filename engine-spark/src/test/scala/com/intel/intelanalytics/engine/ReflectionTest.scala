@@ -48,7 +48,7 @@ import implicits._
 class MixedPlugin extends CommandPlugin[Mixed, Mixed] {
   override def name: String = ???
 
-  override def execute(invocation: Invocation, arguments: Mixed)(implicit user: UserPrincipal, executionContext: ExecutionContext): Mixed = ???
+  override def execute(arguments: Mixed)(implicit invocation: Invocation): Mixed = ???
 }
 
 class ReflectionTest extends FlatSpec with Matchers {

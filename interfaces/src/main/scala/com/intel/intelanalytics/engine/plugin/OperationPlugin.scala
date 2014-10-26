@@ -25,42 +25,12 @@ package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 import spray.json._
 
-import scala.concurrent.ExecutionContext
-
-abstract case class Op[Context, Arguments <: Product : JsonFormat, Return](context: Context = null)
-  extends (Arguments => Return)
-  with Plugin
-  with ClassLoaderAware
-{
-  final def apply(arguments: Arguments) : Return = {
-    require(arguments != null, "Arguments required")
-
-    //We call execute rather than letting plugin authors directly implement
-    //apply so that if we ever need to put additional actions before or
-    //after the plugin code, we can.
-    withMyClassLoader {
-      execute(arguments)
-    }
-  }
-
-  def execute(arguments: Arguments) : Return
-
-}
-
-case class Foo(ret: Option[FrameReference])
-
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-class test extends Op[Foo, FrameReference, FrameReference] {
-  override def execute(arguments: FrameReference): FrameReference = {
-    context.ret.get
-  }
-}
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -72,7 +42,7 @@ class test extends Op[Foo, FrameReference, FrameReference] {
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
 abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
-    extends ((Invocation, Any, Option[Any]) => Return)
+    extends ((Invocation, Arguments) => Return)
     with Plugin
     with ClassLoaderAware {
 
@@ -112,44 +82,41 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
-   * @param invocation information about the user and the circumstances at the time of the call
+   * @param context information about the user and the circumstances at the time of the call
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Arguments)
-             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(arguments: Arguments)(implicit context: Invocation): Return
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
    */
-  final override def apply(invocation: Invocation, arguments: Any, previousReturn: Option[Any]): Return = {
+  final override def apply(invocation: Invocation, arguments: Arguments): Return = {
     require(invocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
-    require(previousReturn != null, "Return value required")
 
     //We call execute rather than letting plugin authors directly implement
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      val result = previousReturn match {
-        case _ =>
-          execute(invocation, arguments.asInstanceOf[Arguments])(invocation.user, invocation.executionContext)
-      }
+      val result = execute(arguments)(invocation)
       if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
       result
     }
   }
 
+  implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
+
 }
 
-import scala.reflect.runtime.{ universe => ru }
-import ru._
 /**
  * Base trait for command plugins
  */
 abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag,
                               Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] {
+
+  def engine(implicit invocation: Invocation) = invocation.engine
 
   val argumentManifest = implicitly[ClassManifest[Arguments]]
   val returnManifest = implicitly[ClassManifest[Return]]
@@ -182,12 +149,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * in the return object that it returns to avoid creating duplicate frames and other
    * entities.
    *
-   * @param invocation information about the user and the circumstances at the time of the call
+   * @param context information about the user and the circumstances at the time of the call
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Arguments, returnValue: Return)
-             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = ???
+  def execute(arguments: Arguments)(implicit context: Invocation): Return = ???
 }
 
 /**
@@ -195,14 +161,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
  */
 abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
   extends OperationPlugin[Arguments, Any] {}
-
-///**
-// * Marker trait for commands that force execution. Users should use 'with Action'  to
-// * mark any plugin that performs a shuffle operation, returns data directly back to the
-// * user, etc.
-// */
-//trait Action[Arguments, Return] { self : CommandPlugin[Arguments, Return] =>
-//}
 
 /**
  * Transforms are command plugins that work lazily - they are only executed when
@@ -215,7 +173,6 @@ abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
  */
 trait Transformation[Arguments <: Product, Return <: Product] extends CommandPlugin[Arguments, Return] {
 
-  final override def execute(invocation: Invocation, arguments: Arguments)
-             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return =
+  final override def execute(arguments: Arguments)(implicit context: Invocation): Return =
     throw new IllegalArgumentException("Transformation called as an action")
 }

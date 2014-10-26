@@ -48,15 +48,15 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: Type
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
-   * @param invocation information about the user and the circumstances at the time of the call
+   * @param context information about the user and the circumstances at the time of the call
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  override def execute(arguments: Arguments)(implicit context: Invocation): Return = {
     //Since the function may come from any class loader, we use the function's
     //class loader, not our own
     withLoader(function.getClass.getClassLoader) {
-      function(arguments, user, invocation)
+      function(arguments, context.user, context)
     }
   }
 }

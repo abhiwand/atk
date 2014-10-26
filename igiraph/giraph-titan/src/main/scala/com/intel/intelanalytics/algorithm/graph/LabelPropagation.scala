@@ -153,13 +153,13 @@ class LabelPropagation
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Lp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LpResult = {
+  override def execute(arguments: Lp)(implicit context: Invocation): LpResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = context.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
@@ -187,7 +187,7 @@ class LabelPropagation
 
     LpResult(GiraphJobManager.run("ia_giraph_lp",
       classOf[LabelPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation, "lp-learning-report_0"))
+      config, giraphConf, context, "lp-learning-report_0"))
   }
 
 }

@@ -25,6 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
@@ -80,12 +81,11 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
+  override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
 
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-    val sc = sparkInvocation.sparkContext
     sc.addJar(Boot.getJar("graphon").getPath)
 
     // Titan Settings for input
@@ -94,7 +94,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Set the graph in Titan
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)

@@ -70,10 +70,10 @@
 //   * @param user current user
 //   * @return a value of type declared as the Return type.
 //   */
-//  override def execute(invocation: SparkInvocation, arguments: Args)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+//  override def execute(arguments: Args)(implicit invocation: Invocation): DataFrame = {
 //    // dependencies (later to be replaced with dependency injection)
-//    val frames = invocation.engine.frames
-//    val ctx = invocation.sparkContext
+//    val frames = engine.frames
+//    val ctx = sc
 //
 //    // validate arguments
 //

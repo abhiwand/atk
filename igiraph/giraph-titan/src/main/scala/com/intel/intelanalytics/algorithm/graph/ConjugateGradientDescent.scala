@@ -201,7 +201,7 @@ class ConjugateGradientDescent
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Cgd)(implicit user: UserPrincipal, executionContext: ExecutionContext): CgdResult = {
+  override def execute(arguments: Cgd)(implicit context: Invocation): CgdResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
@@ -218,7 +218,7 @@ class ConjugateGradientDescent
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = context.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
@@ -255,7 +255,7 @@ class ConjugateGradientDescent
 
     CgdResult(GiraphJobManager.run("ia_giraph_cgd",
       classOf[ConjugateGradientDescentComputation].getCanonicalName,
-      config, giraphConf, invocation, "cgd-learning-report_0"))
+      config, giraphConf, context, "cgd-learning-report_0"))
   }
 
 }
