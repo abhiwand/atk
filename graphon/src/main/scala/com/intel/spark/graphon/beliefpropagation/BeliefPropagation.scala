@@ -1,6 +1,7 @@
 package com.intel.spark.graphon.beliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
@@ -133,21 +134,21 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
                            |
                             """)))
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
+  override def execute(arguments: BeliefPropagationArgs)(implicit invocation: Invocation): BeliefPropagationResult = {
 
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
 
-    sparkInvocation.sparkContext.stop
+    sc.stop
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    val sparkConf: SparkConf = sc.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
 
-    val sc = new SparkContext(sparkConf)
+    val ctx = new SparkContext(sparkConf)
 
     try {
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+      ctx.addJar(Boot.getJar("graphon").getPath)
 
       // Titan Settings for input
       val config = configuration
@@ -155,7 +156,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
       // Get the graph
       import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+      val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
       val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
       titanConfig.setProperty("storage.tablename", iatGraphName)
@@ -163,7 +164,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       val titanConnector = new TitanGraphConnector(titanConfig)
 
       // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
+      val titanReader = new TitanReader(ctx, titanConnector)
       val titanReaderRDD = titanReader.read()
 
       val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
@@ -180,7 +181,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
       // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-      val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
+      val dummyOutEdges: RDD[GBEdge] = ctx.parallelize(List.empty[GBEdge])
 
       // write out the graph
 
@@ -197,7 +198,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     }
 
     finally {
-      sc.stop
+      ctx.stop
     }
 
   }

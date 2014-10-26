@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.intelanalytics.domain.ReferenceResolver
+import com.intel.intelanalytics.engine.{Engine, CommandStorage}
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage

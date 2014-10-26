@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.Transformation
+import com.intel.intelanalytics.engine.plugin.{Invocation, Transformation}
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -65,20 +65,17 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation,
-                       arguments: FrameAddColumns)(implicit user: UserPrincipal,
-                                                            executionContext: ExecutionContext): FrameReference = {
+  override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
     val frame = invocation.resolve[SparkFrameData](arguments.frame)
     val oldSchema = frame.meta.schema
     val newColumns = arguments.columnNames.zip(
-                              arguments.columnTypes.map(DataTypes.toDataType)).toList
+      arguments.columnTypes.map(DataTypes.toDataType)).toList
     val newSchema = oldSchema.addColumns(newColumns)
 
     // Update the data
-    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, arguments.expression)
+    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, arguments.expression)(invocation)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
     val rdd = PythonRDDStorage.pyRDDToFrameRDD(newSchema, pyRdd, converter)
     ???

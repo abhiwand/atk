@@ -138,14 +138,14 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    * @param executionContext Execution context
    * @return Results of executing Gremlin query
    */
-  override def execute(invocation: Invocation, arguments: QueryArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): QueryResult = {
+  override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {
     import scala.concurrent.duration._
 
     val start = System.currentTimeMillis()
     val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     // TODO - graph should provide backend to retrieve the stored table name in hbase

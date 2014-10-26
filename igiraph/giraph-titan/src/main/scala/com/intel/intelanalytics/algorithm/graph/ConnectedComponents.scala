@@ -107,13 +107,13 @@ class ConnectedComponents
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: ConnectedComponentsCommand)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
+  override def execute(arguments: ConnectedComponentsCommand)(implicit context: Invocation): ConnectedComponentsResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = context.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
@@ -137,6 +137,6 @@ class ConnectedComponents
 
     ConnectedComponentsResult(GiraphJobManager.run("ia_giraph_conncectedcomponents",
       classOf[ConnectedComponentsComputation].getCanonicalName,
-      config, giraphConf, invocation, "cc-convergence-report_0"))
+      config, giraphConf, context, "cc-convergence-report_0"))
   }
 }

@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FrameReference }
 import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph }
 import com.intel.intelanalytics.engine.{ Reflection, Engine, CommandStorage }
-import com.intel.intelanalytics.engine.plugin.{Transformation, Invocation, CommandPlugin}
+import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.NotFoundException
@@ -253,10 +253,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
       }
       info(s"Invoking command ${cmd.name}")
       val funcResult = command match {
-        case transform: Transformation[A, R] =>
-          command(invocation, arguments, cmd.result.map(command.parseReturn))
         case _ =>
-          command(invocation, arguments, None)
+          command(invocation, arguments)
       }
       command.serializeReturn(funcResult)
     }
@@ -278,7 +276,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return true if the plugin is an action, false otherwise.
    */
   def isAction[R <: Product](plugin: CommandPlugin[_, R]) = {
-    !plugin.isInstanceOf[Transformation[_,_]] || {
+    !plugin.isInstanceOf[Transformation[_, _]] || {
       implicit val returnTag = plugin.returnTag
       val dataMembers: Seq[(String, Type)] = Reflection.getVals[R]()
       val referenceTypes: Seq[(String, Type)] = Reflection.getUriReferenceTypes[R]()

@@ -130,7 +130,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                   user = user, executionContext = implicitly[ExecutionContext],
                   sparkContext = context, commandStorage = null, resolver = null) //TODO: resolver for queries
 
-                val funcResult = query(invocation, arguments, None)
+                val funcResult = query(invocation, arguments)
 
                 val rdd: RDD[Any] = funcResult.asInstanceOf[RDD[Any]]
 

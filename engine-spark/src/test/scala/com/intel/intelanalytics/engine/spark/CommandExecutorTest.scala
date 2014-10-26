@@ -44,7 +44,7 @@
 //
 //  override def serializeReturn(returnValue: T): JsObject = ???
 //
-//  override def execute(invocation: Invocation, arguments: T)(implicit user: UserPrincipal, executionContext: ExecutionContext): T = ???
+//  override def execute(arguments: T)(implicit invocation: Invocation): T = ???
 //
 //  override def name: String = ???
 //}
@@ -110,7 +110,7 @@
 //
 //      override def name: String = "foo"
 //
-//      def execute(invocation: Invocation, arguments: QuantileValues)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+//      def execute(arguments: QuantileValues)(implicit invocation: Invocation): DataFrame = {
 //
 //        contextCountDuringExecution = executor.commandIdContextMapping.size
 //        containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)

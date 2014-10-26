@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.domain.{UriReference, ReferenceResolver}
+import com.intel.intelanalytics.domain.{ UriReference, ReferenceResolver }
 import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -40,40 +40,53 @@ trait Invocation {
   /**
    * An instance of the engine that the plugin can use to execute its work
    */
-  def engine: Engine
+  private [intelanalytics] def engine: Engine
 
   /**
    * The identifier of this execution
    */
-  def commandId: Long
+  private [intelanalytics] def commandId: Long
 
   /**
    * The original arguments as supplied by the user
    */
-  def arguments: Option[JsObject]
+  private [intelanalytics] def arguments: Option[JsObject]
 
   /**
    * The user that invoked the operation
    */
-  def user: UserPrincipal
+  private [intelanalytics] def user: UserPrincipal
 
   /**
    * A Scala execution context for use with methods that require one
    */
-  def executionContext: ExecutionContext
+  private [intelanalytics] def executionContext: ExecutionContext
 
   /**
    * Command Storage to read/update command progress
    */
-  def commandStorage: CommandStorage
+  private [intelanalytics] def commandStorage: CommandStorage
 
   /**
    * Reference resolver to enable dereferencing of UriReference objects
    */
-  def resolver: ReferenceResolver
+  private [intelanalytics] def resolver: ReferenceResolver
 
   /**
    * Convenience method for resolving references
    */
-  def resolve[T <: UriReference : TypeTag](reference: UriReference) : T = resolver.resolve(reference).get
+  private [intelanalytics] def resolve[T <: UriReference: TypeTag](reference: UriReference): T = resolver.resolve(reference).get
 }
+
+object Invocation {
+  implicit def invocationToUser(inv: Invocation) : UserPrincipal = inv.user
+  implicit class invUser(inv: Invocation) extends HasUser {
+    def user = inv.user
+  }
+}
+
+
+trait HasUser {
+  def user: UserPrincipal
+}
+

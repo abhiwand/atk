@@ -58,12 +58,12 @@ trait ReferenceResolver {
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  def resolve[T <: UriReference : TypeTag](uri: String): Try[T]
+  def resolve[T <: UriReference: TypeTag](uri: String): Try[T]
 
   /**
    * Returns a (possibly updated) reference.
    */
-  def resolve[T <: UriReference : TypeTag](reference: UriReference): Try[T] = {
+  def resolve[T <: UriReference: TypeTag](reference: UriReference): Try[T] = {
     resolve(reference.uri)
   }
 
@@ -161,7 +161,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  def resolve[T <: UriReference : TypeTag](uri: String): Try[T] = Try {
+  def resolve[T <: UriReference: TypeTag](uri: String): Try[T] = Try {
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
       .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
@@ -191,7 +191,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
  */
 object ReferenceResolver extends ReferenceResolver {
 
-  private [intelanalytics] def coerceReference[T <: UriReference: TypeTag](ref: UriReference) : T = {
+  private[intelanalytics] def coerceReference[T <: UriReference: TypeTag](ref: UriReference): T = {
     Try {
       ref.asInstanceOf[T]
     }.getOrElse(throw new IllegalArgumentException(s"Could not convert $ref to an instance of $typeTag[T]"))
@@ -203,7 +203,7 @@ object ReferenceResolver extends ReferenceResolver {
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *         Note this exception will be in the Try, not actually thrown immediately.
    */
-  override def resolve[T <: UriReference : TypeTag](uri: String): Try[T] = EntityRegistry.resolver.resolve(uri)
+  override def resolve[T <: UriReference: TypeTag](uri: String): Try[T] = EntityRegistry.resolver.resolve(uri)
 
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
@@ -218,7 +218,7 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *         Note this exception will be in the Try, not actually thrown immediately.
    */
-  override def resolve[T <: UriReference : TypeTag](uri: String): Try[T] = {
+  override def resolve[T <: UriReference: TypeTag](uri: String): Try[T] = {
     base.resolve(uri).map { ref =>
       val resolved = data.find(d => d.uri == ref.uri).getOrElse(ref)
       ReferenceResolver.coerceReference(resolved)
