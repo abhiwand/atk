@@ -121,6 +121,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          */
         public TitanHBaseVertexReader(InputSplit split, TaskAttemptContext context)
                 throws IOException {
+            GiraphToTitanGraphFactory.addFaunusInputConfiguration(context.getConfiguration());
             INPUT_FORMAT.setConf(context.getConfiguration());
             try {
                 this.recordReader = INPUT_FORMAT.createRecordReader(split, context);

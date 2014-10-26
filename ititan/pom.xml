@@ -25,8 +25,8 @@
     </description>
 
     <properties>
-        <dep.aurelius.version>0.5.1</dep.aurelius.version>
-        <titan.version>0.5.1-SNAPSHOT</titan.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <titan.version>0.5.0-SNAPSHOT</titan.version>
     </properties>
 
 

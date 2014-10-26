@@ -55,22 +55,131 @@
     </build>
 
     <dependencies>
+
         <!--START BDA dependencies to our modules-->
-
-		<dependency>
-			<groupId>com.intel.ia</groupId>
-			<artifactId>igiraph-algorithms</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.intel.ia</groupId>
-			<artifactId>igiraph-titan</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.intel.ia</groupId>
-			<artifactId>igiraph-core</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>igiraph-algorithms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>igiraph-titan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>igiraph-core</artifactId>
+        </dependency>
         <!--END BDA dependencies to our modules-->
+
+        <!-- START Titan dependencies -->
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>ititan-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>asm</artifactId>
+                    <groupId>org.ow2.asm</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-hbase</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.thinkaurelius.titan</groupId>
+                    <artifactId>titan-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>1.8.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-hadoop-2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.mrunit</groupId>
+                    <artifactId>mrunit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.thinkaurelius.titan</groupId>
+                    <artifactId>titan-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- END Titan dependencies -->
 
         <!-- START Giraph dependencies - Sorted lexicographically. -->
         <dependency>
@@ -80,7 +189,6 @@
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.giraph</groupId>
@@ -121,81 +229,77 @@
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-common</artifactId>
-          <version>${dep.hadoop2.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${dep.hadoop2.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${dep.hadoop2.version}</version>
-          <exclusions>
-              <exclusion>
-                  <groupId>net.sf.kosmosfs</groupId>
-                  <artifactId>kfs</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.mortbay.jetty</groupId>
-                  <artifactId>jetty</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.mortbay.jetty</groupId>
-                  <artifactId>jetty-util</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>hsqldb</groupId>
-                  <artifactId>hsqldb</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>junit</groupId>
-                  <artifactId>junit</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>oro</groupId>
-                  <artifactId>oro</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.mortbay.jetty</groupId>
-                  <artifactId>jsp-2.1</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.mortbay.jetty</groupId>
-                  <artifactId>jsp-api-2.1</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.mortbay.jetty</groupId>
-                  <artifactId>servlet-api-2.5</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>tomcat</groupId>
-                  <artifactId>jasper-runtime</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>tomcat</groupId>
-                  <artifactId>jasper-compiler</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>xmlenc</groupId>
-                  <artifactId>xmlenc</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>net.java.dev.jets3t</groupId>
-                  <artifactId>jets3t</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>org.eclipse.jdt</groupId>
-                  <artifactId>core</artifactId>
-              </exclusion>
-          </exclusions>
-      </dependency>
-
-
-
-
+            <artifactId>hadoop-yarn-common</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-api</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${dep.hadoop2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.kosmosfs</groupId>
+                    <artifactId>kfs</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>oro</groupId>
+                    <artifactId>oro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-2.1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-api-2.1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-compiler</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xmlenc</groupId>
+                    <artifactId>xmlenc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jets3t</groupId>
+                    <artifactId>jets3t</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jdt</groupId>
+                    <artifactId>core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -208,29 +312,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-hbase</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkaurelius.titan</groupId>
-            <artifactId>titan-hadoop-2</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.cassandra.deps</groupId>
-                    <artifactId>avro</artifactId>
-                </exclusion>
-               <!-- <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-core</artifactId>
-                </exclusion> -->
-            </exclusions>
-        </dependency>
-        <!-- End Titan dependencies -->
 
 
         <!--START Test dependencies -->

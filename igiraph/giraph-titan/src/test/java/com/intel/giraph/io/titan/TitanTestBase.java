@@ -81,7 +81,6 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
 
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
         GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
     }
 
