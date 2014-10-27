@@ -92,15 +92,15 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
-            boolean hasMoreVertices = false;
-            giraphVertex = null;
-
-            if (getRecordReader().nextKeyValue()) {
-                giraphVertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                hasMoreVertices = true;
+            while (getRecordReader().nextKeyValue()) {
+                Vertex<LongWritable, DistanceMapWritable, NullWritable> tempGiraphVertex =
+                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                if (tempGiraphVertex != null) {
+                    this.giraphVertex = tempGiraphVertex;
+                    return true;
+                }
             }
-
-            return hasMoreVertices;
+            return false;
         }
 
         /**
