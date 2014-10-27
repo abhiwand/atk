@@ -25,7 +25,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/group_by"
+  override def name: String = "frame/group_by"
 
   /**
    * User documentation exposed in Python.
@@ -60,27 +60,27 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     val args_pair = for {
       (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
-    } yield (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
+    } yield (schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
 
     if (arguments.groupByColumns.length > 0) {
       val groupByColumns = arguments.groupByColumns
 
       val columnIndices: Seq[(Int, DataType)] = for {
         col <- groupByColumns
-        columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
-        columnDataType = schema.columns(columnIndex)._2
+        columnIndex = schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == col)
+        columnDataType = schema.columnTuples(columnIndex)._2
       } yield (columnIndex, columnDataType)
 
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
         for { index <- columnIndices.map(_._1) } yield data(index)
       }.mkString("\0"))
-      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, arguments)
+      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, columnIndices.map(_._2).toArray, arguments)
       val rowCount = resultRdd.count()
       frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount))
     }
     else {
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
-      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), arguments)
+      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
       val rowCount = resultRdd.count()
       frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount))
     }

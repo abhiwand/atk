@@ -48,7 +48,7 @@ class RenameGraphPlugin extends SparkCommandPlugin[RenameGraph, Graph] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/rename"
+  override def name: String = "graph/rename"
 
   /**
    * User documentation exposed in Python.

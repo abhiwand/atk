@@ -47,7 +47,7 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/cumulative_percent"
+  override def name: String = "frame/cumulative_percent"
 
   /**
    * User documentation exposed in Python.
@@ -147,7 +147,7 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
     frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))

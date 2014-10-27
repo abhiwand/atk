@@ -46,7 +46,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/column_summary_statistics"
+  override def name: String = "frame/column_summary_statistics"
 
   /**
    * User documentation exposed in Python.
@@ -214,14 +214,14 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     val frameId: Long = arguments.frame.id
     val frame = frames.expectFrame(frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
     val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
 
     // run the operation and return the results
