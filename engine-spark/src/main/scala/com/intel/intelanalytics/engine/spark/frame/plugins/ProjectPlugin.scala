@@ -47,7 +47,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/project"
+  override def name: String = "frame/project"
 
   /**
    * User documentation exposed in Python.
@@ -81,7 +81,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
 
     val columnIndices = for {
       col <- columns
-      columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+      columnIndex = schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == col)
     } yield columnIndex
 
     if (columnIndices.contains(-1)) {
@@ -95,10 +95,10 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
       }.toArray)
 
     val projectedColumns = arguments.newColumnNames match {
-      case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+      case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columnTuples(i)
       case _ =>
         for { i <- 0 until columnIndices.size }
-          yield (arguments.newColumnNames(i), schema.columns(columnIndices(i))._2)
+          yield (arguments.newColumnNames(i), schema.columnTuples(columnIndices(i))._2)
     }
 
     // save results

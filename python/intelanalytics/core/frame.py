@@ -47,113 +47,49 @@ __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_
 # BaseFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsBaseFrame as CommandLoadableBaseFrame
+    from intelanalytics.core.docstubs import DocStubs_BaseFrame
     doc_stubs_import.success(logger, "DocStubsBaseFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "DocStubsBaseFrame", e)
-    CommandLoadableBaseFrame = CommandLoadable
-
-
-class BaseFrame(CommandLoadableBaseFrame):
-    _command_prefix = 'frame'
-
-    def __init__(self):
-        CommandLoadableBaseFrame.__init__(self)
+    class DocStubs_BaseFrame(object): pass
 
 
 # Frame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsFrame as CommandLoadableFrame
+    from intelanalytics.core.docstubs import DocStubsFrame
     doc_stubs_import.success(logger, "DocStubsFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "DocStubsFrame", e)
-    CommandLoadableFrame = BaseFrame
+    class DocStubsFrame(object): pass
+
+
+# VertexFrame
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsVertexFrame
+    doc_stubs_import.success(logger, "DocStubsVertexFrame")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsVertexFrame", e)
+    class DocStubsVertexFrame(object): pass
+
+
+# EdgeFrame
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsEdgeFrame
+    doc_stubs_import.success(logger, "DocStubsEdgeFrame")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsEdgeFrame", e)
+    class DocStubsEdgeFrame(object): pass
+
 
 @api
-@name_support('frame')
-class Frame(CommandLoadableFrame):
-    """
-    Data handle.
+class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
+    _command_prefix = 'frame'
 
-    Class with information about a large 2D table of data.
-    Has information needed to modify data and table structure.
-
-    Parameters
-    ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ] (optional)
-        A source of initial data.
-
-    name : string (optional)
-        The name of the newly created frame.
-
-    Returns
-    -------
-    BigFrame
-        An object with access to the frame.
-
-    Notes
-    -----
-    If no name is provided for the BigFrame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
-
-    Examples
-    --------
-    Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
-    Name the frame "my_frame".
-    Create a BigFrame *g* to access the data::
-
-        g = ia.Frame(my_csv_schema, "my_frame")
-
-    A BigFrame object has been created and *g* is its proxy.
-    It brought in the data described by *my_csv_schema*.
-    It is named *my_frame*.
-
-    Create an empty frame; name it "your_frame"::
-
-        h = ia.Frame(name='your_frame')
-
-    A frame has been created and BigFrame *h* is its proxy.
-    It has no data yet, but it does have the name *your_frame*.
-
-
-    .. versionadded:: 0.8
-
-    """
-    # For other examples, see :ref:`example_frame.bigframe`.
-
-    # TODO - Review Parameters, Examples
-
-    _command_prefix = 'frame:'
-
-    def __init__(self, source=None, name=None):
-        try:
-            check_api_is_loaded()
-            self._error_frame_id = None
-            self._id = 0
-            self._ia_uri = None
-            if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
-                self._backend = _get_backend()
-            CommandLoadableFrame.__init__(self)
-            new_frame_name = self._backend.create(self, source, name)
-            logger.info('Created new frame "%s"', new_frame_name)
-        except:
-            error = IaError(logger)
-
-
-            raise error
-
-
+    def __init__(self):
+        CommandLoadable.__init__(self)
 
     def __getattr__(self, name):
         """After regular attribute access, try looking up the name of a column.
@@ -161,7 +97,7 @@ class Frame(CommandLoadableFrame):
         if name == '_backend':
             raise AttributeError('_backend')
         try:
-            return super(Frame, self).__getattribute__(name)
+            return super(_BaseFrame, self).__getattribute__(name)
         except AttributeError:
             return self._get_column(name, AttributeError, "Attribute '%s' not found")
 
@@ -189,7 +125,7 @@ class Frame(CommandLoadableFrame):
         try:
             return self._backend.get_repr(self)
         except:
-            return super(Frame, self).__repr__() + " (Unable to collect metadata from server)"
+            return super(_BaseFrame, self).__repr__() + " (Unable to collect metadata from server)"
 
     def __len__(self):
         try:
@@ -531,41 +467,6 @@ class Frame(CommandLoadableFrame):
         """
         # For further examples, see :ref:`example_frame.add_columns`.
         self._backend.add_columns(self, func, schema)
-
-    @api
-    def append(self, data):
-        """
-        Add data.
-
-        Adds more data (rows and/or columns) to the frame.
-
-        Parameters
-        ----------
-        data : BigFrame
-            A BigFrame accessing the data being added.
-
-        Examples
-        --------
-        Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
-        Column *col_1* means the same thing in both frames.
-        BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
-        Add the contents of *your_frame* to *my_frame*::
-
-            my_frame.append(your_frame)
-
-        Now the first frame has two columns, *col_1* and *col_2*.
-        Column *col_1* has the data from *col_1* in both original frames.
-        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the
-        value of the second frame column *col_2* in the rows matching the new data in *col_1*.
-
-        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2*
-        and this new column is filled with non-defined data.
-        The frame referred to by *your_frame* is then added to the bottom.
-
-        .. versionadded:: 0.8
-
-        """
-        self._backend.append(self, data)
 
     @api
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
@@ -1022,72 +923,6 @@ class Frame(CommandLoadableFrame):
         """
         # For further examples, see :ref:`example_frame.filter`
         self._backend.filter(self, predicate)
-
-    @api
-    def flatten_column(self, column_name):
-        """
-        Spread out data.
-
-        Search through the currently active BigFrame for multiple items in a single specified column.
-        When it finds multiple values in the column, it replicates the row and separates the multiple items
-        across the existing and new rows.
-        Multiple items is defined in this case as being things separated by commas.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to be flattened.
-
-        Returns
-        -------
-        BigFrame
-            A BigFrame object proxy for the new flattened frame.
-
-        Examples
-        --------
-        Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
-        The "original_data"::
-
-            1-"solo,mono,single"
-            2-"duo,double"
-
-        I run my commands to bring the data in where I can work on it::
-
-            my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
-                delimiter='-')
-            # The above command has been split for enhanced readability in some medias.
-            my_frame = BigFrame(source=my_csv)
-
-        I look at it and see::
-
-            my_frame.inspect()
-
-              a:int32   b:string
-            /------------------------------/
-                1       solo, mono, single
-                2       duo, double
-
-        Now, I want to spread out those sub-strings in column *b*::
-
-            your_frame = my_frame.flatten_column('b')
-
-        Now I check again and my result is::
-
-            your_frame.inspect()
-
-              a:int32   b:str
-            /------------------/
-                1       solo
-                1       mono
-                1       single
-                2       duo
-                2       double
-
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.flatten_column(self, column_name)
 
     @deprecated("Use classification_metrics().")
     def f_measure(self, label_column, pred_column, pos_label='1', beta=1):
@@ -1576,39 +1411,6 @@ class Frame(CommandLoadableFrame):
             raise IaError(logger)
 
     @api
-    def rename_columns(self, column_names):
-        """
-        Rename column.
-
-        Renames columns in a frame.
-
-        Parameters
-        ----------
-        column_names : dictionary of str pairs
-            The name pair ({existing name: new name}).
-
-        Notes
-        -----
-        Unicode in column names is not supported and will likely cause the drop_frames() function
-        (and others) to fail!
-
-        Examples
-        --------
-        Start with a frame with columns *Wrong* and *Wong*.
-        Rename the columns to *Right* and *Wite*::
-
-            my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
-
-        Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
-
-
-        .. versionchanged:: 0.8.5
-
-        """
-        # For further examples, see :ref:`example_frame.rename_columns`.
-        self._backend.rename_columns(self, column_names)
-
-    @api
     def take(self, n, offset=0, columns=None):
         """
         Get data subset.
@@ -1661,8 +1463,394 @@ class Frame(CommandLoadableFrame):
         return result.data
 
 
+
+@api
+@name_support('frame')
+class Frame(DocStubsFrame, _BaseFrame):
+    """
+    Data handle.
+
+    Class with information about a large 2D table of data.
+    Has information needed to modify data and table structure.
+
+    Parameters
+    ----------
+    source : [ CsvFile | BigFrame | BigColumn(s) ]
+        A source of initial data.
+
+    name : string
+        The name of the newly created frame.
+
+    Returns
+    -------
+    BigFrame
+        An object with access to the frame.
+
+    Notes
+    -----
+    If no name is provided for the BigFrame object, it will generate one.
+    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
+    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
+
+    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
+    off of the data before it is put into the field.
+    Anything, including delimiters, between the double-quote characters is considered part of the string.
+    If the first character after the delimiter is anything other than a double-quote character,
+    the string will be composed of all the characters between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are considered part of the string.
+    If the last field type is string, trailing spaces on each row are considered part of the string.
+
+    Examples
+    --------
+    Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
+    Name the frame "my_frame".
+    Create a BigFrame *g* to access the data::
+
+        g = ia.BigFrame(my_csv_schema, "my_frame")
+
+    A BigFrame object has been created and *g* is its proxy.
+    It brought in the data described by *my_csv_schema*.
+    It is named *my_frame*.
+
+    Create an empty frame; name it "your_frame"::
+
+        h = ia.BigFrame(name='your_frame')
+
+    A frame has been created and BigFrame *h* is its proxy.
+    It has no data yet, but it does have the name *your_frame*.
+
+
+    .. versionadded:: 0.8
+
+    """
+    # For other examples, see :ref:`example_frame.bigframe`.
+
+    # TODO - Review Parameters, Examples
+
+    _command_prefix = 'frame:'
+
+    def __init__(self, source=None, name=None):
+        try:
+            check_api_is_loaded()
+            self._error_frame_id = None
+            self._id = 0
+            self._ia_uri = None
+            if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
+                self._backend = _get_backend()
+            _BaseFrame.__init__(self)
+            new_frame_name = self._backend.create(self, source, name)
+            logger.info('Created new frame "%s"', new_frame_name)
+        except:
+            error = IaError(logger)
+            raise error
+
+    @api
+    def append(self, data):
+        """
+        Add data.
+
+        Adds more data (rows and/or columns) to the frame.
+
+        Parameters
+        ----------
+        data : BigFrame
+            A BigFrame accessing the data being added.
+
+        Examples
+        --------
+        Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
+        Column *col_1* means the same thing in both frames.
+        BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
+        Add the contents of *your_frame* to *my_frame*::
+
+            my_frame.append(your_frame)
+
+        Now the first frame has two columns, *col_1* and *col_2*.
+        Column *col_1* has the data from *col_1* in both original frames.
+        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the
+        value of the second frame column *col_2* in the rows matching the new data in *col_1*.
+
+        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2*
+        and this new column is filled with non-defined data.
+        The frame referred to by *your_frame* is then added to the bottom.
+
+        .. versionadded:: 0.8
+
+        """
+        self._backend.append(self, data)
+
+    @api
+    def flatten_column(self, column_name):
+        """
+        Spread out data.
+
+        Search through the currently active BigFrame for multiple items in a single specified column.
+        When it finds multiple values in the column, it replicates the row and separates the multiple items
+        across the existing and new rows.
+        Multiple items is defined in this case as being things separated by commas.
+
+        Parameters
+        ----------
+        column_name : str
+            The column to be flattened.
+
+        Returns
+        -------
+        BigFrame
+            A BigFrame object proxy for the new flattened frame.
+
+        Examples
+        --------
+        Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
+        The "original_data"::
+
+            1-"solo,mono,single"
+            2-"duo,double"
+
+        I run my commands to bring the data in where I can work on it::
+
+            my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
+                delimiter='-')
+            # The above command has been split for enhanced readability in some medias.
+            my_frame = BigFrame(source=my_csv)
+
+        I look at it and see::
+
+            my_frame.inspect()
+
+              a:int32   b:string
+            /------------------------------/
+                1       solo, mono, single
+                2       duo, double
+
+        Now, I want to spread out those sub-strings in column *b*::
+
+            your_frame = my_frame.flatten_column('b')
+
+        Now I check again and my result is::
+
+            your_frame.inspect()
+
+              a:int32   b:str
+            /------------------/
+                1       solo
+                1       mono
+                1       single
+                2       duo
+                2       double
+
+
+        .. versionadded:: 0.8
+
+        """
+        return self._backend.flatten_column(self, column_name)
+
 @api_class_alias
 class BigFrame(Frame):
     def __init__(self, *args, **kwargs):
         raise_deprecation_warning('BigFrame', 'Use Frame()')
         super(BigFrame, self).__init__(*args, **kwargs)
+
+
+@api
+class VertexFrame(DocStubsVertexFrame, _BaseFrame):
+    """
+    Data handle.
+
+    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
+    Has information needed to modify data and table structure.
+
+    Parameters
+    ----------
+    graph: Associated Graph Object
+    label: Vertex Label
+
+    Returns
+    -------
+    VertexFrame
+        An object with access to the frame for an appropriate label
+
+    Notes
+    -----
+
+    If no name is provided for the BigFrame object, it will generate one.
+    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
+    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
+
+    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
+    off of the data before it is put into the field.
+    Anything, including delimiters, between the double-quote characters is considered part of the string.
+    If the first character after the delimiter is anything other than a double-quote character,
+    the string will be composed of all the characters between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are considered part of the string.
+    If the last field type is string, trailing spaces on each row are considered part of the string.
+
+    Examples
+    --------
+    Retrieve a defined Vertex Frame from Graph object.
+        g = ia.get_graph("your_graph")
+
+    Create a new VertexFrame type with the associated label.
+    This creates a new empty vertex frame
+        g.define_vertex_type("your_label")
+
+    Retrieve the new VertexFrame from the graph
+        f = g.vertices["your_label"]
+
+    A Vertex Frame has been created and f is its proxy.
+    It has no data yet, but it does have the label *your_label*
+
+    .. versionadded:: 0.8
+
+    """
+    # For other examples, see :ref:`example_frame.bigframe`.
+
+    # TODO - Review Parameters, Examples
+
+    _command_prefix = 'frame:vertex'
+
+    def __init__(self, source=None, graph=None, label=None):
+        try:
+            check_api_is_loaded()
+            self._error_frame_id = None
+            self._id = 0
+            self._ia_uri = None
+            if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
+                self._backend = _get_backend()
+            _BaseFrame.__init__(self)
+            new_frame_name = self._backend.create_vertex_frame(self, source, label, graph)
+            logger.info('Created new vertex frame "%s"', new_frame_name)
+        except:
+            error = IaError(logger)
+            raise error
+
+    def drop_vertices(self, predicate):
+        self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
+
+    @api
+    def drop_duplicates(self, columns=None):
+        """
+        Remove duplicates.
+
+        Remove duplicate rows, keeping only one row per uniqueness criteria match
+
+        Parameters
+        ----------
+        columns : [ str | list of str ]
+            Column name(s) to identify duplicates.
+            If empty, the function will remove duplicates that have the whole row of data identical.
+
+        Examples
+        --------
+        Remove any rows that have the same data in column *b* as a previously checked row::
+
+            my_frame.drop_duplicates("b")
+
+        The result is a frame with unique values in column *b*.
+
+        Remove any rows that have the same data in columns *a* and *b* as a previously checked row::
+
+            my_frame.drop_duplicates(["a", "b"])
+
+        The result is a frame with unique values for the combination of columns *a* and *b*.
+
+        Remove any rows that have the whole row identical::
+
+            my_frame.drop_duplicates()
+
+        The result is a frame where something is different in every row from every other row.
+        Each row is unique.
+
+
+        .. versionadded:: 0.8
+
+        """
+        # For further examples, see :ref:`example_frame.drop_duplicates`
+        self._backend.drop_duplicate_vertices(self, columns)
+
+    def filter(self, predicate):
+        self._backend.filter_vertices(self, predicate)
+
+
+@api
+class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
+    """
+    Data handle.
+
+    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
+    Has information needed to modify data and table structure.
+
+    Parameters
+    ----------
+    graph: Associated Graph Object
+    label: Edge Label
+    source_vertex_label: label of the source vertex type
+    destination_vertex_label: label of the destination vertex type
+    directed: is the edge directed
+
+    Returns
+    -------
+    EdgeFrame
+        An object with access to the frame for an appropriate label
+
+    Notes
+    -----
+
+    If no name is provided for the BigFrame object, it will generate one.
+    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
+    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
+
+    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
+    off of the data before it is put into the field.
+    Anything, including delimiters, between the double-quote characters is considered part of the string.
+    If the first character after the delimiter is anything other than a double-quote character,
+    the string will be composed of all the characters between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are considered part of the string.
+    If the last field type is string, trailing spaces on each row are considered part of the string.
+
+    Examples
+    --------
+    Retrieve a defined Vertex Frame from Graph object.
+        g = ia.get_graph("your_graph")
+
+    Create a two VertexFrame types.
+        g.define_vertex_type("first_vertex")
+        g.define_vertex_type("second_vertex")
+
+    Create a new EdgeFrame type
+    This creates a new Empty frame consisting of a directed edge list between the two vertices
+        g.define_edge_type("edge_label", "first_vertex", "second_vertex", True)
+
+    Retrieve the new EdgeFrame from the graph
+        f = g.edges["edge_label"]
+
+    A EdgeFrame has been created and f is its proxy.
+    It has no data yet, but it does have the label *edge_label*
+
+    .. versionadded:: 0.8
+
+    """
+    # For other examples, see :ref:`example_frame.bigframe`.
+
+    # TODO - Review Parameters, Examples
+
+    _command_prefix = 'frame:edge'
+
+    def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None):
+        try:
+            check_api_is_loaded()
+            self._error_frame_id = None
+            self._id = 0
+            self._ia_uri = None
+            if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
+                self._backend = _get_backend()
+            _BaseFrame.__init__(self)
+            new_frame_name = self._backend.create_edge_frame(self, source, label, graph, src_vertex_label, dest_vertex_label, directed)
+            logger.info('Created new edge frame "%s"', new_frame_name)
+        except:
+            error = IaError(logger)
+            raise error
+
