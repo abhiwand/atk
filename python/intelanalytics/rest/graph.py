@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import http
+from intelanalytics.rest.frame import FrameInfo
+from intelanalytics.core.frame import VertexFrame, EdgeFrame
 
 
 def initialize_graph(graph, graph_info):
@@ -48,21 +50,21 @@ class GraphBackendRest(object):
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-    def create(self, graph,rules,name):
+    def create(self, graph,rules,name,storage_format):
         logger.info("REST Backend: create graph with name %s: " % name)
         if isinstance(rules, dict):
             rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
             return  # Early exit here
-        new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules))
+        new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules), storage_format)
         return new_graph_name
 
-    def _create_new_graph(self, graph, rules, name):
+    def _create_new_graph(self, graph, rules, name, storage_format):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         else:
-            payload = {'name': name}
+            payload = {'name': name, 'storage_format': storage_format}
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
@@ -74,7 +76,7 @@ class GraphBackendRest(object):
                     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                     logger.debug("REST Backend: create graph payload: " + payload_json)
                 initialized_graph.load(frame_rules, append=False)
-            return graph_info.name
+            return graph_info.id_number
     
     def _get_new_graph_name(self,source=None):
         try:
@@ -101,6 +103,22 @@ class GraphBackendRest(object):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
         graph.load(frame_rules, append=True)
+
+    def get_vertex_frames(self, graphid):
+        r = self.rest_http.get('graphs/%s/vertices' % graphid)
+        return [VertexFrame(x) for x in r.json()]
+
+    def get_vertex_frame(self,graphid, label):
+        r = self.rest_http.get('graphs/%s/vertices?label=%s' % (graphid, label))
+        return VertexFrame(r.json())
+
+    def get_edge_frames(self, graphid):
+        r = self.rest_http.get('graphs/%s/edges' % graphid)
+        return [EdgeFrame(x) for x in r.json()]
+
+    def get_edge_frame(self,graphid, label):
+        r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
+        return EdgeFrame(r.json())
 
 
 # GB JSON Payload objects:
@@ -171,6 +189,15 @@ class JsonRules(object):
     @staticmethod
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
+        #validate the input frames
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+
+        try:
+            frame_backend.get_frame_by_id(uri)
+        except:
+            raise ValueError("Frame provided to establish VertexRule is no longer available.")
+
         try:
             frame = frames_dict[uri]
         except KeyError:
@@ -199,6 +226,10 @@ class GraphInfo(object):
     @property
     def name(self):
         return self._payload['name']
+
+    @property
+    def command_prefix(self):
+        return self._payload['command_prefix']
 
     @property
     def ia_uri(self):

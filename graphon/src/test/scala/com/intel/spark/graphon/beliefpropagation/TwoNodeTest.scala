@@ -25,12 +25,12 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
-    val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+    val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

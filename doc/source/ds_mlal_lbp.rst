@@ -5,7 +5,7 @@ See: http://en.wikipedia.org/wiki/Belief_propagation.
 
 Loopy Belief Propagation (LBP) is a message passing algorithm for inferring state probabilities given a graph and a set of noisy initial
 estimates of state probabilities.
-The Intel Analytics Toolkit provides two implementations of LBP, which differ in their assumptions about the joint distribution of the data.
+The |IA| Toolkit provides two implementations of LBP, which differ in their assumptions about the joint distribution of the data.
 The standard LBP implementation assumes that the joint distribution of the data is given by a Boltzmann distribution, while Gaussian LBP
 assumes that the data is continuous and distributed according to a multivariate normal distribution.
 For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference:
@@ -108,3 +108,4 @@ It is also possible for some (most) nodes to converge and others to never conver
 The algorithm requires all nodes to converge before declaring that the algorithm has converged overall.
 If this condition is not met, the algorithm will continue up to the maximum number of super steps.
 
+.. |IA| replace:: Intel Analytics

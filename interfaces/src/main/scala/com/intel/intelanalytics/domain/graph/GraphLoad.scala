@@ -29,12 +29,12 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
  * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
  * and it is converted into graph data using the graphbuilder3 graph construction rules.
  * @param graph Handle to the graph to be written to.
- * @param frame_rules List of handles to the dataframe to be used as a data source.
+ * @param frameRules List of handles to the dataframe to be used as a data source.
  * @param append true to append to an existing graph, false otherwise.
  */
 case class GraphLoad(graph: GraphReference,
-                     frame_rules: List[FrameRule],
+                     frameRules: List[FrameRule],
                      append: Boolean = false) {
   require(graph != null, "graph must not be null")
-  require(frame_rules != null, "frame rules must not be null")
+  require(frameRules != null, "frame rules must not be null")
 }

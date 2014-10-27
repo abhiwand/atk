@@ -1,6 +1,6 @@
-====================================
-Intel Analytics Package Installation
-====================================
+=========================
+|IA| Package Installation
+=========================
 
 .. contents::
     :local:
@@ -9,7 +9,7 @@ Intel Analytics Package Installation
 Introduction
 ------------
 
-In this guide we will walk through the Intel Analytics installation and
+In this guide we will walk through the |IA| installation and
 the minimal configuration needed to get the service running.
 This guide is not going to walk you through the Cloudera cluster installation
 since that subject is covered by Cloudera in greater detail.
@@ -61,25 +61,25 @@ i.  HDFS
 #.  Yarn(MR2)
 #.  Zookeeper
 
-You need python to run the Intel Analytics python client.
-The Intel Analytics python client will run with python 2.6 and 2.7.
+You need python to run the |IA| python client.
+The |IA| python client will run with python 2.6 and 2.7.
 
 Yum Repository Requirements
 ===========================
 
-All the nodes on the cluster must have the EPEL yum repository as well as two Intel Analytics repositories.
-You will need repository access to Intel Analytics Private Repository which you will get when you sign up.
+All the nodes on the cluster must have the EPEL yum repository as well as two |IA| repositories.
+You will need repository access to |IA| Private Repository which you will get when you sign up.
 
-------------------------------------
-Intel Analytics Packages Information
-------------------------------------
+-------------------------
+|IA| Packages Information
+-------------------------
 
 The dependency list is merely informational.
 When yum installs a package, it will pull dependencies automatically.
 All the Cloudera dependencies are implied for all packages.
 
-Intel Analytics REST Server
-===========================
+|IA| REST Server
+================
 Only needs to be installed on a single node.
 
 Package Name: intelanalytics-rest-server
@@ -92,8 +92,8 @@ i.  intelanalytics-python-client
 #.  python-argparse
 #.  Java Runtime Environment or Java Development Environment 1.7
 
-Intel Analytics Python Client
-=============================
+|IA| Python Client
+==================
 Needs to be installed on every spark worker node as well as the gateway node or other node
 that is going to be the designated client.
 The IA python client submitting requests, the rest server and the rest client package installed
@@ -109,13 +109,13 @@ i.  python 2.6
 #.  `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
 #.  `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
 
-Intel Analytics Python 2.7 Client
+|IA| Python 2.7 Client
 
 Needs to be installed on every spark worker node as well as the gateway node or other node
 that is going to be the designated client.
 The IA python client submitting requests, the rest server and the rest client package installed
 on the worker nodes must all be the same version.
-When using python 2.7 you must configure your Intel Analytics rest server to use the python2.7 executable.
+When using python 2.7 you must configure your |IA| rest server to use the python2.7 executable.
 
 Package Name: intelanalytics-python-rest-client-python27
 
@@ -128,8 +128,8 @@ i.  python 2.7
 #.  python27-requests >= 2.2.1
 
 
-Intel Analytics Graph Builder
-=============================
+|IA| Graph Builder
+==================
 Needs to be installed with the IA rest server
 
 Package Name: intelanalytics-graphbuilder
@@ -138,8 +138,8 @@ Dependencies
 
 *   intelanalytics-spark-deps
 
-Intel Analytics Spark Dependencies
-==================================
+|IA| Spark Dependencies
+=======================
 Needs to be installed on every individual spark worker node.
 
 Package Name: intelanalytics-spark-deps
@@ -148,23 +148,23 @@ Dependencies
 
 *   none
 
--------------------------------------
-Intel Analytics Packages Installation
--------------------------------------
+--------------------------
+|IA| Packages Installation
+--------------------------
 
 Adding Extra Repositories
 =========================
 
-The first step in the installation is adding EPEL and two Intel Analytics repositories to make
+The first step in the installation is adding EPEL and two |IA| repositories to make
 the `YUM <http://en.wikipedia.org/wiki/Yellowdog_Updater,_Modified>`_ installation possible.
-The EPEL and Intel Analytics repositories must be installed on all spark master and worker nodes as well as
-the node that will be running the Intel Analytics rest server.
-The Intel Analytics Dependency repository and the yum-s3 package must be installed before
-trying to `Add Intel Analytics Private Repository`_.
+The EPEL and |IA| repositories must be installed on all spark master and worker nodes as well as
+the node that will be running the |IA| rest server.
+The |IA| Dependency repository and the yum-s3 package must be installed before
+trying to `Add |IA| Private Repository`_.
 
 Add EPEL Repository
 -------------------
-Before trying to install the EPEL repo run the following command to see if it's already available on the machines you will be installing Intel Analytics on.
+Before trying to install the EPEL repo run the following command to see if it's already available on the machines you will be installing |IA| on.
 ::
 
     sudo yum repolist
@@ -203,8 +203,8 @@ Make sure the "epel" repo id is present.
 
 
 
-Add Intel Analytics Dependency Repository
------------------------------------------
+Add |IA| Dependency Repository
+------------------------------
 
 We pre-package and host some open source libraries to aid with installations.
 In some cases we pre-packaged newer versions from what is available in RHEL, EPEL or CentOS repositories.
@@ -244,8 +244,8 @@ If you get similar output, install yum-s3 package::
 
 Installing the YUM s3 plugin will allow us to use the Amazon S3 repository.
 
-Add Intel Analytics Private Repository
---------------------------------------
+Add |IA| Private Repository
+---------------------------
 
 Next we will create /etc/yum.repos.d/ia.repo.
 Don't forget to replace ``YOUR_KEY``, and ``YOUR_SECRET`` with your given AWS access, and secret keys.
@@ -270,7 +270,7 @@ The lines should be combined into a single line with no gaps (spaces).
 
     **Don't forget to replace YOUR_KEY, and YOUR_SECRET with the keys that were given to you.**
 
-Verify the installation of the Intel Analytics repository by running::
+Verify the installation of the |IA| repository by running::
 
     sudo yum info intelanalytics-rest-server
 
@@ -299,13 +299,13 @@ To keep your system time in sync with the world run::
 
     sudo service ntpd start
 
-The Intel Analytics Dependency repository and the yum-s3 package must be installed before trying to `Add Intel Analytics Private Repository`_.
+The |IA| Dependency repository and the yum-s3 package must be installed before trying to `Add |IA| Private Repository`_.
 
-Installing Intel Analytics Packages
-===================================
+Installing |IA| Packages
+========================
 
-Installing Intel Analytics REST Server
---------------------------------------
+Installing |IA| REST Server
+---------------------------
 This next step is going to install IA rest server and all it's dependencies.
 Only one instance of the rest server needs to be installed.
 Although it doesn't matter where it's installed it's usually installed along side the HDFS name node.
@@ -318,26 +318,26 @@ Worker Node Preinstallation
 These are some required steps prior to the installation on “worker nodes”:
 
 *   copy ``ia-deps.repo`` and ``ia.repo`` files from ``/etc/yum.repos.d/`` on master node to ``/etc/yum.repos.d/`` on each worker node
-*   install Intel Analytics Dependencies Repository on each worker node::
+*   install |IA| Dependencies Repository on each worker node::
   
         sudo yum -y install yum-s3
 
-Installing Intel Analytics Spark Dependencies
----------------------------------------------
-The Intel Analytics spark dependencies package needs to be installed on every node running the spark worker role.
+Installing |IA| Spark Dependencies
+----------------------------------
+The |IA| spark dependencies package needs to be installed on every node running the spark worker role.
 ::
 
     sudo yum -y install intelanalytics-spark-deps
 
-Installing Intel Analytics Python REST Client
----------------------------------------------
-The Intel Analytics python rest client package needs to be installed on every node running the spark worker role.
+Installing |IA| Python REST Client
+----------------------------------
+The |IA| python rest client package needs to be installed on every node running the spark worker role.
 ::
 
     sudo yum -y install intelanalytics-python-rest-client
 
-Installing Intel Analytics Python 2.7 REST Client 
--------------------------------------------------
+Installing |IA| Python 2.7 REST Client 
+--------------------------------------
 
 Like the regular python 2.6 client above this also needs to be installed on every spark worker node.
 ::
@@ -355,12 +355,12 @@ The above line should be a single line. It was split across multiple lines to en
 REST Server Configuration
 -------------------------
 
-There are two config files you may need to edit on the node that has the Intel Analytics rest server package.
+There are two config files you may need to edit on the node that has the |IA| rest server package.
 
 intelanalytics-rest-server
 ==========================
 
-This is the configuration file for the Intel Analytics Linux service.
+This is the configuration file for the |IA| Linux service.
 
 If your Cloudera cluster is parcel based you can skip this step because we default to parcel based clusters.
 If your cluster is not parcel based, you need to update the SPARK_HOME value to the location where Cloudera
@@ -409,10 +409,10 @@ Usually non-parcel installations of Cloudera will install Spark to /usr/lib/spar
 application.conf
 ================
 
-This is the configuration file for the Intel Analytics rest server application.
+This is the configuration file for the |IA| rest server application.
 
 The base file *application.conf.tpl* is a reference configuration file.
-This file needs to be copied and renamed to application.conf then updated before the Intel Analytics
+This file needs to be copied and renamed to application.conf then updated before the |IA|
 rest server is started.
 
 *Configuration Script*
@@ -422,10 +422,10 @@ The configuration of application.conf is semi-automated via the use of a python 
 It will query Cloudera Manager for the necessary configuration values and create a new
 application.conf based off the application.conf.tpl file.
 
-To configure your spark service and your Intel Analytics installation do the following::
+To configure your spark service and your |IA| installation do the following::
 
     cd /etc/intelanalytics/rest-sever/
-    sudo python config.py
+    sudo ./config
 
 After executing the script answer the prompts to configure your cluster.
 
@@ -460,7 +460,7 @@ It will use a fresh application.conf.tpl and query Cloudera Manager again to rec
 
 Manual Configuration
 --------------------
-**This section is optional and only if additional changes to the configuration file are needed. `(Skip section) skip_manual`_**
+**This section is optional and only if additional changes to the configuration file are needed.** (`Skip section`_ )
  
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
@@ -581,7 +581,7 @@ Click on the Spark service then configuration in Cloudera Manager to get executo
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you would like the Intel Analytics server to bind to all ip addresses and not just localhost
+If you would like the |IA| server to bind to all ip addresses and not just localhost
 update the following lines and follow the commented instructions.
 This configuration section is also near the top of the file.
 ::
@@ -603,7 +603,7 @@ If it isn't already set, add::
 .. image:: ad_inst_IA_2.*
     :align: center
 
-.. _skip_manual:
+.. _Skip section:
 
 **End of manual configuration**
 
@@ -612,8 +612,8 @@ Now, restart the Spark service.
 .. image:: ad_inst_IA_3.*
     :align: center
 
-Starting Intel Analytics REST Server
-====================================
+Starting |IA| REST Server
+=========================
 
 Starting the REST server is very easy.
 It can be started like any other Linux service.
@@ -623,8 +623,8 @@ It can be started like any other Linux service.
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
-Troubleshooting Intel Analytics REST Server
-===========================================
+Troubleshooting |IA| REST Server
+================================
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or
 /var/log/intelanalytics/rest-server/application.log.
@@ -646,3 +646,5 @@ More details about the logs can be found here: :doc:`ad_log`.
     ad_log
 
 .. _Cloudera Installation Documentation: http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html
+
+.. |IA| replace:: IntelAnalytics

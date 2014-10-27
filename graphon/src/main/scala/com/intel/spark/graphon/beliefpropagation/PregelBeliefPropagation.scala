@@ -27,8 +27,9 @@ case class VertexState(gbVertex: GBVertex,
  * @param smoothing Smoothing parameter used in the potential function
  */
 class PregelBeliefPropagation(val maxIterations: Int,
-                              val power: Double = 0.0d,
-                              val smoothing: Double = 2.0d) extends Serializable {
+                              val power: Double,
+                              val smoothing: Double,
+                              val convergenceThreshold: Double) extends Serializable {
 
   /**
    * Run belief propagation on a graph.
@@ -43,7 +44,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
     // choose loggers
 
     val initialReporter = new BasicCountsInitialReport[VertexState, Double]
-    val superStepReporter = new AverageDeltaSuperStepReport[VertexState]
+    val superStepReporter = new AverageDeltaSuperStepStatusGenerator[VertexState](convergenceThreshold)
 
     // call  Pregel
 
@@ -129,10 +130,12 @@ class PregelBeliefPropagation(val maxIterations: Int,
 
     val statesUNPosteriors = stateRange.zip(reducedMessages)
 
-    val message = stateRange.map(i => statesUNPosteriors.map({
+    val unnormalizedMessage = stateRange.map(i => statesUNPosteriors.map({
       case (j, x: Double) =>
         x * Math.exp(edgePotential(i, j, edgeWeight))
     }).reduce(_ + _))
+
+    val message = VectorMath.l1Normalize(unnormalizedMessage)
 
     Map(sender -> message)
   }

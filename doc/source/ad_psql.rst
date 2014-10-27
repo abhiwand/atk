@@ -5,7 +5,7 @@ Tracking Metadata
 .. contents:: Table of Contents
     :local:
 
-By default, the Intel Analytics Toolkit uses H2, an in-memory database that is lost on application restart.
+By default, the |IA| Toolkit uses H2, an in-memory database that is lost on application restart.
 This is convenient for testing.
 H2 setup is completely automatic.
 No steps below are needed for H2.
@@ -113,3 +113,5 @@ Related Pages
 
 
 .. _PostgreSQL: http://www.postgresql.org
+
+.. |IA| replace:: Intel Analytics

@@ -106,7 +106,7 @@ the documents being analyzed.
 
 Graph construction
 ------------------
-Intel Analytics Toolkit (IAT) uses a bipartite graph, to learn an LDA topic model.
+|IA| Toolkit (IAT) uses a bipartite graph, to learn an LDA topic model.
 This graph contains vertices in two columns.
 The left-hand column contains unique ids, each corresponding to a document in the training collection, while the right-hand column contains
 unique ids corresponding to each word in the entire training set, following any pre-processing steps that were used.
@@ -359,3 +359,5 @@ Data scientists will often set some threshold value to make a categorical judgme
 .. [#LDA5] http://www.ics.uci.edu/~newman/pubs/fastlda.pdf
 .. [#LDA6] http://machinelearning.wustl.edu/mlpapers/paper_files/NIPS2006_511.pdf
 .. [#LDA7] http://www.cs.princeton.edu/~blei/papers/Blei2011.pdf
+
+.. |IA| replace:: Intel Analytics
