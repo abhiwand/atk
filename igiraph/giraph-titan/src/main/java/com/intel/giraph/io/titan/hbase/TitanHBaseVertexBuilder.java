@@ -56,7 +56,7 @@ public class TitanHBaseVertexBuilder {
     public TitanHBaseVertexBuilder(final ImmutableClassesGiraphConfiguration conf) {
         this.vertexValuePropertyKeys = getPropertyKeyMap(conf, INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST);
         this.edgeValuePropertyKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
-        this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
+        this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_LABEL_LIST);
 
         this.enableVectorValue = VECTOR_VALUE.get(conf).equals("true");
         this.vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
@@ -74,13 +74,15 @@ public class TitanHBaseVertexBuilder {
     public Iterator<TitanProperty> buildTitanProperties(FaunusVertex faunusVertex) {
         ArrayList<TitanProperty> titanProperties = new ArrayList<>();
 
-        if (vertexValuePropertyKeys!= null && vertexValuePropertyKeys.size() > 0) {
-            String propertyKey = vertexValuePropertyKeys.keySet().iterator().next();
-            Iterator<TitanProperty> propertyIterator = faunusVertex.getProperties(propertyKey).iterator();
+        if (vertexValuePropertyKeys!= null) {
+            for (String propertyKey : vertexValuePropertyKeys.keySet()) {
+                Iterator<TitanProperty> propertyIterator = faunusVertex.getProperties(propertyKey).iterator();
 
-            while (propertyIterator.hasNext()) {
-                titanProperties.add(propertyIterator.next());
+                while (propertyIterator.hasNext()) {
+                    titanProperties.add(propertyIterator.next());
+                }
             }
+
         }
         return(titanProperties.iterator());
     }

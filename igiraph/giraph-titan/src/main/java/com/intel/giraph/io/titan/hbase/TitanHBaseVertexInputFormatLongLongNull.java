@@ -62,6 +62,7 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
     @Override
     public VertexReader<LongWritable, LongWritable, NullWritable> createVertexReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
+
         return new LongLongNullVertexReader(split, context);
     }
 
@@ -80,6 +81,7 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
          * @throws IOException
          */
         public LongLongNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
+
             super(split, context);
         }
 
@@ -113,6 +115,7 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
         @Override
         public Vertex<LongWritable, LongWritable, NullWritable> getCurrentVertex() throws IOException,
                 InterruptedException {
+
             return this.giraphVertex;
         }
 

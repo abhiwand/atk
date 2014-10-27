@@ -76,6 +76,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
     @Override
     public VertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> createVertexReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
+
         return new PropertyGraph4CFVertexReader(split, context);
     }
 
@@ -111,15 +112,16 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @throws InterruptedException
          */
         public boolean nextVertex() throws IOException, InterruptedException {
-            boolean hasMoreVertices = false;
-            giraphVertex = null;
-
-            if (getRecordReader().nextKeyValue()) {
-                giraphVertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                hasMoreVertices = true;
+            while (getRecordReader().nextKeyValue()) {
+                Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable>  tempGiraphVertex =
+                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                if (tempGiraphVertex != null) {
+                    this.giraphVertex = tempGiraphVertex;
+                    return true;
+                }
             }
+            return false;
 
-            return hasMoreVertices;
         }
 
         /**
