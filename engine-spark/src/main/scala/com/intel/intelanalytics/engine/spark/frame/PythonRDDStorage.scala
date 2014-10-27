@@ -33,9 +33,6 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
       val baseRdd: RDD[String] = frames.loadLegacyFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
           case null => JsNull
-          case Float.NegativeInfinity | Float.PositiveInfinity | Double.NegativeInfinity | Double.PositiveInfinity => JsNull
-          case floatNan if (floatNan.isInstanceOf[Float] && floatNan.asInstanceOf[Float].isNaN()) => JsNull
-          case doubleNan if (doubleNan.isInstanceOf[Float] && doubleNan.asInstanceOf[Float].isNaN()) => JsNull
           case a => a.toJson
         }).toJson.toString)
 

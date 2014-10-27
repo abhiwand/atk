@@ -192,8 +192,12 @@ class _DataTypes(frozenset):
         '4.5'
         >>> valid_data_types.cast(None, str)
         None
+        >>> valid_data_types.cast(np.inf, float32)
+        None
         """
-        if value is None or type(value) is to_type:
+        if value is None or not np.isfinite(value):
+            return None
+        elif type(value) is to_type:    ## Optimization
             return value
         try:
             return to_type(value)

@@ -97,6 +97,9 @@ class ValidDataTypes(unittest.TestCase):
         self.assertEqual(float32(1.0), valid_data_types.cast(1.0, float32))
         self.assertEqual('jim', valid_data_types.cast('jim', str))
         self.assertTrue(valid_data_types.cast(None, unicode) is None)
+        self.assertTrue(None, valid_data_types.cast(np.inf, float32))
+        self.assertTrue(None, valid_data_types.cast(-np.inf, float64))
+        self.assertTrue(None, valid_data_types.cast(np.nan, float32))
         try:
             valid_data_types.cast(3, set)
         except ValueError:
