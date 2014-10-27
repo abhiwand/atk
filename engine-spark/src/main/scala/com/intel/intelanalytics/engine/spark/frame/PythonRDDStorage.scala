@@ -67,20 +67,25 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
   def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
 
-      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
-        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
-        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
-        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
-        case _ => null
-      }).toArray))
-        .flatMap(identity)
-        .map(converter)
+      val resultRdd: RDD[Array[Any]] = getRddFromPythonRdd(pyRdd, converter)
 
       val rowCount = if (skipRowCount) 0 else resultRdd.count()
       //      frames.saveFrameWithoutSchema(ctx, dataFrame, resultRdd)
       frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
       rowCount
     }
+  }
+
+  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[String]) => Array[Any]): RDD[Array[Any]] = {
+    val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+      case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+      case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+      case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+      case _ => null
+    }).toArray))
+      .flatMap(identity)
+      .map(converter)
+    resultRdd
   }
 
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {

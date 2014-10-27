@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ EntropyReturn, Entropy, DataFrame }
-import com.intel.intelanalytics.domain.schema.ColumnInfo
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
@@ -57,39 +57,51 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/entropy"
+  override def name: String = "frame/entropy"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Column Shannon entropy.",
     extendedSummary = Some("""
-    Calculate the Shannon entropy of a column. The column can be weighted. All data elements of weight <= 0
-    are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-    If there are no data elements of finite weight > 0, the entropy is zero.
-
-    Parameters
-    ----------
-    data_column : str
-        The column whose entropy is to be calculated
-
-    weights_column : str (Optional)
-        The column that provides weights (frequencies) for the entropy calculation.
-        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-        parameter is not provided.
-
-    Returns
-    -------
-    entropy : float64
-
-    Example
-    -------
-    >>> entropy = frame.entropy('data column')
-    >>> weighted_entropy = frame.entropy('data column', 'weight column')
-
-    ..versionadded :: 0.8 """)))
+                           |    Extended Summary
+                           |    ----------------
+                           |    Calculate the Shannon entropy of a column.
+                           |    The column can be weighted.
+                           |    All data elements of weight <= 0 are excluded from the calculation, as are
+                           |    all data elements whose weight is NaN or infinite.
+                           |    If there are no data elements with a finite weight greater than 0,
+                           |    the entropy is zero.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    data_column : str
+                           |        The column whose entropy is to be calculated
+                           |
+                           |    weights_column : str (optional)
+                           |        The column that provides weights (frequencies) for the entropy
+                           |        calculation.
+                           |        Must contain numerical data.
+                           |        Uniform weights of 1 for all items will be used for the calculation if
+                           |        this parameter is not provided.
+                           |
+                           |    Returns
+                           |    -------
+                           |    float64
+                           |        entropy
+                           |
+                           |    Examples
+                           |    --------
+                           |    ::
+                           |
+                           |        entropy = frame.entropy('data column')
+                           |        weighted_entropy = frame.entropy('data column', 'weight column')
+                           |
+                           |    ..versionadded :: 0.8
+                           |
+                            """.stripMargin)))
 
   /**
    * Calculate Shannon entropy of a column.
@@ -144,7 +156,7 @@ private[spark] object EntropyRDDFunctions extends Serializable {
    */
   def shannonEntropy(frameRDD: RDD[Row],
                      dataColumnIndex: Int,
-                     weightsColumnOption: Option[ColumnInfo] = None): Double = {
+                     weightsColumnOption: Option[Column] = None): Double = {
     require(dataColumnIndex >= 0, "column index must be greater than or equal to zero")
 
     val dataWeightPairs =

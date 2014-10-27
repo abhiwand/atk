@@ -14,7 +14,7 @@ csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = BigFrame(csv_file)
+frame = Frame(csv_file)
 
 print "Done building frame"
 
@@ -38,6 +38,6 @@ rates = EdgeRule("rating", user, movie, {"splits": frame.splits}, bidirectional=
 
 # Create a graph
 print "creating graph"
-graph = BigGraph([user, movie, rates])
+graph = TitanGraph([user, movie, rates])
 
 
