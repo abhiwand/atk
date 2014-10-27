@@ -101,6 +101,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
     extendedSummary = Some("""
+                             |    ** Experimental Feature **
                              |    The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
                              |
                              |    Parameters

@@ -89,6 +89,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
+                             |    ** Experimental Feature **
                              |    Triangle Count.
                              |
                              |    Parameters

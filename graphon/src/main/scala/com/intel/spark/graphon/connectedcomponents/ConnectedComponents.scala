@@ -83,6 +83,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""
+                             |    ** Experimental Feature **
                              |    Connected components.
                              |
                              |    Parameters
