@@ -31,10 +31,7 @@ import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CFCGD;
-import com.thinkaurelius.titan.core.EdgeLabel;
-import com.thinkaurelius.titan.core.PropertyKey;
-import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
@@ -95,12 +92,18 @@ public class TitanVertexFormatPropertyGraph4CFTest
     protected void configure() throws Exception {
         //load the graph to Titan
         TitanManagement graphManager = graph.getManagementSystem();
-        PropertyKey vertexType = graphManager.makePropertyKey("vertexType").dataType(String.class).make();
-        PropertyKey edgeType = graphManager.makePropertyKey("edgeType").dataType(String.class).make();
-        PropertyKey weight = graphManager.makePropertyKey("weight").dataType(String.class).make();
-        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.makePropertyKey("vertexType").dataType(String.class).make();
+        graphManager.makePropertyKey("edgeType").dataType(String.class).make();
+        graphManager.makePropertyKey("weight").dataType(String.class).make();
+        graphManager.makeEdgeLabel("edge").make();
         graphManager.commit();
 
+        String vertexType = "vertexType";
+        String edgeType = "edgeType";
+        String weight = "weight";
+        String edge = "edge";
+
+        TitanTransaction tx = graph.newTransaction();
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
         }
@@ -163,7 +166,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        TitanTransaction tx = graph.newTransaction();
         long[] nid;
         PropertyKey[] resultKey;
         String[] keyName;
@@ -191,6 +194,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
                         toString()), 0.01d);
             }
         }
+        tx.commit();
     }
 
     @Test
@@ -216,7 +220,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        TitanTransaction tx = graph.newTransaction();
         String keyName = "als_result";
 
         //check keys are generated for Titan
@@ -237,6 +241,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
                 assertEquals(expectedAlsValues[i][j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
+        tx.commit();
     }
 
     //@Ignore
