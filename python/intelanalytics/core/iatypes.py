@@ -195,9 +195,9 @@ class _DataTypes(frozenset):
         >>> valid_data_types.cast(np.inf, float32)
         None
         """
-        if value is None or not np.isfinite(value):
+        if value in [None, np.nan, np.inf, -np.inf]:  ## Special handling for missing values
             return None
-        elif type(value) is to_type:    ## Optimization
+        elif type(value) is to_type:                  ## Optimization
             return value
         try:
             return to_type(value)
