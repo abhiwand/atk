@@ -2,20 +2,19 @@ package com.intel.giraph.io.titan.hbase;
 
 import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.VertexData4CFWritable;
-import com.thinkaurelius.titan.core.EdgeLabel;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.tinkerpop.blueprints.Direction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.conf.StrConfOption;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.util.Options;
 import org.apache.log4j.Logger;
-import org.apache.mahout.math.*;
 
 import java.util.*;
-import java.util.Vector;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
@@ -55,17 +54,13 @@ public class TitanHBaseVertexBuilder {
      * @param conf Giraph configuration file.
      */
     public TitanHBaseVertexBuilder(final ImmutableClassesGiraphConfiguration conf) {
-        String[] vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
-        String[] edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
-        String[] edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
+        this.vertexValuePropertyKeys = getPropertyKeyMap(conf, INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST);
+        this.edgeValuePropertyKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
+        this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
 
-        vertexValuePropertyKeys = getConfigurationMap(vertexValuePropertyKeyList);
-        edgeValuePropertyKeys = getConfigurationMap(edgeValuePropertyKeyList);
-        edgeLabelKeys = getConfigurationMap(edgeLabelList);
-
-        enableVectorValue = VECTOR_VALUE.get(conf).equals("true");
-        vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
-        edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
+        this.enableVectorValue = VECTOR_VALUE.get(conf).equals("true");
+        this.vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
+        this.edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
     }
 
     /**
@@ -102,7 +97,11 @@ public class TitanHBaseVertexBuilder {
                                                                      String vertexTypePropertyKey)
             throws IllegalArgumentException {
         VertexData4CFWritable.VertexType vertexType;
-        Object vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+        Object vertexTypeObject = null;
+
+        if (vertexTypePropertyKey != null && vertexTypePropertyKey != "") {
+            vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+        }
 
         if (vertexTypeObject != null) {
             String vertexTypeString = vertexTypeObject.toString().toLowerCase();
@@ -132,19 +131,31 @@ public class TitanHBaseVertexBuilder {
      */
     public EdgeData4CFWritable.EdgeType getCFEdgeTypeProperty(TitanEdge titanEdge, String edgeTypePropertyKey) {
         EdgeData4CFWritable.EdgeType edgeType;
-        Object edgeTypeObject = titanEdge.getProperty(edgeTypePropertyKey);
-        String edgeTypeString = edgeTypeObject.toString().toLowerCase();
+        Object edgeTypeObject = null;
 
-        if (edgeTypeString.equals(TYPE_TRAIN)) {
-            edgeType = EdgeData4CFWritable.EdgeType.TRAIN;
-        } else if (edgeTypeString.equals(TYPE_VALIDATE)) {
-            edgeType = EdgeData4CFWritable.EdgeType.VALIDATE;
-        } else if (edgeTypeString.equals(TYPE_TEST)) {
-            edgeType = EdgeData4CFWritable.EdgeType.TEST;
-        } else {
-            LOG.error("Edge type string: %s isn't supported." + edgeTypeString);
+        if (edgeTypePropertyKey != null && edgeTypePropertyKey != "") {
+            edgeTypeObject = titanEdge.getProperty(edgeTypePropertyKey);
+        }
+
+        if (edgeTypeObject != null ) {
+            String edgeTypeString = edgeTypeObject.toString().toLowerCase();
+
+            if (edgeTypeString.equals(TYPE_TRAIN)) {
+                edgeType = EdgeData4CFWritable.EdgeType.TRAIN;
+            } else if (edgeTypeString.equals(TYPE_VALIDATE)) {
+                edgeType = EdgeData4CFWritable.EdgeType.VALIDATE;
+            } else if (edgeTypeString.equals(TYPE_TEST)) {
+                edgeType = EdgeData4CFWritable.EdgeType.TEST;
+            } else {
+                LOG.error("Edge type string: %s isn't supported." + edgeTypeString);
+                throw new IllegalArgumentException(String.format(
+                        "Edge type string: %s isn't supported.", edgeTypeString));
+            }
+        }
+        else {
+            LOG.error("Edge type: %s not found." + edgeTypePropertyKey);
             throw new IllegalArgumentException(String.format(
-                    "Edge type string: %s isn't supported.", edgeTypeString));
+                    "Edge type: %s not found.", edgeTypePropertyKey));
         }
         return edgeType;
     }
@@ -222,14 +233,22 @@ public class TitanHBaseVertexBuilder {
     /**
      * Get a Hashmap with name of configuration parameter, and corresponding index in list.
      *
-     * @param configList List of configuration parameters
+     * @param conf Giraph configuration file.
+     * @param confOption Configuration option with delimited list of property keys
      * @return Hashmap with name of configuration parameter, and corresponding index in list
      */
-    private Map<String, Integer> getConfigurationMap(String[] configList) {
-        Map<String, Integer> configMap = new HashMap<String, Integer>();
-        for (int i = 0; i < configList.length; i++) {
-            configMap.put(configList[i], i);
+    private Map<String, Integer> getPropertyKeyMap(final ImmutableClassesGiraphConfiguration conf,
+                                                   final StrConfOption confOption) {
+        String propertyKeyString = confOption.get(conf).trim();
+        Map<String, Integer> propertyKeyMap = new HashMap<>();
+
+        if (propertyKeyString != "") {
+            String[] configList =  confOption.get(conf).split(regexp);
+            for (int i = 0; i < configList.length; i++) {
+                propertyKeyMap.put(configList[i], i);
+            }
         }
-        return (configMap);
+
+        return (propertyKeyMap);
     }
 }

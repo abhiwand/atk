@@ -244,7 +244,13 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
                 throws IllegalArgumentException {
 
             VertexData4LDAWritable.VertexType vertexType;
-            Object vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+
+            Object vertexTypeObject = null;
+
+            if (vertexTypePropertyKey != null && vertexTypePropertyKey != "") {
+                vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+            }
+
             String vertexTypeString = vertexTypeObject.toString().toLowerCase();
 
             if (vertexTypeObject != null) {

@@ -25,10 +25,7 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull;
-import com.thinkaurelius.titan.core.EdgeLabel;
-import com.thinkaurelius.titan.core.PropertyKey;
-import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
@@ -82,26 +79,27 @@ public class TitanVertexFormatLongIDDistanceMapTest
         */
 
         TitanManagement graphManager = graph.getManagementSystem();
-        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.makeEdgeLabel("edge").make();
         graphManager.commit();
 
+        TitanTransaction tx = graph.newTransaction();
         int numVertices = 5;
-        TitanVertex[] nodes = new TitanVertex[5];
-        for (int i = 0; i < 5; i++) {
+        TitanVertex[] nodes = new TitanVertex[numVertices];
+        for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
         }
 
         TitanEdge[] edges = new TitanEdge[10];
-        edges[0] = nodes[0].addEdge(edge, nodes[1]);
-        edges[1] = nodes[0].addEdge(edge, nodes[3]);
-        edges[2] = nodes[1].addEdge(edge, nodes[2]);
-        edges[3] = nodes[1].addEdge(edge, nodes[3]);
-        edges[4] = nodes[2].addEdge(edge, nodes[0]);
-        edges[5] = nodes[2].addEdge(edge, nodes[1]);
-        edges[6] = nodes[2].addEdge(edge, nodes[4]);
-        edges[7] = nodes[3].addEdge(edge, nodes[4]);
-        edges[8] = nodes[4].addEdge(edge, nodes[2]);
-        edges[9] = nodes[4].addEdge(edge, nodes[3]);
+        edges[0] = nodes[0].addEdge("edge", nodes[1]);
+        edges[1] = nodes[0].addEdge("edge", nodes[3]);
+        edges[2] = nodes[1].addEdge("edge", nodes[2]);
+        edges[3] = nodes[1].addEdge("edge", nodes[3]);
+        edges[4] = nodes[2].addEdge("edge", nodes[0]);
+        edges[5] = nodes[2].addEdge("edge", nodes[1]);
+        edges[6] = nodes[2].addEdge("edge", nodes[4]);
+        edges[7] = nodes[3].addEdge("edge", nodes[4]);
+        edges[8] = nodes[4].addEdge("edge", nodes[2]);
+        edges[9] = nodes[4].addEdge("edge", nodes[3]);
 
         tx.commit();
 
@@ -111,7 +109,7 @@ public class TitanVertexFormatLongIDDistanceMapTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         long[] nid;
         PropertyKey[] resultKey;
         String[] keyName;
@@ -137,6 +135,7 @@ public class TitanVertexFormatLongIDDistanceMapTest
                 assertEquals(EXPECT_OUTPUT[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j]).toString()), 0.01d);
             }
         }
+        tx.commit();
     }
 }
 

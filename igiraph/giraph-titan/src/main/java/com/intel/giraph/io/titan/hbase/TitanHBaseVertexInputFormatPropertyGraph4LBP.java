@@ -270,7 +270,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
                                                                            String vertexTypePropertyKey)
                 throws IllegalArgumentException {
             VertexData4LBPWritable.VertexType vertexType;
-            Object vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+
+            Object vertexTypeObject = null;
+            if (vertexTypePropertyKey != null && vertexTypePropertyKey != "") {
+                vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+            }
 
             if (vertexTypeObject != null) {
                 String vertexTypeString = vertexTypeObject.toString().toLowerCase();
