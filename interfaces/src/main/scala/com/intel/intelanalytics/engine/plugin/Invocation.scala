@@ -76,6 +76,8 @@ trait Invocation {
    * Convenience method for resolving references
    */
   private [intelanalytics] def resolve[T <: UriReference: TypeTag](reference: UriReference): T = resolver.resolve(reference).get
+
+  private [intelanalytics] def create[T <: UriReference]() : T = ??? //resolver.create
 }
 
 object Invocation {

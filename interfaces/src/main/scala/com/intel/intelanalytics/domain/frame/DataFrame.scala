@@ -63,4 +63,6 @@ case class DataFrame(id: Long,
   require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
 
   def uri: String = FrameReference(id, None).uri
+  
+  def withSchema(newSchema:Schema) = this.copy(schema = newSchema)
 }
