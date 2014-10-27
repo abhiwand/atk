@@ -94,7 +94,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    */
   private def inferEdgeLabelDefs(): List[EdgeLabelDef] = {
     for {
-      edgeRule ← edgeRules
+      edgeRule <- edgeRules
       if edgeRule.label.isNotParsed
     } yield new EdgeLabelDef(edgeRule.label.value)
   }
@@ -112,19 +112,19 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   private def inferPropertyDefs(): List[PropertyDef] = {
 
     val vertexGbIdPropertyDefs = for {
-      vertexRule ← vertexRules
+      vertexRule <- vertexRules
       if vertexRule.gbId.key.isNotParsed
     } yield PropertyDef(PropertyType.Vertex, safeValue(vertexRule.gbId.key), dataTypeParser.get(vertexRule.gbId.value), unique = true, indexed = true)
 
     val vertexPropertyDefs = for {
-      vertexRule ← vertexRules
-      propertyRule ← vertexRule.propertyRules
+      vertexRule <- vertexRules
+      propertyRule <- vertexRule.propertyRules
       if propertyRule.key.isNotParsed
     } yield PropertyDef(PropertyType.Vertex, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = true)
 
     val edgePropertyDefs = for {
-      edgeRule ← edgeRules
-      propertyRule ← edgeRule.propertyRules
+      edgeRule <- edgeRules
+      propertyRule <- edgeRule.propertyRules
       if propertyRule.key.isNotParsed
     } yield PropertyDef(PropertyType.Edge, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = true)
 

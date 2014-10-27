@@ -78,7 +78,7 @@ object TitanReaderUtils {
 
     val entryList = ListBuffer[Entry]()
 
-    for (pos ← 0 until relation.getLen()) {
+    for (pos <- 0 until relation.getLen()) {
       if (relation.getVertex(pos) == titanVertex) {
         // Ensure that we are serializing properties for the right vertex
         entryList += titanEdgeSerializer.writeRelation(relation, pos, relation.tx())
