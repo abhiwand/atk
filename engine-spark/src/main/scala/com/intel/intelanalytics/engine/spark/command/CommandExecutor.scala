@@ -25,21 +25,15 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FrameReference }
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph }
 import com.intel.intelanalytics.engine.{ Reflection, Engine, CommandStorage }
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.NotFoundException
-import org.apache.hadoop.hdfs.web.resources.UriFsPathParam
 import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.concurrent._
-import scala.reflect.api.JavaUniverse
-import scala.reflect.api._
-import scala.reflect.{ ClassTag, classTag }
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
@@ -222,44 +216,49 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                                                                                   commandContext: CommandContext): JsObject = {
     val cmd = commandContext.command
     try {
-      val invocation = command match {
-        case c: SparkCommandPlugin[A, R] =>
-          val context: SparkContext = commandContext("sparkContext") match {
-            case None =>
-              val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.user, commandContext.command)
-              commandContext.put("sparkContext", sc, () => sc.stop())
-              sc
-            case Some(sc) => sc
-          }
-
-          SparkInvocation(engine,
-            commandId = cmd.id,
-            arguments = cmd.arguments,
-            user = commandContext.user,
-            executionContext = commandContext.executionContext,
-            sparkContext = context,
-            commandStorage = commands,
-            resolver = commandContext.resolver)
-
-        case c: CommandPlugin[A, R] =>
-          SimpleInvocation(engine,
-            commandStorage = commands,
-            commandId = cmd.id,
-            arguments = cmd.arguments,
-            user = commandContext.user,
-            executionContext = commandContext.executionContext,
-            resolver = commandContext.resolver
-          )
-      }
+      val invocation = getInvocation(command, arguments, commandContext, cmd)
       info(s"Invoking command ${cmd.name}")
-      val funcResult = command match {
-        case _ =>
-          command(invocation, arguments)
-      }
+      val funcResult = command(invocation, arguments)
       command.serializeReturn(funcResult)
     }
     finally {
       stopCommand(cmd.id)
+    }
+  }
+
+  def getInvocation[R <: Product : TypeTag, A <: Product : TypeTag](command: CommandPlugin[A, R],
+                                                                    arguments: A,
+                                                                    commandContext: CommandContext,
+                                                                    cmd: Command): Invocation
+                                                                                    with Product with Serializable = {
+    command match {
+      case c: SparkCommandPlugin[A, R] =>
+        val context: SparkContext = commandContext("sparkContext") match {
+          case None =>
+            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.user, commandContext.command)
+            commandContext.put("sparkContext", sc, () => sc.stop())
+            sc
+          case Some(sc) => sc
+        }
+
+        SparkInvocation(engine,
+          commandId = cmd.id,
+          arguments = cmd.arguments,
+          user = commandContext.user,
+          executionContext = commandContext.executionContext,
+          sparkContext = context,
+          commandStorage = commands,
+          resolver = commandContext.resolver)
+
+      case c: CommandPlugin[A, R] =>
+        SimpleInvocation(engine,
+          commandStorage = commands,
+          commandId = cmd.id,
+          arguments = cmd.arguments,
+          user = commandContext.user,
+          executionContext = commandContext.executionContext,
+          resolver = commandContext.resolver
+        )
     }
   }
 

@@ -67,6 +67,11 @@ trait ReferenceResolver {
     resolve(reference.uri)
   }
 
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  def create[T <: UriReference: TypeTag]() : T
+
 }
 
 /**
@@ -120,6 +125,13 @@ class EntityRegistry {
     }
     _resolver
   }
+
+  /**
+   * Create an empty / uninitialized instance of the requested type if possible.
+   *
+   * @tparam R the requested reference type
+   */
+  def create[R <: UriReference : TypeTag] = entity().asInstanceOf[EntityManagement].create()
 
 }
 
@@ -184,6 +196,10 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     val resolved = resolver(id)
     ReferenceResolver.coerceReference(resolved)
   }
+
+  def create[T <: UriReference: TypeTag]() = {
+    registry.create[T](typeTag[T]).asInstanceOf[T]
+  }
 }
 
 /**
@@ -191,7 +207,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
  */
 object ReferenceResolver extends ReferenceResolver {
 
-  private[intelanalytics] def coerceReference[T <: UriReference: TypeTag](ref: UriReference): T = {
+  private[intelanalytics] def coerceReference[T <: UriReference : TypeTag](ref: UriReference): T = {
     Try {
       ref.asInstanceOf[T]
     }.getOrElse(throw new IllegalArgumentException(s"Could not convert $ref to an instance of $typeTag[T]"))
@@ -201,14 +217,20 @@ object ReferenceResolver extends ReferenceResolver {
    * Returns a reference for the given URI if possible.
    *
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
-   *         Note this exception will be in the Try, not actually thrown immediately.
+   *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  override def resolve[T <: UriReference: TypeTag](uri: String): Try[T] = EntityRegistry.resolver.resolve(uri)
+  override def resolve[T <: UriReference : TypeTag](uri: String): Try[T] = EntityRegistry.resolver.resolve(uri)
 
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
    */
   override def isReferenceUriFormat(s: String): Boolean = EntityRegistry.resolver.isReferenceUriFormat(s)
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def create[T <: UriReference : ru.TypeTag](): T = EntityRegistry.resolver.create()
+
 }
 
 case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference with HasData]) extends ReferenceResolver {
@@ -229,6 +251,12 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
    */
   override def isReferenceUriFormat(s: String): Boolean = base.isReferenceUriFormat(s)
+
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def create[T <: UriReference : ru.TypeTag](): T = base.create()
 
   def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
 }

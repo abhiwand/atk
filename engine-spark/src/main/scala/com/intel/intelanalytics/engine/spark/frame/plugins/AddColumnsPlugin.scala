@@ -26,12 +26,10 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.{Invocation, Transformation}
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 
@@ -68,18 +66,15 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
-    val frame = invocation.resolve[SparkFrameData](arguments.frame)
-    val oldSchema = frame.meta.schema
-    val newColumns = arguments.columnNames.zip(
-      arguments.columnTypes.map(DataTypes.toDataType)).toList
-    val newSchema = oldSchema.addColumns(newColumns)
+    val frame = resolve[SparkFrameData](arguments.frame)
+    val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(_.asInstanceOf[DataType]))
+    val newSchema = frame.meta.schema.addColumns(newColumns)
 
     // Update the data
-    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, arguments.expression)(invocation)
-    val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    val rdd = PythonRDDStorage.pyRDDToFrameRDD(newSchema, pyRdd, converter)
-    ???
-    ///val ret = invocation.resolve[FrameMeta](returnValue)
-    ///new SparkFrameData(ret.meta.copy(schema = newSchema), rdd)
+    val rdd = PythonRDDStorage.pyMap(frame.data, arguments.expression, newSchema)
+
+    val saved = engine.frames.saveFrameData(create[FrameMeta].meta.withSchema(newSchema), rdd)
+
+    new SparkFrameData(saved, rdd)
   }
 }

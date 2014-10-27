@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
+import com.intel.intelanalytics.domain.UriReference
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -154,6 +155,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return a value of type declared as the Return type.
    */
   def execute(arguments: Arguments)(implicit context: Invocation): Return = ???
+
+  def resolve[T <: UriReference](reference: UriReference)
+                                (implicit invocation: Invocation) : T = invocation.resolve(reference)
+
+  def create[T <: UriReference](implicit invocation: Invocation) : T = invocation.create()
 }
 
 /**
@@ -173,6 +179,4 @@ abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
  */
 trait Transformation[Arguments <: Product, Return <: Product] extends CommandPlugin[Arguments, Return] {
 
-  final override def execute(arguments: Arguments)(implicit context: Invocation): Return =
-    throw new IllegalArgumentException("Transformation called as an action")
 }

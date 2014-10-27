@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -95,6 +95,12 @@ object PythonRDDStorage extends ClassLoaderAware {
     new sun.misc.BASE64Decoder().decodeBuffer(corrected)
   }
 
+  def convertWithSchema(pyRdd: EnginePythonRDD[String], schema: Schema): (Array[String] => Array[Any]) = {
+    val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+    converter
+  }
+
+
   /**
    * Converts a PythonRDD to a FrameRDD
    *
@@ -103,9 +109,12 @@ object PythonRDDStorage extends ClassLoaderAware {
    * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
    * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
    */
-  def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): FrameRDD = {
+  def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any] = null): FrameRDD = {
     withMyClassLoader {
-
+      val conv = converter match {
+        case null => convertWithSchema(pyRdd, schema)
+        case c => c
+      }
       val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map {
         case x: JsString => x.value
         case x: JsNumber => x.toString()
@@ -113,10 +122,16 @@ object PythonRDDStorage extends ClassLoaderAware {
         case _ => null
       }.toArray))
         .flatMap(identity)
-        .map(converter)
+        .map(conv)
 
       new LegacyFrameRDD(schema, resultRdd).toFrameRDD()
     }
   }
+
+  /**
+   * Map the given Pythoon UDF over the rows of the RDD, producing another RDD that should match the given schema.
+   */
+  def pyMap(frame: FrameRDD, expression: String, schema: Schema)(implicit user: UserPrincipal) =
+    pyRDDToFrameRDD(schema, createPythonRDD(frame, expression))
 
 }
