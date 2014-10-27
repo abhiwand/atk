@@ -861,8 +861,8 @@ class Frame(CommandLoadableFrame):
 
         pandas_df = pd.DataFrame(result.data, columns=headers)
 
-        for i in range (len(data_types)):
-            pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(valid_data_types.to_string(data_types[i]))
+        for i, dtype in enumerate(data_types):
+            pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(valid_data_types.to_string(dtype))
         return pandas_df
 
 
