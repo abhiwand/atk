@@ -42,12 +42,14 @@ object DataTypes {
 
     def parse(s: String): Try[ScalaType]
 
+    /** True if the supplied value matches this data type */
+    def isType(raw: Any): Boolean
+
     def scalaType: Class[ScalaType]
 
     def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
-
   }
 
   /**
@@ -58,6 +60,11 @@ object DataTypes {
 
     override def parse(s: String) = Try {
       s.trim().toInt
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // TODO: nulls aren't allowed for now but we will need to support nulls or Nones later
+      raw != null && raw.isInstanceOf[Int]
     }
 
     override def scalaType = classOf[Int]
@@ -82,6 +89,11 @@ object DataTypes {
       s.trim().toLong
     }
 
+    override def isType(raw: Any): Boolean = {
+      // TODO: nulls aren't allowed for now but we will need to support nulls or Nones later
+      raw != null && raw.isInstanceOf[Long]
+    }
+
     override def scalaType = classOf[Long]
 
     override def typedJson(raw: Any) = {
@@ -101,6 +113,11 @@ object DataTypes {
 
     override def parse(s: String): Try[float32.ScalaType] = Try {
       s.trim().toFloat
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // TODO: nulls aren't allowed for now but we will need to support nulls or Nones later
+      raw != null && raw.isInstanceOf[Float]
     }
 
     override def scalaType = classOf[Float]
@@ -125,6 +142,11 @@ object DataTypes {
       s.trim().toDouble
     }
 
+    override def isType(raw: Any): Boolean = {
+      // TODO: nulls aren't allowed for now but we will need to support nulls or Nones later
+      raw != null && raw.isInstanceOf[Double]
+    }
+
     override def scalaType = classOf[Double]
 
     override def typedJson(raw: Any) = {
@@ -144,6 +166,11 @@ object DataTypes {
 
     override def parse(s: String): Try[string.ScalaType] = Try {
       s
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // where null is allowed we accept null as this type
+      raw == null || raw.isInstanceOf[String]
     }
 
     override def scalaType = classOf[String]
@@ -178,9 +205,9 @@ object DataTypes {
   val int = int32
 
   /**
-   * All the supported datatypes.
+   * All the supported datatypes
    */
-  val types: Map[String, DataType] =
+  val supportedTypes: Map[String, DataType] =
     Seq(int32, int64, float32,
       float64, string)
       .map(t => t.toString -> t)
@@ -212,7 +239,7 @@ object DataTypes {
    * @return the data type object corresponding to the name
    */
   implicit def toDataType(s: String): DataType =
-    types.getOrElse(s,
+    supportedTypes.getOrElse(s,
       throw new IllegalArgumentException(s"Invalid datatype: '$s'"))
 
   /**
@@ -253,6 +280,45 @@ object DataTypes {
   }
 
   /**
+   * Get a String description of the data type of the supplied value
+   */
+  def dataTypeOfValueAsString(value: Any): String = {
+    if (value == null) {
+      "null"
+    }
+    else {
+      // TODO: we should convert this to our type names
+      value.getClass.getName
+    }
+  }
+
+  def dataTypeOfValue(value: Any): DataType = {
+    val matches = supportedTypes.filter { case (name: String, dataType: DataType) => dataType.isType(value) }.toList
+    if (matches.isEmpty) {
+      throw new IllegalArgumentException("No matching data type found for value: " + value)
+    }
+    else if (matches.length > 1) {
+      error("")
+    }
+    matches.head._2
+  }
+
+  /**
+   * Convert any type to any other type.
+   *
+   * Throw errors for conditions not supported (for example, string "s" cannot convert to a Long)
+   */
+  def convertToType(value: Any, dataType: DataType): Any = {
+    dataType match {
+      case `int64` => toLong(value)
+      case `float64` => toDouble(value)
+      // TODO: finish implementation (sorry, I only implemented the minimal I needed)
+      // TODO: throw exceptions when needed
+      case _ => throw new RuntimeException("DataTypes.convertToType() Not yet implemented")
+    }
+  }
+
+  /**
    * Attempt to cast Any type to Double
    *
    * @param value input Any type to be cast
@@ -260,6 +326,7 @@ object DataTypes {
    */
   def toDouble(value: Any): Double = {
     value match {
+      case null => throw new IllegalArgumentException("null cannot be converted to Double")
       case i: Int => i.toDouble
       case l: Long => l.toDouble
       case f: Float => f.toDouble
@@ -270,11 +337,25 @@ object DataTypes {
 
   def toBigDecimal(value: Any): BigDecimal = {
     value match {
+      case null => null
       case i: Int => BigDecimal(i)
       case l: Long => BigDecimal(l)
       case f: Float => BigDecimal(f)
       case d: Double => BigDecimal(d)
       case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
+    }
+  }
+
+  def toLong(value: Any): Long = {
+    value match {
+      case null => throw new IllegalArgumentException("null cannot be converted to Long")
+      case i: Int => i.toLong
+      case l: Long => l
+      case f: Float => f.toLong
+      case d: Double => d.toLong
+      case s: String => s.toLong
+      case jl: java.lang.Long => jl.longValue()
+      case _ => throw new RuntimeException("Not yet implemented")
     }
   }
 

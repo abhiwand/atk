@@ -52,7 +52,7 @@ and it provides the tools to allow data scientists to easily manipulate data in 
 Script Examples
 ---------------
 
-Intel Analytics ships with example scripts and data sets that exercise the various features of the platform.
+|IA| ships with example scripts and data sets that exercise the various features of the platform.
 The example scripts can be found in the iauser's home directory usually /home/iauser.
 
 The examples are located in /home/iauser/examples::
@@ -110,3 +110,5 @@ If you need to debug changes to the scripts or peak behind the curtain, the log 
 .. _Apache Hadoop: http://hadoop.apache.org/docs/current/index.html 
 .. _Apache Giraph: http://giraph.apache.org/ 
 .. _Gremlin: https://github.com/tinkerpop/gremlin/wiki
+
+.. |IA| replace:: Intel Analytics

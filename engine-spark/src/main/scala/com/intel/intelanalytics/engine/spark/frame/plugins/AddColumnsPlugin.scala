@@ -47,7 +47,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/add_columns"
+  override def name: String = "frame/add_columns"
 
   /**
    * User documentation exposed in Python.
@@ -79,17 +79,17 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     val expression = arguments.expression // Python Wrapper containing lambda expression
     val frameMeta = frames.expectFrame(arguments.frame)
     val schema = frameMeta.schema
-    val oldColumns = schema.columns
+    val oldColumns = schema.columnTuples
 
     // run the operation and save results
-    var newColumns = schema.columns
+    var newColumns = schema.columnTuples
     for {
       i <- 0 until columnNames.size
     } {
       val columnName = columnNames(i)
       val columnType = columnTypes(i)
 
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == columnName) >= 0)
+      if (schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == columnName) >= 0)
         throw new IllegalArgumentException(s"Duplicate column name: $columnName")
 
       // Update the schema
@@ -99,14 +99,14 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     // Update the data
     val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    var newFrame = frames.updateSchema(frameMeta, newColumns)
+    var newFrame = frames.updateSchema(frameMeta, frameMeta.schema.legacyCopy(newColumns))
     try {
       pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
     }
     catch {
       case ex: Exception => {
         //reverting back to old schema
-        newFrame = frames.updateSchema(frameMeta, oldColumns)
+        newFrame = frames.updateSchema(frameMeta, frameMeta.schema)
         throw ex
       }
     }

@@ -1,13 +1,14 @@
-=======================
-Intel Analytics Toolkit
-=======================
+============
+|IA| Toolkit
+============
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
     ia_intro
     ad_over
     ds_over
+    ds_apic
     
 ==========
 References
@@ -20,6 +21,7 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
+* :doc:`errata`
 * :download:`PDF <_downloads/IntelAnalytics.pdf>`
 
 .. toctree::
@@ -30,3 +32,5 @@ References
     ia_legal
 
 .. TODOLIST::
+
+.. |IA| replace:: Intel Analytics
