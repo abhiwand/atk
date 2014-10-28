@@ -26,7 +26,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
 import com.intel.testutils.TestingSparkContextFlatSpec
 
 class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
@@ -49,7 +49,7 @@ class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext
   "K-Clique graph" should
     "have each k-cliques as the vertex of the new graph " in new KCliqueGraphGenTest {
 
-      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => CliqueExtension(CliqueFact(x), y, true) })
       val rddOfVertexListOfFourCliqueGraph = sparkContext.parallelize(vertexListOfFourCliqueGraph)
 
       val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)
@@ -61,7 +61,7 @@ class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext
   "K-Clique graph" should
     "produce correct edge list where edges between two k-cliques (which is the vertices of new graph) exists if they share (k-1) elements" in new KCliqueGraphGenTest {
 
-      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => CliqueExtension(CliqueFact(x), y, true) })
       val rddOfEdgeListOfFourCliqueGraph = sparkContext.parallelize(edgeListOfFourCliqueGraph).map(subset => (subset.head, subset.last))
 
       val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)

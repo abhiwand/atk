@@ -26,7 +26,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 object GraphGenerator extends Serializable {
@@ -44,12 +44,12 @@ object GraphGenerator extends Serializable {
    * @param cliqueAndExtenders RDD of pair of clique and extenders of that clique
    * @return
    */
-  def run(cliqueAndExtenders: RDD[ExtendersFact]) = {
+  def run(cliqueAndExtenders: RDD[CliqueExtension]) = {
 
     // Derive the extended k cliques by extending the k-1 cliques
     // and drop the boolean variable neighborHigh that describes whether the neighbors are of higher order
     val extendedClique = cliqueAndExtenders.flatMap({
-      case ExtendersFact(clique, extenders, neighborHigh) =>
+      case CliqueExtension(clique, extenders, neighborHigh) =>
         extenders.map(extendedBy => (clique.members + extendedBy).toSeq.sorted.toSet)
     })
 

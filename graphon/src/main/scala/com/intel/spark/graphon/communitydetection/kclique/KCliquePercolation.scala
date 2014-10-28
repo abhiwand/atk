@@ -37,6 +37,9 @@ import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.component.Boot
 import com.typesafe.config.Config
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
 /**
  * Represents the arguments for KClique Percolation algorithm
@@ -101,7 +104,26 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
     // Start KClique Percolation
-    Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
+
+    // Create the Titan connection
+    val titanConnector = new TitanGraphConnector(titanConfig)
+
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sc, titanConnector)
+    val titanReaderRDD = titanReader.read()
+
+    // Get the GraphBuilder vertex list
+    val gbVertices = titanReaderRDD.filterVertices()
+
+    // Get the GraphBuilder edge list
+    val gbEdges = titanReaderRDD.filterEdges()
+
+    val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
+
+    // Update back each vertex in the input Titan graph and the write the community property
+    // as the set of communities to which it belongs
+    val communityWriterInTitan = new CommunityWriterInTitan()
+    communityWriterInTitan.run(outVertices, outEdges, titanConfig)
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
