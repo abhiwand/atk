@@ -25,17 +25,17 @@ mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/doc
 
 cp -v config/intelanalytics-python-rest-client/requirements.txt tarballs/$package/usr/lib/intelanalytics/rest-client/python/
 
-releaseNumber=$(echo $BRANCH | awk '/release_[0-9.]*$/{print substr($0, match($0,"[0-9.]*$"))}')
-if [ "$releaseNumber" != "" ]; then
-    mkdir -p tarballs/$package/usr/lib/intelanalytics/rest-client/python/rest
-    cp ../python/intelanalytics/rest/config.py tarballs/$package/usr/lib/intelanalytics/rest-client/python/rest/config.py
-    find ../python/intelanalytics -name *.py -type f -delete
-    ls -l ../python/intelanalytics/core
+#releaseNumber=$(echo $BRANCH | awk '/release_[0-9.]*$/{print substr($0, match($0,"[0-9.]*$"))}')
+#if [ "$releaseNumber" != "" ]; then
+#    mkdir -p tarballs/$package/usr/lib/intelanalytics/rest-client/python/rest
+#    cp ../python/intelanalytics/rest/config.py tarballs/$package/usr/lib/intelanalytics/rest-client/python/rest/config.py
+#   find ../python/intelanalytics -name *.py -type f -delete
+#    ls -l ../python/intelanalytics/core
+#    cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
+#    echo "remove py files"
+#else
     cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
-    echo "remove py files"
-else
-    cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
-fi
+#fi
 
 cp -Rv  ../python/cmdgen.py tarballs/$package/usr/lib/intelanalytics/rest-client/
 
