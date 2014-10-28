@@ -25,6 +25,10 @@ package com.intel.intelanalytics.domain.schema
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
+/**
+ * TODO: we should move this implementation to Schema class or be using implementation that is already there
+ * @deprecated use Schema instead
+ */
 object SchemaUtil {
 
   // TODO: remove hard coded strings
@@ -76,8 +80,8 @@ object SchemaUtil {
    */
   def convertSchema(oldSchema: Schema, newSchema: Schema, row: Array[_ <: Any]): Array[Any] = {
 
-    val oldNames = oldSchema.columns.map(_._1).toArray
-    newSchema.columns.toArray.map {
+    val oldNames = oldSchema.columnTuples.map(_._1).toArray
+    newSchema.columnTuples.toArray.map {
       case ((name, columnType)) => {
         val index = oldNames.indexOf(name)
         if (index != -1) {
@@ -93,16 +97,19 @@ object SchemaUtil {
     }
   }
 
+  // TODO: use implementation in Schema
+
   /**
    * Merge schema for the purpose of appending two datasets.
    * @param originalSchema Schema of the original DataFrame
    * @return a single Schema with columns from both using the ordering of the originalSchema
+   * @deprecated use union() implementation in Schema
    */
   def mergeSchema(originalSchema: Schema, appendedSchema: Schema): Schema = {
     if (originalSchema == appendedSchema)
       originalSchema
     else {
-      val appendedColumns = originalSchema.columns ++ appendedSchema.columns
+      val appendedColumns = originalSchema.columnTuples ++ appendedSchema.columnTuples
       val columnOrdering: List[String] = appendedColumns.map { case (name, dataTypes) => name }.distinct
       val groupedColumns = appendedColumns.groupBy { case (name, dataTypes) => name }
 
@@ -110,7 +117,7 @@ object SchemaUtil {
         (key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
       })
 
-      Schema(newColumns)
+      new Schema(newColumns)
     }
   }
 }

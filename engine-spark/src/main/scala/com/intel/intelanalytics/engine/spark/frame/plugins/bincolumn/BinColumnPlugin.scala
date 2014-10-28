@@ -56,7 +56,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/bin_column"
+  override def name: String = "frame/bin_column"
 
   /**
    * User documentation exposed in Python.
@@ -90,13 +90,13 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
     val frameId: Long = arguments.frame.id
     val frameMeta = frames.expectFrame(frameId)
     val columnIndex = frameMeta.schema.columnIndex(arguments.columnName)
-    if (frameMeta.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+    if (frameMeta.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    val allColumns = frameMeta.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+    val allColumns = frameMeta.schema.columnTuples :+ (arguments.binColumnName, DataTypes.int32)
     arguments.binType match {
       case "equalwidth" =>
         val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
@@ -108,6 +108,6 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
         frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
-    frames.updateSchema(newFrame, allColumns)
+    frames.updateSchema(newFrame, frameMeta.schema.legacyCopy(allColumns))
   }
 }

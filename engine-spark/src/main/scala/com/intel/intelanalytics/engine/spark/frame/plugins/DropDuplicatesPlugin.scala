@@ -31,6 +31,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.schema.Schema
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -82,12 +83,9 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
     val frameMeta: DataFrame = frames.expectFrame(frameId)
     val frameSchema = frameMeta.schema
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
-    val columnIndices = frameSchema.columnIndex(arguments.unique_columns)
 
-    // run the operation
-    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
-
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+    val columnNames = arguments.unique_columns
+    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frameSchema, columnNames)
     val rowCount = duplicatesRemoved.count()
 
     // save results

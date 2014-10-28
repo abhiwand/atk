@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, _ }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
@@ -45,7 +45,7 @@ trait FrameStorage {
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
   def drop(frame: DataFrame)
   //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame
+  def updateSchema(frame: DataFrame, schema: Schema): DataFrame
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist

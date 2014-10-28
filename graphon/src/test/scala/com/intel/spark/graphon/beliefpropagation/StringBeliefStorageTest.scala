@@ -23,12 +23,12 @@ class StringBeliefStorageTest extends FlatSpec with Matchers with TestingSparkCo
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
-    val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+    val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = Some(true),
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

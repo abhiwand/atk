@@ -23,10 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
+import com.intel.intelanalytics.engine.Rows
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
 
@@ -74,11 +78,27 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
     // dependencies (later to be replaced with dependency injection)
     val graphs = invocation.engine.graphs
     val frames = invocation.engine.frames
+    val sparkContext = invocation.sparkContext
 
     // validate arguments
-    arguments.frame_rules.foreach(frule => frames.expectFrame(frule.frame))
+    arguments.frameRules.foreach(frule => frames.expectFrame(frule.frame))
+    val frameRules = arguments.frameRules
+    // TODO graphbuilder only supports one input frame at present
+    require(frameRules.size == 1, "only one frame rule per call is supported in this version")
+    val theOnlySourceFrameID = frameRules.head.frame.id
+    val frameMeta = frames.expectFrame(theOnlySourceFrameID)
+    val graphMeta = graphs.expectGraph(arguments.graph.id)
 
-    // run the operation and save results
-    graphs.loadGraph(arguments, invocation)(user)
+    // setup graph builder
+    val gbConfigFactory = new GraphBuilderConfigFactory(frameMeta.schema, arguments, graphMeta)
+    val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
+
+    // setup data in Spark
+    val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sparkContext, theOnlySourceFrameID)
+    val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
+    graphBuilder.build(inputRdd)
+
+    graphMeta
   }
+
 }

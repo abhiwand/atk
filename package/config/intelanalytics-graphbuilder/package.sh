@@ -28,7 +28,7 @@ jarPath=$(find ..  -path ./package -prune -o -name graphbuilder-3.jar -print)
 echo $jarPath
 cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/graphbuilder/
 
-cp -v config/intelanalytics-graphbuilder/set-cm-spark-classpath.sh   tarballs/$package/usr/lib/intelanalytics/graphbuilder/
+#cp -v config/intelanalytics-graphbuilder/set-cm-spark-classpath.sh   tarballs/$package/usr/lib/intelanalytics/graphbuilder/
 chmod +x tarballs/$package/usr/lib/intelanalytics/graphbuilder/set-cm-spark-classpath.sh
 
 pushd tarballs/$package

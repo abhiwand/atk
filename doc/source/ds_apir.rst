@@ -5,7 +5,8 @@ Python User Functions
 .. contents:: Table of Contents
     :local:
 
-A :abbr:`PUF (Python User Function)` is a python function written by the user on the client-side which can execute in a distributed fashion on the cluster.
+A :abbr:`PUF (Python User Function)` is a python function written by the user on the client-side which can
+execute in a distributed fashion on the cluster.
 The function is serialized and copies are distributed throughout the cluster as part of command execution.
 Various API command methods accept PUFs as parameters.
 All PUFs run under the constraints of the particular command.
@@ -16,12 +17,14 @@ Frame Row PUF
 
 A Frame Row :term:`PUF` is a PUF which operates on a single row of a frame.
 The function has one parameter, a *row* object.
-Here is an example of a Row PUF that returns True for a row where the column named “score” has a value greater than zero::
+Here is an example of a Row PUF that returns True for a row where the column named “score” has a value
+greater than zero::
 
     def my_custom_row_func(row):
         return row['score'] > 0
 
-This function would be useful in a Frame filter command, which filters a data frame keeping only those rows which meet certain criteria, -- in this case, only rows with scores greater than zero::
+This function would be useful in a Frame filter command, which filters a data frame keeping only those rows
+which meet certain criteria, -- in this case, only rows with scores greater than zero::
 
     csv = CsvFile(“tresults.txt”, [(‘test’, str), (‘score’, int32)])
 
@@ -29,14 +32,15 @@ This function would be useful in a Frame filter command, which filters a data fr
 
     frame.filter(my_custom_row_func)
 
-In this example, the filter command iterates over every row in the frame and evaluates the user-defined function on each one and
-keeps only those rows which evaluate to True.
+In this example, the filter command iterates over every row in the frame and evaluates the user-defined
+function on each one and keeps only those rows which evaluate to True.
 
 Row Object Parameter
 ====================
 
 The Row object is a read-only dictionary-like structure which contains the cell values for a particular row.
-The values are accessible using the column name, with typical Python square bracket lookup, as shown in the example above.
+The values are accessible using the column name, with typical Python square bracket lookup, as shown in the
+example above.
 The value of cell in column 'score' is accessed like this::
 
     row['score']
@@ -47,8 +51,9 @@ Here is an equivalent row function::
     def my_custom_row_func2(row):
         return row.score > 0
 
-The *dot-member* notation is provided for convenience (it follows the pandas DataFrame technique) and only works for columns
-whose names are legal python variable names (i.e. alphanumeric plus underscore, not starting with a number).
+The *dot-member* notation is provided for convenience (it follows the pandas DataFrame technique) and only
+works for columns whose names are legal python variable names (i.e. alphanumeric plus underscore, not
+starting with a number).
 Columns whose names do not meet this criteria must be referenced using square brackets with strings.
 
 A *row* object instance may not be written to.
@@ -93,44 +98,48 @@ PUF Guidelines
 
 Here are some guidelines to follow when writing a PUF:
 
-#. Error handling:
+1.  Error handling:
     Include error handling.
-    If the function execution raises an exception, it will cause the entire command to fail and possible leave the BigFrame
-    or BigGraph in an incomplete state.
-    The best practice is to put all our PUF functionality in a ``try: except:`` block, where the ``except:`` clause returns
-    a default value or performs a benign side effect.
-    See the ``row_sum`` function example above, where we used a ``try: except:`` block and produced a -1 for rows which caused errors.
+    If the function execution raises an exception, it will cause the entire command to fail and possible
+    leave the BigFrame or BigGraph in an incomplete state.
+    The best practice is to put all our PUF functionality in a ``try: except:`` block, where the
+    ``except:`` clause returns a default value or performs a benign side effect.
+    See the ``row_sum`` function example above, where we used a ``try: except:`` block and produced a -1
+    for rows which caused errors.
 
-#. Dependencies:
-    All dependencies used in the PUF must be available in **the same Python code file** as the PUF or available in the server's
-    installed Python libraries.
-    The serialization technique to get the code distributed throughout the cluster will only serialize dependencies in the same
-    Python module (in other words, file) right now.
-#. Simplicity:
+#.  Dependencies:
+    All dependencies used in the PUF must be available in **the same Python code file** as the PUF or
+    available in the server's installed Python libraries.
+    The serialization technique to get the code distributed throughout the cluster will only serialize
+    dependencies in the same Python module (in other words, file) right now.
+#.  Simplicity:
     Stay within the intended simple context of the given command, like a row operation.
-    Do not try to call other API methods or perform fancy system operations (which will fail due to permissions).
-#. Performance:
+    Do not try to call other API methods or perform fancy system operations (which will fail due to
+    permissions).
+#.  Performance:
     Be mindful of performance.
     These functions execute on each row of data, in other words, several times.
-#. Printing:
+#.  Printing:
     Printing (to stdout, stderr, …) within our PUF will not show up in the client REPL.
     Such messages will usually end up in the server logs.
     In general, avoid printing.
-#. Lambda:
+#.  Lambda:
     Lambda syntax is valid, but discouraged::
 
         frame.filter(lambda row: row.score > 0)
 
     This is legal and attractively shorter to write.
-    However, lambdas do not provide error handling, nor do they have a “name” that would be useful in exception stack traces.
+    However, lambdas do not provide error handling, nor do they have a “name” that would be useful in
+    exception stack traces.
     They cannot be tested in isolation nor have embedded documentation.
     Lambdas are not very shareable.
-#. Closures:
+#.  Closures:
     Closures are read-only.
-    Any closed over variables are copied during serialization, so it is not possible to obtain side-effects.
-#. Multiple executions:
+    Any closed over variables are copied during serialization, so it is not possible to obtain
+    side-effects.
+#.  Multiple executions:
     Do not make any assumptions about how many times the function may get executed.
-#. Parameterizing PUFs:
+#.  Parameterizing PUFs:
     Parameterizing PUFs is possible using Python techniques of closures and nesting function definitions.
     For example, the Row PUF only takes a single row object parameter.
     It could be useful to have a row function that takes a few other parameters.
@@ -154,4 +163,5 @@ Here are some guidelines to follow when writing a PUF:
 
         frame.add_columns(get_row_sum_func(['name', 'address']), ('sum', int32))
 
-    The ``row_sum2`` function closes over the *ignore_list* argument making it available to the row function that executes on each row.
+    The ``row_sum2`` function closes over the *ignore_list* argument making it available to the row
+    function that executes on each row.

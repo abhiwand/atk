@@ -14,7 +14,7 @@ csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = BigFrame(csv_file)
+frame = Frame(csv_file)
 
 print "Done building data frame"
 
@@ -26,11 +26,11 @@ user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
 
 movie = VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
 
-rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating})
+rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating}, bidirectional=True)
 
 print "Creating Graph connected_components_demo"
 
-graph = BigGraph([user, movie, rates], "connected_components_demo")
+graph = TitanGraph([user, movie, rates], "connected_components_demo")
 
 print "Running Connected Components Algorithm"
 

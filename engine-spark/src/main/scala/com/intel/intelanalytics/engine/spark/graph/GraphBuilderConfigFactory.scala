@@ -47,14 +47,14 @@ import spray.json.JsObject
 class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, graph: Graph) {
 
   // TODO graphbuilder does not yet support taking multiple frames as input
-  require(graphLoad.frame_rules.size == 1, "only one frame rule per call is supported in this version")
+  require(graphLoad.frameRules.size == 1, "only one frame rule per call is supported in this version")
 
-  val theOnlyFrameRule = graphLoad.frame_rules.head
+  val theOnlyFrameRule = graphLoad.frameRules.head
 
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
-      getGBVertexRules(theOnlyFrameRule.vertex_rules),
-      getGBEdgeRules(theOnlyFrameRule.edge_rules),
+      getGBVertexRules(theOnlyFrameRule.vertexRules),
+      getGBEdgeRules(theOnlyFrameRule.edgeRules),
       getTitanConfiguration(graph.name),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
@@ -70,7 +70,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    val columns: List[ColumnDef] = schema.columns map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
+    val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
 
     new InputSchema(columns)
   }
