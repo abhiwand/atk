@@ -56,7 +56,7 @@ object GroupByAggregationFunctions {
       i._2 match {
         case "COUNT" | "COUNT_DISTINCT" => DataTypes.int32
         case "SUM" | "MIN" | "MAX" => schema(i._1)._2
-        case _ => DataTypes.float64
+        case _ => if (schema(i._1)._2 == DataTypes.float32) DataTypes.float32 else DataTypes.float64
       }
     }
 
@@ -90,7 +90,7 @@ object GroupByAggregationFunctions {
       case ((j: Int, "MIN"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).min
       case ((j: Int, "AVG"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum * 1.0 / elem.length
       case ((j: Int, "AVG"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum * 1.0 / elem.length
-      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
+      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum / elem.length
       case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
 
       case ((j: Int, "COUNT"), _) => elem.length
