@@ -81,7 +81,6 @@ class ValidDataTypes(unittest.TestCase):
         else:
             self.fail("Expected exception!")
 
-
     def test_to_string(self):
         self.assertEqual('int32', valid_data_types.to_string(int32))
         self.assertEqual('float64', valid_data_types.to_string(float64))
@@ -97,15 +96,24 @@ class ValidDataTypes(unittest.TestCase):
         self.assertEqual(float32(1.0), valid_data_types.cast(1.0, float32))
         self.assertEqual('jim', valid_data_types.cast('jim', str))
         self.assertTrue(valid_data_types.cast(None, unicode) is None)
-        self.assertTrue(None, valid_data_types.cast(np.inf, float32))
-        self.assertTrue(None, valid_data_types.cast(-np.inf, float64))
-        self.assertTrue(None, valid_data_types.cast(np.nan, float32))
         try:
             valid_data_types.cast(3, set)
         except ValueError:
             pass
         else:
             self.fail("Expected exception!")
+
+    def test_nan(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.nan, float32) is None)
+
+    def test_positive_inf(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.inf, float64) is None)
+
+    def test_negative_inf(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(-np.inf, float32) is None)
 
 
 if __name__ == '__main__':
