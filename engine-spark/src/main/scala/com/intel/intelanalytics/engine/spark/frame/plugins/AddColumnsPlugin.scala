@@ -25,14 +25,12 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.engine.plugin.{Invocation, Transformation}
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{PythonRDDStorage, SparkFrameData}
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
-
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -67,7 +65,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    */
   override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
     val frame = resolve[SparkFrameData](arguments.frame)
-    val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(_.asInstanceOf[DataType]))
+    val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x : DataType))
     val newSchema = frame.meta.schema.addColumns(newColumns)
 
     // Update the data

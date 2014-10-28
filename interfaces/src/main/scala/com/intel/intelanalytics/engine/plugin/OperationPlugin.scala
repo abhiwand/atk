@@ -113,8 +113,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
 /**
  * Base trait for command plugins
  */
-abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag,
-                              Return <: Product: JsonFormat: ClassManifest: TypeTag]
+abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] {
 
   def engine(implicit invocation: Invocation) = invocation.engine
@@ -156,10 +155,10 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    */
   def execute(arguments: Arguments)(implicit context: Invocation): Return = ???
 
-  def resolve[T <: UriReference](reference: UriReference)
-                                (implicit invocation: Invocation) : T = invocation.resolve(reference)
+  def resolve[T <: UriReference](reference: UriReference)(implicit invocation: Invocation): T =
+    invocation.resolver.resolve(reference).get
 
-  def create[T <: UriReference](implicit invocation: Invocation) : T = invocation.create()
+  def create[T <: UriReference](implicit invocation: Invocation): T = invocation.resolver.create()
 }
 
 /**

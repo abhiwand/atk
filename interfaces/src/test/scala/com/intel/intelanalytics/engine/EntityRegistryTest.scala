@@ -21,17 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.HasMetaData
+import com.intel.intelanalytics.domain.frame.{FrameReferenceManagement, FrameEntity}
+import com.intel.intelanalytics.engine.plugin.Invocation
+import org.scalatest.{FlatSpec, Matchers}
 
-/**
- * A FrameReference with metadata
- */
-class FrameMeta(frame: DataFrame) extends FrameReference(frame.id, Some(true)) with HasMetaData {
+class EntityRegistryTest extends FlatSpec with Matchers {
 
-  type Meta = DataFrame
+  implicit val invocation: Invocation = null
 
-  val meta = frame
+  "Adding a second manager for the same entity" should "replace the original" in {
+    val registry = new EntityRegistry
+    registry.register(FrameEntity, FrameReferenceManagement)
+    registry.register(FrameEntity, new MockFrameManager)
+
+    val data: MockFrameManager#D = registry.resolver.resolve[MockFrameManager#D]("ia://frames/34").get
+
+    data should not be(null)
+  }
 
 }

@@ -23,14 +23,12 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.domain.{ UriReference, ReferenceResolver }
-import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
+import com.intel.intelanalytics.engine.{CommandStorage, Engine, ReferenceResolver}
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.runtime.{ universe => ru }
-import ru._
+import scala.reflect.runtime.{universe => ru}
 
 /**
  * Provides context for an invocation of a command or query.
@@ -40,55 +38,41 @@ trait Invocation {
   /**
    * An instance of the engine that the plugin can use to execute its work
    */
-  private [intelanalytics] def engine: Engine
+  private[intelanalytics] def engine: Engine
 
   /**
    * The identifier of this execution
    */
-  private [intelanalytics] def commandId: Long
+  private[intelanalytics] def commandId: Long
 
   /**
    * The original arguments as supplied by the user
    */
-  private [intelanalytics] def arguments: Option[JsObject]
+  private[intelanalytics] def arguments: Option[JsObject]
 
   /**
    * The user that invoked the operation
    */
-  private [intelanalytics] def user: UserPrincipal
+  private[intelanalytics] def user: UserPrincipal
 
   /**
    * A Scala execution context for use with methods that require one
    */
-  private [intelanalytics] def executionContext: ExecutionContext
+  private[intelanalytics] def executionContext: ExecutionContext
 
   /**
    * Command Storage to read/update command progress
    */
-  private [intelanalytics] def commandStorage: CommandStorage
+  private[intelanalytics] def commandStorage: CommandStorage
 
   /**
    * Reference resolver to enable dereferencing of UriReference objects
    */
-  private [intelanalytics] def resolver: ReferenceResolver
+  private[intelanalytics] def resolver: ReferenceResolver
 
-  /**
-   * Convenience method for resolving references
-   */
-  private [intelanalytics] def resolve[T <: UriReference: TypeTag](reference: UriReference): T = resolver.resolve(reference).get
-
-  private [intelanalytics] def create[T <: UriReference]() : T = ??? //resolver.create
 }
 
 object Invocation {
-  implicit def invocationToUser(inv: Invocation) : UserPrincipal = inv.user
-  implicit class invUser(inv: Invocation) extends HasUser {
-    def user = inv.user
-  }
-}
-
-
-trait HasUser {
-  def user: UserPrincipal
+  implicit def invocationToUser(inv: Invocation): UserPrincipal = inv.user
 }
 

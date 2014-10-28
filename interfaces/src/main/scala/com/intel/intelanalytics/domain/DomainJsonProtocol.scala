@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
-import com.intel.intelanalytics.engine.plugin.QueryPluginResults
+import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults }
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
@@ -43,12 +43,13 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
 import spray.json._
-import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
+import com.intel.intelanalytics.engine.{ReferenceResolver, ProgressInfo, TaskProgressInfo}
 
 import scala.util.matching.Regex
 import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 /**
  * Implicit conversions for domain objects to/from JSON
  */
@@ -105,19 +106,21 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: UriReference](entity: Entity)
+  class ReferenceFormat[T <: UriReference: TypeTag](entity: Entity)
       extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
-    override def read(json: JsValue): T = json match {
-      case JsString(name) => ReferenceResolver.resolve(name).get.asInstanceOf[T]
-      case JsNumber(n) => ReferenceResolver.resolve(s"ia://${entity.name.plural}/$n").get.asInstanceOf[T]
-      case _ => deserializationError(s"Expected valid ${entity.name.plural} URI, but received " + json)
+    override def read(json: JsValue): T = {
+      implicit val invocation: Invocation = null
+      json match {
+        case JsString(name) => ReferenceResolver.resolve[T](name).get
+        case JsNumber(n) => ReferenceResolver.resolve[T](s"ia://${entity.name.plural}/$n").get
+        case _ => deserializationError(s"Expected valid ${entity.name.plural} URI, but received " + json)
+      }
     }
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameReferenceManagement)
-  implicit val singleFrameReferenceFormat = jsonFormat1(SingleReference[FrameReference])
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameEntity)
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
@@ -182,7 +185,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphReferenceManagement)
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntity)
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 

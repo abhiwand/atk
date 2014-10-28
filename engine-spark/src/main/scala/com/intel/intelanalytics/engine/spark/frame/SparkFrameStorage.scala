@@ -25,38 +25,22 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
 
-import com.intel.intelanalytics.{ DuplicateNameException, NotFoundException }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.schema.DataTypes
-import DataTypes.DataType
-import java.nio.file.Paths
-import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
-import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.execution.ExistingRdd
-
-import scala.io.Codec
-import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark._
-import org.apache.spark.SparkContext
-import scala.util.matching.Regex
-import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
-import com.intel.intelanalytics.engine.FrameStorage
-import com.intel.intelanalytics.repository.SlickMetaStoreComponent
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
+import com.intel.intelanalytics.domain.EntityManager
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.engine.{FrameStorage, _}
 import com.intel.intelanalytics.engine.plugin.Invocation
-import scala.Some
+import com.intel.intelanalytics.engine.spark._
+import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.{DuplicateNameException, NotFoundException}
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
-import com.intel.event.EventLogging
-import scala.util.parsing.combinator.RegexParsers
 
 import scala.util.control.NonFatal
 
@@ -65,10 +49,39 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner,
                         getContext: (UserPrincipal) => SparkContext)
-    extends FrameStorage with EventLogging with ClassLoaderAware {
+    extends FrameStorage with EventLogging with ClassLoaderAware { storage =>
 
   override type Context = SparkContext
   override type Data = FrameRDD
+
+  object SparkFrameManagement extends EntityManager[FrameEntity.type] {
+
+    override type Reference = FrameReference
+
+    override type MetaData = FrameMeta
+
+    override type Data = SparkFrameData
+
+    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
+      val meta = getMetaData(reference)
+      new SparkFrameData(meta.meta, storage.loadFrameData(sc, meta.meta))
+    }
+
+    override def getMetaData(reference: Reference): MetaData = new FrameMeta(expectFrame(reference.id))
+
+    override def create()(implicit invocation: Invocation): Reference = storage.create(DataFrameTemplate(generateFrameName()))
+
+    override def getReference(id: Long): Reference = expectFrame(id)
+
+    implicit def frameToRef(frame: DataFrame): Reference = FrameReference(frame.id, Some(true))
+
+    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
+
+    implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
+
+  }
+
+  EntityRegistry.register(FrameEntity, SparkFrameManagement)
 
   def exchangeNames(frame1: DataFrame, frame2: DataFrame): Unit = {
     metaStore.withTransaction("SFS.exchangeNames") { implicit txn =>

@@ -37,7 +37,7 @@ import scala.concurrent.ExecutionContext
 trait SparkQueryPlugin[Argument <: Product]
     extends QueryPlugin[Argument] {
 
-    def engine(implicit invocation: Invocation): SparkEngine = invocation.engine.asInstanceOf[SparkEngine]
+  def engine(implicit invocation: Invocation): SparkEngine = invocation.engine.asInstanceOf[SparkEngine]
 
-    def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
+  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
 }

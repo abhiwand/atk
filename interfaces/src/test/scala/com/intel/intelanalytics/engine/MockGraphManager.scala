@@ -21,53 +21,34 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.graph
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.domain.{HasData, HasMetaData, EntityManager}
+import com.intel.intelanalytics.domain.graph.{GraphReference, GraphEntity}
+import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 
-case class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
-  /** The entity type */
-  override def entity: Entity = GraphEntity
+class MockGraphManager extends EntityManager[GraphEntity.type] {
+  class M(id: Long) extends GraphReference(id) with HasMetaData {
+    override type Meta = Int
+    override val meta = 3
+  }
+  class D(id: Long) extends M(id) with HasData {
+    override type Data = Seq[Row]
+    override val data = Seq(
+      Array[Any](1,2,3),
+      Array[Any](4,5,6)
+    )
+  }
+  override type MetaData = M
 
-  /** The entity id */
-  override def id: Long = graphId
+  override def getData(reference: Reference)(implicit invocation: Invocation): Data = new D(reference.id)
 
-  /**
-   * Is this reference known to be valid at the time it was created?
-   *
-   * None indicates this is unknown.
-   */
-  override def exists: Option[Boolean] = graphExists
-
-}
-
-object GraphEntity extends Entity {
-
-  override type Reference = GraphReference
-
-  def name = EntityName("graph", "graphs")
-
-  def apply(graphId: Long, graphExists: Option[Boolean] = None) = new GraphReference(graphId, graphExists)
-
-}
-
-object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =>
-
-  //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(GraphEntity, this)
-
-  override type MetaData = Reference with NoMetaData
-
-  override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
-
-  override def getMetaData(reference: Reference): MetaData = ???
+  override def getMetaData(reference: Reference): MetaData = new M(reference.id)
 
   override def create()(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long): Reference = new GraphReference(id, None)
+  override def getReference(id: Long): Reference = new GraphReference(id, Some(true))
 
-  override type Data = Reference with NoData
-
+  override type Data = D
 }

@@ -184,8 +184,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |    
                             """.stripMargin)))
 
-  override def execute(arguments: RecommendParams)
-                      (implicit invocation: Invocation): RecommendResult = {
+  override def execute(arguments: RecommendParams)(implicit invocation: Invocation): RecommendResult = {
     import scala.concurrent.duration._
 
     System.out.println("*********Start to execute Recommend query********")

@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+
 /**
  * Describes the structure of a name, including both singular and plural,
  * for use in constructing URIs and other identifiers for entities in the system.
@@ -78,18 +80,20 @@ trait Entity {
  * Additional functionality for Entities to allow creation (of placeholders) and retrieval of entities'
  * metadata and data.
  */
-trait EntityManagement extends Entity { self =>
+trait EntityManager[E <: Entity] { self =>
+
+  type Reference = E#Reference
 
   type MetaData <: Reference with HasMetaData
 
   type Data <: MetaData with HasData
 
-  def create(): Reference
+  def create()(implicit invocation: Invocation): Reference
 
   def getReference(id: Long): Reference
 
   def getMetaData(reference: Reference): MetaData
 
-  def getData(reference: Reference): Data
+  def getData(reference: Reference)(implicit invocation: Invocation): Data
 
 }

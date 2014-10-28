@@ -24,11 +24,13 @@
 package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.engine.plugin.Invocation
 
 case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 
   /** The entity type */
-  override def entity: Entity = FrameReferenceManagement
+  override def entity: Entity = FrameEntity
 
   /** The entity id */
   override def id: Long = frameId
@@ -41,28 +43,33 @@ case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) ex
   override def exists: Option[Boolean] = frameExists
 }
 
-object FrameReferenceManagement extends EntityManagement { self =>
+object FrameEntity extends Entity {
 
   override type Reference = FrameReference
-
-  //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register[self.type](this)
-
-  override type MetaData = FrameReference with NoMetaData
-
-  override def getData(reference: Reference): Data = ???
-
-  override def getMetaData(reference: Reference): MetaData = ???
-
-  override def create(): Reference = ???
-
-  override def getReference(id: Long): Reference = new FrameReference(id, None)
-
-  override type Data = FrameReference with NoData
 
   def name = EntityName("frame", "frames")
 
   override def alternatives = Seq(EntityName("dataframe", "dataframes"))
 
   def apply(frameId: Long, frameExists: Option[Boolean]) = new FrameReference(frameId, frameExists)
+
+}
+
+object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =>
+
+  //Default resolver that simply creates a reference, with no guarantee that it is valid.
+  EntityRegistry.register(FrameEntity, this)
+
+  override type MetaData = FrameReference with NoMetaData
+
+  override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
+
+  override def getMetaData(reference: Reference): MetaData = ???
+
+  override def create()(implicit invocation: Invocation): Reference = ???
+
+  override def getReference(id: Long): Reference = new FrameReference(id, None)
+
+  override type Data = FrameReference with NoData
+
 }
