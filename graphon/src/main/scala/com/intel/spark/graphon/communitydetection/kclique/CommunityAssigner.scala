@@ -42,37 +42,14 @@ object CommunityAssigner extends Serializable {
    * Emit pairs of vertex ID and community ID from k-clique graph vertex (having a new Long ID) which is originally a set of vertices.
    * Group by vertex IDs so that each vertex ID gets a set (possibly empty) of the community IDs to which it belongs
    *
-   * @param connectedComponents pair of new Long IDs (corresponding to each k-cliques) and community ID
-   * @param cliqueGraphVertexIdToCliqueSet pair of new Long IDs and corresponding k-cliques
-   * @return an RDD of pair of original vertex ID and set of community IDs to which it belongs
    */
-  def run(connectedComponents: RDD[(Long, Long)], cliqueGraphVertexIdToCliqueSet: RDD[(Long, VertexSet)], sc: SparkContext): RDD[(Long, Set[Long])] = {
+  def run(cliquesToCommunities: RDD[(VertexSet, Long)], sc: SparkContext): RDD[(Long, Set[Long])] = {
 
-    // Pair of seq of community Id and seq of k-cliques by cogrouping
-    // connected components (new vertices and community Id pair) and new vertices Id to
-    // old vertices Id (of k-clique) pair
-    val seqOfCommunityIdToSeqOfCliques: RDD[(Iterable[Long], Iterable[Set[Long]])] = connectedComponents.cogroup(cliqueGraphVertexIdToCliqueSet).map(_._2)
+    val vertexCommunityPairs: RDD[(Long, Long)] =
+      cliquesToCommunities.flatMap({ case (clique, communityID) => clique.map(v => (v, communityID)) })
 
-    // Get community Id and corresponding set of old vertex Ids of the k-clique
-    val communityIdToVertexIdSet: RDD[(Long, Set[Long])] = seqOfCommunityIdToSeqOfCliques.flatMap({
-      case (communityIdList, verticesList) =>
-        communityIdList.flatMap(communityID =>
-          verticesList.map(vertices => (communityID, vertices)))
-    })
+    vertexCommunityPairs.groupByKey().map({ case (vertex, communitySeq) => (vertex, communitySeq.toSet) })
 
-    // Emit community Id and old vertex vertex Id (of k-clique) pair from the set of vertex Id
-    val vertexCommunityIDPair = communityIdToVertexIdSet.flatMap(communityIdVertices =>
-      communityIdVertices._2.map(vertex => (vertex, communityIdVertices._1)))
-
-    // Modify the long random community IDs with the normalized community IDs inside the pair 
-    val (communityCount, vertexNormalizedCommunityIDPair) =
-      NormalizeConnectedComponents.normalize(vertexCommunityIDPair, sc)
-
-    // group the communities for each k-clique vertices and get pair of vertex Id and set of community Ids
-    val vertexCommunityIDSet: RDD[(Long, Set[Long])] = vertexNormalizedCommunityIDPair
-      .groupBy(_._1).mapValues(_.map(_._2).toSet)
-
-    vertexCommunityIDSet
   }
 
 }

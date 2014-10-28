@@ -26,45 +26,49 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.spark.graphon.communitydetection.kclique.CommunityAssigner
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait kCliqueVertexWithCommunityListTest {
-    val renamedIDWithCommunity = List((1001, 2), (1002, 2), (1003, 2), (1004, 1), (1005, 1))
-      .map({ case (renamedID, community) => (renamedID.toLong, community.toLong) })
 
-    val renamedIDWithOriginalKClique = List(
-      (1001, Array(2, 3, 4, 5)),
-      (1002, Array(2, 3, 4, 7)),
-      (1003, Array(2, 3, 4, 8)),
-      (1004, Array(3, 5, 6, 7)),
-      (1005, Array(3, 5, 6, 8))
-    ).map({ case (renamedID, kClique) => (renamedID.toLong, kClique.map(_.toLong).toSet) })
+    /*
+     The graph has vertex set 1, 2, 3, 4, 5, 6, 7
+     and edge set 12, 13, 14, 23,24, 34, 35, 36, 37, 46, 46, 47, 56, 57
 
-    val vertexWithCommunityList = List(
-      (2, Array(2)),
-      (3, Array(1, 2)),
-      (4, Array(2)),
-      (5, Array(1, 2)),
-      (6, Array(1)),
-      (7, Array(1, 2)),
-      (8, Array(1, 2))
-    ).map({ case (vertex, community) => (vertex.toLong, community.map(_.toLong).toSet) })
+     so there are three 4-cliques:  1234, 3456, and 3457
+
+     1234 is in its own 4-clique community
+     3456 and 3457 are in another 4-clique community
+     */
+
+    val clique1: VertexSet = Set(1, 2, 3, 4).map(_.toLong)
+    val clique2: VertexSet = Set(3, 4, 5, 6).map(_.toLong)
+    val clique3: VertexSet = Set(3, 4, 5, 7).map(_.toLong)
+
+    val cliquesToCommunities = Seq(Pair(clique1, 1.toLong), Pair(clique2, 2.toLong), Pair(clique3, 2.toLong))
 
   }
 
   "Assignment of communities to the vertices" should
     "produce the pair of original k-clique vertex and set of communities it belongs to" in new kCliqueVertexWithCommunityListTest {
 
-      val rddOfVertexWithCommunityList = sparkContext.parallelize(vertexWithCommunityList)
+      val cliquesToCommunitiesRDD = sparkContext.parallelize(cliquesToCommunities)
 
-      val rddOfRenamedIDWithCommunity = sparkContext.parallelize(renamedIDWithCommunity)
-      val rddOfRenamedIDWithOriginalKClique = sparkContext.parallelize(renamedIDWithOriginalKClique)
+      val verticesToCommunities = CommunityAssigner.run(cliquesToCommunitiesRDD, sparkContext)
 
-      val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique, sparkContext)
+      val vertexToCommunitiesMap = verticesToCommunities.collect().toMap
 
-      vertexWithAssignedCommunities.collect().toSet shouldEqual rddOfVertexWithCommunityList.collect().toSet
+      vertexToCommunitiesMap(1.toLong) should be(Set(1.toLong))
+      vertexToCommunitiesMap(2.toLong) should be(Set(1.toLong))
+
+      vertexToCommunitiesMap(3.toLong) should be(Set(1.toLong, 2.toLong))
+      vertexToCommunitiesMap(4.toLong) should be(Set(1.toLong, 2.toLong))
+
+      vertexToCommunitiesMap(5.toLong) should be(Set(2.toLong))
+      vertexToCommunitiesMap(6.toLong) should be(Set(2.toLong))
+      vertexToCommunitiesMap(7.toLong) should be(Set(2.toLong))
+
     }
 }
 

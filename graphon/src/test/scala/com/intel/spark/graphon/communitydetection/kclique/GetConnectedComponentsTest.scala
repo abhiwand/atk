@@ -26,28 +26,41 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.spark.graphon.communitydetection.kclique.{ GraphGenerator, GetConnectedComponents }
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
 import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait getConnectedComponentsTest {
-    val fourCliques = List((Array(2, 3, 4), Array(5, 7, 8)), (Array(3, 5, 6), Array(7, 8)))
-      .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
+    /*
+     The test graph is on the vertex set 1, 2, 3, 4, 5, 6,  and the edge set is
+     1-2, 2-3, 3-4, 1-3, 2-4, 4-5, 4-6, 5-6,
+     so it has the cliques 123, 234, and 456
 
-    val vertexListOfFourCliqueGraph = List(Array(2, 3, 4, 5), Array(2, 3, 4, 7), Array(2, 3, 4, 8), Array(3, 5, 6, 7), Array(3, 5, 6, 8))
-      .map(clique => clique.map(_.toLong).toSet)
+    */
+
+    val clique1: VertexSet = Set(1.toLong, 2.toLong, 3.toLong)
+    val clique2: VertexSet = Set(2.toLong, 3.toLong, 4.toLong)
+    val clique3: VertexSet = Set(4.toLong, 5.toLong, 6.toLong)
+
+    val cliqueGraphVertexSet = Seq(clique1, clique2, clique3)
+    val cliqueGraphEdgeSet = Seq(Pair(clique1, clique2))
+
   }
 
   "K-Clique Connected Components" should
     "produce the same number of pairs of vertices and component ID as the number of vertices in the input graph" in new getConnectedComponentsTest {
 
-      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val vertexRDD = sparkContext.parallelize(cliqueGraphVertexSet)
+      val edgeRDD = sparkContext.parallelize(cliqueGraphEdgeSet)
 
-      val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)
-      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput, sparkContext)
-      val fourCliqueGraphCC = fourCliqueGraphCCOutput.connectedComponents
+      val cliquesToCommunities = GetConnectedComponents.run(vertexRDD, edgeRDD, sparkContext)
 
-      fourCliqueGraphCC.count() shouldEqual vertexListOfFourCliqueGraph.size
+      val cliquesToCommunitiesMap = cliquesToCommunities.collect().toMap
+
+      cliquesToCommunitiesMap.keySet should contain(clique1)
+      cliquesToCommunitiesMap.keySet should contain(clique2)
+      cliquesToCommunitiesMap.keySet should contain(clique3)
     }
 }
