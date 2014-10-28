@@ -16,9 +16,10 @@ ALTER TABLE frame ADD COLUMN graph_id bigint;
 ALTER TABLE ONLY frame ADD CONSTRAINT graph_frame_id FOREIGN KEY (graph_id) REFERENCES graph(graph_id);
 
 ALTER TABLE graph ADD COLUMN storage_format CHARACTER VARYING(32);
+UPDATE graph SET storage_format = 'hbase/titan';
 ALTER TABLE graph ALTER COLUMN storage_format SET NOT NULL;
 
-UPDATE graph SET storage_format = 'hbase/titan';
+
 
 ALTER TABLE graph ADD COLUMN id_counter BIGINT;
 
