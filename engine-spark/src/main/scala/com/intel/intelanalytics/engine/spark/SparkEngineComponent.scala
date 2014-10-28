@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
@@ -69,7 +69,7 @@ class SparkComponent extends EngineComponent
 
   metaStore.initializeSchema()
 
-  val sparkContextManager = new SparkContextFactoryManager()
+  val sparkContextManager = new SparkContextFactory()
 
   val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 

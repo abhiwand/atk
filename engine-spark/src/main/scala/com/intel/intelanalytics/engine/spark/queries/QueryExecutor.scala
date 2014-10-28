@@ -27,7 +27,7 @@ import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults, FunctionQuery, QueryPlugin }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactoryManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -61,7 +61,7 @@ import com.intel.event.EventLogging
  * @param queries a query storage that the executor can use for audit logging query execution
  * @param contextManager a SparkContext factory that can be passed to SparkQueryPlugins during execution
  */
-class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextManager: SparkContextFactoryManager)
+class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextManager: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
