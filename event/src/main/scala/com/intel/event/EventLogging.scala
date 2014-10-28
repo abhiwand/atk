@@ -36,7 +36,7 @@ trait EventLogging {
    */
   val setEventLog: EventLog = {
     if (EventLogger.getImplementation == null) {
-      EventLogger.setImplementation(new SLF4JLogAdapter())
+      //EventLogger.setImplementation(new SLF4JLogAdapter())
     }
     EventLogger.getImplementation
   }

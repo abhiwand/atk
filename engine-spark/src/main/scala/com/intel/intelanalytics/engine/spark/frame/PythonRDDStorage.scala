@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -99,7 +99,6 @@ object PythonRDDStorage extends ClassLoaderAware {
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     converter
   }
-
 
   /**
    * Converts a PythonRDD to a FrameRDD

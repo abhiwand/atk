@@ -1,12 +1,15 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameReference }
-import com.intel.intelanalytics.domain.graph.{ GraphReferenceManagement, GraphReference }
-import org.scalatest.{ FlatSpec, Matchers }
+import com.intel.intelanalytics.domain.frame.{FrameEntity, FrameReference, FrameReferenceManagement}
+import com.intel.intelanalytics.domain.graph.{GraphEntity, GraphReference, GraphReferenceManagement}
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.{EntityRegistry, ReferenceResolver}
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.{ Success, Try }
+import scala.util.Success
 
 class UriReferenceTest extends FlatSpec with Matchers {
+  implicit val invocation: Invocation = null
 
   "A frame uri" should "fail to resolve when no resolvers are registered" in {
     val uri: String = "ia://frame/1"
@@ -21,7 +24,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val uri: String = "ia://frame/1"
     val expected = new FrameReference(1)
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(GraphReferenceManagement)
+    registry.register(GraphEntity, GraphReferenceManagement)
     val resolver = registry.resolver
     intercept[IllegalArgumentException] {
       resolver.resolve(uri).get
@@ -32,8 +35,8 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val uri: String = "ia://frame/1"
     val expected = Success(new FrameReference(1))
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(GraphReferenceManagement)
-    registry.register(FrameReferenceManagement)
+    registry.register(GraphEntity, GraphReferenceManagement)
+    registry.register(FrameEntity, FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.resolve(uri) should be(expected)
   }
@@ -41,7 +44,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
   it should "be recognized as a valid URI format when the URI is correct and a resolver is registered" in {
     val uri: String = "ia://frame/1"
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(FrameReferenceManagement)
+    registry.register(FrameEntity, FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.isReferenceUriFormat(uri) should be(true)
   }
@@ -49,7 +52,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
   it should "not be recognized as a valid URI format when the URI is incorrect" in {
     val uri: String = "not an URI at all"
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(FrameReferenceManagement)
+    registry.register(FrameEntity, FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.isReferenceUriFormat(uri) should be(false)
   }

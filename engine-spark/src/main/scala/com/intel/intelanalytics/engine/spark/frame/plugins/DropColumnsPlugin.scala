@@ -82,7 +82,6 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
                            |
                             """)))
 
-
   /**
    * Remove columns from a frame.
    *
@@ -95,7 +94,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
   override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation) = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx : SparkContext = sc
+    val ctx: SparkContext = sc
 
     // validate arguments
     val frameId = arguments.frame.id

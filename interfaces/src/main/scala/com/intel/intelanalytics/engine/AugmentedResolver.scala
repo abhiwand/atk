@@ -23,20 +23,36 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.{UriReference, HasData}
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.command.{ Typeful, Dependencies }
-import org.scalatest.{ FlatSpec, Matchers }
-import spray.json._
 
-class DependenciesTest extends FlatSpec with Matchers {
-  "getUriReferencesForJson" should "find UriReferences in case classes" in {
-    case class Foo(frameId: Int, frame: FrameReference)
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-    implicit val fmt = jsonFormat2(Foo)
+import scala.util.Try
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
-    val reference = List(FrameReference(3, None))
-    implicit val invocation: Invocation = null
-    Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
+case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference with HasData]) extends ReferenceResolver {
+  /**
+   * Returns a reference for the given URI if possible.
+   *
+   * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
+   *                                  Note this exception will be in the Try, not actually thrown immediately.
+   */
+  override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation): Try[T] = {
+    base.resolve(uri).map { ref =>
+      val resolved = data.find(d => d.uri == ref.uri).getOrElse(ref)
+      ReferenceResolver.coerceReference(resolved)
+    }
   }
+
+  /**
+   * Checks to see if this string might be a valid reference, without actually trying to resolve it.
+   */
+  override def isReferenceUriFormat(s: String): Boolean = base.isReferenceUriFormat(s)
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def create[T <: UriReference: ru.TypeTag]()(implicit invocation: Invocation): T = base.create()
+
+  def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
 }

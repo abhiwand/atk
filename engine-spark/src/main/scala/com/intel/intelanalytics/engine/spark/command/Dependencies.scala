@@ -25,8 +25,8 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.Reflection
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.{ReferenceResolver, Reflection}
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.command.Typeful.Searchable
 import spray.json.{ JsNumber, JsValue, JsString, JsObject }
 
@@ -53,7 +53,7 @@ object Dependencies {
    * Returns all the [[UriReference]] elements from a JsObject, which really means
    * extracting all the string values that are recognized as valid entity URIs.
    */
-  def getUriReferencesFromJsObject(source: JsObject): Seq[UriReference] = {
+  def getUriReferencesFromJsObject(source: JsObject)(implicit invocation: Invocation): Seq[UriReference] = {
     val results = source.deepFind((s: String) => ReferenceResolver.isReferenceUriFormat(s))
     results.flatMap(js => ReferenceResolver.resolve(js).toOption.toList)
   }
@@ -73,15 +73,14 @@ object Dependencies {
   /**
    * Helper method for the {{build}} method
    */
-  private def buildHelper(startWith: Seq[Computable], resolver: ReferenceResolver, accumulator: List[Set[Command]]): List[Set[Command]] = {
+  private def buildHelper(startWith: Seq[Computable], resolver: ReferenceResolver, accumulator: List[Set[Command]])(implicit invocation: Invocation): List[Set[Command]] = {
     val unfulfilled = startWith.filter(obj => obj.computeStatus != Complete)
     val commands = unfulfilled.map(obj => obj.command()).toSet
     val deps = commands.map(c => c.arguments.get)
       .flatMap(getUriReferencesFromJsObject)
       .toSet
       .map((ref: UriReference) => {
-        val management: EntityManagement = ref.entity.asInstanceOf[EntityManagement]
-        management.getMetaData(ref.asInstanceOf[management.type#Reference]).asInstanceOf[Computable]
+        resolver.resolve[ref.type with HasMetaData](ref).asInstanceOf[Computable]
       })
     buildHelper(deps.toSeq, resolver, commands :: accumulator)
   }
@@ -97,7 +96,7 @@ object Dependencies {
    * @param startWith the set of resources that need to be loaded
    * @param resolver the ReferenceResolver to use to look up information about the objects in the system.
    */
-  def build(startWith: Seq[Computable], resolver: ReferenceResolver = ReferenceResolver): Seq[Set[Command]] =
+  def build(startWith: Seq[Computable], resolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Seq[Set[Command]] =
     buildHelper(startWith, resolver, List.empty)
 
 }

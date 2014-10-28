@@ -27,7 +27,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.engine.spark.{SparkEngine, EngineKryoRegistrator}
+import com.intel.intelanalytics.engine.spark.{ SparkEngine, EngineKryoRegistrator }
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
