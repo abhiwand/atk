@@ -120,6 +120,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
                     return true;
                 }
             }
+            this.giraphVertex = null;
             return false;
 
         }
@@ -135,7 +136,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         @Override
         public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> getCurrentVertex()
                 throws IOException, InterruptedException {
-            return giraphVertex;
+            return this.giraphVertex;
         }
 
         /**
@@ -145,7 +146,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @throws IOException
          */
         protected VertexData4CFWritable getValue() throws IOException {
-            VertexData4CFWritable vertexValue = giraphVertex.getValue();
+            VertexData4CFWritable vertexValue = this.giraphVertex.getValue();
             Vector vector = vertexValue.getVector();
             if (cardinality != vector.size()) {
                 if (cardinality == -1) {
@@ -164,7 +165,8 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @throws IOException
          */
         protected Iterable<Edge<LongWritable, EdgeData4CFWritable>> getEdges() throws IOException {
-            return giraphVertex.getEdges();
+
+            return this.giraphVertex.getEdges();
         }
 
         /**
