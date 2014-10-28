@@ -4,10 +4,7 @@ import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation;
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP;
-import com.thinkaurelius.titan.core.EdgeLabel;
-import com.thinkaurelius.titan.core.PropertyKey;
-import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.junit.Assert;
@@ -65,18 +62,27 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         expectedLpValues.put(20L, new Double[]{0.083, 0.458, 0.458});
 
         TitanManagement graphManager = graph.getManagementSystem();
-        PropertyKey red = graphManager.makePropertyKey("red").dataType(String.class).make();
-        PropertyKey blue = graphManager.makePropertyKey("blue").dataType(String.class).make();
-        PropertyKey yellow = graphManager.makePropertyKey("yellow").dataType(String.class).make();
-        PropertyKey weight = graphManager.makePropertyKey("weight").dataType(String.class).make();
-        PropertyKey vertexType = graphManager.makePropertyKey("vertexType").dataType(String.class).make();
-        PropertyKey prior = graphManager.makePropertyKey("prior").dataType(String.class).make();
-        EdgeLabel friend = graphManager.makeEdgeLabel("friend").make();
+        graphManager.makePropertyKey("red").dataType(String.class).make();
+        graphManager.makePropertyKey("blue").dataType(String.class).make();
+        graphManager.makePropertyKey("yellow").dataType(String.class).make();
+        graphManager.makePropertyKey("weight").dataType(String.class).make();
+        graphManager.makePropertyKey("vertexType").dataType(String.class).make();
+        graphManager.makePropertyKey("prior").dataType(String.class).make();
+        graphManager.makeEdgeLabel("friend").make();
         graphManager.commit();
 
+        TitanTransaction tx = graph.newTransaction();
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
         }
+
+        String red = "red";
+        String blue = "blue";
+        String yellow = "yellow";
+        String weight = "weight";
+        String vertexType = "vertexType";
+        String prior = "prior";
+        String friend = "friend";
 
         nodes[0].addProperty(red, "1");
         nodes[0].addProperty(blue, "0.1");
@@ -156,7 +162,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         long[] nid = new long[numVertices];
         assertTrue(tx.containsRelationType("lbp_red"));
         assertTrue(tx.containsRelationType("lbp_blue"));
@@ -171,6 +177,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             assertEquals(expectedLbpValues.get(nid[i])[1],
                     Double.parseDouble(nodes[i].getProperty(result_blue).toString()), 0.01d);
         }
+        tx.commit();
     }
 
     //@Ignore
@@ -195,7 +202,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
 
-        startNewTransaction();
+        tx = graph.newTransaction();
         //check keys are generated for Titan
         String keyName = "lbp_results";
         assertTrue(tx.containsRelationType(keyName));
@@ -216,6 +223,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 assertEquals(expectedLbpValues.get(nid)[j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
+        tx.commit();
     }
 
     @Test
@@ -243,7 +251,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         assertTrue(tx.containsRelationType("lp_red"));
         assertTrue(tx.containsRelationType("lp_blue"));
         assertTrue(tx.containsRelationType("lp_yellow"));
@@ -257,6 +265,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             assertEquals(expectedLpValues.get(nid)[1],
                     Double.parseDouble(nodes[i].getProperty(result_blue).toString()), 0.01d);
         }
+        tx.commit();
     }
 
     @Test
@@ -284,7 +293,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         //check keys are generated for Titan
         String keyName = "lp_results";
         assertTrue(tx.containsRelationType(keyName));
@@ -305,5 +314,6 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 assertEquals(expectedLpValues.get(nid)[j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
+        tx.commit();
     }
 }

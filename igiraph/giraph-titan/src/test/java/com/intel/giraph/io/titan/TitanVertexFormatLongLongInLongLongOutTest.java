@@ -25,7 +25,10 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation;
 import com.intel.giraph.combiner.MinimumLongCombiner;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongLongNull;
-import com.thinkaurelius.titan.core.*;
+import com.thinkaurelius.titan.core.PropertyKey;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanTransaction;
+import com.thinkaurelius.titan.core.TitanVertex;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.edge.ByteArrayEdges;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -51,9 +54,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TitanVertexFormatLongLongInLongLongOutTest
         extends TitanTestBase<LongWritable, LongWritable, NullWritable> {
-    double[] expectedValues = new double[]{
-            4, 4, 4, 4, 4, 24, 24, 24, 36, 36
-    };
 
 
     @Override
@@ -104,6 +104,12 @@ public class TitanVertexFormatLongLongInLongLongOutTest
             nodes[i] = tx.addVertex();
         }
 
+        int[][] expectedSubgraphs = {
+                {0, 1, 2, 3, 4},
+                {5, 6, 7},
+                {8, 9}};
+
+
         TitanEdge[] edges = new TitanEdge[18];
         edges[0] = nodes[0].addEdge("edge", nodes[2]);
         edges[1] = nodes[0].addEdge("edge", nodes[4]);
@@ -141,12 +147,19 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
+        for (int i = 0; i < expectedSubgraphs.length; i++) {
+            TitanVertex firstNode =  tx.getVertex(nodes[expectedSubgraphs[i][0]].getLongId());
+            long expectedComponentId = Long.parseLong(firstNode.getProperty(resultKey).toString());
 
-        for (int i = 0; i < numVertices; i++) {
-            nid[i] = nodes[i].getLongId();
-            assertTrue(tx.containsVertex(nid[i]));
-            nodes[i] = tx.getVertex(nid[i]);
-            assertEquals(expectedValues[i], Double.parseDouble(nodes[i].getProperty(resultKey).toString()), 0d);
+            for (int j = 0; j < expectedSubgraphs[i].length; j++) {
+                int nodeIndex =  expectedSubgraphs[i][j];
+                nid[nodeIndex] = nodes[nodeIndex].getLongId();
+                assertTrue(tx.containsVertex(nid[nodeIndex]));
+                nodes[nodeIndex] = tx.getVertex(nid[nodeIndex]);
+
+                assertEquals(expectedComponentId, Long.parseLong(nodes[nodeIndex].getProperty(resultKey).toString()), 0l);
+            }
+
         }
         tx.commit();
     }

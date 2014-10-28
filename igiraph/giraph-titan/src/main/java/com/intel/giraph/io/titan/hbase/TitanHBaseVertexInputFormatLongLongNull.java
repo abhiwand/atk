@@ -102,6 +102,7 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
                     return true;
                 }
             }
+            this.giraphVertex = null;
             return false;
         }
 
