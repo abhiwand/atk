@@ -145,8 +145,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForSourceVertexId), destVertexData, preferNewVertexData = false)
+      AddVerticesPlugin.addVertices(ctx, sourceVertexData, graph.vertexMeta(srcLabel).frameReference, List[String](), arguments.columnNameForSourceVertexId, frames, graphs, preferNewVertexData = false)
+      AddVerticesPlugin.addVertices(ctx, destVertexData, graph.vertexMeta(destLabel).frameReference, List[String](), arguments.columnNameForSourceVertexId, frames, graphs, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids

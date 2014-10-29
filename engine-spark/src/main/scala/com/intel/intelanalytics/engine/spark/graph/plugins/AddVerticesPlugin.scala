@@ -36,6 +36,7 @@ import org.apache.spark.ia.graph.VertexFrameRDD
 import org.apache.spark.sql.SQLContext
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.frame.FrameReference
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -104,30 +105,31 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     // run the operation
     val sourceRdd = frames.loadFrameRDD(ctx, sourceFrameMeta)
-    addVertices(ctx, arguments, sourceRdd)
+    AddVerticesPlugin.addVertices(ctx, sourceRdd, arguments.vertexFrame, arguments.allColumnNames, arguments.idColumnName, frames, graphs)
 
     new UnitReturn
   }
+}
 
+object AddVerticesPlugin {
   /**
    * Add vertices
    * @param ctx spark context
-   * @param arguments user supplied arguements
    * @param sourceRdd source data
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(ctx: SparkContext, arguments: AddVertices, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true): Unit = {
+  def addVertices(ctx: SparkContext, sourceRdd: FrameRDD, vertexFrame: FrameReference, allColumnNames: List[String], idColumnName: String, frames: SparkFrameStorage, graphs: SparkGraphStorage, preferNewVertexData: Boolean = true): Unit = {
     // validate arguments
-    val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
+    val vertexFrameMeta = frames.expectFrame(vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
     val graph = graphs.expectSeamless(vertexFrameMeta.graphId.get)
 
-    val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
+    val vertexDataToAdd = sourceRdd.selectColumns(allColumnNames)
 
     // handle id column
-    val idColumnName = vertexFrameMeta.schema.vertexSchema.get.determineIdColumnName(arguments.idColumnName)
-    val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(arguments.idColumnName, idColumnName)
+    val idColumn = vertexFrameMeta.schema.vertexSchema.get.determineIdColumnName(idColumnName)
+    val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(idColumn, idColumn)
 
     // assign unique ids
     val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds("_vid", startId = graph.nextId())
@@ -136,7 +138,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     // load existing data, if any, and append the new data
     val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
-    val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd)
+    val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(verticesToAdd)
     graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd, Some(combinedRdd.count()))
 
     verticesToAdd.unpersist(blocking = false)
