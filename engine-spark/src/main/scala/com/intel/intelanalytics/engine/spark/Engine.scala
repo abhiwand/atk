@@ -43,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptiv
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
+import com.intel.intelanalytics.engine.spark.graph.plugins._
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.NotFoundException
@@ -133,7 +133,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
-  // Registering plugins
+  // Registering frame plugins
   commandPluginRegistry.registerCommand(new LoadFramePlugin)
   commandPluginRegistry.registerCommand(new RenameFramePlugin)
   commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
@@ -159,8 +159,22 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
   commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
   commandPluginRegistry.registerCommand(new TopKPlugin)
+
+  // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
   commandPluginRegistry.registerCommand(new RenameGraphPlugin)
+  commandPluginRegistry.registerCommand(new DefineVertexPlugin(graphs))
+  commandPluginRegistry.registerCommand(new DefineEdgePlugin(graphs))
+  val addVerticesPlugin = new AddVerticesPlugin(frames, graphs)
+  commandPluginRegistry.registerCommand(addVerticesPlugin)
+  commandPluginRegistry.registerCommand(new AddEdgesPlugin(addVerticesPlugin))
+  commandPluginRegistry.registerCommand(new VertexCountPlugin)
+  commandPluginRegistry.registerCommand(new EdgeCountPlugin)
+  commandPluginRegistry.registerCommand(new GraphInfoPlugin)
+  commandPluginRegistry.registerCommand(new FilterVerticesPlugin(graphs))
+  commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
+  commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
+  commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
@@ -448,4 +462,31 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     //do nothing
   }
 
+  override def getVertex(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      Some(seamless.vertexMeta(label))
+    }
+  }
+
+  override def getVertices(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      seamless.vertexFrames
+    }
+  }
+
+  override def getEdge(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      Some(seamless.edgeMeta(label))
+    }
+  }
+
+  override def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      seamless.edgeFrames
+    }
+  }
 }

@@ -23,23 +23,25 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
-import com.intel.intelanalytics.engine.plugin.Invocation
 
 /**
  * Manages multiple graphs in the underlying graph database.
  */
 trait GraphStorage {
 
+  /** Lookup a Graph, throw an Exception if not found */
+  def expectGraph(graphId: Long): Graph
+
+  /** Lookup a Graph, throw an Exception if not found */
+  def expectGraph(graphRef: GraphReference): Graph
+
   def lookup(id: Long): Option[Graph]
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
 
   def renameGraph(graph: Graph, newName: String): Graph
-
-  def loadGraph(graph: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph
 
   def drop(graph: Graph)
 

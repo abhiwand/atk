@@ -29,6 +29,7 @@ import scala.Some
 import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
 import org.apache.spark.engine.Spark
+import com.intel.intelanalytics.domain.schema.Schema
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -41,7 +42,7 @@ import org.apache.spark.SparkContext._
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object MiscFrameFunctions extends Serializable {
+object MiscFrameFunctions extends Serializable {
 
   /**
    * take an input RDD and return another RDD which contains the subset of the original contents
@@ -201,4 +202,13 @@ private[spark] object MiscFrameFunctions extends Serializable {
     duplicatesRemoved
   }
 
+  def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
+    val columnIndices = schema.columnIndices(columnNames)
+
+    // run the operation
+    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
+
+    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+    duplicatesRemoved
+  }
 }

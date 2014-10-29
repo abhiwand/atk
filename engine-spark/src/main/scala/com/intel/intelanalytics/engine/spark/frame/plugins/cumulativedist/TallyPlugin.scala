@@ -47,7 +47,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/tally"
+  override def name: String = "frame/tally"
 
   /**
    * User documentation exposed in Python.
@@ -115,7 +115,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
                            |
                            |    .. versionadded:: 0.8
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Computes a cumulative count
@@ -141,7 +141,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_tally")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
     frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))

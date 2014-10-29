@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnModeReturn, ColumnSummaryStatisticsReturn }
-import com.intel.intelanalytics.domain.schema.ColumnInfo
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics._
@@ -191,7 +191,7 @@ private[spark] object ColumnStatistics extends Serializable {
   }
 
   def getDataWeightPairs(dataColumnIndex: Int,
-                         weightsColumn: Option[ColumnInfo],
+                         weightsColumn: Option[Column],
                          rowRDD: RDD[Row]): RDD[(Any, Double)] = {
     weightsColumn match {
       case Some(column) => getDataWeightPairs(dataColumnIndex, Some(column.index), Some(column.dataType), rowRDD)
