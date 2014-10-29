@@ -23,15 +23,17 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.domain.EntityManager
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage }
+import com.intel.intelanalytics.engine.{ EntityRegistry, Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.repository.MetaStore
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -46,7 +48,41 @@ import com.intel.event.EventLogging
 class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
-    extends GraphStorage with EventLogging {
+    extends GraphStorage with EventLogging { storage =>
+
+  object SparkGraphManagement extends EntityManager[GraphEntity.type] {
+
+    override implicit val referenceTag = GraphEntity.referenceTag
+
+    override type Reference = GraphReference
+
+    override type MetaData = GraphMeta
+
+    override type Data = SparkGraphData
+
+    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
+
+      //TODO: implement!
+      ???
+      //      val meta = getMetaData(reference)
+      //      new SparkGraphData(meta.meta, storage.loadFrameData(sc, meta.meta))
+    }
+
+    override def getMetaData(reference: Reference): MetaData = new GraphMeta(expectGraph(reference.id))
+
+    override def create()(implicit invocation: Invocation): Reference = storage.createGraph(GraphTemplate(generateGraphName()))
+
+    override def getReference(id: Long): Reference = expectGraph(id)
+
+    implicit def graphToRef(graph: Graph): Reference = GraphReference(graph.id, Some(true))
+
+    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
+
+    implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
+
+  }
+
+  EntityRegistry.register(GraphEntity, SparkGraphManagement)
 
   /**
    * Deletes a graph by synchronously deleting its information from the metastore and asynchronously
@@ -73,7 +109,6 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @return Graph metadata.
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-
     metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
@@ -168,10 +203,10 @@ class SparkGraphStorage(metaStore: MetaStore,
         }
     }
   }
+
   /**
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
-   * @return Future of Graph metadata.
    */
   override def lookup(id: Long): Option[Graph] = {
     metaStore.withSession("spark.graphstorage.lookup") {
@@ -180,6 +215,26 @@ class SparkGraphStorage(metaStore: MetaStore,
           metaStore.graphRepo.lookup(id)
         }
     }
+  }
+
+  /**
+   * Get the metadata for a graph from its unique ID.
+   * @param id the ID being looked up.
+   */
+  def expectGraph(id: Long): Graph = {
+    lookup(id).getOrElse(throw new NotFoundException("graph", id.toString))
+  }
+
+  /**
+   * Automatically generate a name for a graph.
+   *
+   * The frame name comprises of the prefix "graph_", a random uuid, and an optional annotation.
+   *
+   * @param annotation Optional annotation to add to graph name
+   * @return Graph name
+   */
+  def generateGraphName(annotation: Option[String] = None): String = {
+    "graph_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
   }
 
 }
