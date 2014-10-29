@@ -20,66 +20,30 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameRenameColumns, DataFrame, FlattenColumn }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
+import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.domain.frame.{ JustALong, FrameCountWhere }
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
- * Rename columns of a frame
+ * Counts rows which meet criteria specified by a UDF predicate
  */
-class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFrame] {
+class CountWherePlugin extends SparkCommandPlugin[FrameCountWhere, JustALong] {
+
+  override def name: String = "frame:/count_where"
+
+  override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   *
-   * The format of the name determines how the plugin gets "installed" in the client layer
-   * e.g Python client via code generation.
-   */
-  override def name: String = "frame:/rename_columns"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Rename one or more columns", Some("""
-    Renames columns in a frame.
-
-    Parameters
-    ----------
-    column_names : dictionary of str pairs
-        The name pair (existing name, new name).
-
-    Notes
-    -----
-    Unicode in column names is not supported and will likely cause the drop_frames() function
-    (and others) to fail!
-
-    Examples
-    --------
-    Start with a frame with columns *Wrong* and *Wong*.
-    Rename the columns to *Right* and *Wite*::
-
-        my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
-
-    Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
-
-    .. versionchanged:: 0.8.5""")))
-
-  /**
-   * Rename columns of a frame
+   * Return count of rows which meet criteria specified by a UDF predicate
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -88,11 +52,13 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
+  override def execute(invocation: SparkInvocation, arguments: FrameCountWhere)(implicit user: UserPrincipal, executionContext: ExecutionContext): JustALong = {
     val frames = invocation.engine.frames
+    val ctx = invocation.sparkContext
 
-    val frame = frames.expectFrame(arguments.frame)
-    frames.renameColumns(frame, arguments.names.toSeq)
+    val sourceFrame = frames.expectFrame(arguments.frame)
+    val pythonRDDStorage = new PythonRDDStorage(frames)
+    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where, ctx)
+    JustALong(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
   }
 }

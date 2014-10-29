@@ -306,23 +306,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
   override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    //withContext("frame.renameColumns") {
     metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
-          val columnsToRename: Seq[String] = name_pairs.map(_._1)
-          val newColumnNames: Seq[String] = name_pairs.map(_._2)
-
-          def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-            val result = columnsToRename.indexOf(oldColumn) match {
-              case notFound if notFound < 0 => oldColumn
-              case found => newColumnNames(found)
-            }
-            result
-          }
-
-          val newColumns = frame.schema.columnTuples.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-          metaStore.frameRepo.updateSchema(frame, frame.schema.legacyCopy(newColumns))
+          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(name_pairs.toMap))
         }
     }
 

@@ -281,7 +281,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionadded:: 0.8
 
         """
-        return self._backend.get_row_count(self)
+        return self._backend.get_row_count(self, None)
 
     @property
     @api
@@ -644,11 +644,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         except:
             raise IaError(logger)
 
-    def copy(self, columns=None):
+    def copy(self, columns=None, where=None):
         """
         Copy frame.
 
-        Copy frame or certain frame columns entirely.
+        Copy frame or certain frame columns entirely or filtered.  Useful for frame query.
 
         Parameters
         ----------
@@ -656,17 +656,19 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             If not None, the copy will only include the columns specified.
             If a dictionary is used, the string pairs represent a column renaming,
             {source_column_name: destination_column_name}.
+        where : row function (optional)
+            If not None, only those rows which evaluate to True will be copied
 
         Returns
         -------
-        BigFrame
-            A new frame object which is a copy of the currently active BigFrame.
+        Frame
+            A new frame object which is a copy of this frame
 
         Examples
         --------
-        Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
+        Build a Frame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            my_frame = ia.BigFrame(source="my_data.csv")
+            my_frame = ia.Frame(source="my_data.csv")
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
@@ -697,20 +699,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionchanged:: 0.8.5
 
         """
-        if columns is None:
-            column_names = self.column_names  # all columns
-            new_names = None
-        elif isinstance(columns, dict):
-            column_names = columns.keys()
-            new_names = columns.values()
-        elif isinstance(columns, basestring):
-            column_names = [columns]
-            new_names = None
-        else:
-            raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
-        copied_frame = Frame()
-        self._backend.project_columns(self, copied_frame, column_names, new_names)
-        return copied_frame
+        return self._backend.copy(self, columns, where)
+
+    @api
+    def count(self, where):
+        """
+        Counts the number of rows which meet given criteria
+
+        Parameters
+        ----------
+        where : function
+            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
+
+        Returns
+        -------
+        count : int
+            number of rows for which the where function evaluated to True
+        """
+        return self._backend.get_row_count(self, where)
 
     def download(self, count=100, offset=0, columns=None):
         """
