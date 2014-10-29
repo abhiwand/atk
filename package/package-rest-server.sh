@@ -56,9 +56,9 @@ echo $jarPath
 #enable this to copy the regular launcher.jar to the correct place
 cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/launcher.jar
 
-jarPath=$(find ~/.m2/repository/ch/qos/logback/ -name "logback-classic-1.1.1.jar")
+jarPath=$(find $HOME/.m2/repository/ch/qos/logback/ -name "logback-classic-1.1.1.jar")
 cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
-jarPath=$(find ~/.m2/repository/ch/qos/logback/ -name "logback-core-1.1.1.jar")
+jarPath=$(find $HOME/.m2/repository/ch/qos/logback/ -name "logback-core-1.1.1.jar")
 cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
 
 popd
