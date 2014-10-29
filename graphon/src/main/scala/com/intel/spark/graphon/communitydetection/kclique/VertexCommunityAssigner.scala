@@ -22,20 +22,35 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection.kclique.datatypes
+package com.intel.spark.graphon.communitydetection.kclique
 
+import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkContext
+import com.intel.spark.graphon.communitydetection.kclique.datatypes._
+import com.intel.spark.graphon.connectedcomponents.NormalizeConnectedComponents
 
 /**
- * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
- * any one of the vertices from the set neighbors.
- *
- * A k clique-extension fact is a clique extension fact where the vertex set contains exactly k vertices.
- * These are the extension facts obtained after the k'th round of the algorithm.
- *
- * INVARIANT:
- * when k is odd, every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
- * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
- *
+ * Assign to each vertex the list of communities to which it belongs, given the assignment of cliques to communities.
  */
-case class CliqueExtension(clique: CliqueFact, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
+
+object VertexCommunityAssigner extends Serializable {
+
+  /**
+   * Assign to each vertex the list of communities to which it belongs, given the assignment of cliques to communities.
+   *
+   * @param cliquesToCommunities Mapping from cliques to the community ID of that clique.
+   * @return Mapping from vertex IDs to the list of communities to which that vertex belongs.If a vertex belongs to no
+   *         cliques, its list of communities will be empty.
+   */
+  def run(cliquesToCommunities: RDD[(VertexSet, Long)]): RDD[(Long, Set[Long])] = {
+
+    val vertexCommunityPairs: RDD[(Long, Long)] =
+      cliquesToCommunities.flatMap({ case (clique, communityID) => clique.map(v => (v, communityID)) })
+
+    vertexCommunityPairs.groupByKey().map({ case (vertex, communitySeq) => (vertex, communitySeq.toSet) })
+
+  }
+
+}
