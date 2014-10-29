@@ -1,10 +1,10 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.{FrameEntity, FrameReference, FrameReferenceManagement}
-import com.intel.intelanalytics.domain.graph.{GraphEntity, GraphReference, GraphReferenceManagement}
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference, FrameReferenceManagement }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference, GraphReferenceManagement }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.{EntityRegistry, ReferenceResolver}
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.intelanalytics.engine.{ EntityRegistry, ReferenceResolver }
+import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.Success
 
@@ -16,7 +16,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val expected = new FrameReference(1)
     val resolver = new EntityRegistry().resolver
     intercept[IllegalArgumentException] {
-      resolver.resolve(uri).get
+      resolver.resolve[FrameReference](uri).get
     }
   }
 
@@ -27,7 +27,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
     registry.register(GraphEntity, GraphReferenceManagement)
     val resolver = registry.resolver
     intercept[IllegalArgumentException] {
-      resolver.resolve(uri).get
+      resolver.resolve[FrameReference](uri).get
     }
   }
 
@@ -38,7 +38,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
     registry.register(GraphEntity, GraphReferenceManagement)
     registry.register(FrameEntity, FrameReferenceManagement)
     val resolver = registry.resolver
-    resolver.resolve(uri) should be(expected)
+    resolver.resolve[FrameReference](uri) should be(expected)
   }
 
   it should "be recognized as a valid URI format when the URI is correct and a resolver is registered" in {
@@ -61,26 +61,26 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val uri: String = "ia://frame/2"
     val expected = Success(new FrameReference(2))
 
-    ReferenceResolver.resolve(uri) should be(expected)
+    ReferenceResolver.resolve[FrameReference](uri) should be(expected)
   }
 
   "A graph's ia_uri and entityName" should "create GraphReference" in {
     val uri: String = "ia://graph/1"
     val expected = Success(new GraphReference(1))
 
-    ReferenceResolver.resolve(uri) should be(expected)
+    ReferenceResolver.resolve[FrameReference](uri) should be(expected)
   }
 
   "A graph's ia_uri" should "create GraphReference" in {
     val uri: String = "ia://graph/2"
     val expected = Success(new GraphReference(2))
 
-    ReferenceResolver.resolve(uri) should be(expected)
+    ReferenceResolver.resolve[FrameReference](uri) should be(expected)
   }
 
   "Incorrect uri" should "throw IllegalArgumentException" in {
     val uri: String = "ia://notaframe/2"
-    intercept[IllegalArgumentException] { ReferenceResolver.resolve(uri).get }
+    intercept[IllegalArgumentException] { ReferenceResolver.resolve[FrameReference](uri).get }
   }
 
 }

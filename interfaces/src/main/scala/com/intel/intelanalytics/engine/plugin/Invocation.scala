@@ -23,12 +23,13 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.engine.{CommandStorage, Engine, ReferenceResolver}
+import com.intel.intelanalytics.engine.{ ReferenceResolver, CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * Provides context for an invocation of a command or query.

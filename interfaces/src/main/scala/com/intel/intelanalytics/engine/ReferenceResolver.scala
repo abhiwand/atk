@@ -8,8 +8,8 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 
 /**
-* The default system registry of URI reference resolvers
-*/
+ * The default system registry of URI reference resolvers
+ */
 object ReferenceResolver extends ReferenceResolver {
 
   private[intelanalytics] def coerceReference[T <: UriReference: TypeTag](ref: UriReference): T = {
@@ -24,7 +24,9 @@ object ReferenceResolver extends ReferenceResolver {
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation): Try[T] = EntityRegistry.resolver.resolve(uri)
+  override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
+                                                                e: T DefaultsTo UriReference): Try[T] =
+    EntityRegistry.resolver.resolve(uri)
 
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
@@ -50,11 +52,13 @@ trait ReferenceResolver {
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation): Try[T]
+  def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
+                                                       e: T DefaultsTo UriReference): Try[T]
 
   /**
    * Returns a (possibly updated) reference.
    */
+  //TODO: Make the return type a subtype of the argument typeN
   def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): Try[T] = {
     resolve(reference.uri)
   }

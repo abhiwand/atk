@@ -25,15 +25,12 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.{ReferenceResolver, Reflection}
+import com.intel.intelanalytics.engine.{ ReferenceResolver, Reflection }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.command.Typeful.Searchable
 import spray.json.{ JsNumber, JsValue, JsString, JsObject }
-
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import scalax.collection.Graph
-import scalax.collection.GraphEdge.DiEdge
 
 /**
  * Tools for retrieving dependencies of system entities such as frames and graphs,

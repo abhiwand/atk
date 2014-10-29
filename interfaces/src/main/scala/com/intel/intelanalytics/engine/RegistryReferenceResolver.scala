@@ -25,12 +25,35 @@ package com.intel.intelanalytics.engine
 
 import java.net.URI
 
-import com.intel.intelanalytics.domain.{UriReference, HasData, HasMetaData}
+import com.intel.intelanalytics.domain.{ UriReference, HasData, HasMetaData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+
+/**
+ * http://stackoverflow.com/questions/4403906/is-it-possible-in-scala-to-force-the-caller-to-specify-a-type-parameter-for-a-po
+ */
+sealed class DefaultsTo[A, B]
+
+trait LowPriorityDefaultsTo {
+  implicit def overrideDefault[A, B] = new DefaultsTo[A, B]
+}
+
+object DefaultsTo extends LowPriorityDefaultsTo {
+  implicit def default[B] = new DefaultsTo[B, B]
+}
+
+/**
+ * http://stackoverflow.com/a/4580176
+ */
+sealed trait NotNothing[T] { type U }
+object NotNothing {
+  implicit val nothingIsNothing = new NotNothing[Nothing] { type U = Any }
+  implicit def notNothing[T] = new NotNothing[T] { type U = T }
+}
+
 /**
  * Provides a way to get access to arbitrary objects in the system by using an URI.
  *
@@ -57,7 +80,12 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
    */
-  def isReferenceUriFormat(s: String) = regex.findFirstIn(s).isDefined
+  def isReferenceUriFormat(s: String) = regex.findFirstIn(s).isDefined match {
+    case true => true
+    case false =>
+      println(s"url $s not matched with $regex")
+      false
+  }
 
   /**
    * Returns a reference for the given URI if possible.
@@ -65,7 +93,8 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation): Try[T] = Try {
+  def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
+                                                       e: T DefaultsTo UriReference): Try[T] = Try {
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
       .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
@@ -86,10 +115,12 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     val resolver = resolvers.getOrElse(entity,
       throw new IllegalArgumentException(s"No resolver found for entity: $entity"))
 
-    val manager = registry.entityManager[T].getOrElse(
-      throw new IllegalArgumentException(s"No entity manager found for entity type '$entity' (or '$typeTag[T]')"))
-    val reference = manager.getReference(id)
+    val uriReference = resolver(id)
 
+    val manager = registry.entityManager(uriReference.entity).getOrElse(
+      throw new IllegalArgumentException(s"No entity manager found for entity type '$entity' (or '$typeTag[T]')"))
+
+    val reference = ReferenceResolver.coerceReference[manager.Reference](uriReference)(manager.referenceTag)
     val detailed = typeTag[T] match {
       case x if x.tpe <:< typeTag[HasData].tpe =>
         manager.getData(reference)

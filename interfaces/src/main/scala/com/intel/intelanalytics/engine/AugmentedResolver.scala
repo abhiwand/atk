@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{UriReference, HasData}
+import com.intel.intelanalytics.domain.{ UriReference, HasData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -37,8 +37,10 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
    *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation): Try[T] = {
+  override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
+                                                                e: T DefaultsTo UriReference): Try[T] = {
     base.resolve(uri).map { ref =>
+      //TODO: this could fail if URIs are not normalized
       val resolved = data.find(d => d.uri == ref.uri).getOrElse(ref)
       ReferenceResolver.coerceReference(resolved)
     }

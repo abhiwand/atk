@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{FrameEntity, FrameReference}
-import com.intel.intelanalytics.domain.graph.{GraphEntity, GraphReference}
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class ReferenceResolverTest extends FlatSpec with Matchers {
 
@@ -34,29 +34,29 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
   registry.register(FrameEntity, new MockFrameManager)
   registry.register(GraphEntity, new MockGraphManager)
   val resolver = registry.resolver
-  implicit val invocation : Invocation = null
+  implicit val invocation: Invocation = null
 
   "Reference resolver" should "return metadata when requested" in {
-    val meta : MockFrameManager#M = resolver.resolve[MockFrameManager#M]("ia://frames/6").get
-    meta should not be(null)
-    val gm : MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get
-    gm should not be(null)
+    val meta: MockFrameManager#M = resolver.resolve[MockFrameManager#M]("ia://frames/6").get
+    meta should not be (null)
+    val gm: MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get
+    gm should not be (null)
   }
 
   it should "return data when requested" in {
-    val data : MockFrameManager#D = resolver.resolve[MockFrameManager#D]("ia://frames/6").get
+    val data: MockFrameManager#D = resolver.resolve[MockFrameManager#D]("ia://frames/6").get
 
-    data should not be(null)
-    val gd : MockGraphManager#D = resolver.resolve[MockGraphManager#D]("ia://graphs/6").get
-    gd should not be(null)
+    data should not be (null)
+    val gd: MockGraphManager#D = resolver.resolve[MockGraphManager#D]("ia://graphs/6").get
+    gd should not be (null)
   }
 
   it should "return a plain reference when requested" in {
-    val ref : FrameReference = resolver.resolve[FrameReference]("ia://frames/6").get
+    val ref: FrameReference = resolver.resolve[FrameReference]("ia://frames/6").get
 
-    ref should not be(null)
-    val gr : GraphReference = resolver.resolve[GraphReference]("ia://graphs/6").get
-    gr should not be(null)
+    ref should not be (null)
+    val gr: GraphReference = resolver.resolve[GraphReference]("ia://graphs/6").get
+    gr should not be (null)
   }
 
   it should "throw IllegalArgumentException when no entity is registered" in {
@@ -67,7 +67,5 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
       val gm: MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get
     }
   }
-
-
 
 }

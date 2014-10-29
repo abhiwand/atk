@@ -55,6 +55,8 @@ object GraphEntity extends Entity {
 
 object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =>
 
+  override implicit val referenceTag = GraphEntity.referenceTag
+
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
   EntityRegistry.register(GraphEntity, this)
 

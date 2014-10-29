@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ Typeful, Dependencies }
 import org.scalatest.{ FlatSpec, Matchers }
@@ -37,6 +37,7 @@ class DependenciesTest extends FlatSpec with Matchers {
 
     val reference = List(FrameReference(3, None))
     implicit val invocation: Invocation = null
+    FrameReferenceManagement //reference to ensure it's loaded and registered
     Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
   }
 }

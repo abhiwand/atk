@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{FrameReferenceManagement, FrameEntity}
+import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class EntityRegistryTest extends FlatSpec with Matchers {
 
@@ -38,7 +38,7 @@ class EntityRegistryTest extends FlatSpec with Matchers {
 
     val data: MockFrameManager#D = registry.resolver.resolve[MockFrameManager#D]("ia://frames/34").get
 
-    data should not be(null)
+    data should not be (null)
   }
 
 }
