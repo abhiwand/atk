@@ -46,7 +46,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/column_median"
+  override def name: String = "frame/column_median"
 
   /**
    * User documentation exposed in Python.
@@ -114,7 +114,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
     val frameId: Long = arguments.frame.id
     val frame = frames.expectFrame(frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
 
     // run the operation and return results
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
@@ -123,7 +123,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
     ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }

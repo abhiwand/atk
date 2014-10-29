@@ -39,7 +39,7 @@ case class VertexRuleParser(inputSchema: InputSchema, vertexRules: List[VertexRu
    */
   def parse(row: InputRow): Seq[Vertex] = {
     for {
-      rule ← vertexRules
+      rule <- vertexRules
       if rule appliesTo row
     } yield vertexParsers(rule).parse(row)
   }

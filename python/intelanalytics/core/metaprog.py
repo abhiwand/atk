@@ -135,7 +135,7 @@ def get_loadable_class_name_from_command_prefix(command_prefix):
     parts = command_prefix.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
-        return "Base" + term
+        return "_Base" + term
     else:
         return underscores_to_pascal(parts[1]) + term
 
@@ -145,7 +145,7 @@ def get_base_class_name_from_prefix(command_prefix):
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
         return CommandLoadable.__name__
-    return "Base" + term
+    return "_Base" + term
 
 
 def get_loadable_class_from_name(class_name, command_prefix):
@@ -158,15 +158,18 @@ def get_loadable_class_from_name(class_name, command_prefix):
     base_class = CommandLoadable if base_class_name == CommandLoadable.__name__\
         else get_loadable_class_from_name(base_class_name, command_prefix)
     loadable_class = create_loadable_class(class_name, base_class, api_globals, "", command_prefix)
-    if not loadable_class.__name__.startswith("Base"):
-        api_globals.add(loadable_class)
+    api_globals.add(loadable_class)
+    return loadable_class
+
+
+def get_loadable_class_from_command_prefix(command_prefix):
+    class_name = get_loadable_class_name_from_command_prefix(command_prefix)
+    loadable_class = get_loadable_class_from_name(class_name, command_prefix)
     return loadable_class
 
 
 def get_loadable_class_from_command_def(command_def):
-    class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
-    loadable_class = get_loadable_class_from_name(class_name, command_def.prefix)
-    return loadable_class
+    return get_loadable_class_from_command_prefix(command_def.prefix)
 
 
 def install_command_defs(command_defs):
@@ -290,12 +293,16 @@ def validate_arguments(arguments, parameters):
     Use parameter definitions to make sure the arguments conform.  This function
     is closure over in the dynamically generated execute command function
     """
+    from intelanalytics.core.frame import Frame
+    from intelanalytics.core.graph import Graph
     validated = {}
     for (k, v) in arguments.items():
         try:
             parameter = [p for p in parameters if p.name == k][0]
         except IndexError:
             raise ValueError("No parameter named '%s'" % k)
+        if (parameter.data_type is Frame or parameter.data_type is Graph) and not isinstance(v, int):
+            v = v._id  # TODO - improve this
         validated[k] = v
         if parameter.data_type is list:
             if v is not None and (isinstance(v, basestring) or not hasattr(v, '__iter__')):
@@ -636,3 +643,20 @@ def get_members_text(loaded_class):
 def indent(text, spaces=4):
     indentation = ' ' * spaces
     return "\n".join([indentation + line for line in text.split('\n')])
+
+
+def delete_docstubs():
+    """
+    Deletes all the doc_stub functions from all classes in docstubs.py
+    """
+    try:
+        import intelanalytics.core.docstubs as docstubs
+    except Exception:
+        logger.info("No docstubs.py found, nothing to delete")
+    else:
+        for item in docstubs.__dict__.values():
+            if inspect.isclass(item):
+                victims = [k for k, v in item.__dict__.iteritems() if hasattr(v, '__call__') and hasattr(v, DOC_STUB)]
+                logger.debug("deleting docstubs from %s: %s", item, victims)
+                for victim in victims:
+                    delattr(item, victim)

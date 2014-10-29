@@ -80,9 +80,9 @@ object LoadRDDFunctions extends Serializable {
    */
   private[frame] def parse(rowsToParse: RDD[String], parser: LineParser): ParseResultRddWrapper = {
 
-    val schema = parser.arguments.schema
+    val schemaArgs = parser.arguments.schema
     val skipRows = parser.arguments.skip_rows
-    val parserFunction = getLineParser(parser, schema.columns.map(_._2).toArray)
+    val parserFunction = getLineParser(parser, schemaArgs.columns.map(_._2).toArray)
 
     val parseResultRdd = rowsToParse.mapPartitionsWithIndex {
       case (partition, lines) => {
@@ -102,7 +102,7 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(new LegacyFrameRDD(schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(new LegacyFrameRDD(schema.schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)

@@ -46,7 +46,7 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/column_mode"
+  override def name: String = "frame/column_mode"
 
   /**
    * User documentation exposed in Python.
@@ -145,13 +145,13 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
     // run the operation and return results
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
     val modeCountOption = arguments.maxModesReturned
 

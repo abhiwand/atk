@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import java.nio.file.Paths
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
@@ -35,7 +35,7 @@ import org.apache.spark.sql.execution.ExistingRdd
 import scala.io.Codec
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark._
-import org.apache.spark.SparkContext
+import org.apache.spark.{ sql, SparkContext }
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
@@ -89,10 +89,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @return the newly created FrameRDD
    */
   def loadFrameRDD(ctx: SparkContext, frame: DataFrame): FrameRDD = {
-    val sqlContext = new SQLContext(ctx);
+    val sqlContext = new SQLContext(ctx)
     if (frame.revision == 0) {
       // revision zero is special and means nothing has been saved to disk yet)
-      new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
+      new FrameRDD(frame.schema, ctx.parallelize[sql.Row](Nil))
     }
     else {
       val absPath = frameFileStorage.currentFrameRevision(frame)
@@ -196,7 +196,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       implicit session =>
         {
           if (frameRDD.schema != null) {
-            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema.columns)
+            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema)
           }
           if (rowCount.isDefined) {
             metaStore.frameRepo.updateRowCount(frameEntity, rowCount.get)
@@ -243,11 +243,14 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
+  /**
+   * @deprecated schema should be updated when you save a FrameRDD, this method shouldn't be needed
+   */
+  def updateSchema(frame: DataFrame, schema: Schema): DataFrame = {
     metaStore.withSession("frame.updateSchema") {
       implicit session =>
         {
-          metaStore.frameRepo.updateSchema(frame, columns)
+          metaStore.frameRepo.updateSchema(frame, schema)
         }
     }
   }
@@ -283,15 +286,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.removeColumn") {
       implicit session =>
         {
-          val remainingColumns = {
-            columnIndex match {
-              case singleColumn if singleColumn.length == 1 =>
-                frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
-              case _ =>
-                frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
-            }
-          }
-          metaStore.frameRepo.updateSchema(frame, remainingColumns)
+          metaStore.frameRepo.updateSchema(frame, frame.schema.dropColumnsByIndex(columnIndex))
         }
     }
 
@@ -326,9 +321,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
             result
           }
 
-          val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-          metaStore.frameRepo.updateSchema(frame, newColumns)
-
+          val newColumns = frame.schema.columnTuples.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
+          metaStore.frameRepo.updateSchema(frame, frame.schema.legacyCopy(newColumns))
         }
     }
 
@@ -443,8 +437,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param annotation Optional annotation to add to frame name
    * @return Frame name
    */
-  def generateFrameName(annotation: Option[String] = None): String = {
-    "frame_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
+  def generateFrameName(prefix: String = "frame_", annotation: Option[String] = None): String = {
+    prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
   }
 
 }

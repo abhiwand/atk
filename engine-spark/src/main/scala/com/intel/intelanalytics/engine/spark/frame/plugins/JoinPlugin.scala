@@ -79,7 +79,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
       frame =>
         {
           val frameMeta = frames.expectFrame(frame._1)
-          frameMeta.schema.columns
+          frameMeta.schema.columnTuples
         }
     }
 
@@ -93,8 +93,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     val leftOn: String = arguments.frames(0)._2
     val rightOn: String = arguments.frames(1)._2
 
-    val leftSchema = Schema(leftColumns)
-    val rightSchema = Schema(rightColumns)
+    val leftSchema = new Schema(leftColumns)
+    val rightSchema = new Schema(rightColumns)
 
     require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
     require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")

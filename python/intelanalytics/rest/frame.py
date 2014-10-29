@@ -91,7 +91,7 @@ class FrameBackendRest(object):
             source = FrameInfo(source)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
-            return  # early exit here
+            return frame.name  # early exit here
 
         new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
 
@@ -131,7 +131,20 @@ class FrameBackendRest(object):
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        return "\n".join(['Frame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
+        frame_type = "VertexFrame" if frame_info._has_vertex_schema() else "EdgeFrame" if frame_info._has_edge_schema() else "Frame"
+
+        if frame_info._has_vertex_schema():
+            frame_type = "VertexFrame"
+            graph_data = "\nLabel = %s" % frame_info.label
+        elif frame_info._has_edge_schema():
+            frame_type = "EdgeFrame"
+            graph_data = "\nLabel = %s\nSource Vertex Label = %s\nDestination Vertex Label = %s\nDirected = %s" % (
+                frame_info.label, frame_info.src_vertex_label, frame_info.dest_vertex_label, frame_info.directed)
+        else:
+            frame_type = "Frame"
+            graph_data = ""
+        return "\n".join(['%s "%s"%s\nrow_count = %d\nschema = ' %
+                          (frame_type, frame_info.name, graph_data,  frame_info.row_count)] +
                          ["  %s:%s" % (name, data_type)
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
@@ -217,7 +230,7 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        result = execute_update_frame_command("load", arguments, frame)
+        result = execute_update_frame_command("frame:/load", arguments, frame)
         if result and result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
@@ -226,7 +239,7 @@ class FrameBackendRest(object):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
         arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
-        execute_update_frame_command("filter", arguments, frame)
+        execute_update_frame_command("frame:/filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
         if columns is None:
@@ -234,18 +247,38 @@ class FrameBackendRest(object):
         elif isinstance(columns, basestring):
             columns = [columns]
         arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('drop_duplicates', arguments, frame)
+        execute_update_frame_command('frame:/drop_duplicates', arguments, frame)
+
+    def drop_duplicate_vertices(self, frame, columns):
+        if columns is None:
+            columns = []
+        elif isinstance(columns, basestring):
+            columns = [columns]
+        arguments = {'frame_id': frame._id, "unique_columns": columns}
+        execute_update_frame_command('frame:vertex/drop_duplicates', arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
         arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
-        execute_update_frame_command("filter", arguments, frame)
+        execute_update_frame_command("frame:/filter", arguments, frame)
+
+    def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
+        from itertools import ifilter
+        from itertools import ifilterfalse
+
+        if(keep_matching_vertices):
+            http_ready_function = prepare_row_function(frame, predicate, ifilter)
+        else:
+            http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
+
+        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
+        execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('flatten_column', arguments)
+        return execute_new_frame_command('frame:/flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
@@ -321,7 +354,7 @@ class FrameBackendRest(object):
             right_on = left_on
         name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
-        return execute_new_frame_command('join', arguments)
+        return execute_new_frame_command('frame:/join', arguments)
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
         # TODO - change project_columns so the server creates the new frame, like join
@@ -389,6 +422,7 @@ class FrameBackendRest(object):
 
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
+
 
     def take(self, frame, n, offset, columns):
         def get_take_result():
@@ -468,6 +502,50 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
+    def create_vertex_frame(self, frame, source, label, graph):
+        logger.info("REST Backend: create vertex_frame with label %s" % label)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
+        if isinstance(source, FrameInfo):
+            self.initialize_graph_frame(frame, source, graph)
+            return frame.name  # early exit here
+
+        graph.define_vertex_type(label)
+        source_frame = graph.vertices[label]
+        self.copy_graph_frame(source_frame, frame)
+        return source_frame.name
+
+    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed):
+        logger.info("REST Backend: create vertex_frame with label %s" % label)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
+        if isinstance(source, FrameInfo):
+            self.initialize_graph_frame(frame, source, graph)
+            return frame.name  # early exit here
+
+        graph.define_edge_type(label, src_vertex_label, dest_vertex_label, directed)
+        source_frame = graph.edges[label]
+        self.copy_graph_frame(source_frame, frame)
+        return source_frame.name
+
+    def initialize_graph_frame(self, frame, frame_info, graph):
+        """Initializes a frame according to given frame_info associated with a graph"""
+        frame._ia_uri = frame_info.ia_uri
+        frame._id = frame_info.id_number
+        frame._error_frame_id = frame_info.error_frame_id
+        frame._label = frame_info.label
+        frame._graph = graph
+
+    def copy_graph_frame(self, source, target):
+        """Initializes a frame from another frame associated with a graph"""
+        target._ia_uri = source._ia_uri
+        target._id = source._id
+        target._error_frame_id = source._error_frame_id
+        target._label = source._label
+        target._graph = source._graph
+
+
+
 class FrameInfo(object):
     """
     JSON-based Server description of a Frame
@@ -515,6 +593,52 @@ class FrameInfo(object):
         except:
             return None
 
+    @property
+    def label(self):
+        try:
+            schema = self._payload['schema']
+            if self._has_vertex_schema():
+                return schema['vertex_schema']['label']
+            if self._has_edge_schema():
+                return schema['edge_schema']['label']
+            return None
+        except:
+            return None
+
+    @property
+    def directed(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['directed']
+        except:
+            return None
+
+    @property
+    def dest_vertex_label(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['dest_vertex_label']
+        except:
+            return None
+
+    @property
+    def src_vertex_label(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['src_vertex_label']
+        except:
+            return None
+
+    def _has_edge_schema(self):
+        return "edge_schema" in self._payload['schema']
+
+    def _has_vertex_schema(self):
+        return "vertex_schema" in self._payload['schema']
+
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
@@ -522,6 +646,8 @@ class FrameInfo(object):
             logger.error(msg)
             raise RuntimeError(msg)
         self._payload = payload
+
+
 
 
 class FrameSchema:
@@ -543,7 +669,7 @@ class FrameSchema:
 
     @staticmethod
     def from_strings_to_types(s):
-        return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
+        return [(column['name'], get_data_type_from_rest_str(column['data_type'])) for column in s]
 
     @staticmethod
     def get_schema_for_columns(schema, selected_columns):
@@ -578,11 +704,12 @@ def initialize_frame(frame, frame_info):
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
+
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
     #support for non-plugin methods that may not supply the full name
     if not command_name.startswith('frame'):
-        command_name = 'frame:/' + command_name
+        command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
@@ -597,7 +724,7 @@ def execute_new_frame_command(command_name, arguments):
     """Executes command and creates a new Frame object from server response"""
     #support for non-plugin methods that may not supply the full name
     if not command_name.startswith('frame'):
-        command_name = 'frame:/' + command_name
+        command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
