@@ -30,8 +30,8 @@ import json
 
 from intelanalytics.core.command import CommandDefinition, Parameter, Return, Doc, Version
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.graph import BigGraph
+from intelanalytics.core.frame import Frame
+from intelanalytics.core.graph import Graph
 
 __all__ = ['get_command_def']
 
@@ -47,8 +47,8 @@ json_type_id_to_data_type  = {
 }
 
 json_str_formats_to_data_type = {
-    "uri/ia-frame": BigFrame,
-    "uri/ia-graph": BigGraph,
+    "uri/ia-frame": Frame,
+    "uri/ia-graph": Graph,
 }
 
 

@@ -1,10 +1,10 @@
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import org.joda.time.{ DateTime, DateTimeZone }
 import org.scalatest.WordSpec
-
-import DomainJsonProtocol._
 import spray.json._
-import org.joda.time.{ DateTimeZone, DateTime }
 
 class DomainJsonProtocolTest extends WordSpec {
 
@@ -21,4 +21,40 @@ class DomainJsonProtocolTest extends WordSpec {
     }
   }
 
+  "SchemaConversionFormat" should {
+
+    "parse legacy format" in {
+      val string =
+        """
+          |{
+          |   "columns": [
+          |              ["foo", "str"]
+          |   ]
+          |}
+        """.stripMargin
+      val json = JsonParser(string).asJsObject
+      val schema = json.convertTo[Schema]
+      assert(schema.columnNames.length == 1)
+      assert(schema.columnDataType("foo") == DataTypes.string)
+    }
+
+    "parse the current format" in {
+      val string =
+        """
+          |{
+          |   "columns": [
+          |          {"name": "foo", "data_type": "str", "index": -1 }
+          |   ],
+          |   "vertex_schema": null,
+          |   "edge_schema": null
+          |}
+        """.
+          stripMargin
+      val json = JsonParser(string).asJsObject
+      val schema = json.convertTo[Schema]
+      assert(schema.columnNames.length == 1)
+      assert(schema.columnDataType("foo") == DataTypes.string)
+      assert(schema.vertexSchema.isEmpty)
+    }
+  }
 }
