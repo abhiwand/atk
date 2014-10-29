@@ -68,25 +68,17 @@ class ExportFromTitanToParquetGraph(frames: SparkFrameStorage, graphs: SparkGrap
   override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     val ctx = invocation.sparkContext
     val vertices = graphs.loadGbVertices(ctx, arguments.graph.id)
-    val edges = graphs.loadGbEdges(ctx, arguments.graph.id)
+    vertices.cache()
 
     val vertexLabels = vertices.map(v => {
       val label = v.gbId.key
       label
     }).distinct().collect()
 
-    val edgeDefinitions = edges.map(e => {
-      EdgeSchema(e.label, e.headVertexGbId.key, e.tailVertexGbId.key)
-    }).distinct().collect()
-
     val graph = graphs.createGraph(GraphTemplate("name", "ia/frame"))
 
     vertexLabels.foreach(label => {
       graphs.defineVertexType(graph.id, VertexSchema(label, None))
-    })
-
-    edgeDefinitions.foreach(edgeDef => {
-      graphs.defineEdgeType(graph.id, edgeDef)
     })
 
     val seemless = graphs.expectSeamless(graph.id)
@@ -104,7 +96,20 @@ class ExportFromTitanToParquetGraph(frames: SparkFrameStorage, graphs: SparkGrap
       AddVerticesPlugin.addVertices(ctx, source, vertexFrame.frameReference, columns, label, frames, graphs)
     })
 
-    seemless.edgeFrames.foreach(edgeFrame => {})
+    vertices.unpersist()
+
+    val edges = graphs.loadGbEdges(ctx, arguments.graph.id)
+    val edgeDefinitions = edges.map(e => {
+      EdgeSchema(e.label, e.headVertexGbId.key, e.tailVertexGbId.key)
+    }).distinct().collect()
+
+    edgeDefinitions.foreach(edgeDef => {
+      graphs.defineEdgeType(graph.id, edgeDef)
+    })
+
+    seemless.edgeFrames.foreach(edgeFrame => {
+
+    })
 
     null
   }
