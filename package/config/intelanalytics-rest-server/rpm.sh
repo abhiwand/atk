@@ -26,7 +26,7 @@ log files live in /var/log/intelanalytics/rest-server \\n
 
 Intel ATK Release Notes - 2014-10-28 \\n
 
-The following changes have been made as part of the ATK 0.8.6 release.\\n
+The following changes have been made as part of the ATK 0.8.7 release.\\n
 
 - TRIB-1517 - Added support for Outer Joins \\n
 - TRIB-3190 - Tuned the HBase and Spark settings to improve performance \\n
