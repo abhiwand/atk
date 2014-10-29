@@ -35,7 +35,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(commandStorage.lookup(anyLong())).thenReturn(Some(cmd))
     val contextManager = mock[SparkContextFactory]
     val sc = mock[SparkContext]
-    when(contextManager.context(any(classOf[UserPrincipal]), anyString())).thenReturn(sc)
+    when(contextManager.context(any(classOf[UserPrincipal]), anyString(), Some(anyString()))).thenReturn(sc)
 
     new CommandExecutor(engine, commandStorage, contextManager)
   }
