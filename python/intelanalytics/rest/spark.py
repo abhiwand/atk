@@ -45,6 +45,11 @@ from intelanalytics.core.iatypes import valid_data_types
 import json
 
 
+def ifiltermap(predicate, function, iterable):
+    """creates a generator than combines filter and map"""
+    return (function(item) for item in iterable if predicate(item))
+
+
 def get_add_one_column_function(row_function, data_type):
     """Returns a function which adds a column to a row based on given row function"""
     def add_one_column(row):
@@ -52,8 +57,9 @@ def get_add_one_column_function(row_function, data_type):
         cast_value = valid_data_types.cast(result, data_type)
         if cast_value is not None:
             cast_value = unicode(cast_value)
-        row.data.append(cast_value)
-        return json.dumps(row.data) 
+        data = row._get_data()
+        data.append(cast_value)
+        return row.json_dumps()
     return add_one_column
 
 
@@ -61,13 +67,25 @@ def get_add_many_columns_function(row_function, data_types):
     """Returns a function which adds several columns to a row based on given row function"""
     def add_many_columns(row):
         result = row_function(row)
+        data = row._get_data()
         for i, data_type in enumerate(data_types):
             cast_value = valid_data_types.cast(result[i], data_type)
             if cast_value is not None:
                 cast_value = unicode(cast_value)
-            row.data.append(cast_value)
-        return json.dumps(row.data) 
+            data.append(cast_value)
+        return row.json_dumps()
     return add_many_columns
+
+
+def get_copy_columns_function(column_names, from_schema):
+    """Returns a function which copies only certain columns for a row"""
+    indices = [i for i, column in enumerate(from_schema) if column[0] in column_names]
+
+    def project_columns(row):
+        from intelanalytics.core.row import NumpyJSONEncoder
+        return json.dumps([row[index] for index in indices], cls=NumpyJSONEncoder)
+    return project_columns
+
 
 class IaPyWorkerError(Exception):
     def __init__(self, value):
@@ -75,13 +93,15 @@ class IaPyWorkerError(Exception):
     def __str__(self):
         return repr(base64.urlsafe_b64decode(self.value))
 
+
 class RowWrapper(Row):
     """
     Wraps row for specific RDD line digestion using the Row object
     """
 
     def load_row(self, s):
-        self.data = json.loads(unicode(s))
+        self._set_data(json.loads(unicode(s)))
+
 
 def pickle_function(func):
     """Pickle the function the way Pyspark does"""
@@ -132,8 +152,18 @@ def prepare_row_function(frame, subject_function, iteration_function):
     row_ready_function = _wrap_row_function(frame, subject_function)
     def iterator_function(iterator): return iteration_function(row_ready_function, iterator)
     def iteration_ready_function(s, iterator): return iterator_function(iterator)
+    return make_http_ready(iteration_ready_function)
 
-    pickled_function = pickle_function(iteration_ready_function)
+
+def prepare_row_function_for_copy_columns(frame, predicate_function, column_names):
+    row_ready_predicate = _wrap_row_function(frame, predicate_function)
+    row_ready_map = _wrap_row_function(frame, get_copy_columns_function(column_names, frame.schema))
+    def iteration_ready_function(s, iterator): return ifiltermap(row_ready_predicate, row_ready_map, iterator)
+    return make_http_ready(iteration_ready_function)
+
+
+def make_http_ready(function):
+    pickled_function = pickle_function(function)
     http_ready_function = encode_bytes_for_http(pickled_function)
     return http_ready_function
 
