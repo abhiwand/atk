@@ -24,31 +24,27 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import java.util.Date
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.{ Await, ExecutionContext }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import spray.json._
-import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.graph.GraphName
-import com.intel.intelanalytics.component.Boot
-import com.typesafe.config.Config
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.security.UserPrincipal
+
+import scala.concurrent._
 
 /**
  * Represents the arguments for KClique Percolation algorithm
  *
- * @param graph reference to the graph for which communities has to be determined
+ * @param graph Reference to the graph for which communities has to be determined.
  * @param cliqueSize Parameter determining clique-size and used to find communities. Must be at least 2.
- *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
- * @param communityPropertyLabel name of the community property of vertex that will be
- *                               updated/created in the input graph
+ *                   Larger values of cliqueSize result in fewer, smaller, more cohesive communities.
+ * @param communityPropertyLabel Name of the community property of vertex that will be
+ *                               updated/created in the input graph.
  */
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
@@ -57,24 +53,28 @@ case class KClique(graph: GraphReference,
 }
 
 /**
- * The result object
+ * The result object.
  *
  * Note: For now it is returning the execution time
  *
  * @param time execution time
  */
+
 case class KCliqueResult(time: Double)
 
-/** Json conversion for arguments and return value case classes */
+/**
+ * Json conversion for arguments and return value case classes
+ */
+
 object KCliquePercolationJsonFormat {
-  import DomainJsonProtocol._
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
   implicit val kcliqueFormat = jsonFormat3(KClique)
   implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
 }
 
 import KCliquePercolationJsonFormat._
 /**
- * KClique Percolation launcher class. Takes the command from python layer
+ * KClique Percolation plugin class.
  */
 class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
@@ -102,8 +102,6 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     // Set the graph in Titan
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
-
-    // Start KClique Percolation
 
     // Create the Titan connection
     val titanConnector = new TitanGraphConnector(titanConfig)
