@@ -125,8 +125,10 @@ trait AbstractEdge extends AbstractRow with Serializable {
    * Convert this row to a GbEdge
    */
   def toGbEdge: GBEdge = {
-    val idColumnName = schema.vertexSchema.get.idColumnName.get
-    val properties = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid")).map(column => GBProperty(column.name, value(column.name)))
+    println(s"RYANN!!!!! IN GB EDGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
+    println(s"RYANN!!!!! $filteredColumns")
+    val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
     GBEdge(srcVertexId(), destVertexId(), null, null, schema.label.get, properties.toSet)
   }
