@@ -50,15 +50,14 @@ class GraphBackendRest(object):
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-    def create(self, graph,rules,name,storage_format):
+    def create(self, graph, rules,name, storage_format):
         logger.info("REST Backend: create graph with name %s: " % name)
         if isinstance(rules, dict):
             rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
-            initialize_graph(graph,rules)
-            return  # Early exit here
-        new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules), storage_format)
-        return new_graph_name
+            return initialize_graph(graph,rules)._id # Early exit here
+        new_graph_id = self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules), storage_format)
+        return new_graph_id
 
     def _create_new_graph(self, graph, rules, name, storage_format):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
@@ -90,7 +89,7 @@ class GraphBackendRest(object):
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
-        return "\n".join(['BigGraph "%s"' % (graph_info.name)])
+        return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name)])
 
     def _get_graph_info(self, graph):
         response = self.rest_http.get_full_uri(self._get_graph_full_uri(graph))

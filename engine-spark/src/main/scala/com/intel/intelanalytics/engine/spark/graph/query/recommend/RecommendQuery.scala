@@ -2,19 +2,15 @@ package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Edge, Vertex, GraphElement }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
-import spray.json._
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
-import spray.json.DefaultJsonProtocol._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
@@ -66,18 +62,21 @@ case class RecommendParams(graph: GraphReference,
 /**
  * Algorithm report comprising of recommended Ids and scores.
  *
- * @param recommendation multi-line string. Each line contains recommended vertex Id and score
+ * @param recommendation List of recommendations with rank, vertex ID, and rating.
  */
-case class RecommendResult(recommendation: String)
+case class RecommendResult(recommendation: List[RankedRating])
 
 /** Json conversion for arguments and return value case classes */
-object RecommendJsonFormat {
+object RecommendQueryFormat {
+  // Implicits needed for JSON conversion
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
+  implicit val rankedRatingFormat = jsonFormat3(RankedRating)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
 }
 
-import RecommendJsonFormat._
+import RecommendQueryFormat._
 
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
@@ -103,12 +102,12 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |    Get recommendation to either left-side or right-side vertices.
                            |    The prerequisite is at least one of two algorithms (ALS or CGD) has
                            |    been run before this query.
-                           |    
+                           |
                            |    Parameters
                            |    ----------
                            |    vertex_id : string
                            |        The vertex id to get recommendation for
-                           |    
+                           |
                            |    vertex_type : string (optional)
                            |        The vertex type to get recommendation for.
                            |        The valid value is either "L" or "R".
@@ -119,73 +118,75 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |        user is your left-side vertex.
                            |        Similarly, input "R" if you want to get recommendations for movie.
                            |        The default value is "L".
-                           |    
+                           |
                            |    output_vertex_property_list : comma-separated string (optional)
                            |        The property name for ALS/CGD results.
                            |        When bias is enabled,
                            |        the last property name in the output_vertex_property_list is for bias.
                            |        The default value is "als_result".
-                           |    
+                           |
                            |    vertex_type_property_key : string (optional)
                            |        The property name for vertex type.
                            |        The default value is "vertex_type".
-                           |    
+                           |
                            |    edge_type_property_key : string (optional)
                            |        The property name for edge type.
                            |        We need this name to know data is in train, validation or test splits.
                            |        The default value is "splits".
-                           |    
+                           |
                            |    vector_value : string (optional)
                            |        Whether ALS/CDG results are saved in a vector for each vertex.
                            |        The default value is "true".
-                           |    
+                           |
                            |    bias_on : string (optional)
                            |        Whether bias turned on/off for ALS/CDG calculation.
                            |        When bias is enabled,
                            |        the last property name in the output_vertex_property_list is for bias.
                            |        The default value is "false".
-                           |    
+                           |
                            |    train_str : string (optional)
                            |        The label for training data.
                            |        The default value is "TR".
-                           |    
+                           |
                            |    num_output_results : int (optional)
                            |        The number of recommendations to output.
                            |        The default value is 10.
-                           |    
+                           |
                            |    left_vertex_name : string (optional)
                            |        The real name for left side vertex.
                            |        The default value is "user".
-                           |    
+                           |
                            |    right_vertex_name : string (optional)
                            |        The real name for right side vertex.
                            |        The default value is "movie".
-                           |    
+                           |
                            |    left_vertex_id_property_key : string (optional)
                            |        The property name for left side vertex id.
                            |        The default value is "user_id".
-                           |    
+                           |
                            |    right_vertex_id_property_key : string (optional)
                            |        The property name for right side vertex id.
                            |        The default value is "movie_id".
-                           |    
+                           |
                            |    Returns
                            |    -------
-                           |    Multiple line string
+                           |    List of rank and corresponding recommendation
                            |        Recommendations for the input vertex
-                           |    
+                           |
                            |    Examples
                            |    --------
-                           |    For example, if your left-side vertices are users,
-                           |    and you want to get movie recommendations for user 1,
+                           |    For example, if your right-side vertices are users,
+                           |    and you want to get movie recommendations for user 8941,
                            |    the command to use is::
-                           |    
-                           |        g.query.recommend(vertex_id = "1")
-                           |    
-                           |    The expected output is like this::
-                           |    
-                           |        {u'recommendation': u'Top 10 recommendation for user 1\\nmovie\\t-132\\tscore\\t5.617994036115665\\nmovie\\t-53\\tscore\\t5.311958055352947\\nmovie\\t-389\\tscore\\t5.098006034765436\\nmovie\\t-84\\tscore\\t4.695484062644423\\nmovie\\t-302\\tscore\\t4.693913046573323\\nmovie\\t-462\\tscore\\t4.648850870271126\\nmovie\\t-186\\tscore\\t4.495738316971479\\nmovie\\t-234\\tscore\\t4.432865786903878\\nmovie\\t-105\\tscore\\t4.418878980193627\\nmovie\\t-88\\tscore\\t4.415980762315559\\n'}
-                           |    
+                           |
+                           |        g.query.recommend(right_vertex_id_property_key='user', left_vertex_id_property_key='movie_name', vertex_type="R", vertex_id = "8941")
+                           |
+                           |    The expected output of recommended movies looks like this::
+                           |
+                           |        {u'recommendation': [{u'vertex_id': u'once_upon_a_time_in_mexico', u'score': 3.831419911100037, u'rank': 1},
+                           |        {u'vertex_id': u'nocturne_1946', u'score': 3.541907655192171, u'rank': 2},
+                           |        {u'vertex_id': u'red_hot_skate_rock', u'score': 3.2573571020389407, u'rank': 3}]}
+                           |
                             """.stripMargin)))
 
   override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
@@ -280,7 +281,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val avoidTargetGbIdsRDD = avoidTargetEdgeRDD.tailVerticesGbIds()
 
     //get unique list of vertices' gbIds to avoid
-    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray()
+    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().collect()
 
     //filter target vertex RDD
     val targetVertexRDD = vertexRDD.filter {
@@ -311,21 +312,20 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val sourceVector = RecommendFeatureVector.parseResultArray(
       sourceVertex, resultPropertyList, vectorValue, biasOn)
 
-    val ratingResultRDD = RecommendFeatureVector
+    val ratingResult = RecommendFeatureVector
       .predict(sourceVector, targetVectorRDD, biasOn)
       .collect()
       .sortBy(-_.score)
       .take(numOutputResults)
 
-    var results = "================Top " + numOutputResults + " recommendations for " +
-      sourceVertexName + " " + vertexId + "==========\n"
-    ratingResultRDD.foreach { rating: Rating =>
-      results += targetVertexName + "\t" + rating.vertexId + "\tscore\t" + rating.score + "\n"
-    }
+    val results = for {
+      i <- 1 to ratingResult.size
+      rating = ratingResult(i - 1)
+    } yield RankedRating(i, rating.vertexId, rating.score)
 
     targetVectorRDD.unpersist()
     sourceVertexRDD.unpersist()
-    RecommendResult(results)
+    RecommendResult(results.toList)
   }
 
 }
