@@ -81,7 +81,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
-  override def kryoClassName: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //override def kryoClassName: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
 
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
@@ -142,11 +142,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     // Get the SparkContext as one the input parameters for Driver
 
-    //sparkInvocation.sparkContext.stop
+    sparkInvocation.sparkContext.stop
 
-    //val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
 
-    val sc = sparkInvocation.sparkContext //new SparkContext(sparkConf)
+    val sc = new SparkContext(sparkConf)
 
     try {
 
@@ -200,7 +200,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     }
 
     finally {
-      // sc.stop
+      sc.stop
     }
 
   }
