@@ -55,7 +55,7 @@ class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSpar
       val vertexRDD = sparkContext.parallelize(cliqueGraphVertexSet)
       val edgeRDD = sparkContext.parallelize(cliqueGraphEdgeSet)
 
-      val cliquesToCommunities = GetConnectedComponents.run(vertexRDD, edgeRDD, sparkContext)
+      val cliquesToCommunities = GetConnectedComponents.run(vertexRDD, edgeRDD)
 
       val cliquesToCommunitiesMap = cliquesToCommunities.collect().toMap
 

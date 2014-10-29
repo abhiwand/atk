@@ -42,16 +42,15 @@ object GetConnectedComponents extends Serializable {
   /**
    * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques
    *
-   * @param sc SparkContext
    * @return Pairs of (clique, community ID) where each ID is the component of the clique graph to which the clique
    *         belongs.
    */
-  def run(cliqueGraphVertices: RDD[VertexSet], cliqueGraphEdges: RDD[(VertexSet, VertexSet)], sc: SparkContext): RDD[(VertexSet, Long)] = {
+  def run(cliqueGraphVertices: RDD[VertexSet], cliqueGraphEdges: RDD[(VertexSet, VertexSet)]): RDD[(VertexSet, Long)] = {
 
     //    Generate new Long IDs for each K-Clique in k-clique graph. These long IDs will be the vertices
     //    of a new graph. In this new graph, the edge between two vertices will exists if the two original
     //    k-cliques corresponding to the two vertices have exactly (k-1) number of elements in common
-    val graphIDAssigner = new GraphIDAssigner[VertexSet](sc)
+    val graphIDAssigner = new GraphIDAssigner[VertexSet]()
     val graphIDAssignerOutput = graphIDAssigner.run(cliqueGraphVertices, cliqueGraphEdges)
     val cliqueIDsToCliques = graphIDAssignerOutput.newIdsToOld
 
