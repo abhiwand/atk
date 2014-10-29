@@ -118,7 +118,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     // Get the GraphBuilder edge list
     val gbEdges = titanReaderRDD.filterEdges()
 
-    val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
+    val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, arguments.cliqueSize, arguments.communityPropertyLabel)
 
     // Update back each vertex in the input Titan graph and the write the community property
     // as the set of communities to which it belongs

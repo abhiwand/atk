@@ -55,7 +55,7 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
 
       val cliquesToCommunitiesRDD = sparkContext.parallelize(cliquesToCommunities)
 
-      val verticesToCommunities = CommunityAssigner.run(cliquesToCommunitiesRDD, sparkContext)
+      val verticesToCommunities = CommunityAssigner.run(cliquesToCommunitiesRDD)
 
       val vertexToCommunitiesMap = verticesToCommunities.collect().toMap
 

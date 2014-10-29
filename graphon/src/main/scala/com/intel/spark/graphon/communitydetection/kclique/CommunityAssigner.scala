@@ -43,7 +43,7 @@ object CommunityAssigner extends Serializable {
    * Group by vertex IDs so that each vertex ID gets a set (possibly empty) of the community IDs to which it belongs
    *
    */
-  def run(cliquesToCommunities: RDD[(VertexSet, Long)], sc: SparkContext): RDD[(Long, Set[Long])] = {
+  def run(cliquesToCommunities: RDD[(VertexSet, Long)]): RDD[(Long, Set[Long])] = {
 
     val vertexCommunityPairs: RDD[(Long, Long)] =
       cliquesToCommunities.flatMap({ case (clique, communityID) => clique.map(v => (v, communityID)) })

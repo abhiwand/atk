@@ -41,14 +41,12 @@ object KCliquePercolationRunner {
 
   /**
    * The main driver to execute k-clique percolation algorithm
-   * @param sc SparkContext
    * @param cliqueSize Parameter determining clique-size used to determine communities. Must be at least 2.
    *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
    * @param communityPropertyLabel name of the community property of vertex that will be
    *                               updated/created in the input graph
    */
   def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge],
-          sc: SparkContext,
           cliqueSize: Int,
           communityPropertyLabel: String): (RDD[GBVertex], RDD[GBEdge]) = {
 
@@ -66,10 +64,10 @@ object KCliquePercolationRunner {
 
     // Run connected component analysis to get the cliques and corresponding communities
     val cliquesToCommunities: RDD[(VertexSet, Long)] =
-      GetConnectedComponents.run(kCliqueGraphGeneratorOutput.cliqueGraphVertices, kCliqueGraphGeneratorOutput.cliqueGraphEdges, sc)
+      GetConnectedComponents.run(kCliqueGraphGeneratorOutput.cliqueGraphVertices, kCliqueGraphGeneratorOutput.cliqueGraphEdges)
 
     // Pair each vertex with a set of the communities to which it belongs
-    val vertexCommunitySet: RDD[(Long, Set[Long])] = CommunityAssigner.run(cliquesToCommunities, sc)
+    val vertexCommunitySet: RDD[(Long, Set[Long])] = CommunityAssigner.run(cliquesToCommunities)
 
     // Set the vertex Ids as required by Graph Builder
     // A Graph Builder vertex is described by three components -
