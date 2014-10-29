@@ -40,9 +40,9 @@ import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.Ve
 object GetConnectedComponents extends Serializable {
 
   /**
-   * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques
+   * Run the connected components and get the mappings of cliques to component IDs.
    *
-   * @return Pairs of (clique, community ID) where each ID is the component of the clique graph to which the clique
+   * @return RDD of pairs of (clique, community ID) where each ID is the component of the clique graph to which the clique
    *         belongs.
    */
   def run(cliqueGraphVertices: RDD[VertexSet], cliqueGraphEdges: RDD[(VertexSet, VertexSet)]): RDD[(VertexSet, Long)] = {
