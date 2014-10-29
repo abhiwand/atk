@@ -114,7 +114,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId the id for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frameId: Long): FrameRDD = {
+  def loadFrameData(ctx: SparkContext, frameId: Long)(implicit user: UserPrincipal): FrameRDD = {
     val frame = expectFrame(frameId)
     loadFrameData(ctx, frame)
   }
@@ -128,7 +128,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+  def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): FrameRDD = {
     val sqlContext = new SQLContext(ctx)
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
@@ -156,7 +156,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long): LegacyFrameRDD = {
+  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long)(implicit user: UserPrincipal): LegacyFrameRDD = {
     val frame = lookup(frameId).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: $frameId"))
     loadLegacyFrameRdd(ctx, frame)
@@ -173,7 +173,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD =
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): LegacyFrameRDD =
     loadFrameData(ctx, frame).toLegacyFrameRDD
 
   private def copyParentNameToChildAndRenameParent(frame: DataFrame)(implicit session: metaStore.Session) = {
@@ -206,7 +206,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
-  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None): DataFrame = {
+  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)
+                     (implicit user: UserPrincipal): DataFrame = {
     saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
   }
 
@@ -219,8 +220,20 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
    */
-  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None): DataFrame =
+  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None)
+                   (implicit user: UserPrincipal): DataFrame =
     withContext("SFS.saveFrame") {
+
+
+      if (frameFileStorage.frameBaseDirectoryExists(frameEntity)) {
+        //We're saving over something that already exists - which we must not do.
+        //So instead we create a new frame.
+        val newFrame = create()
+        val saved = saveFrameData(newFrame, frameRDD, rowCount)
+        //We copy the name from the old frame, since this was intended to replace it.
+        exchangeNames(frameEntity, saved)
+        //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
+      }
 
       val path = frameFileStorage.createFrame(frameEntity).toString
       val count = rowCount.getOrElse {
@@ -389,7 +402,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
    */
-  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)
+                    (implicit user: UserPrincipal): ParseResultRddWrapper = {
     val frameRdd = loadLegacyFrameRdd(ctx, frame)
     val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)

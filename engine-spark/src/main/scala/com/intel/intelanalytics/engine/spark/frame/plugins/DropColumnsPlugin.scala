@@ -114,16 +114,13 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
-        frames.loadFrameData(ctx, frameId).filter(_ => false)
         frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
       case singleColumn if singleColumn.length == 1 =>
-        frames.loadFrameData(ctx, frameMeta)
         frames.loadLegacyFrameRdd(ctx, frameMeta)
           .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
       case multiColumn =>
-        frames.loadFrameData(ctx, frameId)
         frames.loadLegacyFrameRdd(ctx, frameId)
-          .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
+          .map(row => row.zipWithIndex.filter(elem => !multiColumn.contains(elem._2)).map(_._1))
     }
 
     val dataFrame = frames.dropColumns(frameMeta, columnIndices)
