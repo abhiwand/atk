@@ -118,16 +118,7 @@
         <!--END BDA dependencies to our modules-->
 
         <!-- START Titan dependencies -->
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>ititan-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>asm</artifactId>
-                    <groupId>org.ow2.asm</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
@@ -136,10 +127,7 @@
                     <groupId>org.jboss.netty</groupId>
                     <artifactId>netty</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-core</artifactId>
-                </exclusion>
+
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
                     <artifactId>hbase-client</artifactId>
@@ -166,19 +154,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>1.8.9</version>
-        </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hadoop-2</artifactId>
             <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>org.apache.mrunit</groupId>
                     <artifactId>mrunit</artifactId>
@@ -186,10 +166,6 @@
                 <exclusion>
                     <groupId>org.jboss.netty</groupId>
                     <artifactId>netty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
