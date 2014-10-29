@@ -21,6 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.domain.graph
 
-case class FrameName(name: String)
+import com.intel.intelanalytics.domain.HasMetaData
+
+/**
+ * A GraphReference with metadata
+ */
+class GraphMeta(graph: Graph) extends GraphReference(graph.id, Some(true)) with HasMetaData {
+
+  type Meta = Graph
+
+  val meta = graph
+
+}
