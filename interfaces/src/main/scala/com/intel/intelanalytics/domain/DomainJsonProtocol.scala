@@ -232,6 +232,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVertexRows)
 
+  implicit val exportGraphFormat = jsonFormat2(ExportGraph)
+
   implicit object UnitReturnJsonFormat extends RootJsonFormat[UnitReturn] {
     override def write(obj: UnitReturn): JsValue = {
       JsObject()
