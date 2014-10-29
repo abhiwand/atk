@@ -42,7 +42,11 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
    * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
    */
-  def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
+  def persistPythonRDD(dataFrame: DataFrame,
+                       pyRdd: EnginePythonRDD[String],
+                       converter: Array[String] => Array[Any],
+                       skipRowCount: Boolean = false)
+                      (implicit user: UserPrincipal): Long = {
     withMyClassLoader {
 
       val rdd = PythonRDDStorage.pyRDDToFrameRDD(dataFrame.schema, pyRdd, converter)

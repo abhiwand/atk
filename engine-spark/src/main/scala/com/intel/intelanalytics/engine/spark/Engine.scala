@@ -351,7 +351,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
-      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
+      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id)(user).rows
       val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }

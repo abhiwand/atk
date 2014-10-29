@@ -105,6 +105,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     extends EventLogging
     with ClassLoaderAware {
 
+
+  /**
+   * Basic invocation for commands that don't need Spark
+   */
   case class SimpleInvocation(engine: Engine,
                               commandStorage: CommandStorage,
                               executionContext: ExecutionContext,
@@ -129,9 +133,12 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam Return the type of the return value of the command
    * @return an instance of the Return type with all the generated references.
    */
-  def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command,
-                                                                                           plugin: CommandPlugin[Arguments, Return],
-                                                                                           arguments: Arguments)(implicit invocation: Invocation): Return = {
+  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag]
+    (command: Command,
+     plugin: CommandPlugin[Arguments, Return],
+     arguments: Arguments)
+    (implicit invocation: Invocation): Return = {
+
     val types = Reflection.getUriReferenceTypes[Return]()
     val references = types.map {
       case (name, signature) =>
@@ -185,8 +192,21 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     }
   }
 
-  def runDependencies[A <: Product: TypeTag](arguments: A,
-                                             commandContext: CommandContext)(implicit invocation: Invocation): ReferenceResolver = {
+  /**
+   * For the arguments and command given, find all the dependencies (UriReferences) in the arguments,
+   * and if they aren't already materialized, run the commands that generate data for them. If they
+   * in turn have dependencies, process those first, recursively.
+   *
+   * @param arguments the arguments to the command
+   * @param commandContext the command that's being run
+   * @param invocation the invocation in which we're running
+   * @tparam A the arguments type
+   * @return a new ReferenceResolver that will resolve references by returning the in-memory data
+   *         when available, rather than going back to the EntityManager.
+   */
+  private def runDependencies[A <: Product: TypeTag](arguments: A,
+                                             commandContext: CommandContext)
+                                            (implicit invocation: Invocation): ReferenceResolver = {
     val dependencies = Dependencies.getComputables(arguments)
     val newResolver = dependencies match {
       case x if x.isEmpty => ReferenceResolver
@@ -199,8 +219,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
           val results = commands.map(c => {
             executeContext(commandContext.copy(command = c, action = true, resolver = resolver), firstExecution = false)
           })
-          //TODO: next, examine the results and add uri references to the resolver,
-          //if they are HasData instances.
+          //Next, examine the results and add uri references to the resolver,
+          //if they are HasData instances. This is what allows RDDs or other data
+          //structures to chain from one operation to the next without serializing
+          //at each step
           //TODO: Realistic, non-hard-coded timeout
           val refs = results.map(exc => Await.result(exc.end, 100 hours))
             .flatMap(obj => Dependencies.getUriReferencesFromJsObject(obj.result.get))
@@ -335,9 +357,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
         mutable.Map.empty,
         mutable.Map.empty)
 
-      implicit val argTag = plugin.argumentTag
-      implicit val retTag = plugin.returnTag
-      executeContext(context)(argTag, retTag)
+      executeContext(context)(plugin.argumentTag, plugin.returnTag)
     }
 
   private def expectFunction[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {

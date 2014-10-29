@@ -44,14 +44,18 @@ class FrameFileStorage(fsRoot: String,
     info("data frames base directory: " + framesBaseDirectory)
   }
 
+  def frameBaseDirectoryExists(dataFrame: DataFrame) = {
+    val path = frameBaseDirectory(dataFrame.id)
+    hdfs.exists(path)
+  }
+
   def createFrame(dataFrame: DataFrame): Path = withContext("createFrame") {
 
-    val path = frameBaseDirectory(dataFrame.id)
-    if (hdfs.exists(path)) {
-      throw new IllegalArgumentException(s"Frame already exists at $path")
+    if (frameBaseDirectoryExists(dataFrame)) {
+      throw new IllegalArgumentException(s"Frame already exists at ${frameBaseDirectory(dataFrame.id)}")
     }
     //TODO: actually create the file?
-    path
+    frameBaseDirectory(dataFrame.id)
   }
 
   /**
