@@ -138,7 +138,7 @@ trait EventLogging {
     if (exception != null) {
       builder = builder.addException(exception)
     }
-    for (m ← markers) {
+    for (m <- markers) {
       builder = builder.addMarker(m)
     }
     EventLogger.log(builder.build())

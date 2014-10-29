@@ -57,7 +57,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    * @param propertyDefs the definition of a Property
    */
   private def writePropertyDefs(propertyDefs: List[PropertyDef]): Unit = {
-    for (propertyDef ← propertyDefs) {
+    for (propertyDef <- propertyDefs) {
       writePropertyDef(propertyDef)
     }
   }
