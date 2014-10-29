@@ -1102,7 +1102,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>io.spray</groupId>
                 <artifactId>spray-json_${scala.short.version}</artifactId>
-                <version>1.2.5</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>
