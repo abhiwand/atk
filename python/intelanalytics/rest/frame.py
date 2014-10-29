@@ -239,7 +239,7 @@ class FrameBackendRest(object):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
         arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
-        execute_update_frame_command("filter", arguments, frame)
+        execute_update_frame_command("frame:/filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
         if columns is None:
@@ -278,7 +278,7 @@ class FrameBackendRest(object):
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('flatten_column', arguments)
+        return execute_new_frame_command('frame:/flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
