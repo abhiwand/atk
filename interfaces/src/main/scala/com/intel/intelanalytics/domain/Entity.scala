@@ -24,6 +24,8 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.engine.plugin.Invocation
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 /**
  * Describes the structure of a name, including both singular and plural,
@@ -63,6 +65,8 @@ trait Entity {
 
   type Reference <: UriReference
 
+  implicit val referenceTag: TypeTag[Reference] = typeTag[Reference]
+
   /**
    * The standard name for this entity
    */
@@ -83,6 +87,8 @@ trait Entity {
 trait EntityManager[E <: Entity] { self =>
 
   type Reference = E#Reference
+
+  implicit def referenceTag: TypeTag[Reference]
 
   type MetaData <: Reference with HasMetaData
 

@@ -358,7 +358,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     else {
       implicit val impUser: UserPrincipal = user
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-      val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
+      val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext
+      )
       rows
     }
   }

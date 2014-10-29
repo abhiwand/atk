@@ -57,6 +57,8 @@ object FrameEntity extends Entity {
 
 object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =>
 
+  override implicit val referenceTag = FrameEntity.referenceTag
+
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
   EntityRegistry.register(FrameEntity, this)
 

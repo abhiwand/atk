@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{UriReference, Entity, EntityManager}
+import com.intel.intelanalytics.domain.{ UriReference, Entity, EntityManager }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }

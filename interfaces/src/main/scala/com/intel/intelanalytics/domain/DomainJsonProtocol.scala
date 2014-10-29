@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
 import spray.json._
-import com.intel.intelanalytics.engine.{ReferenceResolver, ProgressInfo, TaskProgressInfo}
+import com.intel.intelanalytics.engine.{ ReferenceResolver, ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
 import com.intel.intelanalytics.algorithm.Quantile

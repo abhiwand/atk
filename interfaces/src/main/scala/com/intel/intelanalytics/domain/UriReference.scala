@@ -2,7 +2,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
-import com.intel.intelanalytics.engine.{ReferenceResolver, EntityRegistry}
+import com.intel.intelanalytics.engine.{ ReferenceResolver, EntityRegistry }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try

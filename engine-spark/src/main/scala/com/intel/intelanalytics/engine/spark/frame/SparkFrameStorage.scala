@@ -29,14 +29,14 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.EntityManager
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.engine.{FrameStorage, _}
+import com.intel.intelanalytics.engine.{ FrameStorage, _ }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.{DuplicateNameException, NotFoundException}
+import com.intel.intelanalytics.{ DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -55,6 +55,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   override type Data = FrameRDD
 
   object SparkFrameManagement extends EntityManager[FrameEntity.type] {
+
+    override implicit val referenceTag = FrameEntity.referenceTag
 
     override type Reference = FrameReference
 
