@@ -159,7 +159,7 @@ class VertexRule(Rule):
     properties: dictionary {'vertex_type': ['L|R'] [, property_name:property_value]}
         vertex properties of the form property_name:property_value.
         The property_name (the key) is a string, and property_value is a literal value
-        or a BigColumn source, which must be from the same BigFrame as the id_key and id_value arguments.
+        or a BigColumn source, which must be from the same Frame as the id_key and id_value arguments.
 
     Notes
     -----
@@ -228,15 +228,15 @@ class EdgeRule(Rule):
     label: str or BigColumn source
         Edge label, can be constant string or pulled from BigColumn.
     tail: VertexRule
-        Tail vertex ('from' vertex); must be from same BigFrame as head,
+        Tail vertex ('from' vertex); must be from same Frame as head,
         label and any properties.
     head: VertexRule
-        Head vertex ('to' vertex); must be from same BigFrame as tail,
+        Head vertex ('to' vertex); must be from same Frame as tail,
         label and any properties.
     properties: dict
         Edge properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
-        or a BigColumn source, which must be from same BigFrame as head,
+        or a BigColumn source, which must be from same Frame as head,
         tail and label.
     bidirectional : bool (optional)
         Indicates the edge is bidirectional. The default value is false.
@@ -383,7 +383,7 @@ class Graph(DocStubsGraph, _BaseGraph):
                                             ('movie_id', int32),
                                             ('movie_title', str),
                                             ('rating', str)])
-        frame = ia.BigFrame(csv)
+        frame = ia.Frame(csv)
 
         # create a graph
         graph = ia.Graph()
@@ -411,15 +411,15 @@ class Graph(DocStubsGraph, _BaseGraph):
     connected by 'rating' edges::
 
         # create a frame as the source for a graph
-        userFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('user_id', int32),
+        userFrame = ia.Frame(ia.CsvFile("/users.csv", schema= [('user_id', int32),
                                             ('user_name', str),
                                             ('age', int32)]))
 
-        movieFrame = ia.BigFrame(ia.CsvFile("/movie.csv", schema= [('movie_id', int32),
+        movieFrame = ia.Frame(ia.CsvFile("/movie.csv", schema= [('movie_id', int32),
                                             ('movie_title', str),
                                             ('year', str)]))
 
-        ratingsFrame = ia.BigFrame(ia.CsvFile("/ratings.csv", schema= [('user_id', int32),
+        ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv", schema= [('user_id', int32),
                                             ('movie_id', int32),
                                             ('rating', str)]))
 
@@ -540,7 +540,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
                                             ('vertexType', str),
                                             ('movie', int32),
                                             ('rating', str)])
-        frame = ia.BigFrame(csv)
+        frame = ia.Frame(csv)
 
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
@@ -604,7 +604,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
                                                 ('movie', int32),
                                                 ('rating', str)])
 
-            frame = ia.BigFrame(csv)
+            frame = ia.Frame(csv)
 
             # define graph parsing rules
             user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
@@ -617,7 +617,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         This example shows creating a graph from one frame and appending data to it from other frames::
 
             # create a frame as the source for a graph
-            ratingsFrame = ia.BigFrame(ia.CsvFile("/ratings.csv", schema= [('userId', int32),
+            ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv", schema= [('userId', int32),
                                                   ('movieId', int32),
                                                   ('rating', str)]))
 
@@ -630,12 +630,12 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             graph = ia.Graph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            usersFrame = ia.Frame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
             userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieFrame = ia.Frame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
             movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
@@ -654,9 +654,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     #def remove_props(self, rules)
 
 
-# Deprecation of 'BigGraph'
+# Deprecation of 'TitanGraph'
 @api_class_alias
-class BigGraph(TitanGraph):
+class TitanGraph(TitanGraph):
     def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('BigGraph', 'Use TitanGraph()')
-        super(BigGraph, self).__init__(*args, **kwargs)
+        raise_deprecation_warning('TitanGraph', 'Use TitanGraph()')
+        super(TitanGraph, self).__init__(*args, **kwargs)
