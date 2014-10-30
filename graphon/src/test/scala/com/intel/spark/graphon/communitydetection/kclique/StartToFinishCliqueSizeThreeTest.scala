@@ -24,169 +24,92 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
+import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact, Edge }
-/*
+import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+
+/**
+ * This test checks that end-to-end run of k-clique percolation works with k = 3 on a small graph consisting of
+ * two overlapping three-clique communities, a third non-overlapping three-clique community, and a leaf vertex that
+ * belongs to no three-clique communities.
+ *
+ */
 class StartToFinishCliqueSizeThreeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
-  // nls note: this is not the end-to-end unit test I expected....
-  trait StartToFinishClqSzThreeTest {
-
-    //    val edgeList: List[(Long, Long)] = List((1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4), (3, 5))
-    //      .map({ case (x, y) => (x.toLong, y.toLong) })
-    val edgeList: List[(Long, Long)] = List((1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4),
-      (2, 7), (2, 8), (3, 4), (4, 7), (4, 8), (5, 6))
-      .map({ case (x, y) => (x.toLong, y.toLong) })
-    val rddOfEdgeList: RDD[Edge] = sparkContext.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
+  trait KCliquePropertyNames {
+    val vertexIdPropertyName = "id"
+    val srcIdPropertyName = "srcId"
+    val dstIdPropertyName = "dstId"
+    val edgeLabel = "label"
+    val communityProperty = "communities"
   }
 
-  // Test for CliqueEnumerator
-  "For CliqueSize = 3, CliqueEnumerator" should
-    "create all set of 3-clique extenders fact" in new StartToFinishClqSzThreeTest {
 
-      val expectedThreeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)),
-        (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfExpectedThreeCliques: RDD[ExtendersFact] = sparkContext.parallelize(expectedThreeCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
 
-      val cliqueEnumeratorOutput = CliqueEnumerator.run(rddOfEdgeList, 3)
+  "Three clique community analysis" should "create communities according to expected equivalance classes" in new KCliquePropertyNames  {
 
-      cliqueEnumeratorOutput.collect().toSet shouldEqual rddOfExpectedThreeCliques.collect().toSet
-    }
+    /*
+    The graph has vertex set 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 and edge set 01, 12, 13, 23, 34, 24, 45, 46, 56, 78, 89, 79
 
-  // Test for GraphGenerator vertex list
-  "For CliqueSize = 3, GraphGenerator" should
-    "have each 3-cliques as the vertex of the new graph" in new StartToFinishClqSzThreeTest {
-
-      val expectedVertexListOfThreeCliqueGraph = List(Array(2, 4, 7), Array(2, 4, 8),
-        Array(1, 5, 6), Array(2, 3, 4), Array(1, 3, 4))
-        .map(clique => clique.map(_.toLong).toSet)
-      val rddOfExpectedVertexListOfThreeCliqueGraph = sparkContext.parallelize(expectedVertexListOfThreeCliqueGraph)
-
-      val threeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)), (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfThreeCliques = sparkContext.parallelize(threeCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
-
-      val threeCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfThreeCliques)
-      val vertexListFromGraphGeneratorOutput = threeCliqueGraphFromGraphGeneratorOutput.cliqueGraphVertices
-
-      vertexListFromGraphGeneratorOutput.collect().toSet shouldEqual rddOfExpectedVertexListOfThreeCliqueGraph.collect().toSet
-    }
-
-  // Test for GraphGenerator edge list
-  "For CliqueSize = 3, GraphGenerator" should
-    "produce correct edge list where edges between two 3-cliques " +
-    "(which is the vertices of new graph) exists if they share 2 elements" in new StartToFinishClqSzThreeTest {
-
-      val edgeListOfThreeCliqueGraph = List(
-        (Array(2, 4, 7), Array(2, 3, 4)),
-        (Array(2, 4, 7), Array(2, 4, 8)),
-        (Array(2, 3, 4), Array(2, 4, 8)),
-        (Array(2, 3, 4), Array(1, 3, 4))
-      ).map(edges => (edges._1.map(_.toLong).toSet, edges._2.map(_.toLong).toSet))
-      val rddOfEdgeListOfThreeCliqueGraph = sparkContext.parallelize(edgeListOfThreeCliqueGraph)
-
-      val threeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)),
-        (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfThreeCliques: RDD[ExtendersFact] = sparkContext.parallelize(threeCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
-
-      val threeCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfThreeCliques)
-      val edgeListFromGraphGeneratorOutput = threeCliqueGraphFromGraphGeneratorOutput.cliqueGraphEdges
-
-      edgeListFromGraphGeneratorOutput.collect().toSet shouldEqual rddOfEdgeListOfThreeCliqueGraph.collect().toSet
-    }
-
-  // Test for GetConnectedComponents
-  "For CliqueSize = 3, GetConnectedComponents" should
-    "produce the same number of pairs of vertices and component ID " +
-    "as the number of vertices in the input graph" in new StartToFinishClqSzThreeTest {
-
-      val threeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)),
-        (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfThreeCliques: RDD[ExtendersFact] = sparkContext.parallelize(threeCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
-
-      val vertexListOfThreeCliqueGraph = List(Array(2, 4, 7), Array(2, 4, 8),
-        Array(1, 5, 6), Array(2, 3, 4), Array(1, 3, 4))
-        .map(clique => clique.map(_.toLong).toSet)
-      val rddOfVertexListOfThreeCliqueGraph = sparkContext.parallelize(vertexListOfThreeCliqueGraph)
-
-      val threeCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfThreeCliques)
-      val threeCliqueGraphCCOutput = GetConnectedComponents.run(threeCliqueGraphFromGraphGeneratorOutput, sparkContext)
-      val threeCliqueGraphCC = threeCliqueGraphCCOutput.connectedComponents
-
-      threeCliqueGraphCC.count() shouldEqual vertexListOfThreeCliqueGraph.size
-    }
-
-  //  // Test for GetConnectedComponents
-  //  "For CliqueSize = 3, K-Clique GetConnectedComponents" should
-  //    "produce the pairs of vertices and component ID " in new StartToFinishClqSzThreeTest {
-  //
-  //      val threeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)),
-  //        (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-  //        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-  //      val rddOfThreeCliques: RDD[ExtendersFact] = sparkContext.parallelize(threeCliques)
-  //        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
-  //
-  //      val newVertexIdToOldVertexIdOfThreeCliqueGraph = List(
-  //        ("6057404231105642497".toLong, Array(2, 4, 7)),
-  //        ("-3383310884846698495".toLong, Array(2, 4, 8)),
-  //        ("-3656240272502685695".toLong, Array(1, 5, 6)),
-  //        ("419500541110910977".toLong, Array(2, 3, 4)),
-  //        ("5135849238890020865".toLong, Array(1, 3, 4))
-  //      ).map(newOldPair => (newOldPair._1, newOldPair._2.map(_.toLong).toSet))
-  //      val rddOfNewVertexIdToOldVertexIdOfThreeCliqueGraph = sparkContext.parallelize(newVertexIdToOldVertexIdOfThreeCliqueGraph)
-  //
-  //      val threeCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfThreeCliques)
-  //      val threeCliqueGraphCCOutput = GetConnectedComponents.run(threeCliqueGraphFromGraphGeneratorOutput, sparkContext)
-  //      val threeCliqueGraphNewToOldVertexMap = threeCliqueGraphCCOutput.newVertexIdToOldVertexIdOfCliqueGraph
-  //
-  //      threeCliqueGraphNewToOldVertexMap.collect().toSet shouldEqual rddOfNewVertexIdToOldVertexIdOfThreeCliqueGraph.collect().toSet
-  //    }
-
-  // Test for CommunityAssigner
-
-  // nls - this branch is for implementing LBP, not k clique
-  // we'll fix this unit test when k clique comes on line
-  /*
-  "Assignment of communities to the vertices" should
-    "produce the pair of original 3-clique vertex and set of communities it belongs to" in new StartToFinishClqSzThreeTest {
-
-      val threeCliques = List((Array(4, 7), Array(2)), (Array(5, 6), Array(1)),
-        (Array(3, 4), Array(2, 1)), (Array(4, 8), Array(2)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfThreeCliques: RDD[ExtendersFact] = sparkContext.parallelize(threeCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, false) })
-
-      val vertexWithNormalizedCommunity = List(
-        (1, Array(1, 2)),
-        (2, Array(1)),
-        (3, Array(1)),
-        (4, Array(1)),
-        (5, Array(2)),
-        (6, Array(2)),
-        (7, Array(1)),
-        (8, Array(1)))
-        .map(vertexCommunity => (vertexCommunity._1.toLong, vertexCommunity._2.map(_.toLong).toSet))
-      val rddOfVertexWithNormalizedCommunity = sparkContext.parallelize(vertexWithNormalizedCommunity)
-
-      val threeCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfThreeCliques)
-      val threeCliqueGraphCCOutput = GetConnectedComponents.run(threeCliqueGraphFromGraphGeneratorOutput, sparkContext)
-      val vertexNormalizedCommunityAsCommunityAssignerOutput =
-        CommunityAssigner.run(threeCliqueGraphCCOutput.connectedComponents, threeCliqueGraphCCOutput.newVertexIdToOldVertexIdOfCliqueGraph, sparkContext)
-
-    val test = vertexNormalizedCommunityAsCommunityAssignerOutput.collect().toSet
-    val expected = rddOfVertexWithNormalizedCommunity.collect().toSet
-
-      vertexNormalizedCommunityAsCommunityAssignerOutput.collect().toSet shouldEqual rddOfVertexWithNormalizedCommunity.collect().toSet
-    }
+    So that the 3-clique communities are:
+    {1, 2, 3, 4}. {4 ,5 6}, {7, 8, 9} ... note that 0 belongs to no 3-clique community
     */
+
+    val edgeSet: Set[(Long, Long)] = Set((0,1),(1,2),(1,3),(2,3),(2,4),(3,4),(2,3),(4,5),(4,6),(5,6),(7,8),(7,9),(8,9))
+      .map({ case (x, y) => (x.toLong, y.toLong) }).flatMap({case(x,y) => Set((x,y),(y,x))})
+
+    val vertexSet: Set[Long] = Set(0,1,2,3,4,5,6,7,8,9)
+
+
+    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set()))
+
+    val gbEdgeSet =
+      edgeSet.map({
+        case (src, dst) =>
+          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+      })
+
+
+    val  inVertexRDD : RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
+    val  inEdgeRDD : RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
+
+    val (outVertices, outEdges) = KCliquePercolationRunner.run(inVertexRDD, inEdgeRDD, 3, communityProperty)
+
+    val outEdgesSet = outEdges.collect().toSet
+    val outVertexSet = outVertices.collect().toSet
+
+    outEdgesSet shouldBe gbEdgeSet
+
+    val testVerticesToCommunities = outVertexSet.map(v => (v.gbId.value.asInstanceOf[Long],
+      v.getProperty(communityProperty).get.value.asInstanceOf[java.util.Set[Long]])).toMap
+
+    // vertex 0 gets no community (poor lonley little guy)
+    testVerticesToCommunities(0) should be ('empty)
+
+    // vertices 1, 2, 3 each have only one community and it should be the same one
+    testVerticesToCommunities(1).size() shouldBe 1
+    testVerticesToCommunities(2) shouldBe testVerticesToCommunities(1)
+    testVerticesToCommunities(3) shouldBe testVerticesToCommunities(1)
+
+    // vertices 5 and 6 each have only one community and it should be the same one
+    testVerticesToCommunities(5).size() shouldBe 1
+    testVerticesToCommunities(5) shouldBe testVerticesToCommunities(6)
+
+    // vertices 7, 8, 9 each have only one community and it should be the same one
+    testVerticesToCommunities(7).size() shouldBe 1
+    testVerticesToCommunities(7) shouldBe testVerticesToCommunities(8)
+    testVerticesToCommunities(7) shouldBe testVerticesToCommunities(9)
+
+
+    // vertex 4 belongs to the two community of {1, 2, 3} as well as the community of {5, 6}
+
+    import collection.JavaConversions._
+    testVerticesToCommunities(4).toSet shouldBe testVerticesToCommunities(1).toSet ++ testVerticesToCommunities(5).toSet
+   }
+
+
 }
-*/
+
