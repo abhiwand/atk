@@ -23,7 +23,7 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.reduce(_ + _)
 
-    val normalizedWeights = frequencies.map(x => x / (netFrequencies.toDouble))
+    val normalizedWeights = frequencies.map(x => x / netFrequencies.toDouble)
     val netWeight = normalizedWeights.reduce(_ + _)
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
@@ -37,43 +37,21 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     val numericalStatisticsWeights = new NumericalStatistics(dataWeightRDD, true)
 
     val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).reduce(_ + _)
-    val expectedMax: Double = data.reduce(Math.max(_, _))
-    val expectedMin: Double = data.reduce(Math.min(_, _))
+    val expectedMax: Double = data.reduce(Math.max)
+    val expectedMin: Double = data.reduce(Math.min)
     val dataCount: Double = data.length
 
     val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _)
 
-    val expectedVariancesFrequencies = (1.toDouble / (netFrequencies).toDouble) *
+    val expectedVariancesFrequencies = (1.toDouble / netFrequencies) *
       dataFrequencyPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).reduce(_ + _)
 
-    val expectedVarianceWeights = (1.toDouble / (netWeight).toDouble) *
+    val expectedVarianceWeights = (1.toDouble / netWeight) *
       dataWeightPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).reduce(_ + _)
 
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)
 
-    val expectedSkewnessFrequencies = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataFrequencyPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMean) / expectedStandardDeviationFrequencies), 3) })
-      .reduce(_ + _)
-
-    val expectedSkewnessWeights = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataWeightPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMean) / expectedStandardDeviationWeights), 3) })
-      .reduce(_ + _)
-
-    // TODO - the weighted skewness and kurtosis calculations are probably off! should be cleaned before open sourcing
-    // lest we be very embarassed...
-    val kurtosisMultiplier = dataCount * (dataCount + 1) / ((dataCount - 1) * (dataCount - 2) * (dataCount - 3))
-    val kurtosisSubtrahend = 3 * (dataCount - 1) * (dataCount - 1) / ((dataCount - 2) * (dataCount - 3))
-
-    val expectedKurtosisFrequencies = kurtosisMultiplier * dataFrequencyPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMean) / expectedStandardDeviationFrequencies), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
-
-    val expectedKurtosisWeights = kurtosisMultiplier * dataWeightPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMean) / expectedStandardDeviationWeights), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
   }
 
   "mean" should "handle data with integer frequencies" in new NumericalStatisticsTestPopulationFormulas {
