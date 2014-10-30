@@ -31,6 +31,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 class MockGraphManager extends EntityManager[GraphEntity.type] {
 
   override implicit val referenceTag = GraphEntity.referenceTag
+  require(referenceTag != null)
 
   class M(id: Long) extends GraphReference(id) with HasMetaData {
     override type Meta = Int

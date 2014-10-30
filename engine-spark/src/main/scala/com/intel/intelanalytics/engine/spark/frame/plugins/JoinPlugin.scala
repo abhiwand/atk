@@ -123,7 +123,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
         }
     }
 
-    val pairRdds = tupleRddColumnIndex.map { case (rdd, columnIndex) =>
+    val pairRdds = tupleRddColumnIndex.map {
+      case (rdd, columnIndex) =>
         rdd.map(p => MiscFrameFunctions.createKeyValuePairFromRow(p, Seq(columnIndex))).map {
           case (keyColumns, data) => (keyColumns(0), data)
         }

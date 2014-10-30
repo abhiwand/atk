@@ -65,7 +65,7 @@ trait Entity {
 
   type Reference <: UriReference
 
-  implicit val referenceTag: TypeTag[Reference] = typeTag[Reference]
+  def referenceTag: TypeTag[Reference]
 
   /**
    * The standard name for this entity
