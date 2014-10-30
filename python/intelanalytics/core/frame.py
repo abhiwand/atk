@@ -1645,7 +1645,7 @@ class Frame(DocStubsFrame, _BaseFrame):
         return self._backend.flatten_column(self, column_name)
 
 @api_class_alias
-class Frame(Frame):
+class BigFrame(Frame):
     def __init__(self, *args, **kwargs):
         raise_deprecation_warning('Frame', 'Use Frame()')
         super(Frame, self).__init__(*args, **kwargs)
