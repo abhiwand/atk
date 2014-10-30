@@ -62,7 +62,7 @@ i.  HDFS
 #.  Zookeeper
 
 You need python to run the |IA| python client.
-The |IA| python client will run with python 2.6 and 2.7.
+The |IA| python client will run with python 2.7.
 
 Yum Repository Requirements
 ===========================
