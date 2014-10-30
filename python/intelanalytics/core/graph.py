@@ -654,9 +654,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     #def remove_props(self, rules)
 
 
-# Deprecation of 'TitanGraph'
+# Deprecation of 'BigGraph'
 @api_class_alias
-class TitanGraph(TitanGraph):
+class BigGraph(TitanGraph):
     def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('TitanGraph', 'Use TitanGraph()')
+        raise_deprecation_warning('BigGraph', 'Use TitanGraph()')
         super(TitanGraph, self).__init__(*args, **kwargs)
