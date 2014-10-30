@@ -30,6 +30,7 @@ import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExte
 import com.intel.testutils.TestingSparkContextFlatSpec
 
 class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+  // this needs to be recoded... I think that's the only difference
 
   trait KCliqueGraphGenTest {
     val fourCliques = List((Array(2, 3, 4), Array(5, 7, 8)), (Array(3, 5, 6), Array(7, 8)))

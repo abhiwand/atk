@@ -25,7 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.spark.graphon.communitydetection.kclique.{ GraphGenerator, GetConnectedComponents }
+import com.intel.spark.graphon.communitydetection.kclique.{ GetConnectedComponents }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet

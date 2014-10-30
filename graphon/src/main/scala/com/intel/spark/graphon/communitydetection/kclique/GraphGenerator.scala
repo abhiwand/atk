@@ -46,45 +46,19 @@ object GraphGenerator extends Serializable {
    */
   def run(cliqueAndExtenders: RDD[CliqueExtension]) = {
 
-    // Derive the extended k cliques by extending the k-1 cliques
-    // and drop the boolean variable neighborHigh that describes whether the neighbors are of higher order
-    val extendedClique = cliqueAndExtenders.flatMap({
-      case CliqueExtension(clique, extenders, neighborHigh) =>
-        extenders.map(extendedBy => (clique.members + extendedBy).toSeq.sorted.toSet)
-    })
+    val cliqueGraphDirectedEdges: RDD[(VertexSet, VertexSet)] =
+      cliqueAndExtenders.flatMap({
+        case CliqueExtension(clique, extenders, neighborHigh) =>
+          extenders.map(v => Pair(clique.members, (clique.members + v)))
+      })
 
-    // Derive the pairs of all possible k-1 cliques in the graph corresponding to each extended k cliques
-    // and the extended k cliques
-    val cliqueAndExtendedClique = extendedClique.flatMap({
-      case (extendedCliques) =>
-        extendedCliques.map(cliqueMember => (CliqueFact(extendedCliques - cliqueMember), CliqueFact(extendedCliques)))
-    })
+    cliqueGraphDirectedEdges.persist()
 
-    // Get the distinct CliqueFact set as the new vertex list of k-clique graph
-    val cliqueFactVertexList = extendedClique.map({
-      case (extendedCliques) => CliqueFact(extendedCliques)
-    })
+    val cliqueGraphUndirectedEdges = cliqueGraphDirectedEdges.flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    // Group those pairs by their keys (the k-1) sets, so in each group
-    // we get (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
-    val cliqueAndExtendedCliqueSet = cliqueAndExtendedClique.groupBy(_._1).mapValues(_.map(_._2).toSet)
+    val cliqueGraphVertices: RDD[VertexSet] = cliqueGraphDirectedEdges.flatMap({ case (x, y) => Set(x, y) })
 
-    // Each V_i becomes a vertex of the clique graph. Create edge list as ( V_i, V_j )
-    val pairsOfAdjacentCliques = cliqueAndExtendedCliqueSet.flatMap({
-      case (clique, setOfCliques) => setOfCliques.subsets(2)
-    })
-
-    val cliqueFactEdgeList = pairsOfAdjacentCliques.map(subset => (subset.head, subset.last))
-
-    // Get the list of vertices of the k-clique graph
-    val cliqueGraphVertices = cliqueFactVertexList.map({ case (CliqueFact(cliqueVertex)) => cliqueVertex })
-
-    // Get the list of edges of the k-clique graph
-    val cliqueGraphEdges: RDD[(VertexSet, VertexSet)] = cliqueFactEdgeList.map({
-      case (CliqueFact(idCliqueVertex), CliqueFact(nbrCliqueVertex)) => (idCliqueVertex, nbrCliqueVertex)
-    })
-
-    new KCliqueGraphGeneratorOutput(cliqueGraphVertices, cliqueGraphEdges)
+    new KCliqueGraphGeneratorOutput(cliqueGraphVertices, cliqueGraphUndirectedEdges)
   }
 
 }
