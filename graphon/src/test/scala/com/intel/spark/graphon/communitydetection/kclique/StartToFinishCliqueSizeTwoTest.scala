@@ -60,7 +60,7 @@ class StartToFinishCliqueSizeTwoTest extends FlatSpec with Matchers with Testing
    */
 
     val edgeSet: Set[(Long, Long)] = Set((1,3), (3,5), (2,4), (2,6), (4,6))
-      .map({ case (x, y) => (x.toLong, y.toLong) })
+      .map({ case (x, y) => (x.toLong, y.toLong) }).flatMap({case(x,y) => Set((x,y),(y,x))})
 
     val vertexSet: Set[Long] = Set(1,2,3,4,5,6,7)
 
