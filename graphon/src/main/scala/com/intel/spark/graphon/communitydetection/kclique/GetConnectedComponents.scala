@@ -29,7 +29,6 @@ import com.intel.spark.graphon.idassigner._
 import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator._
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**

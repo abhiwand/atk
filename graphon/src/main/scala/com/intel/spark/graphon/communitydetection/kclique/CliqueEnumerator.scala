@@ -62,9 +62,17 @@ object CliqueEnumerator {
       }
       else {
         val kMinusOneExtensionFacts = cliqueExtension(k - 1)
+        kMinusOneExtensionFacts.cache()
+
         val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
         val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
-        deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
+        kMinusOneExtensionFacts.unpersist(blocking = false)
+
+        val extensions: RDD[CliqueExtension] = deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
+        kCliques.unpersist(blocking = false)
+        kNeighborsOfFacts.unpersist(blocking = false)
+
+        extensions
       }
     }
 
