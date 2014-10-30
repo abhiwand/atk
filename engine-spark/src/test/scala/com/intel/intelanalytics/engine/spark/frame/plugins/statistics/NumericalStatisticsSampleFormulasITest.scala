@@ -219,31 +219,4 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     Math.abs(testTotalWeight - netIPWeights) should be < epsilon
   }
 
-  "skewness" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
-
-    val testSkewness = numericalStatisticsFrequencies.weightedSkewness
-
-    Math.abs(testSkewness - expectedSkewnessFrequencies) should be < epsilon
-  }
-
-  "skewness" should "handle data with fractional weights" in new NumericalStatisticsTestSampleFormulas {
-
-    val testSkewness = numericalStatisticsWeights.weightedSkewness
-
-    Math.abs(testSkewness - expectedSkewnessWeights) should be < epsilon
-  }
-
-  "kurtosis" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
-
-    val testKurtosis = numericalStatisticsFrequencies.weightedKurtosis
-
-    Math.abs(testKurtosis - expectedKurtosisFrequencies) should be < epsilon
-  }
-
-  "kurtosis" should "handle data with fractional weights" in new NumericalStatisticsTestSampleFormulas {
-
-    val testKurtosis = numericalStatisticsWeights.weightedKurtosis
-
-    Math.abs(testKurtosis - expectedKurtosisWeights) should be < epsilon
-  }
 }
