@@ -40,8 +40,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedVariance - numericalStatisticsWithNegs.weightedVariance) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation
       - numericalStatisticsWithNegs.weightedStandardDeviation) should be < epsilon
-    Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithNegs.weightedSkewness) should be < epsilon
-    Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithNegs.weightedKurtosis) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithNegs.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -85,8 +83,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedVariance - numericalStatisticsWithBadGuys.weightedVariance) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation
       - numericalStatisticsWithBadGuys.weightedStandardDeviation) should be < epsilon
-    Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithBadGuys.weightedSkewness) should be < epsilon
-    Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithBadGuys.weightedKurtosis) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithBadGuys.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -139,8 +135,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -162,8 +156,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
 
@@ -186,8 +178,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 1
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -209,8 +199,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 2
     Math.abs(numericalStatistics.weightedVariance - 0.5) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation - Math.sqrt(0.5)) should be < epsilon
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     Math.abs(numericalStatistics.meanConfidenceLower - (1.5 - 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (1.5 + 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
   }
@@ -232,8 +220,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 3
     Math.abs(numericalStatistics.weightedVariance - 1.0) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation - 1.0) should be < epsilon
-    (numericalStatistics.weightedSkewness - 1.7320508075688807) should be < epsilon
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     Math.abs(numericalStatistics.meanConfidenceLower - (2.0 - (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (2.0 + (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
   }
