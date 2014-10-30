@@ -10,15 +10,16 @@ Process Flow Examples
 
     ds_apir
 
-When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
-and finally, analyze it.
+When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it
+with other data sets, and finally, analyze it.
 
 The first thing to do is to load the toolkit.
 This is stored in the intelanalytics folder and it's sub-folders.
 
 .. _pythonpath:
 
-It is recommended that you add the location of the *intelanalytics* directory to the PYTHONPATH environmental variable prior to starting Python.
+It is recommended that you add the location of the *intelanalytics* directory to the PYTHONPATH
+environmental variable prior to starting Python.
 This can be done from a shell script, similar to::
 
     PYTHONPATH=/usr/lib/
@@ -53,7 +54,8 @@ To maintain a database structure, each column of data can only hold one type of 
 Types Of Raw Data
 =================
 
-The only currently supported raw data format is comma-separated variables (CSV), but JSON and XML will be supported in future releases.
+The only currently supported raw data format is comma-separated variables (CSV), but JSON and XML will be
+supported in future releases.
 
 .. _example_files.csvfile:
 
@@ -76,7 +78,8 @@ Each row holds a set of data.
 To import CSV data you need a :term:`schema` defining the structure of your data.
 Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being
 composed of a string and a data type.
-The string is the name of the column, and the data type must be valid (see :ref:`Valid Data Types <valid_data_types>`).
+The string is the name of the column, and the data type must be valid
+(see :ref:`Valid Data Types <valid_data_types>`).
 Unicode in column names will likely cause the drop_frames() function (and others) to fail, and it is not
 supported.
 The order of the columns in the schema must match the order of columns in the data.
@@ -95,7 +98,8 @@ Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
 
     schema_ab = [('a', int32), ('b', string)]
 
-When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
+When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the
+name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
@@ -122,17 +126,18 @@ Now we use the schema and the file name to create objects used to define the dat
 
 .. _example_frame.bigframe:
 
---------
-BigFrame
---------
+-----
+Frame
+-----
 
-A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing
+A :term:`Frame` is a class of objects capable of accessing and controlling a :term:`frame` containing
 "big data".
 The frame is visualized as a table structure of rows and columns.
-It can handle large volumes of data, because it is designed to work with data spread over multiple clusters.
+It can handle large volumes of data, because it is designed to work with data spread over multiple
+clusters.
 
-Create A BigFrame
-=================
+Create A Frame
+==============
 
 A new frame is created:
     1. as "empty"", with no columns defined,
@@ -141,28 +146,28 @@ A new frame is created:
 
 Examples:
 ---------
-To create an empty frame and a BigFrame object, *f*, to access it::
+To create an empty frame and a Frame object, *f*, to access it::
 
-    f = BigFrame()
+    f = Frame()
 
 To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a
-BigFrame object, *my_frame*, to access it::
+Frame object, *my_frame*, to access it::
 
-    my_frame = BigFrame(my_csv, 'bf')
+    my_frame = Frame(my_csv, 'bf')
 
 To create a new frame, identical to the frame named *bf* (except for the name, because the name must always
-be unique), and create a BigFrame object *f2* to access it::
+be unique), and create a Frame object *f2* to access it::
 
-    f2 = BigFrame(my_frame)
+    f2 = Frame(my_frame)
 
-To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame
+To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the Frame
 object as *f3*::
 
-    f3 = BigFrame(my_frame[['a', 'c']])
+    f3 = Frame(my_frame[['a', 'c']])
 
-BigFrames are not the same thing as frames.
-Frames contain data, viewed similarly to a table, while BigFrames are descriptive pointers to the data.
-Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy pointing to the same data.
+Frames (capital 'F') are not the same thing as frames (lower case 'f').
+Frames contain data, viewed similarly to a table, while Frames are descriptive pointers to the data.
+Commands such as ``f4 = my_frame`` will only give you a copy of the Frame proxy pointing to the same data.
 
 .. _example_frame.append:
 
@@ -173,7 +178,7 @@ If columns are the same in both name and data type, the appended data will go in
 Columns and rows are added to the database structure, and data is imported as appropriate.
 
 As an example, let's start with a frame containing two columns *a* and *b*.
-The frame can be accessed by BigFrame *BF1*.
+The frame can be accessed by Frame *BF1*.
 We can look at the data and structure of the database by using the ``inspect`` function::
 
     BF1.inspect()
@@ -185,7 +190,7 @@ We can look at the data and structure of the database by using the ``inspect`` f
     car            2048
 
 To this frame we combine another frame with one column *c*.
-This frame can be accessed by BigFrame *BF2*::
+This frame can be accessed by Frame *BF2*::
 
     BF2.inspect()
 
@@ -199,7 +204,7 @@ With *append*::
     BF1.append(BF2)
 
 The result is that the first frame would have the data from both frames.
-It would still be accessed by BigFrame *BF1*::
+It would still be accessed by Frame *BF1*::
 
     BF1.inspect()
 
@@ -217,12 +222,8 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-<<<<<<< HEAD
-IAT provides several functions that allow you to inspect your data, including attributes, .inspect(), and
-.take().
-=======
-IAT provides several functions that allow you to inspect your data, including .count(), .len(), .inspect(), and .take().
->>>>>>> sprint_20
+IAT provides several functions that allow you to inspect your data, including .count(), .len(),
+.inspect(), and .take().
 
 Examples
 --------
@@ -254,19 +255,21 @@ Here, we've created a frame of 10 rows, beginning at row 200, from the frame acc
 Clean The Data
 ==============
 
-Cleaning data involves removing incomplete, incorrect, inaccurate, or corrupted information from the data set.
-The BigFrame API should be used for this.
-While these Python libraries do not support all Python functionality, they have been specifically designed to handle very large data sets,
-so when using some Python libraries, be aware that some of them are not designed to handle these very large data sets.
+Cleaning data involves removing incomplete, incorrect, inaccurate, or corrupted information from the data
+set.
+The Frame API should be used for this.
+While these Python libraries do not support all Python functionality, they have been specifically designed
+to handle very large data sets, so when using some Python libraries, be aware that some of them are not
+designed to handle these very large data sets.
 
 .. warning::
 
-    Unless stated otherwise, cleaning functions use the BigFrame proxy to operate directly on the data,
+    Unless stated otherwise, cleaning functions use the Frame proxy to operate directly on the data,
     so it changes the data in the frame, rather than return a new frame with the changed data.
     It is recommended that you copy the data to a new frame on a regular basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected::
 
-        next_frame = BigFrame(last_frame)
+        next_frame = Frame(last_frame)
 
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
@@ -276,7 +279,8 @@ For details about row selection based upon its data see :doc:`ds_apir`
 Drop Rows:
 ----------
 
-The ``drop`` function takes a predicate function and removes all rows for which the predicate evaluates to ``True``.
+The ``drop`` function takes a predicate function and removes all rows for which the predicate evaluates to
+``True``.
 
 Examples:
 ~~~~~~~~~
@@ -298,7 +302,8 @@ To drop all rows where any column is empty::
 Filter Rows:
 ------------
 
-The ``filter`` function is like ``drop``, except it removes all rows for which the predicate evaluates to False.
+The ``filter`` function is like ``drop``, except it removes all rows for which the predicate evaluates to
+False.
 
 Examples:
 ~~~~~~~~~
@@ -317,7 +322,8 @@ The ``drop_duplicates`` function performs a row uniqueness comparison across the
 Examples:
 ~~~~~~~~~
 
-To drop any rows where the data in column *a* and column *b* are duplicates of some previously evaluated row::
+To drop any rows where the data in column *a* and column *b* are duplicates of some previously evaluated
+row::
 
     my_frame.drop_duplicates(['a', 'b'])
 
@@ -368,7 +374,8 @@ Add Columns:
 
 Columns can be added to the frame using values from other columns as their value.
 
-Add a column *column3* as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
+Add a column *column3* as an int32 and fill it with the contents of *column1* and *column2* multiplied
+together::
 
     my_frame.add_columns(lambda row: row.column1 * row.column2, ('column3', int32))
 
@@ -433,8 +440,8 @@ We can use the frame function *column_summary_statistics*::
 Group_by (and Aggregate):
 -------------------------
 
-Group rows together based on matching column values and then apply :term:`aggregation functions` on each group,
-producing a **new** frame.
+Group rows together based on matching column values and then apply :term:`aggregation functions` on each
+group, producing a **new** frame.
 
 This needs two parameters:
 
@@ -443,7 +450,7 @@ This needs two parameters:
 
 Aggregation based on columns:
     Given a frame with columns *a*, *b*, *c*, and *d*;
-    Create a new frame and a BigFrame *grouped_data* to access it;
+    Create a new frame and a Frame *grouped_data* to access it;
     Group by unique values in columns *a* and *b*;
     Average the grouped values in column *c* and save it in a new column *c_avg*;
     Add up the grouped values in column *c* and save it in a new column *c_sum*;
@@ -471,7 +478,7 @@ Aggregation based on columns:
 
 Aggregation based on full row:
     Given a frame with columns *a*, and *b*;
-    Create a new frame and a Bigframe *gr_data* to access it;
+    Create a new frame and a Frame *gr_data* to access it;
     Group by unique values in columns *a* and *b*;
     Count the number of rows in each group and put that value in column *count*::
 
@@ -518,7 +525,8 @@ Join:
 Create a **new** frame from a JOIN operation with another frame.
 
 Given two frames *my_frame* (columns *a*, *b*, *c*) and *your_frame* (columns *b*, *c*, *d*).
-For the sake of readability, in these examples we will refer to the frames and the BigFrames by the same name, unless needed for clarity::
+For the sake of readability, in these examples we will refer to the frames and the Frames by the same
+name, unless needed for clarity::
 
     my_frame.inspect()                      
 
@@ -538,7 +546,7 @@ For the sake of readability, in these examples we will refer to the frames and t
     blue              0     log         
 
 Column *b* in both frames is a unique identifier used to tie the two frames together.
-Join *your_frame* to *my_frame*, creating a new frame with a new BigFrame to access it;
+Join *your_frame* to *my_frame*, creating a new frame with a new Frame to access it;
 Include all data from *my_frame* and only that data from *your_frame* which has a value
 in *b* that matches a value in *my_frame* *b*::
 
@@ -570,7 +578,8 @@ Result is *inner_frame*::
     auto        bus         car                   871   dog
     apple       berry       cantelope            5218   frog
 
-Do it again but this time include any data from *my_frame* and *your_frame* which do not have matching values in *b*::
+Do it again but this time include any data from *my_frame* and *your_frame* which do not have matching
+values in *b*::
 
     outer_frame = my_frame.join(your_frame, 'b', how='outer')
 
@@ -585,8 +594,8 @@ Result is *outer_frame*::
     None        None        None                0   log
 
 If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
-Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches
-a value in *your_frame* *c*::
+Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in
+*b* that matches a value in *your_frame* *c*::
 
     right_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
 
@@ -605,11 +614,12 @@ Result is *right_frame*::
 Flatten Column:
 ---------------
 
-The function ``flatten_column`` creates a **new** frame by splitting a particular column and returns a BigFrame object.
+The function ``flatten_column`` creates a **new** frame by splitting a particular column and returns a
+Frame object.
 The column is searched for rows where there is more than one value, separated by commas.
 The row is duplicated and that column is spread across the existing and new rows.
 
-Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
+Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
 The "original_data"::
 
     1-"solo,mono,single"
@@ -618,7 +628,7 @@ The "original_data"::
 I run my commands to bring the data in where I can work on it::
 
     my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)], delimiter='-')
-    my_frame = BigFrame(source=my_csv)
+    my_frame = Frame(source=my_csv)
 
 I look at it and see::
 
@@ -650,11 +660,12 @@ Now I check again and my result is::
 
     Discuss statistics, mean, standard deviation, etcetra.
 
---------
-BigGraph
---------
+----------
+TitanGraph
+----------
 
-For the examples below, we will use a BigFrame *my_frame*, which accesses an arbitrary frame of data consisting of the following columns:
+For the examples below, we will use a Frame *my_frame*, which accesses an arbitrary frame of data
+consisting of the following columns:
 
     +-----------+-----------+-----------+-----------+
     | emp_id    | name      | manager   | years     |
@@ -687,7 +698,8 @@ To create a rule for :term:`vertices`, one needs to define:
 Note:
     The properties of a vertex:
 
-    1.  Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
+    1.  Consist of a label and its value. For example, the property *name* with its value taken from
+        column *name* of our frame.
     #.  Are optional, which means a vertex might have zero or more properties.
 
 Vertex Rule Example:
@@ -697,8 +709,9 @@ Create a vertex rule called “employee” from the above frame::
 
     employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
 
-The created vertices will be grouped under the label “empID”, will have an identification based on the values from the column *emp_id*,
-and will have a property *name* with its value from the specified frame column *name*.
+The created vertices will be grouped under the label “empID”, will have an identification based on the
+values from the column *emp_id*, and will have a property *name* with its value from the specified frame
+column *name*.
 
 Create another vertex rule called “manager”::
 
@@ -706,41 +719,48 @@ Create another vertex rule called “manager”::
 
 The identification values for these vertices will be taken from column *manager* of the frame.
 
-Both vertex rules will be grouped under label *empID* (we will consider managers to also be employees in these examples).
+Both vertex rules will be grouped under label *empID* (we will consider managers to also be employees in
+these examples).
 
 Edge Rule:
 ----------
  
-An edge is a link that connects two vertices, in our case, they are *tail* and *head*. An edge can have properties similar to a vertex.
+An edge is a link that connects two vertices, in our case, they are *tail* and *head*. An edge can have
+properties similar to a vertex.
 
 To create a rule for an edge, one needs to define:
 
-1. The label or identification for the edge, for example, the string “worksUnder”
-#. The tail vertex specified in the previously defined vertex rule.
-#. The head vertex specified in the previously defined vertex rule.
-#. The properties of the edge:
-    A. consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
-    #. are optional, which means an edge might have zero or more properties
+1.  The label or identification for the edge, for example, the string “worksUnder”
+#.  The tail vertex specified in the previously defined vertex rule.
+#.  The head vertex specified in the previously defined vertex rule.
+#.  The properties of the edge:
+
+    A.  consist of a label and its value, for example, the property *name* with value taken from column
+        *name* of a frame
+
+    #.  are optional, which means an edge might have zero or more properties
 
 Edge Rule Example:
 ~~~~~~~~~~~~~~~~~~
 
-Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
-defined *employee* and *manager* rules, and link them together::
+Create an edge called “reports” from the same frame (accessed by Frame *my_frame*) as above, using
+previously defined *employee* and *manager* rules, and link them together::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": my_frame[“years”] })
 
-This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property
-with the value from the frame column *years*.
+This rule ties the vertices together, and also defines the property *years*, so the edges created will
+have this property with the value from the frame column *years*.
 
 Use of bidirectional:
 ~~~~~~~~~~~~~~~~~~~~~
 In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
 
-In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
+In the example above, using the *employee* and *manager* vertices, there is an edge created to link both
+of them with label “worksUnder”.
 This edge is considered “directed” since an employee reports to a manager but not vice versa.
-The bidirectional flag will create an extra edge going in the opposite direction for every edge.  To enable use the
-parameter ``bidirectional`` in the edge rule and set it to ``True``, as shown in example below::
+The bidirectional flag will create an extra edge going in the opposite direction for every edge.
+To enable use the parameter ``bidirectional`` in the edge rule and set it to ``True``,
+as shown in example below::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
         bidirectional = True)
@@ -750,16 +770,16 @@ parameter ``bidirectional`` in the edge rule and set it to ``True``, as shown in
 Building a Graph From a Set of Rules
 ====================================
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
+Now that you have built some rules, let us put them to use and create a graph by calling TitanGraph.
 We will give the graph the name “employee_graph”::
 
-    my_graph = BigGraph([employee, manager, reports], “employee_graph”)
+    my_graph = TitanGraph([employee, manager, reports], “employee_graph”)
 
 The graph is then created in the underlying graph database structure and
-the access control information is saved into the BigGraph object *my_graph*.
-The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the BigGraph API.
+the access control information is saved into the TitanGraph object *my_graph*.
+The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the TitanGraph API.
 
-Similar to what was discussed for BigFrame, what gets returned is not all the data,
+Similar to what was discussed for Frame, what gets returned is not all the data,
 but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
 
@@ -767,7 +787,7 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
 Error Handling
 --------------
 
-Examples:
+Examples::
 
     ia.errors.last  # full exception stack trace and message of the last exception
         raised at the API layer

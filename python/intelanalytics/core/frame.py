@@ -137,13 +137,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     class _FrameIter(object):
         """
         (Private)
-        Iterator for BigFrame - frame iteration works on the columns, returns BigColumn objects
-        (see BigFrame.__iter__)
+        Iterator for Frame - frame iteration works on the columns, returns BigColumn objects
+        (see Frame.__iter__)
 
         Parameters
         ----------
-        frame : BigFrame
-            A BigFrame object.
+        frame : Frame
+            A Frame object.
 
         """
 
@@ -183,7 +183,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Column names.
 
-        The names of all the columns in the current BigFrame object.
+        The names of all the columns in the current Frame object.
 
         Returns
         -------
@@ -191,9 +191,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Create a BigFrame object from the data described by schema *my_csv*; get the column names::
+        Create a Frame object from the data described by schema *my_csv*; get the column names::
 
-            my_frame = ia.BigFrame(source='my_csv')
+            my_frame = ia.Frame(source='my_csv')
             my_columns = my_frame.column_names
             print my_columns
 
@@ -223,7 +223,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         --------
         Create a frame and give it the name "Flavor Recipes"; read the name back to check it::
 
-            frame = ia.BigFrame(name="Flavor Recipes")
+            frame = ia.Frame(name="Flavor Recipes")
             given_name = frame.name
             print given_name
 
@@ -302,7 +302,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Given that we have an existing data frame *my_data*, create a BigFrame, then show the frame schema::
+        Given that we have an existing data frame *my_data*, create a Frame, then show the frame schema::
 
             BF = ia.get_frame('my_data')
             print BF.schema
@@ -404,7 +404,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and
+        Given a Frame proxy *my_frame* identifying a data frame with two int32 columns *column1* and
         *column2*.
         Add a third column named "column3" as an int32 and fill it with the contents of *column1* and
         *column2*
@@ -419,7 +419,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             my_frame.add_columns(lambda row: '', ('column4', str))
 
-        The BigFrame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
+        The Frame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
         The first three columns are int32 and the fourth column is string.  Column *column4* has an
         empty string ('') in every row.
 
@@ -434,7 +434,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the appropriate contents.
 
-        Given a frame of data and BigFrame *my_frame* points to it.
+        Given a frame of data and Frame *my_frame* points to it.
         In addition we have defined a function *func*.
         Run *func* on each row of the frame and put the result in a new integer column *calculated_a*::
 
@@ -504,8 +504,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
-            A BigFrame accessing a new frame, with a bin column appended to the original frame structure
+        Frame
+            A Frame accessing a new frame, with a bin column appended to the original frame structure
             The type of the new column will be int32 and the bin numbers start at 1.
 
         Notes
@@ -522,7 +522,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, we will use a frame with column *a* accessed by a BigFrame object *my_frame*::
+        For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*::
 
             my_frame.inspect( n=11 )
 
@@ -657,14 +657,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
-            A new frame object which is a copy of the currently active BigFrame.
+        Frame
+            A new frame object which is a copy of the currently active Frame.
 
         Examples
         --------
-        Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
+        Build a Frame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            my_frame = ia.BigFrame(source="my_data.csv")
+            my_frame = ia.Frame(source="my_data.csv")
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
@@ -780,7 +780,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object accessing a frame with lots of data for the
+        For this example, my_frame is a Frame object accessing a frame with lots of data for the
         attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
@@ -901,7 +901,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*,
+        For this example, my_frame is a Frame object with lots of data for the attributes of *lizards*,
         *frogs*, and *snakes*.
         Get rid of everything, except information about *lizards* and *frogs*::
 
@@ -1020,8 +1020,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
-            A new object accessing a frame that contains the parse errors of the currently active BigFrame
+        Frame
+            A new object accessing a frame that contains the parse errors of the currently active Frame
             or None if no error frame exists
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
@@ -1031,7 +1031,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Create summarized frame.
 
-        Creates a new frame and returns a BigFrame object to access it.
+        Creates a new frame and returns a Frame object to access it.
         Takes a column or group of columns, finds the unique combination of values,
         and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
@@ -1047,7 +1047,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new object accessing a new aggregated frame.
 
         Notes
@@ -1060,7 +1060,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For setup, we will use a BigFrame *my_frame* accessing a frame with a column *a*::
+        For setup, we will use a Frame *my_frame* accessing a frame with a column *a*::
 
             my_frame.inspect()
 
@@ -1168,7 +1168,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, let's say we have a frame of data and a BigFrame to access it.
+        For this example, let's say we have a frame of data and a Frame to access it.
         Let's look at the first 10 rows of data::
 
             print my_frame.inspect()
@@ -1209,7 +1209,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        right : BigFrame
+        right : Frame
             Another frame to join with.
 
         left_on : str
@@ -1224,7 +1224,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new object accessing a new joined frame.
 
         Notes
@@ -1241,25 +1241,25 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, we will use a BigFrame *my_frame* accessing a frame with columns *a*, *b*, *c*,
-        and a BigFrame *your_frame* accessing a frame with columns *a*, *d*, *e*.
+        For this example, we will use a Frame *my_frame* accessing a frame with columns *a*, *b*, *c*,
+        and a Frame *your_frame* accessing a frame with columns *a*, *d*, *e*.
         Join the two frames keeping only those rows having the same value in column *a*::
 
-            my_frame = BigFrame(schema1)
-            your_frame = BigFrame(schema2)
+            my_frame = Frame(schema1)
+            your_frame = Frame(schema2)
             joined_frame = my_frame.join(your_frame, 'a')
 
-        Now, joined_frame is a BigFrame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and
+        Now, joined_frame is a Frame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and
         *e*.
         The data in the new frame will be from the rows where column 'a' was the same in both frames.
 
-        Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
+        Now, using a single Frame *my_frame* accessing a frame with the columns *b* and *book*.
         Build a new frame, but remove any rows where the values in *b* and *book* do not match::
 
             joined_frame = your_frame.join(your_frame, left_on='b', right_on='book',
                 how='inner')
 
-        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns,
+        We end up with a new Frame *joined_frame* accessing a new frame with all the original columns,
         but only those rows where the data in the original frame in column *b* matched the data in column
         *book*.
 
@@ -1413,12 +1413,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Get data subset.
 
-        Take a subset of the currently active BigFrame.
+        Take a subset of the currently active Frame.
 
         Parameters
         ----------
         n : int
-            The number of rows to copy from the currently active BigFrame.
+            The number of rows to copy from the currently active Frame.
 
         offset : int
             The number of rows to skip before copying.
@@ -1434,24 +1434,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new frame object accessing a new frame containing copies of a subset of the original frame.
 
         Examples
         --------
-        BigFrame *my_frame* accesses a frame with millions of rows of data.
+        Frame *my_frame* accesses a frame with millions of rows of data.
         Get a sample of 5000 rows::
 
             your_frame = my_frame.take( 5000 )
 
-        We now have a separate frame accessed by a BigFrame *your_frame* with a copy of the first 5000 rows
+        We now have a separate frame accessed by a Frame *your_frame* with a copy of the first 5000 rows
         of the original frame.
 
         If we use the function with an offset like::
 
             your_frame = my_frame.take( 5000, 1000 )
 
-        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy
+        We end up with a new frame accessed by the Frame *your_frame* again, but this time it has a copy
         of rows 1001 to 5000 of the original frame.
 
         .. versionadded:: 0.8
@@ -1473,7 +1473,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     Parameters
     ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ]
+    source : [ CsvFile | Frame | BigColumn(s) ]
         A source of initial data.
 
     name : string
@@ -1481,12 +1481,12 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     Returns
     -------
-    BigFrame
+    Frame
         An object with access to the frame.
 
     Notes
     -----
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
@@ -1503,19 +1503,19 @@ class Frame(DocStubsFrame, _BaseFrame):
     --------
     Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
     Name the frame "my_frame".
-    Create a BigFrame *g* to access the data::
+    Create a Frame *g* to access the data::
 
-        g = ia.BigFrame(my_csv_schema, "my_frame")
+        g = ia.Frame(my_csv_schema, "my_frame")
 
-    A BigFrame object has been created and *g* is its proxy.
+    A Frame object has been created and *g* is its proxy.
     It brought in the data described by *my_csv_schema*.
     It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
-        h = ia.BigFrame(name='your_frame')
+        h = ia.Frame(name='your_frame')
 
-    A frame has been created and BigFrame *h* is its proxy.
+    A frame has been created and Frame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
 
 
@@ -1552,14 +1552,14 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Parameters
         ----------
-        data : BigFrame
-            A BigFrame accessing the data being added.
+        data : Frame
+            A Frame accessing the data being added.
 
         Examples
         --------
         Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
-        BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
+        Frame *my_frame* points to the first frame and *your_frame* points to the second.
         Add the contents of *your_frame* to *my_frame*::
 
             my_frame.append(your_frame)
@@ -1583,7 +1583,7 @@ class Frame(DocStubsFrame, _BaseFrame):
         """
         Spread out data.
 
-        Search through the currently active BigFrame for multiple items in a single specified column.
+        Search through the currently active Frame for multiple items in a single specified column.
         When it finds multiple values in the column, it replicates the row and separates the multiple items
         across the existing and new rows.
         Multiple items is defined in this case as being things separated by commas.
@@ -1595,12 +1595,12 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Returns
         -------
-        BigFrame
-            A BigFrame object proxy for the new flattened frame.
+        Frame
+            A Frame object proxy for the new flattened frame.
 
         Examples
         --------
-        Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
+        Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
         The "original_data"::
 
             1-"solo,mono,single"
@@ -1611,7 +1611,7 @@ class Frame(DocStubsFrame, _BaseFrame):
             my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
                 delimiter='-')
             # The above command has been split for enhanced readability in some medias.
-            my_frame = BigFrame(source=my_csv)
+            my_frame = Frame(source=my_csv)
 
         I look at it and see::
 
@@ -1645,10 +1645,10 @@ class Frame(DocStubsFrame, _BaseFrame):
         return self._backend.flatten_column(self, column_name)
 
 @api_class_alias
-class BigFrame(Frame):
+class Frame(Frame):
     def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('BigFrame', 'Use Frame()')
-        super(BigFrame, self).__init__(*args, **kwargs)
+        raise_deprecation_warning('Frame', 'Use Frame()')
+        super(Frame, self).__init__(*args, **kwargs)
 
 
 @api
@@ -1672,7 +1672,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     Notes
     -----
 
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
@@ -1796,7 +1796,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     Notes
     -----
 
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``

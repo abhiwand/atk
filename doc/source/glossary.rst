@@ -96,13 +96,13 @@ Glossary
 
     BigColumn
 
-        An identifier for a single column in a BigFrame.
+        An identifier for a single column in a Frame.
 
-    BigGraph
+    TitanGraph
 
         A class object with the functionality to manipulate the data in a :term:`graph`.
 
-    BigFrame
+    Frame
 
         A class object with the functionality to manipulate the data in a :term:`frame`.
 
@@ -521,7 +521,7 @@ Glossary
 
         These are referred to in the API documentation.
         These are functions passed to other functions.
-        An example of this would be adding a column to a BigFrame and telling the function responsible for
+        An example of this would be adding a column to a Frame and telling the function responsible for
         the column addition what it should put into the new column based on data in other columns.
         A function must return the same type of data that the column definition supplies.
         For example, if a column is defined as a float within an array, the function must return the data
