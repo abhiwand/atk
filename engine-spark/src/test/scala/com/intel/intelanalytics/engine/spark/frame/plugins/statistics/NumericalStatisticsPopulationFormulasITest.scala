@@ -19,7 +19,6 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
-    require(data.length > 3, "Test Data in Error: Data should have at least four elements, lest the kurtosis be trivialized.")
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.reduce(_ + _)
 

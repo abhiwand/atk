@@ -20,7 +20,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
-    require(data.length > 3, "Test Data in Error: Data should have at least four elements, lest the kurtosis be trivialized.")
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.reduce(_ + _)
 
@@ -58,26 +57,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)
 
-    val expectedSkewnessFrequencies = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataFrequencyPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMeanFrequencies) / expectedStandardDeviationFrequencies), 3) })
-      .reduce(_ + _)
-
-    val expectedSkewnessWeights = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataIPWPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMeanIPW) / expectedStandardDeviationWeights), 3) })
-      .reduce(_ + _)
-
-    val kurtosisMultiplier = dataCount * (dataCount + 1) / ((dataCount - 1) * (dataCount - 2) * (dataCount - 3))
-    val kurtosisSubtrahend = 3 * (dataCount - 1) * (dataCount - 1) / ((dataCount - 2) * (dataCount - 3))
-
-    val expectedKurtosisFrequencies = kurtosisMultiplier * dataFrequencyPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMeanFrequencies) / expectedStandardDeviationFrequencies), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
-
-    val expectedKurtosisWeights = kurtosisMultiplier * dataIPWPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMeanIPW) / expectedStandardDeviationWeights), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
   }
 
   "mean" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
