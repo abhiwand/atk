@@ -115,6 +115,19 @@ class ValidDataTypes(unittest.TestCase):
         import numpy as np
         self.assertTrue(valid_data_types.cast(-np.inf, float32) is None)
 
+    def test_native_float_values(self):
+        self.assertTrue(valid_data_types.cast(float('nan'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('NaN'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('inf'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('Infinity'), float64) is None)
+        self.assertTrue(valid_data_types.cast(float('-inf'), float64) is None)
+        self.assertTrue(valid_data_types.cast(float('-Infinity'), float64) is None)
+
+    def test_overflow(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.float64(2 ** 1000), float32) is None)
+        self.assertTrue(valid_data_types.cast(-np.float64(2 ** 1000), float32) is None)
+
 
 if __name__ == '__main__':
     unittest.main()
