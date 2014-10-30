@@ -508,7 +508,7 @@ Example::
 
 Click on the Spark service then configuration in Cloudera Manager to get executor memory.
 
-.. image:: ad_inst_IA_1.*
+.. image:: ad_inst_ia_01.*
     :align: center
 
 Set the Bind IP Address (Optional)
@@ -533,7 +533,7 @@ If it isn't already set, add::
 
     SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-.. image:: ad_inst_IA_2.*
+.. image:: ad_inst_ia_02.*
     :align: center
 
 .. _Skip section:
@@ -542,7 +542,7 @@ If it isn't already set, add::
 
 Now, restart the Spark service.
 
-.. image:: ad_inst_IA_3.*
+.. image:: ad_inst_ia_03.*
     :align: center
 
 Starting |IA| REST Server
