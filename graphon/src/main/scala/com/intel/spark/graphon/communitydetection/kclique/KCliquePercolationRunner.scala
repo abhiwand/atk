@@ -93,13 +93,13 @@ object KCliquePercolationRunner {
     val extensionsOfKMinusOneCliques: RDD[CliqueExtension] = CliqueEnumerator.run(edgeList, cliqueSize)
 
     // Construct the clique graph that will be input for connected components
-    val kCliqueGraphGeneratorOutput = GraphGenerator.run(extensionsOfKMinusOneCliques)
+    val kCliqueGraphGeneratorOutput = CliqueShadowGraphGenerator.run(extensionsOfKMinusOneCliques)
 
     // Run connected component analysis to get the mapping of cliques to "communities".
     // Communities are just connected components in the clique graph.
 
     val cliquesToCommunities: RDD[(VertexSet, Long)] =
-      GetConnectedComponents.run(kCliqueGraphGeneratorOutput.cliqueGraphVertices, kCliqueGraphGeneratorOutput.cliqueGraphEdges)
+      GetConnectedComponents.run(kCliqueGraphGeneratorOutput.vertices, kCliqueGraphGeneratorOutput.edges)
 
     // Pair each vertex with a set of the communities to which it belongs... A vertex belongs to a community of the
     // clique graph if it belongs to a clique that belongs to that community.
