@@ -36,13 +36,11 @@ from intelanalytics.core.namedobj import name_support
 from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
 
 from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
-
+from intelanalytics.core._sphinx_frame import __all__
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
-__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:

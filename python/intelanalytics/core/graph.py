@@ -37,9 +37,8 @@ from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
 
 from intelanalytics.core.deprecate import raise_deprecation_warning
+from intelanalytics.core._sphinx_graph import __all__
 
-
-__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
