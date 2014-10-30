@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameReference, FrameReferenceManagement, FrameEntity}
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -41,4 +42,32 @@ class EntityRegistryTest extends FlatSpec with Matchers {
     data should not be (null)
   }
 
+  "Create" should "create an instance of the right type" in {
+    val registry = new EntityRegistry
+    registry.register(FrameEntity, FrameReferenceManagement)
+    registry.register(FrameEntity, new MockFrameManager)
+    registry.register(GraphEntity, new MockGraphManager)
+
+    val data: FrameReference = registry.create[FrameReference]()
+
+    data should not be (null)
+  }
+  it should "still create an instance of the right type when entities are registered in a different order" in {
+    val registry = new EntityRegistry
+    registry.register(GraphEntity, new MockGraphManager)
+    registry.register(FrameEntity, new MockFrameManager)
+
+    val data: FrameReference = registry.create[FrameReference]()
+
+    data should not be (null)
+  }
+  it should "still create an instance of the right type when the requested type is the metadata" in {
+    val registry = new EntityRegistry
+    registry.register(FrameEntity, new MockFrameManager)
+    registry.register(GraphEntity, new MockGraphManager)
+
+    val data: MockFrameManager#M = registry.create[MockFrameManager#M]()
+
+    data should not be (null)
+  }
 }

@@ -26,6 +26,8 @@ package com.intel.intelanalytics.domain.graph
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.EntityRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 case class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
   /** The entity type */
@@ -43,9 +45,22 @@ case class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) ex
 
 }
 
+/**
+ * Place to store type tag for graph reference.
+ *
+ * The same code in GraphEntity had typeTag returning null, presumably
+ * due to initialization order issues of some kind. Keeping it in a separate
+ * object avoids that problem.
+ */
+private object GraphTag {
+  val referenceTag = typeTag[GraphReference]
+}
+
 object GraphEntity extends Entity {
 
   override type Reference = GraphReference
+
+  override implicit val referenceTag: TypeTag[Reference] = GraphTag.referenceTag
 
   def name = EntityName("graph", "graphs")
 

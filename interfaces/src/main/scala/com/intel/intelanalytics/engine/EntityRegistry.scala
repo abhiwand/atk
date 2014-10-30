@@ -26,8 +26,7 @@ class EntityRegistry {
    */
   def register[E <: Entity: TypeTag](entity: E, entityManagement: EntityManager[E]): Unit = {
     synchronized {
-      val eType: Type = typeOf[E]
-      entityTypes = (eType.member(ru.stringToTypeName("Reference")).asType.toType, entityManagement) :: entityTypes
+      entityTypes = (entityManagement.referenceTag.tpe, entityManagement) :: entityTypes
       _entities += (entity -> entityManagement)
       _resolver = null //resolver becomes invalid when new entities added, will generate a new one
       //next time someone asks for one.
@@ -88,6 +87,6 @@ class EntityRegistry {
    * @tparam R the requested reference type
    */
   def create[R <: UriReference: TypeTag]()(implicit invocation: Invocation): R =
-    resolver.resolve[R](entityManager().get.create()).get
+    resolver.resolve[R](entityManager[R]().get.create()).get
 
 }

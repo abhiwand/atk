@@ -30,7 +30,10 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 
 class MockFrameManager extends EntityManager[FrameEntity.type] {
 
+  var id = 0
+
   override implicit val referenceTag = FrameEntity.referenceTag
+  require(referenceTag != null)
 
   class M(id: Long) extends FrameReference(id) with HasMetaData {
     override type Meta = Int
@@ -49,7 +52,7 @@ class MockFrameManager extends EntityManager[FrameEntity.type] {
 
   override def getMetaData(reference: Reference): MetaData = new M(reference.id)
 
-  override def create()(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = new FrameReference({id+=1; id}, Some(true))
 
   override def getReference(id: Long): Reference = new FrameReference(id, Some(true))
 

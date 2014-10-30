@@ -58,9 +58,9 @@ trait ReferenceResolver {
   /**
    * Returns a (possibly updated) reference.
    */
-  //TODO: Make the return type a subtype of the argument typeN
+  //TODO: Make the return type a subtype of the argument type
   def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): Try[T] = {
-    resolve(reference.uri)
+    resolve[T](reference.uri)
   }
 
   /**

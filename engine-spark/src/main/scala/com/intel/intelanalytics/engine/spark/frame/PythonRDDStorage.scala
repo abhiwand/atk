@@ -45,8 +45,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
   def persistPythonRDD(dataFrame: DataFrame,
                        pyRdd: EnginePythonRDD[String],
                        converter: Array[String] => Array[Any],
-                       skipRowCount: Boolean = false)
-                      (implicit user: UserPrincipal): Long = {
+                       skipRowCount: Boolean = false)(implicit user: UserPrincipal): Long = {
     withMyClassLoader {
 
       val rdd = PythonRDDStorage.pyRDDToFrameRDD(dataFrame.schema, pyRdd, converter)

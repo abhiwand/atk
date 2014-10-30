@@ -105,7 +105,6 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     extends EventLogging
     with ClassLoaderAware {
 
-
   /**
    * Basic invocation for commands that don't need Spark
    */
@@ -133,11 +132,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam Return the type of the return value of the command
    * @return an instance of the Return type with all the generated references.
    */
-  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag]
-    (command: Command,
-     plugin: CommandPlugin[Arguments, Return],
-     arguments: Arguments)
-    (implicit invocation: Invocation): Return = {
+  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command,
+                                                                                                   plugin: CommandPlugin[Arguments, Return],
+                                                                                                   arguments: Arguments)(implicit invocation: Invocation): Return = {
 
     val types = Reflection.getUriReferenceTypes[Return]()
     val references = types.map {
@@ -205,8 +202,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    *         when available, rather than going back to the EntityManager.
    */
   private def runDependencies[A <: Product: TypeTag](arguments: A,
-                                             commandContext: CommandContext)
-                                            (implicit invocation: Invocation): ReferenceResolver = {
+                                                     commandContext: CommandContext)(implicit invocation: Invocation): ReferenceResolver = {
     val dependencies = Dependencies.getComputables(arguments)
     val newResolver = dependencies match {
       case x if x.isEmpty => ReferenceResolver

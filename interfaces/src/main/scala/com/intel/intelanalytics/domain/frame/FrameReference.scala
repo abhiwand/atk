@@ -26,6 +26,8 @@ package com.intel.intelanalytics.domain.frame
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.EntityRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
 case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 
@@ -43,9 +45,26 @@ case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) ex
   override def exists: Option[Boolean] = frameExists
 }
 
+/**
+ * Place to store type tag for frame reference.
+ *
+ * The same code in FrameEntity had typeTag returning null, presumably
+ * due to initialization order issues of some kind. Keeping it in a separate
+ * object avoids that problem.
+ */
+private object FrameTag {
+  val referenceTag = typeTag[FrameReference]
+}
+
 object FrameEntity extends Entity {
 
   override type Reference = FrameReference
+
+  override implicit val referenceTag: TypeTag[FrameReference] = {
+    val tag = FrameTag.referenceTag
+    require(tag != null)
+    tag
+  }
 
   def name = EntityName("frame", "frames")
 

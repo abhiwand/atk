@@ -206,8 +206,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
-  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)
-                     (implicit user: UserPrincipal): DataFrame = {
+  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)(implicit user: UserPrincipal): DataFrame = {
     saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
   }
 
@@ -220,10 +219,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
    */
-  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None)
-                   (implicit user: UserPrincipal): DataFrame =
+  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None)(implicit user: UserPrincipal): DataFrame =
     withContext("SFS.saveFrame") {
-
 
       if (frameFileStorage.frameBaseDirectoryExists(frameEntity)) {
         //We're saving over something that already exists - which we must not do.
@@ -402,8 +399,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
    */
-  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)
-                    (implicit user: UserPrincipal): ParseResultRddWrapper = {
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)(implicit user: UserPrincipal): ParseResultRddWrapper = {
     val frameRdd = loadLegacyFrameRdd(ctx, frame)
     val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
