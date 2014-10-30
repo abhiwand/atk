@@ -36,8 +36,8 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     val numericalStatisticsWeights = new NumericalStatistics(dataWeightRDD, true)
 
     val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).reduce(_ + _)
-    val expectedMax: Double = data.reduce(Math.max)
-    val expectedMin: Double = data.reduce(Math.min)
+    val expectedMax: Double = data.reduce(Math.max(_,_))
+    val expectedMin: Double = data.reduce(Math.min(_,_))
     val dataCount: Double = data.length
 
     val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _)
