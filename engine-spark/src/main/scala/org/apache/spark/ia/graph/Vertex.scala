@@ -113,7 +113,7 @@ trait AbstractVertex extends AbstractRow {
   def toGbVertex: GBVertex = {
     val idColumnName = schema.vertexSchema.get.idColumnName.get
     val properties = schema.columnsExcept(List("_vid", idColumnName)).map(column => GBProperty(column.name, value(column.name)))
-    GBVertex(vid(), GBProperty(idColumnName, idValue()), properties.toSet)
+    GBVertex(null, GBProperty("_vid", vid()), properties.toSet)
   }
 
   /**
