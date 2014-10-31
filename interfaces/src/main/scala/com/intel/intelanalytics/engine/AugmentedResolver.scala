@@ -57,4 +57,9 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
   override def create[T <: UriReference: ru.TypeTag]()(implicit invocation: Invocation): T = base.create()
 
   def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  override def saveData[T <: UriReference with HasData: ru.TypeTag](data: T)(implicit invocation: Invocation): T = base.saveData(data)
 }

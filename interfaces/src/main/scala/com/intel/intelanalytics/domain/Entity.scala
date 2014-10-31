@@ -102,4 +102,9 @@ trait EntityManager[E <: Entity] { self =>
 
   def getData(reference: Reference)(implicit invocation: Invocation): Data
 
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  def saveData(data: Data)(implicit invocation: Invocation): Data
+
 }

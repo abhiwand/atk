@@ -93,4 +93,8 @@ object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =
 
   override type Data = FrameReference with NoData
 
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
 }

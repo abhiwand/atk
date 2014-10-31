@@ -165,21 +165,21 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
             withCommand(commandContext.command) {
               implicit val invocation = getInvocation(plugin, arguments, commandContext)
 
-              if (commandContext.action) {
+              val returnValue = if (commandContext.action) {
                 val res = if (firstExecution) {
                   this.runDependencies(arguments, commandContext)(plugin.argumentTag, invocation)
                 }
                 else commandContext.resolver
                 val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
-                if (firstExecution) {
-                  commandContext.clean()
-                }
                 result
               }
               else {
-                val result = createSuspendedReferences(commandContext.command, plugin, arguments)
-                plugin.serializeReturn(result)
+                createSuspendedReferences(commandContext.command, plugin, arguments)
               }
+              if (firstExecution) {
+                commandContext.clean()
+              }
+              plugin.serializeReturn(returnValue)
             }
           }
           commands.lookup(commandContext.command.id).get
@@ -236,12 +236,12 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
 
   private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
                                                                                   arguments: A,
-                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): JsObject = {
+                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): R = {
     val cmd = commandContext.command
     try {
       info(s"Invoking command ${cmd.name}")
       val funcResult = command(invocation, arguments)
-      command.serializeReturn(funcResult)
+      funcResult
     }
     finally {
       stopCommand(cmd.id)

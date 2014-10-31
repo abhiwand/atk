@@ -28,8 +28,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.runtime.{ universe => ru }
-import ru._
 
 /**
  * Provides context for an invocation of a command or query.
@@ -67,7 +65,7 @@ trait Invocation {
   private[intelanalytics] def commandStorage: CommandStorage
 
   /**
-   * Reference resolver to enable dereferencing of UriReference objects
+   * Reference resolver to enable de-referencing of UriReference objects
    */
   private[intelanalytics] def resolver: ReferenceResolver
 

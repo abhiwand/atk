@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ UriReference, Entity, EntityManager }
+import com.intel.intelanalytics.domain.{ HasData, UriReference, Entity, EntityManager }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }
@@ -85,5 +85,13 @@ class EntityRegistry {
    */
   def create[R <: UriReference: TypeTag]()(implicit invocation: Invocation): R =
     resolver.resolve[R](entityManager[R]().get.create()).get
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = {
+    val manager = entityManager[T].get
+    manager.saveData(data.asInstanceOf[manager.type#Data]).asInstanceOf[T]
+  }
 
 }

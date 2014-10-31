@@ -136,4 +136,11 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
   def create[T <: UriReference: TypeTag]()(implicit invocation: Invocation) = {
     registry.create[T]
   }
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = {
+    registry.saveData(data)
+  }
 }
