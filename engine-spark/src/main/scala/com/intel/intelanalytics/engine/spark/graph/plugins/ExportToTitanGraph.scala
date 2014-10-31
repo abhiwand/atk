@@ -62,7 +62,6 @@ class ExportToTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) e
 
     val edgeRDD: RDD[Edge] = this.toGBEdges(invocation.sparkContext, seamlessGraph.edgeFrames)
 
-
     val emptyGraphLoad = new GraphLoad(new GraphReference(titanGraph.id), List(new FrameRule(null, List(), List())))
     val gbConfigFactory = new GraphBuilderConfigFactory(new Schema(List()), emptyGraphLoad, titanGraph)
     val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
