@@ -614,6 +614,12 @@ Glossary
         can execute in a distributed fashion on the cluster.
         For further explanation, see :doc:`ds_apir`
 
+    Quantile
+
+        One of the class of values of a variate which divides the members of a batch or sample into
+        equal-sized subgroups of adjacent values or a probability distribution into distributions of
+        equal probability.    
+
     Receiver Operating Characteristic
     
         From `Wikipedia\: Receiver Operating Characteristic`_:
