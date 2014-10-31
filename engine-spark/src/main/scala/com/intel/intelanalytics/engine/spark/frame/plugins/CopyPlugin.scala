@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  */
 class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
 
-  override def name: String = "frame:/copy"
+  override def name: String = "frame/copy"
 
   override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
 
