@@ -140,6 +140,14 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
+  implicit def singletonOrListFormat[T: JsonFormat] = new JsonFormat[SingletonOrListValue[T]] {
+    def write(list: SingletonOrListValue[T]) = JsArray(list.value.map(_.toJson))
+    def read(value: JsValue): SingletonOrListValue[T] = value match {
+      case JsArray(list) => SingletonOrListValue[T](list.map(_.convertTo[T]))
+      case singleton => SingletonOrListValue[T](List(singleton.convertTo[T]))
+    }
+  }
+
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
 
@@ -206,7 +214,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
   implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
-  implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
+  implicit val ecdfLongFormat = jsonFormat3(ECDF)
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats

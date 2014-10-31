@@ -141,7 +141,7 @@ def prepare_row_function(frame, subject_function, iteration_function):
 
     Parameters
     ----------
-    frame : BigFrame
+    frame : Frame
         frame on whose rows the function will execute
     subject_function : function
         a function with a single row parameter

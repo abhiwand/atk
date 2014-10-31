@@ -32,7 +32,7 @@ import json
 import sys
 
 from intelanalytics.core.frame import Frame
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
@@ -80,9 +80,9 @@ class FrameBackendRest(object):
 
         if isinstance(source, Frame):
             become_frame(frame, self.copy(source, source.column_names))
-        elif isinstance(source, BigColumn):
+        elif isinstance(source, Column):
             become_frame(frame, self.copy(source.frame, source.name))
-        elif isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source):
+        elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
             become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
         elif source:
             self.append(frame, source)
@@ -229,22 +229,6 @@ class FrameBackendRest(object):
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
         arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("frame:/filter", arguments, frame)
-
-    def drop_duplicates(self, frame, columns):
-        if columns is None:
-            columns = []
-        elif isinstance(columns, basestring):
-            columns = [columns]
-        arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('frame:/drop_duplicates', arguments, frame)
-
-    def drop_duplicate_vertices(self, frame, columns):
-        if columns is None:
-            columns = []
-        elif isinstance(columns, basestring):
-            columns = [columns]
-        arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('frame:vertex/drop_duplicates', arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
@@ -440,50 +424,6 @@ class FrameBackendRest(object):
             data = FrameData.extract_data_from_selected_columns(data, indices)
 
         return TakeResult(data, updated_schema)
-
-    def ecdf(self, frame, sample_col):
-        import numpy as np
-        col_types = dict(frame.schema)
-        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to generate ecdf for non-numeric values")
-        data_type_dict = {np.float32: 'float32', np.float64: 'float64', np.int32: 'int32', np.int64: 'int64'}
-        data_type = 'string'
-        if col_types[sample_col] in data_type_dict:
-            data_type = data_type_dict[col_types[sample_col]]
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
-        return execute_new_frame_command('ecdf', arguments)
-
-    
-    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        arguments = {'frame_id': frame._id, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label)}
-        # valueList = (tp, tn, fp, fn)
-        valueList = get_command_output('confusion_matrix', arguments).get('value_list')
-        # the following output formatting code is ugly, but it works for now...
-        maxLength = len(max((str(x) for x in valueList), key=len))
-        topRowLen = max([maxLength*2 - 7, 1])
-        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
-        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
-        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
-        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
-
-        return formattedMatrix
 
     def create_vertex_frame(self, frame, source, label, graph):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
