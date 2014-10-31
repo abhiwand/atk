@@ -297,7 +297,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-
   /**
    * Execute getRows Query plugin
    * @param arguments RowQuery object describing id, offset, and count
