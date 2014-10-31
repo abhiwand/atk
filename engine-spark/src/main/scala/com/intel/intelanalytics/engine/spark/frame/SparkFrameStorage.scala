@@ -282,15 +282,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def dropColumns(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
-    //withContext("frame.removeColumn") {
-    metaStore.withSession("frame.removeColumn") {
-      implicit session =>
-        {
-          metaStore.frameRepo.updateSchema(frame, frame.schema.dropColumnsByIndex(columnIndex))
-        }
-    }
-
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
     metaStore.withSession("frame.rename") {
       implicit session =>
