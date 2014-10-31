@@ -75,4 +75,18 @@ class VertexWrapperTest extends FlatSpec with Matchers {
     wrapper.setValue("from", "SFO")
     wrapper.stringValue("from") shouldBe "SFO"
   }
+
+  "VertexWrapper" should "convert to a valid GBVertex" in {
+    val wrapper = new VertexWrapper(schema)
+    val row = new GenericRow(Array(1L, "l1", "Bob", "PDX", "LAX", 350))
+    wrapper(row)
+    val gbVertex = wrapper.toGbVertex
+
+    gbVertex.gbId.key should be("_vid")
+    gbVertex.gbId.value should be(1L)
+    gbVertex.getProperty("name").get.value shouldBe("Bob")
+    gbVertex.getProperty("from").get.value shouldBe ("PDX")
+    gbVertex.getProperty("to").get.value shouldBe ("LAX")
+    gbVertex.getProperty("fair").get.value shouldBe (350)
+  }
 }

@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.graph._
@@ -22,8 +22,8 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class ExportToTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[ExportGraph, Graph] {
-  def toGBEdges(ctx: SparkContext, edges: List[DataFrame]): RDD[Edge] = {
-    val gbEdges: RDD[Edge] = edges.foldLeft(ctx.parallelize[Edge](Nil))((gbFrame: RDD[Edge], frame: DataFrame) => {
+  def toGBEdges(ctx: SparkContext, edges: List[DataFrame]): RDD[GBEdge] = {
+    val gbEdges: RDD[GBEdge] = edges.foldLeft(ctx.parallelize[GBEdge](Nil))((gbFrame: RDD[GBEdge], frame: DataFrame) => {
       val edgeFrame: EdgeFrameRDD = new EdgeFrameRDD(frame.schema, frames.loadFrameRDD(ctx, frame))
       val gbEdgeFrame = edgeFrame.toGbEdgeRDD
       gbFrame.union(gbEdgeFrame)
@@ -31,8 +31,8 @@ class ExportToTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) e
     gbEdges
   }
 
-  def toGBVertices(ctx: SparkContext, vertices: List[DataFrame]): RDD[Vertex] = {
-    val gbVertices: RDD[Vertex] = vertices.foldLeft(ctx.parallelize[Vertex](Nil))((gbFrame: RDD[Vertex], frame: DataFrame) => {
+  def toGBVertices(ctx: SparkContext, vertices: List[DataFrame]): RDD[GBVertex] = {
+    val gbVertices: RDD[GBVertex] = vertices.foldLeft(ctx.parallelize[GBVertex](Nil))((gbFrame: RDD[GBVertex], frame: DataFrame) => {
       val vertexFrame: VertexFrameRDD = new VertexFrameRDD(frame.schema, frames.loadFrameRDD(ctx, frame))
       val gbVertexFrame = vertexFrame.toGbVertexRDD
       gbFrame.union(gbVertexFrame)
@@ -58,9 +58,8 @@ class ExportToTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) e
         },
         StorageFormats.HBaseTitan))
 
-    val vertexRDD: RDD[Vertex] = this.toGBVertices(invocation.sparkContext, seamlessGraph.vertexFrames)
-
-    val edgeRDD: RDD[Edge] = this.toGBEdges(invocation.sparkContext, seamlessGraph.edgeFrames)
+    val vertexRDD: RDD[GBVertex] = this.toGBVertices(invocation.sparkContext, seamlessGraph.vertexFrames)
+    val edgeRDD: RDD[GBEdge] = this.toGBEdges(invocation.sparkContext, seamlessGraph.edgeFrames)
 
     val emptyGraphLoad = new GraphLoad(new GraphReference(titanGraph.id), List(new FrameRule(null, List(), List())))
     val gbConfigFactory = new GraphBuilderConfigFactory(new Schema(List()), emptyGraphLoad, titanGraph)
