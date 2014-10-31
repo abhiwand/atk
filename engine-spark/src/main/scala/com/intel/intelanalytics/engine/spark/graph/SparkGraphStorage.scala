@@ -85,7 +85,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   //TODO: enable
-  EntityRegistry.register(GraphEntity, SparkGraphManagement)
+  //EntityRegistry.register(GraphEntity, SparkGraphManagement)
 
   /**
    * Deletes a graph by synchronously deleting its information from the metastore and asynchronously
