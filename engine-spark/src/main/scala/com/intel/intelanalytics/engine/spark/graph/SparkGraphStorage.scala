@@ -84,6 +84,7 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   }
 
+  //TODO: enable
   EntityRegistry.register(GraphEntity, SparkGraphManagement)
 
   /**
