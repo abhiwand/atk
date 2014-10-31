@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameReference, FrameReferenceManagement, FrameEntity}
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameReference, FrameReferenceManagement, FrameEntity }
 import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.scalatest.{ FlatSpec, Matchers }

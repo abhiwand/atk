@@ -54,12 +54,9 @@ class EntityRegistry {
    * @return an Entity that can work with that reference type
    */
   def entityManagerForType(requestedType: Type): Option[EntityManager[_]] = {
-    println("Checking against " + entityTypes)
     entityTypes.find {
       case (t, e) =>
-        println(s"Checking $t to see if it matches $requestedType")
         val res = requestedType <:< t
-        println(res)
         res
     }.map(_._2)
   }
