@@ -73,4 +73,18 @@ class EdgeWrapperTest extends FlatSpec with Matchers {
     wrapper.setValue("distance", 350)
     wrapper.intValue("distance") shouldBe 350
   }
+
+  "EdgeWrapper" should "create a GBEdge Type" in {
+    val wrapper = new EdgeWrapper(schema)
+    val row = new GenericRow(Array(1L, 2L, 3L, "distance", 500))
+    wrapper(row)
+    val gbEdge = wrapper.toGbEdge
+    gbEdge.label should be("label")
+    gbEdge.getProperty("distance").get.value should be(500)
+    gbEdge.getProperty("_eid").get.value should be (1)
+    gbEdge.tailVertexGbId.key should be("_vid")
+    gbEdge.headVertexGbId.key should be("_vid")
+    gbEdge.tailVertexGbId.value should be(2L)
+    gbEdge.headVertexGbId.value should be(3L)
+  }
 }
