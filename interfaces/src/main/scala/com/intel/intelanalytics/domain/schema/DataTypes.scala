@@ -50,6 +50,8 @@ object DataTypes {
     def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
+
+    def isNumerical: Boolean
   }
 
   /**
@@ -77,6 +79,7 @@ object DataTypes {
       raw.asInstanceOf[Int].toDouble
     }
 
+    override def isNumerical = true
   }
 
   /**
@@ -103,6 +106,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Long].toDouble
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -129,6 +134,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Float].toDouble
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -156,6 +163,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Double]
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -187,6 +196,8 @@ object DataTypes {
         case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
       }
     }
+
+    override def isNumerical = false
   }
 
   /**

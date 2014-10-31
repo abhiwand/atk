@@ -157,8 +157,9 @@ case class Schema(columns: List[Column] = List[Column](),
    * Validate that the list of column names provided exist in this schema
    * throwing an exception if any does not exist.
    */
-  def validateColumnsExist(columnNames: Iterable[String]): Unit = {
+  def validateColumnsExist(columnNames: Iterable[String]): Iterable[String] = {
     columnIndices(columnNames.toSeq)
+    columnNames
   }
 
   /**
