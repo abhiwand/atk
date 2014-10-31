@@ -55,4 +55,9 @@ class MockGraphManager extends EntityManager[GraphEntity.type] {
   override def getReference(id: Long): Reference = new GraphReference(id, Some(true))
 
   override type Data = D
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
 }

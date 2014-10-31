@@ -27,7 +27,7 @@ import java.util.UUID
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.EntityManager
+import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityManager }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.{ FrameStorage, _ }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -81,6 +81,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
+    /**
+     * Save data of the given type, possibly creating a new object.
+     */
+    override def saveData(data: Data)(implicit invocation: Invocation): Data = {
+      val meta = saveFrameData(data.meta, data.data)
+      new SparkFrameData(meta, data.data)
+    }
   }
 
   EntityRegistry.register(FrameEntity, SparkFrameManagement)

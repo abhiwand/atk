@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.domain.UriReference
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -64,15 +65,13 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
-    val frame = resolve[SparkFrameData](arguments.frame)
+    val frame: SparkFrameData = arguments.frame
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
     val newSchema = frame.meta.schema.addColumns(newColumns)
 
     // Update the data
     val rdd = PythonRDDStorage.pyMap(frame.data, arguments.expression, newSchema)
 
-    val saved = engine.frames.saveFrameData(create[FrameMeta].meta.withSchema(newSchema), rdd)
-
-    new SparkFrameData(saved, rdd)
+    save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd))
   }
 }

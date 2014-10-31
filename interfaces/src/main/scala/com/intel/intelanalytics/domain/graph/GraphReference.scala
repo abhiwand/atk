@@ -87,4 +87,8 @@ object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =
 
   override type Data = Reference with NoData
 
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
 }

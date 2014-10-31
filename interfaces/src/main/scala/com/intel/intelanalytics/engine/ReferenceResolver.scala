@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.UriReference
+import com.intel.intelanalytics.domain.{ HasData, UriReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -38,6 +38,11 @@ object ReferenceResolver extends ReferenceResolver {
    */
   override def create[T <: UriReference: ru.TypeTag]()(implicit invocation: Invocation): T = EntityRegistry.resolver.create()
 
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = EntityRegistry.resolver.saveData(data)
+
 }
 
 trait ReferenceResolver {
@@ -67,5 +72,10 @@ trait ReferenceResolver {
    * Creates an (empty) instance of the given type, reserving a URI
    */
   def create[T <: UriReference: TypeTag]()(implicit invocation: Invocation): T
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T
 
 }

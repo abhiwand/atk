@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
-import com.intel.intelanalytics.domain.UriReference
+import com.intel.intelanalytics.domain.{ HasData, UriReference }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -140,25 +140,32 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   def numberOfJobs(arguments: Arguments): Int = 1
 
   /**
-   * Transforms must implement this method to do the work requested by the user.
-   *
-   * This is different from other plugins' execute methods in that an instance of the
-   * return type that was created by the lazy execution engine will be passed in. This
-   * pre-created return instance will contain, for example, the UriReferences that
-   * were pre-created, and so the Transform instance should re-use those UriReferences
-   * in the return object that it returns to avoid creating duplicate frames and other
-   * entities.
-   *
-   * @param context information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
+   * Resolves a reference down to the requested type
    */
-  def execute(arguments: Arguments)(implicit context: Invocation): Return = ???
-
   def resolve[T <: UriReference](reference: UriReference)(implicit invocation: Invocation): T =
     invocation.resolver.resolve(reference).get
 
+  /**
+   * Creates an object of the requested type.
+   */
   def create[T <: UriReference](implicit invocation: Invocation): T = invocation.resolver.create()
+
+  /**
+   * Save data, possibly creating a new object
+   */
+  def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T =
+    invocation.resolver.saveData(data)
+
+  /**
+   * Implicit conversion that lets plugin authors simply add type annotations to UriReferences
+   * to convert them to [[com.intel.intelanalytics.domain.HasMetaData]] or
+   * [[com.intel.intelanalytics.domain.HasData]] instances
+   */
+  implicit def coerceReference[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
+                                                                                 ev: Out <:< In): Out = {
+    resolve[Out](ref)
+  }
+
 }
 
 /**
