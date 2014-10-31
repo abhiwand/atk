@@ -241,20 +241,20 @@ class FrameBackendRest(object):
 
         if isinstance(data, PandasFrame):
             pan = data.pandas_frame.dropna(thresh=1)
-            pandas_rows =[]
-            # for index, row in pan.iterrows():
-            #     pandas_rows.append(row.tolist())
-            dataframes = []
-            if pan.__len__() < 40:
-                dataframes.append(pan)
-            else:
-                dataframes = np.array_split(pan, pan.__len__()/40)
-            for df in dataframes:
-                if data.row_index:
-                    pandas_rows = df.values.tolist()
-                else:
-                    df = df.reset_index()
-                    pandas_rows = df.values.tolist()
+            pandas_rows = []
+            if not data.row_index:
+                pan = pan.reset_index()
+            for index, row in pan.iterrows():
+                pandas_rows.append(row.tolist())
+                if index != 0 and index % 10000 == 0:
+                    arguments = self._get_load_arguments(frame, data, pandas_rows)
+                    result = execute_update_frame_command("frame:/load", arguments, frame)
+                    if result and result.has_key("error_frame_id"):
+                        sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+                        logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+                    pandas_rows = []
+
+            if pandas_rows.__len__() > 0:
                 arguments = self._get_load_arguments(frame, data, pandas_rows)
                 result = execute_update_frame_command("frame:/load", arguments, frame)
                 if result and result.has_key("error_frame_id"):
