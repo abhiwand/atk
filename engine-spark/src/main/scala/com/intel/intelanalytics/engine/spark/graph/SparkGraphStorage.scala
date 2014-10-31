@@ -86,6 +86,9 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   //TODO: enable
   //EntityRegistry.register(GraphEntity, SparkGraphManagement)
+  //in the meantime,
+  //Default resolver that simply creates a reference, with no guarantee that it is valid.
+  EntityRegistry.register(GraphEntity, GraphReferenceManagement)
 
   /**
    * Deletes a graph by synchronously deleting its information from the metastore and asynchronously
