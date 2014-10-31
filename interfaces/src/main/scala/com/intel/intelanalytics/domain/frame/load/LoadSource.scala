@@ -24,12 +24,13 @@ case class Load(destination: FrameReference, source: LoadSource)
  * @param uri Location of data to load. Should be appropriate for the source_type.
  * @param parser Object describing how to parse the resource. If data already an RDD can be set to None
  */
-case class LoadSource(source_type: String, uri: String, parser: Option[LineParser]) {
+case class LoadSource(source_type: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None) {
 
   require(source_type != null)
-  require(source_type == "frame" || source_type == "file")
+  require(source_type == "frame" || source_type == "file" || source_type == "pandasFrame")
   require(uri != null)
   require(parser != null)
+  require(data != null)
 
   /**
    * True if source is an existing Frame
@@ -39,12 +40,18 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
   }
 
   /**
+   * True if source is a pandas Data Frame
+   */
+  def isClientData: Boolean = {
+    source_type == "pandasFrame"
+  }
+
+  /**
    * True if source is a file
    */
   def isFile: Boolean = {
     source_type == "file"
   }
-
 }
 
 /**

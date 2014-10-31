@@ -27,10 +27,29 @@ object LoadRDDFunctions extends Serializable {
     val fileContentRdd: RDD[String] = sc.textFile(fileName, partitions).filter(_.trim() != "")
 
     // parse a sample so we can bail early if needed
-    parseSampleOfFile(fileContentRdd, parser)
+    parseSampleOfData(fileContentRdd, parser)
 
     // re-parse the entire file
     parse(fileContentRdd, parser)
+  }
+
+  /**
+   * Load each line from client data into an RDD of Row objects.
+   * @param sc SparkContext used for textFile reading
+   * @param data data to parse
+   * @param parser parser provided
+   * @return  RDD of Row objects
+   */
+  def loadAndParseData(sc: SparkContext,
+                       data: List[List[Any]],
+                       parser: LineParser): ParseResultRddWrapper = {
+
+    val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
+    // parse a sample so we can bail early if needed
+    parseSampleOfData(dataContentRDD, parser)
+
+    // re-parse the entire file
+    parse(dataContentRDD, parser)
   }
 
   /**
@@ -41,7 +60,7 @@ object LoadRDDFunctions extends Serializable {
    * @param fileContentRdd the rows that need to be parsed (the file content)
    * @param parser the parser to use
    */
-  private[frame] def parseSampleOfFile(fileContentRdd: RDD[String],
+  private[frame] def parseSampleOfData(fileContentRdd: RDD[String],
                                        parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
