@@ -30,8 +30,11 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict, namedtuple
 import json
 import sys
+import pandas
+import numpy as np
 
 from intelanalytics.core.frame import Frame
+from intelanalytics.core.panframes import PandasFrame
 from intelanalytics.core.column import Column
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
@@ -85,7 +88,7 @@ class FrameBackendRest(object):
         elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
             become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
         elif source:
-            self.append(frame, source)
+                self.append(frame, source)
 
         return new_frame_name
 
@@ -144,7 +147,7 @@ class FrameBackendRest(object):
     def _get_frame_full_uri(self, frame):
         return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
-    def _get_load_arguments(self, frame, data):
+    def _get_load_arguments(self, frame, data, pandas_rows=None):
         if isinstance(data, CsvFile):
             return {'destination': frame._id,
                     'source': {
@@ -159,13 +162,31 @@ class FrameBackendRest(object):
                                     "columns": data._schema_to_json()
                                 }
                             }
-                        }
+                        },
+                        "data":None
                     }
             }
         if isinstance(data, Frame):
             return {'source': { 'source_type': 'frame',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
+        if isinstance(data, PandasFrame):
+            return{'destination': frame._id,
+                   'source': {"source_type": "pandasFrame",
+                              "uri":"pandas",
+                              "parser": {
+                                    "name": "builtin/line/separator",
+                                    "arguments": {
+                                    "separator": ',',
+                                    "skip_rows": 0,
+                                    "schema":{
+                                        "columns": data._schema_to_json()
+                                    }
+                                }
+                              },
+                              "data": pandas_rows
+                   }
+            }
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -218,11 +239,33 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        arguments = self._get_load_arguments(frame, data)
-        result = execute_update_frame_command("frame:/load", arguments, frame)
-        if result and result.has_key("error_frame_id"):
-            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+        if isinstance(data, PandasFrame):
+            pan = data.pandas_frame.dropna(thresh=1)
+            pandas_rows =[]
+            # for index, row in pan.iterrows():
+            #     pandas_rows.append(row.tolist())
+            dataframes = []
+            if pan.__len__() < 40:
+                dataframes.append(pan)
+            else:
+                dataframes = np.array_split(pan, pan.__len__()/40)
+            for df in dataframes:
+                if data.row_index:
+                    pandas_rows = df.values.tolist()
+                else:
+                    df = df.reset_index()
+                    pandas_rows = df.values.tolist()
+                arguments = self._get_load_arguments(frame, data, pandas_rows)
+                result = execute_update_frame_command("frame:/load", arguments, frame)
+                if result and result.has_key("error_frame_id"):
+                    sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+                    logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+        else:
+            arguments = self._get_load_arguments(frame, data)
+            result = execute_update_frame_command("frame:/load", arguments, frame)
+            if result and result.has_key("error_frame_id"):
+                sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+                logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
