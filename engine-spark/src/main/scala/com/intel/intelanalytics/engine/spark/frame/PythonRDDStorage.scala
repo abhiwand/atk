@@ -6,6 +6,7 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.commons.codec.binary.Base64.decodeBase64
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
@@ -67,7 +68,6 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
       val resultRdd: RDD[Array[Any]] = getRddFromPythonRdd(pyRdd, converter)
 
       val rowCount = if (skipRowCount) 0 else resultRdd.count()
-      //      frames.saveFrameWithoutSchema(ctx, dataFrame, resultRdd)
       frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
       rowCount
     }
@@ -86,10 +86,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
   }
 
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
-    // Python uses different RFC than Java, must correct a couple characters
-    // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
-    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
-    new sun.misc.BASE64Decoder().decodeBuffer(corrected)
+    decodeBase64(byteStr)
   }
 
 }

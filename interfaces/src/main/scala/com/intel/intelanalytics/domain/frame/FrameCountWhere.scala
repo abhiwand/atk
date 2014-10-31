@@ -20,23 +20,12 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain
 
-/**
- * Generic String value that can be used by plugins that return a single String
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class StringValue(value: String)
+package com.intel.intelanalytics.domain.frame
 
-/**
- * Generic Long value that can be used by plugins that return a single Long
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class LongValue(value: Long)
+case class FrameCountWhere(frame: FrameReference, where: String) {
+  require(frame != null, "frame is required")
+  require(where != null, "where predicate is required")
+}
 
-/**
- * Generic singleton or list value which is a List, but has a Json serializer such that a singleton
- * is accepted
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class SingletonOrListValue[T](value: List[T])
+case class JustALong(value: Long) // TODO - temporary, switch when parquet graph branch 3539 merges

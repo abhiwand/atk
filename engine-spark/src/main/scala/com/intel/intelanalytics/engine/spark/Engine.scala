@@ -137,7 +137,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   commandPluginRegistry.registerCommand(new LoadFramePlugin)
   commandPluginRegistry.registerCommand(new RenameFramePlugin)
   commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
-  commandPluginRegistry.registerCommand(new ProjectPlugin)
   commandPluginRegistry.registerCommand(new AssignSamplePlugin)
   commandPluginRegistry.registerCommand(new GroupByPlugin)
   commandPluginRegistry.registerCommand(new FlattenColumnPlugin())
@@ -145,6 +144,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   commandPluginRegistry.registerCommand(new ColumnModePlugin)
   commandPluginRegistry.registerCommand(new ColumnMedianPlugin)
   commandPluginRegistry.registerCommand(new ColumnSummaryStatisticsPlugin)
+  commandPluginRegistry.registerCommand(new CopyPlugin)
+  commandPluginRegistry.registerCommand(new CountWherePlugin)
   commandPluginRegistry.registerCommand(new FilterPlugin)
   commandPluginRegistry.registerCommand(new JoinPlugin(frames))
   commandPluginRegistry.registerCommand(new DropColumnsPlugin)
@@ -297,41 +298,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  // TODO TRIB-2245
-  /*
-  /**
-   * Calculate full statistics of the specified column.
-   * @param arguments Input specification for column statistics.
-   * @param user Current user.
-   */
-  override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
-    commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
-
-  val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
-    pluginRegistry.registerCommand("frame:/column_full_statistics", columnFullStatisticSimple)
-
-  def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
-
-    implicit val u = user
-
-    val frameId: Long = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId)
-    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-
-    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-      (None, None)
-    }
-    else {
-      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }
-
-    ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-  }
- */
 
   /**
    * Execute getRows Query plugin
