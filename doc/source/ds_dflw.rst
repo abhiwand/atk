@@ -500,103 +500,6 @@ Aggregation based on both column and row together:
         my_frame.group_by(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
             'd': [agg.avg, agg.sum]}])
 
-.. _example_frame.quantile:
-
-Quantiles Example:
-------------------
-
-The quantiles function measures the quantiles of a variable at a specified vector of probabilities.
-The returned output is a dictionary containing a list of dictionaries, which contain the quantile
-levels and their associated values. 
-
-Suppose that after loading a data set with a numeric variable, reputation, we would like to examine the
-quantiles of this variable and assess whether it is approximately normally distributed.
-Well start by measuring the mean and standard deviation of the variable, then compute its quantiles
-from 0 to 100% in 1% increments. 
-::
-
-    import intelanalytics as ia
-    import pprint
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-
-    my_frame=ia.get_frame(sample_data)
-    my_frame.column_summary_statistics(reputation)
-    [=========================] 100.00% Tasks retries:0 Time 0:00:02
-    {u'bad_row_count': 0,
-     u'geometric_mean': None,
-     u'good_row_count': 1990163,
-     u'maximum': 128.0,
-     u'mean': 57.92457100247567,
-     u'mean_confidence_lower': 57.83385925171106,
-     u'mean_confidence_upper': 58.015282753240285,
-     u'minimum': -79.0,
-     u'non_positive_weight_count': 0,
-     u'positive_weight_count': 1990163,
-     u'standard_deviation': 65.29077167645274,
-     u'total_weight': 1990163.0,
-     u'variance': 4262.884866106682}
-
-    quant= range(101)
-    quantiles=my_frame.quantiles(reputation, quant)
-    pprint.pprint(quantiles['quantiles'])
-
-    [{u'quantile': 0.0, u'value': -79.0},
-     {u'quantile': 1.0, u'value': -40.0},
-     {u'quantile': 2.0, u'value': -39.0},
-     {u'quantile': 3.0, u'value': -38.0},
-     {u'quantile': 4.0, u'value': -33.0},
-     {u'quantile': 5.0, u'value': -33.0},
-     {u'quantile': 6.0, u'value': -33.0},
-     {u'quantile': 7.0, u'value': -33.0},
-     {u'quantile': 8.0, u'value': -14.0},
-     {u'quantile': 9.0, u'value': 0.0},
-     {u'quantile': 10.0, u'value': 0.0},
-     {u'quantile': 11.0, u'value': 0.0},
-     {u'quantile': 12.0, u'value': 0.0},
-     {u'quantile': 13.0, u'value': 0.0},
-     {u'quantile': 14.0, u'value': 0.0},
-     {u'quantile': 15.0, u'value': 0.0},
-     {u'quantile': 16.0, u'value': 0.0},
-      ...
-
-Now, we will compare this against the quantiles of the normal distribution.
-Since the current version of the toolkit does not include a normal quantile function, we will need to
-compute the quantiles of a normal(mean = 57.92, sd = 65.29) distribution elsewhere and use the result
-for comparison.
-To make a visual comparison, you will also need matplotlib or other graphical library installed.
-The normal quantiles below were computed outside the toolkit::
-
-    norm_quantiles = [-np.Inf, -93.9644769, -76.1662802, -64.873895, -56.3790736, -49.4691916, -43.5877968, -38.4309641, -33.8136354, -29.6143598, -25.7489197, -22.1563964, -18.7912234, -15.618375, -12.6103124, -9.7449648, -7.0043516, -4.3736147, -1.8403219, 0.6060444, 2.9744712, 5.2727055, 7.5074802, 9.6846901, 11.8095316, 13.8866147, 15.920053, 17.9135379, 19.8703992, 21.7936556, 23.6860569, 25.5501192, 27.3881555, 29.2023009, 30.994535, 32.7667004, 34.5205198, 36.2576099, 37.9794946, 39.6876157, 41.3833431, 43.0679839, 44.74279, 46.4089657, 48.0676744, 49.7200447, 51.3671759, 53.0101436, 54.6500048, 56.2878026, 57.924571, 59.5613394, 61.1991372, 62.8389984, 64.4819661, 66.1290973, 67.7814676, 69.4401763, 71.1063521, 72.7811581, 74.4657989, 76.1615263, 77.8696474, 79.5915321, 81.3286222, 83.0824416, 84.854607, 86.6468411, 88.4609865, 90.2990228, 92.1630851, 94.0554864, 95.9787428, 97.9356041, 99.929089, 101.9625273, 104.0396104, 106.1644519, 108.3416618, 110.5764365, 112.8746708, 115.2430976, 117.689464, 120.2227567, 122.8534936, 125.5941068, 128.4594544, 131.467517, 134.6403654, 138.0055384, 141.5980617, 145.4635018, 149.6627774, 154.2801061, 159.4369388, 165.3183336, 172.2282156, 180.723037, 192.0154222, 209.8136189, np.Inf]
-
-Now, we'll get the quantile values of our reputation variable and put them in a list that can be
-easily plotted:: 
-
-    quant_list = []
-    for x in range(101):
-        quant_list.append(quantiles['quantiles'][x]['value'])
-
-    plt.plot(norm_quantiles, quant_list)
-    plt.suptitle(QQ Plot)
-    plt.xlabel('Normal Quantiles')
-    plt.ylabel('Reputation Quantiles')
-    plt.show()
-
-.. image:: ds_dflw_01.*
-    :width: 80%
-    :align: center
-
-
-The comparison of reputation quantiles to normal quantiles shows clear deviation from the forty five
-degree line, indicating a deviation from normality. 
-
-Alternatively, if scipy is installed, we can do::
-
-    Import scipy.stats as stats
-    stats.probplot(quant_list, dist="norm", plot=pylab)
-
-
 Supported aggregation functions:
 
 ..  hlist::
@@ -607,11 +510,12 @@ Supported aggregation functions:
     * max
     * mean
     * min
-    * quantile
+    * :term:`quantile`
     * stdev
     * sum
     * :term:`variance <Bias-variance tradeoff>`
     * distinct
+
 
 
 .. _example_frame.join:
