@@ -11,11 +11,11 @@
 
 ALTER TABLE frame ADD COLUMN command_id bigint NULL;
 
-ALTER TABLE frame ADD COLUMN parent bigint NULL;
+ALTER TABLE frame ADD COLUMN parent_frame_id bigint NULL;
 
-ALTER TABLE frame ADD COLUMN materialized TIMESTAMP WITHOUT TIME ZONE NULL;
+ALTER TABLE frame ADD COLUMN materialized_start TIMESTAMP WITHOUT TIME ZONE NULL;
 
-ALTER TABLE frame ADD COLUMN materialized_duration INTERVAL NULL;
+ALTER TABLE frame ADD COLUMN materialized_end TIMESTAMP WITHOUT TIME ZONE NULL;
 
 ALTER TABLE frame ADD COLUMN storage_format TEXT NULL;
 

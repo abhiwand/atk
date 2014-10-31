@@ -389,9 +389,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def commandId = column[Option[Long]]("command_id")
 
-      def materializedOn = column[Option[DateTime]]("materialized_on")
+      def materializedOn = column[Option[DateTime]]("materialized_start")
 
-      def materializationComplete = column[Option[DateTime]]("materialization_complete")
+      def materializationComplete = column[Option[DateTime]]("materialized_end")
 
       def storageFormat = column[Option[String]]("storage_format")
 
@@ -428,8 +428,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
+      val now: DateTime = new DateTime()
       val f = DataFrame(id = 0, name = frame.name, description = frame.description,
-        schema = Schema(), status = 1L, createdOn = new DateTime(), modifiedOn = None)
+        schema = Schema(), status = 1L, createdOn = now, modifiedOn = Some(now))
       framesAutoInc.insert(f)
     }
 
@@ -443,6 +444,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       updatedFrame
     }
 
+    //TODO: All these updates should update the modifiedOn and modifiedBy fields
     override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
       // this looks crazy but it is how you update only one column
       val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema

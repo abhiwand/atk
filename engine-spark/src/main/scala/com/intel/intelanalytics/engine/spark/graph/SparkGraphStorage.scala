@@ -39,6 +39,8 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.event.EventLogging
 
+import scala.util.Try
+
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
  * @param metaStore Repository for graph and frame meta data.
