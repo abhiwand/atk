@@ -2,7 +2,7 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBVertex }
 import com.intel.spark.graphon.VectorMath
 
 /**
