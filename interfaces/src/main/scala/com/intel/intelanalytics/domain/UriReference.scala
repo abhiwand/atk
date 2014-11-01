@@ -22,7 +22,7 @@ trait UriReference extends HasId {
   def id: Long
 
   /** The entity type */
-  def entity: Entity
+  def entity: EntityType
 
   /** The full URI */
   def uri: String = {

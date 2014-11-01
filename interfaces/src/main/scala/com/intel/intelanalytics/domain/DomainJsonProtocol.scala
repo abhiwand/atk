@@ -106,7 +106,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: UriReference: TypeTag](entity: Entity)
+  class ReferenceFormat[T <: UriReference: TypeTag](entity: EntityType)
       extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(obj.uri)
 

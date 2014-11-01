@@ -32,7 +32,7 @@ import ru._
 case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 
   /** The entity type */
-  override def entity: Entity = FrameEntity
+  override def entity: EntityType = FrameEntity
 
   /** The entity id */
   override def id: Long = frameId
@@ -56,7 +56,7 @@ private object FrameTag {
   val referenceTag = typeTag[FrameReference]
 }
 
-object FrameEntity extends Entity {
+object FrameEntity extends EntityType {
 
   override type Reference = FrameReference
 

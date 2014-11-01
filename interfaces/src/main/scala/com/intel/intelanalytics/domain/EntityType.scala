@@ -35,21 +35,33 @@ import ru._
  */
 case class EntityName(name: String, plural: String)
 
+/**
+ * Indicates that this reference has attached metadata
+ */
 trait HasMetaData {
   type Meta
   def meta: Meta
 }
 
+/**
+ * Useful in testing
+ */
 class NoMetaData extends HasMetaData {
   override type Meta = Unit
   val meta = ()
 }
 
+/**
+ * Indicates that a reference includes attached metadata and data
+ */
 trait HasData extends HasMetaData {
   type Data
   def data: Data
 }
 
+/**
+ * Useful in testing
+ */
 class NoData extends NoMetaData with HasData {
   override type Data = Unit
   val data = ()
@@ -61,8 +73,12 @@ class NoData extends NoMetaData with HasData {
  * Examples include [[com.intel.intelanalytics.domain.graph.Graph]] and
  * [[com.intel.intelanalytics.domain.frame.DataFrame]].
  */
-trait Entity {
+trait EntityType {
 
+  /**
+   * The type of the UriReference that is used for this entity. Note that
+   * no other Entity should use the same Reference type.
+   */
   type Reference <: UriReference
 
   def referenceTag: TypeTag[Reference]
@@ -84,7 +100,7 @@ trait Entity {
  * Additional functionality for Entities to allow creation (of placeholders) and retrieval of entities'
  * metadata and data.
  */
-trait EntityManager[E <: Entity] { self =>
+trait EntityManager[E <: EntityType] { self =>
 
   type Reference = E#Reference
 

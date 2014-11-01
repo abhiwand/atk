@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.intelanalytics.domain.frame
+import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameEntity, FrameReference}
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.scalatest.{ FlatSpec, Matchers }
@@ -36,7 +37,7 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
   val resolver = registry.resolver
   implicit val invocation: Invocation = null
 
-  "Reference resolver" should "return metadata when requested" in {
+  "resolve" should "return metadata when requested" in {
     val meta: MockFrameManager#M = resolver.resolve[MockFrameManager#M]("ia://frames/6").get
     meta should not be (null)
     val gm: MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get
@@ -68,4 +69,16 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
     }
   }
 
+  "create" should "create a FrameReference when requested" in {
+    val ref = resolver.create[FrameReference]()
+
+    ref should not be(null)
+    ref should be(a[FrameReference])
+  }
+  it should "create a meta when requested" in {
+    val ref = resolver.create[MockFrameManager#M]()
+
+    ref should not be(null)
+    ref should be(a[MockFrameManager#M])
+  }
 }
