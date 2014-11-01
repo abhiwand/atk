@@ -31,7 +31,7 @@ import ru._
 
 case class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
   /** The entity type */
-  override def entity: Entity = GraphEntity
+  override def entity: EntityType = GraphEntity
 
   /** The entity id */
   override def id: Long = graphId
@@ -56,7 +56,7 @@ private object GraphTag {
   val referenceTag = typeTag[GraphReference]
 }
 
-object GraphEntity extends Entity {
+object GraphEntity extends EntityType {
 
   override type Reference = GraphReference
 

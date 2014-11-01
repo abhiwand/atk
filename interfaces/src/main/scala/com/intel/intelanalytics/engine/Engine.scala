@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ Entity, UriReference }
+import com.intel.intelanalytics.domain.{ EntityType, UriReference }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }

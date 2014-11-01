@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ HasData, UriReference, Entity, EntityManager }
+import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityType, EntityManager }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }
@@ -16,15 +16,15 @@ object EntityRegistry extends EntityRegistry {}
 class EntityRegistry {
 
   private var entityTypes: List[(Type, EntityManager[_])] = List.empty
-  private var _entities: Map[Entity, EntityManager[_]] = Map.empty
+  private var _entities: Map[EntityType, EntityManager[_]] = Map.empty
 
-  def entities: Set[(Entity, EntityManager[_])] = _entities.toSet
+  def entities: Set[(EntityType, EntityManager[_])] = _entities.toSet
 
   /**
    * Registers an URI resolver that can provide objects of a certain type
    * @param entity the name of the entity type, e.g. "graph"
    */
-  def register[E <: Entity: TypeTag](entity: E, entityManagement: EntityManager[E]): Unit = {
+  def register[E <: EntityType: TypeTag](entity: E, entityManagement: EntityManager[E]): Unit = {
     synchronized {
       entityTypes = (entityManagement.referenceTag.tpe, entityManagement) :: entityTypes
       _entities += (entity -> entityManagement)
@@ -45,7 +45,7 @@ class EntityRegistry {
    * Retrieves a registered entity that works with the given reference type
    * @return an Entity that can work with that reference type
    */
-  def entityManager[E <: Entity](entity: E): Option[EntityManager[E]] =
+  def entityManager[E <: EntityType](entity: E): Option[EntityManager[E]] =
     _entities.get(entity).map(_.asInstanceOf[EntityManager[E]])
 
   /**
