@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanElement, TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
@@ -78,7 +78,7 @@ object TitanReaderUtils {
 
     val entryList = ListBuffer[Entry]()
 
-    for (pos ← 0 until relation.getLen()) {
+    for (pos <- 0 until relation.getLen()) {
       if (relation.getVertex(pos) == titanVertex) {
         // Ensure that we are serializing properties for the right vertex
         entryList += titanEdgeSerializer.writeRelation(relation, pos, relation.tx())

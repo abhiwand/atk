@@ -8,6 +8,7 @@ Files
 -----
 .. automodule:: intelanalytics.core.files
     :members:
+    :inherited-members:
 
 Frame
 -----
@@ -15,13 +16,9 @@ Frame
     :members:
     :inherited-members:
 
-
 Graph
 -----
 .. automodule:: intelanalytics.core.graph
     :members:
     :inherited-members:
 
-.. automodule:: intelanalytics.core.autograph
-    :members:
-    :inherited-members:

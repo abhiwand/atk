@@ -286,14 +286,14 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
     listener.stageIdToTasksFailed(2) = listener.stageIdToTasksFailed.getOrElse(2, 0) + 1
 
-    listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(0))))
+    listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(0))))
 
     sendStageSubmittedToListener(listener, 4, 10)
 
     listener.stageIdToTasksFailed(4) = listener.stageIdToTasksFailed.getOrElse(4, 0) + 1
-    listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(1))))
+    listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(1))))
     listener.stageIdToTasksComplete(4) = listener.stageIdToTasksComplete.getOrElse(4, 0) + 1
-    listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
+    listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)

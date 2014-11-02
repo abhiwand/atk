@@ -25,5 +25,6 @@ package com.intel.intelanalytics.engine
 
 trait GraphComponent {
 
-  def graphs: GraphStorage
+  def graphStorage: GraphStorage
+
 }

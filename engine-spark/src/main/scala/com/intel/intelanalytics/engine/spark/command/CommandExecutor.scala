@@ -132,11 +132,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam Return the type of the return value of the command
    * @return an instance of the Return type with all the generated references.
    */
-  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag]
-    (command: Command,
-     plugin: CommandPlugin[Arguments, Return],
-     arguments: Arguments)
-    (implicit invocation: Invocation): Return = {
+  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command,
+                                                                                                   plugin: CommandPlugin[Arguments, Return],
+                                                                                                   arguments: Arguments)(implicit invocation: Invocation): Return = {
 
     val types = Reflection.getUriReferenceTypes[Return]()
     val references = types.map {
@@ -238,8 +236,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
 
   private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
                                                                                   arguments: A,
-                                                                                  commandContext: CommandContext)
-                                                                                 (implicit invocation: Invocation): R = {
+                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): R = {
     val cmd = commandContext.command
     try {
       info(s"Invoking command ${cmd.name}")
@@ -252,9 +249,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
-                                                                  arguments: A,
-                                                                  commandContext: CommandContext)
-  : Invocation with Product with Serializable = {
+                                                                          arguments: A,
+                                                                          commandContext: CommandContext): Invocation with Product with Serializable = {
     val cmd = commandContext.command
     command match {
       case c: SparkCommandPlugin[A, R] =>

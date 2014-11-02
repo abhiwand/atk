@@ -53,8 +53,18 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       links = RelLink("ia-error-frame", baseUri + "/" + entity.errorFrameId.get, "GET") :: links
     }
 
-    GetDataFrame(id = entity.id, name = entity.name, ia_uri = entity.uri, schema = entity.schema, rowCount = entity.rowCount, links, entity.errorFrameId)
+    GetDataFrame(id = entity.id,
+      name = entity.name,
+      ia_uri = entity.uri,
+      schema = entity.schema,
+      rowCount = entity.rowCount,
+      links,
+      entity.errorFrameId,
+      entity.commandPrefix)
+  }
 
+  def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[DataFrame]): List[GetDataFrame] = {
+    entities.map(frame => decorateEntity(uri, additionalLinks, frame)).toList
   }
 
   /**

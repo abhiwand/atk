@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.frame.load.{ Load, LineParserArguments, LineParser, LoadSource }
+import com.intel.intelanalytics.domain.frame.load._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -47,9 +47,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
         |          "separator": "`",
         |          "skip_rows": 0,
         |          "schema": {
-        |            "columns": [
-        |              ["json", "str"]
-        |            ]
+        |            "columns": [["json", "str"]]
         |          }
         |        }
         |      }
@@ -66,7 +64,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
     val parser = myLoadLines.source.parser.get
 
     parser.name should be("builtin/line/separator")
-    parser.arguments should be(LineParserArguments('`', Schema(List(("json", DataTypes.string))), Some(0)))
+    parser.arguments should be(LineParserArguments('`', new SchemaArgs(List(("json", DataTypes.string))), Some(0)))
   }
 
   "Load" should "parse a Load object with for a frame source" in {
@@ -103,7 +101,9 @@ class LoadLinesTest extends FlatSpec with Matchers {
         |      "schema": {
         |        "columns": [
         |          ["json", "str"]
-        |        ]
+        |        ],
+        |         "frame_type": "VertexFrame",
+        |         "label": "test label"
         |      }
         |    }
         |  }

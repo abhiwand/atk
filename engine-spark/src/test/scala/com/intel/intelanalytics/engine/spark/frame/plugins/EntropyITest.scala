@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.schema.{ ColumnInfo, DataTypes }
+import com.intel.intelanalytics.domain.schema.{ Column, DataTypes }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
@@ -44,7 +44,9 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
   }
   "shannonEntropy" should "compute the correct shannon entropy for weighted data" in {
     val rowRDD = sparkContext.parallelize(weightedInput, 2)
-    val entropy = EntropyRDDFunctions.shannonEntropy(rowRDD, 0, Some(ColumnInfo(1, "columnName", DataTypes.float64)))
+    val column = Column("columnName", DataTypes.float64)
+    column.index = 1
+    val entropy = EntropyRDDFunctions.shannonEntropy(rowRDD, 0, Some(column))
 
     // Expected values were computed using the entropy.empirical method in the R entropy package
     // Input to entropy.empirical is an array of sums of weights of distinct values

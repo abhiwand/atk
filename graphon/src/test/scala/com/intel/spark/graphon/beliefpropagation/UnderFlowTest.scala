@@ -2,10 +2,10 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 
 /**
  * This test makes sure that we do not get underflow errors which cause some posteriors to become all zero vectors.
@@ -26,10 +26,10 @@ class UnderFlowTest extends FlatSpec with Matchers with TestingSparkContextFlatS
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

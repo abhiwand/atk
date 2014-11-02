@@ -2,7 +2,7 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkException
 
@@ -25,19 +25,19 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }
 
-  "BP Runner" should "throw an illegal argument exception when an input vector length does not match the size of the state space " in new BPTest {
+  "BP Runner" should "throw an illegal argument exception when vertices have different prior state space sizes " in new BPTest {
 
-    val vertexSet: Set[Long] = Set(1)
+    val vertexSet: Set[Long] = Set(1, 2)
 
-    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d), 2.toLong -> Vector(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -99,11 +99,11 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
     // This on Spark, so the IllegalArgumentException bubbles up through a SparkException
-    val exception = intercept[SparkException] {
+    val exception = intercept[Exception] {
       BeliefPropagationRunner.run(verticesIn, edgesIn, args)
     }
 
-    exception.asInstanceOf[SparkException].getMessage should include("NotFoundException")
-    exception.asInstanceOf[SparkException].getMessage should include(inputPropertyName)
+    exception.asInstanceOf[Exception].getMessage should include("not be found")
+    exception.asInstanceOf[Exception].getMessage should include(inputPropertyName)
   }
 }

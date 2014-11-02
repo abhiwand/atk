@@ -3,7 +3,7 @@ package com.intel.spark.graphon.beliefpropagation
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
@@ -26,10 +26,10 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

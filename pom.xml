@@ -621,10 +621,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scalariform-maven-plugin</artifactId>
             </plugin>
 
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -1077,7 +1077,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>io.spray</groupId>
                 <artifactId>spray-json_${scala.short.version}</artifactId>
-                <version>1.2.5</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>

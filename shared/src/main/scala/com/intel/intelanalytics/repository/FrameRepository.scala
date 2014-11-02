@@ -25,12 +25,18 @@ package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import DataTypes.DataType
+import com.intel.intelanalytics.security.UserPrincipal
 
-trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] {
+trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] with NameableRepository[Session, DataFrame] {
 
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame
+  def insert(frame: DataFrame)(implicit session: Session): DataFrame
 
   def updateRowCount(frame: DataFrame, rowCount: Option[Long])(implicit session: Session): DataFrame
+  def lookupByName(name: String)(implicit session: Session): Option[DataFrame]
+
+  def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame
 
   /** Update the errorFrameId column */
   def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
@@ -41,4 +47,6 @@ trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, Da
    * @return all the dataframes
    */
   def scanAll()(implicit session: Session): Seq[DataFrame]
+
+  def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[DataFrame]
 }
