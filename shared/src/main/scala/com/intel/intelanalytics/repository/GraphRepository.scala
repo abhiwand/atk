@@ -23,16 +23,20 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
 /**
  * Repository for graphs
  */
-trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] with NameableRepository[Session, Graph] {
   /**
    * Return all the graphs
    * @param session current session
    * @return all the graphs
    */
   def scanAll()(implicit session: Session): Seq[Graph]
+
+  def updateIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit
+
 }

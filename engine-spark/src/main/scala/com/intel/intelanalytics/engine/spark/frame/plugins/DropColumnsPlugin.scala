@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameDropColumns, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameDropColumns, DataFrame }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Remove columns from a frame
  */
-class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] {
+class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, FrameReference] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -55,14 +55,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns from the frame.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns.",
     extendedSummary = Some("""
                            |    Remove columns from the frame.
                            |    They are deleted.
                            |
                            |    Parameters
                            |    ----------
-                           |    columns: str OR list of str
+                           |    columns: [ str | list of str ]
                            |        column name OR list of column names to be removed from the frame
                            |
                            |    Notes
@@ -80,7 +80,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
                            |    Now the frame only has the columns *column_a* and *column_c*.
                            |    For further examples, see: ref: `example_frame.drop_columns`.
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Remove columns from a frame.
@@ -91,41 +91,16 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation) = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-    val ctx: SparkContext = sc
-
-    // validate arguments
-    val frameId = arguments.frame.id
-    val columns = arguments.columns
-    val frameMeta = frames.expectFrame(arguments.frame)
-    val schema = frameMeta.schema
+  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): FrameReference = {
+    val frame: SparkFrameData = arguments.frame
+    val schema = frame.meta.schema
+    schema.validateColumnsExist(arguments.columns)
+    require(schema.columns.length > arguments.columns.length, "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation
-    val columnIndices = {
-      for {
-        col <- columns
-        columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
-      } yield columnIndex
-    }.sorted.distinct
-
-    val resultRDD = columnIndices match {
-      case invalidColumns if invalidColumns.contains(-1) =>
-        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
-      case allColumns if allColumns.length == schema.columns.length =>
-        frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
-      case singleColumn if singleColumn.length == 1 =>
-        frames.loadLegacyFrameRdd(ctx, frameMeta)
-          .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
-      case multiColumn =>
-        frames.loadLegacyFrameRdd(ctx, frameId)
-          .map(row => row.zipWithIndex.filter(elem => !multiColumn.contains(elem._2)).map(_._1))
-    }
-
-    val dataFrame = frames.dropColumns(frameMeta, columnIndices)
+    val result = frame.data.selectColumns(schema.columnNamesExcept(arguments.columns))
 
     // save results
-    frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRDD))
+    save(new SparkFrameData(frame.meta, result))
   }
 }

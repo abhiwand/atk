@@ -47,25 +47,25 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/column_median"
+  override def name: String = "frame/column_median"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Column median (weighted).",
     extendedSummary = Some("""
                            |    Calculate the (weighted) median of a column.
                            |    The median is the least value X in the range of the distribution so that
                            |    the cumulative weight of values strictly below X is strictly less than half
                            |    of the total weight and the cumulative weight of values up to and including X
-                           |    is >= 1/2 the total weight.
+                           |    is greater than or equal to one-half of the total weight.
                            |
-                           |    All data elements of weight <= 0 are excluded from the calculation, as are
-                           |    all data elements whose weight is NaN or infinite.
-                           |    If a weight column is provided and no weights are finite numbers > 0,
-                           |    None is returned.
+                           |    All data elements of weight less than or equal to 0 are excluded from the
+                           |    calculation, as are all data elements whose weight is NaN or infinite.
+                           |    If a weight column is provided and no weights are finite numbers greater
+                           |    than 0, None is returned.
                            |
                            |    Parameters
                            |    ----------
@@ -81,11 +81,11 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
                            |
                            |    Returns
                            |    -------
-                           |    median : The median of the values.
-                           |        If a weight column is provided and no weights are finite numbers > 0,
-                           |        None is returned.
-                           |        Type of the median returned is that of the contents of the data column,
-                           |        so a column of Longs will result in a Long median and a column of
+                           |    median : The median of the values
+                           |        If a weight column is provided and no weights are finite numbers greater
+                           |        than 0, None is returned.
+                           |        The type of the median returned is the same as the contents of the data
+                           |        column, so a column of Longs will result in a Long median and a column of
                            |        Floats will result in a Float median.
                            |
                            |    Examples
@@ -114,7 +114,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
     val frameId: Long = arguments.frame.id
     val frame = frames.expectFrame(frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
 
     // run the operation and return results
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
@@ -123,7 +123,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
     ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }

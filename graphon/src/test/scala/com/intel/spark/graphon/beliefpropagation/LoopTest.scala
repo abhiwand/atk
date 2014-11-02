@@ -1,6 +1,6 @@
 package com.intel.spark.graphon.beliefpropagation
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
@@ -24,10 +24,10 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

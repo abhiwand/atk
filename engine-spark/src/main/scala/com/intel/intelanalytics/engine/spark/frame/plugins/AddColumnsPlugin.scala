@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.UriReference
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, SparkFrameData }
@@ -46,7 +47,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/add_columns"
+  override def name: String = "frame/add_columns"
 
   /**
    * User documentation exposed in Python.
@@ -67,7 +68,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
   override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
     val frame: SparkFrameData = arguments.frame
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
-    val newSchema = frame.meta.schema.addColumns(newColumns)
+    val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
     // Update the data
     val rdd = PythonRDDStorage.pyMap(frame.data, arguments.expression, newSchema)

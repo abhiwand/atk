@@ -3,7 +3,7 @@ package com.intel.spark.graphon.beliefpropagation
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
@@ -27,10 +27,10 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

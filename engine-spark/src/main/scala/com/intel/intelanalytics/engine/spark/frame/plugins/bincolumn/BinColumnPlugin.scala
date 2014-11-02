@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, BinColumn, DataFrame }
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -49,7 +49,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
  */
-class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
+class BinColumnPlugin extends SparkCommandPlugin[BinColumn, FrameReference] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -57,7 +57,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/bin_column"
+  override def name: String = "frame/bin_column"
 
   /**
    * User documentation exposed in Python.
@@ -81,32 +81,22 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-    val ctx = sc
-
-    // validate arguments
-    val frameId: Long = arguments.frame.id
-    val frameMeta = frames.expectFrame(frameId)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.columnName)
-    if (frameMeta.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+  override def execute(arguments: BinColumn)(implicit invocation: Invocation): FrameReference = {
+    val frame: SparkFrameData = arguments.frame
+    val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
+    if (frame.meta.schema.hasColumn(arguments.binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    val allColumns = frameMeta.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
-    arguments.binType match {
+    val newFrame = create[FrameMeta]
+    val newSchema = frame.meta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
+    val data = arguments.binType match {
       case "equalwidth" =>
-        val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
-        val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, frame.data.toLegacyFrameRDD)
       case "equaldepth" =>
-        val binnedRdd = DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, rdd)
-        val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, frame.data.toLegacyFrameRDD)
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
+    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), FrameRDD.toFrameRDD(newSchema, data)))
   }
 }

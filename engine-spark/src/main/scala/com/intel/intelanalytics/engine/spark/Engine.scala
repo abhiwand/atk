@@ -43,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptiv
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
+import com.intel.intelanalytics.engine.spark.graph.plugins._
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.NotFoundException
@@ -136,37 +136,49 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
+  // Registering frame plugins
   commandPluginRegistry.registerCommand(new LoadFramePlugin)
-  // Registering plugins
-  Seq(new LoadFramePlugin,
-    new RenameFramePlugin,
-    new RenameColumnsPlugin,
-    new ProjectPlugin,
-    new AssignSamplePlugin,
-    new GroupByPlugin,
-    new FlattenColumnPlugin,
-    new BinColumnPlugin,
-    new ColumnModePlugin,
-    new ColumnMedianPlugin,
-    new ColumnSummaryStatisticsPlugin,
-    new FilterPlugin,
-    new JoinPlugin(frames),
-    new DropColumnsPlugin,
-    new AddColumnsPlugin,
-    new DropDuplicatesPlugin,
-    new QuantilesPlugin,
-    new ClassificationMetricsPlugin,
-    new EcdfPlugin,
-    new TallyPercentPlugin,
-    new TallyPlugin,
-    new CumulativePercentPlugin,
-    new CumulativeSumPlugin,
-    new ShannonEntropyPlugin,
-    new TopKPlugin,
-    new LoadGraphPlugin,
-    new RenameGraphPlugin).foreach {
-      (c: SparkCommandPlugin[_ <: Product, _ <: Product]) => commandPluginRegistry.registerCommand(c)
-    }
+  commandPluginRegistry.registerCommand(new RenameFramePlugin)
+  commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
+  commandPluginRegistry.registerCommand(new AssignSamplePlugin)
+  commandPluginRegistry.registerCommand(new GroupByPlugin)
+  commandPluginRegistry.registerCommand(new FlattenColumnPlugin())
+  commandPluginRegistry.registerCommand(new BinColumnPlugin)
+  commandPluginRegistry.registerCommand(new ColumnModePlugin)
+  commandPluginRegistry.registerCommand(new ColumnMedianPlugin)
+  commandPluginRegistry.registerCommand(new ColumnSummaryStatisticsPlugin)
+  commandPluginRegistry.registerCommand(new CopyPlugin)
+  commandPluginRegistry.registerCommand(new CountWherePlugin)
+  commandPluginRegistry.registerCommand(new FilterPlugin)
+  commandPluginRegistry.registerCommand(new JoinPlugin(frames))
+  commandPluginRegistry.registerCommand(new DropColumnsPlugin)
+  commandPluginRegistry.registerCommand(new AddColumnsPlugin)
+  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
+  commandPluginRegistry.registerCommand(new QuantilesPlugin)
+  commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
+  commandPluginRegistry.registerCommand(new EcdfPlugin)
+  commandPluginRegistry.registerCommand(new TallyPercentPlugin)
+  commandPluginRegistry.registerCommand(new TallyPlugin)
+  commandPluginRegistry.registerCommand(new CumulativePercentPlugin)
+  commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
+  commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
+  commandPluginRegistry.registerCommand(new TopKPlugin)
+
+  // Registering graph plugins
+  commandPluginRegistry.registerCommand(new LoadGraphPlugin)
+  commandPluginRegistry.registerCommand(new RenameGraphPlugin)
+  commandPluginRegistry.registerCommand(new DefineVertexPlugin(graphs))
+  commandPluginRegistry.registerCommand(new DefineEdgePlugin(graphs))
+  val addVerticesPlugin = new AddVerticesPlugin(frames, graphs)
+  commandPluginRegistry.registerCommand(addVerticesPlugin)
+  commandPluginRegistry.registerCommand(new AddEdgesPlugin(addVerticesPlugin))
+  commandPluginRegistry.registerCommand(new VertexCountPlugin)
+  commandPluginRegistry.registerCommand(new EdgeCountPlugin)
+  commandPluginRegistry.registerCommand(new GraphInfoPlugin)
+  commandPluginRegistry.registerCommand(new FilterVerticesPlugin(graphs))
+  commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
+  commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
+  commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
@@ -289,42 +301,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       frames.lookupByName(name)
     }
   }
-
-  // TODO TRIB-2245
-  /*
-  /**
-   * Calculate full statistics of the specified column.
-   * @param arguments Input specification for column statistics.
-   * @param user Current user.
-   */
-  override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
-    commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
-
-  val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
-    pluginRegistry.registerCommand("frame:/column_full_statistics", columnFullStatisticSimple)
-
-  def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
-
-    implicit val u = user
-
-    val frameId: Long = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId)
-    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-
-    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-      (None, None)
-    }
-    else {
-      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }
-
-    ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-  }
- */
 
   /**
    * Execute getRows Query plugin
@@ -458,4 +434,31 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     //do nothing
   }
 
+  override def getVertex(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      Some(seamless.vertexMeta(label))
+    }
+  }
+
+  override def getVertices(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      seamless.vertexFrames
+    }
+  }
+
+  override def getEdge(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      Some(seamless.edgeMeta(label))
+    }
+  }
+
+  override def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+    future {
+      val seamless = graphs.expectSeamless(graphId)
+      seamless.edgeFrames
+    }
+  }
 }

@@ -2,7 +2,7 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 
 /**
@@ -25,10 +25,10 @@ class StringBeliefStorageTest extends FlatSpec with Matchers with TestingSparkCo
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = Some(true),
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

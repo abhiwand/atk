@@ -26,7 +26,7 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 from intelanalytics.core.api import get_api_decorator, api_globals
-from intelanalytics.core.metaprog import COMMAND_PREFIX, set_function_doc_stub_text
+from intelanalytics.core.metaprog import COMMAND_PREFIX, set_function_doc_stub_text, get_loadable_class_from_command_prefix
 
 
 def name_support(term):
@@ -145,13 +145,23 @@ class _NamedObjectsFunctionFactory(object):
         rest_target = '%ss?name=' % self._term
         module_logger = self._module_logger
         http = self._http
+        term = self._term
         obj_class = self._class
+        get_class = get_loadable_class_from_command_prefix
 
         @get_api_decorator(module_logger)
         def get_object(name):
             module_logger.info("%s(%s)", get_object_name, name)
             r = http.get(rest_target+name)
-            return obj_class(r.json())  # return BigFrame(frame_info)
+            try:
+                command_prefix = r.json()['command_prefix']
+            except KeyError:
+                return obj_class(r.json())
+            else:
+                if not command_prefix.startswith(term):
+                    raise ValueError("Object named '%s' is not a %s type" % (name, term))
+                cls = get_class(command_prefix)
+                return cls(r.json())
         get_object.__name__ = get_object_name
         get_object.__doc__ = """Get {obj_term} object.
 
@@ -160,7 +170,7 @@ class _NamedObjectsFunctionFactory(object):
     Parameters
     ----------
     name : string
-        String containing the name of the BigFrame object
+        String containing the name of the object
 
     Returns
     -------

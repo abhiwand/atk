@@ -48,7 +48,7 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/cumulative_percent"
+  override def name: String = "frame/cumulative_percent"
 
   /**
    * User documentation exposed in Python.
@@ -57,6 +57,8 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Computes a cumulative percent sum.",
     extendedSummary = Some("""
+                           |    Extended Summary
+                           |    ----------------
                            |    Compute a cumulative percent sum.
                            |    A cumulative percent sum is computed by sequentially stepping through the
                            |    column values and keeping track of the current percentage of the total sum
@@ -64,14 +66,16 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
                            |
                            |    Parameters
                            |    ----------
-                           |    sample_col: string
-                           |      The name of the column from which to compute the cumulative percent sum
+                           |    sample_col: str
+                           |        The name of the column from which to compute the cumulative percent sum.
                            |
                            |    Returns
                            |    -------
                            |    BigFrame
                            |        A new object accessing a new frame containing the original columns
-                           |        appended with a column containing the cumulative percent sums
+                           |        appended with a column containing the cumulative percent sums.
+                           |        The new column will have the name of the sample column, appended with
+                           |        ``_cumulative_percent``.
                            |
                            |    Notes
                            |    -----
@@ -89,12 +93,12 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
                            |
                            |          obs:int32
                            |        /-----------/
-                           |              0
-                           |              1
-                           |              2
-                           |              0
-                           |              1
-                           |              2
+                           |             0
+                           |             1
+                           |             2
+                           |             0
+                           |             1
+                           |             2
                            |
                            |    The cumulative percent sum for column *obs* is obtained by::
                            |
@@ -109,16 +113,16 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
                            |
                            |          obs:int32   obs_cumulative_percent:float64
                            |        /--------------------------------------------/
-                           |               0                   0.0
-                           |               1                   0.16666666
-                           |               2                   0.5
-                           |               0                   0.5
-                           |               1                   0.66666666
-                           |               2                   1.0
+                           |             0                             0.0
+                           |             1                             0.16666666
+                           |             2                             0.5
+                           |             0                             0.5
+                           |             1                             0.66666666
+                           |             2                             1.0
                            |
                            |    .. versionadded:: 0.8
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Compute a cumulative percent sum.
@@ -143,7 +147,7 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
     frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))
