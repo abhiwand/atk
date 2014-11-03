@@ -29,7 +29,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
+import com.intel.intelanalytics.engine.spark.graph.{ HBaseAdminFactory, SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import org.apache.hadoop.fs.{ Path => HPath }
@@ -80,10 +80,7 @@ class SparkComponent extends EngineComponent
   val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
   val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
-  // TODO: HBaseAdmin should not be re-used between commands according to docs https://hbase.apache.org/0.94/apidocs/org/apache/hadoop/hbase/client/HBaseAdmin.html
-  private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
-
-  val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(admin), frameStorage)
+  val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory), frameStorage)
 
   val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 

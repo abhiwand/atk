@@ -34,11 +34,12 @@ from intelanalytics.core.namedobj import name_support
 import uuid
 
 from intelanalytics.core.serialize import to_json
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 
 from intelanalytics.core.deprecate import raise_deprecation_warning
-from intelanalytics.core._sphinx_graph import __all__
 
+
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
@@ -87,7 +88,7 @@ class Rule(object):
 
         """
         # TODO - Add examples
-        if isinstance(source, BigColumn):
+        if isinstance(source, Column):
             if frame is None:
                 frame = source.frame
             elif frame != source.frame:
@@ -299,7 +300,7 @@ class EdgeRule(Rule):
         # TODO - Add docstring
 
         label_frame = None
-        if isinstance(self.label, BigColumn):
+        if isinstance(self.label, Column):
             label_frame = VertexRule('label', self.label)._validate()
         elif not self.label or not isinstance(self.label, basestring):
             raise TypeError("label argument must be a column or non-empty string")
@@ -540,7 +541,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
                                             ('vertexType', str),
                                             ('movie', int32),
                                             ('rating', str)])
-        frame = ia.Frame(csv)
+        frame = ia.BigFrame(csv)
 
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
@@ -652,11 +653,3 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     #def remove(self, rules)
     #def add_props(self, rules)
     #def remove_props(self, rules)
-
-
-# Deprecation of 'BigGraph'
-@api_class_alias
-class BigGraph(TitanGraph):
-    def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('BigGraph', 'Use TitanGraph()')
-        super(TitanGraph, self).__init__(*args, **kwargs)
