@@ -34,7 +34,7 @@ import pandas
 import numpy as np
 
 from intelanalytics.core.frame import Frame
-from intelanalytics.core.panframes import PandasFrame
+from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
@@ -147,47 +147,47 @@ class FrameBackendRest(object):
     def _get_frame_full_uri(self, frame):
         return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
-    def _get_load_arguments(self, frame, data, pandas_rows=None):
-        if isinstance(data, CsvFile):
+    def _get_load_arguments(self, frame, source, data=None):
+        if isinstance(source, CsvFile):
             return {'destination': frame._id,
                     'source': {
                         "source_type": "file",
-                        "uri": data.file_name,
+                        "uri": source.file_name,
                         "parser":{
                             "name": "builtin/line/separator",
                             "arguments": {
-                                "separator": data.delimiter,
-                                "skip_rows": data.skip_header_lines,
+                                "separator": source.delimiter,
+                                "skip_rows": source.skip_header_lines,
                                 "schema":{
-                                    "columns": data._schema_to_json()
+                                    "columns": source._schema_to_json()
                                 }
                             }
                         },
-                        "data":None
+                        "data": None
                     }
             }
-        if isinstance(data, Frame):
+        if isinstance(source, Frame):
             return {'source': { 'source_type': 'frame',
-                                'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
+                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
-        if isinstance(data, PandasFrame):
+        if isinstance(source, Pandas):
             return{'destination': frame._id,
-                   'source': {"source_type": "pandasFrame",
-                              "uri":"pandas",
+                   'source': {"source_type": "strings",
+                              "uri": "pandas",
                               "parser": {
                                     "name": "builtin/line/separator",
                                     "arguments": {
                                     "separator": ',',
                                     "skip_rows": 0,
                                     "schema":{
-                                        "columns": data._schema_to_json()
+                                        "columns": source._schema_to_json()
                                     }
                                 }
                               },
-                              "data": pandas_rows
+                              "data": data
                    }
             }
-        raise TypeError("Unsupported data source %s" % type(data))
+        raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -231,6 +231,12 @@ class FrameBackendRest(object):
 
         execute_update_frame_command('add_columns', arguments, frame)
 
+    @staticmethod
+    def _handle_error(self, result):
+        if result and result.has_key("error_frame_id"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame._id, repr(data)))
         # for now, many data sources requires many calls to append
@@ -239,7 +245,7 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        if isinstance(data, PandasFrame):
+        if isinstance(data, Pandas):
             pan = data.pandas_frame.dropna(thresh=1)
             pandas_rows = []
             if not data.row_index:
@@ -249,23 +255,17 @@ class FrameBackendRest(object):
                 if index != 0 and index % 10000 == 0:
                     arguments = self._get_load_arguments(frame, data, pandas_rows)
                     result = execute_update_frame_command("frame:/load", arguments, frame)
-                    if result and result.has_key("error_frame_id"):
-                        sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-                        logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+                    self._handle_error(result)
                     pandas_rows = []
 
             if pandas_rows.__len__() > 0:
                 arguments = self._get_load_arguments(frame, data, pandas_rows)
                 result = execute_update_frame_command("frame:/load", arguments, frame)
-                if result and result.has_key("error_frame_id"):
-                    sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-                    logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+                self._handle_erro(result)
         else:
             arguments = self._get_load_arguments(frame, data)
             result = execute_update_frame_command("frame:/load", arguments, frame)
-            if result and result.has_key("error_frame_id"):
-                sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-                logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+            self._handle_error(result)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
