@@ -1,3 +1,4 @@
+
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -24,9 +25,9 @@ from intelanalytics.core.iatypes import valid_data_types
 import pandas
 
 
-class PandasFrame(object):
+class Pandas(object):
     """
-    Define an intelanalytics pandas dataframe
+    Defines a pandas data source
 
     Parameters
     ----------

@@ -52,7 +52,14 @@ import com.intel.intelanalytics.UnitReturn
 /**
  * Implicit conversions for domain objects to/from JSON
  */
+
 object DomainJsonProtocol extends IADefaultJsonProtocol {
+
+  /**
+   * ***********************************************************************
+   * NOTE:: Order of implicits matters
+   * *************************************************************************
+   */
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
@@ -147,7 +154,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       case singleton => SingletonOrListValue[T](List(singleton.convertTo[T]))
     }
   }
-
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
       obj match {
@@ -173,7 +179,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
   }
-
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
 

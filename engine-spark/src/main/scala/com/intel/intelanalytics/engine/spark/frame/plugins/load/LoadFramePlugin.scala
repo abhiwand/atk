@@ -89,14 +89,14 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     }
     else if (arguments.source.isFile || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
-      var parseResult: ParseResultRddWrapper = null
-      if (arguments.source.isFile) {
+
+      val parseResult = if (arguments.source.isFile) {
         val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-        parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+        LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
       }
       else {
         val data = arguments.source.data.get
-        parseResult = LoadRDDFunctions.loadAndParseData(ctx, data, parser)
+        LoadRDDFunctions.loadAndParseData(ctx, data, parser)
       }
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
