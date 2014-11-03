@@ -252,7 +252,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val defineEdgeFormat = jsonFormat5(DefineEdge)
   implicit val addVerticesFormat = jsonFormat4(AddVertices)
   implicit val addEdgesFormat = jsonFormat6(AddEdges)
-  implicit val labelFormat = jsonFormat2(Label)
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVertexRows)
 
