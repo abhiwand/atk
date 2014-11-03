@@ -26,7 +26,7 @@ package com.intel.graphbuilder.graph.titan
 import com.intel.graphbuilder.io.HBaseTableInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
-import org.apache.hadoop.hbase.TableName
+import org.apache.hadoop.hbase.{ HBaseConfiguration, TableName }
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.spark.SparkContext
 
@@ -145,7 +145,9 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
     }
     else {
       val numCoresPerWorker = Runtime.getRuntime.availableProcessors()
-      val numWorkers = sparkContext.getExecutorStorageStatus.size
+      //val numWorkers = sparkContext.getExecutorStorageStatus.size -- not working well
+      val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create)
+      val numWorkers = getHBaseRegionServerCount(hBaseAdmin)
       println("Num cores per worker: " + numCoresPerWorker)
       println("Num workers: " + numWorkers)
       println("Storage stats" + sparkContext.getExecutorStorageStatus)
@@ -172,5 +174,5 @@ object TitanAutoPartitioner {
   val HBASE_INPUT_SPLITS_PER_CORE = "auto-partitioner.hbase.input-splits-per-spark-core"
 
   val SPARK_MAX_CORES = "spark.cores.max"
-  val TITAN_HBASE_REGION_COUNT = "storage.hbase.region-count"
+  val TITAN_HBASE_REGION_COUNT = "storage.region-count" //TODO: Update for 0.5
 }
