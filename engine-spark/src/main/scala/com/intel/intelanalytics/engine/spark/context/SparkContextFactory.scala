@@ -29,29 +29,38 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.{ SparkConf, SparkContext }
 
+/**
+ * Class Factory for creating spark contexts
+ */
 class SparkContextFactory() extends EventLogging {
   //TODO read the strategy from the config file
 
-  def getContext(user: String, description: String, kryoClassName: Option[String] = None): SparkContext = withContext("engine.SparkContextFactory") {
+  /**
+   * Creates a new sparkContext with the specified kryo classes
+   */
+  def getContext(user: String, description: String, kryoRegistrator: Option[String] = None): SparkContext = withContext("engine.SparkContextFactory") {
 
     val jarPath = Boot.getJar("engine-spark")
-    //val graphonPath = Boot.getJar("graphon")
 
     val sparkConf = new SparkConf()
       .setMaster(SparkEngineConfig.sparkMaster)
       .setSparkHome(SparkEngineConfig.sparkHome)
       .setAppName(s"intel-analytics:$user:$description")
       .setJars(Seq(jarPath.getPath))
-    //.setJars(Seq(jarPath.getPath, graphonPath.getPath))
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
-    if (kryoClassName isDefined) sparkConf.set("spark.kryo.registrator", kryoClassName.get)
+    if (kryoRegistrator isDefined) {
+      //sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      //sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
+    }
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
     new SparkContext(sparkConf)
   }
-
-  def context(implicit user: UserPrincipal, description: String, kryoClassName: Option[String] = None): SparkContext = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description, kryoClassName)
+  /**
+   * Creates a new sparkContext
+   */
+  def context(implicit user: UserPrincipal, description: String, kryoRegistrator: Option[String] = None): SparkContext = getContext(user.user.apiKey.getOrElse(
+    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description, kryoRegistrator)
 }

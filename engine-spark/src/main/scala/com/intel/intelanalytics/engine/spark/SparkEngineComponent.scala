@@ -53,7 +53,7 @@ class SparkComponent extends EngineComponent
 
   SparkEngineConfig.logSettings()
 
-  lazy val engine = new SparkEngine(sparkContextManager,
+  lazy val engine = new SparkEngine(sparkContextFactory,
     commandExecutor, commands, frames, graphs, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
@@ -69,7 +69,7 @@ class SparkComponent extends EngineComponent
 
   metaStore.initializeSchema()
 
-  val sparkContextManager = new SparkContextFactory()
+  val sparkContextFactory = new SparkContextFactory()
 
   val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
@@ -77,7 +77,7 @@ class SparkComponent extends EngineComponent
 
   val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
 
-  val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
+  val getContextFunc = (user: UserPrincipal) => sparkContextFactory.context(user, "query")
   val frames = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
@@ -89,11 +89,11 @@ class SparkComponent extends EngineComponent
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextFactory)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
 
-  lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextManager)
+  lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextFactory)
 
   JvmVersionReporter.check()
 

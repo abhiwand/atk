@@ -125,7 +125,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest, Re
    */
   def numberOfJobs(arguments: Arguments): Int = 1
 
-  def kryoClassName: Option[String] = None
+  /**
+   * Name of the custom kryoclass this plugin needs.
+   * kryoRegistrator = None means use JavaSerializer
+   */
+  def kryoRegistrator: Option[String] = None
 }
 
 /**
