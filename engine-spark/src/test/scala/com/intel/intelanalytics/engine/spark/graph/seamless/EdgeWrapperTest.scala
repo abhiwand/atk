@@ -81,7 +81,7 @@ class EdgeWrapperTest extends FlatSpec with Matchers {
     val gbEdge = wrapper.toGbEdge
     gbEdge.label should be("label")
     gbEdge.getProperty("distance").get.value should be(500)
-    gbEdge.getProperty("_eid").get.value should be (1)
+    gbEdge.getProperty("_eid").get.value should be(1)
     gbEdge.tailVertexGbId.key should be("_vid")
     gbEdge.headVertexGbId.key should be("_vid")
     gbEdge.tailVertexGbId.value should be(2L)

@@ -82,7 +82,6 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
    * @param edgeRdd RDD of Edge objects
    */
   def buildGraphWithSpark(vertexRdd: RDD[Vertex], edgeRdd: RDD[Edge]) {
-
     var vertices = vertexRdd
     var edges = edgeRdd
 
