@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain
 import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityType, EntityManager }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
@@ -38,7 +39,7 @@ class EntityRegistry {
    * @tparam R the reference type
    * @return an Entity that can work with that reference type
    */
-  def entityManager[R <: UriReference: TypeTag](): Option[EntityManager[_]] =
+  def entityManager[R <: UriReference: TypeTag]()(implicit ev: NotNothing[R]): Option[EntityManager[_]] =
     entityManagerForType(typeOf[R])
 
   /**
@@ -54,11 +55,15 @@ class EntityRegistry {
    * @return an Entity that can work with that reference type
    */
   def entityManagerForType(requestedType: Type): Option[EntityManager[_]] = {
-    entityTypes.find {
+    require(!(requestedType =:= typeOf[Nothing]), "No entity manager handles the Nothing type")
+    require(!(requestedType =:= typeOf[UriReference]), "No entity manager handles the raw UriReference type, " +
+      "please specify a subclass appropriate for the entity you want to use")
+    val matches = entityTypes.find {
       case (t, e) =>
         val res = requestedType <:< t
         res
     }.map(_._2)
+    matches.headOption
   }
 
   /**
@@ -83,8 +88,11 @@ class EntityRegistry {
    *
    * @tparam R the requested reference type
    */
-  def create[R <: UriReference: TypeTag]()(implicit invocation: Invocation): R =
-    resolver.resolve[R](entityManager[R]().get.create()).get
+  def create[R <: UriReference: TypeTag]()(implicit invocation: Invocation): R = {
+    val manager: EntityManager[_] = entityManager[R]().get
+    val reference = manager.create()
+    resolver.resolve[R](reference).get
+  }
 
   /**
    * Save data of the given type, possibly creating a new object.

@@ -54,6 +54,7 @@ class EntityRegistryTest extends FlatSpec with Matchers {
   }
   it should "still create an instance of the right type when entities are registered in a different order" in {
     val registry = new EntityRegistry
+    registry.register(FrameEntity, FrameReferenceManagement)
     registry.register(GraphEntity, new MockGraphManager)
     registry.register(FrameEntity, new MockFrameManager)
 
@@ -70,4 +71,13 @@ class EntityRegistryTest extends FlatSpec with Matchers {
 
     data should not be (null)
   }
+
+  //  "Register" should "prevent entity managers from being registered for entities they don't manage" in {
+  //    val registry = new EntityRegistry
+  //    registry.register(FrameEntity, new MockGraphManager)
+  //
+  //    val data: MockFrameManager#M = registry.create[MockFrameManager#M]()
+  //
+  //    data should not be (null)
+  //  }
 }

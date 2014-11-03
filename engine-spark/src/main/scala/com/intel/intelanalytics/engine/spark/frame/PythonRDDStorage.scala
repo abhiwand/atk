@@ -109,6 +109,11 @@ object PythonRDDStorage extends ClassLoaderAware {
   def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any] = null): FrameRDD =
     withMyClassLoader {
 
+      val conv = if (converter == null) {
+        convertWithSchema(pyRdd, schema)
+      } else {
+        converter
+      }
       val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
         case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
         case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
@@ -116,7 +121,7 @@ object PythonRDDStorage extends ClassLoaderAware {
         case _ => null
       }).toArray))
         .flatMap(identity)
-        .map(converter)
+        .map(conv)
       new LegacyFrameRDD(schema, resultRdd).toFrameRDD()
     }
 
