@@ -141,7 +141,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-
+    //TODO change this code to use the sparkContext that was passed in rather than create a new one when we move to the next version of spark
     sparkInvocation.sparkContext.stop
 
     val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
