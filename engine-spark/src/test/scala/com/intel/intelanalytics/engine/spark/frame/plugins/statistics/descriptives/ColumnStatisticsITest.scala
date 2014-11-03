@@ -42,22 +42,6 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     testMode.modes shouldBe Set("E").toJson
   }
 
-  "unweighted full statistics" should "work" in new ColumnStatisticsTest() {
-
-    val stats: ColumnFullStatisticsReturn =
-      ColumnStatistics.columnFullStatistics(2, DataTypes.float32, None, None, rowRDD)
-
-    Math.abs(stats.mean - 2.0) should be < epsilon
-  }
-
-  "weighted full statistics" should "work" in new ColumnStatisticsTest() {
-
-    val stats: ColumnFullStatisticsReturn =
-      ColumnStatistics.columnFullStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD)
-
-    Math.abs(stats.mean - 1.2) should be < epsilon
-  }
-
   "unweighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
     val stats: ColumnSummaryStatisticsReturn = ColumnStatistics.columnSummaryStatistics(2,

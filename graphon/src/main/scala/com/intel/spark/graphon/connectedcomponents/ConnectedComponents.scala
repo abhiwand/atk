@@ -23,7 +23,7 @@
 
 package com.intel.spark.graphon.connectedcomponents
 
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge, Property }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, Property }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }

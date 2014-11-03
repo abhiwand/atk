@@ -12,7 +12,7 @@ import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._

@@ -62,7 +62,7 @@ with warnings.catch_warnings(record=True) as expected_warnings:
 from intelanalytics.core.metaprog import CommandLoadable, get_doc_stubs_module_text
 from intelanalytics.rest.jsonschema import get_command_def
 
-ignore_loadables = ['BigFrame', 'BigGraph']  # these are being deprecated
+ignore_loadables = []
 
 loadables = dict([(item.__name__, item)
                   for item in ia.__dict__.values()

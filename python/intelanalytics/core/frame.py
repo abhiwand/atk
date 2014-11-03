@@ -30,12 +30,12 @@ api = get_api_decorator(logger)
 
 from intelanalytics.core.userfunction import has_python_user_function_arg
 from intelanalytics.core.iatypes import valid_data_types
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.namedobj import name_support
 from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
 
-from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
+#from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
 
 
 def _get_backend():
@@ -112,8 +112,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         data_type_dict = dict(self.schema)
         try:
             if isinstance(column_name, list):
-                return [BigColumn(self, name, data_type_dict[name]) for name in column_name]
-            return BigColumn(self, column_name, data_type_dict[column_name])
+                return [Column(self, name, data_type_dict[name]) for name in column_name]
+            return Column(self, column_name, data_type_dict[column_name])
         except KeyError:
             raise error_type(error_msg % column_name)
 
@@ -139,13 +139,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     class _FrameIter(object):
         """
         (Private)
-        Iterator for BigFrame - frame iteration works on the columns, returns BigColumn objects
-        (see BigFrame.__iter__)
+        Iterator for Frame - frame iteration works on the columns, returns BigColumn objects
+        (see Frame.__iter__)
 
         Parameters
         ----------
-        frame : BigFrame
-            A BigFrame object.
+        frame : Frame
+            A Frame object.
 
         """
 
@@ -162,7 +162,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         def next(self):
             if self.i < len(self.schema):
-                column = BigColumn(self.frame, self.schema[self.i][0], self.schema[self.i][1])
+                column = Column(self.frame, self.schema[self.i][0], self.schema[self.i][1])
                 self.i += 1
                 return column
             raise StopIteration
@@ -185,7 +185,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Column names.
 
-        The names of all the columns in the current BigFrame object.
+        The names of all the columns in the current Frame object.
 
         Returns
         -------
@@ -193,9 +193,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Create a BigFrame object from the data described by schema *my_csv*; get the column names::
+        Create a Frame object from the data described by schema *my_csv*; get the column names::
 
-            my_frame = ia.BigFrame(source='my_csv')
+            my_frame = ia.Frame(source='my_csv')
             my_columns = my_frame.column_names
             print my_columns
 
@@ -225,7 +225,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         --------
         Create a frame and give it the name "Flavor Recipes"; read the name back to check it::
 
-            frame = ia.BigFrame(name="Flavor Recipes")
+            frame = ia.Frame(name="Flavor Recipes")
             given_name = frame.name
             print given_name
 
@@ -281,7 +281,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionadded:: 0.8
 
         """
-        return self._backend.get_row_count(self)
+        return self._backend.get_row_count(self, None)
 
     @property
     @api
@@ -304,7 +304,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Given that we have an existing data frame *my_data*, create a BigFrame, then show the frame schema::
+        Given that we have an existing data frame *my_data*, create a Frame, then show the frame schema::
 
             BF = ia.get_frame('my_data')
             print BF.schema
@@ -317,65 +317,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         return self._backend.get_schema(self)
-
-    @deprecated("Use classification_metrics().")
-    def accuracy(self, label_column, pred_column):
-        """
-        Model accuracy.
-
-        Computes the accuracy measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the classifier are specified.
-        The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true
-        negatives, and :math:`K` denote the total number of classified instances, then the model accuracy is
-        given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
-
-        This measure applies to binary and multi-class classifiers.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        Returns
-        -------
-        float64
-            The accuracy measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-               red         1              0                  0
-               blue        3              1                  0
-               blue        1              0                  0
-               green       0              1                  1
-
-            frame.accuracy('labels', 'predictions')
-
-            0.75
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, 1, 1)
-            return cm.accuracy
-        except:
-            raise IaError(logger)
 
     @api
     @has_python_user_function_arg
@@ -406,7 +347,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and
+        Given a Frame proxy *my_frame* identifying a data frame with two int32 columns *column1* and
         *column2*.
         Add a third column named "column3" as an int32 and fill it with the contents of *column1* and
         *column2*
@@ -421,7 +362,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             my_frame.add_columns(lambda row: '', ('column4', str))
 
-        The BigFrame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
+        The Frame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
         The first three columns are int32 and the fourth column is string.  Column *column4* has an
         empty string ('') in every row.
 
@@ -436,7 +377,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the appropriate contents.
 
-        Given a frame of data and BigFrame *my_frame* points to it.
+        Given a frame of data and Frame *my_frame* points to it.
         In addition we have defined a function *func*.
         Run *func* on each row of the frame and put the result in a new integer column *calculated_a*::
 
@@ -506,8 +447,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
-            A BigFrame accessing a new frame, with a bin column appended to the original frame structure
+        Frame
+            A Frame accessing a new frame, with a bin column appended to the original frame structure
             The type of the new column will be int32 and the bin numbers start at 1.
 
         Notes
@@ -524,7 +465,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, we will use a frame with column *a* accessed by a BigFrame object *my_frame*::
+        For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*::
 
             my_frame.inspect( n=11 )
 
@@ -588,67 +529,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    @deprecated("Use classification_metrics().")
-    def confusion_matrix(self, label_column, pred_column, pos_label='1'):
-        """
-        Builds matrix.
-
-        Outputs a :term:`confusion matrix` for a binary classifier
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance.
-
-        Returns
-        -------
-        Formatted confusion matrix
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-               red         1              0                  0
-               blue        3              1                  0
-               blue        1              0                  0
-               green       0              1                  1
-
-            print(frame.confusion_matrix('labels', 'predictions'))
-
-                            Predicted
-                           _pos_ _neg__
-             Actual   pos |  1     1
-                      neg |  0     2
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.confusion_matrix
-        except:
-            raise IaError(logger)
-
-    def copy(self, columns=None):
+    def copy(self, columns=None, where=None):
         """
         Copy frame.
 
-        Copy frame or certain frame columns entirely.
+        Copy frame or certain frame columns entirely or filtered.  Useful for frame query.
 
         Parameters
         ----------
@@ -656,17 +541,19 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             If not None, the copy will only include the columns specified.
             If a dictionary is used, the string pairs represent a column renaming,
             {source_column_name: destination_column_name}.
+        where : row function (optional)
+            If not None, only those rows which evaluate to True will be copied
 
         Returns
         -------
-        BigFrame
-            A new frame object which is a copy of the currently active BigFrame.
+        Frame
+            A new frame object which is a copy of this frame
 
         Examples
         --------
-        Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
+        Build a Frame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            my_frame = ia.BigFrame(source="my_data.csv")
+            my_frame = ia.Frame(source="my_data.csv")
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
@@ -697,20 +584,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionchanged:: 0.8.5
 
         """
-        if columns is None:
-            column_names = self.column_names  # all columns
-            new_names = None
-        elif isinstance(columns, dict):
-            column_names = columns.keys()
-            new_names = columns.values()
-        elif isinstance(columns, basestring):
-            column_names = [columns]
-            new_names = None
-        else:
-            raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
-        copied_frame = Frame()
-        self._backend.project_columns(self, copied_frame, column_names, new_names)
-        return copied_frame
+        return self._backend.copy(self, columns, where)
+
+    @api
+    def count(self, where):
+        """
+        Counts the number of rows which meet given criteria
+
+        Parameters
+        ----------
+        where : function
+            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
+
+        Returns
+        -------
+        count : int
+            number of rows for which the where function evaluated to True
+        """
+        return self._backend.get_row_count(self, where)
 
     def download(self, count=100, offset=0, columns=None):
         """
@@ -782,7 +673,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object accessing a frame with lots of data for the
+        For this example, my_frame is a Frame object accessing a frame with lots of data for the
         attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
@@ -801,94 +692,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         self._backend.drop(self, predicate)
 
     @api
-    def drop_duplicates(self, columns=None):
-        """
-        Remove duplicates.
-
-        Remove duplicate rows, keeping only one row per uniqueness criteria match
-
-        Parameters
-        ----------
-        columns : [ str | list of str ]
-            Column name(s) to identify duplicates.
-            If empty, the function will remove duplicates that have the whole row of data identical.
-
-        Examples
-        --------
-        Remove any rows that have the same data in column *b* as a previously checked row::
-
-            my_frame.drop_duplicates("b")
-
-        The result is a frame with unique values in column *b*.
-
-        Remove any rows that have the same data in columns *a* and *b* as a previously checked row::
-
-            my_frame.drop_duplicates(["a", "b"])
-
-        The result is a frame with unique values for the combination of columns *a* and *b*.
-
-        Remove any rows that have the whole row identical::
-
-            my_frame.drop_duplicates()
-
-        The result is a frame where something is different in every row from every other row.
-        Each row is unique.
-
-
-        .. versionadded:: 0.8
-
-        """
-        # For further examples, see :ref:`example_frame.drop_duplicates`
-        self._backend.drop_duplicates(self, columns)
-
-    @api
-    def ecdf(self, sample_col):
-        """
-        Empirical Cumulative Distribution.
-
-        Generates the :term:`empirical cumulative distribution` for the input column.
-
-        Parameters
-        ----------
-        sample_col : str
-            The name of the column containing sample.
-
-        Returns
-        -------
-        list
-            List of tuples containing each distinct value in the sample and its corresponding ecdf value.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32
-            /---------------------/
-              red               1
-              blue              3
-              blue              1
-              green             0
-
-            result = frame.ecdf('b')
-            result.inspect()
-
-              b:int32   b_ECDF:float64
-            /--------------------------/
-              1                    0.2
-              2                    0.5
-              3                    0.8
-              4                    1.0
-
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.ecdf(self, sample_col)
-
-    @api
     @has_python_user_function_arg
     def filter(self, predicate):
         """
@@ -903,7 +706,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*,
+        For this example, my_frame is a Frame object with lots of data for the attributes of *lizards*,
         *frogs*, and *snakes*.
         Get rid of everything, except information about *lizards* and *frogs*::
 
@@ -924,94 +727,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         # For further examples, see :ref:`example_frame.filter`
         self._backend.filter(self, predicate)
 
-    @deprecated("Use classification_metrics().")
-    def f_measure(self, label_column, pred_column, pos_label='1', beta=1):
-        """
-        Model :math:`F_{\\beta}` measure.
-
-        Computes the :math:`F_{\\beta}` measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision
-        and recall.
-        If we let:
-
-        * beta :math:`\\equiv \\beta`,
-        * :math:`T_{P}` denote the number of true positives,
-        * :math:`F_{P}` denote the number of false positives, and
-        * :math:`F_{N}` denote the number of false negatives,
-
-        then:
-
-        .. math::
-            F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\
-            \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
-            \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
-
-        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average
-        of the :math:`F_{\\beta}` measure for each label, where the weight is the number of instance with
-        each label in the labeled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-
-        beta : float, (optional)
-            Beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be
-            greater than zero.
-
-        Returns
-        -------
-        float64
-            The :math:`F_{\\beta}` measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.f_measure('labels', 'predictions')
-
-            0.66666666666666663
-
-            frame.f_measure('labels', 'predictions', beta=2)
-
-            0.55555555555555558
-
-            frame.f_measure('labels', 'predictions', pos_label=0)
-
-            0.80000000000000004
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, beta)
-            return cm.f_measure
-        except:
-            raise IaError(logger)
-
     @api
     def get_error_frame(self):
         """
@@ -1022,8 +737,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
-            A new object accessing a frame that contains the parse errors of the currently active BigFrame
+        Frame
+            A new object accessing a frame that contains the parse errors of the currently active Frame
             or None if no error frame exists
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
@@ -1033,7 +748,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Create summarized frame.
 
-        Creates a new frame and returns a BigFrame object to access it.
+        Creates a new frame and returns a Frame object to access it.
         Takes a column or group of columns, finds the unique combination of values,
         and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
@@ -1049,7 +764,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new object accessing a new aggregated frame.
 
         Notes
@@ -1062,7 +777,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For setup, we will use a BigFrame *my_frame* accessing a frame with a column *a*::
+        For setup, we will use a Frame *my_frame* accessing a frame with a column *a*::
 
             my_frame.inspect()
 
@@ -1170,7 +885,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, let's say we have a frame of data and a BigFrame to access it.
+        For this example, let's say we have a frame of data and a Frame to access it.
         Let's look at the first 10 rows of data::
 
             print my_frame.inspect()
@@ -1211,7 +926,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        right : BigFrame
+        right : Frame
             Another frame to join with.
 
         left_on : str
@@ -1226,7 +941,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new object accessing a new joined frame.
 
         Notes
@@ -1243,25 +958,25 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        For this example, we will use a BigFrame *my_frame* accessing a frame with columns *a*, *b*, *c*,
-        and a BigFrame *your_frame* accessing a frame with columns *a*, *d*, *e*.
+        For this example, we will use a Frame *my_frame* accessing a frame with columns *a*, *b*, *c*,
+        and a Frame *your_frame* accessing a frame with columns *a*, *d*, *e*.
         Join the two frames keeping only those rows having the same value in column *a*::
 
-            my_frame = BigFrame(schema1)
-            your_frame = BigFrame(schema2)
+            my_frame = Frame(schema1)
+            your_frame = Frame(schema2)
             joined_frame = my_frame.join(your_frame, 'a')
 
-        Now, joined_frame is a BigFrame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and
+        Now, joined_frame is a Frame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and
         *e*.
         The data in the new frame will be from the rows where column 'a' was the same in both frames.
 
-        Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
+        Now, using a single Frame *my_frame* accessing a frame with the columns *b* and *book*.
         Build a new frame, but remove any rows where the values in *b* and *book* do not match::
 
             joined_frame = your_frame.join(your_frame, left_on='b', right_on='book',
                 how='inner')
 
-        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns,
+        We end up with a new Frame *joined_frame* accessing a new frame with all the original columns,
         but only those rows where the data in the original frame in column *b* matched the data in column
         *book*.
 
@@ -1272,155 +987,17 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         # For further examples, see :ref:`example_frame.join`.
         return self._backend.join(self, right, left_on, right_on, how)
 
-    @deprecated("Use classification_metrics().")
-    def precision(self, label_column, pred_column, pos_label='1'):
-        """
-        Model precision.
-
-        Computes the precision measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The precision of a binary classification model is the proportion of predicted positive
-        instances that are correct.
-        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of
-        false positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
-
-        For multi-class classification, the precision measure is computed as the weighted average of the
-        precision for each label, where the weight is the number of instances with each label in the
-        labelled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-            The default is 1.
-
-        Returns
-        -------
-        float64
-            The precision measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.precision('labels', 'predictions')
-
-            1.0
-
-            frame.precision('labels', 'predictions', 0)
-
-            0.66666666666666663
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.precision
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use classification_metrics().")
-    def recall(self, label_column, pred_column, pos_label='1'):
-        """
-        Model measure.
-
-        Computes the recall measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The recall of a binary classification model is the proportion of positive instances that are
-        correctly identified.
-        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of
-        false negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
-
-        For multi-class classification, the recall measure is computed as the weighted average of the recall
-        for each label, where the weight is the number of instance with each label in the labeled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-
-        Returns
-        -------
-        float64
-            the recall measure for the classifier
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.recall('labels', 'predictions')
-
-            0.5
-
-            frame.recall('labels', 'predictions', 0)
-
-            1.0
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.recall
-        except:
-            raise IaError(logger)
-
     @api
     def take(self, n, offset=0, columns=None):
         """
         Get data subset.
 
-        Take a subset of the currently active BigFrame.
+        Take a subset of the currently active Frame.
 
         Parameters
         ----------
         n : int
-            The number of rows to copy from the currently active BigFrame.
+            The number of rows to copy from the currently active Frame.
 
         offset : int
             The number of rows to skip before copying.
@@ -1436,24 +1013,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        BigFrame
+        Frame
             A new frame object accessing a new frame containing copies of a subset of the original frame.
 
         Examples
         --------
-        BigFrame *my_frame* accesses a frame with millions of rows of data.
+        Frame *my_frame* accesses a frame with millions of rows of data.
         Get a sample of 5000 rows::
 
             your_frame = my_frame.take( 5000 )
 
-        We now have a separate frame accessed by a BigFrame *your_frame* with a copy of the first 5000 rows
+        We now have a separate frame accessed by a Frame *your_frame* with a copy of the first 5000 rows
         of the original frame.
 
         If we use the function with an offset like::
 
             your_frame = my_frame.take( 5000, 1000 )
 
-        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy
+        We end up with a new frame accessed by the Frame *your_frame* again, but this time it has a copy
         of rows 1001 to 5000 of the original frame.
 
         .. versionadded:: 0.8
@@ -1475,7 +1052,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     Parameters
     ----------
-    source : [ CsvFile | BigFrame | BigColumn(s) ]
+    source : [ CsvFile | Frame | BigColumn(s) ]
         A source of initial data.
 
     name : string
@@ -1483,12 +1060,12 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     Returns
     -------
-    BigFrame
+    Frame
         An object with access to the frame.
 
     Notes
     -----
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
@@ -1505,19 +1082,19 @@ class Frame(DocStubsFrame, _BaseFrame):
     --------
     Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
     Name the frame "my_frame".
-    Create a BigFrame *g* to access the data::
+    Create a Frame *g* to access the data::
 
-        g = ia.BigFrame(my_csv_schema, "my_frame")
+        g = ia.Frame(my_csv_schema, "my_frame")
 
-    A BigFrame object has been created and *g* is its proxy.
+    A Frame object has been created and *g* is its proxy.
     It brought in the data described by *my_csv_schema*.
     It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
-        h = ia.BigFrame(name='your_frame')
+        h = ia.Frame(name='your_frame')
 
-    A frame has been created and BigFrame *h* is its proxy.
+    A frame has been created and Frame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
 
 
@@ -1554,14 +1131,14 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Parameters
         ----------
-        data : BigFrame
-            A BigFrame accessing the data being added.
+        data : Frame
+            A Frame accessing the data being added.
 
         Examples
         --------
         Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
-        BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
+        Frame *my_frame* points to the first frame and *your_frame* points to the second.
         Add the contents of *your_frame* to *my_frame*::
 
             my_frame.append(your_frame)
@@ -1585,7 +1162,7 @@ class Frame(DocStubsFrame, _BaseFrame):
         """
         Spread out data.
 
-        Search through the currently active BigFrame for multiple items in a single specified column.
+        Search through the currently active Frame for multiple items in a single specified column.
         When it finds multiple values in the column, it replicates the row and separates the multiple items
         across the existing and new rows.
         Multiple items is defined in this case as being things separated by commas.
@@ -1597,12 +1174,12 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Returns
         -------
-        BigFrame
-            A BigFrame object proxy for the new flattened frame.
+        Frame
+            A Frame object proxy for the new flattened frame.
 
         Examples
         --------
-        Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
+        Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
         The "original_data"::
 
             1-"solo,mono,single"
@@ -1613,7 +1190,7 @@ class Frame(DocStubsFrame, _BaseFrame):
             my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
                 delimiter='-')
             # The above command has been split for enhanced readability in some medias.
-            my_frame = BigFrame(source=my_csv)
+            my_frame = Frame(source=my_csv)
 
         I look at it and see::
 
@@ -1646,12 +1223,6 @@ class Frame(DocStubsFrame, _BaseFrame):
         """
         return self._backend.flatten_column(self, column_name)
 
-@api_class_alias
-class BigFrame(Frame):
-    def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('BigFrame', 'Use Frame()')
-        super(BigFrame, self).__init__(*args, **kwargs)
-
 
 @api
 class VertexFrame(DocStubsVertexFrame, _BaseFrame):
@@ -1674,7 +1245,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     Notes
     -----
 
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
@@ -1798,7 +1369,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     Notes
     -----
 
-    If no name is provided for the BigFrame object, it will generate one.
+    If no name is provided for the Frame object, it will generate one.
     An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``

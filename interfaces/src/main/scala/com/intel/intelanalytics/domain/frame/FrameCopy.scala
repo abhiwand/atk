@@ -21,6 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.graph
+package com.intel.intelanalytics.domain.frame
 
-case class Label(graphRef: GraphReference, label: String)
+case class FrameCopy(frame: FrameReference, columns: Option[Map[String, String]] = None, where: Option[String] = None) {
+  require(frame != null, "frame is required")
+}

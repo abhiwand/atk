@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, ECDF }
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Empirical Cumulative Distribution for a column
  */
-class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
+class EcdfPlugin extends SparkCommandPlugin[ECDF, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -49,12 +49,54 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
    */
   override def name: String = "frame/ecdf"
 
+  override def numberOfJobs(arguments: ECDF) = 6
+
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Empirical Cumulative Distribution.", Some("""
+    Empirical Cumulative Distribution.
+
+    Generates the :term:`empirical cumulative distribution` for the input column.
+
+    Parameters
+    ----------
+    sample_col : str
+        The name of the column containing sample.
+
+    Returns
+    -------
+    frame : Frame
+        a Frame object containing each distinct value in the sample and its corresponding ecdf value.
+
+    Examples
+    --------
+    Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+    column and the predicted labels in the *predictions* column::
+
+        frame.inspect()
+
+          a:unicode   b:int32
+        /---------------------/
+          red               1
+          blue              3
+          blue              1
+          green             0
+
+        result = frame.ecdf('b')
+        result.inspect()
+
+          b:int32   b_ECDF:float64
+        /--------------------------/
+          1                    0.2
+          2                    0.5
+          3                    0.8
+          4                    1.0
+
+
+    .. versionadded:: 0.8""")))
 
   /**
    * Empirical Cumulative Distribution for a column
@@ -66,33 +108,25 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ECDF[Long])(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: ECDF)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val ctx = invocation.sparkContext
 
     // validate arguments
-    val frameId: Long = arguments.frameId
-    val frameMeta = frames.expectFrame(frameId)
-    val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
+    val frame = frames.expectFrame(arguments.frame.id)
+    val sampleColumn = frame.schema.column(arguments.column)
+    require(sampleColumn.dataType.isNumerical, s"Invalid column ${sampleColumn.name} for ECDF.  Expected a numeric data type, but got ${sampleColumn.dataType}.")
+    val ecdfSchema = Schema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
+    val ecdfFrameName = arguments.resultFrameName.getOrElse(frames.generateFrameName(Some("ECDF")))
 
     // run the operation
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleIndex, arguments.dataType)
-
-    val rowCount = ecdfRdd.count()
-
-    val columnName = "_ECDF"
-    val allColumns = arguments.dataType match {
-      case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "int64" => List((arguments.sampleCol, DataTypes.int64), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "float32" => List((arguments.sampleCol, DataTypes.float32), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
-      case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
+    val template = DataFrameTemplate(ecdfFrameName, Some("Generated by ECDF"))
+    frames.tryNewFrame(template) { ecdfFrame =>
+      val rdd = frames.loadLegacyFrameRdd(ctx, frame)
+      val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
+      val rowCount = ecdfRdd.count()
+      frames.saveLegacyFrame(ecdfFrame, new LegacyFrameRDD(ecdfSchema, ecdfRdd), Some(rowCount))
     }
-
-    // save results
-    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
   }
 }

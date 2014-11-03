@@ -23,7 +23,7 @@
 
 package com.intel.spark.graphon.pagerank
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ Graph, Edge => GraphXEdge }
 import org.apache.spark.graphx.lib.{ PageRank => GraphXPageRank }
 import org.apache.spark.rdd.RDD
