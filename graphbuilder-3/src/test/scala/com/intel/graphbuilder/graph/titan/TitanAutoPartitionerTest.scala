@@ -25,7 +25,7 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
     titanAutoPartitioner.enableAutoPartition shouldBe (false)
   }
 
-  /*"getInputSplits" should "dd" in {
+  "setHBasePreSplits" should "set HBase pre-splits based on available region servers" in {
     val titanConfig = new BaseConfiguration()
     val hBaseConfig = HBaseConfiguration.create()
     val hbaseAdmin = new HBaseAdmin(hBaseConfig)
@@ -36,7 +36,7 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
     when(titanAutoPartitioner.titanConfig).thenReturn(titanConfig)
     when(titanAutoPartitioner.getHBaseRegionServerCount(hbaseAdmin)).thenReturn(4)
 
-    titanAutoPartitioner.setHBasePreSplits(hBaseConfig)
+    verify(titanAutoPartitioner).setHBasePreSplits(hBaseConfig)
     println(titanAutoPartitioner)
-  } */
+  }
 }

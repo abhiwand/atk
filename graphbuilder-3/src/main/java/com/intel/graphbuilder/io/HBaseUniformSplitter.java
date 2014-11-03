@@ -95,7 +95,7 @@ public class HBaseUniformSplitter {
                 splits.add(tableSplit);
             }
         } else {
-            Log.warn("Unable to create uniform split for HBase table/split: "
+            Log.warn("Unable to create " + splitsPerRegion + " HBase splits/region for: "
                     + initialSplit.getTable() + "/" + initialSplit +
                     ". Will use default split.");
             splits.add(initialSplit);

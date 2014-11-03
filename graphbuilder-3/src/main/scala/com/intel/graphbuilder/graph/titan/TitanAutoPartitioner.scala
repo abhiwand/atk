@@ -70,10 +70,15 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
   def setHBaseInputSplits(sparkContext: SparkContext,
                           hBaseConfig: org.apache.hadoop.conf.Configuration,
                           titanGraphName: String): Unit = {
+    println("About to HBase split regions")
     if (enableAutoPartition) {
+      println("Enable splits is true")
       val inputSplits = getSparkHBaseInputSplits(sparkContext, hBaseConfig, titanGraphName)
+      println("Trying to create " + inputSplits + " input splits")
       if (inputSplits > 1) {
         hBaseConfig.setInt(HBaseTableInputFormat.NUM_REGION_SPLITS, inputSplits)
+        println("Updating HBase configuration to " + inputSplits + " input splits")
+        println("Checking if config was set to  " + hBaseConfig.getInt(HBaseTableInputFormat.NUM_REGION_SPLITS, -1))
       }
     }
   }
@@ -100,7 +105,9 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
 
     val maxSparkCores = getMaxSparkCores(sparkContext)
     val splitsPerCore = titanConfig.getInt(HBASE_INPUT_SPLITS_PER_CORE, 1)
-
+    println("Max spark cores: " + maxSparkCores)
+    println("Splits per core: " + splitsPerCore)
+    println("Region count: " + regionCount)
     Math.max(splitsPerCore * maxSparkCores, regionCount)
   }
 
@@ -131,13 +138,17 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    */
   private def getMaxSparkCores(sparkContext: SparkContext): Int = {
     val configuredMaxCores = sparkContext.getConf.getInt(SPARK_MAX_CORES, 0)
+    println("Configured spark cores: " + configuredMaxCores)
 
     val maxSparkCores = if (configuredMaxCores > 0) {
       configuredMaxCores
     }
     else {
       val numCoresPerWorker = Runtime.getRuntime.availableProcessors()
-      val numWorkers = sparkContext.getExecutorMemoryStatus.size - 1
+      val numWorkers = sparkContext.getExecutorStorageStatus.size
+      println("Num cores per worker: " + numCoresPerWorker)
+      println("Num workers: " + numWorkers)
+      println("Storage stats" + sparkContext.getExecutorStorageStatus)
       (numCoresPerWorker * numWorkers)
     }
     Math.max(0, maxSparkCores)
