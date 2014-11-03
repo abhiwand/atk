@@ -25,7 +25,7 @@ package com.intel.graphbuilder.driver.local.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
@@ -88,10 +88,10 @@ object LocalTitanCassandraDriver {
 
     // Separate Vertices and Edges
     val vertices = elements.collect {
-      case v: Vertex => v
+      case v: GBVertex => v
     }
     val edges = elements.collect {
-      case e: Edge => e
+      case e: GBEdge => e
     }
 
     // Print out the parsed Info

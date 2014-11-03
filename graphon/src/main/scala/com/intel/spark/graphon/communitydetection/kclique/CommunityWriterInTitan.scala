@@ -43,7 +43,7 @@ class CommunityWriterInTitan extends Serializable {
    * @param gbEdges RDD of Graph Builder Edge list
    * @param titanConfig The titan configuration
    */
-  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfig: SerializableBaseConfiguration) {
+  def run(gbVertices: RDD[GBVertex], gbEdges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration) {
 
     // Create the GraphBuilder object
     // Setting true to append for updating existing graph
