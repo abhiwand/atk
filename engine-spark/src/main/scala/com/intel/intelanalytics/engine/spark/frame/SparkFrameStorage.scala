@@ -278,7 +278,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
       else frameEntity
 
-      val path = frameFileStorage.createFrame(entity).toString
+      val path = frameFileStorage.frameBaseDirectory(entity.id).toString
       val count = rowCount.getOrElse {
         frameRDD.cache()
         frameRDD.count()
