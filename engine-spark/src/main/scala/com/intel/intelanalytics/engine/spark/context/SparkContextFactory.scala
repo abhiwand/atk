@@ -49,10 +49,11 @@ class SparkContextFactory() extends EventLogging {
       .setJars(Seq(jarPath.getPath))
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
-    if (kryoRegistrator isDefined) {
+    //TODO remove this code when we move to the next version of spark
+    //if (kryoRegistrator isDefined) {
       //sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
-    }
+    //}
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
