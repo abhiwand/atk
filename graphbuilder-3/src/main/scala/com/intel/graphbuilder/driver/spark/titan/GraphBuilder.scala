@@ -26,9 +26,10 @@ package com.intel.graphbuilder.driver.spark.titan
 import java.text.NumberFormat
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.graph.titan.{TitanAutoPartitioner, TitanGraphConnector}
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -64,6 +65,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
    * @param edgeInputRdd the input rows to create the edges from
    */
   def build(vertexInputRdd: RDD[Seq[_]], edgeInputRdd: RDD[Seq[_]]) {
+
     if (config.inferSchema) {
       titanSchemaManager.writeSchemaFromRules()
     }

@@ -41,10 +41,12 @@ object TitanReaderExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()
-      .setMaster(ExamplesUtils.sparkMaster)
+      .setMaster("spark://gao-ws9.hf.intel.com:7077")
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
+
+    conf.set("spark.executor.memory", "4g")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
     conf.set("spark.kryoserializer.buffer.mb", "32")
@@ -57,7 +59,7 @@ object TitanReaderExample {
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
     titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
-    titanConfig.setProperty("storage.tablename", tableName)
+    titanConfig.setProperty("storage.tablename", "iat_graph_graph_4148e75642a742f988b8df749d3c70cc")
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 

@@ -14,7 +14,7 @@ import java.util.List;
  * HBase's default TableInputFormat class assigns a single mapper per region,
  * This splitting policy degrades performance when the size of individual regions
  * is large. This class increases the number of splits as follows:
- *
+ * <p/>
  * Total splits = max(hbase.mapreduce.regions.splits, existing number of regions)
  *
  * @see org.apache.hadoop.hbase.mapreduce.TableInputFormat
@@ -22,8 +22,10 @@ import java.util.List;
  */
 public class HBaseTableInputFormat extends TableInputFormat {
 
-    private final Log LOG = LogFactory.getLog(TableInputFormat.class);
+
     public static final String NUM_REGION_SPLITS = "hbase.mapreduce.regions.splits";
+
+    private final Log LOG = LogFactory.getLog(TableInputFormat.class);
 
     /**
      * Gets the input splits using a uniform-splitting policy.
@@ -37,7 +39,7 @@ public class HBaseTableInputFormat extends TableInputFormat {
     public List<InputSplit> getSplits(JobContext context)
             throws IOException {
 
-        List<InputSplit> splits = super.getSplits(context); //Initial splits matches number of regions
+        List<InputSplit> splits = getInitialRegionSplits(context);
         int requestedSplitCount = getRequestedSplitCount(context, splits);
 
         if (splits != null) {
@@ -56,17 +58,29 @@ public class HBaseTableInputFormat extends TableInputFormat {
     }
 
     /**
+     * Get initial region splits. Default policy is one split per HBase region.
+     *
+     * @param context Job Context
+     * @return Initial input splits for HBase table
+     * @throws IOException
+     */
+    protected List<InputSplit> getInitialRegionSplits(JobContext context) throws IOException {
+        // This method helps initialize the mocks for unit tests
+        return (super.getSplits(context));
+    }
+
+    /**
      * Get the requested input split count from the job configuration
      *
      * @param context Current job context which contains configuration.
-     * @param splits List of input splits.
-     * @return
+     * @param splits  List of input splits.
+     * @return Requested split count
      */
-    private int getRequestedSplitCount(JobContext context, List<InputSplit> splits) {
-        Configuration config  = context.getConfiguration();
+    protected int getRequestedSplitCount(JobContext context, List<InputSplit> splits) {
+        Configuration config = context.getConfiguration();
 
         int initialSplitCount = splits.size();
-        int requestedSplitCount  = config.getInt(NUM_REGION_SPLITS, initialSplitCount);
+        int requestedSplitCount = config.getInt(NUM_REGION_SPLITS, initialSplitCount);
 
         return requestedSplitCount;
     }

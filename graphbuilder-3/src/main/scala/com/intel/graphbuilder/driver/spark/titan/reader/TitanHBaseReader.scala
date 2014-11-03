@@ -4,7 +4,8 @@ import java.lang.reflect.Method
 
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
+import com.intel.graphbuilder.io.HBaseTableInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
@@ -49,7 +50,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
 
     checkTableExists(hBaseConfig, tableName)
 
-    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TableInputFormat],
+    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[HBaseTableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
       classOf[org.apache.hadoop.hbase.client.Result])
 
@@ -71,7 +72,13 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     hBaseConfig.set(HConstants.ZOOKEEPER_QUORUM, hBaseZookeeperQuorum);
     hBaseConfig.set(HConstants.ZOOKEEPER_CLIENT_PORT, hBaseZookeeperClientPort);
     hBaseConfig.set(TableInputFormat.INPUT_TABLE, tableName)
+
+    // Auto-configure number of input splits
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
+    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+
     configureHBaseScanner(hBaseConfig)
+
     hBaseConfig
   }
 
