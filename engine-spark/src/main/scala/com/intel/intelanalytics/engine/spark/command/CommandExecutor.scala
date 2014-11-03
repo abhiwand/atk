@@ -62,9 +62,9 @@ import com.intel.event.EventLogging
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
- * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
+ * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextFactory)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextFactory: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -129,7 +129,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
     val commandId = cmd.id
     val commandName = cmd.name
-    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)", command.kryoClassName)
+    val context: SparkContext = contextFactory.context(user, s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
     try {
       val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
       val progressPrinter = new ProgressPrinter(listener)

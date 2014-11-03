@@ -117,7 +117,7 @@ object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(sparkContextManager: SparkContextFactory,
+class SparkEngine(sparkContextFactory: SparkContextFactory,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
@@ -225,7 +225,7 @@ class SparkEngine(sparkContextManager: SparkContextFactory,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user, "query")
+      val ctx = sparkContextFactory.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
@@ -301,7 +301,7 @@ class SparkEngine(sparkContextManager: SparkContextFactory,
 
     val frameId: Long = arguments.frame.id
     val frame = frames.expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = sparkContextFactory.context(user).sparkContext
     val rdd = frames.getFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
