@@ -27,11 +27,14 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, AttributeReference }
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+
+import scala.reflect.ClassTag
 
 /**
  * A Frame RDD is a SchemaRDD with our version of the associated schema.
@@ -46,13 +49,8 @@ class FrameRDD(val schema: Schema,
                sqlContext: SQLContext,
                logicalPlan: LogicalPlan)
     extends SchemaRDD(sqlContext, logicalPlan) {
-  /**
-   * A Frame RDD is a SchemaRDD with our version of the associated schema
-   *
-   * @param schema  the schema describing the columns of this frame
-   * @param rowRDD  RDD of type Row that corresponds to the supplied schema
-   */
-  def this(schema: Schema, rowRDD: RDD[Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlan(schema, rowRDD))
+
+  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
 
   /**
    * A Frame RDD is a SchemaRDD with our version of the associated schema
@@ -62,25 +60,152 @@ class FrameRDD(val schema: Schema,
    */
   def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.sqlContext, schemaRDD.queryExecution.logical)
 
+  /** This wrapper provides richer API for working with Rows */
+  val rowWrapper = new RowWrapper(schema)
+
+  /**
+   * Convert this FrameRDD into a LegacyFrameRDD of type RDD[Array[Any]]
+   */
   def toLegacyFrameRDD: LegacyFrameRDD = {
     new LegacyFrameRDD(this.schema, this.baseSchemaRDD)
   }
+
+  /**
+   * Spark map with a rowWrapper
+   */
+  def mapRows[U: ClassTag](mapFunction: (RowWrapper) => U): RDD[U] = {
+    this.map(sqlRow => {
+      mapFunction(rowWrapper(sqlRow))
+    })
+  }
+
+  /**
+   * Spark groupBy with a rowWrapper
+   */
+  def groupByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, scala.Iterable[sql.Row])] = {
+    this.groupBy(row => {
+      function(rowWrapper(row))
+    })
+  }
+
+  /**
+   * Create a new FrameRDD that is only a subset of the columns of this FrameRDD
+   * @param columnNames names to include
+   * @return the FrameRDD with only some columns
+   */
+  def selectColumns(columnNames: List[String]): FrameRDD = {
+    if (columnNames.isEmpty) {
+      throw new IllegalArgumentException("list of column names can't be empty")
+    }
+    new FrameRDD(schema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+  }
+
+  /**
+   * Drop columns - create a new FrameRDD with the columns specified removed
+   */
+  def dropColumns(columnNames: List[String]): FrameRDD = {
+    convertToNewSchema(schema.dropColumns(columnNames))
+  }
+
+  /**
+   * Union two Frame's, merging schemas if needed
+   */
+  def union(other: FrameRDD): FrameRDD = {
+    val unionedSchema = schema.union(other.schema)
+    val part1 = convertToNewSchema(unionedSchema)
+    val part2 = other.convertToNewSchema(unionedSchema)
+    val unionedRdd = part1.toSchemaRDD.union(part2)
+    new FrameRDD(unionedSchema, unionedRdd)
+  }
+
+  def renameColumn(oldName: String, newName: String): FrameRDD = {
+    new FrameRDD(schema.renameColumn(oldName, newName), this)
+  }
+
+  /**
+   * Add/drop columns to make this frame match the supplied schema
+   *
+   * @param updatedSchema the new schema to take effect
+   * @return the new RDD
+   */
+  def convertToNewSchema(updatedSchema: Schema): FrameRDD = {
+    if (schema == updatedSchema) {
+      // no changes needed
+      this
+    }
+    else {
+      // map to new schema
+      new FrameRDD(updatedSchema, mapRows(row => row.valuesForSchema(updatedSchema)))
+    }
+  }
+
+  /**
+   * Create a new RDD where unique ids are assigned to a specified value.
+   * The ids will be long values that start from a specified value.
+   * The ids are inserted into a specified column. if it does not exist the column will be created.
+   *
+   * (used for _vid and _eid in graphs but can be used elsewhere)
+   *
+   * @param columnName column to insert ids into (adding if needed)
+   * @param startId  the first id to add (defaults to 0), incrementing from there
+   */
+  def assignUniqueIds(columnName: String, startId: Long = 0): FrameRDD = {
+    val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
+
+    val newRows: RDD[sql.Row] = this.mapPartitionsWithIndex((i, rows) => {
+      val (ct: Int, sum: Int) = if (i == 0) (0, 0)
+      else sumsAndCounts(i - 1)
+      val partitionStart = sum + startId
+      rows.zipWithIndex.map {
+        case (row, index) => {
+          val id: Long = partitionStart + index
+          rowWrapper(row).addOrSetValue(columnName, id)
+        }
+      }
+    })
+
+    val newSchema: Schema = if (!schema.hasColumn(columnName)) {
+      schema.addColumn(columnName, DataTypes.int64)
+    }
+    else
+      schema
+
+    new FrameRDD(newSchema, this.sqlContext, FrameRDD.createLogicalPlanFromSql(newSchema, newRows))
+  }
+
 }
 
 /**
  * Static Methods for FrameRDD mostly deals with
  */
-private[frame] object FrameRDD {
+object FrameRDD {
+
+  def toFrameRDD(schema: Schema, rowRDD: RDD[Row]) = {
+    new FrameRDD(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlan(schema, rowRDD))
+  }
+
   /**
    * Creates a logical plan for creating a SchemaRDD from an existing Row object and our schema representation
+   * @param schema Schema describing the rdd
+   * @param rows the RDD containing the data
    * @return A SchemaRDD with a schema corresponding to the schema object
    */
-  def createLogicalPlan(schema: Schema, rows: RDD[Row]): LogicalPlan = {
+  def createLogicalPlan(schema: Schema, rows: RDD[Array[Any]]): LogicalPlan = {
     val rdd = FrameRDD.toRowRDD(schema, rows)
-    val structType = this.schemaToStructType(schema.columns)
+    createLogicalPlanFromSql(schema, rdd)
+  }
+
+  /**
+   * Creates a logical plan for creating a SchemaRDD from an existing sql.Row object and our schema representation
+   * @param schema Schema describing the rdd
+   * @param rows RDD[org.apache.spark.sql.Row] containing the data
+   * @return A SchemaRDD with a schema corresponding to the schema object
+   */
+  def createLogicalPlanFromSql(schema: Schema, rows: RDD[sql.Row]): LogicalPlan = {
+    val structType = this.schemaToStructType(schema.columnTuples)
     val attributes = structType.fields.map(f => AttributeReference(f.name, f.dataType, f.nullable)())
 
-    SparkLogicalPlan(ExistingRdd(attributes, rdd))
+    SparkLogicalPlan(ExistingRdd(attributes, rows))
   }
 
   /**
@@ -95,7 +220,7 @@ private[frame] object FrameRDD {
           o match {
             case null => null
             case _ => {
-              val colType = schema.columns(i)._2
+              val colType = schema.columnTuples(i)._2
               val value = o.asInstanceOf[colType.ScalaType]
               mutableRow(i) = value
             }

@@ -54,7 +54,29 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Rename one or more columns", Some("""
+    Renames columns in a frame.
+
+    Parameters
+    ----------
+    column_names : dictionary of str pairs
+        The name pair (existing name, new name).
+
+    Notes
+    -----
+    Unicode in column names is not supported and will likely cause the drop_frames() function
+    (and others) to fail!
+
+    Examples
+    --------
+    Start with a frame with columns *Wrong* and *Wong*.
+    Rename the columns to *Right* and *Wite*::
+
+        my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
+
+    Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
+
+    .. versionchanged:: 0.8.5""")))
 
   /**
    * Rename columns of a frame
@@ -70,26 +92,7 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
 
-    // validate arguments
-    val frameID = arguments.frame
-    val frameMeta = frames.expectFrame(frameID)
-    val newNames = arguments.new_names
-    val schema = frameMeta.schema
-    val originalNames = arguments.original_names
-
-    for {
-      i <- 0 until newNames.size
-    } {
-      val column_name = newNames(i)
-      val original_name = originalNames(i)
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
-        throw new IllegalArgumentException(s"Cannot rename because another column already exists with that name: $column_name")
-
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == original_name) < 0)
-        throw new IllegalArgumentException(s"Cannot rename because there is no column with that name: $original_name")
-    }
-
-    // run the operation and save results
-    frames.renameColumns(frameMeta, arguments.original_names.zip(arguments.new_names))
+    val frame = frames.expectFrame(arguments.frame)
+    frames.renameColumns(frame, arguments.names.toSeq)
   }
 }

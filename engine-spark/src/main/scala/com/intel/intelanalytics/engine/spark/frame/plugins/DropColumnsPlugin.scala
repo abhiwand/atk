@@ -56,14 +56,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns from the frame.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns.",
     extendedSummary = Some("""
                            |    Remove columns from the frame.
                            |    They are deleted.
                            |
                            |    Parameters
                            |    ----------
-                           |    columns: str OR list of str
+                           |    columns: [ str | list of str ]
                            |        column name OR list of column names to be removed from the frame
                            |
                            |    Notes
@@ -81,7 +81,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
                            |    Now the frame only has the columns *column_a* and *column_c*.
                            |    For further examples, see: ref: `example_frame.drop_columns`.
                            |
-                            """)))
+                            """.stripMargin)))
 
   /**
    * Remove columns from a frame.
@@ -103,31 +103,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
     val columns = arguments.columns
     val frameMeta = frames.expectFrame(arguments.frame)
     val schema = frameMeta.schema
+    schema.validateColumnsExist(arguments.columns)
+    require(schema.columns.length > arguments.columns.length, "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation
-    val columnIndices = {
-      for {
-        col <- columns
-        columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
-      } yield columnIndex
-    }.sorted.distinct
-
-    val resultRDD = columnIndices match {
-      case invalidColumns if invalidColumns.contains(-1) =>
-        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
-      case allColumns if allColumns.length == schema.columns.length =>
-        frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
-      case singleColumn if singleColumn.length == 1 =>
-        frames.loadLegacyFrameRdd(ctx, frameMeta)
-          .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
-      case multiColumn =>
-        frames.loadLegacyFrameRdd(ctx, frameId)
-          .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
-    }
-
-    val dataFrame = frames.dropColumns(frameMeta, columnIndices)
+    val frame = frames.loadFrameRDD(ctx, frameMeta)
+    val result = frame.selectColumns(schema.columnNamesExcept(arguments.columns))
 
     // save results
-    frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRDD))
+    frames.saveFrame(frameMeta, result)
   }
 }

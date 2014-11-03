@@ -30,8 +30,10 @@ import uuid
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.rest.connection import http
+from intelanalytics.rest.frame import FrameInfo
+from intelanalytics.core.frame import VertexFrame, EdgeFrame
 
 
 def initialize_graph(graph, graph_info):
@@ -48,21 +50,20 @@ class GraphBackendRest(object):
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-    def create(self, graph,rules,name):
+    def create(self, graph, rules,name, storage_format):
         logger.info("REST Backend: create graph with name %s: " % name)
         if isinstance(rules, dict):
             rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
-            initialize_graph(graph,rules)
-            return  # Early exit here
-        new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules))
-        return new_graph_name
+            return initialize_graph(graph,rules)._id # Early exit here
+        new_graph_id = self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules), storage_format)
+        return new_graph_id
 
-    def _create_new_graph(self, graph, rules, name):
+    def _create_new_graph(self, graph, rules, name, storage_format):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         else:
-            payload = {'name': name}
+            payload = {'name': name, 'storage_format': storage_format}
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
@@ -74,7 +75,7 @@ class GraphBackendRest(object):
                     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                     logger.debug("REST Backend: create graph payload: " + payload_json)
                 initialized_graph.load(frame_rules, append=False)
-            return graph_info.name
+            return graph_info.id_number
     
     def _get_new_graph_name(self,source=None):
         try:
@@ -88,7 +89,7 @@ class GraphBackendRest(object):
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
-        return "\n".join(['BigGraph "%s"' % (graph_info.name)])
+        return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name)])
 
     def _get_graph_info(self, graph):
         response = self.rest_http.get_full_uri(self._get_graph_full_uri(graph))
@@ -102,6 +103,22 @@ class GraphBackendRest(object):
         frame_rules = JsonRules(rules)
         graph.load(frame_rules, append=True)
 
+    def get_vertex_frames(self, graphid):
+        r = self.rest_http.get('graphs/%s/vertices' % graphid)
+        return [VertexFrame(x) for x in r.json()]
+
+    def get_vertex_frame(self,graphid, label):
+        r = self.rest_http.get('graphs/%s/vertices?label=%s' % (graphid, label))
+        return VertexFrame(r.json())
+
+    def get_edge_frames(self, graphid):
+        r = self.rest_http.get('graphs/%s/edges' % graphid)
+        return [EdgeFrame(x) for x in r.json()]
+
+    def get_edge_frame(self,graphid, label):
+        r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
+        return EdgeFrame(r.json())
+
 
 # GB JSON Payload objects:
 
@@ -109,7 +126,7 @@ class JsonValue(object):
     def __new__(cls, value):
         if isinstance(value, basestring):
             t, v = "CONSTANT", value
-        elif isinstance(value, BigColumn):
+        elif isinstance(value, Column):
             t, v = "VARYING", value.name
         else:
             raise TypeError("Bad graph element source type")
@@ -190,7 +207,7 @@ class JsonRules(object):
 
 class GraphInfo(object):
     """
-    JSON based Server description of a BigGraph
+    JSON based Server description of a Graph
     """
     def __init__(self, graph_json_payload):
         self._payload = graph_json_payload
@@ -208,6 +225,10 @@ class GraphInfo(object):
     @property
     def name(self):
         return self._payload['name']
+
+    @property
+    def command_prefix(self):
+        return self._payload['command_prefix']
 
     @property
     def ia_uri(self):

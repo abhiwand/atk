@@ -62,14 +62,13 @@ with warnings.catch_warnings(record=True) as expected_warnings:
 from intelanalytics.core.metaprog import CommandLoadable, get_doc_stubs_module_text
 from intelanalytics.rest.jsonschema import get_command_def
 
-ignore_loadables = ['BigFrame', 'BigGraph']  # these are being deprecated
+ignore_loadables = []
 
 loadables = dict([(item.__name__, item)
                   for item in ia.__dict__.values()
                   if inspect.isclass(item)
                   and issubclass(item, CommandLoadable)
                   and item.__name__ not in ignore_loadables])
-
 
 skip_engine_launch = len(sys.argv) > 1 and sys.argv[1].strip() == '-x'
 if skip_engine_launch:
@@ -93,4 +92,3 @@ else:
         print "Writing file %s" % file_name
         doc_stubs_file.write(text)
         print "Complete"
-

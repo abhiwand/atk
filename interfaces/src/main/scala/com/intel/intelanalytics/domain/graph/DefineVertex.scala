@@ -21,45 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.elements
+package com.intel.intelanalytics.domain.graph
 
-import org.scalatest.{ WordSpec, Matchers }
-
-class VertexTest extends WordSpec with Matchers {
-
-  val gbId = new Property("gbId", 10001)
-  val vertex = new Vertex(gbId, Set(new Property("key", "value")))
-
-  "Vertex" should {
-    "have a unique id that is the gbId" in {
-      vertex.id shouldBe gbId
-    }
-
-    "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, Set(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      val merged = vertex.merge(vertex2)
-
-      merged.gbId shouldBe gbId
-      merged.properties shouldEqual Set(Property("key", "value"), Property("anotherKey", "anotherValue"))
-    }
-
-    "not allow null gbIds" in {
-      intercept[IllegalArgumentException] {
-        new Vertex(null, Set.empty[Property])
-      }
-    }
-
-    "not allow merging of vertices with different ids" in {
-      val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, Set(new Property("anotherKey", "anotherValue")))
-
-      intercept[IllegalArgumentException] {
-        // invoke method under test
-        vertex.merge(vertex2)
-      }
-    }
-  }
-
+case class DefineVertex(graphRef: GraphReference, label: String) {
+  require(graphRef != null, "graph is required")
+  require(label != null, "label is required")
 }

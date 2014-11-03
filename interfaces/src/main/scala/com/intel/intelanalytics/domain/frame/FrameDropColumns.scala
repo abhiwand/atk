@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class FrameDropColumns(frame: FrameReference, columns: Array[String]) {
+case class FrameDropColumns(frame: FrameReference, columns: List[String]) {
   require(frame != null, "frame is required")
   require(columns != null, "columns are required")
 }

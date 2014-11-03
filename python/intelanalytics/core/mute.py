@@ -25,8 +25,8 @@ Mute definitions from the server
 """
 
 # straightforward approach for now
-muted_commands = ['frame:/load',
+muted_commands = ['frame/load',
                   'frame:/project',
-                  'frame:/rename',
-                  'graph:titan/rename',
+                  'frame/rename',
+                  'graph/rename',
                   ]
