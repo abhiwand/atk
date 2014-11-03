@@ -25,7 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import org.apache.spark.SparkContext
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector

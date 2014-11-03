@@ -66,7 +66,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    */
   override def execute(invocation: SparkInvocation, arguments: DropDuplicates)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     val frames = invocation.engine.frames
-    val vertexFrame = frames.expectFrame(arguments.frameId)
+    val vertexFrame = frames.expectFrame(arguments.frame.id)
 
     vertexFrame.graphId match {
       case Some(graphId) => {
@@ -74,9 +74,12 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
 
         val ctx: SparkContext = invocation.sparkContext
         val schema = vertexFrame.schema
-        val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frameId)
-
-        val columnNames = arguments.unique_columns
+        val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+        val columnNames = arguments.unique_columns match {
+          case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
+          case None => vertexFrame.schema.columnNames
+        }
+        schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
 
         val label = schema.vertexSchema.get.label

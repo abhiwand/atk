@@ -2,7 +2,7 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 
 /**

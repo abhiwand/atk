@@ -35,12 +35,12 @@ from intelanalytics.core.errorhandle import errors
 try:
     from intelanalytics.core.docstubs import *
 except Exception as e:
-    errors._init_doc_stubs_import_star_error = e
+    errors._doc_stubs = e
     del e
 
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, Frame, VertexFrame
-from intelanalytics.core.graph import BigGraph, TitanGraph, VertexRule, EdgeRule
+from intelanalytics.core.frame import Frame, VertexFrame
+from intelanalytics.core.graph import TitanGraph, VertexRule, EdgeRule
 from intelanalytics.rest.connection import server
 connect = server.connect
 
@@ -55,36 +55,3 @@ def _refresh_api_namespace():
 
 _refresh_api_namespace()
 
-
-# AUTO-CONNECT  TODO - remove
-import os
-if not os.getenv('INTELANALYTICS_SKIP_AUTOCONNECT', False):  # TODO - put all the env var names in one place
-    from intelanalytics.core.api import FatalApiLoadError
-    # Try to load the api on import...
-    try:
-        connect()
-    except FatalApiLoadError as not_fatal_here:
-        # raising just a RuntimeError here will cause the intelanalytics import to fail generally.
-        raise RuntimeError("Processing the API information from the server failed: %s" % not_fatal_here.details)
-    except Exception as e:
-        msg = """
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-%s
-
-Unable to connect to server during import. Resolve issues and then call
-'connect()' to continue.%s
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-""" % (e, '' if not type(e).__module__.startswith("requests") else """
-
-Use 'server' to view and edit client's server settings.  For example,
-'print ia.server'
-""")
-        import warnings
-        warnings.warn(msg, RuntimeWarning)
-        del e, msg
-    print """
-**This auto-connect feature is deprecated and soon an explicit call to
-'ia.connect()' will be required before using the server features
-"""
-del os

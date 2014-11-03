@@ -24,7 +24,7 @@
 from intelanalytics.core.iatypes import valid_data_types
 
 
-class BigColumn(object):
+class Column(object):
     """Column in a Frame"""
     def __init__(self, frame, name, data_type):
         self.name = name

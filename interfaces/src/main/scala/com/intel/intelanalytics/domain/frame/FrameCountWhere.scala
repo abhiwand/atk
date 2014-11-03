@@ -21,38 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.graphbuilder.elements._
-import org.apache.spark.rdd.RDD
-
-/**
- * Functions applicable to RDD's of GraphElements
- * <p>
- * This is best used by importing GraphBuilderRDDImplicits._
- * </p>
- *
- * @param self input that these functions are applicable to
- */
-class GraphElementRDDFunctions(self: RDD[GraphElement]) {
-
-  /**
-   * Get all of the Edges from an RDD made up of both Edges and Vertices.
-   */
-  def filterEdges(): RDD[GBEdge] = {
-    self.flatMap {
-      case e: GBEdge => Some(e)
-      case _ => None
-    }
-  }
-
-  /**
-   * Get all of the Vertices from an RDD made up of both Edges and Vertices.
-   */
-  def filterVertices(): RDD[GBVertex] = {
-    self.flatMap {
-      case v: GBVertex => Some(v)
-      case _ => None
-    }
-  }
+case class FrameCountWhere(frame: FrameReference, where: String) {
+  require(frame != null, "frame is required")
+  require(where != null, "where predicate is required")
 }
+
+case class JustALong(value: Long) // TODO - temporary, switch when parquet graph branch 3539 merges

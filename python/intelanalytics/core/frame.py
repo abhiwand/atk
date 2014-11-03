@@ -30,17 +30,19 @@ api = get_api_decorator(logger)
 
 from intelanalytics.core.userfunction import has_python_user_function_arg
 from intelanalytics.core.iatypes import valid_data_types
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.namedobj import name_support
 from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
 
-from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
-from intelanalytics.core._sphinx_frame import __all__
+#from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
+
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
+
+__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:
@@ -110,8 +112,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         data_type_dict = dict(self.schema)
         try:
             if isinstance(column_name, list):
-                return [BigColumn(self, name, data_type_dict[name]) for name in column_name]
-            return BigColumn(self, column_name, data_type_dict[column_name])
+                return [Column(self, name, data_type_dict[name]) for name in column_name]
+            return Column(self, column_name, data_type_dict[column_name])
         except KeyError:
             raise error_type(error_msg % column_name)
 
@@ -160,7 +162,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         def next(self):
             if self.i < len(self.schema):
-                column = BigColumn(self.frame, self.schema[self.i][0], self.schema[self.i][1])
+                column = Column(self.frame, self.schema[self.i][0], self.schema[self.i][1])
                 self.i += 1
                 return column
             raise StopIteration
@@ -279,7 +281,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionadded:: 0.8
 
         """
-        return self._backend.get_row_count(self)
+        return self._backend.get_row_count(self, None)
 
     @property
     @api
@@ -315,65 +317,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         return self._backend.get_schema(self)
-
-    @deprecated("Use classification_metrics().")
-    def accuracy(self, label_column, pred_column):
-        """
-        Model accuracy.
-
-        Computes the accuracy measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the classifier are specified.
-        The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true
-        negatives, and :math:`K` denote the total number of classified instances, then the model accuracy is
-        given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
-
-        This measure applies to binary and multi-class classifiers.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        Returns
-        -------
-        float64
-            The accuracy measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-               red         1              0                  0
-               blue        3              1                  0
-               blue        1              0                  0
-               green       0              1                  1
-
-            frame.accuracy('labels', 'predictions')
-
-            0.75
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, 1, 1)
-            return cm.accuracy
-        except:
-            raise IaError(logger)
 
     @api
     @has_python_user_function_arg
@@ -586,67 +529,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    @deprecated("Use classification_metrics().")
-    def confusion_matrix(self, label_column, pred_column, pos_label='1'):
-        """
-        Builds matrix.
-
-        Outputs a :term:`confusion matrix` for a binary classifier
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance.
-
-        Returns
-        -------
-        Formatted confusion matrix
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-               red         1              0                  0
-               blue        3              1                  0
-               blue        1              0                  0
-               green       0              1                  1
-
-            print(frame.confusion_matrix('labels', 'predictions'))
-
-                            Predicted
-                           _pos_ _neg__
-             Actual   pos |  1     1
-                      neg |  0     2
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.confusion_matrix
-        except:
-            raise IaError(logger)
-
-    def copy(self, columns=None):
+    def copy(self, columns=None, where=None):
         """
         Copy frame.
 
-        Copy frame or certain frame columns entirely.
+        Copy frame or certain frame columns entirely or filtered.  Useful for frame query.
 
         Parameters
         ----------
@@ -654,11 +541,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             If not None, the copy will only include the columns specified.
             If a dictionary is used, the string pairs represent a column renaming,
             {source_column_name: destination_column_name}.
+        where : row function (optional)
+            If not None, only those rows which evaluate to True will be copied
 
         Returns
         -------
         Frame
-            A new frame object which is a copy of the currently active Frame.
+            A new frame object which is a copy of this frame
 
         Examples
         --------
@@ -695,20 +584,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionchanged:: 0.8.5
 
         """
-        if columns is None:
-            column_names = self.column_names  # all columns
-            new_names = None
-        elif isinstance(columns, dict):
-            column_names = columns.keys()
-            new_names = columns.values()
-        elif isinstance(columns, basestring):
-            column_names = [columns]
-            new_names = None
-        else:
-            raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
-        copied_frame = Frame()
-        self._backend.project_columns(self, copied_frame, column_names, new_names)
-        return copied_frame
+        return self._backend.copy(self, columns, where)
+
+    @api
+    def count(self, where):
+        """
+        Counts the number of rows which meet given criteria
+
+        Parameters
+        ----------
+        where : function
+            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
+
+        Returns
+        -------
+        count : int
+            number of rows for which the where function evaluated to True
+        """
+        return self._backend.get_row_count(self, where)
 
     def download(self, count=100, offset=0, columns=None):
         """
@@ -799,94 +692,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         self._backend.drop(self, predicate)
 
     @api
-    def drop_duplicates(self, columns=None):
-        """
-        Remove duplicates.
-
-        Remove duplicate rows, keeping only one row per uniqueness criteria match
-
-        Parameters
-        ----------
-        columns : [ str | list of str ]
-            Column name(s) to identify duplicates.
-            If empty, the function will remove duplicates that have the whole row of data identical.
-
-        Examples
-        --------
-        Remove any rows that have the same data in column *b* as a previously checked row::
-
-            my_frame.drop_duplicates("b")
-
-        The result is a frame with unique values in column *b*.
-
-        Remove any rows that have the same data in columns *a* and *b* as a previously checked row::
-
-            my_frame.drop_duplicates(["a", "b"])
-
-        The result is a frame with unique values for the combination of columns *a* and *b*.
-
-        Remove any rows that have the whole row identical::
-
-            my_frame.drop_duplicates()
-
-        The result is a frame where something is different in every row from every other row.
-        Each row is unique.
-
-
-        .. versionadded:: 0.8
-
-        """
-        # For further examples, see :ref:`example_frame.drop_duplicates`
-        self._backend.drop_duplicates(self, columns)
-
-    @api
-    def ecdf(self, sample_col):
-        """
-        Empirical Cumulative Distribution.
-
-        Generates the :term:`empirical cumulative distribution` for the input column.
-
-        Parameters
-        ----------
-        sample_col : str
-            The name of the column containing sample.
-
-        Returns
-        -------
-        list
-            List of tuples containing each distinct value in the sample and its corresponding ecdf value.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32
-            /---------------------/
-              red               1
-              blue              3
-              blue              1
-              green             0
-
-            result = frame.ecdf('b')
-            result.inspect()
-
-              b:int32   b_ECDF:float64
-            /--------------------------/
-              1                    0.2
-              2                    0.5
-              3                    0.8
-              4                    1.0
-
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.ecdf(self, sample_col)
-
-    @api
     @has_python_user_function_arg
     def filter(self, predicate):
         """
@@ -921,94 +726,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         # For further examples, see :ref:`example_frame.filter`
         self._backend.filter(self, predicate)
-
-    @deprecated("Use classification_metrics().")
-    def f_measure(self, label_column, pred_column, pos_label='1', beta=1):
-        """
-        Model :math:`F_{\\beta}` measure.
-
-        Computes the :math:`F_{\\beta}` measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision
-        and recall.
-        If we let:
-
-        * beta :math:`\\equiv \\beta`,
-        * :math:`T_{P}` denote the number of true positives,
-        * :math:`F_{P}` denote the number of false positives, and
-        * :math:`F_{N}` denote the number of false negatives,
-
-        then:
-
-        .. math::
-            F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\
-            \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
-            \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
-
-        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average
-        of the :math:`F_{\\beta}` measure for each label, where the weight is the number of instance with
-        each label in the labeled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-
-        beta : float, (optional)
-            Beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be
-            greater than zero.
-
-        Returns
-        -------
-        float64
-            The :math:`F_{\\beta}` measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.f_measure('labels', 'predictions')
-
-            0.66666666666666663
-
-            frame.f_measure('labels', 'predictions', beta=2)
-
-            0.55555555555555558
-
-            frame.f_measure('labels', 'predictions', pos_label=0)
-
-            0.80000000000000004
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, beta)
-            return cm.f_measure
-        except:
-            raise IaError(logger)
 
     @api
     def get_error_frame(self):
@@ -1057,23 +774,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             For example, if the original field is 'a' and the function is 'avg',
             the resultant column is named 'a_avg'.
         *   An aggregation argument of 'count' results in a column named 'count'.
-
-        Supported aggregation functions:
-
-        ..  hlist::
-            :columns: 5
-
-            * avg
-            * count
-            * max
-            * mean
-            * min
-            * :term:`quantile`
-            * stdev
-            * sum
-            * :term:`variance <Bias-variance tradeoff>`
-            * distinct
-
 
         Examples
         --------
@@ -1286,144 +986,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         # For further examples, see :ref:`example_frame.join`.
         return self._backend.join(self, right, left_on, right_on, how)
-
-    @deprecated("Use classification_metrics().")
-    def precision(self, label_column, pred_column, pos_label='1'):
-        """
-        Model precision.
-
-        Computes the precision measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The precision of a binary classification model is the proportion of predicted positive
-        instances that are correct.
-        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of
-        false positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
-
-        For multi-class classification, the precision measure is computed as the weighted average of the
-        precision for each label, where the weight is the number of instances with each label in the
-        labelled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-            The default is 1.
-
-        Returns
-        -------
-        float64
-            The precision measure for the classifier.
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.precision('labels', 'predictions')
-
-            1.0
-
-            frame.precision('labels', 'predictions', 0)
-
-            0.66666666666666663
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.precision
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use classification_metrics().")
-    def recall(self, label_column, pred_column, pos_label='1'):
-        """
-        Model measure.
-
-        Computes the recall measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions
-        made by the model are specified.
-        The recall of a binary classification model is the proportion of positive instances that are
-        correctly identified.
-        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of
-        false negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
-
-        For multi-class classification, the recall measure is computed as the weighted average of the recall
-        for each label, where the weight is the number of instance with each label in the labeled column.
-        The determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            The name of the column containing the correct label for each instance.
-
-        pred_column : str
-            The name of the column containing the predicted label for each instance.
-
-        pos_label : [ int | str ] (optional)
-            The value to be interpreted as a positive instance (only for binary, ignored for multi-class).
-
-        Returns
-        -------
-        float64
-            the recall measure for the classifier
-
-        Notes
-        -----
-        This function has been deprecated.  Use the **classification_metrics** function instead.
-
-        Examples
-        --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-        column and the predicted labels in the *predictions* column::
-
-            frame.inspect()
-
-              a:unicode   b:int32   labels:int32  predictions:int32
-            /-------------------------------------------------------/
-              red               1              0                  0
-              blue              3              1                  0
-              blue              1              0                  0
-              green             0              1                  1
-
-            frame.recall('labels', 'predictions')
-
-            0.5
-
-            frame.recall('labels', 'predictions', 0)
-
-            1.0
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
-            return cm.recall
-        except:
-            raise IaError(logger)
 
     @api
     def take(self, n, offset=0, columns=None):
@@ -1660,12 +1222,6 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         """
         return self._backend.flatten_column(self, column_name)
-
-@api_class_alias
-class BigFrame(Frame):
-    def __init__(self, *args, **kwargs):
-        raise_deprecation_warning('Frame', 'Use Frame()')
-        super(Frame, self).__init__(*args, **kwargs)
 
 
 @api

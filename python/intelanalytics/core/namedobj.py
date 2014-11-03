@@ -170,7 +170,7 @@ class _NamedObjectsFunctionFactory(object):
     Parameters
     ----------
     name : string
-        String containing the name of the Frame object
+        String containing the name of the object
 
     Returns
     -------

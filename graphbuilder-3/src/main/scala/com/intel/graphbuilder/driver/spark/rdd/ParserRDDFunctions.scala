@@ -42,7 +42,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    *
    * @param vertexParser the parser to use
    */
-  def parseVertices(vertexParser: Parser[Vertex]): RDD[Vertex] = {
+  def parseVertices(vertexParser: Parser[GBVertex]): RDD[GBVertex] = {
     new VertexParserRDD(self, vertexParser)
   }
 
@@ -51,7 +51,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    *
    * @param edgeParser the parser to use
    */
-  def parseEdges(edgeParser: Parser[Edge]): RDD[Edge] = {
+  def parseEdges(edgeParser: Parser[GBEdge]): RDD[GBEdge] = {
     self.flatMap(row => edgeParser.parse(row))
   }
 

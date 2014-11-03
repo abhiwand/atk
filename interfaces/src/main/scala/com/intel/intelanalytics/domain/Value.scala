@@ -33,3 +33,10 @@ case class StringValue(value: String)
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
  */
 case class LongValue(value: Long)
+
+/**
+ * Generic singleton or list value which is a List, but has a Json serializer such that a singleton
+ * is accepted
+ * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ */
+case class SingletonOrListValue[T](value: List[T])
