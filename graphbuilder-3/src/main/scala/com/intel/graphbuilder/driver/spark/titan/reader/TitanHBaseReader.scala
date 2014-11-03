@@ -13,7 +13,8 @@ import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil 
 import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 /**
  * TitanHBaseReader constants.
  */
@@ -75,8 +76,14 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
 
     // Auto-configure number of input splits
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+    println("TITAN_AUTO_ENABLED" + titanAutoPartitioner.enableAutoPartition)
+    println("TITAN_INPUT_SPLITS" + titanConfig.getProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE))
+    titanConfig.getKeys().foreach(k => {
+      println(k + ":" + titanConfig.getProperty(k.toString))
 
+    })
+    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+    println("Splitting into " + hBaseConfig.getInt(HBaseTableInputFormat.NUM_REGION_SPLITS, -1))
     configureHBaseScanner(hBaseConfig)
 
     hBaseConfig

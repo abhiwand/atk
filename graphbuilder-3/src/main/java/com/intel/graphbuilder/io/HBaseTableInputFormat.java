@@ -43,14 +43,10 @@ public class HBaseTableInputFormat extends TableInputFormat {
         int requestedSplitCount = getRequestedSplitCount(context, splits);
 
         if (splits != null) {
-            try {
-                HBaseUniformSplitter uniformSplitter = new HBaseUniformSplitter(splits);
-                splits = uniformSplitter.createInputSplits(requestedSplitCount);
 
-            } catch (IllegalArgumentException e) {
-                LOG.warn("Unable to create multiple input splits per region. "
-                        + "Will use default split of one mapper per region.", e);
-            }
+            HBaseUniformSplitter uniformSplitter = new HBaseUniformSplitter(splits);
+            splits = uniformSplitter.createInputSplits(requestedSplitCount);
+
             LOG.info("Generated " + splits.size() + " input splits for HBase table");
         }
 
