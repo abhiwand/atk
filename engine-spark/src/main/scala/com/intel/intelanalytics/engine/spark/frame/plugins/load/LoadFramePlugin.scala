@@ -28,13 +28,10 @@ import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-import scala.concurrent.ExecutionContext
 
 /**
  * Parsing data to load and append to data frames
@@ -94,13 +91,17 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
 
       // parse failures go to their own data frame
-      if (parseResult.errorLines.count() > 0) {
-        val errorFrame = frames.lookupOrCreateErrorFrame(destinationFrame)
+      val updatedFrame = if (parseResult.errorLines.count() > 0) {
+        val (updated, errorFrame) = frames.lookupOrCreateErrorFrame(destinationFrame)
         unionAndSave(errorFrame, parseResult.errorLines)
+        updated
+      }
+      else {
+        destinationFrame
       }
 
       // successfully parsed lines get added to the destination frame
-      unionAndSave(destinationFrame, parseResult.parsedLines)
+      unionAndSave(updatedFrame, parseResult.parsedLines)
     }
     else {
       throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)

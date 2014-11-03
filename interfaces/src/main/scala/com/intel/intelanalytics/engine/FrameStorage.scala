@@ -53,7 +53,7 @@ trait FrameStorage {
    * @param frame the 'good' frame
    * @return the parse errors for the 'good' frame
    */
-  def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame
+  def lookupOrCreateErrorFrame(frame: DataFrame): (DataFrame, DataFrame)
 
   /**
    * Get the error frame of the supplied frame

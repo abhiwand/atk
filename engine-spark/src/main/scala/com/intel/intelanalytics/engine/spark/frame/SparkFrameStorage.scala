@@ -299,7 +299,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         metaStore.withSession("frame.saveFrame") {
           implicit session =>
             {
-              val newFrame = metaStore.frameRepo.update(entity.copy(
+              val existing = metaStore.frameRepo.lookup(entity.id).get
+              val newFrame = metaStore.frameRepo.update(existing.copy(
                 rowCount = Some(count),
                 schema = frameRDD.schema,
                 storageFormat = Some(storage),
@@ -460,28 +461,29 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist
    * @param frame the 'good' frame
-   * @return the parse errors for the 'good' frame
+   * @return the updated frame, plus another frame with parse errors for the 'good' frame
    */
-  override def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame = {
+  override def lookupOrCreateErrorFrame(frame: DataFrame): (DataFrame, DataFrame) = {
     val errorFrame = lookupErrorFrame(frame)
     if (!errorFrame.isDefined) {
-      metaStore.withTransaction("frame.lookupOrCreateErrorFrame") {
-        implicit session =>
-          {
-            val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors",
-              Some("This frame was automatically created to capture parse errors for " + frame.name))
-            val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
-            metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
+      val (f, err) = metaStore.withTransaction("frame.lookupOrCreateErrorFrame") { implicit session =>
+        val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors",
+          Some("This frame was automatically created to capture parse errors for " + frame.name))
+        val newlyCreatedErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
+        debug(s"Created error frame ${newlyCreatedErrorFrame.id} for frame ${frame.id}")
+        val updated = metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
+        debug(s"Updated frame ${frame.id} to have error frame ${newlyCreatedErrorFrame.id}")
 
-            //remove any existing artifacts to prevent collisions when a database is reinitialized.
-            frameFileStorage.delete(newlyCreateErrorFrame)
+        //remove any existing artifacts to prevent collisions when a database is reinitialized.
+        frameFileStorage.delete(newlyCreatedErrorFrame)
 
-            newlyCreateErrorFrame
-          }
+        (updated, newlyCreatedErrorFrame)
       }
+      debug("Error frame transaction complete")
+      (f, err)
     }
     else {
-      errorFrame.get
+      (frame, errorFrame.get)
     }
   }
 
