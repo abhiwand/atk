@@ -26,7 +26,7 @@ package com.intel.graphbuilder.driver.spark.titan
 import java.text.NumberFormat
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.graph.titan.{TitanAutoPartitioner, TitanGraphConnector}
+import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.elements.{ Edge, Vertex }
 import org.apache.hadoop.hbase.HBaseConfiguration
