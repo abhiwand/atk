@@ -143,13 +143,13 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   /**
    * Resolves a reference down to the requested type
    */
-  def resolve[T <: UriReference : TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
+  def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
     invocation.resolver.resolve(reference).get
 
   /**
    * Creates an object of the requested type.
    */
-  def create[T <: UriReference : TypeTag](implicit invocation: Invocation, ev: NotNothing[T]): T = invocation.resolver.create[T]()
+  def create[T <: UriReference: TypeTag](implicit invocation: Invocation, ev: NotNothing[T]): T = invocation.resolver.create[T]()
 
   /**
    * Save data, possibly creating a new object
@@ -162,11 +162,10 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * to convert them to [[com.intel.intelanalytics.domain.HasMetaData]] or
    * [[com.intel.intelanalytics.domain.HasData]] instances
    */
-  implicit def coerceReference[In <: UriReference, Out <: UriReference](ref: In)
-                                                                       (implicit invocation: Invocation,
-                                                                        ev: Out <:< In,
-                                                                        tagIn: TypeTag[In],
-                                                                        tagOut: TypeTag[Out]): Out = {
+  implicit def coerceReference[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
+                                                                                 ev: Out <:< In,
+                                                                                 tagIn: TypeTag[In],
+                                                                                 tagOut: TypeTag[Out]): Out = {
     resolve[Out](ref)
   }
 
