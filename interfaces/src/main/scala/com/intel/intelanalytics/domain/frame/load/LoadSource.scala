@@ -50,7 +50,7 @@ case class Load(destination: FrameReference, source: LoadSource)
 case class LoadSource(source_type: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None) {
 
   require(source_type != null)
-  require(source_type == "frame" || source_type == "file" || source_type == "pandasFrame")
+  require(source_type == "frame" || source_type == "file" || source_type == "strings")
   require(uri != null)
   require(parser != null)
   require(data != null)
@@ -66,7 +66,7 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
    * True if source is a pandas Data Frame
    */
   def isClientData: Boolean = {
-    source_type == "pandasFrame"
+    source_type == "strings"
   }
 
   /**
