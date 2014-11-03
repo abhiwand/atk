@@ -25,12 +25,12 @@ package com.intel.graphbuilder.elements
 
 import org.scalatest.{ Matchers, WordSpec }
 
-class EdgeTest extends WordSpec with Matchers {
+class GBEdgeTest extends WordSpec with Matchers {
 
   val tailId = new Property("gbId", 10001)
   val headId = new Property("gbId", 10002)
   val label = "myLabel"
-  val edge = new Edge(tailId, headId, label, Set(new Property("key", "value")))
+  val edge = new GBEdge(tailId, headId, label, Set(new Property("key", "value")))
 
   "Edge" should {
 
@@ -52,7 +52,7 @@ class EdgeTest extends WordSpec with Matchers {
     }
 
     "be mergeable" in {
-      val edge2 = new Edge(tailId, headId, label, Set(new Property("otherKey", "otherValue")))
+      val edge2 = new GBEdge(tailId, headId, label, Set(new Property("otherKey", "otherValue")))
 
       // invoke method under test
       val merged = edge.merge(edge2)
@@ -63,7 +63,7 @@ class EdgeTest extends WordSpec with Matchers {
 
     "not allow merging of edges with different ids" in {
       val diffId = new Property("gbId", 9999)
-      val edge2 = new Edge(tailId, diffId, label, Set(new Property("otherKey", "otherValue")))
+      val edge2 = new GBEdge(tailId, diffId, label, Set(new Property("otherKey", "otherValue")))
 
       intercept[IllegalArgumentException] {
         edge.merge(edge2)

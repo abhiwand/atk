@@ -35,7 +35,7 @@ print("inspect frame 1")
 print frame1.inspect(10)
 
 print("delete frame1 passing BigFrame")
-print delete_frame(frame1)
+print drop_frames(frame1)
 
 print("delete frame2 passing the name")
-print delete_frame("myframe")
+print drop_frames("myframe")

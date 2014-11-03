@@ -39,12 +39,12 @@ object GraphBuilderRDDImplicits {
   /**
    * Functions applicable to Vertex RDD's
    */
-  implicit def vertexRDDToVertexRDDFunctions(rdd: RDD[Vertex]) = new VertexRDDFunctions(rdd)
+  implicit def vertexRDDToVertexRDDFunctions(rdd: RDD[GBVertex]) = new VertexRDDFunctions(rdd)
 
   /**
    * Functions applicable to Edge RDD's
    */
-  implicit def edgeRDDToEdgeRDDFunctions(rdd: RDD[Edge]) = new EdgeRDDFunctions(rdd)
+  implicit def edgeRDDToEdgeRDDFunctions(rdd: RDD[GBEdge]) = new EdgeRDDFunctions(rdd)
 
   /**
    * Functions applicable to GraphElement RDD's
