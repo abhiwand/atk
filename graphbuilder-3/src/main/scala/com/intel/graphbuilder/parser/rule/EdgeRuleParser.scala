@@ -25,13 +25,13 @@ package com.intel.graphbuilder.parser.rule
 
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.elements.Edge
+import com.intel.graphbuilder.elements.GBEdge
 import scala.collection.mutable.ListBuffer
 
 /**
  * Parse InputRow's into Edges using EdgeRules
  */
-case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) extends Parser[Edge](inputSchema) with Serializable {
+case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) extends Parser[GBEdge](inputSchema) with Serializable {
 
   // each rule gets its own parser
   private val edgeParsers = edgeRules.map(rule => rule -> new SingleEdgeRuleParser(rule)).toMap
@@ -39,8 +39,8 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
   /**
    * Parse the supplied InputRow into zero or more Edges using all applicable rules
    */
-  def parse(row: InputRow): Seq[Edge] = {
-    val edges = ListBuffer[Edge]()
+  def parse(row: InputRow): Seq[GBEdge] = {
+    val edges = ListBuffer[GBEdge]()
     for {
       rule <- edgeRules
       if rule appliesTo row
@@ -65,8 +65,8 @@ private[graphbuilder] case class SingleEdgeRuleParser(rule: EdgeRule) extends Se
   private val headGbIdParser = new SinglePropertyRuleParser(rule.headVertexGbId)
   private val propertyParser = new PropertyRuleParser(rule.propertyRules)
 
-  def parse(row: InputRow): Edge = {
-    new Edge(tailGbIdParser.parse(row), headGbIdParser.parse(row), rule.label.value(row), propertyParser.parse(row))
+  def parse(row: InputRow): GBEdge = {
+    new GBEdge(tailGbIdParser.parse(row), headGbIdParser.parse(row), rule.label.value(row), propertyParser.parse(row))
   }
 }
 

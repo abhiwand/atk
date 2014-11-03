@@ -30,7 +30,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.Date
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ GraphElement, Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GraphElement, GBEdge, GBVertex }
 import java.io.File
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 

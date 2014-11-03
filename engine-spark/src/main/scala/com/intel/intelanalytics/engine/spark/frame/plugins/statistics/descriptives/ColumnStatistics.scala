@@ -143,53 +143,6 @@ private[spark] object ColumnStatistics extends Serializable {
       goodRowCount = stats.goodRowCount)
   }
 
-  /**
-   * Calculate full statistics of data column, possibly weighted by an optional weights column.
-   *
-   * It is assumed that the values in the data column are unique. If the data values are not unique,
-   * some statistics will be incorrect.
-   *
-   * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
-   * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
-   * number) or as "non positive weight" (when a row's weight entry is <= 0).
-   *
-   * @param dataColumnIndex Index of column providing the data. Must be numerical data.
-   * @param dataType The type of the data column.
-   * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
-   * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows.
-   * @return  Full statistics of the column.
-   */
-  def columnFullStatistics(dataColumnIndex: Int,
-                           dataType: DataType,
-                           weightsColumnIndexOption: Option[Int],
-                           weightsTypeOption: Option[DataType],
-                           rowRDD: RDD[Row]): ColumnFullStatisticsReturn = {
-
-    val dataWeightPairs: RDD[(Double, Double)] =
-      getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
-
-    // since we aren't offering full statistics right now, this just makes the project compile
-    // if we want to use population variance in full statistics, we'll have to plumb that down
-    val stats = new NumericalStatistics(dataWeightPairs, false)
-
-    ColumnFullStatisticsReturn(mean = stats.weightedMean,
-      geometricMean = stats.weightedGeometricMean,
-      variance = stats.weightedVariance,
-      standardDeviation = stats.weightedStandardDeviation,
-      skewness = stats.weightedSkewness,
-      kurtosis = stats.weightedKurtosis,
-      totalWeight = stats.totalWeight,
-      meanConfidenceLower = stats.meanConfidenceLower,
-      meanConfidenceUpper = stats.meanConfidenceUpper,
-      minimum = stats.min,
-      maximum = stats.max,
-      positiveWeightCount = stats.positiveWeightCount,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount,
-      badRowCount = stats.badRowCount,
-      goodRowCount = stats.goodRowCount)
-  }
-
   def getDataWeightPairs(dataColumnIndex: Int,
                          weightsColumn: Option[Column],
                          rowRDD: RDD[Row]): RDD[(Any, Double)] = {

@@ -23,17 +23,6 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationV
 
   private lazy val singlePassStatistics: FirstPassStatistics = StatisticsRDDFunctions.generateFirstPassStatistics(dataWeightPairs)
 
-  /*
-   * Second pass statistics are used to calculate higher moments about the mean. We can probably get away with just
-   * one pass... but not till after 0.8
-   * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
-   *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
-   *  at the API level.)
-   */
-
-  private lazy val secondPassStatistics: SecondPassStatistics =
-    StatisticsRDDFunctions.generateSecondPassStatistics(dataWeightPairs, weightedMean, weightedStandardDeviation)
-
   /**
    * The weighted mean of the data.
    */
@@ -135,36 +124,6 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationV
       weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(totalWeight))
     else
       Double.NaN
-
-  /**
-   * The un-weighted skewness of the dataset.
-   * NaN when there are <= 2 data elements of nonzero weight.
-   */
-  lazy val weightedSkewness: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.positiveWeightCount)
-    val sumOfThirdWeighted: Option[BigDecimal] = secondPassStatistics.sumOfThirdWeighted
-    if ((n > 2) && sumOfThirdWeighted.nonEmpty)
-      ((n / ((n - 1) * (n - 2))) * sumOfThirdWeighted.get).toDouble
-    else Double.NaN
-  }
-
-  /**
-   * The un-weighted kurtosis of the dataset. NaN when there are <= 3 data elements of nonzero weight.
-   */
-  lazy val weightedKurtosis: Double = {
-    val n = BigDecimal(singlePassStatistics.positiveWeightCount)
-    val sumOfFourthWeighted: Option[BigDecimal] = secondPassStatistics.sumOfFourthWeighted
-    if ((n > 3) && sumOfFourthWeighted.nonEmpty) {
-      val leadingCoefficient: BigDecimal = (n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))
-
-      val subtrahend: BigDecimal = (3 * (n - 1) * (n - 1)) / ((n - 2) * (n - 3))
-
-      ((leadingCoefficient * secondPassStatistics.sumOfFourthWeighted.get) - subtrahend).toDouble
-    }
-    else {
-      Double.NaN
-    }
-  }
 
 }
 

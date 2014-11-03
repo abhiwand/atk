@@ -123,5 +123,5 @@ class CommandNumpyDoc(object):
         # TODO - raises
         # TODO - notes
         # TODO - examples
-        sections.append("\n    .. versionadded:: 0.8")  # TODO - enhance version
+        # sections.append("\n    .. versionadded:: 0.8")  # TODO - enhance version
         return "\n".join(sections)

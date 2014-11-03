@@ -23,29 +23,25 @@
 
 package com.intel.graphbuilder.elements
 
-import com.intel.graphbuilder.util.StringUtils
-
 /**
- * An Edge links two Vertices.
+ * A Vertex.
  * <p>
  * GB Id's are special properties that uniquely identify Vertices.  They are special, in that they must uniquely
  * identify vertices, but otherwise they are completely normal properties.
  * </p>
- * @param tailPhysicalId the unique Physical ID for the source Vertex from the underlying Graph storage layer (optional)
- * @param headPhysicalId the unique Physical ID for the destination Vertex from the underlying Graph storage layer (optional)
- * @param tailVertexGbId the unique ID for the source Vertex
- * @param headVertexGbId the unique ID for the destination Vertex
- * @param label the Edge label
- * @param properties the set of properties associated with this edge
+ * @constructor create a new Vertex
+ * @param physicalId the unique Physical ID for the Vertex from the underlying Graph storage layer (optional)
+ * @param gbId the unique id that will be used by graph builder
+ * @param properties the other properties that exist on this vertex
  */
-case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) extends GraphElement with Mergeable[Edge] {
+case class GBVertex(physicalId: Any, gbId: Property, properties: Set[Property]) extends GraphElement with Mergeable[GBVertex] {
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) {
-    this(null, null, tailVertexGbId, headVertexGbId, label, properties)
+  def this(gbId: Property, properties: Set[Property]) {
+    this(null, gbId, properties)
   }
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: Any, properties: Set[Property]) {
-    this(tailVertexGbId, headVertexGbId, StringUtils.nullSafeToString(label), properties)
+  if (gbId == null) {
+    throw new IllegalArgumentException("gbId can't be null")
   }
 
   /**
@@ -53,34 +49,45 @@ case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId
    *
    * (In Spark, you would use this as the unique id in the groupBy before merging duplicates)
    */
-  override def id: Any = {
-    (tailVertexGbId, headVertexGbId, label)
-  }
+  override def id: Any = gbId
 
   /**
-   * Merge properties for two edges.
+   * Merge two Vertices with the same id into a single Vertex with a combined list of properties.
    *
    * Conflicts are handled arbitrarily.
    *
    * @param other item to merge
    * @return the new merged item
    */
-  override def merge(other: Edge): Edge = {
+  override def merge(other: GBVertex): GBVertex = {
     if (id != other.id) {
-      throw new IllegalArgumentException("You can't merge edges with different ids or labels")
+      throw new IllegalArgumentException("You can't merge vertices with different ids")
     }
-    new Edge(tailVertexGbId, headVertexGbId, label, Property.merge(this.properties, other.properties))
+
+    if (physicalId != null && other.physicalId == null) {
+      new GBVertex(physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else if (physicalId == null && other.physicalId != null) {
+      new GBVertex(other.physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else if (physicalId != null && physicalId == other.physicalId) {
+      new GBVertex(physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else {
+      new GBVertex(gbId, Property.merge(this.properties, other.properties))
+    }
   }
 
   /**
-   * Create edge with head and tail in reverse order
+   * Full set of properties including the gbId
    */
-  def reverse(): Edge = {
-    new Edge(headVertexGbId, tailVertexGbId, label, properties)
+  def fullProperties: Set[Property] = {
+    properties + gbId
   }
 
   /**
    * Find a property in the property list by key
+   *
    * @param key Property key
    * @return Matching property
    */
