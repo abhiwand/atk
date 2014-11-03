@@ -150,6 +150,17 @@ intel.analytics {
         }
 
         //autotype = "none"
+        auto-partitioner {
+          hbase {
+            # Number of regions per regionserver to set when creating Titan’s HBase table
+            regions-per-server = 2
+
+            # Number of input splits per Spark core for Titan/HBase reader
+            input-splits-per-spark-core = 2
+          }
+
+          enable = true
+        }
 
         ids {
           //block-size = 300000

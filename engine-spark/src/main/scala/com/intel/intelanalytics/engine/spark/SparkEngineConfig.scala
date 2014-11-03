@@ -23,8 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.{ ConfigFactory, Config }
+import org.apache.hadoop.hbase.HBaseConfiguration
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
@@ -135,6 +137,10 @@ trait SparkEngineConfig extends EventLogging {
     for (entry <- titanDefaultConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
+
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
+    titanAutoPartitioner.setHBasePreSplits(HBaseConfiguration.create())
+
     titanConfiguration
   }
 
