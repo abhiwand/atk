@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ Edge, Property }
+import com.intel.graphbuilder.elements.{ GBEdge, Property }
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.{ Direction, Graph }
 
@@ -44,7 +44,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @param edge the GraphBuilder Edge find
    * @return the Blueprints Edge
    */
-  def find(edge: Edge): Option[blueprints.Edge] = {
+  def find(edge: GBEdge): Option[blueprints.Edge] = {
     find(edge.tailVertexGbId, edge.headVertexGbId, edge.label)
   }
 
@@ -91,7 +91,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @param edge the description of the Edge to create
    * @return the newly created Edge
    */
-  def create(edge: Edge): blueprints.Edge = {
+  def create(edge: GBEdge): blueprints.Edge = {
     val tailVertex = vertexDAO.findById(edge.tailPhysicalId, edge.tailVertexGbId)
     val headVertex = vertexDAO.findById(edge.headPhysicalId, edge.headVertexGbId)
     if (tailVertex.isEmpty || headVertex.isEmpty) {
@@ -107,7 +107,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @param blueprintsEdge to
    * @return the blueprints.Edge
    */
-  def update(edge: Edge, blueprintsEdge: blueprints.Edge): blueprints.Edge = {
+  def update(edge: GBEdge, blueprintsEdge: blueprints.Edge): blueprints.Edge = {
     edge.properties.map(property => blueprintsEdge.setProperty(property.key, property.value))
     blueprintsEdge
   }
@@ -117,7 +117,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @param edge the description of the Edge to create
    * @return the newly created Edge
    */
-  def updateOrCreate(edge: Edge): blueprints.Edge = {
+  def updateOrCreate(edge: GBEdge): blueprints.Edge = {
     val blueprintsEdge = find(edge)
     if (blueprintsEdge.isEmpty) {
       create(edge)
