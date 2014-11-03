@@ -573,10 +573,26 @@ or::
 
 More details about the logs can be found here: :doc:`ad_log`.
 
+Upgrading Python to 2.7
+=======================
+
+Remove the old python 2.7 client on all your nodes::
+
+    sudo yum remove intelanalytics-python-rest-client-python27
+ 
+Make sure your yum dependency repo is pointed to https://bda-public-repo.s3-us-west-2.amazonaws.com/yum
+Update/install intelanalytics on slave nodes::
+
+    sudo yum install intelanalytics-python-rest-client intelanalytics-spark-deps
+ 
+Update/install intel analytics rest server on master::
+
+    sudo yum install intelanalytics-rest-server
+
 .. toctree::
     :hidden:
     
-    ad_inst_IA2
+    ad_inst_ia2
     ad_log
 
 .. _Cloudera Installation Documentation: http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html
