@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.util.{ JvmVersionReporter, DiskSpaceReporter }
+import com.intel.intelanalytics.engine.spark.util.{EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter}
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
 
@@ -50,6 +50,8 @@ class SparkComponent extends EngineComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
+
+  EnvironmentLogger.log()
 
   SparkEngineConfig.logSettings()
 
