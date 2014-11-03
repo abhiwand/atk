@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.domain.SingleReference
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -36,7 +37,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Copies specified columns into a new BigFrame object, optionally renaming them and/or filtering them
  */
-class CopyPlugin extends SparkCommandPlugin[FrameCopy, FrameReference] {
+class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
 
   override def name: String = "frame/copy"
 
@@ -58,14 +59,14 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, FrameReference] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameCopy)(implicit invocation: Invocation): FrameReference = {
+  override def execute(arguments: FrameCopy)(implicit invocation: Invocation): DataFrame = {
 
-    val sourceFrame: SparkFrameData = arguments.frame
+    val sourceFrame: SparkFrameData = coerceReference(arguments.frame)
     val (newSchema, indices) = arguments.columns match {
       case None => (sourceFrame.meta.schema, null) // full copy
       case Some(cols) => sourceFrame.meta.schema.getRenamedSchemaAndIndices(cols) // partial copy
     }
-    val newFrame = create[FrameMeta]
+    val newFrame : FrameMeta = create[FrameMeta]
 
     val data: FrameRDD = arguments.where match {
       case None =>
@@ -82,6 +83,6 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, FrameReference] {
     }
 
     // save results
-    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), data))
+    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), data)).meta
   }
 }

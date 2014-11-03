@@ -154,6 +154,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
+
   implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameEntity)
   implicit def singletonOrListFormat[T: JsonFormat] = new JsonFormat[SingletonOrListValue[T]] {
     def write(list: SingletonOrListValue[T]) = JsArray(list.value.map(_.toJson))

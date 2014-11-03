@@ -49,7 +49,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
  */
-class BinColumnPlugin extends SparkCommandPlugin[BinColumn, FrameReference] {
+class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -81,8 +81,8 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, FrameReference] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: BinColumn)(implicit invocation: Invocation): FrameReference = {
-    val frame: SparkFrameData = arguments.frame
+  override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = coerceReference(arguments.frame)
     val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
     if (frame.meta.schema.hasColumn(arguments.binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
@@ -97,6 +97,6 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, FrameReference] {
         DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, frame.data.toLegacyFrameRDD)
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
-    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), FrameRDD.toFrameRDD(newSchema, data)))
+    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), FrameRDD.toFrameRDD(newSchema, data))).meta
   }
 }

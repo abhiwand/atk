@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference] {
+class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -65,14 +65,14 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReferenc
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): FrameReference = {
-    val frame: SparkFrameData = arguments.frame
+  override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = coerceReference(arguments.frame)
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
     val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
     // Update the data
     val rdd = PythonRDDStorage.pyMap(frame.data, arguments.expression, newSchema)
 
-    save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd))
+    save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd)).meta
   }
 }

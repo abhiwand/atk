@@ -70,15 +70,26 @@ trait EventLogging {
     catch {
       case NonFatal(e) => {
         if (logErrors) {
-          val message = safeMessage(e)
-          error(message, exception = e)
+          logSafeError(e)
         }
         throw e
+      }
+      //For some reason NonFatal doesn't include NotImplementedError, so we handle it separately.
+      case e: NotImplementedError => {
+        if (logErrors) {
+          logSafeError(e)
+        }
+        throw new Exception("Internal error", e)
       }
     }
     finally {
       ctx.close()
     }
+  }
+
+  private def logSafeError[T](e: Throwable) {
+    val message = safeMessage(e)
+    error(message, exception = e)
   }
 
   private def safeMessage[T](e: Throwable): String = {

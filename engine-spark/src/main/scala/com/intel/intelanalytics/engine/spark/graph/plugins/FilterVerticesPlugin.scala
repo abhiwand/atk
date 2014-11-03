@@ -81,7 +81,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
   override def execute(arguments: FilterVertexRows)(implicit invocation: Invocation): DataFrame = {
     val frames = invocation.engine.frames.asInstanceOf[SparkFrameStorage]
 
-    val vertexFrame: SparkFrameData = arguments.frameId
+    val vertexFrame: SparkFrameData = coerceReference(arguments.frameId)
 
     vertexFrame.meta.graphId match {
       case Some(graphId) => {
