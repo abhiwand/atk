@@ -111,7 +111,8 @@ object PythonRDDStorage extends ClassLoaderAware {
 
       val conv = if (converter == null) {
         convertWithSchema(pyRdd, schema)
-      } else {
+      }
+      else {
         converter
       }
       val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
