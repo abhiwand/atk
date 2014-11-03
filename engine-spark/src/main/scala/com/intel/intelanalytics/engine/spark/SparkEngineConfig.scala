@@ -140,7 +140,7 @@ trait SparkEngineConfig extends EventLogging {
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
     titanAutoPartitioner.setHBasePreSplits(HBaseConfiguration.create())
-
+    println("Updated pre-splits for auto-partitioner" + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
     titanConfiguration
   }
 
