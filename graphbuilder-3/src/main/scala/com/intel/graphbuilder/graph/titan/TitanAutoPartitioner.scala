@@ -145,7 +145,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
     }
     else {
       val numCoresPerWorker = Runtime.getRuntime.availableProcessors()
-      //val numWorkers = sparkContext.getExecutorStorageStatus.size -- not working well
+      //val numWorkers = sparkContext.getExecutorStorageStatus.size -1 -- not working well === need to wait several seconds to get correct count
       val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create)
       val numWorkers = getHBaseRegionServerCount(hBaseAdmin)
       println("Num cores per worker: " + numCoresPerWorker)
