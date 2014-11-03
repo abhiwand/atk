@@ -11,12 +11,12 @@ import com.intel.event.EventLogging
 object EnvironmentLogger extends EventLogging {
   def log() = withContext("EnvironmentLogger") {
     withContext("environmentVariables") {
-      System.getenv().keySet().toArray(Array[String]()).sorted.foreach( environmentVariable =>
+      System.getenv().keySet().toArray(Array[String]()).sorted.foreach(environmentVariable =>
         info(environmentVariable + "=" + System.getenv(environmentVariable))
       )
     }
     withContext("systemProperties") {
-      System.getProperties.stringPropertyNames().toArray(Array[String]()).sorted.foreach( name => {
+      System.getProperties.stringPropertyNames().toArray(Array[String]()).sorted.foreach(name => {
         info(name + "=" + System.getProperty(name))
       })
     }
