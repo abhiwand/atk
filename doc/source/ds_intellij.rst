@@ -11,7 +11,7 @@ Prerequisites
 
 These instructions assume you have already installed
 
-- Python 2.6 
+- Python 2.7 
 - |IA| Python Rest Client and required dependencies
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
@@ -31,10 +31,10 @@ Setup
 
     a)  Choose "Next" leaving "Create project form template" unchecked
 
-    #)  Choose "Python 2.6" as the Python Interpreter and choose the "Next" button
+    #)  Choose "Python 2.7" as the Python Interpreter and choose the "Next" button
 
 
-        i)  If "Python 2.6" does not appear in the list you will need to configure a Python 2.6 Intepreter.
+        i)  If "Python 2.7" does not appear in the list you will need to configure a Python 2.7 Intepreter.
 
             1)  Choose the "Configure" button
 
@@ -44,7 +44,7 @@ Setup
 
             #)  Choose "Add Local"
 
-            #)  Browse for your local Python 2.6 installation.  On RedHat and Centos this is probably /usr/bin/python.
+            #)  Browse for your local Python 2.7 installation.  On RedHat and Centos this is probably /usr/bin/python.
 
             #)  Choose the "OK" button
 
@@ -55,7 +55,7 @@ Setup
 
 #)  Choose :menuselection:`File --> Project Structure`
 
-    a)  Make sure "Python 2.6" is selected as the Project SDK and choose "Apply"
+    a)  Make sure "Python 2.7" is selected as the Project SDK and choose "Apply"
 
     #)  Choose "Libraries" in the left hand pane
 

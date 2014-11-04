@@ -35,8 +35,8 @@ Glossary
 
     Alternating Least Squares
 
-        The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the
-        |IA| Toolkit.
+        The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm
+        used by the |IA| Toolkit.
 
         For more information see:
 
@@ -61,8 +61,10 @@ Glossary
 
             A Baysian Network is a probabilistic graphic model that represents a set of random variables and
             their conditional dependencies through a directed acyclic graph (DAG).
-            For example, a Bayesian network could represent the probabilistic relationships between diseases and symptoms.
-            Given symptoms, the network can be used to compute the probabilities of the presence of various diseases.
+            For example, a Bayesian network could represent the probabilistic relationships between diseases
+            and symptoms.
+            Given symptoms, the network can be used to compute the probabilities of the presence of various
+            diseases.
 
         \Contrast with :term:`Markov Random Fields`.
         
@@ -76,10 +78,10 @@ Glossary
 
             A first issue is the tradeoff between bias and variance. [#f2]_
             Imagine that we have available several different, but equally good, training data sets.
-            A learning algorithm is biased for a particular input x if, when trained on each of these data sets,
-            it is systematically incorrect when predicting the correct output for x.
-            A learning algorithm has high variance for a particular input x if it predicts different output values
-            when trained on different training sets.
+            A learning algorithm is biased for a particular input x if, when trained on each of these data
+            sets, it is systematically incorrect when predicting the correct output for x.
+            A learning algorithm has high variance for a particular input x if it predicts different output
+            values when trained on different training sets.
             The prediction error of a learned classifier is related to the sum of the bias and
             the variance of the learning algorithm.
             Generally, there is a tradeoff between bias and variance.
@@ -96,13 +98,13 @@ Glossary
 
     BigColumn
 
-        An identifier for a single column in a BigFrame.
+        An identifier for a single column in a Frame.
 
-    BigGraph
+    TitanGraph
 
         A class object with the functionality to manipulate the data in a :term:`graph`.
 
-    BigFrame
+    Frame
 
         A class object with the functionality to manipulate the data in a :term:`frame`.
 
@@ -127,9 +129,11 @@ Glossary
 
         From `Wikipedia\: Centrality`_:
 
-        In graph theory and network analysis, centrality of a vertex measures its relative importance within a graph.
+        In graph theory and network analysis, centrality of a vertex measures its relative importance within
+        a graph.
         Applications include how influential a person is within a social network,
-        how important a room is within a building (space syntax), and how well-used a road is within an urban network.
+        how important a room is within a building (space syntax), and how well-used a road is within an
+        urban network.
         There are four main measures of centrality: degree, betweenness, closeness, and eigenvector.
         Centrality concepts were first developed in social network analysis,
         and many of the terms used to measure centrality reflect their sociological origin. [#f10]_
@@ -165,8 +169,8 @@ Glossary
 
         From `Wikipedia\: Collaborative Filtering`_:
 
-        In general, collaborative filtering is the process of filtering for information or patterns using techniques
-        involving collaboration among multiple agents, viewpoints, data sources, etc. [#f5]_
+        In general, collaborative filtering is the process of filtering for information or patterns using
+        techniques involving collaboration among multiple agents, viewpoints, data sources, etc. [#f5]_
 
     Community Structure Detection
 
@@ -216,11 +220,14 @@ Glossary
 
     CSV
 
-        A :abbr:`CSV (comma-separated values)` file stores tabular data (numbers and text) in plain-text form.
+        A :abbr:`CSV (comma-separated values)` file stores tabular data (numbers and text) in plain-text
+        form.
         Plain text means that the file is a sequence of readable characters.
-        A CSV file can consist of any number of records, separated by unique character or sequence of characters.
+        A CSV file can consist of any number of records, separated by unique character or sequence of
+        characters.
         New line characters are ususally used for this purpose.
-        Each record consists of one or more fields, separated by some unique character or sequence of characters.
+        Each record consists of one or more fields, separated by some unique character or sequence of
+        characters.
         Commas are ususally used for this purpose, hence the name.
         Tab characters are also quite common.
         
@@ -243,6 +250,10 @@ Glossary
             follow a sequence of edges that eventually loops back to :math:`v` again.
 
         Contrast with :term:`Undirected Graph`.
+
+    ECDF
+    
+        See :term:`Empirical Cumulative Distribution`
 
     Edge
 
@@ -278,16 +289,23 @@ Glossary
 
     Empirical Cumulative Distribution
     
-        The :abbr:`ECDF (empirical cumulative distribution function)` :math:`Fn` is a step function with
-        jumps :math:`i/n` at observation values, where :math:`i` is the number of tied observations at that value.
+        The :abbr:`ECDF (empirical cumulative distribution function)` :math:`\hat F_{n}(t)` is a step
+        function with jumps :math:`i/n` at observation values, where :math:`i` is the number of tied
+        observations at that value.
         Missing values are ignored.
 
-        For observations x :math:`= (x1,x2, ... xn)`, :math:`Fn` is the fraction of observations less or
-        equal to :math:`t`.
+        For observations :math:`x = (x_{1},x_{2}, ... x_{n})`, :math:`\hat F_{n}(t)` is the fraction of
+        observations less than or equal to :math:`t`.
         
         .. math::
 
-            Fn(t) = \# \frac {xi <= t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator(xi <= t).
+            \hat F_{n}(t) = \frac {x_{i} \le t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator\{x_{i} \le t\}.
+
+        where :math:`Indicator\{A\}` is the indicator of event :math:`A`.
+        For a fixed :math:`t`, the indicator :math:`Indicator\{x_{i} \le t\}` is a Bernoulli random variable
+        with parameter :math:`p = F(t)`, hence :math:`n \hat F_{n}(t)` is a binomial random variable with
+        mean :math:`n F(t)` and variance :math:`n F(t)(1 - F(t))`. This implies that
+        :math:`\hat F_{n}(t)` is an unbiased estimator for :math:`F(t)`.
 
     ETL
     
@@ -295,8 +313,8 @@ Glossary
 
         From `Wikipedia\: Extract, Transform, and Load`_:
 
-            In computing, :abbr:`ETL (extract, transform, and load)` refers to a process in database usage and 
-            especially in data warehousing that:
+            In computing, :abbr:`ETL (extract, transform, and load)` refers to a process in database usage
+            and especially in data warehousing that:
 
         \ 
             *   Extracts data from outside sources
@@ -305,8 +323,9 @@ Glossary
                 data mart, or data warehouse)
 
         \ 
-            :abbr:`ETL (extract, transform, and load)` systems are commonly used to integrate data from multiple
-            applications, typically developed and supported by different vendors or hosted on separate computer hardware.
+            :abbr:`ETL (extract, transform, and load)` systems are commonly used to integrate data from
+            multiple applications, typically developed and supported by different vendors or hosted on
+            separate computer hardware.
             The disparate systems containing the original data are frequently managed and operated by
             different employees.
             For example a cost accounting system may combine data from payroll, sales and purchasing.
@@ -385,7 +404,8 @@ Glossary
         Examples of graph analytics may include:
 
             traversals
-                algorithmic walk throughs of the graph to determine optimal paths and relationship between vertices
+                algorithmic walk throughs of the graph to determine optimal paths and relationship between
+                vertices
             statistics
                 important attributes of the graph such as degrees of separation, number of triangular counts,
                 centralities (highly influential nodes), and so on
@@ -444,7 +464,8 @@ Glossary
 
         You can use any positive float number.
         So 3, 2.5, 1, or 0.7 are all valid values.
-        A larger smoothing value implies stronger relationships between adjacent random variables in the graph.
+        A larger smoothing value implies stronger relationships between adjacent random variables in the
+        graph.
 
     Katz Centrality
 
@@ -470,7 +491,8 @@ Glossary
         continuous, one-dimensional probability distributions that can be used to compare a sample with
         a reference probability distribution (one-sample :abbr`K-S (Kolmogorov–Smirnov)` test),
         or to compare two samples (two-sample :abbr`K-S (Kolmogorov–Smirnov)` test).
-        The :abbr`K-S (Kolmogorov–Smirnov)` statistic quantifies a distance between the empirical distribution
+        The :abbr`K-S (Kolmogorov–Smirnov)` statistic quantifies a distance between the empirical
+        distribution
         function of the sample and the cumulative distribution function of the reference distribution,
         or between the empirical distribution functions of two samples.
 
@@ -480,7 +502,8 @@ Glossary
 
         You start out with a few things that are labeled (with a "kind" or "class" marker).
         And a whole bunch of things that are unlabeled.
-        The goal is compute labels for the unlabeled things so that things that are similar get the same label.
+        The goal is compute labels for the unlabeled things so that things that are similar get the same
+        label.
 
         Mathematically, similarity means that when you model these things as points in space, they are close.
         So, if you want to be all pretty and geometric about it, it's a way of taking a bunch of points,
@@ -510,7 +533,8 @@ Glossary
 
         Adapted from: `Stanford\: Machine Learning`_:
 
-            This is the tradeoff parameter, used in :term:`Label Propagation` on :term:`Gaussian Random Fields`.
+            This is the tradeoff parameter, used in :term:`Label Propagation` on
+            :term:`Gaussian Random Fields`.
             The regularization parameter is a control on fitting parameters.
             It is used in machine learning algorithms to prevent overfitting.
             As the magnitude of the fitting parameter increases, there will be an increasing penalty on
@@ -521,7 +545,7 @@ Glossary
 
         These are referred to in the API documentation.
         These are functions passed to other functions.
-        An example of this would be adding a column to a BigFrame and telling the function responsible for
+        An example of this would be adding a column to a Frame and telling the function responsible for
         the column addition what it should put into the new column based on data in other columns.
         A function must return the same type of data that the column definition supplies.
         For example, if a column is defined as a float within an array, the function must return the data
@@ -532,12 +556,14 @@ Glossary
 
         From `Wikipedia\: Latent Dirichlet Allocation`_:
 
-            In natural language processing, latent Dirichlet allocation (LDA) is a generative model that allows sets of
-            observations to be explained by unobserved groups that explain why some parts of the data are similar.
-            For example, if observations are words collected into documents, it posits that each document is a mixture of
-            a small number of topics and that each word's creation is attributable to one of the document's topics.
-            LDA is an example of a topic model and was first presented as a graphical model for topic discovery by
-            David Blei, Andrew Ng, and Michael Jordan in 2003.
+            In natural language processing, latent Dirichlet allocation (LDA) is a generative model that
+            allows sets of observations to be explained by unobserved groups that explain why some parts of
+            the data are similar.
+            For example, if observations are words collected into documents, it posits that each document is
+            a mixture of a small number of topics and that each word's creation is attributable to one of
+            the document's topics.
+            LDA is an example of a topic model and was first presented as a graphical model for topic
+            discovery by David Blei, Andrew Ng, and Michael Jordan in 2003.
 
     list
 
@@ -563,7 +589,8 @@ Glossary
         distributed algorithm on a cluster.
         It is composed of a map() procedure that performs filtering and sorting (such as sorting
         students by first name into queues, one queue for each name) and a reduce() procedure that performs
-        a summary operation (such as counting the number of students in each queue, yielding name frequencies).
+        a summary operation (such as counting the number of students in each queue, yielding name
+        frequencies).
         The "MapReduce System" (also called "infrastructure" or "framework") orchestrates by marshaling the
         distributed servers, running the various tasks in parallel, managing all communications and data
         transfers between the various parts of the system, and providing for redundancy and fault tolerance.
@@ -614,24 +641,38 @@ Glossary
         can execute in a distributed fashion on the cluster.
         For further explanation, see :doc:`ds_apir`
 
+    Quantile
+
+        One of the class of values of a variate which divides the members of a batch or sample into
+        equal-sized subgroups of adjacent values or a probability distribution into distributions of
+        equal probability.    
+
     Receiver Operating Characteristic
     
         From `Wikipedia\: Receiver Operating Characteristic`_:
 
-        In signal detection theory, a receiver operating characteristic (ROC), or simply ROC curve, is a graphical plot which illustrates the performance of a binary classifier system as its discrimination threshold is varied.
-        It is created by plotting the fraction of true positives out of the total actual positives (TPR = true positive rate) vs. the fraction of false positives out of the total actual negatives (FPR = false positive rate), at various threshold settings.
+        In signal detection theory, a receiver operating characteristic (ROC), or simply ROC curve,
+        is a graphical plot which illustrates the performance of a binary classifier system as its
+        discrimination threshold is varied.
+        It is created by plotting the fraction of true positives out of the total actual positives
+        (TPR = true positive rate) vs. the fraction of false positives out of the total actual negatives
+        (FPR = false positive rate), at various threshold settings.
         TPR is also known as sensitivity or recall in machine learning.
-        The FPR is also known as the fall-out and can be calculated as one minus the more well known specificity.
+        The FPR is also known as the fall-out and can be calculated as one minus the more well known
+        specificity.
         The ROC curve is then the sensitivity as a function of fall-out.
-        In general, if both of the probability distributions for detection and false alarm are known, the ROC curve can be generated by plotting the Cumulative Distribution Function (area under the probability distribution from -inf to +inf) of the detection probability in the y-axis versus the Cumulative Distribution Function of the false alarm probability in x-axis.
+        In general, if both of the probability distributions for detection and false alarm are known,
+        the ROC curve can be generated by plotting the Cumulative Distribution Function (area under the
+        probability distribution from -inf to +inf) of the detection probability in the y-axis versus the
+        Cumulative Distribution Function of the false alarm probability in x-axis.
         
     Recommendation Systems
 
         From `Wikipedia\: Recommender System`_:
 
         Recommender systems or recommendation systems (sometimes replacing "system" with a synonym such as
-        platform or engine) are a subclass of information filtering system that seek to predict the 'rating' or
-        'preference' that user would give to an item [#f3]_ [#f4]_ .
+        platform or engine) are a subclass of information filtering system that seek to predict the 'rating'
+        or 'preference' that user would give to an item [#f3]_ [#f4]_ .
 
     ROC
     
@@ -639,10 +680,11 @@ Glossary
         
     RDF
     
-        The Resource Description Framework (RDF) is a family of World Wide Web Consortium (W3C) specifications
-        originally designed as a metadata data model.
-        It has come to be used as a general method for conceptual description or modeling of information that is
-        implemented in web resources, using a variety of syntax notations and data serialization formats.
+        The Resource Description Framework (RDF) is a family of World Wide Web Consortium (W3C)
+        specifications originally designed as a metadata data model.
+        It has come to be used as a general method for conceptual description or modeling of information
+        that is implemented in web resources, using a variety of syntax notations and data serialization
+        formats.
 
         For more information see: `Wikipedia\: Resource Description Framework`_.
 
@@ -652,7 +694,8 @@ Glossary
 
     Semi-Supervised Learning
 
-        In Semi-Supervised learning algorithms, most the input data are not labeled and a small amount are labeled.
+        In Semi-Supervised learning algorithms, most the input data are not labeled and a small amount are
+        labeled.
         The expectation is that the software "learns" to calculate faster than in either supervised or
         unsupervised algorithms.
 
@@ -667,8 +710,9 @@ Glossary
         In statistics, a simple random sample (SRS) is a subset of individuals (a sample) chosen from a
         larger set (a population).
         Each individual is chosen randomly and entirely by chance, such that each individual has the same
-        probability of being chosen at any stage during the sampling process, and each subset of *k* individuals
-        has the same probability of being chosen for the sample as any other subset of *k* individuals. [#f1]_
+        probability of being chosen at any stage during the sampling process, and each subset of *k*
+        individuals has the same probability of being chosen for the sample as any other subset of *k*
+        individuals. [#f1]_
         This process and technique is known as simple random sampling.
         A simple random sample is an unbiased surveying technique.
 
@@ -689,10 +733,12 @@ Glossary
     Stratified Sampling
 
         In statistics, stratified sampling is a method of sampling from a population.
-        In statistical surveys, when subpopulations within an overall population vary, it is advantageous to sample each
-        subpopulation (stratum) independently.
-        Stratification is the process of dividing members of the population into homogeneous subgroups before sampling.
-        The strata should be mutually exclusive: every element in the population must be assigned to only one stratum.
+        In statistical surveys, when subpopulations within an overall population vary, it is advantageous to
+        sample each subpopulation (stratum) independently.
+        Stratification is the process of dividing members of the population into homogeneous subgroups
+        before sampling.
+        The strata should be mutually exclusive: every element in the population must be assigned to only
+        one stratum.
         The strata should also be collectively exhaustive: no population element can be excluded.
         Then simple random sampling or systematic sampling is applied within each stratum.
         This often improves the representativeness of the sample by reducing sampling error.
@@ -728,7 +774,8 @@ Glossary
 
         From `Wikipedia\: Transaction Processing`_:
 
-        In computer science, transaction processing is information processing that is divided into individual,
+        In computer science, transaction processing is information processing that is divided into
+        individual,
         indivisible operations, called transactions.
         Each transaction must succeed or fail as a complete unit; it cannot be only partially complete.
 
