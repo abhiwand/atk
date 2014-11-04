@@ -265,6 +265,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
       val existing = expectFrame(frameEntity.id)
       val entity = if (existing.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(existing)) {
+        info(s"Path for frame ${existing.id} / ${existing.name} already exists, creating new frame instead")
         //We're saving over something that already exists - which we must not do.
         //So instead we create a new frame.
         val newFrame = create()
@@ -277,7 +278,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
         //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
       }
-      else existing
+      else {
+        info(s"Path for frame ${existing.id} / ${existing.name} does not exist, will save there")
+        existing
+      }
 
       val path = frameFileStorage.frameBaseDirectory(entity.id).toString
       val count = rowCount.getOrElse {

@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.{ProgressInfo, CommandStorage}
+import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
@@ -29,7 +29,7 @@ import scala.collection._
 class FakeCommandStorage extends CommandStorage {
   var commands: Map[Long, Command] = Map.empty
   var counter = 1L
-  
+
   override def lookup(id: Long): Option[Command] = commands.get(id)
 
   override def scan(offset: Int, count: Int): Seq[Command] = commands.values.toSeq
@@ -41,11 +41,11 @@ class FakeCommandStorage extends CommandStorage {
    * @param id command id
    * @param progressInfo list of progress for the jobs initiated by this command
    */
-  override def updateProgress(id: Long, progressInfo: List[ProgressInfo]): Unit = {}  
+  override def updateProgress(id: Long, progressInfo: List[ProgressInfo]): Unit = {}
 
   override def create(template: CommandTemplate): Command = {
     val id = counter
-    counter+=1
+    counter += 1
     val command: Command = Command(id, template.name, template.arguments, createdOn = DateTime.now, modifiedOn = DateTime.now)
     commands += (id -> command)
     command
@@ -107,7 +107,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(CommandTemplate(name = "dummy", arguments = Some(args.toJson.asJsObject())),
-                                      user, implicitly[ExecutionContext], commandPluginRegistry)
+      user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountAfterCancel shouldBe 0
   }
