@@ -775,6 +775,23 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             the resultant column is named 'a_avg'.
         *   An aggregation argument of 'count' results in a column named 'count'.
 
+        Supported aggregation functions:
+
+        ..  hlist::
+            :columns: 5
+
+            * avg
+            * count
+            * max
+            * mean
+            * min
+            * :term:`quantile`
+            * stdev
+            * sum
+            * :term:`variance <Bias-variance tradeoff>`
+            * distinct
+
+
         Examples
         --------
         For setup, we will use a Frame *my_frame* accessing a frame with a column *a*::

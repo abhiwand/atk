@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanElement, TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry

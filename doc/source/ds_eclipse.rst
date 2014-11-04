@@ -11,7 +11,7 @@ Prerequisites
 
 These instructions assume you have already installed
 
-- Python 2.6 
+- Python 2.7 
 - |IA| Python Rest Client and required dependencies
 - Eclipse Standard
 
@@ -44,7 +44,7 @@ Setup
 
     #)  Give your project a name, e.g. "myproject"
 
-    #)  Choose version 2.6
+    #)  Choose version 2.7
 
     #)  Choose "Please configure an interpreter before proceeding"
 
@@ -52,7 +52,7 @@ Setup
 
         #)  Choose the "New" button
 
-        #)  Browse for python 2.6.  On RedHat and Centos this is probably /usr/bin/python
+        #)  Browse for python 2.7.  On RedHat and Centos this is probably /usr/bin/python
 
         #)  Choose the "Ok" button
 

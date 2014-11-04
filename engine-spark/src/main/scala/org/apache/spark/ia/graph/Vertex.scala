@@ -23,7 +23,7 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Property => GBProperty }
+import com.intel.graphbuilder.elements.{ GBVertex, Property => GBProperty }
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row

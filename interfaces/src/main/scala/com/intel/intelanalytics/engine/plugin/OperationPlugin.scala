@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin, Component }
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -124,6 +124,12 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest, Re
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments): Int = 1
+
+  /**
+   * Name of the custom kryoclass this plugin needs.
+   * kryoRegistrator = None means use JavaSerializer
+   */
+  def kryoRegistrator: Option[String] = None
 }
 
 /**

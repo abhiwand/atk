@@ -56,47 +56,57 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF, DataFrame] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Empirical Cumulative Distribution.", Some("""
-    Empirical Cumulative Distribution.
-
-    Generates the :term:`empirical cumulative distribution` for the input column.
-
-    Parameters
-    ----------
-    sample_col : str
-        The name of the column containing sample.
-
-    Returns
-    -------
-    frame : Frame
-        a Frame object containing each distinct value in the sample and its corresponding ecdf value.
-
-    Examples
-    --------
-    Consider the following sample data set in *frame* with actual data labels specified in the *labels*
-    column and the predicted labels in the *predictions* column::
-
-        frame.inspect()
-
-          a:unicode   b:int32
-        /---------------------/
-          red               1
-          blue              3
-          blue              1
-          green             0
-
-        result = frame.ecdf('b')
-        result.inspect()
-
-          b:int32   b_ECDF:float64
-        /--------------------------/
-          1                    0.2
-          2                    0.5
-          3                    0.8
-          4                    1.0
-
-
-    .. versionadded:: 0.8""")))
+  /**
+   * Replaced by Mark Aldrich to match other functions.
+   *
+   * override def doc: Option[CommandDoc] = Some(CommandDoc("Empirical Cumulative Distribution.", Some("""
+   *   Empirical Cumulative Distribution.
+   */
+  override def doc = Some(CommandDoc(oneLineSummary = "Empirical Cumulative Distribution.",
+    extendedSummary = Some("""
+                           |    Extended Summary
+                           |    ----------------
+                           |    Generates the :term:`empirical cumulative distribution` for the input column.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    sample_col : str
+                           |        The name of the column containing sample.
+                           |
+                           |    Returns
+                           |    -------
+                           |    frame : Frame
+                           |        a Frame object containing each distinct value in the sample and its
+                           |        corresponding ecdf value.
+                           |
+                           |    Examples
+                           |    --------
+                           |    Consider the following sample data set in *frame* with actual data labels
+                           |    specified in the *labels* column and the predicted labels in the
+                           |    *predictions* column::
+                           |
+                           |        frame.inspect()
+                           |
+                           |          a:unicode   b:int32
+                           |        /---------------------/
+                           |           red         1
+                           |           blue        3
+                           |           blue        1
+                           |           green       0
+                           |
+                           |        result = frame.ecdf('b')
+                           |        result.inspect()
+                           |
+                           |          b:int32   b_ECDF:float64
+                           |        /--------------------------/
+                           |           1             0.2
+                           |           2             0.5
+                           |           3             0.8
+                           |           4             1.0
+                           |
+                           |    .. versionadded:: 0.8
+                           |
+                            """.stripMargin)))
 
   /**
    * Empirical Cumulative Distribution for a column
@@ -117,7 +127,7 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF, DataFrame] {
     val frame = frames.expectFrame(arguments.frame.id)
     val sampleColumn = frame.schema.column(arguments.column)
     require(sampleColumn.dataType.isNumerical, s"Invalid column ${sampleColumn.name} for ECDF.  Expected a numeric data type, but got ${sampleColumn.dataType}.")
-    val ecdfSchema = Schema(List(sampleColumn, Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
+    val ecdfSchema = Schema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
     val ecdfFrameName = arguments.resultFrameName.getOrElse(frames.generateFrameName(Some("ECDF")))
 
     // run the operation
