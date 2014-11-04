@@ -62,38 +62,53 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate vertex rows.", Some("""
-    Remove duplicate vertex rows, keeping only one vertex row per uniqueness criteria match
-
-    Parameters
-    ----------
-    columns:[str | list of str]
-        Column name(s) to identify duplicates.
-        If empty, the function will remove duplicates that have the whole row of data identical
-        (not including the _vid column that is already unique per row).
-
-    Examples
-    --------
-    Remove any rows that have the same data in column * b * as a previously checked row ::
-
-    my_frame.drop_duplicates("b")
-
-    The result is a frame with unique values in column * b *.
-
-    Remove any rows that have the same data in columns * a * and * b * as a previously checked row ::
-
-       my_frame.drop_duplicates([ "a", "b"] )
-
-    The result is a frame with unique values for the combination of columns * a * and * b *.
-
-    Remove any rows that have the whole row identical ::
-
-      my_frame.drop_duplicates()
-
-    The result is a frame where something is different in every row from every other row.
-    Each row is unique.
-
-    .versionadded :: 0.8""")))
+  /**
+   * 20141104 Mark Aldrich: Changed to match other plugin functions
+   * override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate vertex rows.", Some("""
+   */
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove duplicate vertex rows.",
+    extendedSummary = Some("""
+                           |    Extended Summary
+                           |    ----------------
+                           |    Remove duplicate vertex rows, keeping only one vertex row per uniqueness
+                           |    criteria match
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    columns:[str | list of str]
+                           |        Column name(s) to identify duplicates.
+                           |        If empty, the function will remove duplicates that have the whole row of
+                           |        data identical (not including the _vid column that is already unique per
+                           |        row).
+                           |
+                           |    Examples
+                           |    --------
+                           |    Remove any rows that have the same data in column *b* as a previously
+                           |    checked row::
+                           |
+                           |        my_frame.drop_duplicates("b")
+                           |
+                           |    The result is a frame with unique values in column *b*.
+                           |
+                           |    Remove any rows that have the same data in columns *a* and *b* as a
+                           |    previously checked row::
+                           |
+                           |        my_frame.drop_duplicates([ "a", "b"] )
+                           |
+                           |    The result is a frame with unique values for the combination of columns
+                           |    *a* and *b*.
+                           |
+                           |    Remove any rows that have the whole row identical::
+                           |
+                           |        my_frame.drop_duplicates()
+                           |
+                           |    The result is a frame where something is different in every row from every
+                           |    other row.
+                           |    Each row is unique.
+                           |
+                           |    .versionadded :: 0.8
+                           |
+                            """.stripMargin)))
 
   /**
    * Plugins must implement this method to do the work requested by the user.

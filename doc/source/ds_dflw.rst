@@ -29,6 +29,7 @@ This can be done from a shell script, similar to::
 This way, from inside Python, it is easy to load the toolkit::
 
     import intelanalytics as ia
+    ia.connect()
 
 To test whether you have imported the toolkit properly type::
 
