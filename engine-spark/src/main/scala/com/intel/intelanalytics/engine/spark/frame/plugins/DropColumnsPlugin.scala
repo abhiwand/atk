@@ -92,7 +92,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, FrameRefere
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): FrameReference = {
-    val frame: SparkFrameData = coerceReference(arguments.frame)
+    val frame: SparkFrameData = resolve(arguments.frame)
     val schema = frame.meta.schema
     schema.validateColumnsExist(arguments.columns)
     require(schema.columns.length > arguments.columns.length, "Cannot delete all columns, please leave at least one column remaining")

@@ -140,11 +140,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    */
   def numberOfJobs(arguments: Arguments): Int = 1
 
-  /**
-   * Resolves a reference down to the requested type
-   */
-  def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
-    invocation.resolver.resolve(reference).get
+  //  /**
+  //   * Resolves a reference down to the requested type
+  //   */
+  //  def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
+  //    invocation.resolver.resolve(reference).get
 
   /**
    * Creates an object of the requested type.
@@ -162,11 +162,11 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * to convert them to [[com.intel.intelanalytics.domain.HasMetaData]] or
    * [[com.intel.intelanalytics.domain.HasData]] instances
    */
-  implicit def coerceReference[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
-                                                                                 ev: Out <:< In,
-                                                                                 tagIn: TypeTag[In],
-                                                                                 tagOut: TypeTag[Out]): Out = {
-    resolve[Out](ref)
+  implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
+                                                                         ev: Out <:< In,
+                                                                         tagIn: TypeTag[In],
+                                                                         tagOut: TypeTag[Out]): Out = {
+    invocation.resolver.resolve[Out](ref).get
   }
 
 }
