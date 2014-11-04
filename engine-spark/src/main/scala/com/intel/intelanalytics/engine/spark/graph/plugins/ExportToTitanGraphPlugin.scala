@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex  }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.command.CommandDoc

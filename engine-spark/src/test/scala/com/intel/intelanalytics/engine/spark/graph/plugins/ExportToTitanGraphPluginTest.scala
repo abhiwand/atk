@@ -37,7 +37,7 @@ import org.scalatest.Matchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import scala.collection.JavaConversions._
 
 class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Matchers with MockitoSugar {
