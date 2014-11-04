@@ -78,7 +78,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       case Some(where) =>
         // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
         // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-        PythonRDDStorage.pyFilter(sourceFrame.data, where)
+        PythonRDDStorage.pyMappish(sourceFrame.data, where, sourceFrame.meta.schema)
     }
 
     // save results

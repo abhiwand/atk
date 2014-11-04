@@ -89,7 +89,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
 
         val schema = vertexFrame.meta.schema
 
-        val filteredRdd = PythonRDDStorage.pyFilter(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
+        val filteredRdd = PythonRDDStorage.pyMappish(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
 
         val updated = FilterVerticesFunctions.removeDanglingEdges(schema.vertexSchema.get.label, frames, seamlessGraph, sc, filteredRdd)
 

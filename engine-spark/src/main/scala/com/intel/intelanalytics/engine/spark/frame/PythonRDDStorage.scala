@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
+import java.util
+
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -16,6 +18,58 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+object PythonRDDStorage {
+
+  private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
+    decodeBase64(byteStr)
+  }
+
+  def pyMappish(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
+    val newSchema = if (schema == null) { data.schema } else { schema }
+    val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
+
+    val pyRdd = RDDToPyRDD(pyExpression, data.toLegacyFrameRDD)
+    val frameRdd = getRddFromPythonRdd(pyRdd, converter)
+    new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
+  }
+
+  def RDDToPyRDD(py_expression: String, rdd: LegacyFrameRDD): EnginePythonRDD[String] = {
+    val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
+
+    val baseRdd: RDD[String] = rdd
+      .map(x => x.map(t => t match {
+        case null => JsNull
+        case a => a.toJson
+      }).toJson.toString)
+
+    val pythonExec = SparkEngineConfig.pythonWorkerExec
+    val environment = new util.HashMap[String, String]()
+
+    val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+
+    val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+    val pyRdd = new EnginePythonRDD[String](
+      baseRdd, predicateInBytes, environment,
+      new JArrayList, preservePartitioning = false,
+      pythonExec = pythonExec,
+      broadcastVars, accumulator)
+    pyRdd
+  }
+
+  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[String]) => Array[Any] = null): RDD[Array[Any]] = {
+    val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+      case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+      case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+      case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+      case _ => null
+    }).toArray))
+      .flatMap(identity)
+      .map(converter)
+    resultRdd
+  }
+}
+
 /**
  * Loading and saving Python RDD's
  */
@@ -30,7 +84,10 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    */
   def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
-      PythonRDDStorage.createPythonRDD(frames.loadFrameData(ctx, frameId), py_expression)
+
+      val rdd: LegacyFrameRDD = frames.loadLegacyFrameRdd(ctx, frameId)
+
+      PythonRDDStorage.RDDToPyRDD(py_expression, rdd)
     }
   }
 
@@ -41,8 +98,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param pyRdd PythonRDD instance
    * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
    * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
-   * @return rowCount Number of rows if skipRowCount is false, else 0
-   *         (for optimization/transformations which do not alter row count)
+   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
    */
   def persistPythonRDD(dataFrame: DataFrame,
                        pyRdd: EnginePythonRDD[String],
@@ -50,105 +106,12 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
                        skipRowCount: Boolean = false)(implicit user: UserPrincipal): Long = {
     withMyClassLoader {
 
-      val rdd = PythonRDDStorage.pyRDDToFrameRDD(dataFrame.schema, pyRdd, converter)
+      val resultRdd: RDD[Array[Any]] = PythonRDDStorage.getRddFromPythonRdd(pyRdd, converter)
 
-      val rowCount = if (skipRowCount) 0 else rdd.count()
-      frames.saveFrameData(dataFrame, rdd)
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
+      frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
       rowCount
     }
   }
-}
 
-object PythonRDDStorage extends ClassLoaderAware {
-  /**
-   * Create a Python RDD
-   * @param frame source frame for the parent RDD
-   * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
-   * @param user current user
-   * @return the RDD
-   */
-  def createPythonRDD(frame: FrameRDD, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
-    withMyClassLoader {
-      val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
-
-      val baseRdd: RDD[String] = frame.toLegacyFrameRDD.map(x => {
-        val jsSeq = JsArray(x.map {
-          case null => JsNull
-          case a => a.toJson
-        }.toList)
-        val s = jsSeq.toString
-        if (JsonParser(s) != jsSeq)
-          throw new Exception("Could not parse json while creating PythonRDD")
-        s
-      })
-
-      val pythonExec = SparkEngineConfig.pythonWorkerExec
-      val environment = new java.util.HashMap[String, String]()
-
-      implicit val param = new EnginePythonAccumulatorParam()
-      val accumulator = frame.context.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())
-
-      val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
-
-      val pyRdd = new EnginePythonRDD[String](
-        baseRdd, predicateInBytes, environment,
-        new JArrayList, preservePartitioning = false,
-        pythonExec = pythonExec,
-        broadcastVars, accumulator)
-      pyRdd
-    }
-  }
-
-  def convertWithSchema(pyRdd: EnginePythonRDD[String], schema: Schema): (Array[String] => Array[Any]) = {
-    val converter = DataTypes.parseMany(schema.columns.map(_.dataType).toArray)(_)
-    converter
-  }
-
-  /**
-   * Converts a PythonRDD to a FrameRDD
-   *
-   * @param schema the schema to use for the new RDD
-   * @param pyRdd PythonRDD instance
-   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
-   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
-   */
-  def pyRDDToFrameRDD(schema: Schema, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any] = null): FrameRDD =
-    withMyClassLoader {
-
-      val conv = if (converter == null) {
-        convertWithSchema(pyRdd, schema)
-      }
-      else {
-        converter
-      }
-      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
-        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
-        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
-        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
-        case _ => null
-      }).toArray))
-        .flatMap(identity)
-        .map(conv)
-      new LegacyFrameRDD(schema, resultRdd).toFrameRDD()
-    }
-
-  private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
-    // Python uses different RFC than Java, must correct a couple characters
-    // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
-    //    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
-    //    new sun.misc.BASE64Decoder().decodeBuffer(corrected)
-    decodeBase64(byteStr)
-  }
-  /**
-   * Map the given Python UDF over the rows of the RDD, producing another RDD that should match the given schema.
-   */
-  def pyMap(frame: FrameRDD, expression: String, schema: Schema)(implicit user: UserPrincipal) =
-    pyRDDToFrameRDD(schema, createPythonRDD(frame, expression))
-
-  /**
-   * Filter using the given Python UDF over the rows of the RDD, producing another RDD with the same schema.
-   */
-  def pyFilter(frame: FrameRDD, expression: String)(implicit user: UserPrincipal) =
-    //TODO: How should this work exactly?
-    pyRDDToFrameRDD(frame.schema, createPythonRDD(frame, expression))
 }
