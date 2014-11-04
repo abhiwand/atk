@@ -21,19 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
-import org.apache.spark.SparkContext
-
-class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
-  //TODO read the strategy from the config file
-  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerActionStrategy
-  contextManagementStrategy.configuration = conf
-  contextManagementStrategy.sparkContextFactory = factory
-
-  def getContext(user: String, description: String): SparkContext = contextManagementStrategy.getContext(user, description)
-  def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
+case class FrameCopy(frame: FrameReference, columns: Option[Map[String, String]] = None, where: Option[String] = None) {
+  require(frame != null, "frame is required")
 }

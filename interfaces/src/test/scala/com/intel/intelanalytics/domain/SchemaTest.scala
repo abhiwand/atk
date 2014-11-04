@@ -80,6 +80,12 @@ class SchemaTest extends WordSpec with Matchers {
       reordered.columnIndex("c") shouldBe 0
     }
 
+    "return a subset of the columns as a List[Column]" in {
+      val excluded = abcSchema.columnsExcept(List("a", "b"))
+      excluded.length should be(1)
+      excluded(0).name should be("c")
+    }
+
   }
 
 }

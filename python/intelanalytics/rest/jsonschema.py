@@ -129,7 +129,7 @@ def get_return(return_schema):
     # 4. return None  (no return value)
     data_type = get_data_type(return_schema)
     use_self = return_schema.get('self', False)
-    if use_self and data_type not in [BigFrame, BigGraph]:
+    if use_self and data_type not in [Frame, Graph]:
         raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
     doc = get_doc(return_schema)
     return Return(data_type, use_self, doc)

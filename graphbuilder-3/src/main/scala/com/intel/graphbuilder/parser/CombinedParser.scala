@@ -31,7 +31,7 @@ import com.intel.graphbuilder.elements._
  * This could be used if you want to go over the input rows in a single pass.
  * </p>
  */
-class CombinedParser(inputSchema: InputSchema, vertexParser: Parser[Vertex], edgeParser: Parser[Edge]) extends Parser[GraphElement](inputSchema) {
+class CombinedParser(inputSchema: InputSchema, vertexParser: Parser[GBVertex], edgeParser: Parser[GBEdge]) extends Parser[GraphElement](inputSchema) {
 
   /**
    * Parse a row of data into zero to many GraphElements.

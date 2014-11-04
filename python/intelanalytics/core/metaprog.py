@@ -187,7 +187,7 @@ def get_private_name(name):
 
 def get_intermediate_class_name(parent_class, intermediate_name):
     """Returns the name for intermediate class based on its parent class and intermediate name"""
-    # Example.   get_intermediate_class_name(BigGraph, 'ml') returns 'BigGraphMl'
+    # Example.   get_intermediate_class_name(TitanGraph, 'ml') returns 'TitanGraphMl'
     prefix = parent_class.__name__ if parent_class else ''
     suffix = intermediate_name[0].upper() + intermediate_name[1:]
     return prefix + suffix

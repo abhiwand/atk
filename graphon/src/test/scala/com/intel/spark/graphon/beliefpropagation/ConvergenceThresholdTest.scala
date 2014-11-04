@@ -2,10 +2,10 @@ package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 
 /**
  * "Convergence threshold" in our system:
