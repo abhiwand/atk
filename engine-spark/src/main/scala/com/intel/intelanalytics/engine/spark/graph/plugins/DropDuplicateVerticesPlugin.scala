@@ -40,6 +40,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicates, DataFrame] {
+  
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -86,7 +87,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
 
     The result is a frame with unique values for the combination of columns * a * and * b *.
 
-    Remove any rows that have the whole row identical ::
+    Remove any rows that have the whole row identical (not including the _vid column that is already unique per row) ::
 
       my_frame.drop_duplicates()
 
@@ -116,7 +117,9 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
         val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
         val columnNames = arguments.unique_columns match {
           case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
-          case None => vertexFrame.schema.columnNames
+          case None =>
+            // _vid is always unique so don't include it
+            vertexFrame.schema.dropColumn("_vid").columnNames
         }
         schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
