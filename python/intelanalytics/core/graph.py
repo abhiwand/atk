@@ -541,7 +541,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
                                             ('vertexType', str),
                                             ('movie', int32),
                                             ('rating', str)])
-        frame = ia.Frame(csv)
+        frame = ia.BigFrame(csv)
 
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})

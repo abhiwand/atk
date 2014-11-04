@@ -55,7 +55,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns.",
     extendedSummary = Some("""
                            |    Remove columns from the frame.
-                           |    They are deleted.
+                           |    The data from the columns is lost.
                            |
                            |    Parameters
                            |    ----------
