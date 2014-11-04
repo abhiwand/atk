@@ -48,7 +48,10 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/add_columns"
-
+  /**
+   * Set the kryo class to use
+   */
+  override def kryoRegistrator: Option[String] = None
   /**
    * User documentation exposed in Python.
    *
