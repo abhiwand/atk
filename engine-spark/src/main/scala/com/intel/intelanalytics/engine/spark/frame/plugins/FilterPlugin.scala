@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -74,19 +74,10 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FilterPredicate)(implicit invocation: Invocation): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-    val pythonRDDStorage = new PythonRDDStorage(frames)
+    val frame: SparkFrameData = resolve(arguments.frame)
 
-    // validate arguments
-    val frameMeta = frames.lookup(arguments.frame.id).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+    val updated = PythonRDDStorage.pyMappish(frame.data, arguments.predicate)
 
-    // run the operation and save results
-    val pyRdd = pythonRDDStorage.createPythonRDD(arguments.frame.id, arguments.predicate, sc)
-    val schema = frameMeta.schema
-    val converter = DataTypes.parseMany(schema.columnTuples.map(_._2).toArray)(_)
-    pythonRDDStorage.persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)
-    frames.expectFrame(arguments.frame)
+    save(new SparkFrameData(frame.meta.withSchema(updated.schema), updated)).meta
   }
 }
