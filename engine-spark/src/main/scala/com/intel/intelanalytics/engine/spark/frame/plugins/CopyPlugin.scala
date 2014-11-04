@@ -60,7 +60,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
    */
   override def execute(arguments: FrameCopy)(implicit invocation: Invocation): DataFrame = {
 
-    val sourceFrame: SparkFrameData = coerceReference(arguments.frame)
+    val sourceFrame: SparkFrameData = resolve(arguments.frame)
     val (newSchema, indices) = arguments.columns match {
       case None => (sourceFrame.meta.schema, null) // full copy
       case Some(cols) => sourceFrame.meta.schema.getRenamedSchemaAndIndices(cols) // partial copy

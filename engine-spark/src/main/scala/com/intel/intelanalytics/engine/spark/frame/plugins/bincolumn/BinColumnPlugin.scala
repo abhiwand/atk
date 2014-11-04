@@ -82,7 +82,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
-    val frame: SparkFrameData = coerceReference(arguments.frame)
+    val frame: SparkFrameData = resolve(arguments.frame)
     val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
     if (frame.meta.schema.hasColumn(arguments.binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")

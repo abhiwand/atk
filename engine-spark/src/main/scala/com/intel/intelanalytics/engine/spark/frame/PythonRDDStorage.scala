@@ -71,10 +71,16 @@ object PythonRDDStorage extends ClassLoaderAware {
     withMyClassLoader {
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
-      val baseRdd: RDD[String] = frame.toLegacyFrameRDD.map(x => x.map {
-        case null => JsNull
-        case a => a.toJson
-      }.toJson.toString())
+      val baseRdd: RDD[String] = frame.toLegacyFrameRDD.map(x => {
+        val jsSeq = JsArray(x.map {
+          case null => JsNull
+          case a => a.toJson
+        }.toList)
+        val s = jsSeq.toString
+        if (JsonParser(s) != jsSeq)
+          throw new Exception("Could not parse json while creating PythonRDD")
+        s
+      })
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -129,8 +135,9 @@ object PythonRDDStorage extends ClassLoaderAware {
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
-    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
-    new sun.misc.BASE64Decoder().decodeBuffer(corrected)
+    //    val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
+    //    new sun.misc.BASE64Decoder().decodeBuffer(corrected)
+    decodeBase64(byteStr)
   }
   /**
    * Map the given Python UDF over the rows of the RDD, producing another RDD that should match the given schema.
