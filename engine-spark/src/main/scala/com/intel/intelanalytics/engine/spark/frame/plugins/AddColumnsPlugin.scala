@@ -71,7 +71,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
     // Update the data
-    val rdd = PythonRDDStorage.pyMap(frame.data, arguments.expression, newSchema)
+    val rdd = PythonRDDStorage.pyMappish(frame.data, arguments.expression, newSchema)
 
     save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd)).meta
   }
