@@ -142,5 +142,14 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
     edgeFrames.map(frame => frame.rowCount).reduce(_ + _)
   }
 
+  /**
+   * Create a list of ElementIDName objects corresponding to the IDColumn of all Vertices in this graph.
+   */
+  def vertexIdColumnNames: List[ElementIDName] = {
+    this.vertexFrameMetasMap.map {
+      case (name, frame) => new ElementIDName(name, frame.schema.vertexSchema.get.idColumnName.getOrElse("_vid"))
+    }.toList
+  }
+
 }
 
