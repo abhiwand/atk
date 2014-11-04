@@ -27,8 +27,8 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.graph.{GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, TestingTitan, SparkGraphStorage}
-import com.intel.testutils.{TestingSparkContextFlatSpec, TestingSparkContextWordSpec}
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, TestingTitan, SparkGraphStorage }
+import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
 import org.apache.spark.sql
@@ -66,7 +66,6 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         new GenericRow(Array(2L, "employee", "Joe", 101L)))
       val employeeRDD = sparkContext.parallelize[sql.Row](employees)
 
-
       val employeeFrameRDD = new VertexFrameRDD(employeeSchema, employeeRDD)
 
       val divisions = List(new GenericRow(Array(3L, "division", "development", 200L)))
@@ -83,9 +82,8 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val edgeFrame = edgeFrameRDD.toGbEdgeRDD
       val edgeTaken = edgeFrame.take(10)
 
-
       val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
-      val config =     new GraphBuilderConfig(new InputSchema(List()),
+      val config = new GraphBuilderConfig(new InputSchema(List()),
         List(),
         List(),
         this.titanConfig)
@@ -93,7 +91,6 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
 
       this.titanGraph.getEdges().size should be(2)
       this.titanGraph.getVertices.size should be(3)
-
 
       val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")
