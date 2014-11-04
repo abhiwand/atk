@@ -23,7 +23,7 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property => GBProperty, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
@@ -125,9 +125,9 @@ trait AbstractEdge extends AbstractRow with Serializable {
    * Convert this row to a GbEdge
    */
   def toGbEdge: GBEdge = {
-    val idColumnName = schema.vertexSchema.get.idColumnName.get
-    val properties = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid")).map(column => GBProperty(column.name, value(column.name)))
+    val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
+    val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
-    GBEdge(srcVertexId(), destVertexId(), null, null, schema.label.get, properties.toSet)
+    GBEdge(null, null, GBProperty("_vid", srcVertexId()), GBProperty("_vid", destVertexId()), schema.label.get, properties.toSet)
   }
 }

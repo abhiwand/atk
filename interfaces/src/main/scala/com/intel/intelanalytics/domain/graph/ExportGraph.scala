@@ -21,17 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
-
-import com.typesafe.config.Config
-import org.apache.spark.SparkContext
+package com.intel.intelanalytics.domain.graph
 
 /**
- * Base class for different Spark context management strategies
+ * Data needed to export a graph.
+ * @param graph reference of the source graph
+ * @param newGraphName name of the new target graph. optional. if not included a name should be generated.
  */
-trait SparkContextManagementStrategy {
-  var configuration: Config = null
-  var sparkContextFactory: SparkContextFactory = null
-
-  def getContext(user: String, description: String): SparkContext
-}
+case class ExportGraph(graph: GraphReference, newGraphName: Option[String] = None)

@@ -48,6 +48,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import com.intel.event.EventLogging
 import scala.util.parsing.combinator.RegexParsers
+import scala.util.{ Failure, Success, Try }
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -281,15 +282,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def dropColumns(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
-    //withContext("frame.removeColumn") {
-    metaStore.withSession("frame.removeColumn") {
-      implicit session =>
-        {
-          metaStore.frameRepo.updateSchema(frame, frame.schema.dropColumnsByIndex(columnIndex))
-        }
-    }
-
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
     metaStore.withSession("frame.rename") {
       implicit session =>
@@ -306,23 +298,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
   override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    //withContext("frame.renameColumns") {
     metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
-          val columnsToRename: Seq[String] = name_pairs.map(_._1)
-          val newColumnNames: Seq[String] = name_pairs.map(_._2)
-
-          def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-            val result = columnsToRename.indexOf(oldColumn) match {
-              case notFound if notFound < 0 => oldColumn
-              case found => newColumnNames(found)
-            }
-            result
-          }
-
-          val newColumns = frame.schema.columnTuples.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-          metaStore.frameRepo.updateSchema(frame, frame.schema.legacyCopy(newColumns))
+          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(name_pairs.toMap))
         }
     }
 
@@ -437,8 +416,30 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param annotation Optional annotation to add to frame name
    * @return Frame name
    */
-  def generateFrameName(prefix: String = "frame_", annotation: Option[String] = None): String = {
+  def generateFrameName(annotation: Option[String] = None, prefix: String = "frame_"): String = {
     prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
   }
 
+  /**
+   * Provides a clean-up context to create and work on a new frame
+   *
+   * Takes the template, creates a frame and then hands it to a work function.  If any error occurs during the work
+   * the frame is deleted from the metastore.  Typical usage would be during the creation of a brand new frame,
+   * where data processing needs to occur, any error means the frame should not continue to exist in the metastore.
+   *
+   * @param template - template describing a new frame
+   * @param work - Frame to Frame function.  This function typically loads RDDs, does work, and saves RDDS
+   * @param user user
+   * @return - the frame result of work if successful, otherwise an exception is raised
+   */
+  // TODO: change to return a Try[DataFrame] instead of raising exception?
+  def tryNewFrame(template: DataFrameTemplate)(work: DataFrame => DataFrame)(implicit user: UserPrincipal): DataFrame = {
+    val frame = create(template)
+    Try { work(frame) } match {
+      case Success(f) => f
+      case Failure(e) =>
+        drop(frame)
+        throw e
+    }
+  }
 }

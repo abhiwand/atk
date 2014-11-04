@@ -1,6 +1,6 @@
 package org.apache.spark.ia.graph
 
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD

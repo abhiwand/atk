@@ -93,15 +93,6 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
     val frames = invocation.engine.frames
 
     val frame = frames.expectFrame(arguments.frame)
-    frame.schema.validateColumnsExist(arguments.names.keys)
-
-    for (newName <- arguments.names.values) {
-      // TODO - call schema function containsName (when merged)
-      if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == newName) >= 0)
-        throw new IllegalArgumentException(s"Cannot rename because another column already exists with that name: $newName")
-    }
-
-    // run the operation and save results
     frames.renameColumns(frame, arguments.names.toSeq)
   }
 }

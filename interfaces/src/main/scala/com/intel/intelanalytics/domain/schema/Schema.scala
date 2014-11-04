@@ -85,6 +85,10 @@ case class Schema(columns: List[Column] = List[Column](),
   }
 
   require(columns != null, "columns must not be null")
+  require({
+    val names = columns.map(x => x.name).toList
+    names.size == names.distinct.size
+  }, "column names must be unique")
   require(vertexSchema != null, "vertexSchema must not be null")
   require(edgeSchema != null, "edgeSchema must not be null")
   if (vertexSchema.isDefined) {
@@ -153,13 +157,9 @@ case class Schema(columns: List[Column] = List[Column](),
    * Validate that the list of column names provided exist in this schema
    * throwing an exception if any does not exist.
    */
-  def validateColumnsExist(columnNames: Iterable[String]): Unit = {
-    columnNames.foreach(columnName =>
-      if (!hasColumn(columnName)) {
-        throw new IllegalArgumentException(s"Column name $columnName was not found in schema " + columnNamesAsString)
-      }
-    )
-
+  def validateColumnsExist(columnNames: Iterable[String]): Iterable[String] = {
+    columnIndices(columnNames.toSeq)
+    columnNames
   }
 
   /**
@@ -262,6 +262,44 @@ case class Schema(columns: List[Column] = List[Column](),
   }
 
   /**
+   * Validates a Map argument used for renaming schema, throwing exceptions for violations
+   *
+   * @param names victimName -> newName
+   */
+  def validateRenameMapping(names: Map[String, String]): Unit = {
+    if (names.isEmpty)
+      throw new IllegalArgumentException(s"Empty column name map provided.  At least one name is required")
+    val victimNames = names.keys.toList
+    validateColumnsExist(victimNames)
+    val safeNames = columnNamesExcept(victimNames)
+    val newNames = names.values.toList
+    if (newNames.size != newNames.distinct.size) {
+      throw new IllegalArgumentException(s"Invalid new column names are not unique: $newNames")
+    }
+    for (n <- newNames) {
+      if (safeNames.contains(n)) {
+        throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
+      }
+    }
+  }
+
+  /**
+   * Produces a renamed subset schema and the indices from this schema of the subset
+   * @param columnNames rename mapping
+   * @return new schema and the indices which map it back into this schema
+   */
+  def getRenamedSchemaAndIndices(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
+    validateRenameMapping(columnNames)
+    val colsAndIndices: Seq[(Column, Int)] =
+      for {
+        (c, i) <- columns.zipWithIndex
+        if columnNames.contains(c.name)
+      } yield (Column(columnNames(c.name), c.dataType), i)
+    val (cols, indices) = colsAndIndices.unzip
+    (Schema(cols.toList), indices)
+  }
+
+  /**
    * Get all of the info about a column - this is a nicer wrapper than tuples
    *
    * @param columnIndex the index for the column
@@ -345,6 +383,19 @@ case class Schema(columns: List[Column] = List[Column](),
   }
 
   /**
+   * Renames several columns
+   * @param names oldName -> newName
+   * @return new renamed schema
+   */
+  def renameColumns(names: Map[String, String]): Schema = {
+    validateRenameMapping(names)
+    copy(columns = columns.map({
+      case found if names.contains(found.name) => found.copy(name = names(found.name))
+      case notFound => notFound.copy()
+    }))
+  }
+
+  /**
    * Re-order the columns in the schema.
    *
    * No columns will be dropped.  Any column not named will be tacked onto the end.
@@ -365,7 +416,16 @@ case class Schema(columns: List[Column] = List[Column](),
    * @return the other columns, if any
    */
   def columnsExcept(columnNamesToExclude: List[String]): List[Column] = {
-    dropColumns(columnNamesToExclude).columns
+    this.columns.filter(column => !columnNamesToExclude.contains(column.name))
+  }
+
+  /**
+   * Get the list of column names except those provided
+   * @param columnNamesToExclude column names you want to filter
+   * @return the other column names, if any
+   */
+  def columnNamesExcept(columnNamesToExclude: List[String]): List[String] = {
+    for { c <- columns if !columnNamesToExclude.contains(c.name) } yield c.name
   }
 
   /**
