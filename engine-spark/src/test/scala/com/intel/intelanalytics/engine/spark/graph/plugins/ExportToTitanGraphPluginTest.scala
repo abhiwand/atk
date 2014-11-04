@@ -98,49 +98,4 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
 
     }
   }
-
-
-//    "convert the seamlessGraph vertices into a single RDD[GBVertex] object" in {
-//      val employees = List(
-//        new GenericRow(Array(1L, "employee", "Bob", 100L)),
-//        new GenericRow(Array(2L, "employee", "Joe", 101L)))
-//      val employeeRDD = sparkContext.parallelize[sql.Row](employees)
-//
-//
-//      val employeeFrameRDD = new VertexFrameRDD(employeeSchema, employeeRDD)
-//
-//      val divisions = List(new GenericRow(Array(3L, "division", "development", 200L)))
-//      val divisionRDD = sparkContext.parallelize[sql.Row](divisions)
-//      val divisionFrameRDD = new VertexFrameRDD(employeeSchema, divisionRDD)
-//      val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
-//
-//      val gbVertices = plugin.toGBVertices(sparkContext, List(employeeFrameRDD, divisionFrameRDD))
-//
-//      val values = gbVertices.collect()
-//
-//      values.length should be(3)
-//      values(0).gbId.value should be(1L)
-//      values(1).gbId.value should be(2L)
-//      values(2).gbId.value should be(3L)
-//    }
-//
-//    "convert the seamlessGraph edges into a single RDD[GBEdge] object" in {
-//      val works = List(
-//        new GenericRow(Array(4L, 1L, 3L, "worksIn", "10/15/2012")),
-//        new GenericRow(Array(5L, 2L, 3L, "worksIn", "9/01/2014")))
-//      val edgeRDD = sparkContext.parallelize[sql.Row](works)
-//      val edgeFrameRDD = new EdgeFrameRDD(edgeSchema, edgeRDD)
-//      val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
-//
-//      val gbEdges = plugin.toGBEdges(sparkContext, List(edgeFrameRDD))
-//
-//      val values = gbEdges.collect()
-//
-//      values.length should be(2)
-//      values(0).tailVertexGbId.value should be(1L)
-//      values(0).headVertexGbId.value should be(3L)
-//      values(1).tailVertexGbId.value should be(2L)
-//      values(1).headVertexGbId.value should be(3L)
-//    }
-
 }
