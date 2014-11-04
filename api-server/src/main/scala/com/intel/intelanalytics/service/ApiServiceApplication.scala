@@ -44,6 +44,8 @@ import scala.reflect.ClassTag
  */
 class ApiServiceApplication extends Archive with EventLogging {
 
+  raw = ConfigFactory.load().getBoolean("intel.analytics.api.logging.raw")
+
   //Direct subsequent archive messages to the normal log
   Archive.logger = s => info(s)
   Archive.logger("Archive logger installed")
