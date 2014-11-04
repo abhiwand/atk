@@ -90,28 +90,4 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
       PythonRDDStorage.RDDToPyRDD(py_expression, rdd)
     }
   }
-
-  /**
-   * Persists a PythonRDD after python computation is complete to HDFS
-   *
-   * @param dataFrame DataFrame associated with this RDD
-   * @param pyRdd PythonRDD instance
-   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
-   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
-   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
-   */
-  def persistPythonRDD(dataFrame: DataFrame,
-                       pyRdd: EnginePythonRDD[String],
-                       converter: Array[String] => Array[Any],
-                       skipRowCount: Boolean = false)(implicit user: UserPrincipal): Long = {
-    withMyClassLoader {
-
-      val resultRdd: RDD[Array[Any]] = PythonRDDStorage.getRddFromPythonRdd(pyRdd, converter)
-
-      val rowCount = if (skipRowCount) 0 else resultRdd.count()
-      frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
-      rowCount
-    }
-  }
-
 }

@@ -263,7 +263,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None)(implicit user: UserPrincipal): DataFrame =
     withContext("SFS.saveFrame") {
 
-      val entity = if (frameFileStorage.frameBaseDirectoryExists(frameEntity)) {
+      val existing = expectFrame(frameEntity.id)
+      val entity = if (existing.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(frameEntity)) {
         //We're saving over something that already exists - which we must not do.
         //So instead we create a new frame.
         val newFrame = create()
@@ -276,7 +277,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
         //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
       }
-      else frameEntity
+      else existing
 
       val path = frameFileStorage.frameBaseDirectory(entity.id).toString
       val count = rowCount.getOrElse {
