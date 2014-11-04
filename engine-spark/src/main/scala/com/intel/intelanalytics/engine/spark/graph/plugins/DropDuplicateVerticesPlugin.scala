@@ -40,7 +40,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicates, DataFrame] {
-  
+
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
