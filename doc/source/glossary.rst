@@ -289,22 +289,22 @@ Glossary
 
     Empirical Cumulative Distribution
     
-        The :abbr:`ECDF (empirical cumulative distribution function)` :math:`F_{n}` is a step function with
-        jumps :math:`i/n` at observation values, where :math:`i` is the number of tied observations at that
-        value.
+        The :abbr:`ECDF (empirical cumulative distribution function)` :math:`\hat F_{n}(t)` is a step
+        function with jumps :math:`i/n` at observation values, where :math:`i` is the number of tied
+        observations at that value.
         Missing values are ignored.
 
-        For observations :math:`x = (x_{1},x_{2}, ... x_{n})`, :math:`F_{n}` is the fraction of
+        For observations :math:`x = (x_{1},x_{2}, ... x_{n})`, :math:`\hat F_{n}(t)` is the fraction of
         observations less than or equal to :math:`t`.
         
         .. math::
 
-            \hat F_{n}(t) = \frac {x_{i} <= t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator{x_{i} <= t}.
+            \hat F_{n}(t) = \frac {x_{i} \le t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator\{x_{i} \le t\}.
 
-        where :math:`Indicator{A}` is the indicator of event :math:`A`.
-        For a fixed :math:`t`, the indicator :math:`Indicator{x_{i} \le t}` is a Bernoulli random variable
+        where :math:`Indicator\{A\}` is the indicator of event :math:`A`.
+        For a fixed :math:`t`, the indicator :math:`Indicator\{x_{i} \le t\}` is a Bernoulli random variable
         with parameter :math:`p = F(t)`, hence :math:`n \hat F_{n}(t)` is a binomial random variable with
-        mean :math:`n \hat F(t)` and variance :math:`n \hat F(t)(1 - F(t))`. This implies that
+        mean :math:`n F(t)` and variance :math:`n F(t)(1 - F(t))`. This implies that
         :math:`\hat F_{n}(t)` is an unbiased estimator for :math:`F(t)`.
 
     ETL
