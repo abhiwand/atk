@@ -27,12 +27,15 @@ import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.domain.{ HasData, UriReference }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.NotNothing
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 import spray.json._
 
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+import scala.concurrent.ExecutionContext
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -139,6 +142,14 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments): Int = 1
+
+  //TODO: This needs to move somewhere else, 
+  //this is very spark specific
+  /**
+   * Name of the custom kryoclass this plugin needs.
+   * kryoRegistrator = None means use JavaSerializer
+   */
+  def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
 
   //  /**
   //   * Resolves a reference down to the requested type

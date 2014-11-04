@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.FilterVertexRows
 import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
@@ -40,6 +41,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicates, DataFrame] {
+
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -56,6 +58,44 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    * - model:logistic_regression  means command is loaded into class LogisticRegressionModel
    */
   override def name: String = "frame:vertex/drop_duplicates"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate vertex rows.", Some("""
+    Remove duplicate vertex rows, keeping only one vertex row per uniqueness criteria match
+
+    Parameters
+    ----------
+    columns:[str | list of str]
+        Column name(s) to identify duplicates.
+        If empty, the function will remove duplicates that have the whole row of data identical
+        (not including the _vid column that is already unique per row).
+
+    Examples
+    --------
+    Remove any rows that have the same data in column * b * as a previously checked row ::
+
+    my_frame.drop_duplicates("b")
+
+    The result is a frame with unique values in column * b *.
+
+    Remove any rows that have the same data in columns * a * and * b * as a previously checked row ::
+
+       my_frame.drop_duplicates([ "a", "b"] )
+
+    The result is a frame with unique values for the combination of columns * a * and * b *.
+
+    Remove any rows that have the whole row identical (not including the _vid column that is already unique per row) ::
+
+      my_frame.drop_duplicates()
+
+    The result is a frame where something is different in every row from every other row.
+    Each row is unique.
+
+    .versionadded :: 0.8""")))
 
   /**
    * Plugins must implement this method to do the work requested by the user.
@@ -77,7 +117,9 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
         val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
         val columnNames = arguments.unique_columns match {
           case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
-          case None => vertexFrame.schema.columnNames
+          case None =>
+            // _vid is always unique so don't include it
+            vertexFrame.schema.dropColumn("_vid").columnNames
         }
         schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
