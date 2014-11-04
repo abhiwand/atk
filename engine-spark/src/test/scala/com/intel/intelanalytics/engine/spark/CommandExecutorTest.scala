@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.engine.{ProgressInfo, CommandStorage}
+import org.joda.time.DateTime
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
 import org.mockito.Mockito._
@@ -21,6 +23,36 @@ import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import scala.collection.immutable.HashMap
 import org.scalatest.mock.MockitoSugar
 
+import scala.util.Try
+import scala.collection._
+
+class FakeCommandStorage extends CommandStorage {
+  var commands: Map[Long, Command] = Map.empty
+  var counter = 1L
+  
+  override def lookup(id: Long): Option[Command] = commands.get(id)
+
+  override def scan(offset: Int, count: Int): Seq[Command] = commands.values.toSeq
+
+  override def complete(id: Long, result: Try[JsObject]): Unit = {}
+
+  /**
+   * update command info regarding progress of jobs initiated by this command
+   * @param id command id
+   * @param progressInfo list of progress for the jobs initiated by this command
+   */
+  override def updateProgress(id: Long, progressInfo: List[ProgressInfo]): Unit = {}  
+
+  override def create(template: CommandTemplate): Command = {
+    val id = counter
+    counter+=1
+    val command: Command = Command(id, template.name, template.arguments, createdOn = DateTime.now, modifiedOn = DateTime.now)
+    commands += (id -> command)
+    command
+  }
+
+  override def start(id: Long): Unit = ???
+}
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val loader = mock[CommandLoader]
@@ -29,10 +61,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
     val engine = mock[SparkEngine]
-    val commandStorage = mock[SparkCommandStorage]
-    val cmd: Command = Command(1, "command", None, None, List(), false, None, null, null, None)
-    when(commandStorage.create(any(classOf[CommandTemplate]))).thenReturn(cmd)
-    when(commandStorage.lookup(anyLong())).thenReturn(Some(cmd))
+    val commandStorage = new FakeCommandStorage
     val contextFactory = mock[SparkContextFactory]
     val sc = mock[SparkContext]
     when(contextFactory.context(any(classOf[UserPrincipal]), anyString(), Some(anyString()))).thenReturn(sc)
@@ -52,9 +81,10 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       mock[DataFrame]
     }
 
-    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
+    commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
-    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    val execution = executor.execute(CommandTemplate(name = "dummy", arguments = Some(args.toJson.asJsObject())),
+      user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 1
     containsKey1DuringExecution shouldBe true
@@ -74,9 +104,10 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       mock[DataFrame]
     }
 
-    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
+    commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
-    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    val execution = executor.execute(CommandTemplate(name = "dummy", arguments = Some(args.toJson.asJsObject())),
+                                      user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountAfterCancel shouldBe 0
   }

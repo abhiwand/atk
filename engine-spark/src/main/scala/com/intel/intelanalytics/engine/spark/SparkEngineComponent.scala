@@ -26,23 +26,13 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
-import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, FrameRDD, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ HBaseAdminFactory, SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
-import com.intel.intelanalytics.engine.spark.user.UserStorage
-import com.intel.intelanalytics.engine.spark.util.DiskSpaceReporter
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.hadoop.fs.{ Path => HPath }
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.spark.SparkContext
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
 import com.intel.intelanalytics.engine.spark.user.UserStorage

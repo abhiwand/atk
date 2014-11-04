@@ -264,7 +264,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     withContext("SFS.saveFrame") {
 
       val existing = expectFrame(frameEntity.id)
-      val entity = if (existing.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(frameEntity)) {
+      val entity = if (existing.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(existing)) {
         //We're saving over something that already exists - which we must not do.
         //So instead we create a new frame.
         val newFrame = create()
@@ -286,14 +286,14 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
       try {
 
-        val storage = frameEntity.storageFormat.getOrElse("file/parquet")
+        val storage = entity.storageFormat.getOrElse("file/parquet")
         storage match {
           case "file/sequence" =>
             val schemaRDD = frameRDD.toSchemaRDD
             schemaRDD.saveAsObjectFile(path)
           case "file/parquet" =>
             val schemaRDD = frameRDD.toSchemaRDD
-            schemaRDD.saveAsParquetFile(path.toString)
+            schemaRDD.saveAsParquetFile(path)
           case format => illegalArg(s"Unrecognized storage format: $format")
         }
 

@@ -25,21 +25,13 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, Graph }
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdges, AddVertices }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext._
-import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -109,7 +101,6 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AddEdges)(implicit invocation: Invocation): UnitReturn = {
@@ -145,8 +136,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
