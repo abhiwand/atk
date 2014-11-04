@@ -83,7 +83,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * Set the kryo class to use
    */
   override def kryoRegistrator: Option[String] = None
-  
+
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
     val start = System.currentTimeMillis()
