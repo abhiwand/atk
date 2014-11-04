@@ -47,7 +47,10 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * e.g Python client via code generation.
    */
   override def name: String = "frame:/drop_columns"
-
+  /**
+   * Set the kryo class to use
+   */
+  override def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
   /**
    * User documentation exposed in Python.
    *
