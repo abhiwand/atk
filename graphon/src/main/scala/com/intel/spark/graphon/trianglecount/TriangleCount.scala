@@ -88,6 +88,9 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def name: String = "graph:titan/ml/graphx_triangle_count"
 
+  //TODO remove when we move the next version of spark
+  override def kryoRegistrator: Option[String] = None
+
   override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
                              |    ** Experimental Feature **
