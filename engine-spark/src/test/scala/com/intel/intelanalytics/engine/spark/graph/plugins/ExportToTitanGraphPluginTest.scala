@@ -91,11 +91,17 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         this.titanConfig)
       plugin.loadTitanGraph(config, vertexFrame, edgeFrame)
 
-
       this.titanGraph.getEdges().size should be(2)
       this.titanGraph.getVertices.size should be(3)
 
 
+      val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
+      bobVertex.getProperty[String]("name") should be("Bob")
+      val bobsDivision = bobVertex.getVertices(Direction.OUT)
+      bobsDivision.size should be(1)
+      bobsDivision.iterator().next().getProperty[String]("name") should be("development")
+      val bobEdges = bobVertex.getEdges(Direction.OUT)
+      bobEdges.size should be(1)
     }
   }
 }
