@@ -344,7 +344,7 @@ class FrameBackendRest(object):
         arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
                      'where': where}
-        return execute_new_frame_command('frame:/copy', arguments)
+        return execute_new_frame_command('frame/copy', arguments)
 
     def group_by(self, frame, group_by_columns, aggregation):
         if group_by_columns is None:

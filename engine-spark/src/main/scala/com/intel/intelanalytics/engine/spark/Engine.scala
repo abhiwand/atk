@@ -54,7 +54,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,7 +117,7 @@ object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(sparkContextManager: SparkContextManager,
+class SparkEngine(sparkContextFactory: SparkContextFactory,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
@@ -241,7 +241,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user, "query")
+      val ctx = sparkContextFactory.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)

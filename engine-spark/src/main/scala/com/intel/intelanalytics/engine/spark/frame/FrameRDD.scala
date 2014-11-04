@@ -108,7 +108,7 @@ class FrameRDD(val schema: Schema,
   }
 
   /**
-   * Union two Frame's merging schemas if needed
+   * Union two Frame's, merging schemas if needed
    */
   def union(other: FrameRDD): FrameRDD = {
     val unionedSchema = schema.union(other.schema)
