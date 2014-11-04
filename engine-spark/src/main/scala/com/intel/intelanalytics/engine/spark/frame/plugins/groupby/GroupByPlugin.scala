@@ -60,14 +60,14 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     val args_pair = for {
       (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
-    } yield (schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
+    } yield (schema.columnIndex(column_to_apply), aggregation_function)
 
     if (arguments.groupByColumns.length > 0) {
       val groupByColumns = arguments.groupByColumns
 
       val columnIndices: Seq[(Int, DataType)] = for {
         col <- groupByColumns
-        columnIndex = schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == col)
+        columnIndex = schema.columnIndex(col)
         columnDataType = schema.columnTuples(columnIndex)._2
       } yield (columnIndex, columnDataType)
 

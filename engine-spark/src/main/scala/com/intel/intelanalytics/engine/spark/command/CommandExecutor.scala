@@ -28,6 +28,8 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
@@ -99,9 +101,9 @@ case class CommandContext(
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
- * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
+ * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextFactory: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -310,7 +312,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                                                                cmd: Command): SparkContext = withMyClassLoader {
     val commandId = cmd.id
     val commandName = cmd.name
-    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+    val context: SparkContext = contextFactory.context(user, s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
     try {
       val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
       val progressPrinter = new ProgressPrinter(listener)

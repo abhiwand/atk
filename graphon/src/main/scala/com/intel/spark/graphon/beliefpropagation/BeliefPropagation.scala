@@ -82,6 +82,9 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
+  //TODO uncomment when we move the next version of spark
+  //override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
     extendedSummary = Some("""
@@ -146,10 +149,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-
+    //TODO change this code to use the sparkContext that was passed in rather than create a new one when we move to the next version of spark
     sc.stop
 
     val sparkConf: SparkConf = sc.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    //sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer") works without setting this, why?
 
     val ctx = new SparkContext(sparkConf)
 

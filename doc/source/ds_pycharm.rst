@@ -13,7 +13,7 @@ Prerequisites
 
 These instructions assume you have already installed
 
-- Python 2.6 
+- Python 2.7 
 - |IA| Python Rest Client and required dependencies
 - `PyCharm <http://www.jetbrains.com/pycharm/>`_
 
@@ -28,16 +28,16 @@ Setup
 
     #)  Give your project a name, e.g "myproject"
 
-    #)  Choose "Python 2.6" as the Python Interpreter and choose the "OK" button
+    #)  Choose "Python 2.7" as the Python Interpreter and choose the "OK" button
 
 
-        i)  If "Python 2.6" does not appear in the list you will need to configure a Python 2.6 Intepreter.
+        i)  If "Python 2.7" does not appear in the list you will need to configure a Python 2.7 Intepreter.
 
             1)  Choose the button that looks like a "gear"
 
             #)  Choose "Add Local"
 
-            #)  Browse for your local Python 2.6 installation.  On RedHat or Centos this is probably /usr/bin/python.
+            #)  Browse for your local Python 2.7 installation.  On RedHat or Centos this is probably /usr/bin/python.
 
             #)  Choose the "OK" button
 
