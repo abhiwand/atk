@@ -76,33 +76,40 @@ public class HBaseUniformSplitterTest {
     @Test
     public void testCreateInputSplitsEmptyEndRow() throws Exception {
         // If endRow is empty (i.e., last region in table), use max key to split region
-        byte xAA = (byte) 0xAA;
-        byte xFF = (byte) 0xFF;
 
-        byte[] startRow = HConstants.EMPTY_BYTE_ARRAY;
-        byte[] middle1 = Bytes.toBytes("UUUUUUUU");
-        byte[] middle2 = new byte[]{xAA, xAA, xAA, xAA, xAA, xAA, xAA, xAA};
-        byte[] endRow = new byte[]{xFF, xFF, xFF, xFF, xFF, xFF, xFF, xFF};
+        // Test split when start row is less than MAX_INT
+        byte[] startRow1 = HConstants.EMPTY_BYTE_ARRAY;
+        byte[] middle1 = Bytes.toBytes(1L << 31);
+        byte[] endRow = HConstants.EMPTY_BYTE_ARRAY;
+        TableSplit tableSplit1 = new TableSplit(TableName.valueOf("table"), startRow1, HConstants.EMPTY_BYTE_ARRAY, "location");
+        List<InputSplit> inputSplits1 = new ArrayList<>();
+        inputSplits1.add(tableSplit1);
 
-        TableSplit tableSplit1 = new TableSplit(TableName.valueOf("table"), startRow, HConstants.EMPTY_BYTE_ARRAY, "location");
-        List<InputSplit> inputSplits = new ArrayList<>();
-        inputSplits.add(tableSplit1);
+        HBaseUniformSplitter uniformSplitter1 = new HBaseUniformSplitter(inputSplits1);
+        List<InputSplit> uniformSplits1 = uniformSplitter1.createInputSplits(2);
 
-        HBaseUniformSplitter uniformSplitter = new HBaseUniformSplitter(inputSplits);
-        List<InputSplit> uniformSplits = uniformSplitter.createInputSplits(3);
+        assertEquals(2, uniformSplits1.size());
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(0)).getStartRow(), startRow1));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(0)).getEndRow(), middle1));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(1)).getStartRow(), middle1));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(1)).getEndRow(), endRow));
 
-        // Test split into three parts.
-        assertEquals(3, uniformSplits.size());
-        // Empty to UUUUUUUU
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getStartRow(), startRow));
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getEndRow(), middle1));
-        // UUUUUUUU to xAAxAAxAAxAAxAAxAAxAAxAA
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getStartRow(), middle1));
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getEndRow(), middle2));
-        // xAAxAAxAAxAAxAAxAAxAAxAA to xFFxFFxFFxFFxFFxFFxFFxFF
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(2)).getStartRow(), middle2));
-        //assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(2)).getEndRow(), endRow));
+        // Test split when start row is greater than MAX_INT
+        byte[] startRow2 = Bytes.toBytes(1L << 61); //2305843009213693952
+        byte[] middle2 = Bytes.toBytes(5L << 60);   //5764607523034234880
 
+        TableSplit tableSplit2 = new TableSplit(TableName.valueOf("table"), startRow2, HConstants.EMPTY_BYTE_ARRAY, "location");
+        List<InputSplit> inputSplits2 = new ArrayList<>();
+        inputSplits2.add(tableSplit2);
+
+        HBaseUniformSplitter uniformSplitter2 = new HBaseUniformSplitter(inputSplits2);
+        List<InputSplit> uniformSplits2 = uniformSplitter2.createInputSplits(2);
+
+        assertEquals(2, uniformSplits2.size());
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits2.get(0)).getStartRow(), startRow2));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits2.get(0)).getEndRow(), middle2));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits2.get(1)).getStartRow(), middle2));
+        assertTrue(Bytes.equals(((TableSplit) uniformSplits2.get(1)).getEndRow(), endRow));
     }
 
     @Test
