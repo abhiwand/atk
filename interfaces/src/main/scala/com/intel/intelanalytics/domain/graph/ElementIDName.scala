@@ -12,7 +12,7 @@ case class ElementIDNames(elementIDNames: List[ElementIDName]) {
  * @param elementName label of graph element
  * @param idColumnName column name of unique identifier.
  */
-case class ElementIDName(elementName: String, idColumnName: String){
+case class ElementIDName(elementName: String, idColumnName: String) {
   require(!elementName.isEmpty, "element name is required")
   require(!idColumnName.isEmpty, "idColumnName is required")
 }
