@@ -1,5 +1,7 @@
 #!/usr/bin/python2.7
-from intelanalytics import *
+import intelanalytics as ia
+
+ia.connect();
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/lbp_edge.csv"
@@ -11,11 +13,11 @@ schema = [("source", int64),
           ("target", int64),
           ("weight", float64)]
 
-csv = CsvFile(dataset, schema, skip_header_lines=1)
+csv = ia.CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame 'myframe'"
 
-frame = Frame(csv, "myframe")
+frame = ia.Frame(csv, "myframe")
 
 print "Done building data frame 'myframe'"
 
@@ -23,15 +25,15 @@ print "Inspecting frame 'myframe'"
 
 print frame.inspect()
 
-source = VertexRule("source", frame.source, {"vertex_type": frame.vertex_type, "value": frame.value})
+source = ia.VertexRule("source", frame.source, {"vertex_type": frame.vertex_type, "value": frame.value})
 
-target = VertexRule("target", frame.target, {"vertex_type": frame.vertex_type, "value": frame.value})
+target = ia.VertexRule("target", frame.target, {"vertex_type": frame.vertex_type, "value": frame.value})
 
-edge = EdgeRule("edge", target, source, {'weight': frame.weight}, bidirectional=True)
+edge = ia.EdgeRule("edge", target, source, {'weight': frame.weight}, bidirectional=True)
 
 print "Creating Graph 'mygraph'"
 
-graph = TitanGraph([target, source, edge], "mygraph")
+graph = ia.TitanGraph([target, source, edge], "mygraph")
 
 print "Running Loopy Belief Propagation on Graph mygraph"
 
