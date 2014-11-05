@@ -129,7 +129,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest, Re
    * Name of the custom kryoclass this plugin needs.
    * kryoRegistrator = None means use JavaSerializer
    */
-  def kryoRegistrator: Option[String] = None
+  def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
 }
 
 /**

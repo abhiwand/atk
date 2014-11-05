@@ -81,8 +81,8 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
-  //TODO uncomment when we move the next version of spark
-  //override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //TODO remove when we move the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
@@ -152,7 +152,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     sparkInvocation.sparkContext.stop
 
     val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
-    //sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer") works without setting this, why?
 
     val sc = /*sparkInvocation.sparkContext*/ new SparkContext(sparkConf)
 
