@@ -28,7 +28,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ RowParser, LoadRDDFunctions, RowParseResult }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRDDFunctions, RowParseResult }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
@@ -58,7 +58,7 @@ class EngineKryoRegistrator extends KryoRegistrator {
 
     // frame related classes
     kryo.register(classOf[Row])
-    kryo.register(classOf[RowParser])
+    kryo.register(classOf[CsvRowParser])
     kryo.register(classOf[RowParseResult])
     kryo.register(classOf[LegacyFrameRDD])
     kryo.register(ClassificationMetrics.getClass)

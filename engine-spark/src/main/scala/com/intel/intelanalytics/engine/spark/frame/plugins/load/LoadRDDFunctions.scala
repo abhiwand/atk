@@ -9,6 +9,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SchemaRDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
+import scala.reflect.ClassTag
+
 /**
  * Helper functions for loading an RDD
  */
@@ -72,14 +74,14 @@ object LoadRDDFunctions extends Serializable {
    * @param fileContentRdd the rows that need to be parsed (the file content)
    * @param parser the parser to use
    */
-  private[frame] def parseSampleOfData[T](fileContentRdd: RDD[T],
-                                       parser: LineParser): Unit = {
+  private[frame] def parseSampleOfData[T: ClassTag](fileContentRdd: RDD[T],
+                                                    parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val sampleRdd = MiscFrameFunctions.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
+    val sampleRdd = MiscFrameFunctions.getPagedRdd[T](fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
     sampleRdd.cache()
@@ -151,11 +153,11 @@ object LoadRDDFunctions extends Serializable {
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
         val rowParser = new CsvRowParser(args.separator, columnTypes)
-        s => rowParser(s)
+        s => rowParser(s.asInstanceOf[String])
       }
       case "builtin/upload" => {
-
-        row => RowParseResult
+        val uploadParser = new UploadParser(columnTypes)
+        row => uploadParser(row.asInstanceOf[List[Any]])
       }
       case x => throw new Exception("Unsupported parser: " + x)
     }

@@ -184,7 +184,7 @@ class FrameBackendRest(object):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
                               "uri": "pandas",
-                              "parser": {"name": "builtin/line/separator",
+                              "parser": {"name": "builtin/upload",
                                          "arguments": { "separator": ',',
                                                        "skip_rows": 0,
                                                        "schema":{ "columns": source._schema_to_json()
