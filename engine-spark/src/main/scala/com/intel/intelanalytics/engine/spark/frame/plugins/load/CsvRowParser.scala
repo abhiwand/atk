@@ -41,7 +41,7 @@ import scala.collection.JavaConversions.asScalaIterator
  *
  * @param separator delimiter character
  */
-class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
+class CsvRowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
 
   val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
 

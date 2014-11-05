@@ -32,6 +32,7 @@ import json
 import sys
 import pandas
 import numpy as np
+import intelanalytics.rest.config as config
 
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
@@ -258,7 +259,7 @@ class FrameBackendRest(object):
                 pan = pan.reset_index()
             for index, row in pan.iterrows():
                 pandas_rows.append(row.tolist())
-                if index != 0 and index % 10000 == 0:
+                if index != 0 and index % config.upload_defaults.rows == 0:
                     arguments = self._get_load_arguments(frame, data, pandas_rows)
                     result = execute_update_frame_command("frame:/load", arguments, frame)
                     self._handle_error(result)
@@ -267,7 +268,7 @@ class FrameBackendRest(object):
             if pandas_rows.__len__() > 0:
                 arguments = self._get_load_arguments(frame, data, pandas_rows)
                 result = execute_update_frame_command("frame:/load", arguments, frame)
-                self._handle_erro(result)
+                self._handle_error(result)
         else:
             arguments = self._get_load_arguments(frame, data)
             result = execute_update_frame_command("frame:/load", arguments, frame)

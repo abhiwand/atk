@@ -55,8 +55,8 @@ object LoadRDDFunctions extends Serializable {
                        data: List[List[Any]],
                        parser: LineParser): ParseResultRddWrapper = {
 
-    val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
-    //val dataContentRDD: RDD[Any] = sc.parallelize(data)
+    //val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
+    val dataContentRDD: RDD[Any] = sc.parallelize(data)
     // parse a sample so we can bail early if needed
     parseSampleOfData(dataContentRDD, parser)
 
@@ -72,7 +72,7 @@ object LoadRDDFunctions extends Serializable {
    * @param fileContentRdd the rows that need to be parsed (the file content)
    * @param parser the parser to use
    */
-  private[frame] def parseSampleOfData(fileContentRdd: RDD[String],
+  private[frame] def parseSampleOfData[T](fileContentRdd: RDD[T],
                                        parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
@@ -109,7 +109,7 @@ object LoadRDDFunctions extends Serializable {
    * @param parser the parser to use
    * @return the parse result - successes and failures
    */
-  private[frame] def parse(rowsToParse: RDD[String], parser: LineParser): ParseResultRddWrapper = {
+  private[frame] def parse[T](rowsToParse: RDD[T], parser: LineParser): ParseResultRddWrapper = {
 
     val schemaArgs = parser.arguments.schema
     val skipRows = parser.arguments.skip_rows
@@ -140,7 +140,7 @@ object LoadRDDFunctions extends Serializable {
     }
   }
 
-  private[frame] def getLineParser(parser: LineParser, columnTypes: Array[DataTypes.DataType]): String => RowParseResult = {
+  private[frame] def getLineParser[T](parser: LineParser, columnTypes: Array[DataTypes.DataType]): T => RowParseResult = {
     parser.name match {
       //TODO: look functions up in a table rather than switching on names
       case "builtin/line/separator" => {
@@ -150,8 +150,12 @@ object LoadRDDFunctions extends Serializable {
           case x => throw new IllegalArgumentException(
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
-        val rowParser = new RowParser(args.separator, columnTypes)
+        val rowParser = new CsvRowParser(args.separator, columnTypes)
         s => rowParser(s)
+      }
+      case "builtin/upload" => {
+
+        row => RowParseResult
       }
       case x => throw new Exception("Unsupported parser: " + x)
     }
