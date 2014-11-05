@@ -163,6 +163,8 @@ public class HBaseUniformSplitter {
         byte[] endKey = Bytes.toBytes(((1L << 32) - 1L));
         long maxRange = 0;
 
+        if (Bytes.equals(startKey, HConstants.EMPTY_BYTE_ARRAY))
+
         for (InputSplit split : initialSplits) {
             TableSplit tableSplit = (TableSplit) split;
             try {
