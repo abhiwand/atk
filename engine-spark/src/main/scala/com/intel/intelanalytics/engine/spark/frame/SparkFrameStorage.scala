@@ -349,15 +349,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = getContext(user)
-        try {
-          val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame)
-          val rows = MiscFrameFunctions.getRows(rdd, offset, count, maxRows)
-          rows
-        }
-        finally {
-          ctx.stop()
-        }
         val absPath: Path = new Path(frame.storageLocation.get)
         val reader = new ParquetReader(absPath, frameFileStorage.hdfs)
         val rows = reader.take(count, offset, Some(maxRows))
