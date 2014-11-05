@@ -7,7 +7,7 @@ Installation
 
     ad_inst_pre_cloudera
     ad_inst_cloudera
-    ad_inst_IA
+    ad_inst_ia1
     ad_psql
     ad_ipython
     ad_inst_vm
