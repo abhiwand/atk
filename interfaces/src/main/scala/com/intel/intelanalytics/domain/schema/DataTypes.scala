@@ -42,6 +42,8 @@ object DataTypes {
 
     def parse(s: String): Try[ScalaType]
 
+    def parse(raw: Any): Try[ScalaType]
+
     /** True if the supplied value matches this data type */
     def isType(raw: Any): Boolean
 
@@ -62,6 +64,10 @@ object DataTypes {
 
     override def parse(s: String) = Try {
       s.trim().toInt
+    }
+
+    override def parse(raw: Any) = Try {
+      toInt(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -269,7 +275,7 @@ object DataTypes {
    * @param strings the strings to be converted
    * @return the converted values. Any values that cannot be parsed will result in an illegal argument exception.
    */
-  def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
+  def parseMany(columnTypes: Array[DataType])(strings: Array[Any]): Array[Any] = {
     val frameColumnCount = columnTypes.length
     val dataCount = strings.length
 
