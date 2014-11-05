@@ -78,6 +78,7 @@ public class HBaseTableInputFormat extends TableInputFormat {
         int initialSplitCount = splits.size();
         int requestedSplitCount = config.getInt(NUM_REGION_SPLITS, initialSplitCount);
 
+        LOG.info("Set requested input splits for HBase table to: " + requestedSplitCount);
         return requestedSplitCount;
     }
 

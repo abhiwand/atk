@@ -27,6 +27,7 @@ import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.{ ConfigFactory, Config }
 import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
@@ -138,9 +139,24 @@ trait SparkEngineConfig extends EventLogging {
       titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
 
+    setTitanAutoPartitions(titanConfiguration)
+  }
+
+  /**
+   * Update Titan configuration with auto-generated settings.
+   *
+   * At present, auto-partitioner for graph construction only sets HBase pre-splits.
+   *
+   * @param titanConfiguration
+   * @return Updated Titan configuration
+   */
+  def setTitanAutoPartitions(titanConfiguration: SerializableBaseConfiguration): SerializableBaseConfiguration = {
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
-    titanAutoPartitioner.setHBasePreSplits(HBaseConfiguration.create())
-    println("Updated pre-splits for auto-partitioner" + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+    val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
+
+    titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
+    info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+
     titanConfiguration
   }
 
