@@ -9,23 +9,21 @@
 
 ############################################################################################################
 function check_environment {
-# Running on Ubuntu, we don't need virtpy because Ubuntu is awesome!
+# debug: Running on Ubuntu, we do not need virtpy because Ubuntu is awesome!
     UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
 
     if [ "$UBUNTU_OS" == "" ]; then
+        
         # This is not Ubuntu, so look for a virtual environment
         if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
             ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
         else
             ACTIVATE_FILE=/usr/local/virtpy/bin/activate
         fi
-
+        
         if [[ -f $ACTIVATE_FILE ]]; then
             source $ACTIVATE_FILE > /dev/null
         else
-            echo "Virtual Environment is not installed."
-            echo "Please execute install_pyenv.sh to install."
-            echo "or use the -f/--force flag."
             return 1
         fi
     fi
@@ -150,7 +148,7 @@ function log_step {
 }
 ############################################################################################################
 function main {
-    # $1 = Modified Arguments
+    # debug: $1 = Modified Arguments
 
     echo
 
@@ -159,13 +157,13 @@ function main {
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
 
-    # Start the log file
+    # debug: Start the log file
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
-    # Sometimes numpy chokes on these files.
+    # debug: Sometimes numpy chokes on these files.
     if [[ -f ../core/*.pyc ]]; then rm ../core/*.pyc; fi
 
-# Check on quiet mode
+    # debug: Check on quiet mode
     echo $ModifiedArguments | grep -i -e "/-q/" -e "/-qq/" > /dev/null
     if [ $? == 0 ]; then
         AskThem=No
@@ -173,8 +171,7 @@ function main {
         AskThem=Yes
     fi
 
-
-# Check on super quiet mode
+    # debug: Check on super quiet mode
     echo $ModifiedArguments | grep -i -e "/-qq/" > /dev/null
     if [ $? == 0 ]; then
          DisplayStatus=No
@@ -182,30 +179,36 @@ function main {
          DisplayStatus=Yes
     fi
 
-
-# Look for help
+    # debug: Look for help
     echo $ModifiedArguments | grep -i -e "/-h/" -e "/--help/" > /dev/null
     if [ $? == 0 ]; then
         doc_help $ModifiedArguments
         return 0
     fi
 
-# Look for a virtual environment if needed
+    # debug: Look for a virtual environment if needed
     echo $ModifiedArguments | grep -i -e "/-f/" -e "/--force/" > /dev/null
     if [ $? == 1 ]; then
+        # debug: about to check the environment
         USERNAME=$(check_environment)
-        if [ "$?" == "1" ]; then return 1; fi
+        if [ "$?" == "1" ]; then
+            echo "Virtual Environment is not installed."
+            echo "Please execute install_pyenv.sh to install."
+            echo "or use the -f/--force flag."
+            return 1
+        fi
     else
+        # debug: setting USERNAME=$LOGNAME
         USERNAME=$LOGNAME
     fi
 
-# Look for packages if the individual is a techwriter
+    # debug: Look for packages if the individual is a techwriter
     echo $ModifiedArguments | grep -i "/packages/" > /dev/null
     if [[ "$?" == "0" && "$USERNAME" != "" ]]; then
         packages $USERNAME $ScriptPath
     fi
 
-# Look for buildable
+    # debug: Look for buildable
     echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
     if [ "$?" == "0" ]; then
         echo $ModifiedArguments | grep -i -e "/latex/" > /dev/null
@@ -213,64 +216,91 @@ function main {
             ModifiedArguments="$ModifiedArguments+/latex/"
         fi
     fi
-    echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/txt/" -e "/html/" > /dev/null
+    echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
-    # Remove previous doctrees
+        # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
             delete_previous "build/doctrees" $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then return 1; fi
         fi
 
-    # Check for rebuilding the scala routines
+        # debug: Check for rebuilding the scala routines
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
 
-        # Update scala server
+            # debug: Update scala server
             pushd ../ > /dev/null
             update_scala $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then popd; return 1; fi
 
-        # Update the additional python documentation files
+            # debug: Update the additional python documentation files
             cd python
             update_python $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then popd; return 1; fi
 
-        # Return to original directory to continue
+            # debug: Return to original directory to continue
             popd > /dev/null
         fi
 
-    # Look for sphinx build types
+        # debug: Look for sphinx build types
         SphinxFormats="latex text html"
+        SphinxFlag=OK
         for Format in $SphinxFormats
         do
-
-            echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
-            if [ "$?" == "0" ]; then
-                sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
-                if [ "$?" == "1" ]; then return 1; fi
+            if [ "$SphinxFlag" == "OK" ]; then
+                echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
+                if [ "$?" == "0" ]; then
+                    which sphinx-build > /dev/null
+                    if [ "$?" == "0" ]; then
+                        sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
+                        if [ "$?" == "1" ]; then return 1; fi
+                    else
+                        echo "The sphinx documentation system does not seem to be present."
+                        read -p "Abort? [Y/n] "
+                        if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+                        if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+                        SphinxFlag=No
+                    fi
+                fi
             fi
         done
 
-    # Look for pdf building
+        # debug: Look for pdf building
         echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
         if [ $? == 0 ]; then
-            pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" == "1" ]; then return 1; fi
-            if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
-                RunCommand="cp build/latex/IntelAnalytics.pdf build/html/_downloads/"
-                do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+            which pdflatex > /dev/null
+            if [ "$?" == "0" ]; then
+                pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
                 if [ "$?" == "1" ]; then return 1; fi
+                if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+                    RunCommand="cp build/latex/IntelAnalytics.pdf build/html/_downloads/"
+                    do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+                    if [ "$?" == "1" ]; then return 1; fi
+                fi
+            else
+                echo "The latex to pdf convert does not seem to be present."
+                read -p "Abort? [Y/n] "
+                if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+                if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
             fi
         fi
     fi
 
-# Compress the results into a single file
+    # debug: Compress the results into a single file
     echo $ModifiedArguments | grep -i -e "/zip/" > /dev/null
     if [ $? == 0 ]; then
-        RunCommand="zip -q -9 -r intel_analytics_docs build/*"
-        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        which pdflatex > /dev/null
+        if [ "$?" == "0" ]; then
+            RunCommand="zip -q -9 -r intel_analytics_docs build/*"
+            do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        else
+            echo "The zip utility does not seem to be present."
+            read -p "Abort? [Y/n] "
+            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+            if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+        fi
     fi
 }
 ############################################################################################################
@@ -367,8 +397,24 @@ function update_python {
     # $4 = LogFile
 
 # Update the additional python documentation files
-    do_this "python cmdgen.py" $1 $2 $3 $4
-    return $?
+    which python > /dev/null
+    if [ "$?" == "0" ]; then
+        if [[ -f cmdgen.py ]]; then
+            do_this "python cmdgen.py" $1 $2 $3 $4
+            return $?
+        else
+            echo "The python script cmdgen.py seems to be missing."
+            read -p "Abort? [Y/n] "
+            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+            if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+        fi
+    else
+        echo "Python seems to be missing."
+        read -p "Abort? [Y/n] "
+        if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+        if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+    fi
+    return 0
 }
 ############################################################################################################
 function update_scala {
@@ -378,23 +424,27 @@ function update_scala {
     # $4 = LogFile
 
     # Update scala server
-    RunCommand="mvn compile"
-    log_step "$RunCommand" $2 $4
-    $RunCommand > $3
-    if [ "$?" == "1" ]; then
-        Err "$RunCommand" $1 $2 $3 $4
+    which mvn > /dev/null
+    if [ "$?" == "0" ]; then
+        RunCommand="mvn compile"
+        log_step "$RunCommand" $2 $4
+        $RunCommand > $3
         if [ "$?" == "1" ]; then
-            return 1
-        fi
-        RunCommand="mvn clean install -DskipTests"
-        read -p "Try \"$RunCommand\"? [y|N]" UserResponse
-        if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-        if [ "${UserResponse:0:1}" == 'y' ]; then
-            do_this "$RunCommand" $1 $2 $3 $4
-            return $?
+            Err "$RunCommand" $1 $2 $3 $4
+            if [ "$?" == "1" ]; then return 1; fi
+            RunCommand="mvn clean install -DskipTests"
+            read -p "Try \"$RunCommand\"? [y|N]" UserResponse
+            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
+            if [ "${UserResponse:0:1}" == 'y' ]; then
+                do_this "$RunCommand" $1 $2 $3 $4
+                return $?
+            fi
+        else
+            rm $3 > /dev/null
         fi
     else
-        rm $3 > /dev/null
+        Err "Maven does not appear installed." $1 $2 $3 $4
+        if [ "$?" == "1" ]; then return 1; fi
     fi
     return 0
 }
