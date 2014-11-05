@@ -60,6 +60,7 @@ Setup
 
             import intelanalytics as ia
             ia.server.host = "correct host name or IP address"
+            ia.connect()
             ia.server.ping()
 
     #)  If you see a yellow bar across the top of the file warning about "Package requirements" not being satisfied then
