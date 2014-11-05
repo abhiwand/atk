@@ -56,8 +56,13 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
   def withPluginContext[T](context: String)(expr: => T)(implicit invocation: Invocation): T = {
     withContext(context) {
       EventContext.getCurrent.put("plugin_name", name)
-      val caller = user.user
-      EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
+      try {
+        val caller = user.user
+        EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
+      }
+      catch {
+        case e => EventContext.getCurrent.put("user-name-error", e.toString)
+      }
       expr
     }
   }
