@@ -37,6 +37,7 @@ import spray.json._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.concurrent.ExecutionContext
+import scala.util.control.NonFatal
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -59,9 +60,8 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
       try {
         val caller = user.user
         EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
-      }
-      catch {
-        case e => EventContext.getCurrent.put("user-name-error", e.toString)
+      } catch {
+        case NonFatal(e) => EventContext.getCurrent.put("user-name-error", e.toString)
       }
       expr
     }
