@@ -33,11 +33,11 @@ This way, from inside Python, it is easy to load the toolkit::
 
 To test whether you have imported the toolkit properly type::
 
-    print valid_data_types
+    print ia.valid_data_types
 
 You should see something like this::
 
-    float32, float64, int32, int64, str, unicode
+    ia.float64, float64, ia.int64, int64, str, unicode
 
 .. _Importing Data:
 
@@ -93,16 +93,11 @@ Let's start with a file *Data.csv* whose contents look like this::
     4,
     5,""
 
-Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
+Create the schema *schema_ab* with two columns: *a* (int64), and *b* (string):
 
 .. code::
 
-    schema_ab = [('a', int32), ('b', string)]
-
-When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the
-name should be an empty string ``''``::
-
-    schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
+    schema_ab = [('a', ia.int64), ('b', ia.str)]
 
 The delimiter can be declared using the key word ``delimiter``.
 This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for
@@ -112,20 +107,20 @@ passed in with the ``skip_header_lines`` parameter.
 
 Now we use the schema and the file name to create objects used to define the data layouts::
 
-    my_csv = CsvFile('Data.csv', schema_ab)
-    csv1 = CsvFile("data.txt", schema_ab)
-    csv2 = CsvFile(file_name="more_data.txt", schema=schema_ab)
-    csv3 = CsvFile("different_data.txt", schema=[('x', float32), ('', ignore), ('y', int64)])
+    my_csv = ia.CsvFile('Data.csv', schema_ab)
+    csv1 = ia.CsvFile("data.txt", schema_ab)
+    csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
+    csv3 = ia.CsvFile("different_data.txt", schema=[('x', ia.float64), ('y', ia.int64)])
 
     raw_csv_data_file = "my_data.csv"
-    column_schema_list = [("x", float32), ("y", float32), ("z", bool)]
-    csv4 = CsvFile(raw_csv_data_file,
+    column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", ia.bool)]
+    csv4 = ia.CsvFile(raw_csv_data_file,
                    column_schema_list,
                    delimiter='|',
                    skip_header_lines=2)
 
 
-.. _example_frame.bigframe:
+.. _example_frame.frame:
 
 -----
 Frame
@@ -142,32 +137,33 @@ Create A Frame
 
 A new frame is created:
     1. as "empty"", with no columns defined,
-    #. as defined by a schema, or
+    #. as defined by a schema and the source file, or
     #. by copying (all or a part of) another frame.
 
 Examples:
 ---------
 To create an empty frame and a Frame object, *f*, to access it::
 
-    f = Frame()
+    f = ia.Frame()
 
 To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a
 Frame object, *my_frame*, to access it::
 
-    my_frame = Frame(my_csv, 'bf')
+    my_frame = ia.Frame(my_csv, 'bf')
 
 To create a new frame, identical to the frame named *bf* (except for the name, because the name must always
 be unique), and create a Frame object *f2* to access it::
 
-    f2 = Frame(my_frame)
+    f2 = ia.Frame(my_frame)
 
 To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the Frame
 object as *f3*::
 
-    f3 = Frame(my_frame[['a', 'c']])
+    f3 = ia.Frame(my_frame[['a', 'c']])
 
 Frames (capital 'F') are not the same thing as frames (lower case 'f').
-Frames contain data, viewed similarly to a table, while Frames are descriptive pointers to the data.
+Frames (lower case 'f') contain data, viewed similarly to a table, while Frames are descriptive pointers
+to the data.
 Commands such as ``f4 = my_frame`` will only give you a copy of the Frame proxy pointing to the same data.
 
 .. _example_frame.append:
@@ -184,21 +180,21 @@ We can look at the data and structure of the database by using the ``inspect`` f
 
     BF1.inspect()
 
-    a:str       b:int32
-    -------------------
-    apple           182
-    bear             71
-    car            2048
+      a:ia.str   b:ia.int64
+    /-----------------------/
+      apple           182
+      bear             71
+      car            2048
 
 To this frame we combine another frame with one column *c*.
 This frame can be accessed by Frame *BF2*::
 
     BF2.inspect()
 
-    c:str
-    -----
-    dog
-    cat
+      c:ia.str
+    /----------/
+      dog
+      cat
 
 With *append*::
 
@@ -209,13 +205,13 @@ It would still be accessed by Frame *BF1*::
 
     BF1.inspect()
 
-    a:str       b:int32     c:str
-    -----------------------------
-    apple           182     None
-    bear             71     None
-    car            2048     None
-    None           None     dog
-    None           None     cat
+      a:ia.str     b:ia.int64     c:ia.str
+    /--------------------------------------/
+      apple           182         None
+      bear             71         None
+      car            2048         None
+      None           None         dog
+      None           None         cat
 
 See also the *join* method in the :doc:`API <ds_apic>` section.
 
@@ -223,33 +219,27 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-IAT provides several functions that allow you to inspect your data, including .count(), .len(),
-.inspect(), and .take().
+|IA| provides several functions that allow you to inspect your data, including inspect(), and .take().
 
 Examples
 --------
-To count the number of rows of data, you could do it this way::
 
-    my_frame.count()
-
-To count the number of columns, you use this function::
-
-    my_frame.len()
-
-To print the first two rows of data::
+To print two rows of data::
 
     print my_frame.inspect(2)
 
-    a:float32          b:int64   
-    --------------------------
-      12.3000              500    
-     195.1230           183954    
+      a:ia.float64  b:ia.int64   
+    /--------------------------/
+        12.3000            500    
+       195.1230         183954    
 
-To create a new frame using the existing frame, use .take()::
+To get a section of data from the existing frame, use .take()::
 
-    my_frame.take(10, offset=200)
+    my_data = my_frame.take(10, offset=200)
  
-Here, we've created a frame of 10 rows, beginning at row 200, from the frame accessed by *my_frame*.
+Here, we've created a variable *my_data* of type list.
+The variable *my_data* has 10 lists.
+Each list has the row from the frame accessed by *my_frame*, beginning at row 200.
 
 .. _Clean The Data:
 
@@ -270,7 +260,7 @@ designed to handle these very large data sets.
     It is recommended that you copy the data to a new frame on a regular basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected::
 
-        next_frame = Frame(last_frame)
+        next_frame = ia.Frame(last_frame)
 
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
@@ -375,18 +365,18 @@ Add Columns:
 
 Columns can be added to the frame using values from other columns as their value.
 
-Add a column *column3* as an int32 and fill it with the contents of *column1* and *column2* multiplied
+Add a column *column3* as an ia.int64 and fill it with the contents of *column1* and *column2* multiplied
 together::
 
-    my_frame.add_columns(lambda row: row.column1 * row.column2, ('column3', int32))
+    my_frame.add_columns(lambda row: row.column1 * row.column2, ('column3', ia.int64))
 
 Add a new column *all_ones* and fill the entire column with the value 1::
 
-    my_frame.add_columns(lambda row: 1, ('all_ones', int32))
+    my_frame.add_columns(lambda row: 1, ('all_ones', ia.int64))
 
 Add a new column *a_plus_b* and fill the entire column with the value of column *a* plus column *b*::
 
-    my_frame.add_columns(lambda row: row.a + row.b, ('a_plus_b', int32))
+    my_frame.add_columns(lambda row: row.a + row.b, ('a_plus_b', ia.int64))
 
 Add a new column *a_lpt* and fill the value according to this table:
 
@@ -420,11 +410,11 @@ An example of Piecewise Linear Transformation::
             return None
         return m * x + c
 
-    my_frame.add_columns(transform_a, ('a_lpt', float32))
+    my_frame.add_columns(transform_a, ('a_lpt', ia.float64))
 
 Create multiple columns at once by making a function return a list of values for the new frame columns::
 
-    my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
+    my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', ia.int64), ('b_abs', ia.int64)])
 
 .. _ds_dflw_frame_examine:
 
@@ -511,7 +501,6 @@ Supported aggregation functions:
     * max
     * mean
     * min
-    * :term:`quantile`
     * stdev
     * sum
     * :term:`variance <Bias-variance tradeoff>`
@@ -532,7 +521,7 @@ name, unless needed for clarity::
 
     my_frame.inspect()                      
 
-    a:str       b:str       c:str           
+    a:ia.str       b:ia.str       c:ia.str           
     --------------------------------------  
     alligator   bear        cat             
     auto        bus         car             
@@ -541,7 +530,7 @@ name, unless needed for clarity::
 
     your_frame.inspect()
                                         
-    b:str       c:int32     d:str
+    b:ia.str       c:ia.int64     d:ia.str
     ------------------------------------
     bus             871     dog
     berry          5218     frog
@@ -558,12 +547,12 @@ Result is *our_frame*::
 
     our_frame.inspect()
 
-    a:str       b:str       c_L:str         c_R:int32   d:str
-    ----------------------------------------------------------------
-    alligator   bear        cat                  None   None
-    auto        bus         car                   871   dog
-    apple       berry       cantelope            5281   frog
-    mirror      frog        ball                 None   None
+      a:ia.str    b:ia.str    c_L:ia.str   c_R:ia.int64   d:ia.str
+    /--------------------------------------------------------------/
+      alligator   bear        cat          None           None
+      auto        bus         car           871           dog
+      apple       berry       cantelope    5281           frog
+      mirror      frog        ball         None           None
 
 Do it again but this time include only data from *my_frame* and *your_frame* which have matching values in *b*::
 
@@ -575,25 +564,10 @@ Result is *inner_frame*::
 
     inner_frame.inspect()
 
-    a:str       b:str       c_L:str         c_R:int32   d:str
-    ----------------------------------------------------------------
-    auto        bus         car                   871   dog
-    apple       berry       cantelope            5218   frog
-
-Do it again but this time include any data from *my_frame* and *your_frame* which do not have matching
-values in *b*::
-
-    outer_frame = my_frame.join(your_frame, 'b', how='outer')
-
-Result is *outer_frame*::
-
-    outer_frame.inspect()
-
-    a:str       b:str       c_L:str     c_R:int32   d:str
-    ----------------------------------------------------------------
-    alligator   bear        cat              None   None
-    mirror      frog        ball             None   None
-    None        None        None                0   log
+      a:ia.str    b:ia.str    c_L:ia.str   c_R:ia.int64   d:ia.str
+    /--------------------------------------------------------------/
+      auto        bus         car             871         dog
+      apple       berry       cantelope      5218         frog
 
 If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
 Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in
@@ -605,11 +579,11 @@ Result is *right_frame*::
 
     right_frame.inspect()
 
-    a:str       b_L:str     c:str       b_R:str     c:int32     d:str
-    ----------------------------------------------------------------------------
-    None        None        None        bus             871     dog
-    mirror      frog        ball        berry          5218     frog
-    None        None        None        blue              0     log
+      a:ia.str   b_L:ia.str   c:ia.str   b_R:ia.str  c:ia.int64   d:ia.str
+    /----------------------------------------------------------------------/
+      None       None         None       bus          871         dog
+      mirror     frog         ball       berry       5218         frog
+      None       None         None       blue           0         log
 
 .. _example_frame.flatten_column:
 
@@ -629,17 +603,17 @@ The "original_data"::
 
 I run my commands to bring the data in where I can work on it::
 
-    my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)], delimiter='-')
-    my_frame = Frame(source=my_csv)
+    my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), ('b', ia.str)], delimiter='-')
+    my_frame = ia.Frame(source=my_csv)
 
 I look at it and see::
 
     my_frame.inspect()
 
-    a:int32   b:string
-    ----------------------------------
-      1       solo, mono, single
-      2       duo, double
+      a:ia.int64   b:ia.string
+    /---------------------------------/
+          1        solo, mono, single
+          2        duo, double
 
 Now, I want to spread out those sub-strings in column *b*::
 
@@ -649,22 +623,22 @@ Now I check again and my result is::
 
     your_frame.inspect()
 
-    a:int32   b:str
-    ------------------
-      1       solo
-      1       mono
-      1       single
-      2       duo
-      2       double
+      a:ia.int64   b:ia.str
+    /-----------------------/
+        1          solo
+        1          mono
+        1          single
+        2          duo
+        2          double
 
 .. TODO:: Miscellaneous Notes
     Misc Notes
 
     Discuss statistics, mean, standard deviation, etcetra.
 
-----------
-TitanGraph
-----------
+----------------------------------
+Graph (TitanGraph & Parquet Graph)
+----------------------------------
 
 For the examples below, we will use a Frame *my_frame*, which accesses an arbitrary frame of data
 consisting of the following columns:
@@ -709,7 +683,7 @@ Vertex Rule Example:
 
 Create a vertex rule called “employee” from the above frame::
 
-    employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
+    employee = ia.VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
 
 The created vertices will be grouped under the label “empID”, will have an identification based on the
 values from the column *emp_id*, and will have a property *name* with its value from the specified frame
@@ -717,7 +691,7 @@ column *name*.
 
 Create another vertex rule called “manager”::
 
-    manager = VertexRule(‘empID”, my_frame[“manager”])
+    manager = ia.VertexRule(‘empID”, my_frame[“manager”])
 
 The identification values for these vertices will be taken from column *manager* of the frame.
 
@@ -748,7 +722,7 @@ Edge Rule Example:
 Create an edge called “reports” from the same frame (accessed by Frame *my_frame*) as above, using
 previously defined *employee* and *manager* rules, and link them together::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": my_frame[“years”] })
+    reports = ia.EdgeRule("worksUnder", employee, manager, { "years": my_frame[“years”] })
 
 This rule ties the vertices together, and also defines the property *years*, so the edges created will
 have this property with the value from the frame column *years*.
@@ -764,7 +738,7 @@ The bidirectional flag will create an extra edge going in the opposite direction
 To enable use the parameter ``bidirectional`` in the edge rule and set it to ``True``,
 as shown in example below::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
+    reports = ia.EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
         bidirectional = True)
 
 .. _ds_dflw_building_a_graph:
@@ -775,7 +749,7 @@ Building a Graph From a Set of Rules
 Now that you have built some rules, let us put them to use and create a graph by calling TitanGraph.
 We will give the graph the name “employee_graph”::
 
-    my_graph = TitanGraph([employee, manager, reports], “employee_graph”)
+    my_graph = ia.TitanGraph([employee, manager, reports], “employee_graph”)
 
 The graph is then created in the underlying graph database structure and
 the access control information is saved into the TitanGraph object *my_graph*.
