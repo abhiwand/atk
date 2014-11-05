@@ -785,7 +785,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             * max
             * mean
             * min
-            * :term:`quantile`
             * stdev
             * sum
             * :term:`variance <Bias-variance tradeoff>`
