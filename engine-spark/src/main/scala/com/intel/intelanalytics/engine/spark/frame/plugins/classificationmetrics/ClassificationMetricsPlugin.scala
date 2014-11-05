@@ -47,7 +47,10 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    * e.g Python client via code generation.
    */
   override def name: String = "frame/classification_metrics"
-
+  /**
+   * Set the kryo class to use
+   */
+  override def kryoRegistrator: Option[String] = None
   /**
    * User documentation exposed in Python.
    *
