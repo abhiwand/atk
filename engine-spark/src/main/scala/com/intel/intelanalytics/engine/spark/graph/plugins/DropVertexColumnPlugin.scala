@@ -45,7 +45,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
 
   val systemFields = Set("_vid", "_label")
 
-  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): FrameReference = {
+  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): DataFrame = {
     DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns.toList, systemFields)
     super.execute(arguments)
   }
