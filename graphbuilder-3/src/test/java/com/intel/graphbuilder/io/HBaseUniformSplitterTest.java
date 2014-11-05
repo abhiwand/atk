@@ -17,9 +17,9 @@ public class HBaseUniformSplitterTest {
 
     @Test
     public void testCreate2InputSplits() throws Exception {
-        byte[] startRow = Bytes.toBytes("AAA");
-        byte[] middle = Bytes.toBytes("CCC");
-        byte[] endRow = Bytes.toBytes("EEE");
+        byte[] startRow = Bytes.toBytes(0L);
+        byte[] middle = Bytes.toBytes(3L);
+        byte[] endRow = Bytes.toBytes(5L);
 
         // Test split into 2 parts
         TableSplit tableSplit1 = new TableSplit(TableName.valueOf("table"), startRow, endRow, "location");
@@ -30,10 +30,10 @@ public class HBaseUniformSplitterTest {
         List<InputSplit> uniformSplits = uniformSplitter.createInputSplits(2);
 
         assertEquals(2, uniformSplits.size());
-        // AAA to CCC
+        // 0L to 3L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getStartRow(), startRow));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getEndRow(), middle));
-        // CCC to EEE
+        // 3L to 5L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getStartRow(), middle));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getEndRow(), endRow));
     }
@@ -41,11 +41,11 @@ public class HBaseUniformSplitterTest {
 
     @Test
     public void testCreateInput4Splits() throws Exception {
-        byte[] startRow = Bytes.toBytes("AAA");
-        byte[] middle1 = Bytes.toBytes("BBB");
-        byte[] middle2 = Bytes.toBytes("CCC");
-        byte[] middle3 = Bytes.toBytes("DDD");
-        byte[] endRow = Bytes.toBytes("EEE");
+        byte[] startRow = Bytes.toBytes(10L);
+        byte[] middle1 = Bytes.toBytes(35L);
+        byte[] middle2 = Bytes.toBytes(60L);
+        byte[] middle3 = Bytes.toBytes(85L);
+        byte[] endRow = Bytes.toBytes(110L);
 
         // Test split into 2 pars
         TableSplit tableSplit1 = new TableSplit(TableName.valueOf("table"), startRow, middle2, "location");
@@ -59,20 +59,18 @@ public class HBaseUniformSplitterTest {
 
         // Test split into four parts.
         assertEquals(4, uniformSplits.size());
-        // AAA to BBB
+        // 10L to 35L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getStartRow(), startRow));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(0)).getEndRow(), middle1));
-        // BBB to CCC
+        // 35L to 60L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getStartRow(), middle1));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(1)).getEndRow(), middle2));
-        // CCC to DDD
+        // 60L to 85L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(2)).getStartRow(), middle2));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(2)).getEndRow(), middle3));
-        // DDD to EEE
+        // 85L to 110L
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(3)).getStartRow(), middle3));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits.get(3)).getEndRow(), endRow));
-
-
     }
 
     @Test
