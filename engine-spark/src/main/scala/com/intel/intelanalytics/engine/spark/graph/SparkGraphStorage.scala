@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.graphbuilder.elements.{ Vertex, Edge }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
@@ -192,7 +192,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, frames.generateFrameName("vertex_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, frames.generateFrameName(prefix = "vertex_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -221,7 +221,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, frames.generateFrameName("edge_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, frames.generateFrameName(prefix = "edge_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -255,7 +255,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    new EdgeFrameRDD(frameRdd)
   //  }
 
-  def loadGbVertices(ctx: SparkContext, graphId: Long): RDD[Vertex] = {
+  def loadGbVertices(ctx: SparkContext, graphId: Long): RDD[GBVertex] = {
     val graphMeta = expectGraph(graphId)
     if (graphMeta.isSeamless) {
       val graphMeta = expectSeamless(graphId)
@@ -267,7 +267,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def loadGbEdges(ctx: SparkContext, graphId: Long): RDD[Edge] = {
+  def loadGbEdges(ctx: SparkContext, graphId: Long): RDD[GBEdge] = {
     val graphMeta = expectGraph(graphId)
     if (graphMeta.isSeamless) {
       val graphMeta = expectSeamless(graphId)
@@ -279,11 +279,11 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def loadGbVerticesForFrame(ctx: SparkContext, frameId: Long): RDD[Vertex] = {
+  def loadGbVerticesForFrame(ctx: SparkContext, frameId: Long): RDD[GBVertex] = {
     loadVertexRDD(ctx, frameId).toGbVertexRDD
   }
 
-  def loadGbEdgesForFrame(ctx: SparkContext, frameId: Long): RDD[Edge] = {
+  def loadGbEdgesForFrame(ctx: SparkContext, frameId: Long): RDD[GBEdge] = {
     loadEdgeRDD(ctx, frameId).toGbEdgeRDD
   }
 

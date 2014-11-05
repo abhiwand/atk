@@ -55,7 +55,37 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate rows.", Some("""
+    Remove duplicate rows, keeping only one row per uniqueness criteria match
+
+    Parameters
+    ----------
+    columns:[str | list of str]
+        Column name(s) to identify duplicates.
+        If empty, the function will remove duplicates that have the whole row of data identical.
+
+    Examples
+    --------
+    Remove any rows that have the same data in column * b * as a previously checked row ::
+
+    my_frame.drop_duplicates("b")
+
+    The result is a frame with unique values in column * b *.
+
+    Remove any rows that have the same data in columns * a * and * b * as a previously checked row ::
+
+       my_frame.drop_duplicates([ "a", "b"] )
+
+    The result is a frame with unique values for the combination of columns * a * and * b *.
+
+    Remove any rows that have the whole row identical ::
+
+      my_frame.drop_duplicates()
+
+    The result is a frame where something is different in every row from every other row.
+    Each row is unique.
+
+    .versionadded :: 0.8""")))
 
   /**
    * Number of Spark jobs that get created by running this command
@@ -79,17 +109,17 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
     val ctx = invocation.sparkContext
 
     // validate arguments
-    val frameId: Long = arguments.frameId
-    val frameMeta: DataFrame = frames.expectFrame(frameId)
-    val frameSchema = frameMeta.schema
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
-
-    val columnNames = arguments.unique_columns
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frameSchema, columnNames)
+    val frame: DataFrame = frames.expectFrame(arguments.frame.id)
+    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+    val columnNames = arguments.unique_columns match {
+      case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
+      case None => frame.schema.columnNames
+    }
+    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
     val rowCount = duplicatesRemoved.count()
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
+    frames.saveLegacyFrame(frame, new LegacyFrameRDD(frame.schema, duplicatesRemoved), Some(rowCount))
   }
 }
 

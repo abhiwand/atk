@@ -15,7 +15,10 @@ class SparkGraphHBaseBackendTest extends WordSpec with Matchers with MockitoSuga
       val mockHBaseAdmin = mock[HBaseAdmin]
       when(mockHBaseAdmin.tableExists(tableName)).thenReturn(false)
 
-      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(mockHBaseAdmin)
+      val hbaseAdminFactory = mock[HBaseAdminFactory]
+      when(hbaseAdminFactory.createHBaseAdmin()).thenReturn(mockHBaseAdmin)
+
+      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory)
 
       an[IllegalArgumentException] should be thrownBy sparkGraphHBaseBackend.deleteUnderlyingTable(tableName, quiet = false)
 
@@ -30,7 +33,11 @@ class SparkGraphHBaseBackendTest extends WordSpec with Matchers with MockitoSuga
       when(mockHBaseAdmin.tableExists(internalTableName)).thenReturn(true)
       when(mockHBaseAdmin.isTableEnabled(internalTableName)).thenReturn(true)
 
-      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(mockHBaseAdmin)
+      val hbaseAdminFactory = mock[HBaseAdminFactory]
+      when(hbaseAdminFactory.createHBaseAdmin()).thenReturn(mockHBaseAdmin)
+
+      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory)
+
       sparkGraphHBaseBackend.deleteUnderlyingTable(userTableName, quiet = true)
 
       verify(mockHBaseAdmin, times(1)).disableTable(internalTableName)

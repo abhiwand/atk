@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -184,9 +184,9 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     // val enableRoc = arguments.enable_roc.getOrElse(config.getBoolean("enable-roc"))
     val numBuckets = arguments.histogram_buckets.getOrElse(config.getInt("histogram-buckets"))
     val propertyClass = arguments.property_type match {
-      case Some("EDGE_PROPERTY") => classOf[Edge]
-      case Some("VERTEX_PROPERTY") => classOf[Vertex]
-      case None => classOf[Vertex]
+      case Some("EDGE_PROPERTY") => classOf[GBEdge]
+      case Some("VERTEX_PROPERTY") => classOf[GBVertex]
+      case None => classOf[GBVertex]
       case _ => throw new IllegalArgumentException("Please input 'VERTEX_PROPERTY' or 'EDGE_PROPERTY' for property_type")
     }
 
@@ -202,7 +202,7 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     val sc = invocation.sparkContext
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
-    val graphElementRDD = if (propertyClass.isInstanceOf[Edge]) {
+    val graphElementRDD = if (propertyClass.isInstanceOf[GBEdge]) {
       titanReaderRDD.filterEdges()
     }
     else titanReaderRDD.filterVertices()

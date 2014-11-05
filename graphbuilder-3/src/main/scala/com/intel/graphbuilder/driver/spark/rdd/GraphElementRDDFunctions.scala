@@ -39,9 +39,9 @@ class GraphElementRDDFunctions(self: RDD[GraphElement]) {
   /**
    * Get all of the Edges from an RDD made up of both Edges and Vertices.
    */
-  def filterEdges(): RDD[Edge] = {
+  def filterEdges(): RDD[GBEdge] = {
     self.flatMap {
-      case e: Edge => Some(e)
+      case e: GBEdge => Some(e)
       case _ => None
     }
   }
@@ -49,9 +49,9 @@ class GraphElementRDDFunctions(self: RDD[GraphElement]) {
   /**
    * Get all of the Vertices from an RDD made up of both Edges and Vertices.
    */
-  def filterVertices(): RDD[Vertex] = {
+  def filterVertices(): RDD[GBVertex] = {
     self.flatMap {
-      case v: Vertex => Some(v)
+      case v: GBVertex => Some(v)
       case _ => None
     }
   }

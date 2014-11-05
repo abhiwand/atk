@@ -54,7 +54,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -117,7 +117,7 @@ object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(sparkContextManager: SparkContextManager,
+class SparkEngine(sparkContextFactory: SparkContextFactory,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
@@ -240,7 +240,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user, "query")
+      val ctx = sparkContextFactory.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
@@ -296,42 +296,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       frames.lookupByName(name)
     }
   }
-
-  // TODO TRIB-2245
-  /*
-  /**
-   * Calculate full statistics of the specified column.
-   * @param arguments Input specification for column statistics.
-   * @param user Current user.
-   */
-  override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
-    commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
-
-  val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
-    pluginRegistry.registerCommand("frame:/column_full_statistics", columnFullStatisticSimple)
-
-  def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
-
-    implicit val u = user
-
-    val frameId: Long = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId)
-    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-
-    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-      (None, None)
-    }
-    else {
-      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }
-
-    ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-  }
- */
 
   /**
    * Execute getRows Query plugin

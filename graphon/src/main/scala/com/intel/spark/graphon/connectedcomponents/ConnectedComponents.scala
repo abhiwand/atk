@@ -23,7 +23,7 @@
 
 package com.intel.spark.graphon.connectedcomponents
 
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge, Property }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, Property }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
@@ -80,6 +80,9 @@ import ConnectedComponentsJsonFormat._
 class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsResult] {
 
   override def name: String = "graph:titan/ml/graphx_connected_components"
+
+  //TODO remove when we move the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""
