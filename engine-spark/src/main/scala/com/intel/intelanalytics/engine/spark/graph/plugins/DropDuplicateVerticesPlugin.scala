@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.engine.spark.frame.plugins.DropDuplicatesPlugin
 import com.intel.intelanalytics.domain.FilterVertexRows
 import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
 import com.intel.intelanalytics.security.UserPrincipal
