@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.engine.plugin
 
+import com.intel.event.{ EventContext, EventLogger, EventLogging }
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
-import com.intel.intelanalytics.domain.{ HasData, UriReference }
+import com.intel.intelanalytics.domain.{ User, HasData, UriReference }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.NotNothing
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
@@ -43,13 +44,23 @@ import scala.concurrent.ExecutionContext
  * Plugin authors should implement the execute() method
  *
  * @tparam Arguments the type of the arguments that the plugin expects to receive from
- *           the user
+ *                   the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
 abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
     extends ((Invocation, Arguments) => Return)
     with Plugin
+    with EventLogging
     with ClassLoaderAware {
+
+  def withPluginContext[T](context: String)(expr: => T)(implicit invocation: Invocation): T = {
+    withContext(context) {
+      EventContext.getCurrent.put("plugin_name", name)
+      val caller = user.user
+      EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
+      expr
+    }
+  }
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -78,12 +89,16 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
   /**
    * Convert the given JsObject to an instance of the Argument type
    */
-  def parseArguments(arguments: JsObject): Arguments = arguments.convertTo[Arguments]
+  def parseArguments(arguments: JsObject)(implicit invocation: Invocation): Arguments = withPluginContext("parseArguments") {
+    arguments.convertTo[Arguments]
+  }
 
   /**
    * Convert the given argument to a JsObject
    */
-  def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
+  def serializeArguments(arguments: Arguments)(implicit invocation: Invocation): JsObject = withPluginContext("serializeArguments") {
+    arguments.toJson.asJsObject()
+  }
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -92,11 +107,12 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    * @return a value of type declared as the Return type.
    */
   def execute(arguments: Arguments)(implicit context: Invocation): Return
+
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
    */
-  final override def apply(invocation: Invocation, arguments: Arguments): Return = {
+  final override def apply(invocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
     require(invocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
 
@@ -105,10 +121,12 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     //after the plugin code, we can.
     withMyClassLoader {
       val result = execute(arguments)(invocation)
-      if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
+      if (result == null) {
+        throw new Exception(s"Plugin ${this.getClass.getName} returned null")
+      }
       result
     }
-  }
+  })(invocation)
 
   implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
@@ -118,7 +136,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
  * Base trait for command plugins
  */
 abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
-    extends OperationPlugin[Arguments, Return] {
+    extends OperationPlugin[Arguments, Return] with EventLogging {
 
   def engine(implicit invocation: Invocation) = invocation.engine
 
@@ -126,15 +144,20 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   val returnManifest = implicitly[ClassManifest[Return]]
   val argumentTag = implicitly[TypeTag[Arguments]]
   val returnTag = implicitly[TypeTag[Return]]
+
   /**
    * Convert the given object to a JsObject
    */
-  def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: Return)(implicit invocation: Invocation): JsObject = withPluginContext("serializeReturn") {
+    returnValue.toJson.asJsObject
+  }
 
   /**
    * Convert the given JsObject to an instance of the Return type
    */
-  def parseReturn(js: JsObject) = js.convertTo[Return]
+  def parseReturn(js: JsObject)(implicit invocation: Invocation) = withPluginContext("parseReturn") {
+    js.convertTo[Return]
+  }
 
   /**
    * Number of jobs needs to be known to give a single progress bar
@@ -143,7 +166,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    */
   def numberOfJobs(arguments: Arguments): Int = 1
 
-  //TODO: This needs to move somewhere else, 
+  //TODO: This needs to move somewhere else,
   //this is very spark specific
   /**
    * Name of the custom kryoclass this plugin needs.
@@ -160,13 +183,16 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   /**
    * Creates an object of the requested type.
    */
-  def create[T <: UriReference: TypeTag](implicit invocation: Invocation, ev: NotNothing[T]): T = invocation.resolver.create[T]()
+  def create[T <: UriReference: TypeTag](implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
+    invocation.resolver.create[T]()
+  }
 
   /**
    * Save data, possibly creating a new object
    */
-  def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T =
+  def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = withPluginContext("save") {
     invocation.resolver.saveData(data)
+  }
 
   /**
    * Implicit conversion that lets plugin authors simply add type annotations to UriReferences
@@ -176,10 +202,9 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
                                                                          ev: Out <:< In,
                                                                          tagIn: TypeTag[In],
-                                                                         tagOut: TypeTag[Out]): Out = {
+                                                                         tagOut: TypeTag[Out]): Out = withPluginContext("resolve") {
     invocation.resolver.resolve[Out](ref).get
   }
-
 }
 
 /**

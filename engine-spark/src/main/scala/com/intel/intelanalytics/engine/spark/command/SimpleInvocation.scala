@@ -21,35 +21,23 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.plugin
+package com.intel.intelanalytics.engine.spark.command
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.{ ReferenceResolver, CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json._
+import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
 
 /**
- * Encapsulates a normal Scala function as a QueryPlugin.
- *
- * @param name the name to assign to the query
- * @param function the function to call when the query executes
- * @tparam Arguments the argument type of the query
+ * Basic invocation for commands that don't need Spark
  */
-case class FunctionQuery[Arguments <: Product: JsonFormat: ClassManifest](name: String,
-                                                                          function: (Arguments, UserPrincipal, Invocation) => Any)
-    extends QueryPlugin[Arguments] {
-
-  /**
-   * Operation plugins must implement this method to do the work requested by the user.
-   * @param context information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
-   */
-  override def execute(arguments: Arguments)(implicit context: Invocation): Any = {
-    //Since the function may come from any class loader, we use the function's
-    //class loader, not our own
-    withLoader(function.getClass.getClassLoader) {
-      function(arguments, context.user, context)
-    }
-  }
+case class SimpleInvocation(engine: Engine,
+                            commandStorage: CommandStorage,
+                            executionContext: ExecutionContext,
+                            arguments: Option[JsObject],
+                            commandId: Long,
+                            user: UserPrincipal,
+                            resolver: ReferenceResolver) extends Invocation {
 }

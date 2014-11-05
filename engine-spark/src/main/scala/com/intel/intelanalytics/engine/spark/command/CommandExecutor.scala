@@ -105,17 +105,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
     extends EventLogging
     with ClassLoaderAware {
 
-  /**
-   * Basic invocation for commands that don't need Spark
-   */
-  case class SimpleInvocation(engine: Engine,
-                              commandStorage: CommandStorage,
-                              executionContext: ExecutionContext,
-                              arguments: Option[JsObject],
-                              commandId: Long,
-                              user: UserPrincipal,
-                              resolver: ReferenceResolver) extends Invocation
-
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
   /**
@@ -159,11 +148,13 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
     withMyClassLoader {
       withContext(commandContext.command.name) {
         val plugin = expectFunction[A, R](commandContext.plugins, commandContext.command)
-        val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+        val tempInvocation = SimpleInvocation(engine, commands, ec, commandContext.command.arguments, commandContext.command.id,
+          commandContext.user, commandContext.resolver)
+        val arguments = plugin.parseArguments(commandContext.command.arguments.get)(tempInvocation)
+        implicit val invocation = getInvocation(plugin, arguments, commandContext)
         val cmdFuture = future {
           withContext("cmdFuture") {
             withCommand(commandContext.command) {
-              implicit val invocation = getInvocation(plugin, arguments, commandContext)
 
               val returnValue = if (commandContext.action) {
                 val res = if (firstExecution) {

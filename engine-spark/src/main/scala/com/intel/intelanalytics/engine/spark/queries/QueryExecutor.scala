@@ -27,6 +27,7 @@ import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults, FunctionQuery, QueryPlugin }
+import com.intel.intelanalytics.engine.spark.command.SimpleInvocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
@@ -116,17 +117,20 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                                            user: UserPrincipal,
                                            executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
-    val q = queries.create(QueryTemplate(query.name, Some(query.serializeArguments(arguments))))
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(query.name) {
           val context: SparkContext = contextManager.context(user, "query")
+          //Just enough of an invocation to provide user name for serializeArguments
+          val tempInvocation = SimpleInvocation(null, null, ec, None, 0, user, null)
+          val q = queries.create(QueryTemplate(query.name, Some(query.serializeArguments(arguments)(tempInvocation))))
+
           val qFuture = future {
             withQuery(q) {
 
               try {
                 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-                val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
+                implicit val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],
                   sparkContext = context, commandStorage = null, resolver = null) //TODO: resolver for queries
 
@@ -193,7 +197,10 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     val function = getQueryDefinition(query.name)
       .getOrElse(throw new NotFoundException("query definition", query.name))
       .asInstanceOf[QueryPlugin[A]]
-    val convertedArgs = function.parseArguments(query.arguments.get)
+    //Just enough of an invocation to provide user name for serializeArguments
+    val tempInvocation = SimpleInvocation(null, null, executionContext, None, 0, user, null)
+
+    val convertedArgs = function.parseArguments(query.arguments.get)(tempInvocation)
     execute(function, convertedArgs, user, executionContext)
   }
 
