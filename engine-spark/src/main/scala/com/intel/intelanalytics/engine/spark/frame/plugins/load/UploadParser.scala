@@ -29,49 +29,22 @@ import org.apache.commons.csv.{ CSVFormat, CSVParser }
 
 import scala.collection.JavaConversions.asScalaIterator
 
-/**
- * Split a string based on delimiter into List[String]
- * <p>
- * Usage:
- * scala> import com.intelanalytics.engine.Row
- * scala> val out = RowParser.apply("foo,bar")
- * scala> val out = RowParser.apply("a,b,\"foo,is this ,bar\",foobar ")
- * scala> val out = RowParser.apply(" a,b,'',\"\"  ")
- * </p>
- *
- * @param separator delimiter character
- */
-class CsvRowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
-
-  val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
+class UploadParser(columnTypes: Array[DataType]) extends Serializable {
 
   val converter = DataTypes.parseMany(columnTypes)(_)
 
   /**
    * Parse a line into a RowParseResult
-   * @param line a single line
+   * @param row a single line
    * @return the result - either a success row or an error row
    */
-  def apply(line: String): RowParseResult = {
+  def apply(row: List[Any]): RowParseResult = {
     try {
-      val parts = splitLineIntoParts(line)
-      RowParseResult(parseSuccess = true, converter(parts.asInstanceOf[Array[Any]]))
+      RowParseResult(parseSuccess = true, converter(row.toArray))
     }
     catch {
       case e: Exception =>
-        RowParseResult(parseSuccess = false, Array(line, e.toString))
+        RowParseResult(parseSuccess = false, Array(row.mkString(","), e.toString))
     }
   }
-
-  private[frame] def splitLineIntoParts(line: String): Array[String] = {
-    val records = CSVParser.parse(line, csvFormat).getRecords
-    if (records.isEmpty) {
-      Array.empty[String]
-    }
-    else {
-      records.get(0).iterator().toArray
-    }
-
-  }
-
 }

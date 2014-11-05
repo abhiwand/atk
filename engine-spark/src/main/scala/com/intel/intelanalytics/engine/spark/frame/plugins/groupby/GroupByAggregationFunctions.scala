@@ -71,7 +71,7 @@ object GroupByAggregationFunctions {
 
   private def convertGroupBasedOnSchema(groupedColumnSchema: Array[DataTypes.DataType], data: String): Array[Any] = {
     if (data != null && data != "")
-      DataTypes.parseMany(groupedColumnSchema)(data.split("\0"))
+      DataTypes.parseMany(groupedColumnSchema)(data.split("\0").asInstanceOf[Array[Any]])
     else
       Array[Any]()
   }
