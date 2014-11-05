@@ -23,23 +23,36 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphNoArgs }
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.graph._
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema, VertexSchema }
+import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameStorage }
-import com.intel.intelanalytics.domain.schema.DataTypes.int64
+import com.intel.intelanalytics.domain.schema.DataTypes._
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.elements.Property
+import com.thinkaurelius.titan.core.{ TitanKey, TitanGraph }
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphNoArgs
+import scala.Some
+import com.intel.intelanalytics.domain.schema.Column
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.VertexSchema
+import com.tinkerpop.blueprints.Direction
+import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
+import org.apache.spark.ia.graph.EdgeFrameRDD
+
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.SparkContext._
 
-class ExportFromTitanToParquetGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[GraphNoArgs, DataFrame] {
+class ExportFromTitanToParquetGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[GraphNoArgs, Graph] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -65,61 +78,141 @@ class ExportFromTitanToParquetGraph(frames: SparkFrameStorage, graphs: SparkGrap
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+
+  override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
     val ctx = invocation.sparkContext
-    val vertices = graphs.loadGbVertices(ctx, arguments.graph.id)
+    val graphId: Long = arguments.graph.id
+    val vertices = graphs.loadGbVertices(ctx, graphId)
+
     vertices.cache()
 
-    val vertexLabels = vertices.map(v => {
-      val label = v.gbId.key
-      label
-    }).distinct().collect()
+    val titanIAGraph = graphs.expectGraph(graphId)
 
-    val graph = graphs.createGraph(GraphTemplate("name", "ia/frame"))
+    val labelToIdNameMapping: Map[String, String] = titanIAGraph.elementIDNames.get.elementIDNames.map(e => e.elementName -> e.idColumnName).toMap
 
-    vertexLabels.foreach(label => {
-      graphs.defineVertexType(graph.id, VertexSchema(label, None))
-    })
+    val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
-    val seemless = graphs.expectSeamless(graph.id)
+    ExportFromTitanToParquetGraph.createVertexFrames(graphs, graph.id, vertices)
 
-    seemless.vertexFrames.foreach(vertexFrame => {
+    val titanDBGraph = graphs.getTitanGraph(graphId)
+
+    graphs.expectSeamless(graph.id).vertexFrames.foreach(vertexFrame => {
       val label = vertexFrame.schema.vertexSchema.get.label
-      val typeVertex: RDD[Vertex] = vertices.filter(v => v.gbId.key.equalsIgnoreCase(label))
-      val columns = typeVertex.take(1).apply(0).fullProperties.map(p => p.key).toList
+      val typeVertex: RDD[GBVertex] = vertices.filter(v => {
+        val vertexLabel = v.getProperty("_label") match {
+          case Some(p) => p.value.toString
+          case _ => "titan_vertex"
+        }
 
-      val sourceRdd: RDD[Row] = typeVertex.map(v => ExportFromTitanToParquetGraph.getPropertiesValueByColumns(columns, v.fullProperties))
+        label.equalsIgnoreCase(vertexLabel)
+      })
 
-      //also need to include the property schema
-      val schema = new Schema(List((label, int64)))
+      val firstVertex: GBVertex = typeVertex.take(1)(0)
+      val columns = firstVertex.properties.map(p => p.key).toList
+
+      val sourceRdd: RDD[Row] = typeVertex.map(v => ExportFromTitanToParquetGraph.getPropertiesValueByColumns(columns, v.properties))
+
+      val idColumn = labelToIdNameMapping(label)
+      val schema = new Schema(ExportFromTitanToParquetGraph.getSchemaFromProperties(columns, titanDBGraph))
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
-      AddVerticesPlugin.addVertices(ctx, source, vertexFrame.frameReference, columns, label, frames, graphs)
+      AddVerticesPlugin.addVertices(ctx, source, vertexFrame.frameReference, columns, idColumn, frames, graphs)
     })
 
     vertices.unpersist()
 
     val edges = graphs.loadGbEdges(ctx, arguments.graph.id)
-    val edgeDefinitions = edges.map(e => {
-      EdgeSchema(e.label, e.headVertexGbId.key, e.tailVertexGbId.key)
-    }).distinct().collect()
+    edges.cache()
+
+    val labelAndOneEdge = edges.map(e => (e.label, e)).reduceByKey((a, b) => a).collect()
+
+    val edgeDefinitions = labelAndOneEdge.map {
+      case (label, edge) => {
+        val srcId = edge.headPhysicalId
+        val destId = edge.tailPhysicalId
+
+        val srcVertex = titanDBGraph.getVertex(srcId)
+        val destVertex = titanDBGraph.getVertex(destId)
+
+        val srcLabel = srcVertex.getProperty("_label").asInstanceOf[String]
+        val destLabel = destVertex.getProperty("_label").asInstanceOf[String]
+
+        EdgeSchema(label, srcLabel, destLabel)
+      }
+    }
 
     edgeDefinitions.foreach(edgeDef => {
       graphs.defineEdgeType(graph.id, edgeDef)
     })
 
-    seemless.edgeFrames.foreach(edgeFrame => {
+    graphs.expectSeamless(graph.id).edgeFrames.foreach(edgeFrame => {
+      val label = edgeFrame.schema.edgeSchema.get.label
+      val typeEdge: RDD[GBEdge] = edges.filter(e => e.label.equalsIgnoreCase(label))
 
+      val firstEdge: GBEdge = typeEdge.take(1)(0)
+      val columns = firstEdge.properties.map(p => p.key).toList
+      val schema = new Schema(ExportFromTitanToParquetGraph.getSchemaFromProperties(columns, titanDBGraph))
+
+      val sourceRdd: RDD[Row] = typeEdge.map(e => ExportFromTitanToParquetGraph.getPropertiesValueByColumns(columns, e.properties))
+      val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
+
+      val edgeDataToAdd = source.selectColumns(columns).assignUniqueIds("_eid", startId = graph.nextId())
+      graphs.saveEdgeRdd(edgeFrame.id, new EdgeFrameRDD(edgeDataToAdd), Some(edgeDataToAdd.count()))
     })
 
-    null
+    edges.unpersist()
+    graph
   }
 }
 
 object ExportFromTitanToParquetGraph {
 
+  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertices: RDD[GBVertex]) {
+    val vertexLabels = vertices.flatMap(v => {
+      v.getProperty("_label")
+    }).map(p => p.value.toString).distinct().collect()
+
+    vertexLabels.foreach(label => {
+      graphs.defineVertexType(graphId, VertexSchema(label, None))
+    })
+  }
+
   def getPropertiesValueByColumns(columns: List[String], properties: Set[Property]): Array[Any] = {
     val mapping = properties.map(p => p.key -> p.value).toMap
     columns.map(c => mapping(c)).toArray
+  }
+
+  def getSchemaFromProperties(columns: List[String], titanGraph: TitanGraph): List[Column] = {
+    columns.map(c => {
+      val dataType = javaTypeToIATType(titanGraph.getType(c).asInstanceOf[TitanKey].getDataType)
+      Column(c, dataType)
+    }).toList
+  }
+
+  def javaTypeToIATType = (a: java.lang.Class[_]) => {
+    val intType = classOf[java.lang.Integer]
+    val longType = classOf[java.lang.Long]
+    val floatType = classOf[java.lang.Float]
+    val doubleType = classOf[java.lang.Double]
+    val stringType = classOf[java.lang.String]
+
+    if (a == intType) {
+      int32
+    }
+    else if (a == longType) {
+      int64
+    }
+    else if (a == floatType) {
+      float32
+    }
+    else if (a == doubleType) {
+      float64
+    }
+    else if (a == stringType) {
+      string
+    }
+    else {
+      throw new IllegalArgumentException(s"unsupported type $a")
+    }
   }
 }
 
