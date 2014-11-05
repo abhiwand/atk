@@ -1,5 +1,7 @@
 #!/usr/bin/python2.7
-from intelanalytics import *
+import intelanalytics as ia
+
+ia.connect();
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/lp_edge.csv"
@@ -11,11 +13,11 @@ schema = [("source", int64),
           ("weight", float64)]
 
 #csv schema definition
-csv = CsvFile(dataset, schema, skip_header_lines=1)
+csv = ia.CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame 'lp'"
 
-frame = Frame(csv, "lp")
+frame = ia.Frame(csv, "lp")
 
 print "Done building data frame"
 
@@ -23,15 +25,15 @@ print "Inspecting frame 'lp'"
 
 print frame.inspect()
 
-source = VertexRule("source", frame.source, {"input_value" : frame.input_value})
+source = ia.VertexRule("source", frame.source, {"input_value" : frame.input_value})
 
-target = VertexRule("target", frame.target, {"input_value" : frame.input_value})
+target = ia.VertexRule("target", frame.target, {"input_value" : frame.input_value})
 
-edge = EdgeRule("edge", source, target, {'weight': frame.weight}, bidirectional=True)
+edge = ia.EdgeRule("edge", source, target, {'weight': frame.weight}, bidirectional=True)
 
 print "Creating graph 'lp_graph'"
 
-graph = TitanGraph([source, target, edge], "lp_graph")
+graph = ia.TitanGraph([source, target, edge], "lp_graph")
 
 print "Running Label Propagation on Graph 'lp_graph'"
 
