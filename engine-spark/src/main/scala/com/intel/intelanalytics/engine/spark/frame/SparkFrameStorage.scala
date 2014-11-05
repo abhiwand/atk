@@ -260,29 +260,29 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
    */
-  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None)(implicit user: UserPrincipal): DataFrame =
+  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit user: UserPrincipal): DataFrame =
     withContext("SFS.saveFrame") {
 
-      val existing = expectFrame(frameEntity.id)
-      val entity = if (existing.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(existing)) {
-        info(s"Path for frame ${existing.id} / ${existing.name} already exists, creating new frame instead")
+      val entity = expectFrame(frameEntity.id)
+
+      if (entity.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(entity)) {
+        info(s"Path for frame ${entity.id} / ${entity.name} already exists, creating new frame instead")
         //We're saving over something that already exists - which we must not do.
         //So instead we create a new frame.
         val newFrame = create()
-        val saved = saveFrameData(newFrame, frameRDD, rowCount)
+        return saveFrameData(newFrame, frameRDD, rowCount, Some(entity))
+      }
+      info(s"Path for frame ${entity.id} / ${entity.name} does not exist, will save there")
+
+      parent.foreach { p =>
         //We copy the name from the old frame, since this was intended to replace it.
         metaStore.withTransaction("sfs.switch-names-and-graphs") { implicit txn =>
-          val (f1, f2) = exchangeNames(frameEntity, saved)
+          val (f1, f2) = exchangeNames(entity, p)
           val (f1G, _) = exchangeGraphs(f1, f2)
           f1G
         }
         //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
       }
-      else {
-        info(s"Path for frame ${existing.id} / ${existing.name} does not exist, will save there")
-        existing
-      }
-
       val path = frameFileStorage.frameBaseDirectory(entity.id).toString
       val count = rowCount.getOrElse {
         frameRDD.cache()
