@@ -36,7 +36,7 @@ import numpy as np
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile
+from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -166,21 +166,27 @@ class FrameBackendRest(object):
                         "data": None
                     }
             }
-        if isinstance(source, Frame):
-            return {'source': { 'source_type': 'frame',
-                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': frame._id}
+        if isinstance( source, LineFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "linefile",
+                            "uri": source.file_name,
+                            "parser": {"name": "invalid",
+                                        "arguments":{"separator": ',',
+                                                    "skip_rows": 0,
+                                                    "schema": {"columns": [("data_lines",valid_data_types.to_string(str))]}
+                                        }
+                                },
+                                "data": None
+                                },
+                    }
         if isinstance(source, Pandas):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
                               "uri": "pandas",
-                              "parser": {
-                                    "name": "builtin/line/separator",
-                                    "arguments": {
-                                    "separator": ',',
-                                    "skip_rows": 0,
-                                    "schema":{
-                                        "columns": source._schema_to_json()
+                              "parser": {"name": "builtin/line/separator",
+                                         "arguments": { "separator": ',',
+                                                       "skip_rows": 0,
+                                                       "schema":{ "columns": source._schema_to_json()
                                     }
                                 }
                               },
@@ -232,7 +238,7 @@ class FrameBackendRest(object):
         execute_update_frame_command('add_columns', arguments, frame)
 
     @staticmethod
-    def _handle_error(self, result):
+    def _handle_error(result):
         if result and result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")

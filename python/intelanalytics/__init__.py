@@ -38,7 +38,7 @@ except Exception as e:
     errors._doc_stubs = e
     del e
 
-from intelanalytics.core.files import CsvFile
+from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import TitanGraph, VertexRule, EdgeRule
