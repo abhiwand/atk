@@ -17,10 +17,9 @@ import java.util.List;
  */
 public class HBaseUniformSplitter {
 
-    //Splitting the last region is not straight-forward because the last row key in a HBase table is null
-    //Assumes that the same maximum row key as the uniform splitter in org.apache.hadoop.hbase.util.RegionSplitter
-    public static final byte xFF = (byte) 0xFF;
-    public static final byte[] maxRowKeyBytes = new byte[]{xFF, xFF, xFF, xFF, xFF, xFF, xFF, xFF};
+    // Uses a similar formula to com.thinkaurelius.titan.diskstorage.hbase.HBaseKeyColumnValueStore
+    public static final byte[] maxIntRowKey = Bytes.toBytes(((1L << 32) - 1L));
+    public static final byte[] maxLongRowKey = Bytes.toBytes(((1L << 63) - 1L));
 
     private final List<InputSplit> initialSplits;
 
@@ -153,33 +152,21 @@ public class HBaseUniformSplitter {
     }
 
     /**
-     * @param startKey
-     * @return
-     * @see com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
+     * Estimate the end key for the last region.
+     *
+     * The end key of the last region is empty in a HBase table.
+     *
+     * @param startKey Start key for the region
+     * @return MAX_INT - 1, if start key is less than MAX_INT else MAX_LONG-1
      */
     public byte[] getLastRegionKey(byte[] startKey) {
 
         // Compute end key using pre-split formula in
-        byte[] endKey = Bytes.toBytes(((1L << 32) - 1L));
-        long maxRange = 0;
+        byte[] endKey = maxIntRowKey;
 
-        if (Bytes.equals(startKey, HConstants.EMPTY_BYTE_ARRAY))
-
-        for (InputSplit split : initialSplits) {
-            TableSplit tableSplit = (TableSplit) split;
-            try {
-                long regionRange = Bytes.toLong(tableSplit.getEndRow()) - Bytes.toLong(tableSplit.getStartRow());
-                maxRange = java.lang.Math.max(maxRange, regionRange);
-            }
-            catch (IllegalArgumentException e) {}
-        }
-
-        if (maxRange > 0) {
-            endKey = Bytes.toBytes(Bytes.toLong(startKey) + maxRange);
-        }
-        else if (!Bytes.equals(startKey, HConstants.EMPTY_BYTE_ARRAY)) {
+        if (!Bytes.equals(startKey, HConstants.EMPTY_BYTE_ARRAY)) {
             if (Bytes.compareTo(startKey, endKey) > 0) { //Start key > end key
-                endKey = maxRowKeyBytes;
+                endKey = maxLongRowKey;
             }
         }
         return (endKey);

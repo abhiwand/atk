@@ -168,5 +168,5 @@ object TitanAutoPartitioner {
   val HBASE_REGIONS_PER_SERVER = "auto-partitioner.hbase.regions-per-server"
   val HBASE_INPUT_SPLITS_PER_CORE = "auto-partitioner.hbase.input-splits-per-spark-core"
   val SPARK_MAX_CORES = "spark.cores.max"
-  val TITAN_HBASE_REGION_COUNT = "storage.region-count" //TODO: Update for 0.5
+  val TITAN_HBASE_REGION_COUNT = "storage.region-count"
 }
