@@ -23,7 +23,7 @@
 
 package com.intel.spark.graphon
 
-import com.intel.graphbuilder.elements.Edge
+import com.intel.graphbuilder.elements.GBEdge
 import org.apache.spark.rdd.RDD
 
 object GraphStatistics {
@@ -38,7 +38,7 @@ object GraphStatistics {
    * @param edgeRDD RDD containing edges and their properties
    * @return        A list of Tuples of (VertexID, degree)
    */
-  def outDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
+  def outDegrees(edgeRDD: RDD[GBEdge]): RDD[(Any, Long)] = {
 
     val groupedByEdges = edgeRDD.groupBy(edge => edge.tailPhysicalId)
     groupedByEdges.map(e => (e._1, e._2.size))
@@ -53,7 +53,7 @@ object GraphStatistics {
    * @param edgeLabel Edge label to filter edges
    * @return          A list of Tuples of (VertexID, degree)
    */
-  def outDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
+  def outDegreesByEdgeType(edgeRDD: RDD[GBEdge], edgeLabel: String): RDD[(Any, Long)] = {
 
     val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
     val groupedByEdges = filteredEdges.groupBy(edge => edge.tailPhysicalId)
@@ -70,7 +70,7 @@ object GraphStatistics {
    * @param edgeRDD RDD containing edges and their properties
    * @return        A list of Tuples of (VertexID, degree)
    */
-  def inDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
+  def inDegrees(edgeRDD: RDD[GBEdge]): RDD[(Any, Long)] = {
 
     val groupedByEdges = edgeRDD.groupBy(edge => edge.headPhysicalId)
     groupedByEdges.map(e => (e._1, e._2.size))
@@ -85,7 +85,7 @@ object GraphStatistics {
    * @param edgeLabel Edge label to filter edges
    * @return          A list of Tuples of (VertexID, degree)
    */
-  def inDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
+  def inDegreesByEdgeType(edgeRDD: RDD[GBEdge], edgeLabel: String): RDD[(Any, Long)] = {
 
     val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
     val groupedByEdges = filteredEdges.groupBy(edge => edge.headPhysicalId)

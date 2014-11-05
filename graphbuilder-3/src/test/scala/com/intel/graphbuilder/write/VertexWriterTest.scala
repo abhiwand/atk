@@ -26,7 +26,7 @@ package com.intel.graphbuilder.write
 import org.mockito.Mockito._
 import org.scalatest.{ Matchers, WordSpec }
 import com.intel.graphbuilder.write.dao.VertexDAO
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import org.scalatest.mock.MockitoSugar
 
 class VertexWriterTest extends WordSpec with Matchers with MockitoSugar {
@@ -36,7 +36,7 @@ class VertexWriterTest extends WordSpec with Matchers with MockitoSugar {
     "support append true" in {
       // setup mocks
       val vertexDAO = mock[VertexDAO]
-      val vertex = mock[Vertex]
+      val vertex = mock[GBVertex]
 
       // instantiated class under test
       val vertexWriter = new VertexWriter(vertexDAO, append = true)
@@ -51,7 +51,7 @@ class VertexWriterTest extends WordSpec with Matchers with MockitoSugar {
     "support append false" in {
       // setup mocks
       val vertexDAO = mock[VertexDAO]
-      val vertex = mock[Vertex]
+      val vertex = mock[GBVertex]
 
       // instantiate class under test
       val vertexWriter = new VertexWriter(vertexDAO, append = false)

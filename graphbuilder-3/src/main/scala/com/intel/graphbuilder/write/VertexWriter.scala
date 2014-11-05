@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write
 
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.tinkerpop.blueprints
 
@@ -38,7 +38,7 @@ class VertexWriter(vertexDAO: VertexDAO, append: Boolean) extends Serializable {
   /**
    * Write a vertex to the Graph database
    */
-  def write(vertex: Vertex): blueprints.Vertex = {
+  def write(vertex: GBVertex): blueprints.Vertex = {
     if (append) {
       vertexDAO.updateOrCreate(vertex)
     }

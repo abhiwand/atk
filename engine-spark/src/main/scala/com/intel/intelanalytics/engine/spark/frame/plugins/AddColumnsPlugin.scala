@@ -48,7 +48,6 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/add_columns"
-
   /**
    * User documentation exposed in Python.
    *

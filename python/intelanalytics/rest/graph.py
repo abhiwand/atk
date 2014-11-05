@@ -30,7 +30,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.frame import FrameInfo
 from intelanalytics.core.frame import VertexFrame, EdgeFrame
@@ -126,7 +126,7 @@ class JsonValue(object):
     def __new__(cls, value):
         if isinstance(value, basestring):
             t, v = "CONSTANT", value
-        elif isinstance(value, BigColumn):
+        elif isinstance(value, Column):
             t, v = "VARYING", value.name
         else:
             raise TypeError("Bad graph element source type")
@@ -207,7 +207,7 @@ class JsonRules(object):
 
 class GraphInfo(object):
     """
-    JSON based Server description of a BigGraph
+    JSON based Server description of a Graph
     """
     def __init__(self, graph_json_payload):
         self._payload = graph_json_payload
