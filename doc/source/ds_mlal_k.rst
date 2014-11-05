@@ -76,6 +76,7 @@ The algorithm updates the input graph vertex with updated property named in “c
     Example::
     
         import intelanalytics as ia
+        ia.connect()
         dataset = r"datasets/kclique_edges.csv"
         schema= [("source", int64), ("target", int64)]
         csvfile = ia.CsvFile(dataset, schema)
