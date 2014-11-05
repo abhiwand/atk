@@ -1,11 +1,13 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments }
-import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column, SchemaUtil }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
-import org.apache.spark.SparkContext
+import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SchemaRDD
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
  * Helper functions for loading an RDD
@@ -26,11 +28,20 @@ object LoadRDDFunctions extends Serializable {
 
     val fileContentRdd: RDD[String] = sc.textFile(fileName, partitions).filter(_.trim() != "")
 
-    // parse a sample so we can bail early if needed
-    parseSampleOfData(fileContentRdd, parser)
+    if (parser != null) {
 
-    // re-parse the entire file
-    parse(fileContentRdd, parser)
+      // parse a sample so we can bail early if needed
+      parseSampleOfData(fileContentRdd, parser)
+
+      // re-parse the entire file
+      parse(fileContentRdd, parser)
+    }
+    else {
+      val listColumn = List(Column("data_lines", DataTypes.str))
+      val rows = fileContentRdd.map(s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
+      ParseResultRddWrapper(new FrameRDD(new Schema(listColumn), rows).toLegacyFrameRDD, null)
+    }
+
   }
 
   /**
@@ -45,6 +56,7 @@ object LoadRDDFunctions extends Serializable {
                        parser: LineParser): ParseResultRddWrapper = {
 
     val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
+    //val dataContentRDD: RDD[Any] = sc.parallelize(data)
     // parse a sample so we can bail early if needed
     parseSampleOfData(dataContentRDD, parser)
 
@@ -138,10 +150,8 @@ object LoadRDDFunctions extends Serializable {
           case x => throw new IllegalArgumentException(
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
-
         val rowParser = new RowParser(args.separator, columnTypes)
         s => rowParser(s)
-
       }
       case x => throw new Exception("Unsupported parser: " + x)
     }

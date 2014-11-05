@@ -87,6 +87,11 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(invocation, destinationFrame, additionalData)
     }
+    else if (arguments.source.isLineFile) {
+      val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
+      unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
+    }
     else if (arguments.source.isFile || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
 
@@ -106,6 +111,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       // successfully parsed lines get added to the destination frame
       unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
     }
+
     else {
       throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)
     }

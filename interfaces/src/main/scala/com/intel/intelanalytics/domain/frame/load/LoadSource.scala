@@ -50,7 +50,7 @@ case class Load(destination: FrameReference, source: LoadSource)
 case class LoadSource(source_type: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None) {
 
   require(source_type != null)
-  require(source_type == "frame" || source_type == "file" || source_type == "strings")
+  require(source_type == "frame" || source_type == "file" || source_type == "strings" || source_type == "linefile")
   require(uri != null)
   require(parser != null)
   require(data != null)
@@ -74,6 +74,13 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
    */
   def isFile: Boolean = {
     source_type == "file"
+  }
+
+  /**
+   * True if source is a Line File
+   */
+  def isLineFile: Boolean = {
+    source_type == "linefile"
   }
 }
 
