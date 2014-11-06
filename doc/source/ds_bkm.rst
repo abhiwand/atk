@@ -39,6 +39,7 @@ Ping the server::
     >>> import intelanalytics as ia
     >>> ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
+    >>> ia.connect()
 
 View and edit the server connection::
 

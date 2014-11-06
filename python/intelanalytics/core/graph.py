@@ -436,6 +436,27 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.vertices['users'].add_vertices(userFrame, 'user_id', ['user_name', 'age'])
         graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
         graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+
+    This example shows edges between vertices of the same type.  In this example, "employees work under other employees" ::
+
+        # create a frame to use as the source for the graph data
+        employees_frame = ia.Frame(ia.CsvFile("employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+
+        # define a graph
+        graph = ia.Graph()
+        graph.define_vertex_type('Employee')
+        graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=True)
+
+        # add data
+        graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
+        graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
+
+        # inspect the graph
+        graph.vertex_count()
+        graph.edge_count()
+        graph.vertices['Employee'].inspect(20)
+        graph.edges['worksunder'].inspect(20)
+
     """
     _command_prefix = 'graph:'
 

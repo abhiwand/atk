@@ -29,6 +29,7 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 import java.io.File
 import java.net.InetAddress
 
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.tinkerpop.blueprints.Graph
 
 import scala.collection.JavaConversions._
@@ -135,7 +136,7 @@ object ExamplesUtils {
 
     val output = new StringBuilder("---- Graph Dump ----\n")
 
-    graph.getVertices.toList.foreach(v => {
+    TitanGraphConnector.getVertices(graph).toList.foreach(v => {
       output.append(v).append("\n")
       vertexCount += 1
     })

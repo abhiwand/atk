@@ -24,26 +24,24 @@ package com.intel.giraph.io.titan.hbase;
 
 import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.VertexData4CFWritable;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.diskstorage.Backend;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanProperty;
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
+import java.util.Iterator;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
 
 
 /**
@@ -62,127 +60,73 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
-    TitanHBaseVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+        TitanHBaseVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+
+    private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
 
     /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
-
-    /**
-     * checkInputSpecs
+     * Constructs Giraph vertex reader
+     * <p/>
+     * Reads Giraph vertex from Titan/HBase table.
      *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void checkInputSpecs(Configuration conf) {
-    }
-
-    /**
-     * set up HBase with based on users' configuration
-     *
-     * @param conf :Giraph configuration
-     */
-    @Override
-    public void setConf(
-        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> conf) {
-        GiraphTitanUtils.setupHBase(conf);
-        super.setConf(conf);
-    }
-
-    /**
-     * create TitanHBaseVertexReader
-     *
-     * @param split   : inputsplits from TableInputFormat
-     * @param context : task context
-     * @return VertexReader
+     * @param split   Input split from HBase table
+     * @param context Giraph task context
      * @throws IOException
-     * @throws RuntimeException
      */
+    @Override
     public VertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> createVertexReader(
-        InputSplit split, TaskAttemptContext context) throws IOException {
+            InputSplit split, TaskAttemptContext context) throws IOException {
 
-        return new TitanHBaseVertexReader(split, context);
-
+        return new PropertyGraph4CFVertexReader(split, context);
     }
 
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
-        /**
-         * reader to parse Titan graph
-         */
-        private TitanHBaseGraphReader graphReader;
-        /**
-         * Giraph vertex
-         */
-        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex;
-        /**
-         * task context
-         */
-        private final TaskAttemptContext context;
+    public static class PropertyGraph4CFVertexReader extends TitanHBaseVertexReader<
+            LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+
+        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> giraphVertex = null;
+
         /**
          * The length of vertex value vector
          */
         private int cardinality = -1;
 
         /**
-         * TitanHBaseVertexReader constructor
+         * Constructs vertex reader
          *
-         * @param split   Input Split
-         * @param context Task context
+         * @param split   Input split from HBase table
+         * @param context Giraph task context
          * @throws IOException
          */
-        public TitanHBaseVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-            this.context = context;
+        public PropertyGraph4CFVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
+            super(split, context);
         }
 
         /**
-         * initialize TitanHBaseVertexReader
+         * Gets the next Giraph vertex from the input split.
          *
-         * @param inputSplit input splits
-         * @param context    task context
-         */
-        @Override
-        public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-            InterruptedException {
-            super.initialize(inputSplit, context);
-            this.graphReader = new TitanHBaseGraphReader(
-                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                    GIRAPH_TITAN.get(context.getConfiguration())));
-        }
-
-        /**
-         * check whether there is next vertex
-         *
-         * @return boolean true if there is next vertex
+         * @return boolean Returns True, if more vertices available
          * @throws IOException
          * @throws InterruptedException
          */
-        @Override
         public boolean nextVertex() throws IOException, InterruptedException {
-            //the edge store name used by Titan
-            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
-
             while (getRecordReader().nextKeyValue()) {
-                final Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> temp = graphReader
-                    .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
-                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                        .get(edgeStoreFamily));
-                if (null != temp) {
-                    vertex = temp;
+                Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable>  tempGiraphVertex =
+                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                if (tempGiraphVertex != null) {
+                    this.giraphVertex = tempGiraphVertex;
                     return true;
                 }
             }
-            vertex = null;
+            this.giraphVertex = null;
             return false;
+
         }
 
         /**
-         * get current vertex with ID in long; value as two vectors, both in
+         * Get current vertex with ID in long; value as two vectors, both in
          * double edge as two vectors, both in double
          *
          * @return Vertex Giraph vertex
@@ -191,18 +135,18 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> getCurrentVertex()
-            throws IOException, InterruptedException {
-            return vertex;
+                throws IOException, InterruptedException {
+            return this.giraphVertex;
         }
 
         /**
-         * get vertex value
+         * Get vertex value
          *
          * @return VertexDataWritable vertex value in vector
          * @throws IOException
          */
         protected VertexData4CFWritable getValue() throws IOException {
-            VertexData4CFWritable vertexValue = vertex.getValue();
+            VertexData4CFWritable vertexValue = this.giraphVertex.getValue();
             Vector vector = vertexValue.getVector();
             if (cardinality != vector.size()) {
                 if (cardinality == -1) {
@@ -215,24 +159,102 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         }
 
         /**
-         * get edges of this vertex
+         * Get edges of this vertex
          *
          * @return Iterable of Giraph edges
          * @throws IOException
          */
         protected Iterable<Edge<LongWritable, EdgeData4CFWritable>> getEdges() throws IOException {
-            return vertex.getEdges();
+
+            return this.giraphVertex.getEdges();
+        }
+
+        /**
+         * Construct a Giraph vertex from a Faunus (Titan/Hadoop vertex).
+         *
+         * @param conf         Giraph configuration with property names, and edge labels to filter
+         * @param faunusVertex Faunus vertex
+         * @return Giraph vertex
+         */
+        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> readGiraphVertex(
+                final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+
+            // Initialize Giraph vertex
+            Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex = conf.createVertex();
+            VertexData4CFWritable.VertexType vertexType = vertexBuilder.getCFVertexTypeProperty(
+                    faunusVertex, vertexBuilder.vertexTypePropertyKey);
+            initializeVertexProperties(vertex, faunusVertex, vertexType, vertexBuilder.vertexValuePropertyKeys.size());
+
+            // Update vertex properties
+            Iterator<TitanProperty> titanProperties = vertexBuilder.buildTitanProperties(faunusVertex);
+            setVertexProperties(vertex, vertexType, titanProperties);
+
+            // Add edges
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
+            addGiraphEdges(vertex, faunusVertex, titanEdges);
+
+            return (vertex);
+        }
+
+        /**
+         * Initialize Giraph vertex with vertex type and prior vector.
+         *
+         * @param vertex       Giraph vertex
+         * @param faunusVertex Faunus (Titan/Hadoop) vertex
+         * @param vertexType   Vertex type (Left or Right)
+         * @param size         Size of prior vector
+         */
+        private void initializeVertexProperties(
+                Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
+                FaunusVertex faunusVertex,
+                VertexData4CFWritable.VertexType vertexType,
+                int size) {
+            double[] data = new double[size];
+            Vector priorVector = new DenseVector(data);
+            VertexData4CFWritable vertexValueVector = new VertexData4CFWritable(vertexType, priorVector.clone());
+            vertex.initialize(new LongWritable(faunusVertex.getLongId()), vertexValueVector);
         }
 
 
         /**
-         * close
+         * Update prior vector in Giraph vertex.
+         * <p/>
+         * The prior vector is updated using the values in the Titan properties.
          *
-         * @throws IOException
+         * @param vertex          Giraph vertex
+         * @param vertexType      Vertex type (Left or Right)
+         * @param titanProperties Iterator of Titan properties
          */
-        public void close() throws IOException {
-            this.graphReader.shutdown();
-            super.close();
+        private void setVertexProperties(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
+                                         VertexData4CFWritable.VertexType vertexType, Iterator<TitanProperty> titanProperties) {
+            while (titanProperties.hasNext()) {
+                TitanProperty titanProperty = titanProperties.next();
+                Vector priorVector = vertexBuilder.setVector(vertex.getValue().getVector(), titanProperty);
+                vertex.setValue(new VertexData4CFWritable(vertexType, priorVector));
+            }
+        }
+
+        /**
+         * Add edges to Giraph vertex.
+         * <p/>
+         * Edges contain edge type, and value.
+         *
+         * @param vertex       Giraph vertex
+         * @param faunusVertex Faunus (Titan/Hadoop) vertex
+         * @param titanEdges   Iterator of Titan edges
+         */
+        private void addGiraphEdges(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
+                                    FaunusVertex faunusVertex, Iterator<TitanEdge> titanEdges) {
+            while (titanEdges.hasNext()) {
+                TitanEdge titanEdge = titanEdges.next();
+
+                EdgeData4CFWritable.EdgeType edgeType = vertexBuilder.getCFEdgeTypeProperty(titanEdge, vertexBuilder.edgeTypePropertyKey);
+
+                for (final String propertyKey : vertexBuilder.edgeValuePropertyKeys.keySet()) {
+                    Edge<LongWritable, EdgeData4CFWritable> edge = vertexBuilder.getCFGiraphEdge(faunusVertex, titanEdge, edgeType, propertyKey);
+                    vertex.addEdge(edge);
+                }
+            }
         }
     }
 }
