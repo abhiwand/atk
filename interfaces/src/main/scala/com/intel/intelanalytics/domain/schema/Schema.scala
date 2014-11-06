@@ -416,7 +416,7 @@ case class Schema(columns: List[Column] = List[Column](),
    * @return the other columns, if any
    */
   def columnsExcept(columnNamesToExclude: List[String]): List[Column] = {
-    dropColumns(columnNamesToExclude).columns
+    this.columns.filter(column => !columnNamesToExclude.contains(column.name))
   }
 
   /**
