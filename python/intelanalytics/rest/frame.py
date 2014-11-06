@@ -390,24 +390,17 @@ class FrameBackendRest(object):
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
-    def sort(self, frame, columns_and_ascending, ascending):
-        if isinstance(columns_and_ascending, basestring):
-            if isinstance(ascending, bool):
-                arguments = { 'frame': frame._id, 'column_names_and_ascending': [(columns_and_ascending,ascending)]}
+    def sort(self, frame, columns, ascending):
+        if isinstance(columns, basestring):
+            columns_and_ascending = [(columns, ascending)]
+        elif isinstance(columns, list):
+            if isinstance(columns[0], basestring):
+                columns_and_ascending = map(lambda x: (x, ascending),columns)
             else:
-                arguments = { 'frame': frame._id, 'column_names_and_ascending': [(columns_and_ascending,True)]}
-        elif isinstance(columns_and_ascending, list):
-            if isinstance(columns_and_ascending[0], basestring):
-                def to_tuple(s):
-                    if isinstance(ascending, bool):
-                        return (s, ascending)
-                    else:
-                        return (s, True)
-                arguments = { 'frame': frame._id, 'column_names_and_ascending': map(to_tuple, columns_and_ascending) }
-            else:
-                arguments = { 'frame': frame._id, 'column_names_and_ascending': columns_and_ascending }
+                columns_and_ascending = columns
         else:
-            raise ValueError("Bad type %s provided as argument; expecting basestring, tuple, or list of tuples" % type(columns_and_ascending))
+            raise ValueError("Bad type %s provided as argument; expecting basestring, list of basestring, or list of tuples" % type(columns))
+        arguments = { 'frame': frame._id, 'column_names_and_ascending': columns_and_ascending }
         execute_update_frame_command("sort", arguments, frame)
 
     def take(self, frame, n, offset, columns):
