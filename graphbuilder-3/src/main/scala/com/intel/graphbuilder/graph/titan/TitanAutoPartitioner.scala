@@ -28,6 +28,7 @@ import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.HBaseAdmin
+import org.apache.hadoop.hbase.mapreduce.TableInputFormat
 import org.apache.spark.SparkContext
 
 import scala.util.Try
@@ -75,13 +76,28 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
                           hBaseAdmin: HBaseAdmin,
                           titanGraphName: String): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = hBaseAdmin.getConfiguration
+    println("Checking splits")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
     if (enableAutoPartition) {
       val inputSplits = getSparkHBaseInputSplits(sparkContext, hBaseAdmin, titanGraphName)
       if (inputSplits > 1) {
         hBaseConfig.setInt(HBaseTableInputFormat.NUM_REGION_SPLITS, inputSplits)
       }
     }
+    println("Checking splits again")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
     hBaseConfig
+  }
+
+  def setHBaseInputSplits(sparkContext: SparkContext,
+                          hBaseConfig: org.apache.hadoop.conf.Configuration,
+                          titanGraphName: String): Unit = {
+    if (enableAutoPartition) {
+      val inputSplits = getSparkHBaseInputSplits(sparkContext, new HBaseAdmin(hBaseConfig), titanGraphName)
+      if (inputSplits > 1) {
+        hBaseConfig.setInt(HBaseTableInputFormat.NUM_REGION_SPLITS, inputSplits)
+      }
+    }
   }
 
   /**
