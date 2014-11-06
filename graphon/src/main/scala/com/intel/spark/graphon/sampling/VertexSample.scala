@@ -77,8 +77,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
    */
   override def name: String = "graph:titan/sampling/vertex_sample"
 
-  //TODO remove when we move the next version of spark
-  override def kryoRegistrator: Option[String] = None
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
   /**
    * User documentation exposed in Python.
    *
