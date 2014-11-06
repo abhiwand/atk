@@ -27,7 +27,7 @@ import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
-import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ HBaseAdminFactory, SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.util.{ JvmVersionReporter, DiskSpaceReporter }
+import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
 
@@ -51,9 +51,11 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  EnvironmentLogger.log()
+
   SparkEngineConfig.logSettings()
 
-  lazy val engine = new SparkEngine(sparkContextManager,
+  lazy val engine = new SparkEngine(sparkContextFactory,
     commandExecutor, commands, frameStorage, graphStorage, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
@@ -69,7 +71,7 @@ class SparkComponent extends EngineComponent
 
   metaStore.initializeSchema()
 
-  val sparkContextManager = new SparkContextManager(SparkEngineConfig.config, new SparkContextFactory)
+  val sparkContextFactory = new SparkContextFactory()
 
   val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
@@ -77,7 +79,7 @@ class SparkComponent extends EngineComponent
 
   val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
 
-  val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
+  val getContextFunc = (user: UserPrincipal) => sparkContextFactory.context(user, "query")
   val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory), frameStorage)
@@ -86,11 +88,11 @@ class SparkComponent extends EngineComponent
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextFactory)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
 
-  lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextManager)
+  lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextFactory)
 
   JvmVersionReporter.check()
 
