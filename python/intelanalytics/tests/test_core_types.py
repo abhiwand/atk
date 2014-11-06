@@ -81,7 +81,6 @@ class ValidDataTypes(unittest.TestCase):
         else:
             self.fail("Expected exception!")
 
-
     def test_to_string(self):
         self.assertEqual('int32', valid_data_types.to_string(int32))
         self.assertEqual('float64', valid_data_types.to_string(float64))
@@ -103,6 +102,31 @@ class ValidDataTypes(unittest.TestCase):
             pass
         else:
             self.fail("Expected exception!")
+
+    def test_nan(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.nan, float32) is None)
+
+    def test_positive_inf(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.inf, float64) is None)
+
+    def test_negative_inf(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(-np.inf, float32) is None)
+
+    def test_native_float_values(self):
+        self.assertTrue(valid_data_types.cast(float('nan'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('NaN'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('inf'), float32) is None)
+        self.assertTrue(valid_data_types.cast(float('Infinity'), float64) is None)
+        self.assertTrue(valid_data_types.cast(float('-inf'), float64) is None)
+        self.assertTrue(valid_data_types.cast(float('-Infinity'), float64) is None)
+
+    def test_overflow(self):
+        import numpy as np
+        self.assertTrue(valid_data_types.cast(np.float64(2 ** 1000), float32) is None)
+        self.assertTrue(valid_data_types.cast(-np.float64(2 ** 1000), float32) is None)
 
 
 if __name__ == '__main__':

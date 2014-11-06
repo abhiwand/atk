@@ -28,6 +28,7 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
@@ -96,6 +97,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    */
   override def execute(invocation: SparkInvocation, arguments: ExportGraph)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
     val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
+    validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: Graph = graphs.createGraph(
       new GraphTemplate(
         arguments.newGraphName match {
@@ -131,5 +133,16 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
       List(),
       List(),
       GraphBuilderConfigFactory.getTitanConfiguration(graphName))
+  }
+
+  def validateLabelNames(edgeFrames: List[DataFrame], edgeLabels: List[String]) = {
+    val invalidColumnNames = edgeFrames.flatMap(frame => frame.schema.columnNames.map(columnName => {
+      if (edgeLabels.contains(columnName))
+        s"Edge: ${frame.schema.edgeSchema.get.label} Column: $columnName"
+      else
+        ""
+    })).toList.filter(s => !s.isEmpty)
+    require(invalidColumnNames.size == 0,
+      s"Titan does not allow properties with the same key as an edge label. Please rename the following columns:\n\t${invalidColumnNames.mkString("\n\t")}")
   }
 }

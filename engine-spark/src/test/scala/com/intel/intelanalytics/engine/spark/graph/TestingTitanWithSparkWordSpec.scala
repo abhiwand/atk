@@ -2,6 +2,7 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import java.io.File
 
+import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.{ TestingSparkContextWordSpec, DirectoryUtils, LogUtils }
 import com.thinkaurelius.titan.core.util.TitanCleanup
@@ -19,6 +20,7 @@ trait TestingTitanWithSparkWordSpec extends TestingSparkContextWordSpec with Bef
   val titanConfig = new SerializableBaseConfiguration()
 
   override def beforeAll() {
+    EnvironmentValidator.skipEnvironmentValidation = true
     super[TestingSparkContextWordSpec].beforeAll()
     tmpDir = DirectoryUtils.createTempDirectory("engine-tmp-dir-for-titan-tests")
 

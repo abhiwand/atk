@@ -41,12 +41,18 @@ import scala.concurrent.ExecutionContext
  * @param commandId the ID assigned to this command execution
  * @param executionContext the Scala execution context in use
  * @param arguments the original JSON arguments, unconverted
- * @param sparkContext a SparkContext that can be used to implement the plugin's functionality
+ * @param sparkContextFunc a function for getting a SparkContext that can be used to implement the plugin's functionality
  */
 case class SparkInvocation(engine: SparkEngine,
                            user: UserPrincipal,
                            commandId: Long,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
-                           sparkContext: SparkContext,
-                           commandStorage: SparkCommandStorage) extends Invocation
+                           sparkContextFunc: () => SparkContext,
+                           commandStorage: SparkCommandStorage) extends Invocation {
+
+  /**
+   * SparkContext to be used by a plugin
+   */
+  lazy val sparkContext = sparkContextFunc()
+}
