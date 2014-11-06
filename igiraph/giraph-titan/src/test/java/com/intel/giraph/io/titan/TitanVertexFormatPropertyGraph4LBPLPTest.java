@@ -43,23 +43,23 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         "[4,[5,5,0.5],[\"VA\"],[[3,4,[]],[2,4,[]]]]"
     };
     */
-    private HashMap<Long, Double[]> expectedLbpValues = new HashMap<Long, Double[]>();
-    private HashMap<Long, Double[]> expectedLpValues = new HashMap<Long, Double[]>();
+    private HashMap<Integer, Double[]> expectedLbpValues = new HashMap<Integer, Double[]>();
+    private HashMap<Integer, Double[]> expectedLpValues = new HashMap<Integer, Double[]>();
 
 
     @Override
     protected void configure() throws Exception {
-        expectedLbpValues.put(4L, new Double[]{0.562, 0.088, 0.350});
-        expectedLbpValues.put(8L, new Double[]{0.042, 0.102, 0.855});
-        expectedLbpValues.put(12L, new Double[]{0.038, 0.087, 0.874});
-        expectedLbpValues.put(16L, new Double[]{0.228, 0.048, 0.724});
-        expectedLbpValues.put(20L, new Double[]{0.039, 0.088, 0.874});
+        expectedLbpValues.put(0, new Double[]{0.562, 0.088, 0.350});
+        expectedLbpValues.put(1, new Double[]{0.042, 0.102, 0.855});
+        expectedLbpValues.put(2, new Double[]{0.038, 0.087, 0.874});
+        expectedLbpValues.put(3, new Double[]{0.228, 0.048, 0.724});
+        expectedLbpValues.put(4, new Double[]{0.039, 0.088, 0.874});
 
-        expectedLpValues.put(4L, new Double[]{0.833, 0.083, 0.083});
-        expectedLpValues.put(8L, new Double[]{0.271, 0.271, 0.458});
-        expectedLpValues.put(12L, new Double[]{0.083, 0.083, 0.833});
-        expectedLpValues.put(16L, new Double[]{0.083, 0.833, 0.083});
-        expectedLpValues.put(20L, new Double[]{0.083, 0.458, 0.458});
+        expectedLpValues.put(0, new Double[]{0.833, 0.083, 0.083});
+        expectedLpValues.put(1, new Double[]{0.271, 0.271, 0.458});
+        expectedLpValues.put(2, new Double[]{0.083, 0.083, 0.833});
+        expectedLpValues.put(3, new Double[]{0.083, 0.833, 0.083});
+        expectedLpValues.put(4, new Double[]{0.083, 0.458, 0.458});
 
         TitanManagement graphManager = graph.getManagementSystem();
         graphManager.makePropertyKey("red").dataType(String.class).make();
@@ -174,7 +174,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
-            assertEquals(expectedLbpValues.get(nid[i])[1],
+            assertEquals(expectedLbpValues.get(i)[1],
                     Double.parseDouble(nodes[i].getProperty(result_blue).toString()), 0.01d);
         }
         tx.commit();
@@ -220,7 +220,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             String lbpResult = nodes[i].getProperty(resultKey).toString();
             String[] valueString = lbpResult.split(",");
             for (int j = 0; j < numKeys; j++) {
-                assertEquals(expectedLbpValues.get(nid)[j], Double.parseDouble(valueString[j]), 0.01d);
+                assertEquals(expectedLbpValues.get(i)[j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
         tx.commit();
@@ -262,7 +262,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             long nid = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid));
             nodes[i] = tx.getVertex(nid);
-            assertEquals(expectedLpValues.get(nid)[1],
+            assertEquals(expectedLpValues.get(i)[1],
                     Double.parseDouble(nodes[i].getProperty(result_blue).toString()), 0.01d);
         }
         tx.commit();
@@ -311,7 +311,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
             String lpResult = nodes[i].getProperty(resultKey).toString();
             String[] valueString = lpResult.split(",");
             for (int j = 0; j < numKeys; j++) {
-                assertEquals(expectedLpValues.get(nid)[j], Double.parseDouble(valueString[j]), 0.01d);
+                assertEquals(expectedLpValues.get(i)[j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
         tx.commit();

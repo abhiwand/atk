@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import com.tinkerpop.blueprints.Direction
@@ -37,11 +37,11 @@ object TitanReaderUtils {
   def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
     graphElements.map(element => {
       element match {
-        case v: Vertex => {
-          new Vertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
+        case v: GBVertex => {
+          new GBVertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
         }
-        case e: Edge => {
-          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
+        case e: GBEdge => {
+          new GBEdge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
         }
       }
     })
