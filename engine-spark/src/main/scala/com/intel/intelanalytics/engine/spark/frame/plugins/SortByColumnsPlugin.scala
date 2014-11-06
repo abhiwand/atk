@@ -36,7 +36,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Template to follow when writing plugins
+ * Sort by one or more columns
  */
 class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, UnitReturn] {
 
@@ -49,9 +49,7 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, UnitReturn] 
   override def name: String = "frame/sort"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   * Docs written in Python layer
    */
   override def doc: Option[CommandDoc] = None
 
