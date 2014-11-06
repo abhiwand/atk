@@ -13,6 +13,7 @@ import org.apache.giraph.edge.EdgeFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.Options;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ public class TitanHBaseVertexBuilder {
             for (String propertyKey : vertexValuePropertyKeys.keySet()) {
                 Iterator<TitanProperty> propertyIterator = faunusVertex.getProperties(propertyKey).iterator();
 
-                while (propertyIterator.hasNext()) {
+                if (propertyIterator.hasNext()) {
                     titanProperties.add(propertyIterator.next());
                 }
             }
@@ -202,6 +203,9 @@ public class TitanHBaseVertexBuilder {
             //one property key has a vector as value
             //split by either space or comma or tab
             String[] valueString = vertexValueObject.toString().split(regexp);
+            int size = valueString.length;
+            double[] data = new double[size];
+            vector = new DenseVector(data);
             for (int i = 0; i < valueString.length; i++) {
                 vector.set(i, Double.parseDouble(valueString[i]));
             }

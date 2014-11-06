@@ -1,7 +1,7 @@
 package com.intel.graphbuilder.util
 
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanVertex, TitanEdge, TitanProperty }
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import com.tinkerpop.blueprints.Direction
@@ -20,13 +20,13 @@ object TitanConverter {
    * @param gbIdPropertyName Property name of unique ID used by graph builder
    * @return GraphBuilder vertex
    */
-  def createGraphBuilderVertex(faunusVertex: FaunusVertex, gbIdPropertyName: Option[String] = None): Vertex = {
+  def createGraphBuilderVertex(faunusVertex: FaunusVertex, gbIdPropertyName: Option[String] = None): GBVertex = {
     val physicalId = faunusVertex.getId
 
     val gbId = getGbId(faunusVertex, gbIdPropertyName)
     val gbProperties = createGraphBuilderProperties(faunusVertex.getProperties)
 
-    Vertex(physicalId, gbId, gbProperties)
+    GBVertex(physicalId, gbId, gbProperties)
   }
 
   /**
@@ -48,7 +48,7 @@ object TitanConverter {
    * @param gbIdPropertyName Property name of unique ID used by graph builder
    * @return Iterator of Graph builder edges
    */
-  def createGraphBuilderEdges(faunusVertex: FaunusVertex, gbIdPropertyName: Option[String] = None): Iterator[Edge] = {
+  def createGraphBuilderEdges(faunusVertex: FaunusVertex, gbIdPropertyName: Option[String] = None): Iterator[GBEdge] = {
     val titanEdges = faunusVertex.getTitanEdges(Direction.OUT).iterator()
     titanEdges.map(titanEdge => createGraphBuilderEdge(titanEdge, gbIdPropertyName))
   }
@@ -60,7 +60,7 @@ object TitanConverter {
    * @param gbIdPropertyName Property name of unique ID used by graph builder
    * @return Graph builder edge
    */
-  def createGraphBuilderEdge(titanEdge: TitanEdge, gbIdPropertyName: Option[String] = None): Edge = {
+  def createGraphBuilderEdge(titanEdge: TitanEdge, gbIdPropertyName: Option[String] = None): GBEdge = {
     val titanFromVertex = titanEdge.getVertex(Direction.OUT)
     val titanToVertex = titanEdge.getVertex(Direction.IN)
     val fromGbId = getGbId(titanFromVertex, gbIdPropertyName)
@@ -68,7 +68,7 @@ object TitanConverter {
 
     val edgeProperties = titanEdge.getPropertyKeys.map(key => Property(key, titanEdge.getProperty(key))).toSet
 
-    Edge(titanFromVertex.getId, titanToVertex.getId, fromGbId, toGbId, titanEdge.getLabel, edgeProperties)
+    GBEdge(titanFromVertex.getId, titanToVertex.getId, fromGbId, toGbId, titanEdge.getLabel, edgeProperties)
   }
 
   /**

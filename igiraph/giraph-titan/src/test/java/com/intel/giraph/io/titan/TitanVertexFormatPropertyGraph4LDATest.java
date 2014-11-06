@@ -109,10 +109,14 @@ public class TitanVertexFormatPropertyGraph4LDATest
 
 
         TitanManagement graphManager = graph.getManagementSystem();
-        PropertyKey vertexType = graphManager.makePropertyKey("vertexType").dataType(String.class).make();
-        PropertyKey frequency = graphManager.makePropertyKey("frequency").dataType(String.class).make();
-        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.makePropertyKey("vertexType").dataType(String.class).make();
+        graphManager.makePropertyKey("frequency").dataType(String.class).make();
+        graphManager.makeEdgeLabel("edge").make();
         graphManager.commit();
+
+        String vertexType = "vertexType";
+        String frequency = "frequency";
+        String edge = "edge";
 
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();

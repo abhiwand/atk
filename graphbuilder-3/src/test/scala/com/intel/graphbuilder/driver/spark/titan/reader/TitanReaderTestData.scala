@@ -2,12 +2,11 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import java.io.File
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.DirectoryUtils
-import com.thinkaurelius.titan.core.{ TitanEdge, TitanVertex }
-import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.thinkaurelius.titan.core.TitanVertex
 import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ BeforeAndAfterAll, Suite }
 
@@ -85,26 +84,26 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   // GraphBuilder graph elements
   val neptuneGbVertex = {
     val gbNeptuneProperties = createGbProperties(neptuneTitanVertex.getProperties())
-    new Vertex(neptuneTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), gbNeptuneProperties)
+    new GBVertex(neptuneTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), gbNeptuneProperties)
   }
 
   val seaGbVertex = {
     val gbSeaProperties = createGbProperties(seaTitanVertex.getProperties())
-    new Vertex(seaTitanVertex.getId, Property(gbID, seaTitanVertex.getId), gbSeaProperties)
+    new GBVertex(seaTitanVertex.getId, Property(gbID, seaTitanVertex.getId), gbSeaProperties)
   }
 
   val plutoGbVertex = {
     val gbPlutoProperties = createGbProperties(plutoTitanVertex.getProperties())
-    new Vertex(plutoTitanVertex.getId, Property(gbID, plutoTitanVertex.getId), gbPlutoProperties)
+    new GBVertex(plutoTitanVertex.getId, Property(gbID, plutoTitanVertex.getId), gbPlutoProperties)
   }
 
   val seaGbEdge = {
     val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
-    new Edge(neptuneTitanVertex.getId, seaTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, seaTitanVertex.getId), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
+    new GBEdge(neptuneTitanVertex.getId, seaTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, seaTitanVertex.getId), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), Set[Property]())
+    new GBEdge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
   // Faunus graph elements
