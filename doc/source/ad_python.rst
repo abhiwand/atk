@@ -17,7 +17,7 @@ Windows Python Setup
 
 #. Open a command prompt.
 
-#. Run the command: ``conda create -n intelanalytics-python python=2.6 numpy=1.8 requests=2.3 ordereddict=1.1``. This creates a virtual python environment that mimics the cluster's configuration.
+#. Run the command: ``conda create -n intelanalytics-python python=2.7 numpy=1.8 requests=2.3 ordereddict=1.1``. This creates a virtual python environment that mimics the cluster's configuration.
 
 ----------------------------------------
 Integrated Development Environment (IDE)
@@ -70,7 +70,7 @@ To configure Eclipse to use the right python environment:
       
          - Choose a project type: Python
          
-         - Grammar Version: 2.6
+         - Grammar Version: 2.7
          
          - Interpreter: intelanalytics-python
 

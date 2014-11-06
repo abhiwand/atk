@@ -21,29 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
+package com.intel.intelanalytics.domain.frame
 
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
-
-import scala.collection.mutable
-import org.apache.spark.SparkContext
-import com.intel.event.EventLogging
-
-/**
- * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
- * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
- * create in the order of hundreds of SparkContetxs pre JVM
- */
-object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
-
-  //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
-
-  //TODO: how to run jobs as a particular user
-  //TODO: Decide on spark context life cycle - should it be torn down after every operation,
-  //or left open for some time, and reused if a request from the same user comes in?
-  //Is there some way of sharing a context across two different Engine instances?
-
-  override def getContext(user: String, description: String): SparkContext = {
-    sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
-  }
+case class FrameCountWhere(frame: FrameReference, where: String) {
+  require(frame != null, "frame is required")
+  require(where != null, "where predicate is required")
 }
+
+case class JustALong(value: Long) // TODO - temporary, switch when parquet graph branch 3539 merges

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Column }
 
 class ECDFTest extends TestingSparkContextFlatSpec with Matchers {
 
@@ -65,13 +66,13 @@ class ECDFTest extends TestingSparkContextFlatSpec with Matchers {
     val sampleThreeRdd = sparkContext.parallelize(sampleThreeList, 2)
 
     // Get binned results
-    val sampleOneECDF = CumulativeDistFunctions.ecdf(sampleOneRdd, 0, "int32")
+    val sampleOneECDF = CumulativeDistFunctions.ecdf(sampleOneRdd, Column("a", DataTypes.int32, 0))
     val resultOne = sampleOneECDF.take(10)
 
-    val sampleTwoECDF = CumulativeDistFunctions.ecdf(sampleTwoRdd, 0, "int32")
+    val sampleTwoECDF = CumulativeDistFunctions.ecdf(sampleTwoRdd, Column("a", DataTypes.int32, 0))
     val resultTwo = sampleTwoECDF.take(5)
 
-    val sampleThreeECDF = CumulativeDistFunctions.ecdf(sampleThreeRdd, 0, "int32")
+    val sampleThreeECDF = CumulativeDistFunctions.ecdf(sampleThreeRdd, Column("a", DataTypes.int32, 0))
     val resultThree = sampleThreeECDF.take(5)
 
     // Validate

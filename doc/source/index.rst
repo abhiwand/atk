@@ -3,7 +3,7 @@
 ============
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 4
 
     ia_intro
     ad_over

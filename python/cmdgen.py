@@ -22,6 +22,11 @@
 ##############################################################################
 """
 Creates the docstubs.py API documentation file
+
+usage:  python2.7 cmdgen.py  [-x] [-debug]
+
+-x      : skips calling the engine to dump the commands and just uses the current json dump file
+-debug  : turns on IJ debugging just before the metaprogramming generates the docstubs
 """
 
 import json
@@ -62,7 +67,7 @@ with warnings.catch_warnings(record=True) as expected_warnings:
 from intelanalytics.core.metaprog import CommandLoadable, get_doc_stubs_module_text
 from intelanalytics.rest.jsonschema import get_command_def
 
-ignore_loadables = ['BigFrame', 'BigGraph']  # these are being deprecated
+ignore_loadables = []
 
 loadables = dict([(item.__name__, item)
                   for item in ia.__dict__.values()
@@ -70,7 +75,9 @@ loadables = dict([(item.__name__, item)
                   and issubclass(item, CommandLoadable)
                   and item.__name__ not in ignore_loadables])
 
-skip_engine_launch = len(sys.argv) > 1 and sys.argv[1].strip() == '-x'
+args = [a.strip() for a in sys.argv[1:]]
+
+skip_engine_launch = '-x' in args
 if skip_engine_launch:
     print "SKIPPING the call to engine-spark!"
 else:
@@ -83,7 +90,13 @@ print "Opening dump file and pulling in the command defintions"
 with open("../target/command_dump.json", 'r') as json_file:
     command_defs = [get_command_def(json_schema) for json_schema in json.load(json_file)['commands']]
 
+if '-debug' in args:
+    import ijdebug
+    ijdebug.start()
+
 text = get_doc_stubs_module_text(command_defs, loadables, ia)
+
+
 if not text:
     print "No doc stub text found, so no file content to write"
     print "Early exit"

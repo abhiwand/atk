@@ -4,7 +4,7 @@
 # It should be run after 'git' updating the main branch of code.
 
 # This is what we look for
-s=CommandDoc\(oneLineSummary
+s=CommandDoc\(
 
 # First make sure the comparison directory exists. The data files will go here.
 w=.CommandDoc

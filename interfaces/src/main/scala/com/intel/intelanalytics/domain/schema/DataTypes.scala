@@ -50,6 +50,8 @@ object DataTypes {
     def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
+
+    def isNumerical: Boolean
   }
 
   /**
@@ -77,6 +79,7 @@ object DataTypes {
       raw.asInstanceOf[Int].toDouble
     }
 
+    override def isNumerical = true
   }
 
   /**
@@ -103,6 +106,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Long].toDouble
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -129,6 +134,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Float].toDouble
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -156,6 +163,8 @@ object DataTypes {
     override def asDouble(raw: Any): Double = {
       raw.asInstanceOf[Double]
     }
+
+    override def isNumerical = true
   }
 
   /**
@@ -187,6 +196,8 @@ object DataTypes {
         case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
       }
     }
+
+    override def isNumerical = false
   }
 
   /**
@@ -354,9 +365,61 @@ object DataTypes {
       case f: Float => f.toLong
       case d: Double => d.toLong
       case s: String => s.toLong
-      case jl: java.lang.Long => jl.longValue()
       case _ => throw new RuntimeException("Not yet implemented")
     }
+  }
+
+  def toInt(value: Any): Int = {
+    value match {
+      case null => throw new IllegalArgumentException("null cannot be converted to Int")
+      case i: Int => i
+      case l: Long => l.toInt
+      case f: Float => f.toInt
+      case d: Double => d.toInt
+      case s: String => s.toInt
+      case _ => throw new RuntimeException("Not yet implemented")
+    }
+  }
+
+  def toFloat(value: Any): Float = {
+    value match {
+      case null => throw new IllegalArgumentException("null cannot be converted to Float")
+      case i: Int => i.toFloat
+      case l: Long => l.toFloat
+      case f: Float => f
+      case d: Double => d.toFloat
+      case s: String => s.toFloat
+      case _ => throw new RuntimeException("Not yet implemented")
+    }
+  }
+
+  /**
+   * Compare our supported data types
+   * @param valueA
+   * @param valueB
+   * @return
+   */
+  def compare(valueA: Any, valueB: Any): Int = {
+    if (valueB == null) {
+      if (valueA == null) {
+        0
+      }
+      else {
+        1
+      }
+    }
+    else {
+      valueA match {
+        case null => -1
+        case i: Int => i.compare(DataTypes.toInt(valueB))
+        case l: Long => l.compare(DataTypes.toLong(valueB))
+        case f: Float => f.compare(DataTypes.toFloat(valueB))
+        case d: Double => d.compare(DataTypes.toDouble(valueB))
+        case s: String => s.compareTo(valueB.toString)
+        case _ => throw new RuntimeException("Not yet implemented")
+      }
+    }
+
   }
 
 }
