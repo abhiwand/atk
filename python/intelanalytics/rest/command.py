@@ -43,7 +43,7 @@ from collections import namedtuple
 
 
 
-def execute_command(command_name, **arguments):
+def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
@@ -56,7 +56,14 @@ def execute_command(command_name, **arguments):
     elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
         # TODO: remove this hack for plugins that return data frame
         from intelanalytics.core.frame import get_frame
-        result = get_frame(command_info.result['name'])
+        parent = command_info.result.get('parent')
+        if parent and parent == getattr(selfish, '_id'):
+            print "Changing ID for existing proxy"
+            selfish._id = command_info.result['id']
+            result = selfish
+        else:
+            print "Returning new proxy"
+            result = get_frame(command_info.result['name'])
     else:
         result = command_info.result
     return result

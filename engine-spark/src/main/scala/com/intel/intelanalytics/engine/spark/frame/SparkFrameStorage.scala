@@ -309,7 +309,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                 rowCount = Some(count),
                 schema = frameRDD.schema,
                 storageFormat = Some(storage),
-                storageLocation = Some(path)))
+                storageLocation = Some(path),
+                parent = parent.map(p => p.id)))
               newFrame.get
             }
         }
