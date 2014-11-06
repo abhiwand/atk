@@ -7,10 +7,10 @@ ia.connect();
 dataset = r"datasets/lp_edge.csv"
 
 #csv schema definition
-schema = [("source", int64),
+schema = [("source", ia.int64),
           ("input_value", str),
-          ("target", int64),
-          ("weight", float64)]
+          ("target", ia.int64),
+          ("weight", ia.float64)]
 
 #csv schema definition
 csv = ia.CsvFile(dataset, schema, skip_header_lines=1)

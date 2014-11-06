@@ -7,9 +7,9 @@ ia.connect();
 dataset = r"datasets/movie_data_random.csv"
 
 #csv schema definition
-schema = [("user_id", int32),
-          ("movie_id", int32),
-          ("rating", int32),
+schema = [("user_id", ia.int32),
+          ("movie_id", ia.int32),
+          ("rating", ia.int32),
           ("splits", str)]
 
 csv_file = ia.CsvFile(dataset, schema, skip_header_lines=1)
