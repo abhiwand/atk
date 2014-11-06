@@ -98,13 +98,13 @@ object TriangleCountRunner extends Serializable {
   // Triangle Count makes sense on a undirected graph, hence we can change the edges to the canonical orientation
   // before passing it to graphx. We do not need the edges henceforth for join purposes.
   // Refer: https://spark.apache.org/docs/1.0.2/api/scala/index.html#org.apache.spark.graphx.lib.TriangleCount$
-  private def createGraphXEdgeFromGBEdge(gbEdge: GBEdge): GraphXEdge[Long] = {
-    val tailId = gbEdge.tailPhysicalId.asInstanceOf[Long]
-    val headId = gbEdge.headPhysicalId.asInstanceOf[Long]
-    if (tailId < headId)
-      GraphXEdge[Long](tailId, headId)
+  private def createGraphXEdgeFromGBEdge(gbEdge: GBEdge, canonicalOrientation: Boolean = true): GraphXEdge[Long] = {
+    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
+    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
+    if (canonicalOrientation && srcId > destId)
+      GraphXEdge[Long](destId, srcId)
     else
-      GraphXEdge[Long](headId, tailId)
+      GraphXEdge[Long](srcId, destId)
   }
 
   // generates GBVertex from value pair obtained as a result of join and appends the pagerank property to the GBVertex
