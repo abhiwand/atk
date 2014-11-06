@@ -385,7 +385,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
     override def write(frame: DataFrame): JsValue = {
-      JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields + ("ia_uri" -> JsString(frame.uri)) + ("command_prefix" -> JsString(frame.commandPrefix)))
+      JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields +
+        ("ia_uri" -> JsString(frame.uri)) +
+        ("command_prefix" -> JsString(frame.commandPrefix)))
     }
   }
 
@@ -397,7 +399,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
     override def write(graph: Graph): JsValue = {
-      JsObject(graphFormatOriginal.write(graph).asJsObject.fields + ("ia_uri" -> JsString(graph.uri)) + ("command_prefix" -> JsString(graph.commandPrefix)))
+      JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
+        ("ia_uri" -> JsString(graph.uri)) +
+        ("command_prefix" -> JsString(graph.commandPrefix)))
     }
   }
 
