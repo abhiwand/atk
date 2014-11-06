@@ -95,8 +95,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     /**
      * Save data of the given type, possibly creating a new object.
      */
-    override def saveData(data: SparkGraphStorage.this.SparkGraphManagement.Data)
-                         (implicit invocation: Invocation): SparkGraphStorage.this.SparkGraphManagement.Data = ???
+    override def saveData(data: SparkGraphStorage.this.SparkGraphManagement.Data)(implicit invocation: Invocation): SparkGraphStorage.this.SparkGraphManagement.Data = ???
   }
 
   //TODO: enable

@@ -27,10 +27,12 @@ import com.intel.intelanalytics.domain.HasData
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrame, FrameReference }
 
 /**
- * A FrameReference with metadata and a Spark RDD representing the data in the frame
+ * A FrameReference with metadata and a Spark RDD representing the data in the frame.
+ *
+ * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
 class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
-    extends FrameMeta(frame)
+    extends FrameMeta(frame.withSchema(rdd.schema))
     with HasData {
 
   type Data = FrameRDD

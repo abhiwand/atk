@@ -60,7 +60,8 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
       try {
         val caller = user.user
         EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
-      } catch {
+      }
+      catch {
         case NonFatal(e) => EventContext.getCurrent.put("user-name-error", e.toString)
       }
       expr
@@ -125,10 +126,12 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
+      debug("Invoking execute method with arguments:\n" + arguments)
       val result = execute(arguments)(invocation)
       if (result == null) {
         throw new Exception(s"Plugin ${this.getClass.getName} returned null")
       }
+      debug("Result was:\n" + result)
       result
     }
   })(invocation)
