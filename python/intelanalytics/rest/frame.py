@@ -253,22 +253,28 @@ class FrameBackendRest(object):
             return
 
         if isinstance(data, Pandas):
-            pan = data.pandas_frame.dropna(thresh=1)
-            pandas_rows = []
+            pan = data.pandas_frame
             if not data.row_index:
                 pan = pan.reset_index()
-            for index, row in pan.iterrows():
-                pandas_rows.append(row.tolist())
-                if index != 0 and index % config.upload_defaults.rows == 0:
-                    arguments = self._get_load_arguments(frame, data, pandas_rows)
-                    result = execute_update_frame_command("frame:/load", arguments, frame)
-                    self._handle_error(result)
-                    pandas_rows = []
+            pan = pan.dropna(thresh=len(pan.columns))
+            #number of columns should match the number of columns in the schema, else throw an error
+            if len(pan.columns) != len(data.field_names):
+                raise ValueError("Number of columns in Pandasframe {0} does not match the number of columns in the "
+                                 " schema provided {1}.".format(len(pan.columns), len(data.field_names)))
 
-            if pandas_rows.__len__() > 0:
+            begin_index = 0
+            iteration = 1
+            end_index = config.upload_defaults.rows
+            while True:
+                pandas_rows = pan[begin_index:end_index].values.tolist()
                 arguments = self._get_load_arguments(frame, data, pandas_rows)
                 result = execute_update_frame_command("frame:/load", arguments, frame)
                 self._handle_error(result)
+                if end_index > len(pan.index):
+                    break
+                iteration += 1
+                begin_index = end_index
+                end_index = config.upload_defaults.rows * iteration
         else:
             arguments = self._get_load_arguments(frame, data)
             result = execute_update_frame_command("frame:/load", arguments, frame)
