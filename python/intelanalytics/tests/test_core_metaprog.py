@@ -26,7 +26,7 @@ iatest.init()
 import unittest
 import mock
 import intelanalytics.core.iatypes as iatypes
-from intelanalytics.core.metaprog import CommandLoadable, load_loadable
+from intelanalytics.core.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_command_prefix
 from intelanalytics.core.command import CommandDefinition, Parameter, Return
 from intelanalytics.core.loggers import loggers
 
@@ -84,6 +84,22 @@ class TestCommandsLoadable(unittest.TestCase):
         help(n.lang.spanish)
         self.assertEqual("uno, dos", n.lang.spanish(1, 2))
         self.assertEqual("deux, zero", n.lang.french(2, 0))
+
+
+class TestDocStubs(unittest.TestCase):
+    def test_get_loadable_class_name_from_command_prefix(self):
+        cases = [
+            ('frame', "_BaseFrame"),
+            ('frame:', "Frame"),
+            ('frame:edge', "EdgeFrame"),
+            ('frame:vertex', "VertexFrame"),
+            ('graph', "_BaseGraph"),
+            ('graph:', "Graph"),
+            ('graph:titan', "TitanGraph"),
+            ('model', "_BaseModel"),
+            ]
+        for prefix, expected in cases:
+            self.assertEqual(expected, get_loadable_class_name_from_command_prefix(prefix))
 
 
 if __name__ == '__main__':

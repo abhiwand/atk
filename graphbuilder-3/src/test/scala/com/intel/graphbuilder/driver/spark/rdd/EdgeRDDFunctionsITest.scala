@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.elements.{ Edge, GbIdToPhysicalId, Property }
+import com.intel.graphbuilder.elements.{ GBEdge, GbIdToPhysicalId, Property }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 
@@ -36,9 +36,9 @@ class EdgeRDDFunctionsITest extends TestingSparkContextWordSpec with Matchers {
     // is somewhat expensive to spin up a testing SparkContext
     "pass integration test" in {
 
-      val edge1 = new Edge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
-      val edge2 = new Edge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
-      val edge3 = new Edge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key2", "value2")))
+      val edge1 = new GBEdge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
+      val edge2 = new GBEdge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
+      val edge3 = new GBEdge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key2", "value2")))
 
       val gbIdToPhysicalId1 = new GbIdToPhysicalId(Property("gbId", 1L), new java.lang.Long(1001L))
       val gbIdToPhysicalId2 = new GbIdToPhysicalId(Property("gbId", 2L), new java.lang.Long(1002L))

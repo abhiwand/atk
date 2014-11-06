@@ -32,17 +32,14 @@ import json
 import sys
 
 from intelanalytics.core.frame import Frame
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.column import Column
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
-from intelanalytics.core.metaprog import load_loadable
-from intelanalytics.core.deprecate import raise_deprecation_warning
-from intelanalytics.core.namedobj import add_named_object_support
 
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, executor, execute_command
+from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
@@ -71,20 +68,6 @@ class FrameBackendRest(object):
             initialize_frame(frame, FrameInfo(payload))
             return frame
 
-    def delete_frame(self, frame):
-        if isinstance(frame, Frame):
-            return self._delete_frame(frame)
-        elif isinstance(frame, basestring):
-            # delete by name
-            return self._delete_frame(self.get_frame(frame))
-        else:
-            raise TypeError("Excepted argument of type Frame or the frame name")
-
-    def _delete_frame(self, frame):
-        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = self.rest_http.delete("frames/" + str(frame._id))
-        return None
-
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
         if isinstance(source, dict):
@@ -95,16 +78,14 @@ class FrameBackendRest(object):
 
         new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
 
-        # TODO - change project such that server creates the new frame, instead of passing one in
         if isinstance(source, Frame):
-            self.project_columns(source, frame, source.column_names)
-        elif isinstance(source, BigColumn):
-            self.project_columns(source.frame, frame, source.name)
-        elif isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source):
-            self.project_columns(source[0].frame, frame, [s.name for s in source])
-        else:
-            if source:
-                self.append(frame, source)
+            become_frame(frame, self.copy(source, source.column_names))
+        elif isinstance(source, Column):
+            become_frame(frame, self.copy(source.frame, source.name))
+        elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
+            become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
+        elif source:
+            self.append(frame, source)
 
         return new_frame_name
 
@@ -123,8 +104,16 @@ class FrameBackendRest(object):
     def get_schema(self, frame):
         return self._get_frame_info(frame).schema
 
-    def get_row_count(self, frame):
-        return self._get_frame_info(frame).row_count
+    def get_row_count(self, frame, where):
+        if not where:
+            return self._get_frame_info(frame).row_count
+        # slightly faster generator to only return a list of one item, since we're just counting rows
+        # TODO - there's got to be a better way to do this with the RDDs, trick is with Python.
+        def icountwhere(predicate, iterable):
+           return ("[1]" for item in iterable if predicate(item))
+        http_ready_function = prepare_row_function(frame, where, icountwhere)
+        arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
+        return get_command_output("count_where", arguments)
 
     def get_ia_uri(self, frame):
         return self._get_frame_info(frame).ia_uri
@@ -241,22 +230,6 @@ class FrameBackendRest(object):
         arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
-    def drop_duplicates(self, frame, columns):
-        if columns is None:
-            columns = []
-        elif isinstance(columns, basestring):
-            columns = [columns]
-        arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('frame:/drop_duplicates', arguments, frame)
-
-    def drop_duplicate_vertices(self, frame, columns):
-        if columns is None:
-            columns = []
-        elif isinstance(columns, basestring):
-            columns = [columns]
-        arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('frame:vertex/drop_duplicates', arguments, frame)
-
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
@@ -356,28 +329,22 @@ class FrameBackendRest(object):
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         return execute_new_frame_command('frame:/join', arguments)
 
-    def project_columns(self, frame, projected_frame, columns, new_names=None):
-        # TODO - change project_columns so the server creates the new frame, like join
-        if isinstance(columns, basestring):
-            columns = [columns]
-        elif isinstance(columns, dict):
-            if new_names is not None:
-                raise ValueError("'new_names' argument must be None since 'columns' argument is a dictionary, ")
-            columns, new_names = zip(*columns.items())
-
-        if new_names is not None:
-            if isinstance(new_names, basestring):
-                new_names = [new_names]
-            if len(columns) != len(new_names):
-                raise ValueError("new_names list argument must be the same length as the column_names")
-        # TODO - fix REST server to accept nulls, for now we'll pass an empty list
-        else:
-            new_names = list(columns)
+    def copy(self, frame, columns=None, where=None):
+        if where:
+            if not columns:
+                column_names = frame.column_names
+            elif isinstance(columns, basestring):
+                column_names = [columns]
+            elif isinstance(columns, dict):
+                column_names = columns.keys()
+            else:
+                column_names = columns
+            from intelanalytics.rest.spark import prepare_row_function_for_copy_columns
+            where = prepare_row_function_for_copy_columns(frame, where, column_names)
         arguments = {'frame': self.get_ia_uri(frame),
-                     'projected_frame': self.get_ia_uri(projected_frame),
                      'columns': columns,
-                     'new_column_names': new_names}
-        execute_update_frame_command('project', arguments, projected_frame)
+                     'where': where}
+        return execute_new_frame_command('frame/copy', arguments)
 
     def group_by(self, frame, group_by_columns, aggregation):
         if group_by_columns is None:
@@ -457,50 +424,6 @@ class FrameBackendRest(object):
             data = FrameData.extract_data_from_selected_columns(data, indices)
 
         return TakeResult(data, updated_schema)
-
-    def ecdf(self, frame, sample_col):
-        import numpy as np
-        col_types = dict(frame.schema)
-        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to generate ecdf for non-numeric values")
-        data_type_dict = {np.float32: 'float32', np.float64: 'float64', np.int32: 'int32', np.int64: 'int64'}
-        data_type = 'string'
-        if col_types[sample_col] in data_type_dict:
-            data_type = data_type_dict[col_types[sample_col]]
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
-        return execute_new_frame_command('ecdf', arguments)
-
-    
-    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        arguments = {'frame_id': frame._id, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label)}
-        # valueList = (tp, tn, fp, fn)
-        valueList = get_command_output('confusion_matrix', arguments).get('value_list')
-        # the following output formatting code is ugly, but it works for now...
-        maxLength = len(max((str(x) for x in valueList), key=len))
-        topRowLen = max([maxLength*2 - 7, 1])
-        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
-        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
-        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
-        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
-
-        return formattedMatrix
 
     def create_vertex_frame(self, frame, source, label, graph):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
@@ -704,6 +627,11 @@ def initialize_frame(frame, frame_info):
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
+def become_frame(frame, source_frame):
+    """Initializes a frame proxy according to another frame proxy"""
+    frame._ia_uri = source_frame._ia_uri
+    frame._id = source_frame._id
+    frame._error_frame_id = source_frame._error_frame_id
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""

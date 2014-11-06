@@ -26,7 +26,7 @@ package com.intel.spark.graphon.sampling
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -47,7 +47,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param seed optional random seed value
    * @return RDD containing the vertices in the sample
    */
-  def sampleVerticesUniform(vertices: RDD[Vertex], size: Int, seed: Option[Long]): RDD[Vertex] = {
+  def sampleVerticesUniform(vertices: RDD[GBVertex], size: Int, seed: Option[Long]): RDD[GBVertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     // TODO: Currently, all vertices are treated the same.  This should be extended to allow the user to specify, for example, different sample weights for different vertex types.
     if (size >= vertices.count()) {
@@ -74,7 +74,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param seed optional random seed value
    * @return RDD containing the vertices in the sample
    */
-  def sampleVerticesDegree(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
+  def sampleVerticesDegree(vertices: RDD[GBVertex], edges: RDD[GBEdge], size: Int, seed: Option[Long]): RDD[GBVertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     if (size >= vertices.count()) {
       vertices
@@ -104,7 +104,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param seed optional random seed value
    * @return RDD containing the vertices in the sample
    */
-  def sampleVerticesDegreeDist(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
+  def sampleVerticesDegreeDist(vertices: RDD[GBVertex], edges: RDD[GBEdge], size: Int, seed: Option[Long]): RDD[GBVertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     if (size >= vertices.count()) {
       vertices
@@ -129,7 +129,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges the set of edges for the input graph
    * @return the edge RDD for the vertex induced subgraph
    */
-  def vertexInducedEdgeSet(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
+  def vertexInducedEdgeSet(vertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[GBEdge] = {
     // TODO: Find more efficient way of doing this that does not involve collecting sampled vertices
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
@@ -142,7 +142,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param titanConfig the config for Titan
    * @return tuple containing RDDs of vertices and edges
    */
-  def getGraphRdds(sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[Vertex], RDD[Edge]) = {
+  def getGraphRdds(sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[GBVertex], RDD[GBEdge]) = {
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // read graph
@@ -163,7 +163,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges the edges to write to Titan
    * @param titanConfig the config for Titan
    */
-  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration): Unit = {
+  def writeToTitan(vertices: RDD[GBVertex], edges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration): Unit = {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
@@ -188,7 +188,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param size number of vertices to take
    * @return RDD of vertices
    */
-  def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
+  def getTopVertices(weightedVertexRdd: RDD[(Double, GBVertex)], size: Int): RDD[GBVertex] = {
     // TODO: There is a bug with Spark top function that is resolved in Spark 1.1.0, so use less efficient sortByKey() for now
     //val vertexSampleArray = weightedVertexRdd.top(size)(Ordering.by { case (vertexWeight, vertex) => vertexWeight })
 
@@ -207,7 +207,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges RDD of all edges
    * @return RDD of tuples that contain vertex degree histogram bin size as weight for each vertex
    */
-  def addVertexDegreeDistWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
+  def addVertexDegreeDistWeights(vertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[(Long, GBVertex)] = {
     // get tuples of (vertexDegree, vertex)
     val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
@@ -225,7 +225,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges RDD of all edges
    * @return RDD of tuples that contain vertex degree as weight for each vertex
    */
-  def addVertexDegreeWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
+  def addVertexDegreeWeights(vertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[(Long, GBVertex)] = {
     val vertexIdDegrees = GraphStatistics.outDegrees(edges)
     val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
 

@@ -12,7 +12,7 @@ import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
@@ -81,6 +81,9 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
+  //TODO remove when we move the next version of spark
+  override def kryoRegistrator: Option[String] = None
+
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
     extendedSummary = Some("""
@@ -145,12 +148,12 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-
+    //TODO change this code to use the sparkContext that was passed in rather than create a new one when we move to the next version of spark
     sparkInvocation.sparkContext.stop
 
     val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
 
-    val sc = new SparkContext(sparkConf)
+    val sc = /*sparkInvocation.sparkContext*/ new SparkContext(sparkConf)
 
     try {
 

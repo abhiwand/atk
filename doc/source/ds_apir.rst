@@ -26,11 +26,11 @@ greater than zero::
 This function would be useful in a Frame filter command, which filters a data frame keeping only those rows
 which meet certain criteria, -- in this case, only rows with scores greater than zero::
 
-    csv = CsvFile(“tresults.txt”, [(‘test’, str), (‘score’, int32)])
+    my_csv = CsvFile(“tresults.txt”, [(‘test’, str), (‘score’, int32)])
 
-    frame = BigFrame(csv)
+    my_frame = Frame(my_csv)
 
-    frame.filter(my_custom_row_func)
+    my_frame.filter(my_custom_row_func)
 
 In this example, the filter command iterates over every row in the frame and evaluates the user-defined
 function on each one and keeps only those rows which evaluate to True.
@@ -101,7 +101,7 @@ Here are some guidelines to follow when writing a PUF:
 1.  Error handling:
     Include error handling.
     If the function execution raises an exception, it will cause the entire command to fail and possible
-    leave the BigFrame or BigGraph in an incomplete state.
+    leave the Frame or TitanGraph in an incomplete state.
     The best practice is to put all our PUF functionality in a ``try: except:`` block, where the
     ``except:`` clause returns a default value or performs a benign side effect.
     See the ``row_sum`` function example above, where we used a ``try: except:`` block and produced a -1
