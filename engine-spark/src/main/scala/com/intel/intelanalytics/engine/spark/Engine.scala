@@ -160,6 +160,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
   commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
   commandPluginRegistry.registerCommand(new TopKPlugin)
+  commandPluginRegistry.registerCommand(new SortByColumnsPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)

@@ -23,8 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import java.util
+
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.InputSchema
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, TestingTitan, SparkGraphStorage }
@@ -33,6 +36,7 @@ import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.joda.time.DateTime
 import org.scalatest.Matchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
@@ -44,11 +48,11 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
   val edgeColumns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
   val edgeSchema = new Schema(edgeColumns, edgeSchema = Some(EdgeSchema("worksUnder", "srclabel", "destlabel")))
 
-  val employeeColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("employeeID", DataTypes.int64))
+  val employeeColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("employee", DataTypes.int64))
   val employeeSchema = new Schema(employeeColumns, Some(VertexSchema("employee", null)))
 
   val divisionColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("divisionID", DataTypes.int64))
-  val divisionSchema = new Schema(divisionColumns, Some(VertexSchema("manager", null)))
+  val divisionSchema = new Schema(divisionColumns, Some(VertexSchema("division", null)))
 
   "ExportToTitanGraph" should {
     "create an expected graphbuilder config " in {
@@ -76,6 +80,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val works = List(
         new GenericRow(Array(4L, 1L, 3L, "worksIn", "10/15/2012")),
         new GenericRow(Array(5L, 2L, 3L, "worksIn", "9/01/2014")))
+
       val edgeRDD = sparkContext.parallelize[sql.Row](works)
       val edgeFrameRDD = new EdgeFrameRDD(edgeSchema, edgeRDD)
 
@@ -94,11 +99,45 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
 
       val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")
-      val bobsDivision = bobVertex.getVertices(Direction.OUT)
-      bobsDivision.size should be(1)
-      bobsDivision.iterator().next().getProperty[String]("name") should be("development")
+      val bobsDivisionIterator = bobVertex.getVertices(Direction.OUT)
+      bobsDivisionIterator.size should be(1)
+
+      val bobsDivision = bobsDivisionIterator.iterator().next()
+      bobsDivision.getProperty[String]("name") should be("development")
+
       val bobEdges = bobVertex.getEdges(Direction.OUT)
+
       bobEdges.size should be(1)
+    }
+
+    "unallowed titan naming elements will throw proper exceptions" in {
+      intercept[IllegalArgumentException] {
+        val edgeColumns1 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label1", DataTypes.string), Column("label3", DataTypes.string))
+        val edgeSchema1 = new Schema(edgeColumns1, edgeSchema = Some(EdgeSchema("label1", "srclabel", "destlabel")))
+        val frame1 = new DataFrame(1, "name", None, edgeSchema1, 0L, 1L, new DateTime, new DateTime)
+
+        val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label2", DataTypes.string))
+        val edgeSchema2 = new Schema(edgeColumns2, edgeSchema = Some(EdgeSchema("label2", "srclabel", "destlabel")))
+        val frame2 = new DataFrame(1, "name", None, edgeSchema2, 0L, 1L, new DateTime, new DateTime)
+
+        val edgeColumns3 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
+        val edgeSchema3 = new Schema(edgeColumns3, edgeSchema = Some(EdgeSchema("label3", "srclabel", "destlabel")))
+        val frame3 = new DataFrame(1, "name", None, edgeSchema3, 0L, 1L, new DateTime, new DateTime)
+
+        val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+        plugin.validateLabelNames(List(frame1, frame2, frame3), List("label1", "label2", "label3"))
+      }
+    }
+    "no exception thrown if titan naming elements are valid" in {
+      val frame1 = new DataFrame(1, "name", None, edgeSchema, 0L, 1L, new DateTime, new DateTime)
+
+      val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
+      val edgeSchema2 = new Schema(edgeColumns2, edgeSchema = Some(EdgeSchema("label1", "srclabel", "destlabel")))
+      val frame2 = new DataFrame(1, "name", None, edgeSchema2, 0L, 1L, new DateTime, new DateTime)
+
+      val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+      plugin.validateLabelNames(List(frame1, frame2), List("notalabel1", "label2", "label3"))
+
     }
   }
 }
