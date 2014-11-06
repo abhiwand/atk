@@ -50,7 +50,8 @@ case class Graph(id: Long,
                  modifiedOn: DateTime,
                  createdByUserId: Option[Long] = None,
                  modifiedByUserId: Option[Long] = None,
-                 idCounter: Option[Long] = None) extends HasId with IAUri {
+                 idCounter: Option[Long] = None,
+                 elementIDNames: Option[ElementIDNames] = None) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")

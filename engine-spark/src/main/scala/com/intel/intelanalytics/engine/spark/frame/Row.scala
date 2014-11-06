@@ -84,20 +84,12 @@ trait AbstractRow {
   def value(columnName: String): Any = row(schema.columnIndex(columnName))
 
   /**
-   * Get more than one value as a Product
-   * @param columnNames
-   * @return
+   * Get more than one value as a List
+   * @param columnNames the columns to get values for
+   * @return the values for the columns
    */
-  def values(columnNames: List[String]): Product = {
-    columnNames.size match {
-      case i if i <= 0 => throw new IllegalArgumentException("Number of columns must be greater than or equal to one")
-      case 1 => toTuple(columnNames(0))
-      case 2 => toTuple(columnNames(0), columnNames(1))
-      case 3 => toTuple(columnNames(0), columnNames(1), columnNames(2))
-      case 4 => toTuple(columnNames(0), columnNames(1), columnNames(2), columnNames(3))
-      case 5 => toTuple(columnNames(0), columnNames(1), columnNames(2), columnNames(3), columnNames(4))
-      case _ => throw new RuntimeException("Not yet implemented sizes other than 1-5")
-    }
+  def values(columnNames: List[String]): List[Any] = {
+    columnNames.map(columnName => value(columnName))
   }
 
   /**
@@ -160,9 +152,9 @@ trait AbstractRow {
   }
 
   /**
-   * Set all of the values for an entire row
-   * @param values
-   * @return
+   * Set all of the values for an entire row with validation
+   * @param values the values to set
+   * @return the row
    */
   def setValues(values: Array[Any]): Row = {
     validate(values)
@@ -305,31 +297,32 @@ trait AbstractRow {
     new GenericRow(content)
   }
 
-  /**
-   * Get a tuple out of the row
-   * @param columnName the column to include
-   * @tparam T the type for the column
-   * @return a tuple of the supplied columns
-   */
-  def toTuple[T](columnName: String): Tuple1[T] = {
-    Tuple1(value(columnName).asInstanceOf[T])
-  }
-
-  def toTuple[T1, T2](columnName1: String, columnName2: String): (T1, T2) = {
-    Tuple2(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2])
-  }
-
-  def toTuple[T1, T2, T3](columnName1: String, columnName2: String, columnName3: String): (T1, T2, T3) = {
-    Tuple3(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3])
-  }
-
-  def toTuple[T1, T2, T3, T4](columnName1: String, columnName2: String, columnName3: String, columnName4: String): (T1, T2, T3, T4) = {
-    Tuple4(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4])
-  }
-
-  def toTuple[T1, T2, T3, T4, T5](columnName1: String, columnName2: String, columnName3: String, columnName4: String, columnName5: String): (T1, T2, T3, T4, T5) = {
-    Tuple5(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4], value(columnName5).asInstanceOf[T5])
-  }
+  // TODO: is tuple conversion nice to have?  either we have a use or we should delete it?
+  //  /**
+  //   * Get a tuple out of the row
+  //   * @param columnName the column to include
+  //   * @tparam T the type for the column
+  //   * @return a tuple of the supplied columns
+  //   */
+  //  def toTuple[T](columnName: String): Tuple1[T] = {
+  //    Tuple1(value(columnName).asInstanceOf[T])
+  //  }
+  //
+  //  def toTuple[T1, T2](columnName1: String, columnName2: String): (T1, T2) = {
+  //    Tuple2(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2])
+  //  }
+  //
+  //  def toTuple[T1, T2, T3](columnName1: String, columnName2: String, columnName3: String): (T1, T2, T3) = {
+  //    Tuple3(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3])
+  //  }
+  //
+  //  def toTuple[T1, T2, T3, T4](columnName1: String, columnName2: String, columnName3: String, columnName4: String): (T1, T2, T3, T4) = {
+  //    Tuple4(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4])
+  //  }
+  //
+  //  def toTuple[T1, T2, T3, T4, T5](columnName1: String, columnName2: String, columnName3: String, columnName4: String, columnName5: String): (T1, T2, T3, T4, T5) = {
+  //    Tuple5(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4], value(columnName5).asInstanceOf[T5])
+  //  }
 
   /**
    * Create a new empty row
