@@ -177,6 +177,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
   commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
   commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
+  commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
