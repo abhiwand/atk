@@ -309,4 +309,14 @@ class SparkGraphStorage(metaStore: MetaStore,
     frames.saveFrame(frameMeta, edgeFrameRDD, rowCount)
   }
 
+  def updateElementIDNames(graphMeta: Graph, elementIDColumns: List[ElementIDName]): Graph = {
+    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
+      implicit session =>
+        {
+          val updatedGraph = graphMeta.copy(elementIDNames = Some(new ElementIDNames(elementIDColumns)))
+          metaStore.graphRepo.update(updatedGraph).get
+        }
+    }
+  }
+
 }
