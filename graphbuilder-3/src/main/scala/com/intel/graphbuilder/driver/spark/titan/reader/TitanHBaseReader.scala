@@ -49,6 +49,10 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val hBaseConfig = createHBaseConfiguration()
     val tableName = hBaseConfig.get(TableInputFormat.INPUT_TABLE)
 
+    println("Initial HBase config")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
+    println(HBaseTableInputFormat.NUM_REGION_SPLITS + "=" + hBaseConfig.get(HBaseTableInputFormat.NUM_REGION_SPLITS))
+
     checkTableExists(hBaseConfig, tableName)
 
     val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[HBaseTableInputFormat],
@@ -67,19 +71,32 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val hBaseZookeeperQuorum = titanConfig.getString(TITAN_STORAGE_HOSTNAME)
     val tableName = titanConfig.getString(TITAN_STORAGE_TABLENAME)
     val hBaseZookeeperClientPort = titanConfig.getString(TITAN_STORAGE_PORT, HConstants.DEFAULT_ZOOKEPER_CLIENT_PORT.toString)
-
+    println("Printing Titan properties")
+    titanConfig.getKeys.foreach(k => {
+      println("Property " + k + "=" + titanConfig.getProperty(k.toString))
+    })
+    println("Zookeeper: " + hBaseZookeeperQuorum)
+    println("tablename: " + tableName)
     // Other options for configuring scan behavior are available. More information available at
     // http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html
     hBaseConfig.set(HConstants.ZOOKEEPER_QUORUM, hBaseZookeeperQuorum);
     hBaseConfig.set(HConstants.ZOOKEEPER_CLIENT_PORT, hBaseZookeeperClientPort);
     hBaseConfig.set(TableInputFormat.INPUT_TABLE, tableName)
 
+    println("Initial HBase config")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
+    println(HBaseTableInputFormat.NUM_REGION_SPLITS + "=" + hBaseConfig.get(HBaseTableInputFormat.NUM_REGION_SPLITS))
+
     // Auto-configure number of input splits
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    val newHBaseConfig = titanAutoPartitioner.setHBaseInputSplits(sparkContext, new HBaseAdmin(hBaseConfig), tableName)
-    configureHBaseScanner(newHBaseConfig)
+    //val hBaseAdmin = new HBaseAdmin(hBaseConfig)
+    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+    configureHBaseScanner(hBaseConfig)
 
-    newHBaseConfig
+    println("Updated HBase config")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
+    println(HBaseTableInputFormat.NUM_REGION_SPLITS + "=" + hBaseConfig.get(HBaseTableInputFormat.NUM_REGION_SPLITS))
+    hBaseConfig
   }
 
   /**
@@ -114,6 +131,12 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
    */
   private def checkTableExists(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: String) = {
     val admin = new HBaseAdmin(hBaseConfig)
+
+    println("Checking table exists for  HBase config. Tablename=" + tableName)
+    if (admin == null) println("oh! oh!")
+    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
+    println(HBaseTableInputFormat.NUM_REGION_SPLITS + "=" + hBaseConfig.get(HBaseTableInputFormat.NUM_REGION_SPLITS))
+
     if (!admin.isTableAvailable(tableName)) {
       throw new RuntimeException("Table does not exist:" + tableName)
     }
