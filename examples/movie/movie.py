@@ -23,7 +23,7 @@ ia.connect()
 #loggers.set_http()
 
 print("server ping")
-server.ping()
+ia.server.ping()
 
 print("define csv file")
 csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
