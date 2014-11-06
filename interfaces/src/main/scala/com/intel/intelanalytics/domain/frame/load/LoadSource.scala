@@ -56,8 +56,8 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
   if (source_type == "frame" || source_type == "file" || source_type == "linefile") {
     require(data == None)
   }
-  if (source_type == strings) {
-    require (data != None)
+  if (source_type == "strings") {
+    require(data != None)
   }
 
   /**
