@@ -256,6 +256,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphNoArgsFormat = jsonFormat1(GraphNoArgs)
 
+  implicit val graphElementIDNameFormat = jsonFormat2(ElementIDName)
+  implicit val graphElementIDNamesFormat = jsonFormat1(ElementIDNames)
+
   // graph loading formats for specifying graphbuilder and graphload rules
 
   implicit val valueFormat = jsonFormat2(ValueRule)
@@ -272,6 +275,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addEdgesFormat = jsonFormat6(AddEdges)
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVertexRows)
+
+  implicit val exportGraphFormat = jsonFormat2(ExportGraph)
 
   implicit object UnitReturnJsonFormat extends RootJsonFormat[UnitReturn] {
     override def write(obj: UnitReturn): JsValue = {
@@ -382,7 +387,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   }
 
   implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat11(Graph)
+    implicit val graphFormatOriginal = jsonFormat12(Graph)
 
     override def read(value: JsValue): Graph = {
       graphFormatOriginal.read(value)

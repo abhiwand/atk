@@ -1004,7 +1004,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         return self._backend.join(self, right, left_on, right_on, how)
 
     @api
-    def sort(self, columns, ascending=None):
+    def sort(self, columns, ascending=True):
         """
         Sort a frame.
 
