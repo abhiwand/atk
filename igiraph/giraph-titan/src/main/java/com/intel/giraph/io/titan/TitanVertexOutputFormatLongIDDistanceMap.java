@@ -55,12 +55,8 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTE
 public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
     V extends DistanceMapWritable, E extends NullWritable>
     extends TextVertexOutputFormat<I, V, E> {
-    /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
 
+    private static final Logger LOG = Logger.getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
 
     /**
      * set up Titan based on users' configuration

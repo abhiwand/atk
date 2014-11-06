@@ -102,12 +102,20 @@ intel.analytics {
 
           #Examples of other useful properties to edit for performance tuning:
 
-          //spark.akka.frameSize=10000
+          # Increased Akka frame size from default of 10MB to 100MB to allow tasks to send large results to Spark driver
+          # (e.g., using collect() on large datasets)
+          spark.akka.frameSize=100
+
           //spark.akka.retry.wait=30000
           //spark.akka.timeout=200
           //spark.akka.timeout=30000
 
-          //spark.shuffle.consolidateFiles=true
+          spark.shuffle.consolidateFiles=true
+
+          # Enabling RDD compression to save space (might increase CPU cycles)
+          # Snappy compression is more efficient
+          spark.rdd.compress=true
+          spark.io.compression.codec=org.apache.spark.io.SnappyCompressionCodec
 
           //spark.storage.blockManagerHeartBeatMs=300000
           //spark.storage.blockManagerSlaveTimeoutMs=300000
@@ -133,27 +141,71 @@ intel.analytics {
     titan {
       load {
         # documentation for these settings is available on Titan website
+        # http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html
         storage {
-          //backend = "hbase"
-          #Performance tuning parameters:
-          //batch-loading = "true"
-          //buffer-size = 2048
-          //attempt-wait = 300
-          //lock-wait-time = 400
-          //lock-retries = 15
-          //idauthority-retries = 30
-          //read-attempts = 6
-          // Pre-split settngs for large datasets
-          // region-count = 100
-          // short-cf-names = "true"
+          backend = "hbase"
+          # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
+          port = "2181"
 
+          # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
+          batch-loading = true
+
+          # Size of the batch in which mutations are persisted
+          buffer-size = 2048
+
+          lock {
+            #Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend
+            wait-time = 400
+
+            #Number of times the system attempts to acquire a lock before giving up and throwing an exception
+            retries = 15
+          }
+
+          hbase {
+            # Pre-split settngs for large datasets
+            // region-count = 100
+            //compression-algorithm = "SNAPPY"
+          }
+
+          cassandra {
+            # Cassandra configuration options
+          }
         }
 
-        //autotype = "none"
-
         ids {
-          //block-size = 300000
-          //renew-timeout = 150000
+          #Globally reserve graph element IDs in chunks of this size. Setting this too low will make commits
+          #frequently block on slow reservation requests. Setting it too high will result in IDs wasted when a
+          #graph instance shuts down with reserved but mostly-unused blocks.
+          block-size = 300000
+
+          #Number of partition block to allocate for placement of vertices
+          //num-partitions = 10
+
+          #The number of milliseconds that the Titan id pool manager will wait before giving up on allocating a new block of ids
+          renew-timeout = 150000
+
+          #When true, vertices and edges are assigned IDs immediately upon creation. When false, IDs are assigned
+          #only when the transaction commits. Must be disabled for graph partitioning to work.
+          flush = true
+
+          authority {
+            #This setting helps separate Titan instances sharing a single graph storage
+            #backend avoid contention when reserving ID blocks, increasing overall throughput.
+            # The options available are:
+            #NONE = Default in Titan
+            #LOCAL_MANUAL = Expert feature: user manually assigns each Titan instance a unique conflict avoidance tag in its local graph configuration
+            #GLOBAL_MANUAL = User assigns a tag to each Titan instance. The tags should be globally unique for optimal performance,
+            #                but duplicates will not compromise correctness
+            #GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations.
+            conflict-avoidance-mode = "GLOBAL_AUTO"
+
+            #The number of milliseconds the system waits for an ID block reservation to be acknowledged by the storage backend
+            wait-time = 300
+
+            # Number of times the system attempts ID block reservations with random conflict avoidance tags
+            # before giving up and throwing an exception
+            //randomized-conflict-avoidance-retries = 10
+          }
         }
       }
 

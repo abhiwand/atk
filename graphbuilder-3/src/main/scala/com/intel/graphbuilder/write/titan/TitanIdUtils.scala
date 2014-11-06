@@ -37,6 +37,6 @@ object TitanIdUtils {
    * @return its Titan-assigned ID.
    */
   def titanId(blueprintsElement: blueprints.Element): Long = {
-    blueprintsElement.asInstanceOf[TitanElement].getID
+    blueprintsElement.asInstanceOf[TitanElement].getLongId
   }
 }

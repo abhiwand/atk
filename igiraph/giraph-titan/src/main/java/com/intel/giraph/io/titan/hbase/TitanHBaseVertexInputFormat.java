@@ -22,134 +22,65 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
+import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Abstract class that uses HBase TableInputFormat and its Scan object to
- * instantiate vertices from an HBase table.
- *
- * Subclasses can configure TableInputFormat by using conf.set
+ * Abstract class that uses TitanHBaseInputFormat to read Titan/Hadoop (i.e., Faunus) vertices from HBase.
+ * <p/>
+ * Subclasses can configure TitanHBaseInputFormat by using conf.set
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
  */
 public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, V extends Writable, E extends Writable>
-    extends VertexInputFormat<I, V, E> {
+        extends VertexInputFormat<I, V, E> {
+
+    protected static final TitanHBaseInputFormat INPUT_FORMAT = new TitanHBaseInputFormat();
+    protected static TitanHBaseVertexBuilder vertexBuilder = null;
+
 
     /**
-     * use HBase table input format
-     */
-    protected static final TableInputFormat INPUT_FORMAT = new TableInputFormat();
-
-    /**
-     * Create RecordReader to read HBase row-key, result records.
-     * Subclasses need to implement nextVertex() and getCurrentVertex()
+     * Check that input configuration is valid.
      *
-     * @param <I> Vertex index value
-     * @param <V> Vertex value
-     * @param <E> Edge value
+     * @param conf Configuration
      */
-    public abstract static class HBaseVertexReader<I extends WritableComparable, V extends Writable, E extends Writable>
-        extends VertexReader<I, V, E> {
-
-        /**
-         * Reader instance
-         */
-        private RecordReader<ImmutableBytesWritable, Result> reader;
-        /**
-         * Context passed to initialize
-         */
-        private TaskAttemptContext context;
-
-        /**
-         * Create the hbase record reader. Override this to use a different
-         * underlying record reader (useful for testing).
-         *
-         * @param inputSplit the split to read
-         * @param context    the context passed to initialize
-         * @return the record reader to be used
-         * @throws IOException          exception that can be thrown during creation
-         * @throws InterruptedException exception that can be thrown during
-         *                              creation
-         */
-        protected RecordReader<ImmutableBytesWritable, Result>
-        createHBaseRecordReader(InputSplit inputSplit, TaskAttemptContext context)
-            throws IOException, InterruptedException {
-            INPUT_FORMAT.setConf(context.getConfiguration());
-            return INPUT_FORMAT.createRecordReader(inputSplit, context);
-        }
-
-        /**
-         * initialize
-         *
-         * @param inputSplit Input split to be used for reading vertices.
-         * @param context    Context from the task.
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-            InterruptedException {
-            reader = createHBaseRecordReader(inputSplit, context);
-            reader.initialize(inputSplit, context);
-            this.context = context;
-        }
-
-        /**
-         * close
-         *
-         * @throws IOException
-         */
-        public void close() throws IOException {
-            reader.close();
-        }
-
-        /**
-         * getProgress
-         *
-         * @return progress
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        public float getProgress() throws IOException, InterruptedException {
-            return reader.getProgress();
-        }
-
-        /**
-         * getRecordReader
-         *
-         * @return Record reader to be used for reading.
-         */
-        protected RecordReader<ImmutableBytesWritable, Result> getRecordReader() {
-            return reader;
-        }
-
-        /**
-         * getContext
-         *
-         * @return Context passed to initialize.
-         */
-        protected TaskAttemptContext getContext() {
-            return context;
-        }
+    public void checkInputSpecs(Configuration conf) {
 
     }
 
     /**
-     * getSplits from TableInputFormat
+     * Set up Titan/HBase configuration for Giraph
+     *
+     * @param conf :Giraph configuration
+     */
+    @Override
+    public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
+        super.setConf(conf);
+        GiraphTitanUtils.sanityCheckInputParameters(conf);
+        vertexBuilder = new TitanHBaseVertexBuilder(conf);
+    }
+
+    /**
+     * Get input splits from Titan/HBase input format
      *
      * @param context           task context
      * @param minSplitCountHint minimal split count
@@ -159,8 +90,100 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
      */
     @Override
     public List<InputSplit> getSplits(JobContext context, int minSplitCountHint) throws IOException,
-        InterruptedException {
-        INPUT_FORMAT.setConf(getConf());
+            InterruptedException {
+        Configuration hadoopConfig = getConf();
+        GiraphToTitanGraphFactory.addFaunusInputConfiguration(hadoopConfig);
+        INPUT_FORMAT.setConf(hadoopConfig);
         return INPUT_FORMAT.getSplits(context);
     }
+
+    /**
+     * Create RecordReader to read Faunus vertices from HBase
+     * Subclasses need to implement nextVertex() and getCurrentVertex()
+     *
+     * @param <I> Vertex index value
+     * @param <V> Vertex value
+     * @param <E> Edge value
+     */
+    public static abstract class TitanHBaseVertexReader<I extends WritableComparable, V extends Writable, E extends Writable>
+            extends VertexReader<I, V, E> {
+
+        private final RecordReader<NullWritable, FaunusVertex> recordReader;
+        private TaskAttemptContext context;
+        private static final Logger LOG = Logger.getLogger(TitanHBaseVertexReader.class);
+
+        /**
+         * Sets the Titan/HBase TableInputFormat and creates a record reader.
+         *
+         * @param split   InputSplit
+         * @param context Context
+         * @throws IOException
+         */
+        public TitanHBaseVertexReader(InputSplit split, TaskAttemptContext context)
+                throws IOException {
+            GiraphToTitanGraphFactory.addFaunusInputConfiguration(context.getConfiguration());
+            INPUT_FORMAT.setConf(context.getConfiguration());
+            try {
+                this.recordReader = INPUT_FORMAT.createRecordReader(split, context);
+            } catch (InterruptedException e) {
+                LOG.error("Interruption while creating record reader for Titan/HBase", e);
+                throw new IOException(e);
+            }
+        }
+
+        /**
+         * Initialize the record reader
+         *
+         * @param inputSplit Input split to be used for reading vertices.
+         * @param context    Context from the task.
+         * @throws IOException
+         * @throws InterruptedException
+         */
+        public void initialize(InputSplit inputSplit,
+                               TaskAttemptContext context)
+                throws IOException, InterruptedException {
+            this.recordReader.initialize(inputSplit, context);
+            this.context = context;
+        }
+
+        /**
+         * Get progress of Titan/HBase record reader
+         *
+         * @return Progress of record reader
+         * @throws IOException
+         * @throws InterruptedException
+         */
+        public float getProgress() throws IOException, InterruptedException {
+            return this.recordReader.getProgress();
+        }
+
+        /**
+         * Get Titan/HBase record reader
+         *
+         * @return Record recordReader to be used for reading.
+         */
+        protected RecordReader<NullWritable, FaunusVertex> getRecordReader() {
+            return this.recordReader;
+        }
+
+        /**
+         * Get task context
+         *
+         * @return Context passed to initialize.
+         */
+        protected TaskAttemptContext getContext() {
+            return this.context;
+        }
+
+        /**
+         * Close the Titan/HBase record reader
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.recordReader.close();
+        }
+
+    }
+
 }

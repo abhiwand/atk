@@ -23,12 +23,17 @@
 
 package com.intel.graphbuilder.graph.titan
 
-import com.intel.graphbuilder.graph.GraphConnector
-import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import java.io.File
-import org.apache.commons.configuration.{ PropertiesConfiguration, Configuration }
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+
+import com.intel.graphbuilder.graph.GraphConnector
+import com.thinkaurelius.titan.core.TitanGraph
+import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+import com.tinkerpop.blueprints.Graph
+import org.apache.commons.configuration.{ Configuration, PropertiesConfiguration }
+
+import scala.collection.JavaConversions._
 
 /**
  * Get a connection to Titan.
@@ -52,8 +57,55 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
    * Returns a StandardTitanGraph which is a superset of TitanGraph. StandardTitanGraph implements additional
    * methods required to load graphs from Titan.
    */
-  override def connect(): StandardTitanGraph = {
-    new StandardTitanGraph(new GraphDatabaseConfiguration(config))
+  override def connect(): TitanGraph = {
+    new StandardTitanGraph(new GraphDatabaseConfiguration(new CommonsConfiguration(config)))
   }
 
+}
+
+object TitanGraphConnector {
+
+  /**
+   * Get table name configuration key based on the storage backend.
+   *
+   * Titan uses different options for specifying the tablename based on the backend. For example,
+   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
+   *
+   * @param config Titan configuration
+   * @return Table name configuration key based on the storage backend
+   */
+  def getTitanTableNameKey(config: Configuration): String = {
+    val storageBackend = config.getString("storage.backend")
+    getTitanTableNameKey(storageBackend)
+  }
+
+  /**
+   * Get table name configuration key based on the storage backend.
+   *
+   * Titan uses different options for specifying the tablename based on the backend. For example,
+   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
+   *
+   * @param storageBackend Name of Titan storage backend. For example (hbase, or cassandra)
+   * @return Table name configuration key based on the storage backend
+   */
+  def getTitanTableNameKey(storageBackend: String): String = {
+    storageBackend.toLowerCase match {
+      case "hbase" => "storage.hbase.table"
+      case "cassandra" => "storage.cassandra.keyspace"
+      case _ => throw new RuntimeException("Unsupported storage backend for Titan. Please set storage.backend to hbase or cassandra")
+    }
+  }
+
+  /**
+   * Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+
+   *
+   * "Error:(96, 18) ambiguous reference to overloaded definition, both method getVertices in
+   * trait TitanGraphTransaction of type (x$1: <repeated...>[Long])java.util.Map[Long,com.thinkaurelius.titan.core.TitanVertex]
+   * and  method getVertices in trait Graph of type ()Iterable[com.tinkerpop.blueprints.Vertex]
+   * match expected type ?
+   */
+  def getVertices(titanGraph: Graph): Iterable[com.tinkerpop.blueprints.Vertex] = {
+    val vertices: Iterable[com.tinkerpop.blueprints.Vertex] = titanGraph.getVertices
+    vertices
+  }
 }

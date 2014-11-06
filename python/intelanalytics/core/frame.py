@@ -785,7 +785,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             * max
             * mean
             * min
-            * :term:`quantile`
             * stdev
             * sum
             * :term:`variance <Bias-variance tradeoff>`
@@ -1315,6 +1314,33 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
             raise error
 
     def drop_vertices(self, predicate):
+        """
+        Drop vertex rows.
+
+        Remove all vertex rows from the frame which satisfy the predicate.
+
+        Parameters
+        ----------
+        predicate : function
+            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
+
+        Examples
+        --------
+        For this example, my_frame is a Frame object accessing a frame with lots of data for the
+        attributes of *lions*, *tigers*, and *ligers*.
+        Get rid of the *lions* and *tigers*::
+
+            my_frame.drop_rows(lambda row: row.animal_type == "lion" or
+                row.animal_type == "tiger")
+
+        Now the frame only has information about *ligers*.
+
+        More information on row functions can be found at :doc:`ds_apir`
+
+
+        .. versionchanged:: 0.9
+
+        """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
     @api
