@@ -35,7 +35,7 @@ class server_defaults:
                'Authorization': "test_api_key_1"}
 
 class upload_defaults:
-    rows = 10
+    rows = 10000
 
 class polling_defaults:
     start_interval_secs = 1
