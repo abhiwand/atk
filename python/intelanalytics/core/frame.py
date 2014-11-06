@@ -1004,6 +1004,50 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         return self._backend.join(self, right, left_on, right_on, how)
 
     @api
+    def sort(self, columns, ascending=None):
+        """
+        Sort a frame.
+
+        Sort a frame by column values either ascending or descending.
+
+        Parameters
+        ----------
+        columns: str | list of str | list of tuples
+            Either a column name, a list of column names, or a list of tuples where each tuple is a name and an ascending bool value
+        ascending: bool
+            True for ascending, False for descending
+
+        Examples
+        --------
+        Sort a single column::
+
+            # sort a single column ascending
+            frame.sort('column_name')
+
+            # sort a single column ascending
+            frame.sort('column_name', True)
+
+            # sort a single column descending
+            frame.sort('column_name', False)
+        
+        Sort multiple columns::
+
+            # sort multiple columns ascending
+            frame.sort(['col1', 'col2'])
+
+            # sort multiple columns ascending
+            frame.sort(['col1', 'col2'], True)
+
+            # sort multiple columns descending
+            frame.sort(['col1', 'col2'], False)
+
+            # sort multiple columns: 'col1' ascending and 'col2' descending
+            frame.sort([ ('col1', True), ('col2', False) ])
+
+        """
+        return self._backend.sort(self, columns_and_ascending, ascending)
+
+    @api
     def take(self, n, offset=0, columns=None):
         """
         Get data subset.

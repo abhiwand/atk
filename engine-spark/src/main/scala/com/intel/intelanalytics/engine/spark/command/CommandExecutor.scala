@@ -89,14 +89,14 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
       withContext("ce.execute") {
         withContext(command.name) {
 
-          val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
+          def sparkContextFunc(): SparkContext = createContextForCommand(command, arguments, user, cmd)
 
           val cmdFuture = future {
             withCommand(cmd) {
               try {
                 val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = commands)
+                  sparkContextFunc = sparkContextFunc, commandStorage = commands)
 
                 executeCommand(command, arguments, invocation)
               }
