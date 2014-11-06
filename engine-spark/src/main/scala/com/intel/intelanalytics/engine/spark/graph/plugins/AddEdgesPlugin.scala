@@ -61,7 +61,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Add edges to a graph",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Add edges to a graph.",
     extendedSummary = Some("""
     Add edges to a graph.  Includes appending to a list of existing edges.
 
@@ -81,10 +81,11 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
 
     Examples
     --------
-                             |graph = ia.Graph()
-                             |graph.define_edge_type('ratings', 'users', 'movies', directed=True)
-                             |graph.add_edges(frame, 'user_id', 'movie_id', ['rating'], create_missing_vertices=True)
-                           """)))
+    Create a frame and add edges::
+
+        graph = ia.Graph()
+        graph.define_edge_type('ratings', 'users', 'movies', directed=True)
+        graph.add_edges(frame, 'user_id', 'movie_id', ['rating'], create_missing_vertices=True)""")))
 
   /**
    * Number of Spark jobs that get created by running this command
@@ -146,7 +147,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
       addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForSourceVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids

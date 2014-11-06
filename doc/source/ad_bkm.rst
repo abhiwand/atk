@@ -5,6 +5,13 @@ Best Known Methods (Admin)
 .. contents:: Table of Contents
     :local:
 
+.. toctree::
+    :hidden:
+
+    ad_gitune
+    ad_hbtune
+    ad_partit
+
 ---
 Yum
 ---
@@ -21,39 +28,10 @@ or::
 Configuration information
 -------------------------
 
-Partitioning
-============
+.. include:: ad_gitune.rst
+.. include:: ad_hbtune.rst
+.. include:: ad_partit.rst
 
-Rules of thumb:
-
-*   Choose a reasonable number of partitions:
-
-    *   No smaller than 100, no larger than 10,000 (large cluster)
-
-    *   Lower bound:
-
-        *   At least 2x number of cores in your cluster
-
-        *   Too few partitions results in
-
-            *   Less concurrency
-            *   More susceptible to data skew
-            *   Increased memory pressure
-
-    *   Upper bound:
-      
-        *   Ensure your tasks take at least 100ms (if they are going faster, then you are probably
-            spending more time scheduling tasks than executing them)
-
-   *   Too many partitions results in
-
-       *   Time wasted spent scheduling
-       *   If you choose a number way too high then more time will be spent scheduling than executing
-
-   *   10,000 would be way too big for a 4 node cluster
-
-.. _ad_bkm_ide:
-    
 -----
 Spark
 -----
