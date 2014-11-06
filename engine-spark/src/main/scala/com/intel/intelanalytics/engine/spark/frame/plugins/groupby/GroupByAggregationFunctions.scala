@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import org.apache.spark.rdd.RDD
+import scala.Product
 import spray.json.JsObject
 
 /**
@@ -40,14 +41,14 @@ import spray.json.JsObject
  */
 object GroupByAggregationFunctions {
 
-  def aggregation(groupedRDD: RDD[(String, Iterable[Array[Any]])],
+  def aggregation(groupedRDD: RDD[(Seq[Any], Iterable[Array[Any]])],
                   args_pair: Seq[(Int, String)],
                   schema: List[(String, DataTypes.DataType)],
                   groupedColumnSchema: Array[DataTypes.DataType],
                   arguments: FrameGroupByColumn): LegacyFrameRDD = {
 
     val resultRdd = groupedRDD.map(elem =>
-      convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregationFunctions(elem._2.toSeq, args_pair, schema))
+      (elem._1 ++ aggregationFunctions(elem._2.toSeq, args_pair, schema)).toArray)
 
     val aggregated_column_schema = for {
       i <- args_pair
@@ -67,13 +68,6 @@ object GroupByAggregationFunctions {
     val new_schema = new_column_names.zip(new_data_types)
 
     new LegacyFrameRDD(new Schema(new_schema), resultRdd)
-  }
-
-  private def convertGroupBasedOnSchema(groupedColumnSchema: Array[DataTypes.DataType], data: String): Array[Any] = {
-    if (data != null && data != "")
-      DataTypes.parseMany(groupedColumnSchema)(data.split("\0").asInstanceOf[Array[Any]])
-    else
-      Array[Any]()
   }
 
   private def aggregationFunctions(elem: Seq[Array[Any]],
@@ -96,7 +90,7 @@ object GroupByAggregationFunctions {
       case ((j: Int, "MIN"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).min
       case ((j: Int, "AVG"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum * 1.0 / elem.length
       case ((j: Int, "AVG"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum * 1.0 / elem.length
-      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
+      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum * 1.0 / elem.length
       case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
 
       case ((j: Int, "COUNT"), _) => elem.length
