@@ -1,7 +1,7 @@
 #!/usr/bin/python2.7
 import intelanalytics as ia
 
-ia.connect();
+ia.connect()
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/movie_data_random.csv"
@@ -10,7 +10,7 @@ dataset = r"datasets/movie_data_random.csv"
 schema = [("user_id", ia.int64),
           ("movie_id", ia.int64),
           ("rating", ia.int64),
-          ("splits", ia.str)]
+          ("splits", str)]
 
 csv_file = ia.CsvFile(dataset, schema, skip_header_lines=1)
 
