@@ -81,8 +81,18 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
-  //TODO uncomment when we move the next version of spark
-  //override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
+  override def numberOfJobs(arguments: BeliefPropagationArgs): Int = {
+    // TODO: not sure this is right but it seemed to work with testing
+    //    when max iterations was 1, number of jobs was 11
+    //    when max iterations was 2, number of jobs was 13
+    //    when max iterations was 3, number of jobs was 15
+    //    when max iterations was 4, number of jobs was 17
+    //    when max iterations was 5, number of jobs was 19
+    //    when max iterations was 6, number of jobs was 21
+    9 + (arguments.maxIterations.getOrElse(0) * 2)
+  }
 
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
@@ -144,72 +154,54 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
                            """.stripMargin)))
 
   override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
-
     val start = System.currentTimeMillis()
+    val sparkContext = sparkInvocation.sparkContext
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    // Get the SparkContext as one the input parameters for Driver
-    //TODO change this code to use the sparkContext that was passed in rather than create a new one when we move to the next version of spark
-    sparkInvocation.sparkContext.stop
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
-    //sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer") works without setting this, why?
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val sc = /*sparkInvocation.sparkContext*/ new SparkContext(sparkConf)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    try {
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
+      arguments.priorProperty,
+      arguments.maxIterations,
+      stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
+      arguments.convergenceThreshold,
+      arguments.edgeWeightProperty)
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    val dummyOutEdges: RDD[GBEdge] = sparkContext.parallelize(List.empty[GBEdge])
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    // write out the graph
 
-      val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
-        arguments.priorProperty,
-        arguments.maxIterations,
-        stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
-        arguments.convergenceThreshold,
-        arguments.edgeWeightProperty)
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
 
-      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
-
-      // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
-
-      val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
-
-      // write out the graph
-
-      // Create the GraphBuilder object
-      // Setting true to append for updating existing graph
-      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-      // Build the graph using spark
-      gb.buildGraphWithSpark(outVertices, dummyOutEdges)
-
-      // Get the execution time and print it
-      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-      BeliefPropagationResult(log, time)
-
-    }
-
-    finally {
-      sc.stop
-    }
+    // Get the execution time and print it
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    BeliefPropagationResult(log, time)
 
   }
 

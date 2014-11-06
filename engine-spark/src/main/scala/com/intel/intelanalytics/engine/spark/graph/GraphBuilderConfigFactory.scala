@@ -54,7 +54,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
-      getTitanConfiguration(graph.name),
+      GraphBuilderConfigFactory.getTitanConfiguration(graph.name),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,
@@ -72,22 +72,6 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
     val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
 
     new InputSchema(columns)
-  }
-
-  /**
-   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
-   * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
-   * @param graphName Name of the graph to be written to.
-   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
-   */
-  private def getTitanConfiguration(graphName: String): SerializableBaseConfiguration = {
-
-    // load settings from titan.conf file...
-    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
-
-    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
-    titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
-    titanConfiguration
   }
 
   /**
@@ -157,4 +141,22 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
     edgeRules map getGBEdgeRule
   }
 
+}
+
+object GraphBuilderConfigFactory {
+  /**
+   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
+   * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
+   * @param graphName Name of the graph to be written to.
+   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
+   */
+  def getTitanConfiguration(graphName: String): SerializableBaseConfiguration = {
+
+    // load settings from titan.conf file...
+    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
+
+    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
+    titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration
+  }
 }

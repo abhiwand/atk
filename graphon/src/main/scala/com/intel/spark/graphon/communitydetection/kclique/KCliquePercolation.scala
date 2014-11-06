@@ -80,6 +80,8 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
 
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
     val start = System.currentTimeMillis()

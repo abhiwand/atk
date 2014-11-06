@@ -99,6 +99,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph:titan/ml/graphx_pagerank"
 
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
     extendedSummary = Some("""
                              |    ** Experimental Feature **
@@ -161,62 +163,51 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(sparkInvocation: SparkInvocation, arguments: PageRankArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): PageRankResult = {
 
-    sparkInvocation.sparkContext.stop
+    val sparkContext = sparkInvocation.sparkContext
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    val sc = new SparkContext(sparkConf)
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    try {
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
+      arguments.input_edge_labels,
+      arguments.max_iterations,
+      arguments.reset_probability,
+      arguments.convergence_tolerance)
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    // Call PageRankRunner to kick off PageRank computation on RDDs
+    val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    val newGraphName = arguments.output_graph_name
+    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
+    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+      config.getInt("default-timeout") seconds)
 
-      val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
-        arguments.input_edge_labels,
-        arguments.max_iterations,
-        arguments.reset_probability,
-        arguments.convergence_tolerance)
+    // create titan config copy for newGraph write-back
+    val newTitanConfig = new SerializableBaseConfiguration()
+    newTitanConfig.copy(titanConfig)
+    newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
+    writeToTitan(newTitanConfig, outVertices, outEdges)
 
-      // Call PageRankRunner to kick off PageRank computation on RDDs
-      val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
-
-      val newGraphName = arguments.output_graph_name
-      val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-        config.getInt("default-timeout") seconds)
-
-      // create titan config copy for newGraph write-back
-      val newTitanConfig = new SerializableBaseConfiguration()
-      newTitanConfig.copy(titanConfig)
-      newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
-      writeToTitan(newTitanConfig, outVertices, outEdges)
-
-      PageRankResult(newGraphName)
-    }
-
-    finally {
-      sc.stop
-    }
+    PageRankResult(newGraphName)
   }
 
   // Helper function to write rdds back to Titan

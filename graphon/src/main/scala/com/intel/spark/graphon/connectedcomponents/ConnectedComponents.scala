@@ -81,6 +81,8 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def name: String = "graph:titan/ml/graphx_connected_components"
 
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""
                              |    ** Experimental Feature **
@@ -125,65 +127,54 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def execute(sparkInvocation: SparkInvocation, arguments: ConnectedComponentsArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
 
-    sparkInvocation.sparkContext.stop
+    val sparkContext = sparkInvocation.sparkContext
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    val sc = new SparkContext(sparkConf)
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    try {
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    val gbVertices = titanReaderRDD.filterVertices()
+    val gbEdges = titanReaderRDD.filterEdges()
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
+    val inputEdges = gbEdges
+      .map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    // Call ConnectedComponentsGraphXDefault to kick off ConnectedComponents computation on RDDs
+    val intermediateVertices = ConnectedComponentsGraphXDefault.run(inputVertices, inputEdges)
+    val connectedComponentRDD = intermediateVertices.map({
+      case (vertexId, componentId) => (vertexId, Property(arguments.output_property, componentId))
+    })
 
-      val gbVertices = titanReaderRDD.filterVertices()
-      val gbEdges = titanReaderRDD.filterEdges()
+    val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
-      val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
-      val inputEdges = gbEdges
-        .map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
+    val newGraphName = arguments.output_graph_name
+    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
+    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+      config.getInt("default-timeout") seconds)
 
-      // Call ConnectedComponentsGraphXDefault to kick off ConnectedComponents computation on RDDs
-      val intermediateVertices = ConnectedComponentsGraphXDefault.run(inputVertices, inputEdges)
-      val connectedComponentRDD = intermediateVertices.map({
-        case (vertexId, componentId) => (vertexId, Property(arguments.output_property, componentId))
-      })
+    // create titan config copy for newGraph write-back
+    val newTitanConfig = new SerializableBaseConfiguration()
+    newTitanConfig.copy(titanConfig)
+    newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
+    writeToTitan(newTitanConfig, outVertices, gbEdges)
 
-      val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
-
-      val newGraphName = arguments.output_graph_name
-      val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-        config.getInt("default-timeout") seconds)
-
-      // create titan config copy for newGraph write-back
-      val newTitanConfig = new SerializableBaseConfiguration()
-      newTitanConfig.copy(titanConfig)
-      newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
-      writeToTitan(newTitanConfig, outVertices, gbEdges)
-
-      ConnectedComponentsResult(newGraphName)
-    }
-
-    finally {
-      sc.stop
-    }
+    ConnectedComponentsResult(newGraphName)
   }
 
   // Helper function to write rdds back to Titan
