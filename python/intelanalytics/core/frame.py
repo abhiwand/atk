@@ -1045,7 +1045,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             frame.sort([ ('col1', True), ('col2', False) ])
 
         """
-        return self._backend.sort(self, columns_and_ascending, ascending)
+        return self._backend.sort(self, columns, ascending)
 
     @api
     def take(self, n, offset=0, columns=None):
