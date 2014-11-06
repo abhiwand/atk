@@ -7,11 +7,11 @@ ia.connect();
 dataset = r"datasets/lbp_edge.csv"
 
 #csv schema definition
-schema = [("source", int64),
+schema = [("source", ia.int64),
           ("value", str),
           ("vertex_type", str),
-          ("target", int64),
-          ("weight", float64)]
+          ("target", ia.int64),
+          ("weight", ia.float64)]
 
 csv = ia.CsvFile(dataset, schema, skip_header_lines=1)
 

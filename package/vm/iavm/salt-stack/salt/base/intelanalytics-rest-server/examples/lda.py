@@ -10,7 +10,7 @@ dataset = r"datasets/test_lda.csv"
 schema = [("doc", str),
           ("vertex_type", str),
           ("word", str),
-          ("word_count", int64)]
+          ("word_count", ia.int64)]
 
 csv_file = ia.CsvFile(dataset, schema, skip_header_lines=1)
 
