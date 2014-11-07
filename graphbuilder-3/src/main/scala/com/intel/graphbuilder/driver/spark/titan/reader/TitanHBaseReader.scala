@@ -1,7 +1,5 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import java.lang.reflect.Method
-
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -9,9 +7,8 @@ import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat
-import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
-import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil }
-import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

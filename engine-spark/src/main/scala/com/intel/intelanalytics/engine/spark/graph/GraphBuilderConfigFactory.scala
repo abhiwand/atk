@@ -24,16 +24,15 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
-import com.intel.graphbuilder.parser.rule.{ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule}
-import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
+import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, PropertyRule, ValueRule, VertexRule, _}
-import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad}
+import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.typesafe.config.Config
-
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -70,11 +69,10 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType)}
+    val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
 
     new InputSchema(columns)
   }
-
 
   /**
    * Converts com.intel.intelanalytics.domain.graphconstruction.Value into the GraphBuilder3 consumable
@@ -192,7 +190,6 @@ object GraphBuilderConfigFactory {
     val titanGraphNameKey = getTitanGraphNameKey(titanConfig)
     titanConfig.getString(titanGraphNameKey)
   }
-
 
   /**
    * Get graph name configuration key based on the storage backend.

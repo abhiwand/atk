@@ -216,7 +216,6 @@ class ConjugateGradientDescent
       "Please input one property name for bias and one property name for results when both vector_value " +
         "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
@@ -235,7 +234,7 @@ class ConjugateGradientDescent
     GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.min_value)
     GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.num_iters)
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))

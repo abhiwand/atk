@@ -4,7 +4,7 @@ import java.io.File
 
 import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{TestingTitan, TestingSparkContextWordSpec, DirectoryUtils, LogUtils}
+import com.intel.testutils.{ TestingTitan, TestingSparkContextWordSpec, DirectoryUtils, LogUtils }
 import com.thinkaurelius.titan.core.util.TitanCleanup
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.Graph
