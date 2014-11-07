@@ -12,7 +12,7 @@ setup(
     author_email="bleh@intel.com",
 
     # Packages
-    packages=["intelanalytics","intelanalytics/core","intelanalytics/rest","intelanalytics/tests", "intelanalytics/doc"],
+    packages=["intelanalytics","intelanalytics/core","intelanalytics/rest","intelanalytics/tests"],
 
     # Include additional files into the package
     include_package_data=True,
