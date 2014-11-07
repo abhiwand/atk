@@ -23,7 +23,7 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
   "Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
       val hBaseRDD = sparkContext.parallelize(Seq.empty[(NullWritable, FaunusVertex)])
-      val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
+      val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD)
       val graphElements = titanReaderRDD.collect()
       graphElements.length shouldBe 0
     }
@@ -33,7 +33,7 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
           (NullWritable.get(), plutoFaunusVertex),
           (NullWritable.get(), seaFaunusVertex)))
 
-      val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
+      val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD)
       val vertexRDD = titanReaderRDD.filterVertices()
       val edgeRDD = titanReaderRDD.filterEdges()
 

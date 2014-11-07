@@ -26,7 +26,7 @@ object GiraphConfigurationUtil {
    * @param key the starting point in the Config object. Defaults to "hadoop".
    * @return a populated Hadoop Configuration object.
    */
-  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") : org.apache.hadoop.conf.Configuration = {
+  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop"): org.apache.hadoop.conf.Configuration = {
     require(config != null, "Config cannot be null")
     require(key != null, "Key cannot be null")
     val hConf = new Configuration()
@@ -40,12 +40,12 @@ object GiraphConfigurationUtil {
 
   /**
    * Update the Hadoop configuration object with the Titan configuration
-   * 
+   *
    * @param hConf the Hadoop configuration object to update
    * @param config the Config object from which to copy Titan properties to the Hadoop Configuration
    * @param graph the graph object containing the Titan graph name
    */
-  def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph) : Unit = {
+  def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph): Unit = {
 
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
