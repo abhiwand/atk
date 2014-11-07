@@ -27,7 +27,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
@@ -134,10 +134,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // create titanConfig
-    val titanConfig = SparkEngineConfig.createTitanConfiguration(config, "titan.load")
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
-    titanConfig.setProperty(titanTableNameKey, iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
@@ -158,16 +155,11 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
-    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
     val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = new SerializableBaseConfiguration()
-    subgraphTitanConfig.copy(titanConfig)
-
-    val subgraphTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
-    subgraphTitanConfig.setProperty(subgraphTableNameKey, iatSubgraphName)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 

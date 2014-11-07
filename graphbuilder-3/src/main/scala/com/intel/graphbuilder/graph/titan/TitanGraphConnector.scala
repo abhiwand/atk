@@ -26,6 +26,7 @@ package com.intel.graphbuilder.graph.titan
 import java.io.File
 
 import com.intel.graphbuilder.graph.GraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
@@ -64,37 +65,6 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
 }
 
 object TitanGraphConnector {
-
-  /**
-   * Get table name configuration key based on the storage backend.
-   *
-   * Titan uses different options for specifying the tablename based on the backend. For example,
-   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
-   *
-   * @param config Titan configuration
-   * @return Table name configuration key based on the storage backend
-   */
-  def getTitanTableNameKey(config: Configuration): String = {
-    val storageBackend = config.getString("storage.backend")
-    getTitanTableNameKey(storageBackend)
-  }
-
-  /**
-   * Get table name configuration key based on the storage backend.
-   *
-   * Titan uses different options for specifying the tablename based on the backend. For example,
-   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
-   *
-   * @param storageBackend Name of Titan storage backend. For example (hbase, or cassandra)
-   * @return Table name configuration key based on the storage backend
-   */
-  def getTitanTableNameKey(storageBackend: String): String = {
-    storageBackend.toLowerCase match {
-      case "hbase" => "storage.hbase.table"
-      case "cassandra" => "storage.cassandra.keyspace"
-      case _ => throw new RuntimeException("Unsupported storage backend for Titan. Please set storage.backend to hbase or cassandra")
-    }
-  }
 
   /**
    * Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+

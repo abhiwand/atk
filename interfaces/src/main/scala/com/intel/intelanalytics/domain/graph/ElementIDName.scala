@@ -9,10 +9,10 @@ case class ElementIDNames(elementIDNames: List[ElementIDName]) {
 
 /**
  * Name Value pairing of a graph element and its corresponding id column name
- * @param elementName label of graph element
+ * @param label label of graph element
  * @param idColumnName column name of unique identifier.
  */
-case class ElementIDName(elementName: String, idColumnName: String) {
-  require(!elementName.isEmpty, "element name is required")
+case class ElementIDName(label: String, idColumnName: String) {
+  require(!label.isEmpty, "label is required")
   require(!idColumnName.isEmpty, "idColumnName is required")
 }
