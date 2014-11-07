@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.Naming.Name
 
 case class FrameName(name: String)
 
@@ -41,7 +42,7 @@ object FrameName {
    * @param annotation Optional annotation to add to frame name
    * @return Frame name
    */
-  def generate(annotation: Option[String] = None): String = Naming.generateName(Some("frame_"), annotation)
+  def generate(annotation: Option[String] = None): Name = Naming.generateName(Some("frame_"), annotation)
 }
 import com.intel.intelanalytics.domain.HasMetaData
 
