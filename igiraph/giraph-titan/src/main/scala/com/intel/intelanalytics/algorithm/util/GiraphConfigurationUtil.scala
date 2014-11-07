@@ -62,7 +62,7 @@ object GiraphConfigurationUtil {
   def initializeTitanConfig(hConf: Configuration, titanConf: Map[String, String], graph: Graph) = {
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     val titanStorageBackend = titanConf.get("titan.load.storage.backend").getOrElse("")
-    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanStorageBackend)
+    val titanTableNameKey = TitanGraphConnector.getTitanGraphNameKey(titanStorageBackend)
     set(hConf, "giraph.titan.input.storage.backend", Option[Any](titanStorageBackend))
     set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
     set(hConf, "giraph.titan.input." + titanTableNameKey, Option[Any](iatGraphName))
