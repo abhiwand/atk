@@ -6,7 +6,7 @@ setup(
     name="intelanalytics",
 
     # Version number (initial):
-    version=u"0.9-"+os.environ['BUILD_NUMBER'],
+    version=u"0.9-" + BUILD_NUMBER,
 
     # Application author details:
     author="Intel",

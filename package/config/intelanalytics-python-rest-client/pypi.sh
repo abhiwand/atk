@@ -27,6 +27,8 @@ cp -Rv assets/* intelanalytics/
 
 pushd intelanalytics
 
+sed -i "s/BUILD_NUMBER/\"${BUILD_NUMBER}\"/g" setup.py
+
 python setup.py sdist
 
 popd
