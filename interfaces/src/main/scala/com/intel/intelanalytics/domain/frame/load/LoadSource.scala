@@ -104,7 +104,12 @@ case class LineParser(name: String, arguments: LineParserArguments)
  * @param schema Schema of Row created in file
  * @param skip_rows number of lines to skip in the file
  */
-case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int])
+case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int]) {
+  skip_rows match {
+    case e: Some[Int] => require(skip_rows.get >= 0 && skip_rows.get < 3, "valid values for skip_header_lines are: 0, 1, 2")
+    case _ =>
+  }
+}
 
 /**
  * Schema arguments for the LineParserArguments -
