@@ -409,18 +409,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Automatically generate a name for a frame.
-   *
-   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
-   *
-   * @param annotation Optional annotation to add to frame name
-   * @return Frame name
-   */
-  def generateFrameName(annotation: Option[String] = None, prefix: String = "frame_"): String = {
-    prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
-  }
-
-  /**
    * Provides a clean-up context to create and work on a new frame
    *
    * Takes the template, creates a frame and then hands it to a work function.  If any error occurs during the work

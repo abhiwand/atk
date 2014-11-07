@@ -21,12 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.domain.graph
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
-  FrameName.validate(name)
-  require(description != null, "description must not be null")
-}
-
+/**
+ * Data needed to export a graph.
+ * @param graph reference of the source graph
+ * @param newGraphName name of the new target graph. optional. if not included a name should be generated.
+ */
+case class ExportGraph(graph: GraphReference, newGraphName: Option[String] = None)

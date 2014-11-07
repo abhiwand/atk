@@ -17,7 +17,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory) extends Graph
 
     val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
 
-    val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
+    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
     if (hbaseAdmin.tableExists(tableName)) {
       if (hbaseAdmin.isTableEnabled(tableName)) {
         info(s"disabling hbase table: $tableName")
@@ -36,8 +36,8 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory) extends Graph
   }
 
   override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
-    val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
-    val newTableName: String = GraphName.convertGraphUserNameToBackendName(newName)
+    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    val newTableName: String = GraphBackendName.convertGraphUserNameToBackendName(newName)
     val snapShotName: String = graphName.concat("_SnapShot")
 
     val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
