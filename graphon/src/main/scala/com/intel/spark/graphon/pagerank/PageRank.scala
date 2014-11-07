@@ -31,7 +31,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
 import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -169,14 +169,12 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
     // Titan Settings for input
     val config = configuration
-    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 
@@ -197,14 +195,11 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
     val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = new SerializableBaseConfiguration()
-    newTitanConfig.copy(titanConfig)
-    newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
     writeToTitan(newTitanConfig, outVertices, outEdges)
 
     PageRankResult(newGraphName)

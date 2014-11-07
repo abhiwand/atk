@@ -1,7 +1,5 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import java.lang.reflect.Method
-
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -9,17 +7,19 @@ import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat
-import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
-import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil }
-import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConversions._
 
 /**
  * TitanHBaseReader constants.
  */
 object TitanHBaseReader {
+  val TITAN_HADOOP_PREFIX = "titan.hadoop.input.conf."
   val TITAN_STORAGE_NAMESPACE = GraphDatabaseConfiguration.STORAGE_NS.getName
   val TITAN_STORAGE_HOSTNAME = TITAN_STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_HOSTS.getName
   val TITAN_STORAGE_TABLENAME = TITAN_STORAGE_NAMESPACE + "." + HBaseStoreManager.HBASE_NS.getName + "." + HBaseStoreManager.HBASE_TABLE.getName
@@ -49,7 +49,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
    */
   override def read(): RDD[GraphElement] = {
     val hBaseConfig = createHBaseConfiguration()
-    val tableName = hBaseConfig.get(TableInputFormat.INPUT_TABLE)
+    val tableName = titanConfig.getString(TITAN_STORAGE_TABLENAME)
 
     checkTableExists(hBaseConfig, tableName)
 
@@ -57,7 +57,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       classOf[NullWritable],
       classOf[FaunusVertex])
 
-    new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
+    new TitanHBaseReaderRDD(hBaseRDD)
   }
 
   /**
@@ -66,41 +66,13 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def createHBaseConfiguration(): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = HBaseConfiguration.create()
 
-    val hBaseZookeeperQuorum = titanConfig.getString(TITAN_STORAGE_HOSTNAME)
-    val tableName = titanConfig.getString(TITAN_STORAGE_TABLENAME)
-    val hBaseZookeeperClientPort = titanConfig.getString(TITAN_STORAGE_PORT, HConstants.DEFAULT_ZOOKEPER_CLIENT_PORT.toString)
+    titanConfig.getKeys.foreach {
+      case (titanKey: String) =>
+        val titanHadoopKey = TITAN_HADOOP_PREFIX + titanKey
+        hBaseConfig.set(titanHadoopKey, titanConfig.getProperty(titanKey).toString)
+    }
 
-    // Other options for configuring scan behavior are available. More information available at
-    // http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html
-    hBaseConfig.set(HConstants.ZOOKEEPER_QUORUM, hBaseZookeeperQuorum);
-    hBaseConfig.set(HConstants.ZOOKEEPER_CLIENT_PORT, hBaseZookeeperClientPort);
-    hBaseConfig.set(TableInputFormat.INPUT_TABLE, tableName)
-    configureHBaseScanner(hBaseConfig)
     hBaseConfig
-  }
-
-  /**
-   * Configure HBase scanner to filter for Titan's edge store column family.
-   *
-   * TODO:  consider adding support for scanner optimizations in http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html
-   * @param hBaseConfig HBase configuration
-   */
-  private def configureHBaseScanner(hBaseConfig: org.apache.hadoop.conf.Configuration) = {
-    val scanner: Scan = new Scan
-    val titanColumnFamilyName = com.thinkaurelius.titan.diskstorage.Backend.EDGESTORE_NAME.getBytes()
-    scanner.addFamily(titanColumnFamilyName)
-
-    var converter: Method = null
-    try {
-      converter = classOf[TableMapReduceUtil].getDeclaredMethod("convertScanToString", classOf[Scan])
-      converter.setAccessible(true)
-      hBaseConfig.set(TableInputFormat.SCAN, converter.invoke(null, scanner).asInstanceOf[String])
-    }
-    catch {
-      case e: Exception => {
-        throw new RuntimeException("Unable to create HBase filter for Titan's edge column family", e)
-      }
-    }
   }
 
   /**
@@ -112,7 +84,9 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def checkTableExists(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: String) = {
     val admin = new HBaseAdmin(hBaseConfig)
     if (!admin.isTableAvailable(tableName)) {
+      admin.close()
       throw new RuntimeException("Table does not exist:" + tableName)
     }
+    admin.close()
   }
 }

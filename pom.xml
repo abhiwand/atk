@@ -112,6 +112,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
         <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
+        <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
 
         <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
@@ -815,7 +816,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${dep.reflections}</version>
+            </dependency>
             <!--ENDititan-->
 
             <!--STARTgremlin-groovy -->
