@@ -10,7 +10,7 @@ import org.mockito.Mockito._
 import scala.Some
 import com.intel.intelanalytics.domain.schema.VertexSchema
 
-class ExportFromTitanToParquetGraphITest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
+class ExportFromTitanITest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
   "createVertexFrames" should "vertex frame by label" in {
     val graphs = mock[SparkGraphStorage]
     val vertex1 = GBVertex(1, Property("key", 1), Set(Property("_label", "user")))
@@ -18,7 +18,7 @@ class ExportFromTitanToParquetGraphITest extends TestingSparkContextFlatSpec wit
     val verticesRdd = sparkContext.parallelize(List(vertex1, vertex2))
 
     val graphId = 1
-    ExportFromTitanToParquetGraph.createVertexFrames(graphs, graphId, verticesRdd)
+    ExportFromTitanGraph.createVertexFrames(graphs, graphId, verticesRdd)
 
     verify(graphs).defineVertexType(graphId, VertexSchema("user", None))
     verify(graphs).defineVertexType(graphId, VertexSchema("movie", None))
