@@ -27,52 +27,6 @@
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
-            <plugin>
-                <inherited>true</inherited>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadeTestJar>true</shadeTestJar>
-                            <finalName>${project.artifactId}</finalName>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <shadedClassifierName>${project.artifactId}</shadedClassifierName>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.maven:*</exclude>
-                                    <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>*.html</exclude>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>reference.conf</resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
@@ -87,6 +41,9 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>ititan-core</artifactId>
         </dependency>
+        <!-- END BDA dependencies to our modules -->
+
+        <!-- START Titan dependencies -->
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-berkeleyje</artifactId>
@@ -124,16 +81,20 @@
             <artifactId>titan-hadoop-2</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.mrunit</groupId>
-                    <artifactId>mrunit</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.jboss.netty</groupId>
                     <artifactId>netty</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.thinkaurelius.titan</groupId>
+                    <artifactId>titan-es</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.thinkaurelius.titan</groupId>
+                    <artifactId>titan-cassandra</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
@@ -169,6 +130,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
@@ -221,8 +183,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+        </dependency>
+        <!--END Titan dependencies -->
 
-        <!--END BDA dependencies to our modules-->
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
