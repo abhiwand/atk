@@ -87,15 +87,15 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(invocation, destinationFrame, additionalData)
     }
-    else if (arguments.source.isLineFile) {
+    else if (arguments.source.isUnparsableFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
       val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
       unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
     }
-    else if (arguments.source.isFile || arguments.source.isClientData) {
+    else if (arguments.source.isParsableFile || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
 
-      val parseResult = if (arguments.source.isFile) {
+      val parseResult = if (arguments.source.isParsableFile) {
         val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
         LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
       }

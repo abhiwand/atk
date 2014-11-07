@@ -77,14 +77,14 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
   /**
    * True if source is a file
    */
-  def isFile: Boolean = {
+  def isParsableFile: Boolean = {
     source_type == "file"
   }
 
   /**
    * True if source is a Line File
    */
-  def isLineFile: Boolean = {
+  def isUnparsableFile: Boolean = {
     source_type == "linefile"
   }
 }
