@@ -98,9 +98,6 @@ class FrameBackendRest(object):
                     raise
             return frame_info.name
         return frame.name
-            become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
-        elif source:
-                self.append(frame, source)
 
     def get_name(self, frame):
         return self._get_frame_info(frame).name
