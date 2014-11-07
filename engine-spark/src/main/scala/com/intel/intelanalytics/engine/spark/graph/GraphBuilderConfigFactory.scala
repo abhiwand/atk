@@ -24,15 +24,16 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
-import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.graphbuilder.parser.rule.{ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule}
+import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad }
+import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, PropertyRule, ValueRule, VertexRule, _}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad}
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.typesafe.config.Config
+
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -54,7 +55,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
-      getTitanConfiguration(graph.name),
+      GraphBuilderConfigFactory.getTitanConfiguration(graph.name),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,
@@ -69,26 +70,11 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
+    val columns: List[ColumnDef] = schema.columnTuples map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType)}
 
     new InputSchema(columns)
   }
 
-  /**
-   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
-   * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
-   * @param graphName Name of the graph to be written to.
-   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
-   */
-  private def getTitanConfiguration(graphName: String): SerializableBaseConfiguration = {
-
-    // load settings from titan.conf file...
-    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
-
-    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
-    TitanGraphConnector.setTitanGraphName(titanConfiguration, GraphName.convertGraphUserNameToBackendName(graphName))
-    titanConfiguration
-  }
 
   /**
    * Converts com.intel.intelanalytics.domain.graphconstruction.Value into the GraphBuilder3 consumable
@@ -155,6 +141,76 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getGBEdgeRules(edgeRules: List[EdgeRule]): List[GBEdgeRule] = {
     edgeRules map getGBEdgeRule
+  }
+
+}
+
+object GraphBuilderConfigFactory {
+  /**
+   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
+   * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
+   * @param graphName Name of the graph to be written to.
+   *
+   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
+   */
+  def getTitanConfiguration(graphName: String): SerializableBaseConfiguration = {
+
+    // load settings from titan.conf file...
+    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
+    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
+    val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
+    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration
+  }
+
+  /**
+   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
+   * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
+   * @param commandConfig Configuration object for command.
+   * @param titanPath Dot-separated expressions with Titan config, e.g., titan.load
+   * @param graphName Name of the graph to be written to.
+   *
+   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
+   */
+  def getTitanConfiguration(commandConfig: Config, titanPath: String, graphName: String): SerializableBaseConfiguration = {
+
+    // load settings from titan.conf file...
+    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
+    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
+    val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
+    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration
+  }
+
+  /**
+   * Get graph name from Titan configuration based on the storage backend.
+   *
+   * @param titanConfig Titan configuration
+   * @return Graph name
+   */
+  def getTitanGraphName(titanConfig: SerializableBaseConfiguration): String = {
+    val titanGraphNameKey = getTitanGraphNameKey(titanConfig)
+    titanConfig.getString(titanGraphNameKey)
+  }
+
+
+  /**
+   * Get graph name configuration key based on the storage backend.
+   *
+   * Titan uses different options for specifying the graph name based on the backend. For example,
+   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
+   *
+   * @param titanConfig Titan configuration
+   * @return Graph name key for backend (either "storage.hbase.table" or "storage.cassandra.keyspace")
+   */
+  def getTitanGraphNameKey(titanConfig: SerializableBaseConfiguration): String = {
+    val storageBackend = titanConfig.getString("storage.backend")
+
+    storageBackend.toLowerCase match {
+      case "hbase" => "storage.hbase.table"
+      case "cassandra" => "storage.cassandra.keyspace"
+      case _ => throw new RuntimeException("Unsupported storage backend for Titan. Please set storage.backend to hbase or cassandra")
+    }
   }
 
 }

@@ -66,52 +66,6 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
 
 object TitanGraphConnector {
 
-  /**
-   * Get graph name from Titan configuration based on the storage backend.
-   *
-   * Titan uses different options for specifying the graph name based on the backend.
-   * For example, "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
-   *
-   * @param titanConfig Titan configuration
-   * @return Graph name
-   */
-  def getTitanGraphName(titanConfig: SerializableBaseConfiguration): String = {
-    val storageBackend = titanConfig.getString("storage.backend")
-    val graphNameKey = getTitanGraphNameKey(storageBackend)
-    titanConfig.getString(graphNameKey)
-  }
-
-  /**
-   * Set graph name in Titan configuration based on the storage backend.
-   *
-   * Titan uses different options for specifying the graph name based on the backend. For example,
-   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
-   *
-   * @param titanConfig Titan configuration
-   * @param graphName Graph name
-   */
-  def setTitanGraphName(titanConfig: SerializableBaseConfiguration, graphName: String): Unit = {
-    val storageBackend = titanConfig.getString("storage.backend")
-    val graphNameKey = getTitanGraphNameKey(storageBackend)
-    titanConfig.setProperty(graphNameKey, graphName)
-  }
-
-  /**
-   * Get graph name configuration key based on the storage backend.
-   *
-   * Titan uses different options for specifying the graph name based on the backend. For example,
-   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
-   *
-   * @param storageBackend Name of Titan storage backend. For example (hbase, or cassandra)
-   * @return Graph name configuration key based on the storage backend
-   */
-  def getTitanGraphNameKey(storageBackend: String): String = {
-    storageBackend.toLowerCase match {
-      case "hbase" => "storage.hbase.table"
-      case "cassandra" => "storage.cassandra.keyspace"
-      case _ => throw new RuntimeException("Unsupported storage backend for Titan. Please set storage.backend to hbase or cassandra")
-    }
-  }
 
   /**
    * Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+

@@ -47,6 +47,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val executor = createCommandExecutor()
 
     val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: SparkInvocation) => {
+      invocation.sparkContext.getConf
       contextCountDuringExecution = executor.commandIdContextMapping.size
       containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
       mock[DataFrame]

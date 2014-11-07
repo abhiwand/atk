@@ -6,7 +6,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.{GraphBuilderConfigFactory, GraphName}
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
@@ -236,9 +236,8 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       }
 
     // Create graph connection
-    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.load")
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    TitanGraphConnector.setTitanGraphName(titanConfiguration, iatGraphName)
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
     val sc = invocation.sparkContext

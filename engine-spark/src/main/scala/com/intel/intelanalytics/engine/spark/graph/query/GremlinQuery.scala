@@ -7,7 +7,7 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.{GraphBuilderConfigFactory, GraphName}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
@@ -150,9 +150,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     // Create graph connection
-    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    TitanGraphConnector.setTitanGraphName(titanConfiguration, iatGraphName)
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", iatGraphName)
 
     val titanGraph = getTitanGraph(iatGraphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()

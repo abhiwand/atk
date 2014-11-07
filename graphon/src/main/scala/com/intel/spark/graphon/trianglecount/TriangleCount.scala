@@ -35,7 +35,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.{GraphBuilderConfigFactory, GraphName}
 import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -87,8 +87,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def name: String = "graph:titan/ml/graphx_triangle_count"
 
-  //TODO remove when we move the next version of spark
-  override def kryoRegistrator: Option[String] = None
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
 
   override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
@@ -137,59 +136,44 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def execute(sparkInvocation: SparkInvocation, arguments: TriangleCountArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): TriangleCountResult = {
 
-    sparkInvocation.sparkContext.stop
+    val sparkContext = sparkInvocation.sparkContext
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    val sc = new SparkContext(sparkConf)
+    // Titan Settings for input
+    val config = configuration
 
-    try {
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      TitanGraphConnector.setTitanGraphName(titanConfig, iatGraphName)
+    val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
+      arguments.input_edge_labels)
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    // Call TriangleCountRunner to kick off Triangle Count computation on RDDs
+    val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    val newGraphName = arguments.output_graph_name
+    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
+    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+      config.getInt("default-timeout") seconds)
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    // create titan config copy for newGraph write-back
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatNewGraphName)
+    writeToTitan(newTitanConfig, outVertices, outEdges)
 
-      val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
-        arguments.input_edge_labels)
-
-      // Call TriangleCountRunner to kick off Triangle Count computation on RDDs
-      val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
-
-      val newGraphName = arguments.output_graph_name
-      val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-        config.getInt("default-timeout") seconds)
-
-      // create titan config copy for newGraph write-back
-      val newTitanConfig = new SerializableBaseConfiguration()
-      newTitanConfig.copy(titanConfig)
-      TitanGraphConnector.setTitanGraphName(newTitanConfig, iatNewGraphName)
-      writeToTitan(newTitanConfig, outVertices, outEdges)
-
-      TriangleCountResult(newGraphName)
-    }
-
-    finally {
-      sc.stop
-    }
+    TriangleCountResult(newGraphName)
   }
 
   // Helper function to write rdds back to Titan

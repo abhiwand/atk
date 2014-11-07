@@ -167,6 +167,14 @@ class _DataTypes(frozenset):
         _DataTypes.get_from_type(data_type)
 
     @staticmethod
+    def checkMissingValues(value):
+        if value in [None, np.inf, -np.inf]:
+            return True
+        if type(value) in [float32, float64, float] and np.isnan(value):
+            return True
+        return False
+
+    @staticmethod
     def cast(value, to_type):
         """
         Returns the given value cast to the given type.  None is always returned as None
@@ -192,13 +200,19 @@ class _DataTypes(frozenset):
         '4.5'
         >>> valid_data_types.cast(None, str)
         None
+        >>> valid_data_types.cast(np.inf, float32)
+        None
         """
-        if value is None or type(value) is to_type:
+        if _DataTypes.checkMissingValues(value):  ## Special handling for missing values
+            return None
+        elif type(value) is to_type:                  ## Optimization
             return value
         try:
-            return to_type(value)
+            result = to_type(value)
+            return None if _DataTypes.checkMissingValues(result) else result
         except Exception as e:
             raise ValueError(("Unable to cast to type %s\n" % to_type) + str(e))
+
 
     def __repr__(self):
         aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _alias_types.iteritems()])))
