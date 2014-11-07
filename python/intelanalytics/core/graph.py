@@ -597,11 +597,6 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         except:
             return super(TitanGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
-    @property
-    @api
-    def ia_uri(self):
-        return self._backend.get_ia_uri(self)
-
     @api
     def append(self, rules=None):
         """

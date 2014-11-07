@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
@@ -38,6 +38,7 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.domain.Naming
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
@@ -192,7 +193,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, frames.generateFrameName(prefix = "vertex_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -221,7 +222,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, frames.generateFrameName(prefix = "edge_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
