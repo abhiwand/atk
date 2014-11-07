@@ -283,10 +283,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_row_count(self, None)
 
-    @property
-    @api
-    def ia_uri(self):
-        return self._backend.get_ia_uri(self)
 
     @property
     @api
@@ -529,7 +525,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    def copy(self, columns=None, where=None):
+    def copy(self, columns=None, where=None, name=None):
         """
         Copy frame.
 
@@ -543,7 +539,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             {source_column_name: destination_column_name}.
         where : row function (optional)
             If not None, only those rows which evaluate to True will be copied
-
+        name : str (optional)
+            name of the copied frame
         Returns
         -------
         Frame
@@ -584,7 +581,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionchanged:: 0.8.5
 
         """
-        return self._backend.copy(self, columns, where)
+        return self._backend.copy(self, columns, where, name)
 
     @api
     def count(self, where):
@@ -1002,6 +999,50 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         # For further examples, see :ref:`example_frame.join`.
         return self._backend.join(self, right, left_on, right_on, how)
+
+    @api
+    def sort(self, columns, ascending=True):
+        """
+        Sort a frame.
+
+        Sort a frame by column values either ascending or descending.
+
+        Parameters
+        ----------
+        columns: str | list of str | list of tuples
+            Either a column name, a list of column names, or a list of tuples where each tuple is a name and an ascending bool value
+        ascending: bool
+            True for ascending, False for descending
+
+        Examples
+        --------
+        Sort a single column::
+
+            # sort a single column ascending
+            frame.sort('column_name')
+
+            # sort a single column ascending
+            frame.sort('column_name', True)
+
+            # sort a single column descending
+            frame.sort('column_name', False)
+        
+        Sort multiple columns::
+
+            # sort multiple columns ascending
+            frame.sort(['col1', 'col2'])
+
+            # sort multiple columns ascending
+            frame.sort(['col1', 'col2'], True)
+
+            # sort multiple columns descending
+            frame.sort(['col1', 'col2'], False)
+
+            # sort multiple columns: 'col1' ascending and 'col2' descending
+            frame.sort([ ('col1', True), ('col2', False) ])
+
+        """
+        return self._backend.sort(self, columns, ascending)
 
     @api
     def take(self, n, offset=0, columns=None):

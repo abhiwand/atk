@@ -27,7 +27,7 @@ import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.EntityManager
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -47,6 +47,7 @@ import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.domain.Naming
 
 import scala.util.Try
 
@@ -81,7 +82,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     override def getMetaData(reference: Reference): MetaData = new GraphMeta(expectGraph(reference.id))
 
     override def create()(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(generateGraphName()))
+      GraphTemplate(GraphName.generate()))
 
     override def getReference(id: Long): Reference = expectGraph(id)
 
@@ -245,7 +246,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, frameStorage.generateFrameName(prefix = "vertex_frame_"), schema, 1, new DateTime, Some(new DateTime), graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), schema, 1, new DateTime, Some(new DateTime), graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -274,7 +275,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, frameStorage.generateFrameName(prefix = "edge_frame_"), schema, 1, new DateTime,
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), schema, 1, new DateTime,
             Some(new DateTime), graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
@@ -363,16 +364,14 @@ class SparkGraphStorage(metaStore: MetaStore,
     frameStorage.saveFrameData(frameMeta, edgeFrameRDD, rowCount)
   }
 
-  /**
-   * Automatically generate a name for a graph.
-   *
-   * The frame name comprises of the prefix "graph_", a random uuid, and an optional annotation.
-   *
-   * @param annotation Optional annotation to add to graph name
-   * @return Graph name
-   */
-  def generateGraphName(annotation: Option[String] = None): String = {
-    "graph_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
+  def updateElementIDNames(graphMeta: Graph, elementIDColumns: List[ElementIDName]): Graph = {
+    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
+      implicit session =>
+        {
+          val updatedGraph = graphMeta.copy(elementIDNames = Some(new ElementIDNames(elementIDColumns)))
+          metaStore.graphRepo.update(updatedGraph).get
+        }
+    }
   }
 
 }

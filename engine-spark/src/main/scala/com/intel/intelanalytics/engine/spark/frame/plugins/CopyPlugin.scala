@@ -28,6 +28,10 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.security.UserPrincipal
 
 // Implicits needed for JSON conversion
 import spray.json._

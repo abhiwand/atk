@@ -93,7 +93,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     override def getMetaData(reference: Reference): MetaData = new FrameMeta(expectFrame(reference.id))
 
-    override def create()(implicit invocation: Invocation): Reference = storage.create(DataFrameTemplate(generateFrameName()))
+    override def create()(implicit invocation: Invocation): Reference = storage.create(DataFrameTemplate(FrameName.generate()))
 
     override def getReference(id: Long): Reference = expectFrame(id)
 
@@ -216,16 +216,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): LegacyFrameRDD =
     loadFrameData(ctx, frame).toLegacyFrameRDD
-
-  private def copyParentNameToChildAndRenameParent(frame: DataFrame)(implicit session: metaStore.Session) = {
-    require(frame.parent.isDefined, "Cannot copy name from frame parent if no parent provided")
-
-    val parentFrame = expectFrame(frame.parent.get)
-    val name = parentFrame.name
-    metaStore.frameRepo.update(parentFrame.copy(name = generateFrameName(Option(name))))
-    metaStore.frameRepo.update(frame.copy(name = name))
-
-  }
 
   /**
    * Determine if a dataFrame is saved as parquet
@@ -501,18 +491,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       None
     }
 
-  }
-
-  /**
-   * Automatically generate a name for a frame.
-   *
-   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
-   *
-   * @param annotation Optional annotation to add to frame name
-   * @return Frame name
-   */
-  def generateFrameName(annotation: Option[String] = None, prefix: String = "frame_"): String = {
-    prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
   }
 
   /**

@@ -163,6 +163,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
   commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
   commandPluginRegistry.registerCommand(new TopKPlugin)
+  commandPluginRegistry.registerCommand(new SortByColumnsPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
@@ -179,6 +180,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
   commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
   commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
+  commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
