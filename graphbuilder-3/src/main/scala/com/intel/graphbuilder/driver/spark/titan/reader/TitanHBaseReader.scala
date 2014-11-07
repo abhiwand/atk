@@ -57,7 +57,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       classOf[NullWritable],
       classOf[FaunusVertex])
 
-    new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
+    new TitanHBaseReaderRDD(hBaseRDD)
   }
 
   /**

@@ -147,8 +147,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -165,12 +164,11 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
     val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatNewGraphName)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
     writeToTitan(newTitanConfig, outVertices, outEdges)
 
     TriangleCountResult(newGraphName)

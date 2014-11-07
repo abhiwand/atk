@@ -150,9 +150,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     // Create graph connection
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", iatGraphName)
-
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", graph.name)
+    val iatGraphName = GraphBuilderConfigFactory.getTitanGraphName(titanConfiguration)
     val titanGraph = getTitanGraph(iatGraphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()
     bindings.put("g", titanGraph)

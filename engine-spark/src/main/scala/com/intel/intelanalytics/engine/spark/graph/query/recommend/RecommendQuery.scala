@@ -236,8 +236,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       }
 
     // Create graph connection
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
     val sc = invocation.sparkContext
