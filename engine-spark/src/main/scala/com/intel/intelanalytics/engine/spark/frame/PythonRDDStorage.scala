@@ -57,7 +57,7 @@ object PythonRDDStorage {
     pyRdd
   }
 
-  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[String]) => Array[Any] = null): RDD[Array[Any]] = {
+  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
     val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
       case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
       case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value

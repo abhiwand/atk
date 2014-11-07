@@ -88,7 +88,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     else if (arguments.source.isUnparsableFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
       val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
-      unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
+      unionAndSave(destinationFrame, parseResult.parsedLines)
     }
     else if (arguments.source.isParsableFile || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
