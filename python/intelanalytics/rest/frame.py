@@ -74,25 +74,32 @@ class FrameBackendRest(object):
             source = FrameInfo(source)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
-            return frame.name  # early exit here
-
-        new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
-
-        if isinstance(source, Frame):
-            become_frame(frame, self.copy(source, source.column_names))
+        elif isinstance(source, Frame):
+            become_frame(frame, source.copy(name=name))
         elif isinstance(source, Column):
-            become_frame(frame, self.copy(source.frame, source.name))
+            become_frame(frame, source.frame.copy(columns=source.name, name=name))
         elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
-            become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
-        elif source:
-            self.append(frame, source)
+            become_frame(frame, source[0].frame.copy(columns=[s.name for s in source], name=name))
+        else:
+            payload = {'name': name }
+            r = self.rest_http.post('frames', payload)
+            logger.info("REST Backend: create frame response: " + r.text)
+            frame_info = FrameInfo(r.json())
+            initialize_frame(frame, frame_info)
+            if source:
+                try:
+                    self.append(frame, source)
+                except Exception:
+                    self.rest_http.delete("frames/%s" % frame_info.id_number)
+                    raise
+            return frame_info.name
+        return frame.name
 
         return new_frame_name
 
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
-        logger.info("REST Backend: posting create frame request")
         r = self.rest_http.post('frames', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         frame_info = FrameInfo(r.json())
@@ -330,7 +337,7 @@ class FrameBackendRest(object):
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         return execute_new_frame_command('frame:/join', arguments)
 
-    def copy(self, frame, columns=None, where=None):
+    def copy(self, frame, columns=None, where=None, name=None):
         if where:
             if not columns:
                 column_names = frame.column_names
@@ -344,7 +351,8 @@ class FrameBackendRest(object):
             where = prepare_row_function_for_copy_columns(frame, where, column_names)
         arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
-                     'where': where}
+                     'where': where,
+                     'name': name}
         return execute_new_frame_command('frame/copy', arguments)
 
     def group_by(self, frame, group_by_columns, aggregation):
@@ -391,6 +399,18 @@ class FrameBackendRest(object):
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
+    def sort(self, frame, columns, ascending):
+        if isinstance(columns, basestring):
+            columns_and_ascending = [(columns, ascending)]
+        elif isinstance(columns, list):
+            if isinstance(columns[0], basestring):
+                columns_and_ascending = map(lambda x: (x, ascending),columns)
+            else:
+                columns_and_ascending = columns
+        else:
+            raise ValueError("Bad type %s provided as argument; expecting basestring, list of basestring, or list of tuples" % type(columns))
+        arguments = { 'frame': frame._id, 'column_names_and_ascending': columns_and_ascending }
+        execute_update_frame_command("sort", arguments, frame)
 
     def take(self, frame, n, offset, columns):
         def get_take_result():

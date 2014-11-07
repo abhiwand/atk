@@ -60,9 +60,9 @@ import com.intel.event.EventLogging
  *
  * @param engine an Engine instance that will be passed to query plugins during execution
  * @param queries a query storage that the executor can use for audit logging query execution
- * @param contextManager a SparkContext factory that can be passed to SparkQueryPlugins during execution
+ * @param sparkContextFactory a SparkContext factory that can be passed to SparkQueryPlugins during execution
  */
-class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextManager: SparkContextFactory)
+class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, sparkContextFactory: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -120,19 +120,18 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(query.name) {
-          val context: SparkContext = contextManager.context(user, "query")
+          val context: SparkContext = sparkContextFactory.context(user, "query")
           //Just enough of an invocation to provide user name for serializeArguments
           val tempInvocation = SimpleInvocation(null, null, ec, None, 0, user, null)
           val q = queries.create(QueryTemplate(query.name, Some(query.serializeArguments(arguments)(tempInvocation))))
 
           val qFuture = future {
             withQuery(q) {
-
+              implicit val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
+                user = user, executionContext = implicitly[ExecutionContext],
+                sparkContext = context, commandStorage = null, resolver = null) //TODO: resolver for queries
               try {
                 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-                implicit val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
-                  user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = null, resolver = null) //TODO: resolver for queries
 
                 val funcResult = query(invocation, arguments)
 
@@ -146,7 +145,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                 QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
               }
               finally {
-                context.stop()
+                invocation.sparkContext.stop()
               }
 
             }

@@ -20,28 +20,15 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.engine.spark.frame
-
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrame, FrameReference }
+package com.intel.intelanalytics.domain.frame
 
 /**
- * A FrameReference with metadata and a Spark RDD representing the data in the frame.
- *
- * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
+ * Specifies frame creation, used in REST API to support optional name
+ * @param name Option name, if not provided, one will be generated
+ * @param description Option description
  */
-class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
-    extends FrameMeta(frame.withSchema(rdd.schema))
-    with HasData {
-
-  /**
-   * Returns a copy with the given data instead of the current data
-   */
-  def withData(newData: FrameRDD): SparkFrameData = new SparkFrameData(this.meta, newData)
-
-  type Data = FrameRDD
-
-  val data = rdd
-
+case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None) {
+  def toDataFrameTemplate: DataFrameTemplate = {
+    DataFrameTemplate(name = FrameName.validateOrGenerate(name), description)
+  }
 }

@@ -33,7 +33,6 @@ import org.apache.spark.{ SparkConf, SparkContext }
  * Class Factory for creating spark contexts
  */
 class SparkContextFactory() extends EventLogging {
-  //TODO read the strategy from the config file
 
   /**
    * Creates a new sparkContext with the specified kryo classes
@@ -50,7 +49,7 @@ class SparkContextFactory() extends EventLogging {
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
-    if (kryoRegistrator isDefined) {
+    if (kryoRegistrator.isDefined) {
       sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
     }

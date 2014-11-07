@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.topk
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, TopK, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, TopK, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -151,7 +151,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
-    val newFrameName = frames.generateFrameName()
+    val newFrameName = FrameName.generate()
     val newFrame = frames.create(DataFrameTemplate(newFrameName, None))
     val useBottomK = arguments.k < 0
     val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
