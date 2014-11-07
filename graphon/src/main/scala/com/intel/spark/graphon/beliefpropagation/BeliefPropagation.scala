@@ -157,23 +157,21 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
   override def execute(arguments: BeliefPropagationArgs)(implicit invocation: Invocation): BeliefPropagationResult = {
 
     val start = System.currentTimeMillis()
+    sc.addJar(Boot.getJar("graphon").getPath)
 
     // Titan Settings for input
     val config = configuration
     val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    val sparkConf: SparkConf = sc.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val ctx = new SparkContext(sparkConf)
     val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 
-    ctx.addJar(Boot.getJar("graphon").getPath)
     // Read the graph from Titan
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
@@ -181,9 +179,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
     val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-    // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
     val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
       arguments.priorProperty,
       arguments.maxIterations,

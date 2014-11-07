@@ -164,19 +164,23 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(arguments: PageRankArgs)(implicit invocation: Invocation): PageRankResult = {
 
+    sc.addJar(Boot.getJar("graphon").getPath)
+
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
+
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    sc.addJar(Boot.getJar("graphon").getPath)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 
-    // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
     // Read the graph from Titan
-    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
     val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
@@ -188,9 +192,12 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
       arguments.reset_probability,
       arguments.convergence_tolerance)
 
+    // Call PageRankRunner to kick off PageRank computation on RDDs
+    val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
+
     val newGraphName = arguments.output_graph_name
     val iatNewGraphName = GraphBackendName.convertGraphUserNameToBackendName(newGraphName)
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
