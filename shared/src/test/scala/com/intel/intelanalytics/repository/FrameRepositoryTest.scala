@@ -33,7 +33,7 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
     slickMetaStoreComponent.metaStore.withSession("frame-test") {
       implicit session =>
 
-        val frameName = "frame-name"
+        val frameName = "frame_name"
         val frameDescription = "my description"
 
         // create a frame
@@ -57,11 +57,11 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
     slickMetaStoreComponent.metaStore.withSession("frame-test") {
       implicit session =>
 
-        val frameName = "frame-name"
+        val frameName = "frame_name"
 
         // create the frames
         val frame = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
-        val errorFrame = frameRepo.insert(new DataFrameTemplate(frameName + "-errors", None)).get
+        val errorFrame = frameRepo.insert(new DataFrameTemplate(frameName + "_errors", None)).get
 
         // invoke method under test
         frameRepo.updateErrorFrameId(frame, Some(errorFrame.id))
