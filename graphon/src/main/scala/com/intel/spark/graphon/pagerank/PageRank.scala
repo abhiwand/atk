@@ -31,7 +31,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -175,7 +175,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
@@ -197,7 +197,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
+    val iatNewGraphName = GraphBackendName.convertGraphUserNameToBackendName(newGraphName)
     val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 

@@ -26,6 +26,7 @@ Mute definitions from the server
 
 # straightforward approach for now
 muted_commands = ['frame/load',
+                  'frame/count_where',
                   'frame:/load',
                   'frame:vertex/load',
                   'frame:edge/load',
