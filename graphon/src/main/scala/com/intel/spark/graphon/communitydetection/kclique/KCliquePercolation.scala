@@ -120,7 +120,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
                              |
                            """.stripMargin)))
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  override def kryoRegistrator: Option[String] = None
 
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
