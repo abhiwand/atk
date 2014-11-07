@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.algorithm.util
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.engine.spark.graph.{GraphBuilderConfigFactory, GraphName}
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
@@ -26,7 +26,7 @@ object GiraphConfigurationUtil {
    * @param key the starting point in the Config object. Defaults to "hadoop".
    * @return a populated Hadoop Configuration object.
    */
-  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") = {
+  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") : org.apache.hadoop.conf.Configuration = {
     require(config != null, "Config cannot be null")
     require(key != null, "Key cannot be null")
     val hConf = new Configuration()
@@ -38,11 +38,16 @@ object GiraphConfigurationUtil {
     hConf
   }
 
+  /**
+   * Update the Hadoop configuration object with the Titan configuration
+   * 
+   * @param hConf the Hadoop configuration object to update
+   * @param config the Config object from which to copy Titan properties to the Hadoop Configuration
+   * @param graph the graph object containing the Titan graph name
+   */
+  def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph) : Unit = {
 
-  def initializeTitanConfig(hConf: Configuration, commandConfig: Config, graph: Graph) = {
-
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     titanConfig.getKeys.foreach {
       case (titanKey: String) =>
@@ -71,7 +76,5 @@ object GiraphConfigurationUtil {
     }
     result
   }
-
-
 
 }

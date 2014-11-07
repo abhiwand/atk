@@ -134,8 +134,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // create titanConfig
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
@@ -156,12 +155,11 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
-    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
     val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatSubgraphName)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 

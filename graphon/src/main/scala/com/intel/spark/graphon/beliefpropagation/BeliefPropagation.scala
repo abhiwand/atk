@@ -165,8 +165,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan

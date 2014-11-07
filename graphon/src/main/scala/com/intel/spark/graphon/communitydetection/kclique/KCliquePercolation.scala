@@ -139,8 +139,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Set the graph in Titan
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // Start KClique Percolation
     Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
