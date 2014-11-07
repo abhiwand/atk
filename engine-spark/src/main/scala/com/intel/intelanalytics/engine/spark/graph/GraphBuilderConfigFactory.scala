@@ -156,7 +156,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
 
     val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
-    titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty("storage.tablename", GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
   }
 }

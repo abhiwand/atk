@@ -23,7 +23,10 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import com.intel.intelanalytics.domain.Naming
+
 case class RenameFrame(frame: FrameReference, newName: String) {
   require(frame != null, "frame is required")
   require(newName != null && newName.size > 0, "newName is required")
+  FrameName.validate(newName)
 }
