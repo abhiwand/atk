@@ -152,11 +152,11 @@ class FrameRDD(val schema: Schema,
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
     val pairRdd = mapRows(row => (row.values(columnNames), row.data))
 
-    implicit val multiColumnOrdering = new Ordering[Product] {
-      override def compare(a: Product, b: Product): Int = {
-        for (i <- 0 to a.productArity - 1) {
-          val columnA = a.productElement(i)
-          val columnB = b.productElement(i)
+    implicit val multiColumnOrdering = new Ordering[List[Any]] {
+      override def compare(a: List[Any], b: List[Any]): Int = {
+        for (i <- 0 to a.length - 1) {
+          val columnA = a(i)
+          val columnB = b(i)
           val result = DataTypes.compare(columnA, columnB)
           if (result != 0) {
             if (ascendingPerColumn(i)) {

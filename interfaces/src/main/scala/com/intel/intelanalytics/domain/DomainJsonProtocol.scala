@@ -154,6 +154,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("frames", "frame", n => FrameReference(n))
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
+  implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -225,6 +226,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphNoArgsFormat = jsonFormat1(GraphNoArgs)
 
+  implicit val graphElementIDNameFormat = jsonFormat2(ElementIDName)
+  implicit val graphElementIDNamesFormat = jsonFormat1(ElementIDNames)
+
   // graph loading formats for specifying graphbuilder and graphload rules
 
   implicit val valueFormat = jsonFormat2(ValueRule)
@@ -241,6 +245,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addEdgesFormat = jsonFormat6(AddEdges)
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVertexRows)
+
+  implicit val exportGraphFormat = jsonFormat2(ExportGraph)
 
   implicit object UnitReturnJsonFormat extends RootJsonFormat[UnitReturn] {
     override def write(obj: UnitReturn): JsValue = {
@@ -339,7 +345,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       val jo = value.asJsObject
       val frame = frameReferenceFormat.read(jo.getFields("frame")(0))
       val columns: Option[Map[String, String]] = jo.getFields("columns") match {
-        case Seq(JsString(name)) => Some(Map[String, String](name -> name))
+        case Seq(JsString(n)) => Some(Map[String, String](n -> n))
         case Seq(JsArray(names)) => Some((for (n <- names) yield (n.convertTo[String], n.convertTo[String])).toMap)
         case Seq(JsObject(fields)) => Some((for ((name, new_name) <- fields) yield (name, new_name.convertTo[String])).toMap)
         case Seq(JsNull) => None
@@ -352,13 +358,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON expression for argument 'where' but got $x")
       }
-      FrameCopy(frame, columns, where)
+      val name: Option[String] = jo.getFields("name") match {
+        case Seq(JsString(n)) => Some(n)
+        case Seq(JsNull) => None
+      }
+      FrameCopy(frame, columns, where, name)
     }
 
     override def write(frameCopy: FrameCopy): JsValue = frameCopy match {
-      case FrameCopy(frame, columns, where) => JsObject("frame" -> frame.toJson,
+      case FrameCopy(frame, columns, where, name) => JsObject("frame" -> frame.toJson,
         "columns" -> columns.toJson,
-        "where" -> where.toJson)
+        "where" -> where.toJson,
+        "name" -> name.toJson)
     }
   }
 
@@ -377,7 +388,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   }
 
   implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat11(Graph)
+    implicit val graphFormatOriginal = jsonFormat12(Graph)
 
     override def read(value: JsValue): Graph = {
       graphFormatOriginal.read(value)

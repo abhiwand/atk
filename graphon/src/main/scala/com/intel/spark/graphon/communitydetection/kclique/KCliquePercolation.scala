@@ -25,6 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
@@ -33,7 +34,7 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import spray.json._
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.component.Boot
 import com.typesafe.config.Config
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -80,7 +81,46 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  override def numberOfJobs(arguments: KClique): Int = {
+    // TODO: not sure of correct value here
+    // Based on limited experiments:
+    //    2 cliques created 12 jobs
+    //    3,4,5,6 cliques created 7 jobs
+    if (arguments.cliqueSize == 2) {
+      12
+    }
+    else {
+      7
+    }
+  }
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "k-Clique Percolation is used to find communities.",
+    extendedSummary = Some("""
+                             |
+                             |    Parameters
+                             |    ----------
+                             |    clique_size : integer
+                             |        Large values of clique size result in fewer, smaller communities that are more connected.
+                             |        Must be at least 2.
+                             |
+                             |    community_property_label: str
+                             |        Name of the community property of vertex that will be updated/created in the graph.
+                             |
+                             |    Examples
+                             |    --------
+                             |    ::
+                             |
+                             |        graph.ml.kclique_percolation(4, 'community')
+                             |
+                             |
+                           """.stripMargin)))
+
+  override def kryoRegistrator: Option[String] = None
 
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
@@ -99,7 +139,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Set the graph in Titan
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
     // Start KClique Percolation
