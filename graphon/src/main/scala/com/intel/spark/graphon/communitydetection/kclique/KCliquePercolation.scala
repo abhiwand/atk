@@ -25,6 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
@@ -102,7 +103,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Set the graph in Titan
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
+    TitanGraphConnector.setTitanGraphName(titanConfig, iatGraphName)
 
     // Start KClique Percolation
     Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)

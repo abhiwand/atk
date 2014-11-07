@@ -183,7 +183,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
       val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
       val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+      TitanGraphConnector.setTitanGraphName(titanConfig, iatGraphName)
 
       val titanConnector = new TitanGraphConnector(titanConfig)
 
@@ -211,7 +211,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
       // create titan config copy for newGraph write-back
       val newTitanConfig = new SerializableBaseConfiguration()
       newTitanConfig.copy(titanConfig)
-      newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
+      TitanGraphConnector.setTitanGraphName(newTitanConfig, iatNewGraphName)
       writeToTitan(newTitanConfig, outVertices, outEdges)
 
       PageRankResult(newGraphName)

@@ -26,6 +26,7 @@ package com.intel.graphbuilder.graph.titan
 import java.io.File
 
 import com.intel.graphbuilder.graph.GraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
@@ -66,29 +67,45 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
 object TitanGraphConnector {
 
   /**
-   * Get table name configuration key based on the storage backend.
+   * Get graph name from Titan configuration based on the storage backend.
    *
-   * Titan uses different options for specifying the tablename based on the backend. For example,
-   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
+   * Titan uses different options for specifying the graph name based on the backend.
+   * For example, "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
    *
-   * @param config Titan configuration
-   * @return Table name configuration key based on the storage backend
+   * @param titanConfig Titan configuration
+   * @return Graph name
    */
-  def getTitanTableNameKey(config: Configuration): String = {
-    val storageBackend = config.getString("storage.backend")
-    getTitanTableNameKey(storageBackend)
+  def getTitanGraphName(titanConfig: SerializableBaseConfiguration): String = {
+    val storageBackend = titanConfig.getString("storage.backend")
+    val graphNameKey = getTitanGraphNameKey(storageBackend)
+    titanConfig.getString(graphNameKey)
   }
 
   /**
-   * Get table name configuration key based on the storage backend.
+   * Set graph name in Titan configuration based on the storage backend.
    *
-   * Titan uses different options for specifying the tablename based on the backend. For example,
+   * Titan uses different options for specifying the graph name based on the backend. For example,
+   * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
+   *
+   * @param titanConfig Titan configuration
+   * @param graphName Graph name
+   */
+  def setTitanGraphName(titanConfig: SerializableBaseConfiguration, graphName: String): Unit = {
+    val storageBackend = titanConfig.getString("storage.backend")
+    val graphNameKey = getTitanGraphNameKey(storageBackend)
+    titanConfig.setProperty(graphNameKey, graphName)
+  }
+
+  /**
+   * Get graph name configuration key based on the storage backend.
+   *
+   * Titan uses different options for specifying the graph name based on the backend. For example,
    * "storage.hbase.table" for HBase, and "storage.cassandra.keyspace" for Cassandra.
    *
    * @param storageBackend Name of Titan storage backend. For example (hbase, or cassandra)
-   * @return Table name configuration key based on the storage backend
+   * @return Graph name configuration key based on the storage backend
    */
-  def getTitanTableNameKey(storageBackend: String): String = {
+  def getTitanGraphNameKey(storageBackend: String): String = {
     storageBackend.toLowerCase match {
       case "hbase" => "storage.hbase.table"
       case "cassandra" => "storage.cassandra.keyspace"

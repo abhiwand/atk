@@ -151,9 +151,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
     // Create graph connection
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
-    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfiguration)
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfiguration.setProperty(titanTableNameKey, iatGraphName)
+    TitanGraphConnector.setTitanGraphName(titanConfiguration, iatGraphName)
 
     val titanGraph = getTitanGraph(iatGraphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()

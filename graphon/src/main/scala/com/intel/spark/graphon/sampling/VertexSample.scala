@@ -137,8 +137,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // create titanConfig
     val titanConfig = SparkEngineConfig.createTitanConfiguration(config, "titan.load")
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
-    titanConfig.setProperty(titanTableNameKey, iatGraphName)
+    TitanGraphConnector.setTitanGraphName(titanConfig, iatGraphName)
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
@@ -166,9 +165,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = new SerializableBaseConfiguration()
     subgraphTitanConfig.copy(titanConfig)
-
-    val subgraphTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
-    subgraphTitanConfig.setProperty(subgraphTableNameKey, iatSubgraphName)
+    TitanGraphConnector.setTitanGraphName(subgraphTitanConfig, iatSubgraphName)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
