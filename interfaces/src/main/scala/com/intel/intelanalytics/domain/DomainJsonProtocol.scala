@@ -58,7 +58,14 @@ import ru._
 /**
  * Implicit conversions for domain objects to/from JSON
  */
+
 object DomainJsonProtocol extends IADefaultJsonProtocol {
+
+  /**
+   * ***********************************************************************
+   * NOTE:: Order of implicits matters
+   * *************************************************************************
+   */
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
@@ -162,7 +169,31 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       case singleton => SingletonOrListValue[T](List(singleton.convertTo[T]))
     }
   }
+  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
+    override def write(obj: Any): JsValue = {
+      obj match {
+        case n: Int => new JsNumber(n)
+        case n: Long => new JsNumber(n)
+        case n: Float => new JsNumber(n)
+        case n: Double => new JsNumber(n)
+        case s: String => new JsString(s)
+        case n: java.lang.Long => new JsNumber(n.longValue())
+        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
+      }
+    }
 
+    override def read(json: JsValue): Any = {
+      json match {
+        case JsNumber(n) if n.isValidInt => n.intValue()
+        case JsNumber(n) if n.isValidLong => n.longValue()
+        case JsNumber(n) if n.isValidFloat => n.floatValue()
+        case JsNumber(n) => n.doubleValue()
+        case JsString(s) => s
+        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
+      }
+    }
+
+  }
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
 
@@ -178,7 +209,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject])
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
-  implicit val loadSourceFormat = jsonFormat3(LoadSource)
+  implicit val loadSourceFormat = jsonFormat4(LoadSource)
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate)
   implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
@@ -270,32 +301,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     override def read(json: JsValue): UnitReturn = {
       throw new RuntimeException("UnitReturn type should never be provided as an argument")
     }
-  }
-
-  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
-    override def write(obj: Any): JsValue = {
-      obj match {
-        case n: Int => new JsNumber(n)
-        case n: Long => new JsNumber(n)
-        case n: Float => new JsNumber(n)
-        case n: Double => new JsNumber(n)
-        case s: String => new JsString(s)
-        case n: java.lang.Long => new JsNumber(n.longValue())
-        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
-      }
-    }
-
-    override def read(json: JsValue): Any = {
-      json match {
-        case JsNumber(n) if n.isValidInt => n.intValue()
-        case JsNumber(n) if n.isValidLong => n.longValue()
-        case JsNumber(n) if n.isValidFloat => n.floatValue()
-        case JsNumber(n) => n.doubleValue()
-        case JsString(s) => s
-        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
-      }
-    }
-
   }
 
   implicit object UriFormat extends JsonFormat[URI] {

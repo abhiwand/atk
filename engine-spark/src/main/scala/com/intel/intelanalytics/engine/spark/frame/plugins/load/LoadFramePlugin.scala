@@ -85,11 +85,22 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(destinationFrame, additionalData)
     }
-    else if (arguments.source.isFile) {
-      val parser = arguments.source.parser.get
+    else if (arguments.source.isUnparsableFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
+      unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
+    }
+    else if (arguments.source.isParsableFile || arguments.source.isClientData) {
+      val parser = arguments.source.parser.get
 
+      val parseResult = if (arguments.source.isParsableFile) {
+        val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
+        LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+      }
+      else {
+        val data = arguments.source.data.get
+        LoadRDDFunctions.loadAndParseData(ctx, data, parser)
+      }
       // parse failures go to their own data frame
       val updatedFrame = if (parseResult.errorLines.count() > 0) {
         val (updated, errorFrame) = frames.lookupOrCreateErrorFrame(destinationFrame)
@@ -103,6 +114,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       // successfully parsed lines get added to the destination frame
       unionAndSave(updatedFrame, parseResult.parsedLines)
     }
+
     else {
       throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)
     }
