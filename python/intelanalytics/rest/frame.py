@@ -194,6 +194,10 @@ class FrameBackendRest(object):
                               "data": data
                    }
             }
+        if isinstance(source, Frame):
+            return {'source': { 'source_type': 'frame',
+                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
