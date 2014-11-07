@@ -66,7 +66,6 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
 
 object TitanGraphConnector {
 
-
   /**
    * Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+
    *
