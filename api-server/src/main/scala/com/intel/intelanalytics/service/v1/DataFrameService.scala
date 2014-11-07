@@ -35,8 +35,7 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ DataFrameCreate, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
@@ -90,11 +89,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
           } ~
             post {
               import spray.httpx.SprayJsonSupport._
-              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+              implicit val format = DomainJsonProtocol.dataFrameCreateFormat
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
-              entity(as[DataFrameTemplate]) {
+              entity(as[DataFrameCreate]) {
                 frame =>
-                  onComplete(engine.create(frame)) {
+                  onComplete(engine.create(frame.toDataFrameTemplate)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
                     case Failure(ex) => ctx => {
                       ctx.complete(500, ex.getMessage)
