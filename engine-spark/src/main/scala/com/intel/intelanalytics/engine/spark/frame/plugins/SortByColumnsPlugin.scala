@@ -72,7 +72,7 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, DataFrame] {
    */
   override def execute(arguments: SortByColumns)(implicit invocation: Invocation): DataFrame = {
     // validate arguments
-    val frame : SparkFrameData = resolve(arguments.frame)
+    val frame: SparkFrameData = resolve(arguments.frame)
 
     // run the operation
     save(frame.withData(frame.data.sortByColumns(arguments.columnNamesAndAscending))).meta

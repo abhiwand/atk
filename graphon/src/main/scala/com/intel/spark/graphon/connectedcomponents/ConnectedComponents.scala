@@ -137,6 +137,9 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
+
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -160,20 +163,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
     val newGraphName = arguments.output_graph_name
     val iatNewGraphName = GraphBackendName.convertGraphUserNameToBackendName(newGraphName)
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-      config.getInt("default-timeout") seconds)
-
-    // create titan config copy for newGraph write-back
-    val newTitanConfig = new SerializableBaseConfiguration()
-    newTitanConfig.copy(titanConfig)
-    newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
-    writeToTitan(newTitanConfig, outVertices, gbEdges)
-
-    val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
-
-    val newGraphName = arguments.output_graph_name
-    val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
