@@ -1,11 +1,12 @@
 from setuptools import setup
+import os
 
 setup(
     # Application name:
     name="intelanalytics",
 
     # Version number (initial):
-    version=u"0.8.8",
+    version=u"0.9-"+os.environ['BUILD_NUMBER'],
 
     # Application author details:
     author="Intel",
@@ -21,8 +22,8 @@ setup(
     url="https://analyticstoolkit.intel.com",
 
     #
-    # license="LICENSE.txt",
-    description="Useful towel-related stuff.",
+    license="LICENSE.txt",
+    description="Intel Analytics Toolkit",
 
     long_description=open("README").read(),
 
