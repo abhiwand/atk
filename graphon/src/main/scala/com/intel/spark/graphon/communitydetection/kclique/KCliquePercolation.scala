@@ -100,7 +100,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "KClique Percolation is used to find communities.",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "k-Clique Percolation is used to find communities.",
     extendedSummary = Some("""
                              |
                              |    Parameters
@@ -121,7 +121,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
                              |
                            """.stripMargin)))
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
 
