@@ -260,43 +260,38 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    new EdgeFrameRDD(frameRdd)
   //  }
 
-  def loadGbVertices(ctx: SparkContext, graphId: Long): RDD[GBVertex] = {
-    val graphMeta = expectGraph(graphId)
+  def loadGbVertices(ctx: SparkContext, graph: Graph): RDD[GBVertex] = {
+    val graphMeta = expectGraph(graph.id)
     if (graphMeta.isSeamless) {
-      val graphMeta = expectSeamless(graphId)
+      val graphMeta = expectSeamless(graph.id)
       graphMeta.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graphId)
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
       import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
       val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
       gbVertices
     }
   }
 
-  def loadGbEdges(ctx: SparkContext, graphId: Long): RDD[GBEdge] = {
-    val graphMeta = expectGraph(graphId)
+  def loadGbEdges(ctx: SparkContext, graph: Graph): RDD[GBEdge] = {
+    val graphMeta = expectGraph(graph.id)
     if (graphMeta.isSeamless) {
-      val graphMeta = expectSeamless(graphId)
+      val graphMeta = expectSeamless(graph.id)
       graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graphId)
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
       import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
       gbEdges
     }
   }
 
-  def getTitanReaderRDD(ctx: SparkContext, graphId: Long): RDD[GraphElement] = {
-    val titanConfig = SparkEngineConfig.titanLoadConfiguration
-    val graph = lookup(graphId).get
-
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
-
+  def getTitanReaderRDD(ctx: SparkContext, graph: Graph): RDD[GraphElement] = {
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -310,7 +305,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     val graph = lookup(graphId).get
 
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
+    titanConfig.setProperty("storage.hbase.table", iatGraphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
