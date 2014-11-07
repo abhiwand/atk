@@ -25,6 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
@@ -79,6 +80,45 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * The name of the command, e.g. graphs/ml/kclique_percolation
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
+
+  override def numberOfJobs(arguments: KClique): Int = {
+    // TODO: not sure of correct value here
+    // Based on limited experiments:
+    //    2 cliques created 12 jobs
+    //    3,4,5,6 cliques created 7 jobs
+    if (arguments.cliqueSize == 2) {
+      12
+    }
+    else {
+      7
+    }
+  }
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "KClique Percolation is used to find communities.",
+    extendedSummary = Some("""
+                             |
+                             |    Parameters
+                             |    ----------
+                             |    clique_size : integer
+                             |        Large values of clique size result in fewer, smaller communities that are more connected.
+                             |        Must be at least 2.
+                             |
+                             |    community_property_label: str
+                             |        Name of the community property of vertex that will be updated/created in the graph.
+                             |
+                             |    Examples
+                             |    --------
+                             |    ::
+                             |
+                             |        graph.ml.kclique_percolation(4, 'community')
+                             |
+                             |
+                           """.stripMargin)))
 
   override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
 
