@@ -102,7 +102,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph:titan/ml/graphx_pagerank"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
     extendedSummary = Some("""
