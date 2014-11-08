@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.graphbuilder.elements.Property
+import com.intel.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
@@ -43,7 +43,8 @@ import com.intel.intelanalytics.domain.schema.Column
 class ExportFromTitanTest extends FlatSpec with Matchers with MockitoSugar {
   "getPropertiesValueByColumns" should "get property values by column sequence" in {
     val properties = Set(Property("col4", 2f), Property("col1", 1), Property("col2", "2"), Property("col3", true))
-    val result = ExportFromTitanGraph.getPropertiesValueByColumns(List("col1", "col2", "col3", "col4"), properties)
+    val vertex = GBVertex(1, Property("gbId", "1"), properties)
+    val result = vertex.getPropertiesValueByColumns(List("col1", "col2", "col3", "col4"), properties)
     result shouldBe Array(1, "2", true, 2f)
   }
 
