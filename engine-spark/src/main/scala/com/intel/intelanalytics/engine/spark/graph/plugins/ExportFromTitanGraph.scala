@@ -102,7 +102,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
 
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
 
-    ExportFromTitanGraph.createEdgeFrames(edges, titanDBGraph, graphs, graphId: Long)
+    ExportFromTitanGraph.createEdgeFrames(edges, titanDBGraph, graphs, graph.id)
     saveToEdgeFrame(edges, ctx, graph, titanDBGraph)
     edges.unpersist()
 
