@@ -426,7 +426,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(UUID.randomUUID().toString))(implicit user: UserPrincipal): DataFrame = {
+  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(FrameName.generate()))(implicit user: UserPrincipal): DataFrame = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {

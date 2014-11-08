@@ -22,8 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
-
-
 /**
  * General user object naming
  */
@@ -33,7 +31,7 @@ object Naming {
     Naming.validateAlphaNumericUnderscore(name)
   }
 
-  implicit def nameToString(name: Name) : String = name.name
+  implicit def nameToString(name: Name): String = name.name
 
   private lazy val alphaNumericUnderscorePattern = "^[a-zA-Z0-9_]+$".r
 
