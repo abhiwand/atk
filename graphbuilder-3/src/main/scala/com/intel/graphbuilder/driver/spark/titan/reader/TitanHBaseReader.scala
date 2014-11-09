@@ -51,7 +51,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val hBaseConfig = createHBaseConfiguration()
     val tableName = titanConfig.getString(TITAN_STORAGE_TABLENAME)
 
-    //checkTableExists(hBaseConfig, tableName)
+    checkTableExists(hBaseConfig, tableName)
 
     val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TitanHBaseInputFormat],
       classOf[NullWritable],
@@ -84,9 +84,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def checkTableExists(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: String) = {
     val admin = new HBaseAdmin(hBaseConfig)
     if (!admin.isTableAvailable(tableName)) {
-      admin.close()
       throw new RuntimeException("Table does not exist:" + tableName)
     }
-    admin.close()
   }
 }
