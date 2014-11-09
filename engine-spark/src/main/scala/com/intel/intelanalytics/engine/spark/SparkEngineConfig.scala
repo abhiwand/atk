@@ -132,6 +132,9 @@ trait SparkEngineConfig extends EventLogging {
   def createTitanConfiguration(commandConfig: Config, titanPath: String): SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanDefaultConfig = commandConfig.getConfig(titanPath)
+
+    //Prevents errors in Titan/HBase reader when storage.hostname is converted to list
+    titanConfiguration.setDelimiterParsingDisabled(true)
     for (entry <- titanDefaultConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
