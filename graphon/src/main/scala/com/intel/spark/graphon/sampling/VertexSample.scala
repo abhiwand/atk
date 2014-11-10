@@ -26,7 +26,7 @@ package com.intel.spark.graphon.sampling
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }

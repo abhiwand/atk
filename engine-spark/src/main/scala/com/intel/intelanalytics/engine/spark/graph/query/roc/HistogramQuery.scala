@@ -4,17 +4,12 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
-import spray.json._
 
-import scala.collection.JavaConverters._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
