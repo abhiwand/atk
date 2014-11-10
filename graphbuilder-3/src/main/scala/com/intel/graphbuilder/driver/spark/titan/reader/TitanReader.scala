@@ -10,8 +10,16 @@ import org.apache.spark.rdd.RDD
  * TitanReader constants.
  */
 object TitanReader {
-  val TITAN_STORAGE_NS = GraphDatabaseConfiguration.STORAGE_NS.getName
-  val TITAN_STORAGE_BACKEND = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_BACKEND.getName
+  val TITAN_HADOOP_PREFIX = "titan.hadoop.input.conf."
+
+  val TITAN_STORAGE_BACKEND = "storage.backend" //GraphDatabaseConfiguration.STORAGE_BACKEND
+  val TITAN_STORAGE_HOSTNAME = "storage.hostname" //GraphDatabaseConfiguration.STORAGE_HOSTS
+  val TITAN_STORAGE_PORT = "storage.port"
+
+  val TITAN_STORAGE_HBASE_TABLE = "storage.hbase.table" // HBaseStoreManager.HBASE_TABLE
+  val TITAN_STORAGE_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace"
+  val TITAN_CASSANDRA_INPUT_WIDEROWS = "cassandra.input.widerows";
+  val TITAN_CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.batch.size";
   val TITAN_READER_DEFAULT_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
 }
 
@@ -42,6 +50,10 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       case "hbase" => {
         val titanHBaseReader = new TitanHBaseReader(sparkContext, titanConnector)
         titanHBaseReader.read()
+      }
+      case "cassandra" => {
+        val titanCassandraReader = new TitanCassandraReader(sparkContext, titanConnector)
+        titanCassandraReader.read()
       }
       case _ => throw new RuntimeException {
         "Unsupported storage backend for Titan reader: " + storageBackend

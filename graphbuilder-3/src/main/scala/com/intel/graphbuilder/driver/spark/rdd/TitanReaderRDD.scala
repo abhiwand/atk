@@ -11,11 +11,11 @@ import org.apache.spark.{ InterruptibleIterator, Partition, TaskContext }
 /**
  * RDD that loads Titan graph from HBase.
  *
- * @param hBaseRDD Input RDD
+ * @param faunusRDD Input RDD
  * @param titanConnector connector to Titan
  */
 
-class TitanReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
+class TitanReaderRDD(faunusRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](faunusRDD) {
 
   override def getPartitions: Array[Partition] = firstParent[(NullWritable, FaunusVertex)].partitions
 
@@ -26,8 +26,8 @@ class TitanReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConnector
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
 
-    val graphElements = firstParent[(NullWritable, FaunusVertex)].iterator(split, context).flatMap(hBaseRow => {
-      val faunusVertex = hBaseRow._2
+    val graphElements = firstParent[(NullWritable, FaunusVertex)].iterator(split, context).flatMap(inputRow => {
+      val faunusVertex = inputRow._2
 
       val gbVertex = TitanConverter.createGraphBuilderVertex(faunusVertex)
       val gbEdges = TitanConverter.createGraphBuilderEdges(faunusVertex)

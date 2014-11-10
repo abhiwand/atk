@@ -155,10 +155,16 @@ trait SparkEngineConfig extends EventLogging {
    */
   def setTitanAutoPartitions(titanConfiguration: SerializableBaseConfiguration): SerializableBaseConfiguration = {
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
-    val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
+    val storageBackend = titanConfiguration.getString("storage.backend")
 
-    titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
-    info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+    storageBackend.toLowerCase match {
+      case "hbase" => {
+        val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
+        titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
+        info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+      }
+      case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
+    }
 
     titanConfiguration
   }
