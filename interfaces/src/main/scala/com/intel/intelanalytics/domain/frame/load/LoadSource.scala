@@ -47,12 +47,18 @@ case class Load(destination: FrameReference, source: LoadSource)
  * @param uri Location of data to load. Should be appropriate for the source_type.
  * @param parser Object describing how to parse the resource. If data already an RDD can be set to None
  */
-case class LoadSource(source_type: String, uri: String, parser: Option[LineParser]) {
+case class LoadSource(source_type: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None) {
 
   require(source_type != null)
-  require(source_type == "frame" || source_type == "file")
+  require(source_type == "frame" || source_type == "file" || source_type == "strings" || source_type == "linefile")
   require(uri != null)
   require(parser != null)
+  if (source_type == "frame" || source_type == "file" || source_type == "linefile") {
+    require(data == None)
+  }
+  if (source_type == "strings") {
+    require(data != None)
+  }
 
   /**
    * True if source is an existing Frame
@@ -62,12 +68,25 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
   }
 
   /**
+   * True if source is a pandas Data Frame
+   */
+  def isClientData: Boolean = {
+    source_type == "strings"
+  }
+
+  /**
    * True if source is a file
    */
-  def isFile: Boolean = {
+  def isParsableFile: Boolean = {
     source_type == "file"
   }
 
+  /**
+   * True if source is a Line File
+   */
+  def isUnparsableFile: Boolean = {
+    source_type == "linefile"
+  }
 }
 
 /**
@@ -85,7 +104,12 @@ case class LineParser(name: String, arguments: LineParserArguments)
  * @param schema Schema of Row created in file
  * @param skip_rows number of lines to skip in the file
  */
-case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int])
+case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int]) {
+  skip_rows match {
+    case e: Some[Int] => require(skip_rows.get >= 0 && skip_rows.get < 3, "valid values for skip_header_lines are: 0, 1, 2")
+    case _ =>
+  }
+}
 
 /**
  * Schema arguments for the LineParserArguments -
