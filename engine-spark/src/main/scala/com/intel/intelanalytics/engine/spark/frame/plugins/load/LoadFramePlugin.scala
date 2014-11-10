@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.{ ParseResultRddWrapper, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -87,20 +87,31 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(invocation, destinationFrame, additionalData)
     }
-    else if (arguments.source.isFile) {
-      val parser = arguments.source.parser.get
+    else if (arguments.source.isUnparsableFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
+      unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
+    }
+    else if (arguments.source.isParsableFile || arguments.source.isClientData) {
+      val parser = arguments.source.parser.get
 
+      val parseResult = if (arguments.source.isParsableFile) {
+        val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
+        LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+      }
+      else {
+        val data = arguments.source.data.get
+        LoadRDDFunctions.loadAndParseData(ctx, data, parser)
+      }
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
         val errorFrame = frames.lookupOrCreateErrorFrame(destinationFrame)
         unionAndSave(invocation, errorFrame, parseResult.errorLines)
       }
-
       // successfully parsed lines get added to the destination frame
       unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
     }
+
     else {
       throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)
     }

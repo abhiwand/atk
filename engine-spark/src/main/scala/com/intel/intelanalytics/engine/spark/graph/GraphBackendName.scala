@@ -29,7 +29,7 @@ package com.intel.intelanalytics.engine.spark.graph
 /**
  * Utility for converting between user provided graph names and their names in the graph database.
  */
-object GraphName {
+object GraphBackendName {
 
   private val iatGraphTablePrefix: String = "iat_graph_"
 

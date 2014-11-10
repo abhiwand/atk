@@ -326,7 +326,7 @@ case class Schema(columns: List[Column] = List[Column](),
    * @return a new copy of the Schema with the column removed
    */
   def dropColumn(columnName: String): Schema = {
-    copy(columns = columns.drop(columnIndex(columnName) + 1))
+    copy(columns = columns.filterNot(column => column.name == columnName))
   }
 
   /**

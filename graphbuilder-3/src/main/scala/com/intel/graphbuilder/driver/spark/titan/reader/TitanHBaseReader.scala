@@ -2,7 +2,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.{TitanAutoPartitioner, TitanGraphConnector}
+import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
 import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.core.util.ReflectiveConfigOptionLoader
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
