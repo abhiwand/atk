@@ -28,7 +28,8 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ DataFrame }
+import com.intel.intelanalytics.domain.{ Naming }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
@@ -109,7 +110,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
       new GraphTemplate(
         arguments.newGraphName match {
           case Some(name) => name
-          case None => frames.generateFrameName(prefix = "titan_graph")
+          case None => Naming.generateName(prefix = Some("titan_graph"))
         },
         StorageFormats.HBaseTitan))
     val ctx = invocation.sparkContext

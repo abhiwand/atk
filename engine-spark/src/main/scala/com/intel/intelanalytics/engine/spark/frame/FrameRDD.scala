@@ -109,6 +109,15 @@ class FrameRDD(val schema: Schema,
   }
 
   /**
+   * Drop all columns with the 'ignore' data type.
+   *
+   * The ignore data type is a slight hack for ignoring some columns on import.
+   */
+  def dropIgnoreColumns(): FrameRDD = {
+    convertToNewSchema(schema.dropIgnoreColumns())
+  }
+
+  /**
    * Union two Frame's, merging schemas if needed
    */
   def union(other: FrameRDD): FrameRDD = {
@@ -285,6 +294,7 @@ object FrameRDD {
           case x if x.equals(DataTypes.float32) => FloatType
           case x if x.equals(DataTypes.float64) => DoubleType
           case x if x.equals(DataTypes.string) => StringType
+          case x if x.equals(DataTypes.ignore) => StringType
         }, nullable = true)
     }
     StructType(fields)

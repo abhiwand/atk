@@ -283,10 +283,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_row_count(self, None)
 
-    @property
-    @api
-    def ia_uri(self):
-        return self._backend.get_ia_uri(self)
 
     @property
     @api
@@ -529,7 +525,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    def copy(self, columns=None, where=None):
+    def copy(self, columns=None, where=None, name=None):
         """
         Copy frame.
 
@@ -543,7 +539,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             {source_column_name: destination_column_name}.
         where : row function (optional)
             If not None, only those rows which evaluate to True will be copied
-
+        name : str (optional)
+            name of the copied frame
         Returns
         -------
         Frame
@@ -584,7 +581,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. versionchanged:: 0.8.5
 
         """
-        return self._backend.copy(self, columns, where)
+        return self._backend.copy(self, columns, where, name)
 
     @api
     def count(self, where):
