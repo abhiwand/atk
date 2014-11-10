@@ -74,28 +74,26 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
 
     // run the operation
     val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
-    frames.tryNewFrame(template) { newFrame =>
-      val copiedFrame = frames.updateSchema(newFrame, newSchema)
-      if (arguments.where.isEmpty) {
-        val rdd: FrameRDD = arguments.columns match {
-          case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
-          case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
-            frames.loadFrameRDD(ctx, sourceFrame)
-              .map(row => {
-                for { i <- indices } yield row(i)
-              }.toArray))
-        }
-        frames.saveFrame(copiedFrame, rdd, Some(sourceFrame.rowCount))
+    val newFrame = frames.updateSchema(frames.create(template), newSchema)
+    if (arguments.where.isEmpty) {
+      val rdd: FrameRDD = arguments.columns match {
+        case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
+        case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
+          frames.loadFrameRDD(ctx, sourceFrame)
+            .map(row => {
+              for { i <- indices } yield row(i)
+            }.toArray))
       }
-      else {
-        // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
-        // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-        val pythonRDDStorage = new PythonRDDStorage(frames)
-        val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where.get, ctx)
-        val converter = DataTypes.parseMany(newSchema.columns.map(_.dataType).toArray)(_)
-        val rowCount = pythonRDDStorage.persistPythonRDD(copiedFrame, pyRdd, converter, skipRowCount = false)
-        frames.updateRowCount(copiedFrame, rowCount)
-      }
+      frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
+    }
+    else {
+      // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
+      // TODO - update if UDF wrapping logic ever moves out of the client and into the server
+      val pythonRDDStorage = new PythonRDDStorage(frames)
+      val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where.get, ctx)
+      val converter = DataTypes.parseMany(newSchema.columns.map(_.dataType).toArray)(_)
+      val rowCount = pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = false)
+      frames.updateRowCount(newFrame, rowCount)
     }
   }
 }
