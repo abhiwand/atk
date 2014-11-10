@@ -106,7 +106,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
 
     val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
-    ExportFromTitanGraph.createVertexFrames(graphs, graph.id, vertices, labelToIdNameMapping.keySet.toList)
+    ExportFromTitanGraph.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
     val titanDBGraph = graphs.getTitanGraph(graphId)
     saveToVertexFrame(vertices, ctx, labelToIdNameMapping, graph, titanDBGraph)
     vertices.unpersist()
@@ -223,9 +223,9 @@ object ExportFromTitanGraph {
    * Create vertex frames for all the vertex types in the input vertex rdd
    * @param graphs graph storage
    * @param graphId destination graph id
-   * @param vertices vertices rdd
+   * @param vertexLabels vertex labels
    */
-  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertices: RDD[GBVertex], vertexLabels: List[String]) {
+  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String]) {
     vertexLabels.foreach(label => {
       graphs.defineVertexType(graphId, VertexSchema(label, None))
     })

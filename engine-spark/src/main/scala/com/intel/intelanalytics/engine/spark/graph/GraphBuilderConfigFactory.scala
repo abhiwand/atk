@@ -28,7 +28,7 @@ import com.intel.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad }
+import com.intel.intelanalytics.domain.graph.{ GraphName, Graph, GraphLoad }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -157,7 +157,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
   }
 
@@ -176,7 +176,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
   }
 
