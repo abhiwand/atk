@@ -25,8 +25,8 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
@@ -43,6 +43,7 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.thinkaurelius.titan.core.TitanGraph
+import com.intel.intelanalytics.domain.Naming
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
@@ -197,7 +198,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, frames.generateFrameName(prefix = "vertex_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -226,7 +227,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, frames.generateFrameName(prefix = "edge_frame_"), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }

@@ -1,11 +1,15 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments }
-import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column, SchemaUtil }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
-import org.apache.spark.SparkContext
+import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SchemaRDD
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+
+import scala.reflect.ClassTag
 
 /**
  * Helper functions for loading an RDD
@@ -26,11 +30,40 @@ object LoadRDDFunctions extends Serializable {
 
     val fileContentRdd: RDD[String] = sc.textFile(fileName, partitions).filter(_.trim() != "")
 
+    if (parser != null) {
+
+      // parse a sample so we can bail early if needed
+      parseSampleOfData(fileContentRdd, parser)
+
+      // re-parse the entire file
+      parse(fileContentRdd, parser)
+    }
+    else {
+      val listColumn = List(Column("data_lines", DataTypes.str))
+      val rows = fileContentRdd.map(s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
+      ParseResultRddWrapper(new FrameRDD(new Schema(listColumn), rows), null)
+    }
+
+  }
+
+  /**
+   * Load each line from client data into an RDD of Row objects.
+   * @param sc SparkContext used for textFile reading
+   * @param data data to parse
+   * @param parser parser provided
+   * @return  RDD of Row objects
+   */
+  def loadAndParseData(sc: SparkContext,
+                       data: List[List[Any]],
+                       parser: LineParser): ParseResultRddWrapper = {
+
+    //val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
+    val dataContentRDD: RDD[Any] = sc.parallelize(data)
     // parse a sample so we can bail early if needed
-    parseSampleOfFile(fileContentRdd, parser)
+    parseSampleOfData(dataContentRDD, parser)
 
     // re-parse the entire file
-    parse(fileContentRdd, parser)
+    parse(dataContentRDD, parser)
   }
 
   /**
@@ -41,14 +74,14 @@ object LoadRDDFunctions extends Serializable {
    * @param fileContentRdd the rows that need to be parsed (the file content)
    * @param parser the parser to use
    */
-  private[frame] def parseSampleOfFile(fileContentRdd: RDD[String],
-                                       parser: LineParser): Unit = {
+  private[frame] def parseSampleOfData[T: ClassTag](fileContentRdd: RDD[T],
+                                                    parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val sampleRdd = MiscFrameFunctions.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
+    val sampleRdd = MiscFrameFunctions.getPagedRdd[T](fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
     sampleRdd.cache()
@@ -63,7 +96,7 @@ object LoadRDDFunctions extends Serializable {
     sampleRdd.unpersist()
 
     if (failedRatio >= threshold) {
-      val errorExampleRecord = preEvaluateResults.errorLines.first().clone()
+      val errorExampleRecord = preEvaluateResults.errorLines.first().copy()
       val errorRow = errorExampleRecord { 0 }
       val errorMessage = errorExampleRecord { 1 }
       throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount, " +
@@ -78,7 +111,7 @@ object LoadRDDFunctions extends Serializable {
    * @param parser the parser to use
    * @return the parse result - successes and failures
    */
-  private[frame] def parse(rowsToParse: RDD[String], parser: LineParser): ParseResultRddWrapper = {
+  private[frame] def parse[T](rowsToParse: RDD[T], parser: LineParser): ParseResultRddWrapper = {
 
     val schemaArgs = parser.arguments.schema
     val skipRows = parser.arguments.skip_rows
@@ -102,14 +135,14 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(new LegacyFrameRDD(schema.schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(FrameRDD.toFrameRDD(schema.schema, successesRdd), FrameRDD.toFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
     }
   }
 
-  private[frame] def getLineParser(parser: LineParser, columnTypes: Array[DataTypes.DataType]): String => RowParseResult = {
+  private[frame] def getLineParser[T](parser: LineParser, columnTypes: Array[DataTypes.DataType]): T => RowParseResult = {
     parser.name match {
       //TODO: look functions up in a table rather than switching on names
       case "builtin/line/separator" => {
@@ -119,10 +152,12 @@ object LoadRDDFunctions extends Serializable {
           case x => throw new IllegalArgumentException(
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
-
-        val rowParser = new RowParser(args.separator, columnTypes)
-        s => rowParser(s)
-
+        val rowParser = new CsvRowParser(args.separator, columnTypes)
+        s => rowParser(s.asInstanceOf[String])
+      }
+      case "builtin/upload" => {
+        val uploadParser = new UploadParser(columnTypes)
+        row => uploadParser(row.asInstanceOf[List[Any]])
       }
       case x => throw new Exception("Unsupported parser: " + x)
     }

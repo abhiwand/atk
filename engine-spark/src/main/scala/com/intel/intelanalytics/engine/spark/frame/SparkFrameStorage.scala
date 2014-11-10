@@ -321,8 +321,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param errorFrame the model for the frame that was the parse errors
    */
   def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
-    val frameRdd = loadLegacyFrameRdd(ctx, frame)
-    val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
+    val frameRdd = loadFrameRDD(ctx, frame)
+    val errorFrameRdd = loadFrameRDD(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
@@ -406,18 +406,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       None
     }
 
-  }
-
-  /**
-   * Automatically generate a name for a frame.
-   *
-   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
-   *
-   * @param annotation Optional annotation to add to frame name
-   * @return Frame name
-   */
-  def generateFrameName(annotation: Option[String] = None, prefix: String = "frame_"): String = {
-    prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
   }
 
   /**

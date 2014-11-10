@@ -20,13 +20,15 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
 package com.intel.intelanalytics.domain.frame
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
-  FrameName.validate(name)
-  require(description != null, "description must not be null")
+/**
+ * Specifies frame creation, used in REST API to support optional name
+ * @param name Option name, if not provided, one will be generated
+ * @param description Option description
+ */
+case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None) {
+  def toDataFrameTemplate: DataFrameTemplate = {
+    DataFrameTemplate(name = FrameName.validateOrGenerate(name), description)
+  }
 }
-
