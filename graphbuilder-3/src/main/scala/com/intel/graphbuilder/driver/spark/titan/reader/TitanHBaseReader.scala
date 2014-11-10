@@ -3,7 +3,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
 import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -51,11 +51,17 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def createHBaseConfiguration(): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = HBaseConfiguration.create()
 
+    // Add Titan configuratoin
     titanConfig.getKeys.foreach {
       case (titanKey: String) =>
         val titanHadoopKey = TITAN_HADOOP_PREFIX + titanKey
         hBaseConfig.set(titanHadoopKey, titanConfig.getProperty(titanKey).toString)
     }
+
+    // Auto-configure number of input splits
+    val tableName = titanConfig.getString(TITAN_STORAGE_HBASE_TABLE)
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
+    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
 
     hBaseConfig
   }

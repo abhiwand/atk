@@ -23,12 +23,15 @@
 
 package com.intel.graphbuilder.graph.titan
 
+import com.google.common.annotations.VisibleForTesting
 import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
+import org.apache.hadoop.conf
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat
+import org.apache.hadoop.hbase.util.FSUtils
 import org.apache.spark.SparkContext
 
 import scala.util.Try
@@ -76,19 +79,18 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
                           hBaseAdmin: HBaseAdmin,
                           titanGraphName: String): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = hBaseAdmin.getConfiguration
-    println("Checking splits")
-    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
-    if (enableAutoPartition) {
-      val inputSplits = getSparkHBaseInputSplits(sparkContext, hBaseAdmin, titanGraphName)
-      if (inputSplits > 1) {
-        hBaseConfig.setInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, inputSplits)
-      }
-    }
-    println("Checking splits again")
-    println(TableInputFormat.INPUT_TABLE + "=" + hBaseConfig.get(TableInputFormat.INPUT_TABLE))
+    setHBaseInputSplits(sparkContext, hBaseConfig, titanGraphName)
     hBaseConfig
   }
 
+  /**
+   * Sets the HBase input splits for the HBase table input format in the HBase configuration
+   * that is supplied as input.
+   *
+   * @param sparkContext Spark context
+   * @param hBaseConfig HBase configuration
+   * @param titanGraphName  Titan graph name
+   */
   def setHBaseInputSplits(sparkContext: SparkContext,
                           hBaseConfig: org.apache.hadoop.conf.Configuration,
                           titanGraphName: String): Unit = {
@@ -105,9 +107,10 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    *
    * The default input split policy for HBase tables is one Spark partition per HBase region. This
    * function computes the desired number of HBase input splits based on the number of available Spark
-   * cores in the cluster, and the user-defined configuration for splits/core.
+   * cores in the cluster, the user-defined configuration for splits/core, and the minimum size of an
+   * input split
    *
-   * Number of input splits = max(Number of HBase regions for table, (available Spark cores*input splits/core))
+   * Number of input splits = min((HBase Table size MB/minimum split size MB), (available Spark cores*input splits/core))
    *
    * @param sparkContext Spark context
    * @param hBaseAdmin HBase administration
@@ -117,30 +120,53 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
   private def getSparkHBaseInputSplits(sparkContext: SparkContext,
                                        hBaseAdmin: HBaseAdmin,
                                        titanGraphName: String): Int = {
-    val regionCount = Try(hBaseAdmin.getTableRegions(TableName.valueOf(titanGraphName)).size()).getOrElse(0)
-
+    val maxSplitsBySize = getMaxInputSplitsBySize(hBaseAdmin, titanGraphName)
     val maxSparkCores = getMaxSparkCores(sparkContext, hBaseAdmin)
     val splitsPerCore = titanConfig.getInt(HBASE_INPUT_SPLITS_PER_CORE, 1)
-    Math.max(splitsPerCore * maxSparkCores, regionCount)
+    Math.min(splitsPerCore * maxSparkCores, maxSplitsBySize)
   }
 
   /**
-   * Get HBase pre-splits
+   * Get the maximum number of input splits based on the graph size in HBase, and the minimum size of an input split
    *
-   * Uses a simple rule-of-thumb to calculate the number of regions per table. This is a place-holder
-   * while we figure out how to incorporate other parameters such as input-size, and number of HBase column
-   * families into the formula.
+   * @param hBaseAdmin HBase configuration
+   * @param titanGraphName Titan graph name
+   * @return Maximum number of input splits
    *
-   * @param hBaseAdmin HBase administration
-   * @return Number of HBase pre-splits
    */
-  private def getHBasePreSplits(hBaseAdmin: HBaseAdmin): Int = {
-    val regionsPerServer = titanConfig.getInt(HBASE_REGIONS_PER_SERVER, 1)
-    val regionServerCount = getHBaseRegionServerCount(hBaseAdmin)
+  @VisibleForTesting
+  def getMaxInputSplitsBySize(hBaseAdmin: HBaseAdmin, titanGraphName: String): Int = {
+    val minSplitSizeMb = titanConfig.getInt(HBASE_MIN_INPUT_SPLIT_SIZE_MB, 0)
+    val hBaseConfig = hBaseAdmin.getConfiguration
+    val tableName = TableName.valueOf(titanGraphName)
 
-    val preSplits = if (regionServerCount > 0) regionsPerServer * regionServerCount else 0
+    val regionCount = Try(hBaseAdmin.getTableRegions(tableName).size()).getOrElse(0)
+    val tableSizeMb = getTableSizeInMb(hBaseConfig, tableName)
 
-    preSplits
+    val maxSplitsBySize = if (minSplitSizeMb > 0) {
+      Math.max(tableSizeMb / minSplitSizeMb, regionCount)
+    }
+    else regionCount
+
+    maxSplitsBySize
+  }
+
+  /**
+   * Get the size of a HBase table on disk
+   *
+   * @param hBaseConfig HBase configuration
+   * @param tableName HBase table name
+   * @return Size of HBase table on disk
+   */
+  @VisibleForTesting
+  def getTableSizeInMb(hBaseConfig: conf.Configuration, tableName: TableName): Int = {
+    val tableSize = Try({
+      val tableDir = FSUtils.getTableDir(FSUtils.getRootDir(hBaseConfig), tableName)
+      val fileSystem = FileSystem.get(hBaseConfig)
+      (fileSystem.getContentSummary(tableDir).getLength / (1024 * 1024))
+    }).getOrElse(0L)
+
+    if (tableSize > Integer.MAX_VALUE) Integer.MAX_VALUE else tableSize.toInt
   }
 
   /**
@@ -168,6 +194,25 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
   }
 
   /**
+   * Get HBase pre-splits
+   *
+   * Uses a simple rule-of-thumb to calculate the number of regions per table. This is a place-holder
+   * while we figure out how to incorporate other parameters such as input-size, and number of HBase column
+   * families into the formula.
+   *
+   * @param hBaseAdmin HBase administration
+   * @return Number of HBase pre-splits
+   */
+  private def getHBasePreSplits(hBaseAdmin: HBaseAdmin): Int = {
+    val regionsPerServer = titanConfig.getInt(HBASE_REGIONS_PER_SERVER, 1)
+    val regionServerCount = getHBaseRegionServerCount(hBaseAdmin)
+
+    val preSplits = if (regionServerCount > 0) regionsPerServer * regionServerCount else 0
+
+    preSplits
+  }
+
+  /**
    * Get the number of region servers in the HBase cluster.
    *
    * @param hBaseAdmin HBase administration
@@ -179,10 +224,14 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
 
 }
 
+/**
+ * Constants used by Titan Auto-partitioner
+ */
 object TitanAutoPartitioner {
   val ENABLE_AUTO_PARTITION = "auto-partitioner.enable"
   val HBASE_REGIONS_PER_SERVER = "auto-partitioner.hbase.regions-per-server"
   val HBASE_INPUT_SPLITS_PER_CORE = "auto-partitioner.hbase.input-splits-per-spark-core"
+  val HBASE_MIN_INPUT_SPLIT_SIZE_MB = "auto-partitioner.hbase.input-splits-per-spark-core"
   val SPARK_MAX_CORES = "spark.cores.max"
   val TITAN_HBASE_REGION_COUNT = "storage.region-count"
 }

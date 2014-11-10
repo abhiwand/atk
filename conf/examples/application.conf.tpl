@@ -39,8 +39,10 @@ intel.analytics {
         # The (comma separated, no spaces) Zookeeper hosts that
         # Comma separated list of host names with zookeeper role assigned
         titan.load.storage.hostname = "invalid-titan-host"
+
         # Titan storage backend. Available options are hbase and cassandra. The default is hbase
         //titan.load.storage.backend = "hbase"
+
         # Titan storage port, defaults to 2181 for HBase ZooKeeper. Use 9160 for Cassandra
         //titan.load.storage.port = "2181"
 
@@ -206,13 +208,17 @@ intel.analytics {
             //randomized-conflict-avoidance-retries = 10
           }
         }
+
         auto-partitioner {
           hbase {
             # Number of regions per regionserver to set when creating Titan’s HBase table
             regions-per-server = 2
 
-            # Number of input splits per Spark core for Titan/HBase reader
+            # Number of input splits for Titan reader is based on number of available cores
+            # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
+            #     graph size in HBase/minimum-input-splits-size-mb)
             input-splits-per-spark-core = 2
+            minimum-input-splits-size-mb = 64
           }
 
           enable = false

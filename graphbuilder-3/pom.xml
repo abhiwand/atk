@@ -84,22 +84,9 @@
                     <groupId>org.jboss.netty</groupId>
                     <artifactId>netty</artifactId>
                 </exclusion>
-
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-cassandra</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-hbase</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-es</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.mrunit</groupId>
@@ -121,7 +108,6 @@
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-client</artifactId>
                 </exclusion>
-
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-core</artifactId>
@@ -149,10 +135,6 @@
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
             <exclusions>
-                <exclusion>
-                    <groupId>org.apache.zookeeper</groupId>
-                    <artifactId>zookeeper</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
@@ -359,6 +341,5 @@
             <groupId>com.github.stephenc.high-scale-lib</groupId>
             <artifactId>high-scale-lib</artifactId>
         </dependency>
-
     </dependencies>
 </project>
