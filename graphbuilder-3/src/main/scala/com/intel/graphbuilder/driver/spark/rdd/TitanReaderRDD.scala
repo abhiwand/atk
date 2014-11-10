@@ -15,7 +15,7 @@ import org.apache.spark.{ InterruptibleIterator, Partition, TaskContext }
  * @param titanConnector connector to Titan
  */
 
-class TitanHBaseReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
+class TitanReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
 
   override def getPartitions: Array[Partition] = firstParent[(NullWritable, FaunusVertex)].partitions
 
