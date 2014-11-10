@@ -52,7 +52,14 @@ import com.intel.intelanalytics.UnitReturn
 /**
  * Implicit conversions for domain objects to/from JSON
  */
+
 object DomainJsonProtocol extends IADefaultJsonProtocol {
+
+  /**
+   * ***********************************************************************
+   * NOTE:: Order of implicits matters
+   * *************************************************************************
+   */
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
@@ -140,12 +147,45 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
+  implicit def singletonOrListFormat[T: JsonFormat] = new JsonFormat[SingletonOrListValue[T]] {
+    def write(list: SingletonOrListValue[T]) = JsArray(list.value.map(_.toJson))
+    def read(value: JsValue): SingletonOrListValue[T] = value match {
+      case JsArray(list) => SingletonOrListValue[T](list.map(_.convertTo[T]))
+      case singleton => SingletonOrListValue[T](List(singleton.convertTo[T]))
+    }
+  }
+  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
+    override def write(obj: Any): JsValue = {
+      obj match {
+        case n: Int => new JsNumber(n)
+        case n: Long => new JsNumber(n)
+        case n: Float => new JsNumber(n)
+        case n: Double => new JsNumber(n)
+        case s: String => new JsString(s)
+        case n: java.lang.Long => new JsNumber(n.longValue())
+        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
+      }
+    }
+
+    override def read(json: JsValue): Any = {
+      json match {
+        case JsNumber(n) if n.isValidInt => n.intValue()
+        case JsNumber(n) if n.isValidLong => n.longValue()
+        case JsNumber(n) if n.isValidFloat => n.floatValue()
+        case JsNumber(n) => n.doubleValue()
+        case JsString(s) => s
+        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
+      }
+    }
+
+  }
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
 
   implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("frames", "frame", n => FrameReference(n))
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
+  implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -155,7 +195,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject])
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
-  implicit val loadSourceFormat = jsonFormat3(LoadSource)
+  implicit val loadSourceFormat = jsonFormat4(LoadSource)
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate)
   implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
@@ -174,6 +214,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnFormat = jsonFormat6(BinColumn)
+  implicit val sortByColumnsFormat = jsonFormat2(SortByColumns)
 
   implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatistics)
   implicit val columnSummaryStatisticsReturnFormat = jsonFormat13(ColumnSummaryStatisticsReturn)
@@ -206,7 +247,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
   implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
-  implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
+  implicit val ecdfLongFormat = jsonFormat3(ECDF)
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
@@ -215,6 +256,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   implicit val graphNoArgsFormat = jsonFormat1(GraphNoArgs)
+
+  implicit val graphElementIDNameFormat = jsonFormat2(ElementIDName)
+  implicit val graphElementIDNamesFormat = jsonFormat1(ElementIDNames)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
@@ -230,9 +274,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val defineEdgeFormat = jsonFormat5(DefineEdge)
   implicit val addVerticesFormat = jsonFormat4(AddVertices)
   implicit val addEdgesFormat = jsonFormat6(AddEdges)
-  implicit val labelFormat = jsonFormat2(Label)
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVertexRows)
+
+  implicit val exportGraphFormat = jsonFormat2(ExportGraph)
 
   implicit object UnitReturnJsonFormat extends RootJsonFormat[UnitReturn] {
     override def write(obj: UnitReturn): JsValue = {
@@ -242,32 +287,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     override def read(json: JsValue): UnitReturn = {
       throw new RuntimeException("UnitReturn type should never be provided as an argument")
     }
-  }
-
-  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
-    override def write(obj: Any): JsValue = {
-      obj match {
-        case n: Int => new JsNumber(n)
-        case n: Long => new JsNumber(n)
-        case n: Float => new JsNumber(n)
-        case n: Double => new JsNumber(n)
-        case s: String => new JsString(s)
-        case n: java.lang.Long => new JsNumber(n.longValue())
-        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
-      }
-    }
-
-    override def read(json: JsValue): Any = {
-      json match {
-        case JsNumber(n) if n.isValidInt => n.intValue()
-        case JsNumber(n) if n.isValidLong => n.longValue()
-        case JsNumber(n) if n.isValidFloat => n.floatValue()
-        case JsNumber(n) => n.doubleValue()
-        case JsString(s) => s
-        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
-      }
-    }
-
   }
 
   implicit object UriFormat extends JsonFormat[URI] {
@@ -331,7 +350,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       val jo = value.asJsObject
       val frame = frameReferenceFormat.read(jo.getFields("frame")(0))
       val columns: Option[Map[String, String]] = jo.getFields("columns") match {
-        case Seq(JsString(name)) => Some(Map[String, String](name -> name))
+        case Seq(JsString(n)) => Some(Map[String, String](n -> n))
         case Seq(JsArray(names)) => Some((for (n <- names) yield (n.convertTo[String], n.convertTo[String])).toMap)
         case Seq(JsObject(fields)) => Some((for ((name, new_name) <- fields) yield (name, new_name.convertTo[String])).toMap)
         case Seq(JsNull) => None
@@ -344,13 +363,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON expression for argument 'where' but got $x")
       }
-      FrameCopy(frame, columns, where)
+      val name: Option[String] = jo.getFields("name") match {
+        case Seq(JsString(n)) => Some(n)
+        case Seq(JsNull) => None
+      }
+      FrameCopy(frame, columns, where, name)
     }
 
     override def write(frameCopy: FrameCopy): JsValue = frameCopy match {
-      case FrameCopy(frame, columns, where) => JsObject("frame" -> frame.toJson,
+      case FrameCopy(frame, columns, where, name) => JsObject("frame" -> frame.toJson,
         "columns" -> columns.toJson,
-        "where" -> where.toJson)
+        "where" -> where.toJson,
+        "name" -> name.toJson)
     }
   }
 
@@ -369,7 +393,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   }
 
   implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat11(Graph)
+    implicit val graphFormatOriginal = jsonFormat12(Graph)
 
     override def read(value: JsValue): Graph = {
       graphFormatOriginal.read(value)

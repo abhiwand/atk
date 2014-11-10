@@ -24,11 +24,9 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.spark.graphon.communitydetection.kclique.{ GetConnectedComponents }
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
-import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.testutils.TestingSparkContextFlatSpec
+import org.scalatest.{ FlatSpec, Matchers }
 
 class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

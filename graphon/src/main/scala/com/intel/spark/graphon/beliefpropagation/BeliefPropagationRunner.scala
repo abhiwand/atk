@@ -1,7 +1,7 @@
 package com.intel.spark.graphon.beliefpropagation
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ Graph, Edge }
 import com.intel.intelanalytics._
 import com.intel.spark.graphon.VectorMath

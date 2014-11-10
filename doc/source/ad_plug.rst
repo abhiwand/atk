@@ -112,22 +112,25 @@ Naming
 ======
 
 Naming your command correctly is crucial for the usability of your system.
-The Python client creates Python functions to match the commands in the engine, and it places them and names then in accordance with the
-name you specify for your plugin.
+The Python client creates Python functions to match the commands in the engine, and it places them and names
+then in accordance with the name you specify for your plugin.
 
 Name components are separated by slashes.
 For instance, the command that drops columns from a dataframe is called dataframe/drop_column.
-The Python client sees that name, knows that dataframe commands are associated with the :term:`BigFrame` class, and therefore generates a
-function named drop_column on BigFrame.
-When the user calls that function, its arguments will be converted to JSON, sent to the REST server, and then on to the engine for processing.
+The Python client sees that name, knows that dataframe commands are associated with the :term:`Frame`
+class, and therefore generates a function named drop_column on the Frame.
+When the user calls that function, its arguments will be converted to JSON, sent to the REST server, and
+then on to the engine for processing.
 The results from the engine flow back through the REST server, and are converted back to Python objects.
 
-If the name of the command contains more than one slash, the Python client will create intermediate objects that allow functions
-to be grouped logically together.
-For example, if the command is named dataframe/ml/my_new_algorithm (of course, your algorithms will have better names!),
-then the method created in the Python client could be accessed on a frame f using f.ml.my_new_algorithm().
-You may nest commands as deeply as needed, any number of intermediary objects will be created automatically so that the object model
-of the frame or graph matches the command tree structure defined by the command names in the system.
+If the name of the command contains more than one slash, the Python client will create intermediate objects
+that allow functions to be grouped logically together.
+For example, if the command is named dataframe/ml/my_new_algorithm (of course, your algorithms will have
+better names!), then the method created in the Python client could be accessed on a frame f using
+f.ml.my_new_algorithm().
+You may nest commands as deeply as needed, any number of intermediary objects will be created automatically
+so that the object model of the frame or graph matches the command tree structure defined by the command
+names in the system.
 
 REST Input and Output
 =====================
@@ -147,9 +150,10 @@ and com.intel.intelanalytics.domain.graph.GraphReference to represent graphs.
 Self Arguments
 ==============
 
-Use a FrameReference as the type, and place this parameter first in the case class definition if you want this parameter to be filled
-by the BigFrame instance whose method is being invoked by the user.
-Similarly, if the method is on a graph, using  a GraphReference in the first position will do the trick for :term:`BigGraph` instances.
+Use a FrameReference as the type, and place this parameter first in the case class definition if you want
+this parameter to be filled by the Frame instance whose method is being invoked by the user.
+Similarly, if the method is on a graph, using  a GraphReference in the first position will do the trick for
+:term:`TitanGraph` instances.
 
 Single Value Results
 ====================

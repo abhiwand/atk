@@ -24,8 +24,8 @@
 from intelanalytics.core.iatypes import valid_data_types
 
 
-class BigColumn(object):
-    """Column in a BigFrame"""
+class Column(object):
+    """Column in a Frame"""
     def __init__(self, frame, name, data_type):
         self.name = name
         self.data_type = valid_data_types.get_from_type(data_type)

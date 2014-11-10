@@ -26,7 +26,20 @@ Mute definitions from the server
 
 # straightforward approach for now
 muted_commands = ['frame/load',
+                  'frame/count_where',
+                  'frame:/load',
+                  'frame:vertex/load',
+                  'frame:edge/load',
+                  'frame:/load',
                   'frame:/project',
                   'frame/rename',
+                  'frame:/rename',
+                  'frame:vertex/rename',
+                  'frame:edge/rename',
+                  #'graph/load',  # TODO - fix ref to graph.load in TitanGraph
+                  #'graph:/load',
+                  #'graph:titan/load',
                   'graph/rename',
+                  'graph:/rename',
+                  'graph:titan/rename',
                   ]

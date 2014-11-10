@@ -217,7 +217,7 @@ If you don't already have python 2.7 installed it will be installed automaticall
 a dependency on |IA| python rest client.
 Run the following command to install the |IA| rest client and all it's dependent packages::
 
-    sudo yum install intelanalytics-python-rest-client-python27
+    sudo yum install intelanalytics-python-rest-client-python
 
 Installing IPython
 ==================
@@ -287,7 +287,7 @@ Ipython shell and trying to ping the rest server.
     In [2]: ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
 
-    In [3]:
+    In [3]: ia.connect()
 
 IPython Notebook
 ================
@@ -298,4 +298,4 @@ You can start the notebook server with the following command::
     
     $ ipython notebook
 
-    .. |IA| replace:: Intel Analytics
+.. |IA| replace:: Intel Analytics

@@ -42,7 +42,6 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     testMode.modes shouldBe Set("E").toJson
   }
 
-
   "unweighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
     val stats: ColumnSummaryStatisticsReturn = ColumnStatistics.columnSummaryStatistics(2,

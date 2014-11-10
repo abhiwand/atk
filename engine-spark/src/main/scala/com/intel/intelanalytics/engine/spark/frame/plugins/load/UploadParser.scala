@@ -21,19 +21,30 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
+package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
-import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
-import org.apache.spark.SparkContext
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import org.apache.commons.csv.{ CSVFormat, CSVParser }
 
-class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
-  //TODO read the strategy from the config file
-  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerActionStrategy
-  contextManagementStrategy.configuration = conf
-  contextManagementStrategy.sparkContextFactory = factory
+import scala.collection.JavaConversions.asScalaIterator
 
-  def getContext(user: String, description: String): SparkContext = contextManagementStrategy.getContext(user, description)
-  def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
+class UploadParser(columnTypes: Array[DataType]) extends Serializable {
+
+  val converter = DataTypes.parseMany(columnTypes)(_)
+
+  /**
+   * Parse a line into a RowParseResult
+   * @param row a single line
+   * @return the result - either a success row or an error row
+   */
+  def apply(row: List[Any]): RowParseResult = {
+    try {
+      RowParseResult(parseSuccess = true, converter(row.toArray))
+    }
+    catch {
+      case e: Exception =>
+        RowParseResult(parseSuccess = false, Array(row.mkString(","), e.toString))
+    }
+  }
 }

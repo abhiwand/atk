@@ -23,4 +23,9 @@
 
 package com.intel.intelanalytics.domain.graph
 
-case class Label(graphRef: GraphReference, label: String)
+/**
+ * Data needed to export a graph.
+ * @param graph reference of the source graph
+ * @param newGraphName name of the new target graph. optional. if not included a name should be generated.
+ */
+case class ExportGraph(graph: GraphReference, newGraphName: Option[String] = None)
