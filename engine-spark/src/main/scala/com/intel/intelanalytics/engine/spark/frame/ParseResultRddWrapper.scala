@@ -9,5 +9,5 @@ import com.intel.intelanalytics.engine.Rows.Row
  * @param parsedLines lines that were successfully parsed
  * @param errorLines lines that were NOT successfully parsed including error messages
  */
-case class ParseResultRddWrapper(parsedLines: LegacyFrameRDD, errorLines: LegacyFrameRDD)
+case class ParseResultRddWrapper(parsedLines: FrameRDD, errorLines: FrameRDD)
 
