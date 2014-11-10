@@ -98,15 +98,12 @@ class CommandLoadable(object):
                             % (self.__class__, COMMAND_PREFIX))
 
         # instantiate the loaded intermediate classes
-        if hasattr(self.__class__, LOADED_INTERMEDIATE_CLASSES):
-            logger.debug("%s has intermediate classes to instantiate", self.__class__)
-            intermediate_classes = getattr(self.__class__, LOADED_INTERMEDIATE_CLASSES)
-            for intermediate in intermediate_classes:
-                private_member_name = get_private_name(getattr(intermediate, INTERMEDIATE_NAME))
-                if not hasattr(self, private_member_name):
-                    logger.debug("Instantiating intermediate class %s as %s", intermediate, private_member_name)
-                    instance = intermediate(self, *args, **kwargs)  # pass self as parent
-                    self._add_intermediate_instance(private_member_name, instance)
+        for intermediate in get_loaded_intermediate_classes(self.__class__):
+            private_member_name = get_private_name(getattr(intermediate, INTERMEDIATE_NAME))
+            if not hasattr(self, private_member_name):
+                logger.debug("Instantiating intermediate class %s as %s", intermediate, private_member_name)
+                instance = intermediate(self, *args, **kwargs)  # pass self as parent
+                self._add_intermediate_instance(private_member_name, instance)
 
     def _add_intermediate_instance(self, private_member_name, instance):
         logger.debug("Adding intermediate class instance as member %s", private_member_name)
@@ -187,7 +184,7 @@ def get_private_name(name):
 
 def get_intermediate_class_name(parent_class, intermediate_name):
     """Returns the name for intermediate class based on its parent class and intermediate name"""
-    # Example.   get_intermediate_class_name(BigGraph, 'ml') returns 'BigGraphMl'
+    # Example.   get_intermediate_class_name(TitanGraph, 'ml') returns 'TitanGraphMl'
     prefix = parent_class.__name__ if parent_class else ''
     suffix = intermediate_name[0].upper() + intermediate_name[1:]
     return prefix + suffix
@@ -211,10 +208,9 @@ def get_intermediate_class(parent_class, intermediate_name):
 
 def create_intermediate_class(parent_class, intermediate_name):
     class_name = get_intermediate_class_name(parent_class, intermediate_name)
-    doc = "Contains %s functionality for %s" % (intermediate_name, parent_class.__name__)
+    doc = "Contains %s functionality for :class:`~intelanalytics.%s`" % (intermediate_name, parent_class.__name__)
     intermediate_class = create_loadable_class(class_name, CommandLoadable, parent_class, doc, intermediate_name)
     setattr(intermediate_class, INTERMEDIATE_NAME, intermediate_name)
-    setattr(intermediate_class, LOADED_COMMANDS, [])
     return intermediate_class
 
 
@@ -241,12 +237,11 @@ def add_intermediate_class(parent_class, intermediate_name):
 
     # Add a property getter which returns an instance member variable of the
     # same name prefixed w/ an underscore, per convention
-    prop = create_intermediate_property(intermediate_name)
+    prop = create_intermediate_property(intermediate_class, intermediate_name)
     setattr(parent_class, intermediate_name, prop)
 
-    if not hasattr(parent_class, LOADED_INTERMEDIATE_CLASSES):
-        setattr(parent_class, LOADED_INTERMEDIATE_CLASSES, set())
-    getattr(parent_class, LOADED_INTERMEDIATE_CLASSES).add(intermediate_class)
+    # store class in the parent's loaded intermediate classes attribute
+    get_loaded_intermediate_classes(parent_class).add(intermediate_class)
 
     return intermediate_class
 
@@ -275,13 +270,25 @@ def load_loadable(loadable_class, command_def, execute_command_function):
         add_command(current_class, command_def, function)
 
 
+def get_loaded_intermediate_classes(loadable_class):
+    attr_name = loadable_class.__name__ + LOADED_INTERMEDIATE_CLASSES
+    if not hasattr(loadable_class, attr_name):
+        setattr(loadable_class, attr_name, set())
+    return getattr(loadable_class, attr_name)
+
+
+def get_loaded_commands(loadable_class):
+    attr_name = loadable_class.__name__ + LOADED_COMMANDS
+    if not hasattr(loadable_class, attr_name):
+        setattr(loadable_class, attr_name, [])
+    return getattr(loadable_class, attr_name)
+
+
 def add_command(loadable_class, command_def, function):
     # Add the function if it doesn't already exist or exists as a doc_stub
     if not hasattr(loadable_class, command_def.name) or hasattr(getattr(loadable_class, command_def.name), DOC_STUB):
         setattr(loadable_class, command_def.name, function)
-        if not hasattr(loadable_class, LOADED_COMMANDS):
-            setattr(loadable_class, LOADED_COMMANDS, [])
-        getattr(loadable_class, LOADED_COMMANDS).append(command_def)
+        get_loaded_commands(loadable_class).append(command_def)
         #print "%s <-- %s" % (loadable_class.__name__, command_def.full_name)
         logger.debug("Added function %s to class %s", command_def.name, loadable_class)
 
@@ -394,7 +401,7 @@ def {name}(self):
     return {cls}()
     """.format(doc_stub=doc_stub.__name__,
                name=intermediate_name,
-               doc=_get_property_doc(intermediate_name),
+               doc=_get_property_doc(intermediate_class, intermediate_name),
                cls=intermediate_class.__name__)
 
 
@@ -409,15 +416,18 @@ def get_fget(intermediate_name):
     return fget
 
 
-def create_intermediate_property(intermediate_name):
+def create_intermediate_property(intermediate_class, intermediate_name):
     fget = get_fget(intermediate_name)
     mark_with_intermediate_name(fget, intermediate_name)
-    doc = _get_property_doc(intermediate_name)
+    doc = _get_property_doc(intermediate_class, intermediate_name)
     return property(fget=fget, doc=doc)
 
+def _get_intermediate_sphinx_link_name(intermediate_class):
+    return "link_" + intermediate_class.__name__
 
-def _get_property_doc(intermediate_name):
-    return "Access to object's %s functionality" % intermediate_name  # vanilla doc string
+def _get_property_doc(intermediate_class, intermediate_name):
+    return "Access to object's %s functionality (See :class:`~intelanalytics.core.docstubs.%s`)" %\
+           (intermediate_name, intermediate_class.__name__)
 
 #
 # doc stubs
@@ -483,6 +493,9 @@ def {name}({params}):
     set_doc_stub_text(function, doc_stub_text)
 
 
+def is_class_command_loadable(cls):
+    return CommandLoadable in inspect.getmro(cls)
+
 def get_base_class_via_inspect(cls):
     return inspect.getmro(cls)[1]
 
@@ -505,9 +518,16 @@ def set_doc_stub_text(item, text):
 
 
 def get_doc_stub_class_text(loaded_class):
-    base_text = get_loaded_base_class_text(loaded_class)
-    intermediate_text = get_intermediate_classes_text(loaded_class)
-    return "\n".join([base_text, intermediate_text]) if base_text or intermediate_text else ''
+    """
+   Produces code text for the base class from which the main loadable class
+   will inherit the commands --i.e. the main class of the doc stub *.py file
+   """
+    members_text = get_members_text(loaded_class)
+    class_text = get_loadable_class_text(get_doc_stubs_class_name(loaded_class),
+                                     "Contains commands for %s provided by the server" % loaded_class.__name__,
+                                     members_text) if members_text else ''
+    intermediate_classes_text = get_intermediate_classes_text(loaded_class)
+    return "\n".join([class_text, intermediate_classes_text]) if class_text or intermediate_classes_text else ''
 
 
 def get_doc_stub_globals_text(module):
@@ -524,15 +544,15 @@ def get_doc_stub_globals_text(module):
     return '\n\n\n'.join(lines) if lines else ''
 
 
-def get_doc_stubs_module_text(command_defs, existing_loadables, global_module):
+def get_doc_stubs_module_text(command_defs, existing_loadables_dict, global_module):
     for command_def in command_defs:
         class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
-        if class_name not in existing_loadables:
+        if class_name not in existing_loadables_dict:
             cls = get_loadable_class_from_command_def(command_def)
-            existing_loadables[class_name] = cls
-        loadable_class = existing_loadables[class_name]
+            existing_loadables_dict[class_name] = cls
+        loadable_class = existing_loadables_dict[class_name]
         load_loadable(loadable_class, command_def, None)  # None for execute_command, since this is a doc stub
-    lines = [get_doc_stub_class_text(loaded_class) for loaded_class in existing_loadables.values()]
+    lines = [get_doc_stub_class_text(loaded_class) for loaded_class in existing_loadables_dict.values()]
     lines.append(get_doc_stub_globals_text(global_module))
     for line in lines:
         if line:
@@ -593,7 +613,7 @@ class {name}({base_class}):
 '''.format(name=class_name, base_class=CommandLoadable.__name__, doc=indent(doc), members=members_text)
 
 
-def get_loaded_base_class_doc_stubs_name(loaded_class):
+def get_doc_stubs_class_name(loaded_class):
     return DOC_STUB_LOADABLE_CLASS_PREFIX + loaded_class.__name__
 
 
@@ -603,7 +623,7 @@ def get_loaded_base_class_text(loaded_class):
     will inherit the commands --i.e. the main class of the doc stub *.py file
     """
     members_text = get_members_text(loaded_class)
-    return get_loadable_class_text(get_loaded_base_class_doc_stubs_name(loaded_class),
+    return get_loadable_class_text(get_doc_stubs_class_name(loaded_class),
                                    "Contains commands for %s provided by the server" % loaded_class.__name__,
                                    members_text) if members_text else ''
 
@@ -612,16 +632,12 @@ def get_intermediate_classes_text(loaded_class):
     """
     Produces code text for dynamically created loadable classes needed as intermediate objects
     """
-    if not hasattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
-        return ''
-
     lines = []
-    q = deque(getattr(loaded_class, LOADED_INTERMEDIATE_CLASSES))
+    q = deque(get_loaded_intermediate_classes(loaded_class))
     while len(q):
         c = q.pop()
         lines.append(get_loadable_class_text(c.__name__, c.__doc__, get_members_text(c)))
-        if hasattr(c, LOADED_INTERMEDIATE_CLASSES):
-            q.appendleft(getattr(c, LOADED_INTERMEDIATE_CLASSES))
+        q.extendleft(get_loaded_intermediate_classes(c))
     return "\n".join(lines)
 
 
@@ -631,12 +647,10 @@ def get_members_text(loaded_class):
     that have been loaded into the loadable class
     """
     lines = []
-    if hasattr(loaded_class, LOADED_COMMANDS):
-        for command in getattr(loaded_class, LOADED_COMMANDS):
-            lines.append(indent(get_function_text(command, decorator_text='@' + doc_stub.__name__)))
-    if hasattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
-        for intermediate_class in getattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
-            lines.append(indent(get_property_text(intermediate_class)))
+    for command in get_loaded_commands(loaded_class):
+        lines.append(indent(get_function_text(command, decorator_text='@' + doc_stub.__name__)))
+    for intermediate_class in get_loaded_intermediate_classes(loaded_class):
+        lines.append(indent(get_property_text(intermediate_class)))
     return "\n".join(lines)
 
 

@@ -21,29 +21,45 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
+package com.intel.graphbuilder.elements
 
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import org.scalatest.{ WordSpec, Matchers }
 
-import scala.collection.mutable
-import org.apache.spark.SparkContext
-import com.intel.event.EventLogging
+class GBVertexTest extends WordSpec with Matchers {
 
-/**
- * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
- * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
- * create in the order of hundreds of SparkContetxs pre JVM
- */
-object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
+  val gbId = new Property("gbId", 10001)
+  val vertex = new GBVertex(gbId, Set(new Property("key", "value")))
 
-  //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
+  "Vertex" should {
+    "have a unique id that is the gbId" in {
+      vertex.id shouldBe gbId
+    }
 
-  //TODO: how to run jobs as a particular user
-  //TODO: Decide on spark context life cycle - should it be torn down after every operation,
-  //or left open for some time, and reused if a request from the same user comes in?
-  //Is there some way of sharing a context across two different Engine instances?
+    "be mergeable with another vertex" in {
+      val vertex2 = new GBVertex(gbId, Set(new Property("anotherKey", "anotherValue")))
 
-  override def getContext(user: String, description: String): SparkContext = {
-    sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
+      // invoke method under test
+      val merged = vertex.merge(vertex2)
+
+      merged.gbId shouldBe gbId
+      merged.properties shouldEqual Set(Property("key", "value"), Property("anotherKey", "anotherValue"))
+    }
+
+    "not allow null gbIds" in {
+      intercept[IllegalArgumentException] {
+        new GBVertex(null, Set.empty[Property])
+      }
+    }
+
+    "not allow merging of vertices with different ids" in {
+      val diffId = new Property("gbId", 10002)
+      val vertex2 = new GBVertex(diffId, Set(new Property("anotherKey", "anotherValue")))
+
+      intercept[IllegalArgumentException] {
+        // invoke method under test
+        vertex.merge(vertex2)
+      }
+    }
   }
+
 }

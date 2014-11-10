@@ -41,7 +41,7 @@ import scala.collection.JavaConversions.asScalaIterator
  *
  * @param separator delimiter character
  */
-class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
+class CsvRowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
 
   val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
 
@@ -55,7 +55,7 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializa
   def apply(line: String): RowParseResult = {
     try {
       val parts = splitLineIntoParts(line)
-      RowParseResult(parseSuccess = true, converter(parts))
+      RowParseResult(parseSuccess = true, converter(parts.asInstanceOf[Array[Any]]))
     }
     catch {
       case e: Exception =>
@@ -71,6 +71,7 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializa
     else {
       records.get(0).iterator().toArray
     }
+
   }
 
 }

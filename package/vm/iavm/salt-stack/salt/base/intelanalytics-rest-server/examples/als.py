@@ -1,20 +1,22 @@
 #!/usr/bin/python2.7
-from intelanalytics import *
+import intelanalytics as ia
+
+ia.connect();
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/movie_data_random.csv"
 
 #csv schema definition
-schema = [("user_id", int32),
-          ("movie_id", int32),
-          ("rating", int32),
+schema = [("user_id", ia.int32),
+          ("movie_id", ia.int32),
+          ("rating", ia.int32),
           ("splits", str)]
 
-csv_file = CsvFile(dataset, schema, skip_header_lines=1)
+csv_file = ia.CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = Frame(csv_file)
+frame = ia.Frame(csv_file)
 
 print "Done building data frame"
 
@@ -22,15 +24,15 @@ print "Inspecting frame"
 
 print frame.inspect()
 
-user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
+user = ia.VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
 
-movie = VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
+movie = ia.VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
 
-rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating}, bidirectional=True)
+rates = ia.EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating}, bidirectional=True)
 
 print "Creating Graph als"
 
-g = TitanGraph([user, movie, rates], "als")
+g = ia.TitanGraph([user, movie, rates], "als")
 
 print "Running Alternating Least Squares on Graph als"
 

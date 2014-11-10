@@ -62,7 +62,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
    * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
    */
-  def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
+  def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[Any] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
 
       val resultRdd: RDD[Array[Any]] = getRddFromPythonRdd(pyRdd, converter)
@@ -73,13 +73,13 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
     }
   }
 
-  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[String]) => Array[Any]): RDD[Array[Any]] = {
+  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[Any]) => Array[Any]): RDD[Array[Any]] = {
     val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
       case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
-      case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+      case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value
       case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
       case _ => null
-    }).toArray))
+    }).toArray.asInstanceOf[Array[Any]]))
       .flatMap(identity)
       .map(converter)
     resultRdd

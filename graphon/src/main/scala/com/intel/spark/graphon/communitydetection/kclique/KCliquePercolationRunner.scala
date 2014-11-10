@@ -24,15 +24,10 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import org.apache.spark.SparkContext
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Edge }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Edge }
+import org.apache.spark.rdd.RDD
 
 /**
  * The driver for running the k-clique percolation algorithm
@@ -125,7 +120,7 @@ object KCliquePercolationRunner {
    */
   def edgeListFromGBEdgeList(gbEdgeList: RDD[GBEdge]): RDD[Edge] = {
 
-    gbEdgeList.filter(e => (e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long])).
+    gbEdgeList.filter(e => e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long]).
       map(e => datatypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
   }
 }

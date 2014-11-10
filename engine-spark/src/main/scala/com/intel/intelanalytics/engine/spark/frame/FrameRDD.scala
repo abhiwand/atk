@@ -27,12 +27,13 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import SparkContext._
 
 import scala.reflect.ClassTag
 
@@ -108,7 +109,16 @@ class FrameRDD(val schema: Schema,
   }
 
   /**
-   * Union two Frame's merging schemas if needed
+   * Drop all columns with the 'ignore' data type.
+   *
+   * The ignore data type is a slight hack for ignoring some columns on import.
+   */
+  def dropIgnoreColumns(): FrameRDD = {
+    convertToNewSchema(schema.dropIgnoreColumns())
+  }
+
+  /**
+   * Union two Frame's, merging schemas if needed
    */
   def union(other: FrameRDD): FrameRDD = {
     val unionedSchema = schema.union(other.schema)
@@ -137,6 +147,44 @@ class FrameRDD(val schema: Schema,
       // map to new schema
       new FrameRDD(updatedSchema, mapRows(row => row.valuesForSchema(updatedSchema)))
     }
+  }
+
+  /**
+   * Sort by one or more columns
+   * @param columnNamesAndAscending column names to sort by, true for ascending, false for descending
+   * @return the sorted Frame
+   */
+  def sortByColumns(columnNamesAndAscending: List[(String, Boolean)]): FrameRDD = {
+    require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+
+    val columnNames = columnNamesAndAscending.map(_._1)
+    val ascendingPerColumn = columnNamesAndAscending.map(_._2)
+    val pairRdd = mapRows(row => (row.values(columnNames), row.data))
+
+    implicit val multiColumnOrdering = new Ordering[List[Any]] {
+      override def compare(a: List[Any], b: List[Any]): Int = {
+        for (i <- 0 to a.length - 1) {
+          val columnA = a(i)
+          val columnB = b(i)
+          val result = DataTypes.compare(columnA, columnB)
+          if (result != 0) {
+            if (ascendingPerColumn(i)) {
+              // ascending
+              return result
+            }
+            else {
+              // descending
+              return result * -1
+            }
+          }
+        }
+        0
+      }
+    }
+
+    // ascending is always true here because we control in the ordering
+    val sortedRows = pairRdd.sortByKey(ascending = true).values
+    new FrameRDD(schema, sortedRows)
   }
 
   /**
@@ -246,6 +294,7 @@ object FrameRDD {
           case x if x.equals(DataTypes.float32) => FloatType
           case x if x.equals(DataTypes.float64) => DoubleType
           case x if x.equals(DataTypes.string) => StringType
+          case x if x.equals(DataTypes.ignore) => StringType
         }, nullable = true)
     }
     StructType(fields)

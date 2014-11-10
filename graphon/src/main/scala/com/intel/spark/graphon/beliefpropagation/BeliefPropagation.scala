@@ -7,12 +7,12 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
@@ -81,6 +81,19 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
+  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+
+  override def numberOfJobs(arguments: BeliefPropagationArgs): Int = {
+    // TODO: not sure this is right but it seemed to work with testing
+    //    when max iterations was 1, number of jobs was 11
+    //    when max iterations was 2, number of jobs was 13
+    //    when max iterations was 3, number of jobs was 15
+    //    when max iterations was 4, number of jobs was 17
+    //    when max iterations was 5, number of jobs was 19
+    //    when max iterations was 6, number of jobs was 21
+    9 + (arguments.maxIterations.getOrElse(0) * 2)
+  }
+
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
     extendedSummary = Some("""
@@ -141,71 +154,54 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
                            """.stripMargin)))
 
   override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
-
     val start = System.currentTimeMillis()
+    val sparkContext = sparkInvocation.sparkContext
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    // Get the SparkContext as one the input parameters for Driver
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    sparkInvocation.sparkContext.stop
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    val sc = new SparkContext(sparkConf)
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-    try {
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
+      arguments.priorProperty,
+      arguments.maxIterations,
+      stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
+      arguments.convergenceThreshold,
+      arguments.edgeWeightProperty)
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    val dummyOutEdges: RDD[GBEdge] = sparkContext.parallelize(List.empty[GBEdge])
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    // write out the graph
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
 
-      val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
-        arguments.priorProperty,
-        arguments.maxIterations,
-        stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
-        arguments.convergenceThreshold,
-        arguments.edgeWeightProperty)
-
-      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
-
-      // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
-
-      val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
-
-      // write out the graph
-
-      // Create the GraphBuilder object
-      // Setting true to append for updating existing graph
-      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-      // Build the graph using spark
-      gb.buildGraphWithSpark(outVertices, dummyOutEdges)
-
-      // Get the execution time and print it
-      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-      BeliefPropagationResult(log, time)
-
-    }
-
-    finally {
-      sc.stop
-    }
+    // Get the execution time and print it
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    BeliefPropagationResult(log, time)
 
   }
 

@@ -46,16 +46,15 @@ object CliqueShadowGraphGenerator extends Serializable {
    */
   def run(cliqueAndExtenders: RDD[CliqueExtension]) = {
 
+    val cliques: RDD[VertexSet] = cliqueAndExtenders.flatMap(
+      { case CliqueExtension(clique, extenders, _) => extenders.map(v => clique.members + v) })
 
-  val cliques : RDD[VertexSet] = cliqueAndExtenders.flatMap(
-  {case CliqueExtension(clique, extenders, _) => extenders.map(v=> clique.members + v)})
+    val cliqueToShadowEdges: RDD[(VertexSet, VertexSet)] = cliques.flatMap(V => (V.subsets(V.size - 1).map(U => (V, U))))
 
-  val cliqueToShadowEdges : RDD[(VertexSet, VertexSet)] =  cliques.flatMap(V  => (V.subsets(V.size -1).map(U => (V,U))))
+    val shadows: RDD[VertexSet] = cliqueToShadowEdges.map(_._2).distinct()
 
-  val shadows : RDD[VertexSet] = cliqueToShadowEdges.map(_._2).distinct()
-
-  val vertices : RDD[VertexSet] = cliques.union(shadows)
-  val edges : RDD[(VertexSet, VertexSet)] = cliqueToShadowEdges.flatMap({case (x,y) => Set((x,y), (y,x))})
+    val vertices: RDD[VertexSet] = cliques.union(shadows)
+    val edges: RDD[(VertexSet, VertexSet)] = cliqueToShadowEdges.flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
     new cliqueShadowGraphGeneratorOutput(vertices, edges)
   }

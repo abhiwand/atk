@@ -23,30 +23,44 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import com.typesafe.config.Config
-import org.apache.spark.{ SparkConf, SparkContext }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.event.EventLogging
+import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
- * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
+ * Class Factory for creating spark contexts
  */
-class SparkContextFactory extends EventLogging {
+class SparkContextFactory() extends EventLogging {
 
-  def createSparkContext(configuration: Config, appName: String): SparkContext = withContext("engine.sparkContextFactory") {
+  /**
+   * Creates a new sparkContext with the specified kryo classes
+   */
+  def getContext(user: String, description: String, kryoRegistrator: Option[String] = None): SparkContext = withContext("engine.SparkContextFactory") {
 
     val jarPath = Boot.getJar("engine-spark")
+
     val sparkConf = new SparkConf()
       .setMaster(SparkEngineConfig.sparkMaster)
       .setSparkHome(SparkEngineConfig.sparkHome)
-      .setAppName(appName)
+      .setAppName(s"intel-analytics:$user:$description")
       .setJars(Seq(jarPath.getPath))
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
+
+    if (kryoRegistrator.isDefined) {
+      sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
+    }
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
     new SparkContext(sparkConf)
   }
+  /**
+   * Creates a new sparkContext
+   */
+  def context(implicit user: UserPrincipal, description: String, kryoRegistrator: Option[String] = None): SparkContext = getContext(user.user.apiKey.getOrElse(
+    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description, kryoRegistrator)
 }

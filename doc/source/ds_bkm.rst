@@ -39,6 +39,7 @@ Ping the server::
     >>> import intelanalytics as ia
     >>> ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
+    >>> ia.connect()
 
 View and edit the server connection::
 
@@ -73,12 +74,24 @@ Errors
 
 By default the toolkit does not print the full stack trace when exceptions occur.  To see the full python stack trace of the last (i.e. most recent) exception::
 
-    >>> print ia.errors.last
+    ia.errors.last
 
 To enable always printing the full python stack trace, set the 'show_details' property::
 
-    >>> ia.errors.show_details = True
+    import intelanalytics as ia
+     
+    # show full stack traces
+    ia.errors.show_details = True
+     
+    ia.connect()
+     
+    # … the rest of your script …
 
+If you enable this setting at the top of your script you get better error
+messages.
+The longer error messages are really helpful in bug reports, emails about
+issues, etc.
+ 
 Tab Completion
 ==============
 

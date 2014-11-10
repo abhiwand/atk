@@ -25,10 +25,10 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import org.apache.spark.rdd.RDD
-import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
 import com.intel.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.rdd.RDD
+import org.scalatest.{ FlatSpec, Matchers }
 
 /**
  * This test validates that the GraphGenerator correctly constructs a clique-shadow graph as follows:
@@ -69,7 +69,7 @@ class CliqueShadowGraphGeneratorTest extends FlatSpec with Matchers with Testing
       (Set(2, 3, 4), Set(2, 3)), (Set(2, 3, 4), Set(2, 4)), (Set(2, 3, 4), Set(3, 4)),
       (Set(4, 5, 6), Set(4, 5)), (Set(4, 5, 6), Set(4, 6)), (Set(4, 5, 6), Set(5, 6)),
       (Set(7, 8, 9), Set(8, 9)), (Set(7, 8, 9), Set(7, 8)), (Set(7, 8, 9), Set(7, 9))
-    ).map({case (x,y) => (x.map(_.toLong), y.map(_.toLong))}).flatMap({case (x,y) => Set((x,y), (y,x))})
+    ).map({ case (x, y) => (x.map(_.toLong), y.map(_.toLong)) }).flatMap({ case (x, y) => Set((x, y), (y, x)) })
   }
 
   "K-Clique graph" should

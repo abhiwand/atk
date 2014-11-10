@@ -1,6 +1,6 @@
 package com.intel.spark.graphon.testutils
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.spark.graphon.VectorMath
 
 /**

@@ -16,7 +16,6 @@ import org.apache.spark.AccumulatorParam
  */
 object StatisticsRDDFunctions extends Serializable {
 
-
   /**
    * Generates the first-pass statistics for a given distribution.
    * @param dataWeightPairs The (data, weight) pairs of the distribution.
@@ -106,7 +105,5 @@ object StatisticsRDDFunctions extends Serializable {
     minimum = Double.PositiveInfinity,
     maximum = Double.NegativeInfinity,
     totalWeight = BigDecimal(0))
-
-
 
 }

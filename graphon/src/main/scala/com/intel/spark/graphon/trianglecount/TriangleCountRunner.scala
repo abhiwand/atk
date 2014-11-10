@@ -24,7 +24,7 @@
 
 package com.intel.spark.graphon.trianglecount
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ Graph, Edge => GraphXEdge }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD

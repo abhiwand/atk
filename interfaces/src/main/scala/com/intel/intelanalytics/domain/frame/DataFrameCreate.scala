@@ -20,18 +20,15 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.engine.spark.context
-
-import com.typesafe.config.Config
-import org.apache.spark.SparkContext
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Base class for different Spark context management strategies
+ * Specifies frame creation, used in REST API to support optional name
+ * @param name Option name, if not provided, one will be generated
+ * @param description Option description
  */
-trait SparkContextManagementStrategy {
-  var configuration: Config = null
-  var sparkContextFactory: SparkContextFactory = null
-
-  def getContext(user: String, description: String): SparkContext
+case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None) {
+  def toDataFrameTemplate: DataFrameTemplate = {
+    DataFrameTemplate(name = FrameName.validateOrGenerate(name), description)
+  }
 }

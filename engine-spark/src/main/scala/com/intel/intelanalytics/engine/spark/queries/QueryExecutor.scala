@@ -27,7 +27,7 @@ import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults, FunctionQuery, QueryPlugin }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -59,9 +59,9 @@ import com.intel.event.EventLogging
  *
  * @param engine an Engine instance that will be passed to query plugins during execution
  * @param queries a query storage that the executor can use for audit logging query execution
- * @param contextManager a SparkContext factory that can be passed to SparkQueryPlugins during execution
+ * @param sparkContextFactory a SparkContext factory that can be passed to SparkQueryPlugins during execution
  */
-class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextManager: SparkContextManager)
+class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, sparkContextFactory: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -120,16 +120,15 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(query.name) {
-          val context: SparkContext = contextManager.context(user, "query")
+          def context(): SparkContext = sparkContextFactory.context(user, "query")
           val qFuture = future {
             withQuery(q) {
 
+              val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
+                user = user, executionContext = implicitly[ExecutionContext],
+                sparkContextFunc = context, commandStorage = null)
               try {
                 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-                val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
-                  user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = null)
-
                 val funcResult = query(invocation, arguments)
 
                 val rdd: RDD[Any] = funcResult.asInstanceOf[RDD[Any]]
@@ -142,7 +141,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                 QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
               }
               finally {
-                context.stop()
+                invocation.sparkContext.stop()
               }
 
             }

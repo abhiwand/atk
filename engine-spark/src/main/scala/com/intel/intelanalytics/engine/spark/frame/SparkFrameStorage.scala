@@ -48,6 +48,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import com.intel.event.EventLogging
 import scala.util.parsing.combinator.RegexParsers
+import scala.util.{ Failure, Success, Try }
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -281,15 +282,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def dropColumns(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
-    //withContext("frame.removeColumn") {
-    metaStore.withSession("frame.removeColumn") {
-      implicit session =>
-        {
-          metaStore.frameRepo.updateSchema(frame, frame.schema.dropColumnsByIndex(columnIndex))
-        }
-    }
-
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
     metaStore.withSession("frame.rename") {
       implicit session =>
@@ -329,8 +321,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param errorFrame the model for the frame that was the parse errors
    */
   def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
-    val frameRdd = loadLegacyFrameRdd(ctx, frame)
-    val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
+    val frameRdd = loadFrameRDD(ctx, frame)
+    val errorFrameRdd = loadFrameRDD(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
@@ -417,15 +409,25 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Automatically generate a name for a frame.
+   * Provides a clean-up context to create and work on a new frame
    *
-   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
+   * Takes the template, creates a frame and then hands it to a work function.  If any error occurs during the work
+   * the frame is deleted from the metastore.  Typical usage would be during the creation of a brand new frame,
+   * where data processing needs to occur, any error means the frame should not continue to exist in the metastore.
    *
-   * @param annotation Optional annotation to add to frame name
-   * @return Frame name
+   * @param template - template describing a new frame
+   * @param work - Frame to Frame function.  This function typically loads RDDs, does work, and saves RDDS
+   * @param user user
+   * @return - the frame result of work if successful, otherwise an exception is raised
    */
-  def generateFrameName(prefix: String = "frame_", annotation: Option[String] = None): String = {
-    prefix + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + annotation.getOrElse("")
+  // TODO: change to return a Try[DataFrame] instead of raising exception?
+  def tryNewFrame(template: DataFrameTemplate)(work: DataFrame => DataFrame)(implicit user: UserPrincipal): DataFrame = {
+    val frame = create(template)
+    Try { work(frame) } match {
+      case Success(f) => f
+      case Failure(e) =>
+        drop(frame)
+        throw e
+    }
   }
-
 }

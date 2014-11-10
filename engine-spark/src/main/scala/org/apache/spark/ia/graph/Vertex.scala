@@ -23,7 +23,7 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Property => GBProperty }
+import com.intel.graphbuilder.elements.{ GBVertex, Property => GBProperty }
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
@@ -111,9 +111,8 @@ trait AbstractVertex extends AbstractRow {
    * Convert this row to a GbVertex
    */
   def toGbVertex: GBVertex = {
-    val idColumnName = schema.vertexSchema.get.idColumnName.get
-    val properties = schema.columnsExcept(List("_vid", idColumnName)).map(column => GBProperty(column.name, value(column.name)))
-    GBVertex(vid(), GBProperty(idColumnName, idValue()), properties.toSet)
+    val properties = schema.columnsExcept(List("_vid")).map(column => GBProperty(column.name, value(column.name)))
+    GBVertex(null, GBProperty("_vid", vid()), properties.toSet)
   }
 
   /**
