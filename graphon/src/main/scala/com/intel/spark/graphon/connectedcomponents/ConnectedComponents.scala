@@ -82,7 +82,8 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def name: String = "graph:titan/ml/graphx_connected_components"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""

@@ -29,6 +29,9 @@ import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.security.UserPrincipal
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -82,7 +85,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
+      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isUnparsableFile) {
@@ -112,7 +115,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       }
 
       // successfully parsed lines get added to the destination frame
-      unionAndSave(updatedFrame, parseResult.parsedLines)
+      unionAndSave(destinationFrame, parseResult.parsedLines.dropIgnoreColumns())
     }
 
     else {
@@ -126,15 +129,15 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(existingFrame: DataFrame, additionalData: LegacyFrameRDD)(implicit invocation: Invocation): DataFrame = {
+  private def unionAndSave(existingFrame: DataFrame, additionalData: FrameRDD)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc
 
-    val existingRdd = frames.loadLegacyFrameRdd(ctx, existingFrame)
+    val existingRdd = frames.loadFrameData(ctx, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     val rowCount = unionedRdd.count()
-    frames.saveLegacyFrame(existingFrame, unionedRdd, Some(rowCount))
+    frames.saveFrameData(existingFrame, unionedRdd, Some(rowCount))
   }
 
 }
