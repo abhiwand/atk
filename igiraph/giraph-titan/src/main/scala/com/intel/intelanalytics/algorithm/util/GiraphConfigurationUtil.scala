@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.algorithm.util
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._

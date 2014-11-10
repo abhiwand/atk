@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.graph
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
@@ -313,7 +313,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     val titanConfig = SparkEngineConfig.titanLoadConfiguration
     val graph = lookup(graphId).get
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.hbase.table", iatGraphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
