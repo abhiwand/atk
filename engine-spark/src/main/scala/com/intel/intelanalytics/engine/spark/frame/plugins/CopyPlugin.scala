@@ -69,7 +69,8 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       case None => (sourceFrame.meta.schema, null) // full copy
       case Some(cols) => sourceFrame.meta.schema.getRenamedSchemaAndIndices(cols) // partial copy
     }
-    val newFrame: FrameMeta = create[FrameMeta]
+
+    val newFrame: FrameMeta = create[FrameMeta](arguments.name)
 
     val data: FrameRDD = arguments.where match {
       case None =>

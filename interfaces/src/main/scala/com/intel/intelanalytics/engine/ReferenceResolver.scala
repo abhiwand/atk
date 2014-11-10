@@ -36,7 +36,8 @@ object ReferenceResolver extends ReferenceResolver {
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
-  override def create[T <: UriReference: ru.TypeTag]()(implicit invocation: Invocation, ev: NotNothing[T]): T = EntityRegistry.resolver.create()
+  override def create[T <: UriReference: ru.TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T =
+    EntityRegistry.resolver.create(annotation)
 
   /**
    * Save data of the given type, possibly creating a new object.
@@ -71,7 +72,7 @@ trait ReferenceResolver {
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
-  def create[T <: UriReference: TypeTag]()(implicit invocation: Invocation, ev: NotNothing[T]): T
+  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T
 
   /**
    * Save data of the given type, possibly creating a new object.

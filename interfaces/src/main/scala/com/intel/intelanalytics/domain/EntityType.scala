@@ -110,7 +110,7 @@ trait EntityManager[E <: EntityType] { self =>
 
   type Data <: MetaData with HasData
 
-  def create()(implicit invocation: Invocation): Reference
+  def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference
 
   def getReference(id: Long): Reference
 

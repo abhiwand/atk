@@ -88,7 +88,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
-    val newFrame = create[FrameMeta]
+    val newFrame = create[FrameMeta]()
     val newSchema = frame.meta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
     val data = arguments.binType match {
       case "equalwidth" =>

@@ -88,7 +88,7 @@ class EntityRegistry {
    *
    * @tparam R the requested reference type
    */
-  def create[R <: UriReference: TypeTag]()(implicit invocation: Invocation): R = {
+  def create[R <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation): R = {
     val manager: EntityManager[_] = entityManager[R]().get
     val reference = manager.create()
     resolver.resolve[R](reference).get
