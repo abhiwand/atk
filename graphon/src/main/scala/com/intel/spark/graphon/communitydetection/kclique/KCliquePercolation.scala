@@ -34,7 +34,7 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import spray.json._
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, GraphName }
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.component.Boot
 import com.typesafe.config.Config
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig

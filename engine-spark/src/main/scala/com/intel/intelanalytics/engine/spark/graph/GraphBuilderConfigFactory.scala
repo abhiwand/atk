@@ -157,7 +157,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
   }
 
@@ -176,7 +176,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
   }
 
