@@ -11,7 +11,8 @@ import org.apache.spark.{ InterruptibleIterator, Partition, TaskContext }
 /**
  * RDD that loads Titan graph from HBase.
  *
- * @param hBaseRDD Input Titan/HBase RDDs with key-value pairs of (NullWritable, FaunusVertex)
+ * @param hBaseRDD Input RDD
+ * @param titanConnector connector to Titan
  */
 
 class TitanHBaseReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
@@ -36,12 +37,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)], titanConn
       rowGraphElements
     })
 
-    context.addOnCompleteCallback(() => {
-      //val titanGraph = titanConnector.connect()
-      //titanGraph.shutdown()
-    })
-
-    graphElements
+    new InterruptibleIterator(context, graphElements)
   }
 
 }
