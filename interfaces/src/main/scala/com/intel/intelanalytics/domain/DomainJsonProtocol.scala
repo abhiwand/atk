@@ -225,8 +225,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphNoArgsFormat = jsonFormat1(GraphNoArgs)
 
-  implicit val graphElementIDNameFormat = jsonFormat2(ElementIDName)
-  implicit val graphElementIDNamesFormat = jsonFormat1(ElementIDNames)
+  implicit val schemaListFormat = jsonFormat1(SchemaList)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 

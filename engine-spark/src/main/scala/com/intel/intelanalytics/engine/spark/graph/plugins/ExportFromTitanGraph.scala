@@ -89,7 +89,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
     val maxVertexId = vertices.map(v => v.physicalId.asInstanceOf[Long]).reduce((a, b) => Math.max(a, b))
 
     //record id column information for each vertex type
-    val labelToIdNameMapping: Map[String, String] = titanIAGraph.elementIDNames.get.elementIDNames.map(e => e.label -> e.idColumnName).toMap
+    val labelToIdNameMapping: Map[String, String] = titanIAGraph.frameSchemaList.get.schemas.filter(schema => schema.vertexSchema != None).map(e => e.label.get -> e.vertexSchema.get.idColumnName.get).toMap
     val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
     ExportFromTitanGraph.createVertexFrames(graphs, graph.id, vertices)
