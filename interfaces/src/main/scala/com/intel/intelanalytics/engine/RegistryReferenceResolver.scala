@@ -133,8 +133,8 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     ReferenceResolver.coerceReference(detailed)
   }
 
-  def create[T <: UriReference: TypeTag]()(implicit invocation: Invocation, ev: NotNothing[T]) = {
-    registry.create[T]
+  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]) = {
+    registry.create[T](annotation)
   }
 
   /**

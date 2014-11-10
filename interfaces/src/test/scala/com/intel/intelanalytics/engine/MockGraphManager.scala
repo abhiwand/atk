@@ -50,7 +50,7 @@ class MockGraphManager extends EntityManager[GraphEntity.type] {
 
   override def getMetaData(reference: Reference): MetaData = new M(reference.id)
 
-  override def create()(implicit invocation: Invocation): Reference = ???
+  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
 
   override def getReference(id: Long): Reference = new GraphReference(id, Some(true))
 

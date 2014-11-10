@@ -81,8 +81,8 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getMetaData(reference: Reference): MetaData = new GraphMeta(expectGraph(reference.id))
 
-    override def create()(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(GraphName.generate()))
+    override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = storage.createGraph(
+      GraphTemplate(GraphName.generate(annotation)))
 
     override def getReference(id: Long): Reference = expectGraph(id)
 

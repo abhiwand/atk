@@ -191,8 +191,8 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   /**
    * Creates an object of the requested type.
    */
-  def create[T <: UriReference: TypeTag](implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
-    invocation.resolver.create[T]()
+  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
+    invocation.resolver.create[T](annotation)
   }
 
   /**
