@@ -50,7 +50,7 @@ public class GBTitanHBaseInputFormat extends TitanHBaseInputFormat {
 
             LOG.info("Generated " + splits.size() + " input splits for HBase table");
         }
-                   titanSetup.close();
+
         return splits;
     }
 
