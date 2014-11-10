@@ -69,6 +69,13 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
 
   override def kryoRegistrator: Option[String] = None
 
+  override def numberOfJobs(arguments: GraphNoArgs): Int = {
+    val numberOfVertexTypes = 2
+    val numberOfEdgeTypes = 1
+    val totalProgress = numberOfVertexTypes * 5 + numberOfEdgeTypes * 5 + 3
+    totalProgress
+  }
+
   /**
    * Plugins must implement this method to do the work requested by the user.
    * @param invocation information about the user and the circumstances at the time of the call,
@@ -83,7 +90,8 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
     val graphId: Long = arguments.graph.id
 
     val titanIAGraph = graphs.expectGraph(graphId)
-    val vertices = graphs.loadGbVertices(ctx, titanIAGraph)
+
+    val (vertices, edges) = graphs.loadFromTitan(ctx, titanIAGraph)
     vertices.cache()
 
     val maxVertexId = vertices.map(v => v.physicalId.asInstanceOf[Long]).reduce((a, b) => Math.max(a, b))
@@ -92,12 +100,11 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
     val labelToIdNameMapping: Map[String, String] = titanIAGraph.elementIDNames.get.elementIDNames.map(e => e.label -> e.idColumnName).toMap
     val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
-    ExportFromTitanGraph.createVertexFrames(graphs, graph.id, vertices)
+    ExportFromTitanGraph.createVertexFrames(graphs, graph.id, vertices, labelToIdNameMapping.keySet.toList)
     val titanDBGraph = graphs.getTitanGraph(graphId)
     saveToVertexFrame(vertices, ctx, labelToIdNameMapping, graph, titanDBGraph)
     vertices.unpersist()
 
-    val edges = graphs.loadGbEdges(ctx, titanIAGraph)
     edges.cache()
 
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
@@ -204,11 +211,7 @@ object ExportFromTitanGraph {
    * @param graphId destination graph id
    * @param vertices vertices rdd
    */
-  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertices: RDD[GBVertex]) {
-    val vertexLabels = vertices.flatMap(v => {
-      v.getProperty("_label")
-    }).map(p => p.value.toString).distinct().collect()
-
+  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertices: RDD[GBVertex], vertexLabels: List[String]) {
     vertexLabels.foreach(label => {
       graphs.defineVertexType(graphId, VertexSchema(label, None))
     })
