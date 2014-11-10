@@ -403,8 +403,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param errorFrame the model for the frame that was the parse errors
    */
   def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)(implicit user: UserPrincipal): ParseResultRddWrapper = {
-    val frameRdd = loadLegacyFrameRdd(ctx, frame)
-    val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
+    val frameRdd = loadFrameData(ctx, frame)
+    val errorFrameRdd = loadFrameData(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 

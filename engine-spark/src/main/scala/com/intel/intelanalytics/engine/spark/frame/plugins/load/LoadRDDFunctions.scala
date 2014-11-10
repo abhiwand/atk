@@ -41,7 +41,7 @@ object LoadRDDFunctions extends Serializable {
     else {
       val listColumn = List(Column("data_lines", DataTypes.str))
       val rows = fileContentRdd.map(s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
-      ParseResultRddWrapper(new FrameRDD(new Schema(listColumn), rows).toLegacyFrameRDD, null)
+      ParseResultRddWrapper(new FrameRDD(new Schema(listColumn), rows), null)
     }
 
   }
@@ -96,7 +96,7 @@ object LoadRDDFunctions extends Serializable {
     sampleRdd.unpersist()
 
     if (failedRatio >= threshold) {
-      val errorExampleRecord = preEvaluateResults.errorLines.first().clone()
+      val errorExampleRecord = preEvaluateResults.errorLines.first().copy()
       val errorRow = errorExampleRecord { 0 }
       val errorMessage = errorExampleRecord { 1 }
       throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount, " +
@@ -135,7 +135,7 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(new LegacyFrameRDD(schema.schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(FrameRDD.toFrameRDD(schema.schema, successesRdd), FrameRDD.toFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
