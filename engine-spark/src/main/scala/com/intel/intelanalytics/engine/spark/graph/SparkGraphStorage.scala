@@ -300,6 +300,14 @@ class SparkGraphStorage(metaStore: MetaStore,
     titanReaderRDD
   }
 
+  def loadFromTitan(ctx: SparkContext, graph: Graph): (RDD[GBVertex], RDD[GBEdge]) = {
+    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    (gbVertices, gbEdges)
+  }
+
   def getTitanGraph(graphId: Long): TitanGraph = {
     val titanConfig = SparkEngineConfig.titanLoadConfiguration
     val graph = lookup(graphId).get
