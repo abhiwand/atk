@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.domain
 
 import org.scalatest.{ WordSpec, Matchers, FlatSpec }
-import com.intel.intelanalytics.domain.schema.DataTypes.{ float32, int64, DataType, string }
+import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema.Schema
 
 class SchemaTest extends WordSpec with Matchers {
@@ -50,9 +50,47 @@ class SchemaTest extends WordSpec with Matchers {
       abcSchema.label.isEmpty shouldBe true
     }
 
-    "be able to drop columns" in {
-      println(abcSchema.dropColumn("b"))
-      abcSchema.dropColumn("b").hasColumn("b") shouldBe false
+    def testDropColumn(columnName: String): Unit = {
+      val result = abcSchema.dropColumn(columnName)
+      assert(result.columns.length == 2, "length was not 2: " + result)
+      assert(!result.hasColumn(columnName), "column was still present: " + result)
+    }
+
+    "be able to drop a column a" in {
+      testDropColumn("a")
+    }
+
+    "be able to drop a column b" in {
+      testDropColumn("b")
+    }
+
+    "be able to drop a column c" in {
+      testDropColumn("c")
+    }
+
+    "be able to drop multiple columns 1" in {
+      val result = abcSchema.dropColumns(List("a", "c"))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("b"))
+    }
+
+    "be able to drop multiple columns 2" in {
+      val result = abcSchema.dropColumns(List("a", "b"))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("c"))
+    }
+
+    "be able to drop multiple columns 3" in {
+      val result = abcSchema.dropColumns(List("b", "c"))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("a"))
+    }
+
+    "be able to drop multiple columns with list of 1" in {
+      val result = abcSchema.dropColumns(List("a"))
+      assert(result.columns.length == 2)
+      assert(result.hasColumn("b"))
+      assert(result.hasColumn("c"))
     }
 
     "be able to copy a subset of columns" in {
@@ -84,6 +122,11 @@ class SchemaTest extends WordSpec with Matchers {
       val excluded = abcSchema.columnsExcept(List("a", "b"))
       excluded.length should be(1)
       excluded(0).name should be("c")
+    }
+
+    "be able to drop 'ignore' columns" in {
+      val schema = new Schema(List(("a", int64), ("b", ignore), ("c", string))).dropIgnoreColumns()
+      assert(schema.columnTuples == List(("a", int64), ("c", string)))
     }
 
   }

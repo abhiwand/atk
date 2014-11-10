@@ -171,6 +171,7 @@ object DataTypes {
    * Strings
    */
   case object string extends DataType {
+
     override type ScalaType = String
 
     override def parse(raw: Any) = Try {
@@ -184,7 +185,7 @@ object DataTypes {
 
     override def scalaType = classOf[String]
 
-    override def typedJson(raw: Any) = {
+    override def typedJson(raw: Any): JsValue = {
       raw.asInstanceOf[String].toJson
     }
 
@@ -195,6 +196,37 @@ object DataTypes {
       catch {
         case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
       }
+    }
+
+    override def isNumerical = false
+  }
+
+  /**
+   * This is a special type for values that should be ignored while importing from CSV file.
+   *
+   * Any column with this type should be dropped.
+   */
+  case object ignore extends DataType {
+
+    override type ScalaType = Null
+
+    override def parse(s: Any): Try[ignore.ScalaType] = Try {
+      null
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // always report false - we don't every want to match this type
+      false
+    }
+
+    override def scalaType = classOf[Null]
+
+    override def typedJson(raw: Any): JsValue = {
+      JsNull
+    }
+
+    override def asDouble(raw: Any): Double = {
+      throw new IllegalArgumentException("cannot convert ignore type to Double")
     }
 
     override def isNumerical = false
@@ -220,7 +252,7 @@ object DataTypes {
    */
   val supportedTypes: Map[String, DataType] =
     Seq(int32, int64, float32,
-      float64, string)
+      float64, string, ignore)
       .map(t => t.toString -> t)
       .toMap ++
       Map("str" -> string,
