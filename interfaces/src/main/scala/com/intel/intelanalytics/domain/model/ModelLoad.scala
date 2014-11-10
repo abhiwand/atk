@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain.frame.FrameReference
@@ -28,14 +29,13 @@ import com.intel.intelanalytics.domain.model.ModelReference
 /**
  * Command for loading model data into existing model in the model database.
  * @param model Handle to the model to be written to.
- * @param frame Handle to the train data frame
- * @param observationColumn
- * @param labelColumn
+ * @param frame Handle to the data frame
+ * @param observationColumn Handle to the observation column of the data frame
+ * @param labelColumn Handle to the label column of the data frame
  */
-
-case class ModelLoad(model: ModelReference, frame: FrameReference, labelColumn: String, observationColumn: String) {
+case class ModelLoad(model: ModelReference, frame: FrameReference, observationColumn: String, labelColumn: String) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumn.isEmpty, "observationColumn must not be null")
-  require(!labelColumn.isEmpty, "labelColumn must not be null")
+  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
+  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
 }
