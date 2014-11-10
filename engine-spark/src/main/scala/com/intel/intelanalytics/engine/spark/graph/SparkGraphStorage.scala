@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.graph
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
@@ -341,11 +341,11 @@ class SparkGraphStorage(metaStore: MetaStore,
     frames.saveFrame(frameMeta, edgeFrameRDD, rowCount)
   }
 
-  def updateElementIDNames(graphMeta: Graph, elementIDColumns: List[ElementIDName]): Graph = {
+  def updateFrameSchemaList(graphMeta: Graph, schemas: List[Schema]): Graph = {
     metaStore.withSession("spark.graphstorage.updateElementIDNames") {
       implicit session =>
         {
-          val updatedGraph = graphMeta.copy(elementIDNames = Some(new ElementIDNames(elementIDColumns)))
+          val updatedGraph = graphMeta.copy(frameSchemaList = Some(new SchemaList(schemas)))
           metaStore.graphRepo.update(updatedGraph).get
         }
     }
