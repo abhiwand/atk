@@ -13,6 +13,7 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
+GROUP="Intel Analytics Client"
 LICENSE="Confidential"
 #SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 

@@ -24,52 +24,84 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
 import org.scalatest.Matchers
 
-/**
- * Sample Class used for a test case below
- * @param num  a number
- * @param name a string representation of that number
- */
-case class TestCase(num: Int, name: String)
+class FrameRDDTest extends TestingSparkContextWordSpec with Matchers {
+  "FrameRDD" should {
 
-/**
- * Unit Tests for the FrameRDD class
- */
-class FrameRDDTest extends TestingSparkContextFlatSpec with Matchers {
-  "FrameRDD" should "be convertible into a SchemaRDD" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-    val rdd = new FrameRDD(schema, rows)
-    val schemaRDD = rdd.toSchemaRDD()
+    "create an appropriate StructType from frames Schema" in {
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val structType = FrameRDD.schemaToStructType(schema.columnTuples)
+      structType.fields(0).name should be("num")
+      structType.fields(0).dataType should be(IntegerType)
 
-    schemaRDD.getClass should be(classOf[SchemaRDD])
-  }
+      structType.fields(1).name should be("name")
+      structType.fields(1).dataType should be(StringType)
+    }
 
-  "FrameRDD" should "create an appropriate StructType from frames Schema" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-    val rdd = new FrameRDD(schema, rows)
+    "allow a Row RDD in the construtor" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val rdd = FrameRDD.toFrameRDD(schema, rows)
+      rdd.schema should be(schema)
+      rdd.first should equal(rows.first)
+    }
 
-    val structType = rdd.schemaToStructType()
-    structType.fields(0).name should be("num")
-    structType.fields(0).dataType should be(IntegerType)
+    "be convertible into a LegacyFrameRDD" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val rdd = FrameRDD.toFrameRDD(schema, rows)
+      val legacy = rdd.toLegacyFrameRDD
+      legacy.getClass should be(classOf[LegacyFrameRDD])
+      legacy.schema should equal(schema)
+      legacy.first should equal(rdd.first)
+    }
 
-    structType.fields(1).name should be("name")
-    structType.fields(1).dataType should be(StringType)
-  }
+    "create unique ids in a new column" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i.toLong, i.toString))).repartition(7)
+      val schema = new Schema(List(("num", DataTypes.int64), ("name", DataTypes.string)))
+      val rdd = FrameRDD.toFrameRDD(schema, rows)
 
-  "FrameRDD" should "allow a SchemaRDD in its constructor" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
-    val sqlContext = new SQLContext(sparkContext)
-    val schemaRDD = sqlContext.createSchemaRDD(rows)
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val rddWithUniqueIds = rdd.assignUniqueIds("_vid")
+      rddWithUniqueIds.schema.columnTuples.size should be(3)
+      val ids = rddWithUniqueIds.map(x => x(2)).collect
 
-    val frameRDD = new FrameRDD(schema, schemaRDD)
+      val uniqueIds = ids.distinct
+      ids.size should equal(uniqueIds.size)
+      ids(0) should be(0)
+    }
 
-    frameRDD.take(1) should be(Array(Array(1, "1")))
+    "create unique ids in an existing column" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i.toLong, i.toString))).repartition(5)
+      val schema = new Schema(List(("num", DataTypes.int64), ("name", DataTypes.string)))
+      val rdd = FrameRDD.toFrameRDD(schema, rows)
+
+      val rddWithUniqueIds = rdd.assignUniqueIds("num")
+      rddWithUniqueIds.schema.columnTuples.size should be(2)
+      val values = rddWithUniqueIds.collect()
+      val ids = values.map(x => x(0))
+
+      val uniqueIds = ids.distinct
+      ids.size should equal(uniqueIds.size)
+      ids(0) should be(0)
+    }
+
+    "create unique ids starting at a specified value" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i.toLong, i.toString))).repartition(3)
+      val schema = new Schema(List(("num", DataTypes.int64), ("name", DataTypes.string)))
+      val rdd = FrameRDD.toFrameRDD(schema, rows)
+      val startVal = 121
+
+      val rddWithUniqueIds = rdd.assignUniqueIds("num", startVal)
+      val values = rddWithUniqueIds.collect()
+      val ids = values.map(x => x(0))
+
+      val uniqueIds = ids.distinct
+      ids.size should equal(uniqueIds.size)
+      ids(0) should be(startVal)
+
+    }
   }
 }

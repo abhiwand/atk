@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.service
 
-import com.intel.intelanalytics.shared.EventLogging
 import spray.routing.directives.BasicDirectives
 import spray.routing._
+import com.intel.event.EventLogging
 
 /**
  * Directive for setting up EventLogging Context

@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.graphbuilder.parser.Parser
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ Partition, TaskContext }
@@ -35,14 +35,14 @@ import scala.collection.mutable.Map
  *
  * @param vertexParser the parser to use
  */
-class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[Vertex]) extends RDD[Vertex](prev) {
+class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[GBVertex]) extends RDD[GBVertex](prev) {
 
-  override def getPartitions: Array[Partition] = firstParent[Vertex].partitions
+  override def getPartitions: Array[Partition] = firstParent[GBVertex].partitions
 
   /**
    * Parse the raw rows of input into Vertices
    */
-  override def compute(split: Partition, context: TaskContext): Iterator[Vertex] = {
+  override def compute(split: Partition, context: TaskContext): Iterator[GBVertex] = {
 
     // In some data sets many vertices are duplicates and many of the duplicates are
     // 'near' each other in the parsing process (like Netflix movie data where the
@@ -51,7 +51,7 @@ class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[Vertex]) extends R
     // will be less to deal with later. This is like a combiner in Hadoop Map/Reduce,
     // it won't remove all duplicates in the final RDD but there will be less to
     // shuffle later.  For input without duplicates, this shouldn't add much overhead.
-    val vertexMap = Map[Property, Vertex]()
+    val vertexMap = Map[Property, GBVertex]()
 
     firstParent[Seq[_]].iterator(split, context).foreach(row => {
       vertexParser.parse(row).foreach(v => {

@@ -2,15 +2,17 @@ package com.intel.intelanalytics.service
 
 import java.util.concurrent.TimeUnit
 
-import com.intel.intelanalytics.shared.SharedConfig
 import scala.concurrent.duration._
+import com.typesafe.config.ConfigFactory
 
 /**
  * Configuration settings for ApiServer.
  *
  * This is our wrapper for Typesafe config.
  */
-object ApiServiceConfig extends SharedConfig {
+object ApiServiceConfig {
+
+  val config = ConfigFactory.load()
 
   // val's are not lazy because failing early is better
 

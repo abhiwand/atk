@@ -30,7 +30,7 @@ import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo, CommandStorage }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
-import com.intel.intelanalytics.shared.EventLogging
+import com.intel.event.EventLogging
 
 class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
   val repo = metaStore.commandRepo

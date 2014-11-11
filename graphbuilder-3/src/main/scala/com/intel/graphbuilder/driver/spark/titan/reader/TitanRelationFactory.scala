@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.database.EdgeSerializer
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
@@ -132,12 +132,12 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    *
    * @return GraphBuilder vertex
    */
-  private def createVertex(): Option[Vertex] = {
+  private def createVertex(): Option[GBVertex] = {
     if (vertexProperties.isEmpty) {
       None
     }
     else {
-      Option(new Vertex(vertexId, Property(gbId, vertexId), vertexProperties.toSeq))
+      Option(new GBVertex(vertexId, Property(gbId, vertexId), vertexProperties.toSet))
     }
   }
 
@@ -156,15 +156,15 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    *
    * @return GraphBuilder edge
    */
-  private def createEdge(vertexId: Long, otherVertexID: Long, direction: Direction, edgeLabel: String, properties: Map[String, Any]): Option[Edge] = {
+  private def createEdge(vertexId: Long, otherVertexID: Long, direction: Direction, edgeLabel: String, properties: Map[String, Any]): Option[GBEdge] = {
 
     direction match {
       case Direction.OUT =>
         val srcVertexId = vertexId
         val destVertexId = otherVertexID
-        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSeq
+        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSet
 
-        Option(new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties))
+        Option(new GBEdge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties))
       case _ => None
     }
   }

@@ -43,12 +43,6 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Retu
                                                                                                                           override val doc: Option[CommandDoc] = None)
     extends CommandPlugin[Arguments, Return] {
 
-  override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
-
-  override def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
-
-  override def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
-
   override def numberOfJobs(arguments: Arguments) = numberOfJobsFunc(arguments)
 
   /**

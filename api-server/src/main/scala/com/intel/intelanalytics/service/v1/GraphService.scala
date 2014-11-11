@@ -27,23 +27,22 @@ import com.intel.intelanalytics.domain._
 import spray.json._
 import spray.http.{ StatusCodes, Uri }
 import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetGraph
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
-import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
+import com.intel.intelanalytics.service.v1.decorators.{ FrameDecorator, GraphDecorator }
 
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import com.intel.event.EventLogging
 
 //TODO: Is this right execution context for us?
 
@@ -60,6 +59,8 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
   def graphRoutes() = {
     //import ViewModelJsonImplicits._
     val prefix = "graphs"
+    val verticesPrefix = "vertices"
+    val edgesPrefix = "edges"
 
     /**
      * Creates "decorated graph" for return on HTTP protocol
@@ -130,36 +131,112 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
         } ~
           pathPrefix(prefix / LongNumber) {
             id =>
-              pathEnd {
-                requestUri {
-                  uri =>
-                    get {
-                      onComplete(engine.getGraph(id)) {
-                        case Success(graph) => {
-                          val decorated = decorate(uri, graph)
-                          complete {
-                            import spray.httpx.SprayJsonSupport._
-                            implicit val format = DomainJsonProtocol.graphTemplateFormat
-                            implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
-                            decorated
+              {
+                pathEnd {
+                  requestUri {
+                    uri =>
+                      get {
+                        onComplete(engine.getGraph(id)) {
+                          case Success(graph) => {
+                            val decorated = decorate(uri, graph)
+                            complete {
+                              import spray.httpx.SprayJsonSupport._
+                              implicit val format = DomainJsonProtocol.graphTemplateFormat
+                              implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
+                              decorated
+                            }
                           }
-                        }
-                        case Failure(ex) => throw ex
-                      }
-                    } ~
-                      delete {
-                        onComplete(for {
-                          graph <- engine.getGraph(id)
-                          res <- engine.deleteGraph(graph)
-                        } yield res) {
-                          case Success(ok) => complete("OK")
                           case Failure(ex) => throw ex
                         }
+                      } ~
+                        delete {
+                          onComplete(for {
+                            graph <- engine.getGraph(id)
+                            res <- engine.deleteGraph(graph)
+                          } yield res) {
+                            case Success(ok) => complete("OK")
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                  }
+                } ~
+                  pathPrefix(verticesPrefix) {
+                    pathEnd {
+                      requestUri {
+                        uri =>
+                          {
+                            get {
+                              import IADefaultJsonProtocol._
+                              parameters('label.?) {
+                                (label) =>
+                                  label match {
+                                    case Some(label) => {
+                                      onComplete(engine.getVertex(id, label)) {
+                                        case Success(Some(frame)) => {
+                                          import spray.httpx.SprayJsonSupport._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))
+                                        }
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                    case None => {
+                                      onComplete(engine.getVertices(id)) {
+                                        case Success(frames) =>
+                                          import spray.httpx.SprayJsonSupport._
+                                          import IADefaultJsonProtocol._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                  }
+                              }
+                            }
+                          }
                       }
-                }
+                    }
+                  } ~
+                  pathPrefix(edgesPrefix) {
+                    pathEnd {
+                      requestUri {
+                        uri =>
+                          {
+                            get {
+                              import IADefaultJsonProtocol._
+                              parameters('label.?) {
+                                (label) =>
+                                  label match {
+                                    case Some(label) => {
+                                      onComplete(engine.getEdge(id, label)) {
+                                        case Success(Some(frame)) => {
+                                          import spray.httpx.SprayJsonSupport._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))
+                                        }
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                    case None => {
+                                      onComplete(engine.getEdges(id)) {
+                                        case Success(frames) =>
+                                          import spray.httpx.SprayJsonSupport._
+                                          import IADefaultJsonProtocol._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                  }
+                              }
+                            }
+                          }
+                      }
+                    }
+                  }
+
               }
           }
     }
-
   }
 }

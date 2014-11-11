@@ -2,7 +2,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import java.io.File
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.DirectoryUtils
@@ -82,26 +82,26 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   // GraphBuilder graph elements
   val neptuneGbVertex = {
     val gbNeptuneProperties = createGbProperties(neptuneTitanVertex.getProperties())
-    new Vertex(neptuneTitanVertex.getID(), Property(gbID, neptuneTitanVertex.getID()), gbNeptuneProperties)
+    new GBVertex(neptuneTitanVertex.getID(), Property(gbID, neptuneTitanVertex.getID()), gbNeptuneProperties)
   }
 
   val seaGbVertex = {
     val gbSeaProperties = createGbProperties(seaTitanVertex.getProperties())
-    new Vertex(seaTitanVertex.getID(), Property(gbID, seaTitanVertex.getID()), gbSeaProperties)
+    new GBVertex(seaTitanVertex.getID(), Property(gbID, seaTitanVertex.getID()), gbSeaProperties)
   }
 
   val plutoGbVertex = {
     val gbPlutoProperties = createGbProperties(plutoTitanVertex.getProperties())
-    new Vertex(plutoTitanVertex.getID(), Property(gbID, plutoTitanVertex.getID()), gbPlutoProperties)
+    new GBVertex(plutoTitanVertex.getID(), Property(gbID, plutoTitanVertex.getID()), gbPlutoProperties)
   }
 
   val seaGbEdge = {
-    val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
-    new Edge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
+    val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
+    new GBEdge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), List[Property]())
+    new GBEdge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
   // Serialized Titan rows created using the Titan graph elements defined above.

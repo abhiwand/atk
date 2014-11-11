@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import org.apache.hadoop.fs.Path
+import com.intel.event.EventLogging
 
 /**
  * Frame storage in HDFS.
@@ -38,7 +38,7 @@ import org.apache.hadoop.fs.Path
  * @param hdfs methods for interacting with underlying storage (e.g. HDFS)
  */
 class FrameFileStorage(fsRoot: String,
-                       hdfs: HdfsFileStorage) extends EventLogging {
+                       val hdfs: HdfsFileStorage) extends EventLogging {
 
   private val framesBaseDirectory = new Path(fsRoot + "/intelanalytics/dataframes")
 
