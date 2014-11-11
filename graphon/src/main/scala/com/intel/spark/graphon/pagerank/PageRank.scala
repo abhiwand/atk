@@ -102,6 +102,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph:titan/ml/graphx_pagerank"
 
+  //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
