@@ -21,43 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
-
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+package com.intel.intelanalytics.domain.model
 
 /**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
+ * Arguments for creating the metadata entry for a model.
+ * @param name The user's name for the model.
  */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
-
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
-
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
-
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
-
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
-
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
-
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
-
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
+case class ModelTemplate(name: String, modelType: String) {
+  require(name != null, "name must not be null")
+  require(name.trim.length > 0, "name must not be empty or whitespace")
+  require(modelType != null, "modelType must not be null")
 }
