@@ -61,7 +61,10 @@ case class PageRankArgs(graph: GraphReference,
                         input_edge_labels: Option[List[String]] = None,
                         max_iterations: Option[Int] = None,
                         reset_probability: Option[Double] = None,
-                        convergence_tolerance: Option[Double] = None)
+                        convergence_tolerance: Option[Double] = None) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * Companion object holds the default values.
@@ -99,7 +102,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph:titan/ml/graphx_pagerank"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
     extendedSummary = Some("""

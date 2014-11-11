@@ -52,7 +52,10 @@ import java.util.UUID
  */
 case class ConnectedComponentsArgs(graph: GraphReference,
                                    output_property: String,
-                                   output_graph_name: String)
+                                   output_graph_name: String) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * The result object
@@ -81,7 +84,8 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
   override def name: String = "graph:titan/ml/graphx_connected_components"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Connected Components.",
     extendedSummary = Some("""

@@ -61,6 +61,7 @@ _types = {
     int64: "int64",
     #list: "list", TODO
     unicode: "unicode",
+    ignore: "ignore"
 }
 
 _strings = dict([(s, t) for t, s in _types.iteritems()])

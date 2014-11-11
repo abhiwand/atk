@@ -181,7 +181,7 @@ class IaBatchedSerializer(BatchedSerializer):
                 serialized = '[%s]' % ','.join(obj)
                 try:
                     s = str(serialized)
-                except UnicodeEncodeError:
-                    s = unicode(serialized).encode('unicode_escape')
+                except:
+                    s = serialized.encode('utf-8')
                 write_int(len(s), stream)
                 stream.write(s)

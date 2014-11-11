@@ -58,7 +58,10 @@ import java.util.UUID
 case class TriangleCountArgs(graph: GraphReference,
                              output_property: String,
                              output_graph_name: String,
-                             input_edge_labels: Option[List[String]] = None)
+                             input_edge_labels: Option[List[String]] = None) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * The result object
@@ -87,7 +90,8 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
   override def name: String = "graph:titan/ml/graphx_triangle_count"
 
-  override def kryoRegistrator: Option[String] = Some("com.intel.spark.graphon.GraphonKryoRegistrator")
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Triangle Count.",
     extendedSummary = Some("""
