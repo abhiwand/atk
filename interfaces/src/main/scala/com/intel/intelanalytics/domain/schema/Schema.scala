@@ -180,7 +180,7 @@ case class Schema(columns: List[Column] = List[Column](),
    * @param columnName name of the column to find index
    */
   def columnIndex(columnName: String): Int = {
-    val index = columns.indexWhere(column => column.name == columnName)
+    val index = columns.indexWhere(column => column.name == columnName, 0)
     if (index == -1)
       throw new IllegalArgumentException(s"Invalid column name $columnName provided, please choose from: " + columnNamesAsString)
     else
@@ -337,11 +337,20 @@ case class Schema(columns: List[Column] = List[Column](),
   def dropColumns(columnNames: List[String]): Schema = {
     var newSchema = this
     if (columnNames != null) {
-      columnNames.foreach(columnName =>
+      columnNames.foreach(columnName => {
         newSchema = newSchema.dropColumn(columnName)
-      )
+      })
     }
     newSchema
+  }
+
+  /**
+   * Drop all columns with the 'ignore' data type.
+   *
+   * The ignore data type is a slight hack for ignoring some columns on import.
+   */
+  def dropIgnoreColumns(): Schema = {
+    dropColumns(columns.filter(col => col.dataType == DataTypes.ignore).map(col => col.name))
   }
 
   /**

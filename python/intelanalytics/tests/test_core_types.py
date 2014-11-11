@@ -39,7 +39,7 @@ class ValidDataTypes(unittest.TestCase):
         self.assertFalse(list in valid_data_types)  # not supported yet!
         self.assertFalse(int in valid_data_types)
         self.assertFalse(float in valid_data_types)
-        self.assertFalse(ignore in valid_data_types)
+        self.assertTrue(ignore in valid_data_types)
         self.assertFalse(unknown in valid_data_types)
 
     def test_repr(self):
@@ -64,33 +64,18 @@ class ValidDataTypes(unittest.TestCase):
     def test_get_from_type(self):
         self.assertEqual(int64, valid_data_types.get_from_type(int64))
         self.assertEqual(float64, valid_data_types.get_from_type(float))
-        try:
-            valid_data_types.get_from_type(ignore)
-        except ValueError:
-            pass
-        else:
-            self.fail("Expected exception!")
+        self.assertEqual(ignore, valid_data_types.get_from_type(ignore))
 
     def test_validate(self):
         valid_data_types.validate(float64)
         valid_data_types.validate(int)
-        try:
-            valid_data_types.validate(ignore)
-        except ValueError:
-            pass
-        else:
-            self.fail("Expected exception!")
+        valid_data_types.validate(ignore)
 
     def test_to_string(self):
         self.assertEqual('int32', valid_data_types.to_string(int32))
         self.assertEqual('float64', valid_data_types.to_string(float64))
         self.assertEqual('unicode', valid_data_types.to_string(str))
-        try:
-            valid_data_types.to_string(ignore)
-        except ValueError:
-            pass
-        else:
-            self.fail("Expected exception!")
+        self.assertEqual('ignore', valid_data_types.to_string(ignore))
 
     def test_cast(self):
         self.assertEqual(float32(1.0), valid_data_types.cast(1.0, float32))
