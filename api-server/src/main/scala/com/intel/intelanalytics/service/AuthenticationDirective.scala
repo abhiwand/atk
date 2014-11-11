@@ -33,9 +33,9 @@ import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
 import spray.routing._
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.Engine
+import com.intel.event.EventLogging
 
 /**
  * Uses authorization HTTP header and engine to authenticate a user

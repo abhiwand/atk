@@ -39,3 +39,12 @@ def get_graph_backend():
         _graph_backend = GraphBackendRest()
     return _graph_backend
 _graph_backend = None
+
+# Model
+def get_model_backend():
+    global _model_backend
+    if _model_backend is None:
+        from intelanalytics.rest.model import ModelBackendRest
+        _model_backend = ModelBackendRest()
+    return _model_backend
+_model_backend = None

@@ -27,7 +27,7 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderCon
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.graphbuilder.elements.{ Edge, Vertex, Property }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.testutils.TestingSparkContextWordSpec
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
@@ -191,11 +191,11 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
       // Create edge set RDD, make up properties
       val inputRdd = inputRows.map(row => row.split(" "): Seq[String])
-      val edgeRdd = inputRdd.map(e => new Edge(new Property("userId", e(0)), new Property("userId", e(1)), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+      val edgeRdd = inputRdd.map(e => new GBEdge(new Property("userId", e(0)), new Property("userId", e(1)), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
       // Create vertex set RDD, make up properties
       val rawVertexRdd = inputRdd.flatMap(row => row).distinct()
-      val vertexRdd = rawVertexRdd.map(v => new Vertex(new Property("userId", v), Seq(new Property("location", "Oregon"))))
+      val vertexRdd = rawVertexRdd.map(v => new GBVertex(new Property("userId", v), Set(new Property("location", "Oregon"))))
 
       // Build the graph
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))

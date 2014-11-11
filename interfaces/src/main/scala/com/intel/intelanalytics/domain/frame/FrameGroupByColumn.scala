@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class FrameGroupByColumn[+Arguments, FrameRef](frame: FrameRef, name: String, group_by_columns: List[String], aggregations: List[(String, String, String)]) {
+case class FrameGroupByColumn(frame: FrameReference, name: String, groupByColumns: List[String], aggregations: List[(String, String, String)]) {
   require(name != null, "frame name is required for the new frame")
   require(frame != null, "frame is required")
-  require(group_by_columns != null, "groupbycol is required")
+  require(groupByColumns != null, "groupbycol is required")
   require(aggregations != null, "aggregation list is required")
 }

@@ -24,11 +24,11 @@
 package com.intel.intelanalytics.engine.spark.user
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.domain.User
+import com.intel.event.EventLogging
 
 /**
  * Get users from metaStore

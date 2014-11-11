@@ -30,18 +30,20 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict, namedtuple
 import json
 import sys
+import pandas
+import numpy as np
+import intelanalytics.rest.config as config
 
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.column import BigColumn
-from intelanalytics.core.files import CsvFile
+from intelanalytics.core.frame import Frame
+from intelanalytics.core.iapandas import Pandas
+from intelanalytics.core.column import Column
+from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
-from intelanalytics.core.metaprog import load_loadable
-from intelanalytics.core.deprecate import raise_deprecation_warning
 
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
+from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
@@ -52,93 +54,50 @@ schema contains only columns baed on user specified columns
 the data type under schema is also coverted to IA types
 """
 
-class FrameBackendRest(object):
-    """REST plumbing for BigFrame"""
 
-    commands_loaded = {}
+class FrameBackendRest(object):
+    """REST plumbing for Frame"""
 
     def __init__(self, http_methods=None):
         self.rest_http = http_methods or http
-        # use global connection, auth, etc.  This client does not support
-        # multiple connection contexts
-        if not self.__class__.commands_loaded:
-            # New way
-            logger.info("Loading Frame commands")
-            commands = get_commands()
-            load_loadable(BigFrame, commands, execute_command)
-
-            # Old way - keep doing old way for static methods for now, incremental switch-over
-            self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
-                                                                                 execute_update_frame_command,
-                                                                                 execute_new_frame_command))
-            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-
-    def get_frame_names(self):
-        logger.info("REST Backend: get_frame_names")
-        r = self.rest_http.get('dataframes')
-        payload = r.json()
-        return [f['name'] for f in payload]
-
-    def get_frame(self, name):
-        logger.info("REST Backend: get_frame")
-        r = self.rest_http.get('dataframes?name='+name)
-        frame_info = FrameInfo(r.json())
-        return BigFrame(frame_info)
 
     def get_frame_by_id(self, id):
         logger.info("REST Backend: get_frame_by_id")
         if id is None:
             return None
         else:
-            r = self.rest_http.get('dataframes/' + str(id))
+            r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = BigFrame()
+            frame = Frame()
             initialize_frame(frame, FrameInfo(payload))
             return frame
 
-    def delete_frame(self, frame):
-        if isinstance(frame, BigFrame):
-            return self._delete_frame(frame)
-        elif isinstance(frame, basestring):
-            # delete by name
-            return self._delete_frame(self.get_frame(frame))
-        else:
-            raise TypeError("Excepted argument of type BigFrame or the frame name")
-
-    def _delete_frame(self, frame):
-        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return None
-
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
-            return  # early exit here
-
-        new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
-
-        # TODO - change project such that server creates the new frame, instead of passing one in
-        if isinstance(source, BigFrame):
-            self.project_columns(source, frame, source.column_names)
-        elif isinstance(source, BigColumn):
-            self.project_columns(source.frame, frame, source.name)
-        elif isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source):
-            self.project_columns(source[0].frame, frame, [s.name for s in source])
+        elif isinstance(source, Frame):
+            become_frame(frame, source.copy(name=name))
+        elif isinstance(source, Column):
+            become_frame(frame, source.frame.copy(columns=source.name, name=name))
+        elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
+            become_frame(frame, source[0].frame.copy(columns=[s.name for s in source], name=name))
         else:
+            payload = {'name': name }
+            r = self.rest_http.post('frames', payload)
+            logger.info("REST Backend: create frame response: " + r.text)
+            frame_info = FrameInfo(r.json())
+            initialize_frame(frame, frame_info)
             if source:
-                self.append(frame, source)
-
-        return new_frame_name
-
-    def _create_new_frame(self, frame, name):
-        """create helper method to call http and initialize frame with results"""
-        payload = {'name': name }
-        r = self.rest_http.post('dataframes', payload)
-        logger.info("REST Backend: create frame response: " + r.text)
-        frame_info = FrameInfo(r.json())
-        initialize_frame(frame, frame_info)
-        return frame_info.name
+                try:
+                    self.append(frame, source)
+                except Exception:
+                    self.rest_http.delete("frames/%s" % frame_info.id_number)
+                    raise
+            return frame_info.name
+        return frame.name
 
     def get_name(self, frame):
         return self._get_frame_info(frame).name
@@ -146,15 +105,36 @@ class FrameBackendRest(object):
     def get_schema(self, frame):
         return self._get_frame_info(frame).schema
 
-    def get_row_count(self, frame):
-        return self._get_frame_info(frame).row_count
+    def get_row_count(self, frame, where):
+        if not where:
+            return self._get_frame_info(frame).row_count
+        # slightly faster generator to only return a list of one item, since we're just counting rows
+        # TODO - there's got to be a better way to do this with the RDDs, trick is with Python.
+        def icountwhere(predicate, iterable):
+           return ("[1]" for item in iterable if predicate(item))
+        http_ready_function = prepare_row_function(frame, where, icountwhere)
+        arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
+        return get_command_output("count_where", arguments)
 
     def get_ia_uri(self, frame):
         return self._get_frame_info(frame).ia_uri
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
+        frame_type = "VertexFrame" if frame_info._has_vertex_schema() else "EdgeFrame" if frame_info._has_edge_schema() else "Frame"
+
+        if frame_info._has_vertex_schema():
+            frame_type = "VertexFrame"
+            graph_data = "\nLabel = %s" % frame_info.label
+        elif frame_info._has_edge_schema():
+            frame_type = "EdgeFrame"
+            graph_data = "\nLabel = %s\nSource Vertex Label = %s\nDestination Vertex Label = %s\nDirected = %s" % (
+                frame_info.label, frame_info.src_vertex_label, frame_info.dest_vertex_label, frame_info.directed)
+        else:
+            frame_type = "Frame"
+            graph_data = ""
+        return "\n".join(['%s "%s"%s\nrow_count = %d\nschema = ' %
+                          (frame_type, frame_info.name, graph_data,  frame_info.row_count)] +
                          ["  %s:%s" % (name, data_type)
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
@@ -163,31 +143,59 @@ class FrameBackendRest(object):
         return FrameInfo(response.json())
 
     def _get_frame_full_uri(self, frame):
-        return self.rest_http.create_full_uri('dataframes/%d' % frame._id)
+        return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
-    def _get_load_arguments(self, frame, data):
-        if isinstance(data, CsvFile):
+    def _get_load_arguments(self, frame, source, data=None):
+        if isinstance(source, CsvFile):
             return {'destination': frame._id,
                     'source': {
                         "source_type": "file",
-                        "uri": data.file_name,
+                        "uri": source.file_name,
                         "parser":{
                             "name": "builtin/line/separator",
                             "arguments": {
-                                "separator": data.delimiter,
-                                "skip_rows": data.skip_header_lines,
+                                "separator": source.delimiter,
+                                "skip_rows": source.skip_header_lines,
                                 "schema":{
-                                    "columns": data._schema_to_json()
+                                    "columns": source._schema_to_json()
                                 }
                             }
-                        }
+                        },
+                        "data": None
                     }
             }
-        if isinstance(data, BigFrame):
-            return {'source': { 'source_type': 'dataframe',
-                                'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
+        if isinstance( source, LineFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "linefile",
+                            "uri": source.file_name,
+                            "parser": {"name": "invalid",
+                                        "arguments":{"separator": ',',
+                                                    "skip_rows": 0,
+                                                    "schema": {"columns": [("data_lines",valid_data_types.to_string(str))]}
+                                        }
+                                },
+                                "data": None
+                                },
+                    }
+        if isinstance(source, Pandas):
+            return{'destination': frame._id,
+                   'source': {"source_type": "strings",
+                              "uri": "pandas",
+                              "parser": {"name": "builtin/upload",
+                                         "arguments": { "separator": ',',
+                                                       "skip_rows": 0,
+                                                       "schema":{ "columns": source._schema_to_json()
+                                    }
+                                }
+                              },
+                              "data": data
+                   }
+            }
+        if isinstance(source, Frame):
+            return {'source': { 'source_type': 'frame',
+                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
-        raise TypeError("Unsupported data source %s" % type(data))
+        raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -224,12 +232,18 @@ class FrameBackendRest(object):
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
 
         execute_update_frame_command('add_columns', arguments, frame)
+
+    @staticmethod
+    def _handle_error(result):
+        if result and result.has_key("error_frame_id"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame._id, repr(data)))
@@ -239,55 +253,62 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        arguments = self._get_load_arguments(frame, data)
-        result = execute_update_frame_command("load", arguments, frame)
-        if result and result.has_key("error_frame_id"):
-            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+        if isinstance(data, Pandas):
+            pan = data.pandas_frame
+            if not data.row_index:
+                pan = pan.reset_index()
+            pan = pan.dropna(thresh=len(pan.columns))
+            #number of columns should match the number of columns in the schema, else throw an error
+            if len(pan.columns) != len(data.field_names):
+                raise ValueError("Number of columns in Pandasframe {0} does not match the number of columns in the "
+                                 " schema provided {1}.".format(len(pan.columns), len(data.field_names)))
 
-    def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
-            quantiles = [quantiles]
-
-        invalid_quantiles = []
-        for p in quantiles:
-            if p > 100 or p < 0:
-                invalid_quantiles.append(str(p))
-
-        if len(invalid_quantiles) > 0:
-            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
-
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
-        result_dict = {}
-        for p in quantiles_result:
-            result_dict[p.get("quantile")] = p.get("value")
-        return result_dict
+            begin_index = 0
+            iteration = 1
+            end_index = config.upload_defaults.rows
+            while True:
+                pandas_rows = pan[begin_index:end_index].values.tolist()
+                arguments = self._get_load_arguments(frame, data, pandas_rows)
+                result = execute_update_frame_command("frame:/load", arguments, frame)
+                self._handle_error(result)
+                if end_index > len(pan.index):
+                    break
+                iteration += 1
+                begin_index = end_index
+                end_index = config.upload_defaults.rows * iteration
+        else:
+            arguments = self._get_load_arguments(frame, data)
+            result = execute_update_frame_command("frame:/load", arguments, frame)
+            self._handle_error(result)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
-        execute_update_frame_command("filter", arguments, frame)
-
-    def drop_duplicates(self, frame, columns):
-        if columns is None:
-            columns = []
-        elif isinstance(columns, basestring):
-            columns = [columns]
-        arguments = {'frame_id': frame._id, "unique_columns": columns}
-        execute_update_frame_command('drop_duplicates', arguments, frame)
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
-        execute_update_frame_command("filter", arguments, frame)
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        execute_update_frame_command("frame:/filter", arguments, frame)
+
+    def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
+        from itertools import ifilter
+        from itertools import ifilterfalse
+
+        if(keep_matching_vertices):
+            http_ready_function = prepare_row_function(frame, predicate, ifilter)
+        else:
+            http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
+
+        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
+        execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('flatten_column', arguments)
+        return execute_new_frame_command('frame:/flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
@@ -301,7 +322,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -363,30 +384,25 @@ class FrameBackendRest(object):
             right_on = left_on
         name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
-        return execute_new_frame_command('join', arguments)
+        return execute_new_frame_command('frame:/join', arguments)
 
-    def project_columns(self, frame, projected_frame, columns, new_names=None):
-        # TODO - change project_columns so the server creates the new frame, like join
-        if isinstance(columns, basestring):
-            columns = [columns]
-        elif isinstance(columns, dict):
-            if new_names is not None:
-                raise ValueError("'new_names' argument must be None since 'columns' argument is a dictionary, ")
-            columns, new_names = zip(*columns.items())
-
-        if new_names is not None:
-            if isinstance(new_names, basestring):
-                new_names = [new_names]
-            if len(columns) != len(new_names):
-                raise ValueError("new_names list argument must be the same length as the column_names")
-        # TODO - fix REST server to accept nulls, for now we'll pass an empty list
-        else:
-            new_names = list(columns)
-        arguments = {'frame': self._get_frame_full_uri(frame),
-                     'projected_frame': self._get_frame_full_uri(projected_frame),
+    def copy(self, frame, columns=None, where=None, name=None):
+        if where:
+            if not columns:
+                column_names = frame.column_names
+            elif isinstance(columns, basestring):
+                column_names = [columns]
+            elif isinstance(columns, dict):
+                column_names = columns.keys()
+            else:
+                column_names = columns
+            from intelanalytics.rest.spark import prepare_row_function_for_copy_columns
+            where = prepare_row_function_for_copy_columns(frame, where, column_names)
+        arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
-                     'new_column_names': new_names}
-        execute_update_frame_command('project', arguments, projected_frame)
+                     'where': where,
+                     'name': name}
+        return execute_new_frame_command('frame/copy', arguments)
 
     def group_by(self, frame, group_by_columns, aggregation):
         if group_by_columns is None:
@@ -416,42 +432,53 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
         return execute_new_frame_command("group_by", arguments)
 
-    def rename_columns(self, frame, column_names, new_names):
-        if new_names is not None:
-            raise_deprecation_warning("rename_columns with old parameter syntax",
-                                      "New parameter syntax is to pass a dictionary of name pairs, (old, new)")
-            if isinstance(column_names, basestring) and isinstance(new_names, basestring):
-                column_names = [column_names]
-                new_names = [new_names]
-            if len(column_names) != len(new_names):
-                raise ValueError("Old-style rename_columns requires name lists of equal length")
-        else:
-            if not isinstance(column_names, dict):
-                raise ValueError("rename_columns requires a dictionary of string pairs")
-            new_names = column_names.values()
-            column_names = column_names.keys()
+    def rename_columns(self, frame, column_names):
+        if not isinstance(column_names, dict):
+            raise ValueError("rename_columns requires a dictionary of string pairs")
+        new_names = column_names.values()
+        column_names = column_names.keys()
 
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
-    def rename_frame(self, frame, name):
-        arguments = {'frame': frame._id, "new_name": name}
-        execute_update_frame_command('rename_frame', arguments, frame)
-
-
+    def sort(self, frame, columns, ascending):
+        if isinstance(columns, basestring):
+            columns_and_ascending = [(columns, ascending)]
+        elif isinstance(columns, list):
+            if isinstance(columns[0], basestring):
+                columns_and_ascending = map(lambda x: (x, ascending),columns)
+            else:
+                columns_and_ascending = columns
+        else:
+            raise ValueError("Bad type %s provided as argument; expecting basestring, list of basestring, or list of tuples" % type(columns))
+        arguments = { 'frame': frame._id, 'column_names_and_ascending': columns_and_ascending }
+        execute_update_frame_command("sort", arguments, frame)
 
     def take(self, frame, n, offset, columns):
+        def get_take_result():
+            data = []
+            schema = None
+            while len(data) < n:
+                url = 'frames/{0}/data?offset={2}&count={1}'.format(frame._id,n + len(data), offset + len(data))
+                result = executor.query(url)
+                if not schema:
+                    schema = result.schema
+                if len(result.data) == 0:
+                    break
+                data.extend(result.data)
+            return TakeResult(data, schema)
+
         if n == 0:
             return TakeResult([], frame.schema)
-        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        result = executor.query(url)
+        result = get_take_result()
+
         schema = FrameSchema.from_strings_to_types(result.schema)
 
         if isinstance(columns, basestring):
@@ -468,53 +495,53 @@ class FrameBackendRest(object):
 
         return TakeResult(data, updated_schema)
 
-    def ecdf(self, frame, sample_col):
-        import numpy as np
-        col_types = dict(frame.schema)
-        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to generate ecdf for non-numeric values")
-        data_type_dict = {np.float32: 'float32', np.float64: 'float64', np.int32: 'int32', np.int64: 'int64'}
-        data_type = 'string'
-        if col_types[sample_col] in data_type_dict:
-            data_type = data_type_dict[col_types[sample_col]]
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
-        return execute_new_frame_command('ecdf', arguments)
+    def create_vertex_frame(self, frame, source, label, graph):
+        logger.info("REST Backend: create vertex_frame with label %s" % label)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
+        if isinstance(source, FrameInfo):
+            self.initialize_graph_frame(frame, source, graph)
+            return frame.name  # early exit here
 
-    
-    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        arguments = {'frame_id': frame._id, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label)}
-        # valueList = (tp, tn, fp, fn)
-        valueList = get_command_output('confusion_matrix', arguments).get('value_list')
-        # the following output formatting code is ugly, but it works for now...
-        maxLength = len(max((str(x) for x in valueList), key=len))
-        topRowLen = max([maxLength*2 - 7, 1])
-        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
-        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
-        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
-        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
+        graph.define_vertex_type(label)
+        source_frame = graph.vertices[label]
+        self.copy_graph_frame(source_frame, frame)
+        return source_frame.name
 
-        return formattedMatrix
+    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed):
+        logger.info("REST Backend: create vertex_frame with label %s" % label)
+        if isinstance(source, dict):
+            source = FrameInfo(source)
+        if isinstance(source, FrameInfo):
+            self.initialize_graph_frame(frame, source, graph)
+            return frame.name  # early exit here
+
+        graph.define_edge_type(label, src_vertex_label, dest_vertex_label, directed)
+        source_frame = graph.edges[label]
+        self.copy_graph_frame(source_frame, frame)
+        return source_frame.name
+
+    def initialize_graph_frame(self, frame, frame_info, graph):
+        """Initializes a frame according to given frame_info associated with a graph"""
+        frame._ia_uri = frame_info.ia_uri
+        frame._id = frame_info.id_number
+        frame._error_frame_id = frame_info.error_frame_id
+        frame._label = frame_info.label
+        frame._graph = graph
+
+    def copy_graph_frame(self, source, target):
+        """Initializes a frame from another frame associated with a graph"""
+        target._ia_uri = source._ia_uri
+        target._id = source._id
+        target._error_frame_id = source._error_frame_id
+        target._label = source._label
+        target._graph = source._graph
+
+
 
 class FrameInfo(object):
     """
-    JSON-based Server description of a BigFrame
+    JSON-based Server description of a Frame
     """
     def __init__(self, frame_json_payload):
         self._payload = frame_json_payload
@@ -559,6 +586,52 @@ class FrameInfo(object):
         except:
             return None
 
+    @property
+    def label(self):
+        try:
+            schema = self._payload['schema']
+            if self._has_vertex_schema():
+                return schema['vertex_schema']['label']
+            if self._has_edge_schema():
+                return schema['edge_schema']['label']
+            return None
+        except:
+            return None
+
+    @property
+    def directed(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['directed']
+        except:
+            return None
+
+    @property
+    def dest_vertex_label(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['dest_vertex_label']
+        except:
+            return None
+
+    @property
+    def src_vertex_label(self):
+        if not self._has_edge_schema():
+            return None
+        try:
+            return self._payload['schema']['edge_schema']['src_vertex_label']
+        except:
+            return None
+
+    def _has_edge_schema(self):
+        return "edge_schema" in self._payload['schema']
+
+    def _has_vertex_schema(self):
+        return "vertex_schema" in self._payload['schema']
+
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
@@ -566,6 +639,8 @@ class FrameInfo(object):
             logger.error(msg)
             raise RuntimeError(msg)
         self._payload = payload
+
+
 
 
 class FrameSchema:
@@ -587,7 +662,7 @@ class FrameSchema:
 
     @staticmethod
     def from_strings_to_types(s):
-        return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
+        return [(column['name'], get_data_type_from_rest_str(column['data_type'])) for column in s]
 
     @staticmethod
     def get_schema_for_columns(schema, selected_columns):
@@ -622,11 +697,17 @@ def initialize_frame(frame, frame_info):
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
+def become_frame(frame, source_frame):
+    """Initializes a frame proxy according to another frame proxy"""
+    frame._ia_uri = source_frame._ia_uri
+    frame._id = source_frame._id
+    frame._error_frame_id = source_frame._error_frame_id
+
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
     #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('dataframe'):
-        command_name = 'dataframe/' + command_name
+    if not command_name.startswith('frame'):
+        command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
@@ -638,19 +719,19 @@ def execute_update_frame_command(command_name, arguments, frame):
 
 
 def execute_new_frame_command(command_name, arguments):
-    """Executes command and creates a new BigFrame object from server response"""
+    """Executes command and creates a new Frame object from server response"""
     #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('dataframe'):
-        command_name = 'dataframe/' + command_name
+    if not command_name.startswith('frame'):
+        command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
-    return BigFrame(frame_info)
+    return Frame(frame_info)
 
 
 def get_command_output(command_name, arguments):
     """Executes command and returns the output"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_request = CommandRequest('frame:/' + command_name, arguments)
     command_info = executor.issue(command_request)
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
         return command_info.result.get('value')

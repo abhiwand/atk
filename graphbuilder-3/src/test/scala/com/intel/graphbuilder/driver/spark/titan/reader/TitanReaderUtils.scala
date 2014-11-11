@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanElement, TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
@@ -29,8 +29,8 @@ object TitanReaderUtils {
    * @param properties Titan properties
    * @return Iterable of GraphBuilder properties
    */
-  def createGbProperties(properties: Iterable[TitanProperty]): Seq[Property] = {
-    properties.map(p => Property(p.getPropertyKey().getName(), p.getValue())).toList
+  def createGbProperties(properties: Iterable[TitanProperty]): Set[Property] = {
+    properties.map(p => Property(p.getPropertyKey().getName(), p.getValue())).toSet
   }
 
   /**
@@ -78,7 +78,7 @@ object TitanReaderUtils {
 
     val entryList = ListBuffer[Entry]()
 
-    for (pos ← 0 until relation.getLen()) {
+    for (pos <- 0 until relation.getLen()) {
       if (relation.getVertex(pos) == titanVertex) {
         // Ensure that we are serializing properties for the right vertex
         entryList += titanEdgeSerializer.writeRelation(relation, pos, relation.tx())
@@ -112,25 +112,4 @@ object TitanReaderUtils {
     })
   }
 
-  /**
-   * Orders properties in GraphBuilder elements alphabetically using the property key.
-   *
-   * Needed to ensure to that comparison tests pass. Graphbuilder properties are represented
-   * as a sequence, so graph elements with different property orderings are not considered equal.
-   *
-   * @param graphElements Array of GraphBuilder elements
-   * @return  Array of GraphBuilder elements with sorted property lists
-   */
-  def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
-    graphElements.map(element => {
-      element match {
-        case v: Vertex => {
-          new Vertex(v.physicalId, v.gbId, v.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
-        }
-        case e: Edge => {
-          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
-        }
-      }
-    })
-  }
 }

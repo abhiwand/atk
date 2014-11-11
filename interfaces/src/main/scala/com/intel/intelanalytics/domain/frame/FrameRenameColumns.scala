@@ -23,9 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class FrameRenameColumns[+Arguments, FrameRef](frame: FrameRef, original_names: List[String], new_names: List[String]) {
+case class FrameRenameColumns(frame: FrameReference, names: Map[String, String]) {
   require(frame != null, "frame is required")
-  require(original_names != null, "original column name(s) required")
-  require(new_names != null, "new column name(s) required")
-  require(original_names.size == new_names.size, "equal number of original names and new names required")
+  require(names != null, "names is required")
 }

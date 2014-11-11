@@ -23,9 +23,11 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import com.intel.intelanalytics.domain.SingletonOrListValue
+
 /**
  * Command for dropping duplicates rows per uniqueness criteria match
- * @param frameId id of the data frame
+ * @param frame data frame
  * @param unique_columns the key columns for identifying duplicates
  */
-case class DropDuplicates(frameId: Long, unique_columns: List[String])
+case class DropDuplicates(frame: FrameReference, unique_columns: Option[SingletonOrListValue[String]] = None)
