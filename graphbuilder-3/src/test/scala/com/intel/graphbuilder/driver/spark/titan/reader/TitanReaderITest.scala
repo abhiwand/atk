@@ -3,7 +3,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
-import com.intel.graphbuilder.elements.{GBVertex, GBEdge, GraphElement}
+import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, GraphElement }
 import com.intel.testutils.TestingSparkContextWordSpec
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.hbase.CellUtil
