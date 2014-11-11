@@ -1085,7 +1085,9 @@ class PrettyTable(object):
             # Enforce max widths
             lines = value.split("\n")
             new_lines = []
-            for line in lines: 
+            for line in lines:
+                #This list indexing is to remove the quotes that wrap a represented unicode string
+                line = repr(line)[2:-1]
                 if _str_block_width(line) > width:
                     line = textwrap.fill(line, width)
                 new_lines.append(line)
