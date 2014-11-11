@@ -80,21 +80,31 @@ object KCliquePercolationRunner {
 
     val edgeList: RDD[Edge] = edgeListFromGBEdgeList(inEdges)
 
-    // Get a list of all pairs (C,V) where:
-    // 1. C is a (k-1) clique.
-    // 2. For every v in V,  C + v is a k clique.
-    // 3. For all v so that C + v is a k clique, v is in V.
+    /* Get a list of all ways to extend a k-1 clique into a k clique.
+      In particular:
+      enumerate all  pairs (C,V) where:
+      - C is a (k-1) clique.
+      - For every v in V,  C + v is a k clique.
+      - For all v so that C + v is a k clique, v is in V.
+     */
 
-    val extensionsOfKMinusOneCliques: RDD[CliqueExtension] = CliqueEnumerator.run(edgeList, cliqueSize)
+    val kMinusOneExtensions: RDD[CliqueExtension] = CliqueExtensionEnumerator.run(edgeList, cliqueSize)
 
-    // Construct the clique graph that will be input for connected components
-    val kCliqueGraphGeneratorOutput = CliqueShadowGraphGenerator.run(extensionsOfKMinusOneCliques)
+    /*
+      Construct the clique-shadow graph that will be used to assign communities to the k cliques
+      A clique shadow graph is a bipartite graph whose vertex sets are:
+      - The k cliques in the input graph.
+      - All k-1 subsets of k cliques in the input graph (the "shadows" of the cliques in combinatorial parlance)
+      There is an edge from a clique to each shadow that it contains as a subset.
+     */
 
-    // Run connected component analysis to get the mapping of cliques to "communities".
-    // Communities are just connected components in the clique graph.
+    val cliqueShadowGraph = CliqueShadowGraphGenerator.run(kMinusOneExtensions)
+
+    // Run connected component analysis to get the mapping of cliques to communities.
+    // Communities are just connected components in the clique-shadow graph.
 
     val cliquesToCommunities: RDD[(VertexSet, Long)] =
-      GetConnectedComponents.run(kCliqueGraphGeneratorOutput.vertices, kCliqueGraphGeneratorOutput.edges)
+      GetConnectedComponents.run(cliqueShadowGraph.vertices, cliqueShadowGraph.edges)
 
     // Pair each vertex with a set of the communities to which it belongs... A vertex belongs to a community of the
     // clique graph if it belongs to a clique that belongs to that community.

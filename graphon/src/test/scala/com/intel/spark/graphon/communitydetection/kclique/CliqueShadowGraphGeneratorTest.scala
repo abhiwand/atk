@@ -25,7 +25,7 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
@@ -54,7 +54,7 @@ class CliqueShadowGraphGeneratorTest extends FlatSpec with Matchers with Testing
     val extensionsOfTwoCliques: Set[CliqueExtension] = Set((Set(1, 2), Set(3)), (Set(2, 3), Set(4)), (Set(4, 5), Set(6)),
       (Set(7, 8), Set(9))).map({
         case (clique, extenders) =>
-          CliqueExtension(CliqueFact(clique.map(_.toLong)), extenders.map(_.toLong), neighborsHigh = true)
+          CliqueExtension(Clique(clique.map(_.toLong)), extenders.map(_.toLong), neighborsHigh = true)
       })
 
     val triangleVertices = Set(Set(1, 2, 3), Set(2, 3, 4), Set(4, 5, 6), Set(7, 8, 9)).map(clique => clique.map(_.toLong))

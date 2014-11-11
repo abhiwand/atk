@@ -24,12 +24,9 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 import org.apache.spark.SparkContext._
-import org.apache.spark.SparkContext
-import com.intel.spark.graphon.communitydetection.kclique.datatypes._
-import com.intel.spark.graphon.connectedcomponents.NormalizeConnectedComponents
+import org.apache.spark.rdd.RDD
 
 /**
  * Assign to each vertex the list of communities to which it belongs, given the assignment of cliques to communities.
@@ -50,7 +47,5 @@ object VertexCommunityAssigner extends Serializable {
       cliquesToCommunities.flatMap({ case (clique, communityID) => clique.map(v => (v, communityID)) })
 
     vertexCommunityPairs.groupByKey().map({ case (vertex, communitySeq) => (vertex, communitySeq.toSet) })
-
   }
-
 }

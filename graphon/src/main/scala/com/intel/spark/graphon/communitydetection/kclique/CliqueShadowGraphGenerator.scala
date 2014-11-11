@@ -26,7 +26,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 object CliqueShadowGraphGenerator extends Serializable {
@@ -36,17 +36,23 @@ object CliqueShadowGraphGenerator extends Serializable {
    * @param vertices List of vertices of new graph where vertices are k-cliques
    * @param edges List of edges between the vertices of new graph of k-cliques
    */
-  case class cliqueShadowGraphGeneratorOutput(val vertices: RDD[VertexSet],
-                                              val edges: RDD[(VertexSet, VertexSet)])
+  case class CliqueShadowGraph(val vertices: RDD[VertexSet],
+                               val edges: RDD[(VertexSet, VertexSet)])
 
   /**
-   * Generate the clique-shadow graph from the extension fact
-   * @param cliqueAndExtenders RDD of pair of clique and extenders of that clique
-   * @return
+   * Generate the clique-shadow graph from the extension facts.
+   *
+   *   A clique shadow graph is a bipartite graph whose vertex sets are:
+   *   - The k cliques in the input graph.
+   *   - All k-1 subsets of k cliques in the input graph (the "shadows" of the cliques in combinatorial parlance)
+   *   There is an edge from a clique to each shadow that it contains as a subset.
+   *
+   * @param cliqueExtensions RDD of clique extension facts
+   * @return The clique-shadow graph, packaged into a CliqueShadowGraph
    */
-  def run(cliqueAndExtenders: RDD[CliqueExtension]) = {
+  def run(cliqueExtensions: RDD[CliqueExtension]) = {
 
-    val cliques: RDD[VertexSet] = cliqueAndExtenders.flatMap(
+    val cliques: RDD[VertexSet] = cliqueExtensions.flatMap(
       { case CliqueExtension(clique, extenders, _) => extenders.map(v => clique.members + v) })
 
     val cliqueToShadowEdges: RDD[(VertexSet, VertexSet)] = cliques.flatMap(V => (V.subsets(V.size - 1).map(U => (V, U))))
@@ -56,7 +62,7 @@ object CliqueShadowGraphGenerator extends Serializable {
     val vertices: RDD[VertexSet] = cliques.union(shadows)
     val edges: RDD[(VertexSet, VertexSet)] = cliqueToShadowEdges.flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    new cliqueShadowGraphGeneratorOutput(vertices, edges)
+    new CliqueShadowGraph(vertices, edges)
   }
 
 }
