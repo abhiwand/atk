@@ -27,7 +27,7 @@ import java.io.File
 
 import com.intel.graphbuilder.graph.GraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.thinkaurelius.titan.core.TitanGraph
+import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
@@ -59,7 +59,8 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
    * methods required to load graphs from Titan.
    */
   override def connect(): TitanGraph = {
-    new StandardTitanGraph(new GraphDatabaseConfiguration(new CommonsConfiguration(config)))
+    TitanFactory.open(config)
+    //new StandardTitanGraph(new GraphDatabaseConfiguration(new CommonsConfiguration(config)))
   }
 
 }

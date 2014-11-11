@@ -41,7 +41,7 @@ object TitanReaderExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()
-      .setMaster(ExamplesUtils.sparkMaster)
+      .setMaster("local")
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
@@ -52,11 +52,11 @@ object TitanReaderExample {
     val sc = new SparkContext(conf)
 
     // Create graph connection
-    val tableName = System.getProperty("TABLE_NAME", "titan")
+    val tableName = System.getProperty("TABLE_NAME", "iat_graph_graph_13eec9517f7c4f57a93a9aba72be37cd")
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
-    titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
+    titanConfig.setProperty("storage.hostname", "gao-ws9.hf.intel.com")
     titanConfig.setProperty("storage.hbase.table", tableName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
