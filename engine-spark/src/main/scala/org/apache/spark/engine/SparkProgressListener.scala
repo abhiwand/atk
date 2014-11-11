@@ -77,7 +77,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
 
     runningStages.foreach(stage => {
       val totalTasksCount = stage.numTasks
-      val successCount = stageIdToTasksComplete.getOrElse(stage.stageId, 0)
+      //      val successCount = stageIdToTasksComplete.getOrElse(stage.stageId, 0)
+      val successCount = 0
       progress += (100 * successCount.toFloat / (totalTasksCount * totalStageCount).toFloat)
     })
 
@@ -91,7 +92,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
     val stageIds = jobIdToStagesIds(jobId)
     var totalFailed = 0
     for (stageId <- stageIds) {
-      totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
+      //      totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
+      totalFailed = 0
     }
 
     TaskProgressInfo(totalFailed)

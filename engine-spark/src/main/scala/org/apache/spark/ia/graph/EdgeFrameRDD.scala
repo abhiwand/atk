@@ -21,7 +21,7 @@ class EdgeFrameRDD(schema: Schema,
                    sqlContext: SQLContext,
                    logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.schema, frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRDD: FrameRDD) = this(frameRDD.frameSchema, frameRDD.sqlContext, frameRDD.logicalPlan)
 
   def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
 
@@ -68,7 +68,7 @@ class EdgeFrameRDD(schema: Schema,
    * - no overwrite
    */
   def append(other: FrameRDD): EdgeFrameRDD = {
-    val unionedSchema = schema.union(other.schema).reorderColumns(GraphSchema.edgeSystemColumnNames)
+    val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.edgeSystemColumnNames)
 
     // TODO: better way to check for empty?
     if (take(1).length > 0) {
