@@ -30,10 +30,14 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict, namedtuple
 import json
 import sys
+import pandas
+import numpy as np
+import intelanalytics.rest.config as config
 
 from intelanalytics.core.frame import Frame
+from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile
+from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -141,29 +145,57 @@ class FrameBackendRest(object):
     def _get_frame_full_uri(self, frame):
         return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
-    def _get_load_arguments(self, frame, data):
-        if isinstance(data, CsvFile):
+    def _get_load_arguments(self, frame, source, data=None):
+        if isinstance(source, CsvFile):
             return {'destination': frame._id,
                     'source': {
                         "source_type": "file",
-                        "uri": data.file_name,
+                        "uri": source.file_name,
                         "parser":{
                             "name": "builtin/line/separator",
                             "arguments": {
-                                "separator": data.delimiter,
-                                "skip_rows": data.skip_header_lines,
+                                "separator": source.delimiter,
+                                "skip_rows": source.skip_header_lines,
                                 "schema":{
-                                    "columns": data._schema_to_json()
+                                    "columns": source._schema_to_json()
                                 }
                             }
-                        }
+                        },
+                        "data": None
                     }
             }
-        if isinstance(data, Frame):
+        if isinstance( source, LineFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "linefile",
+                            "uri": source.file_name,
+                            "parser": {"name": "invalid",
+                                        "arguments":{"separator": ',',
+                                                    "skip_rows": 0,
+                                                    "schema": {"columns": [("data_lines",valid_data_types.to_string(str))]}
+                                        }
+                                },
+                                "data": None
+                                },
+                    }
+        if isinstance(source, Pandas):
+            return{'destination': frame._id,
+                   'source': {"source_type": "strings",
+                              "uri": "pandas",
+                              "parser": {"name": "builtin/upload",
+                                         "arguments": { "separator": ',',
+                                                       "skip_rows": 0,
+                                                       "schema":{ "columns": source._schema_to_json()
+                                    }
+                                }
+                              },
+                              "data": data
+                   }
+            }
+        if isinstance(source, Frame):
             return {'source': { 'source_type': 'frame',
-                                'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
+                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
-        raise TypeError("Unsupported data source %s" % type(data))
+        raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -207,6 +239,12 @@ class FrameBackendRest(object):
 
         execute_update_frame_command('add_columns', arguments, frame)
 
+    @staticmethod
+    def _handle_error(result):
+        if result and result.has_key("error_frame_id"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame._id, repr(data)))
         # for now, many data sources requires many calls to append
@@ -215,11 +253,33 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        arguments = self._get_load_arguments(frame, data)
-        result = execute_update_frame_command("frame:/load", arguments, frame)
-        if result and result.has_key("error_frame_id"):
-            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+        if isinstance(data, Pandas):
+            pan = data.pandas_frame
+            if not data.row_index:
+                pan = pan.reset_index()
+            pan = pan.dropna(thresh=len(pan.columns))
+            #number of columns should match the number of columns in the schema, else throw an error
+            if len(pan.columns) != len(data.field_names):
+                raise ValueError("Number of columns in Pandasframe {0} does not match the number of columns in the "
+                                 " schema provided {1}.".format(len(pan.columns), len(data.field_names)))
+
+            begin_index = 0
+            iteration = 1
+            end_index = config.upload_defaults.rows
+            while True:
+                pandas_rows = pan[begin_index:end_index].values.tolist()
+                arguments = self._get_load_arguments(frame, data, pandas_rows)
+                result = execute_update_frame_command("frame:/load", arguments, frame)
+                self._handle_error(result)
+                if end_index > len(pan.index):
+                    break
+                iteration += 1
+                begin_index = end_index
+                end_index = config.upload_defaults.rows * iteration
+        else:
+            arguments = self._get_load_arguments(frame, data)
+            result = execute_update_frame_command("frame:/load", arguments, frame)
+            self._handle_error(result)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
