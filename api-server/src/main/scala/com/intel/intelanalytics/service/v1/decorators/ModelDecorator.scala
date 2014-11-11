@@ -21,43 +21,28 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import com.intel.intelanalytics.domain.model.Model
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetModels, GetModel }
 
-/**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
- */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
+object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
 
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Model): GetModel = {
 
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
+    GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList)
+  }
 
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
-
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
-
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
-
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
-
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
+  /**
+   * Decorate a list of entities (like you would want in "GET /entities")
+   *
+   * @param uri the base URI, for this type of entity "../entities"
+   * @param entities the list of entities to decorate
+   * @return the View/Model
+   */
+  override def decorateForIndex(uri: String, entities: Seq[Model]): List[GetModels] = {
+    entities.map(model => new GetModels(id = model.id,
+      name = model.name,
+      url = uri + "/" + model.id)).toList
+  }
 }

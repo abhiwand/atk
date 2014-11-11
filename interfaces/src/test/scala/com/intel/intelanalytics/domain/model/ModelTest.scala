@@ -21,43 +21,33 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import org.joda.time.DateTime
+import org.scalatest.WordSpec
 
-/**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
- */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
+class ModelTest extends WordSpec {
 
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
+  val model = new Model(1, "name", "modelType", None, 1, None, new DateTime(), new DateTime())
 
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
+  "Model" should {
 
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
+    "require an id greater than zero" in {
+      intercept[IllegalArgumentException] { model.copy(id = -1) }
+    }
 
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
+    "require a name" in {
+      intercept[IllegalArgumentException] { model.copy(name = null) }
+    }
 
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
+    "require a non-empty name" in {
+      intercept[IllegalArgumentException] { model.copy(name = "") }
+    }
 
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
+    "require a modelType" in {
+      intercept[IllegalArgumentException] { model.copy(modelType = null) }
+    }
 
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
+  }
 
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
 }

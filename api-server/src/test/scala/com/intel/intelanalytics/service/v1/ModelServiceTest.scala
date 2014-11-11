@@ -21,43 +21,34 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import com.intel.intelanalytics.domain.model.Model
+import com.intel.intelanalytics.security.UserPrincipal
+import org.mockito.Mockito._
 
-/**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
- */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
+import com.intel.intelanalytics.engine.Engine
+import scala.concurrent.Future
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
+import com.intel.intelanalytics.domain.schema.Schema
+import org.joda.time.DateTime
 
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
+class ModelServiceTest extends ServiceTest {
+  implicit val userPrincipal = mock[UserPrincipal]
+  val commonDirectives = mock[CommonDirectives]
+  when(commonDirectives.apply("models")).thenReturn(provide(userPrincipal))
 
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
+  "ModelService" should "give an empty set when there are no models" in {
+    val engine = mock[Engine]
+    val modelService = new ModelService(commonDirectives, engine)
 
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
+    when(engine.getModels()).thenReturn(Future.successful(Seq()))
 
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
+    Get("/models") ~> modelService.modelRoutes() ~> check {
+      assert(responseAs[String] == "[]")
+    }
+  }
 
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
-
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
-
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
 }
+
