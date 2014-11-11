@@ -23,41 +23,31 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import com.intel.intelanalytics.domain.model.ModelTemplate
+import org.scalatest.Matchers
 
-/**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
- */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
+class ModelRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
 
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
+  "ModelRepository" should "be able to create models" in {
+    val modelRepo = slickMetaStoreComponent.metaStore.modelRepo
+    slickMetaStoreComponent.metaStore.withSession("model-test") {
+      implicit session =>
+        val name = "my-model"
+        val modelType = "LogisticRegression"
 
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
+        // create a model
+        val model = modelRepo.insert(new ModelTemplate(name, modelType))
+        model.get should not be null
 
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
+        //look it up and validate expected values
+        val model2 = modelRepo.lookup(model.get.id)
+        model2.get should not be null
+        model2.get.name shouldBe name
+        model2.get.createdOn should not be null
+        model2.get.modifiedOn should not be null
 
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
+    }
 
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
+  }
 
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
-
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
 }

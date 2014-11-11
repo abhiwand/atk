@@ -471,7 +471,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         elif source is None:
             self._id = self._backend.create(self, None, name, 'ia/frame')
         else:
-            raise ValueError("Invalid source value of type %s, expected")
+            raise ValueError("Invalid source value of type %s" % type(source))
 
         self.vertices = GraphFrameCollection(self.get_vertex_frame, self.get_vertex_frames)
         self.edges = GraphFrameCollection(self.get_edge_frame, self.get_edge_frames)

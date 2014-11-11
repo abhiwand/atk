@@ -42,6 +42,8 @@ from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import TitanGraph, VertexRule, EdgeRule
+from intelanalytics.core.model import LogisticRegressionModel
+
 from intelanalytics.rest.connection import server
 connect = server.connect
 
