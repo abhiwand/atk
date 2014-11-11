@@ -33,14 +33,15 @@ class ClassificationMetricsResult(object):
         self.f_measure = json_result['f_measure']
         self.accuracy = json_result['accuracy']
         self.recall = json_result['recall']
-        if len(json_result['confusion_matrix']) > 0:
-            cm_result = json_result['confusion_matrix']
+        cm_result = json_result['confusion_matrix']
+        if cm_result:
             header = ['Predicted_Pos', 'Predicted_Neg']
             row_index = ['Actual_Pos', 'Actual_Neg']
             data = [(cm_result['tp'], cm_result['fn']), (cm_result['fp'],cm_result['tn'])]
-            self.confusion_matrix = pd.DataFrame(data, index= row_index, columns=header)
+            self.confusion_matrix = pd.DataFrame(data, index=row_index, columns=header)
         else:
-            return "Confusion Matrix is not supported for multi class classifiers"
+            #empty pandas frame
+            return
 
     def __repr__(self):
         return "Precision: {0}\nRecall: {1}\nAccuracy: {2}\nFMeasure: {3}\nConfusion Matrix: \n{4}".format(self.precision, self.recall, self.accuracy, self.f_measure, self.confusion_matrix)
