@@ -85,6 +85,45 @@ class TestCommandsLoadable(unittest.TestCase):
         self.assertEqual("uno, dos", n.lang.spanish(1, 2))
         self.assertEqual("deux, zero", n.lang.french(2, 0))
 
+class TestNaming(unittest.TestCase):
+
+    def test_upper_first(self):
+        from intelanalytics.core.metaprog import upper_first
+        self.assertEqual("Apple", upper_first('apple'))
+        self.assertEqual("Apple", upper_first('Apple'))
+        self.assertEqual('', upper_first(''))
+        self.assertEqual('', upper_first(None))
+
+    def test_lower_first(self):
+        from intelanalytics.core.metaprog import lower_first
+        self.assertEqual("apple", lower_first('apple'))
+        self.assertEqual("apple", lower_first('Apple'))
+        self.assertEqual('', lower_first(''))
+        self.assertEqual('', lower_first(None))
+
+    def test_underscores_to_pascal(self):
+        from intelanalytics.core.metaprog import underscores_to_pascal
+        self.assertEqual("LogisticRegressionModel", underscores_to_pascal("logistic_regression_model"))
+
+    def test_pascal_to_underscores(self):
+        from intelanalytics.core.metaprog import pascal_to_underscores
+        self.assertEqual("logistic_regression_model", pascal_to_underscores("LogisticRegressionModel"))
+
+    def test_get_command_prefix_from_class_name(self):
+        from intelanalytics.core.metaprog import get_command_prefix_from_class_name
+        self.assertEqual("model:logistic_regression", get_command_prefix_from_class_name("LogisticRegressionModel"))
+        self.assertEqual("model", get_command_prefix_from_class_name("_BaseModel"))
+        with self.assertRaises(ValueError) as cm:
+            get_command_prefix_from_class_name("")
+        self.assertEqual(str(cm.exception), "Invalid empty class_name, expected non-empty string")
+
+    def test_get_loadable_class_name_from_command_prefix(self):
+        from intelanalytics.core.metaprog import get_loadable_class_name_from_command_prefix
+        self.assertEqual("LogisticRegressionModel", get_loadable_class_name_from_command_prefix("model:logistic_regression"))
+        self.assertEqual("_BaseModel", get_loadable_class_name_from_command_prefix("model"))
+        with self.assertRaises(ValueError) as cm:
+            get_loadable_class_name_from_command_prefix("")
+        self.assertEqual(str(cm.exception), "Invalid empty command_prefix, expected non-empty string")
 
 class TestDocStubs(unittest.TestCase):
     def test_get_loadable_class_name_from_command_prefix(self):

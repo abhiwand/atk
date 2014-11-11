@@ -21,43 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
+ * Command for loading model data into existing model in the model database.
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumn Handle to the observation column of the data frame
+ * @param labelColumn Handle to the label column of the data frame
  */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
-
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
-
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
-
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
-
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
-
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
-
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
-
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
-
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
+case class ModelLoad(model: ModelReference, frame: FrameReference, observationColumn: String, labelColumn: String) {
+  require(model != null, "model must not be null")
+  require(frame != null, "frame must not be null")
+  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
+  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
 }
