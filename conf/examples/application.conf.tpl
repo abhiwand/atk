@@ -39,7 +39,11 @@ intel.analytics {
         # The (comma separated, no spaces) Zookeeper hosts that
         # Comma separated list of host names with zookeeper role assigned
         titan.load.storage.hostname = "invalid-titan-host"
-        # Zookeeper client port, defaults to 2181
+
+        # Titan storage backend. Available options are hbase and cassandra. The default is hbase
+        //titan.load.storage.backend = "hbase"
+
+        # Titan storage port, defaults to 2181 for HBase ZooKeeper. Use 9160 for Cassandra
         //titan.load.storage.port = "2181"
 
         # The URL for connecting to the Spark master server
@@ -143,9 +147,6 @@ intel.analytics {
         # documentation for these settings is available on Titan website
         # http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html
         storage {
-          backend = "hbase"
-          # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          port = "2181"
 
           # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
           batch-loading = true
@@ -207,12 +208,27 @@ intel.analytics {
             //randomized-conflict-avoidance-retries = 10
           }
         }
+
+        auto-partitioner {
+          hbase {
+            # Number of regions per regionserver to set when creating Titan’s HBase table
+            regions-per-server = 2
+
+            # Number of input splits for Titan reader is based on number of available cores
+            # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
+            #     graph size in HBase/minimum-input-splits-size-mb)
+            input-splits-per-spark-core = 2
+            minimum-input-splits-size-mb = 64
+          }
+
+          enable = false
+        }
       }
 
       query {
         storage {
           # query does use the batch load settings in titan.load
-          //backend = ${intel.analytics.engine.titan.load.storage.backend}
+          backend = ${intel.analytics.engine.titan.load.storage.backend}
           hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
           port =  ${intel.analytics.engine.titan.load.storage.port}
         }

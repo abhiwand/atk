@@ -94,8 +94,11 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         this.titanConfig)
       plugin.loadTitanGraph(config, vertexFrame, edgeFrame)
 
+      // Need to explicitly specify type when getting vertices to resolve the error
+      // "Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+"
+      val titanVertices: Iterable[com.tinkerpop.blueprints.Vertex] = this.titanGraph.getVertices
       this.titanGraph.getEdges().size should be(2)
-      this.titanGraph.getVertices.size should be(3)
+      titanVertices.size should be(3)
 
       val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")
