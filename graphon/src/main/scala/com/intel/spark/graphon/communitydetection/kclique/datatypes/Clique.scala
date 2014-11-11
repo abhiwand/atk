@@ -27,20 +27,7 @@ package com.intel.spark.graphon.communitydetection.kclique.datatypes
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
- * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
- * any one of the vertices from the set neighbors.
- *
- * A k clique-extension fact is a clique extension fact where the vertex set contains exactly k vertices.
- * These are the extension facts obtained after the k'th round of the algorithm.
- *
- * Symbolically, a pair (C,V) where:
- *   - C is a (k-1) clique.
- *   - For every v in V,  C + v is a k clique.
- *   - For all v so that C + v is a k clique, v is in V.
- *
- * INVARIANT:
- * when k is odd, every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
- * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
- *
+ * A set of vertices, all pairs of which are connected in the graph.
+ * @param members The set of vertices comprising the members of this clique.
  */
-case class CliqueExtension(clique: Clique, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
+case class Clique(members: VertexSet) extends Serializable

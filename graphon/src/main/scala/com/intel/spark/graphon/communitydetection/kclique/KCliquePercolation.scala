@@ -27,24 +27,11 @@ package com.intel.spark.graphon.communitydetection.kclique
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-
-import java.util.Date
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.{ Await, ExecutionContext }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import spray.json._
-import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
-
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -86,6 +73,7 @@ object KCliquePercolationJsonFormat {
 }
 
 import KCliquePercolationJsonFormat._
+
 /**
  * KClique Percolation plugin class.
  */
@@ -120,11 +108,14 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
                              |    Parameters
                              |    ----------
                              |    clique_size : integer
-                             |        Large values of clique size result in fewer, smaller communities that are more connected.
+                             |        The sizes of the cliques used to form communities.
+                             |        Larger values of clique size result in fewer, smaller communities that are more connected.
                              |        Must be at least 2.
                              |
                              |    community_property_label: str
                              |        Name of the community property of vertex that will be updated/created in the graph.
+                             |        This property will contain for each vertex the set of communities that contain
+                             |        that vertex.
                              |
                              |    Examples
                              |    --------

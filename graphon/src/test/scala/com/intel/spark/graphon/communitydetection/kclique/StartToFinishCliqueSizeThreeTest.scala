@@ -28,7 +28,7 @@ import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, CliqueFact, Edge }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique, Edge }
 
 /**
  * This test checks that end-to-end run of k-clique percolation works with k = 3 on a small graph consisting of
