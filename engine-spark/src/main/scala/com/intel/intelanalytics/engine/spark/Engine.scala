@@ -25,14 +25,16 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
-import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
+import com.intel.intelanalytics.domain.query._
+import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
+import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
@@ -41,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugi
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
@@ -50,10 +52,19 @@ import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.mllib.classification.mllib.plugins.{ TestModelPlugin, TrainModelPlugin }
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
+import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
+import com.intel.intelanalytics.engine.spark.user.UserStorage
+import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
+import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.engine.SparkProgressListener
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 
-import DomainJsonProtocol._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.spark.mllib.util.MLDataSplitter
 
@@ -122,6 +133,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
                   val graphs: SparkGraphStorage,
+                  val models: SparkModelStorage,
                   users: UserStorage,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
@@ -179,6 +191,10 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
   commandPluginRegistry.registerCommand(new ExportFromTitanGraph(frames, graphs))
+
+  //Registering model plugins
+  commandPluginRegistry.registerCommand(new TrainModelPlugin)
+  commandPluginRegistry.registerCommand(new TestModelPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
@@ -416,6 +432,58 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     withContext("se.deletegraph") {
       future {
         graphs.drop(graph)
+      }
+    }
+  }
+
+  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
+
+  /**
+   * Register a model name with the metadate store.
+   * @param model Metadata for model creation.
+   * @param user IMPLICIT. The user creating the model.
+   * @return Future of the model to be created.
+   */
+  def createModel(model: ModelTemplate)(implicit user: UserPrincipal) = {
+    future {
+      withMyClassLoader {
+        models.createModel(model)
+      }
+    }
+  }
+  /**
+   * Obtain a model's metadata from its identifier.
+   * @param id Unique identifier for the model provided by the metastore.
+   * @return A future of the model metadata entry.
+   */
+  def getModel(id: Identifier): Future[Model] = {
+    future {
+      models.lookup(id).get
+    }
+  }
+
+  def getModelByName(name: String)(implicit user: UserPrincipal): Future[Option[Model]] =
+    withContext("se.getModelByName") {
+      future {
+        models.getModelByName(name)
+      }
+    }
+
+  def getModels()(implicit user: UserPrincipal): Future[Seq[Model]] =
+    withContext("se.getModels") {
+      future {
+        models.getModels()
+      }
+    }
+
+  /**
+   * Delete a model from the metastore.
+   * @param model Model
+   */
+  def deleteModel(model: Model): Future[Unit] = {
+    withContext("se.deletemodel") {
+      future {
+        models.drop(model)
       }
     }
   }

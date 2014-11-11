@@ -21,43 +21,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, Model }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json.{ JsValue, JsObject }
 
-/**
- * The MetaStore gives access to Repositories. Repositories are how you
- * modify and query underlying tables (frames, graphs, users, etc).
- */
-trait MetaStore {
-  type Session
-  def withSession[T](name: String)(f: Session => T): T
+trait ModelStorage {
 
-  /** Repository for CRUD on 'status' table */
-  def statusRepo: Repository[Session, Status, Status]
+  def expectModel(modelId: Long): Model
 
-  /** Repository for CRUD on 'frame' table */
-  //def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-  def frameRepo: FrameRepository[Session]
+  def lookup(id: Long): Option[Model]
 
-  /** Repository for CRUD on 'graph' table */
-  def graphRepo: GraphRepository[Session]
+  def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Model
 
-  /** Repository for CRUD on 'command' table */
-  def commandRepo: CommandRepository[Session]
+  def renameModel(model: Model, newName: String): Model
 
-  /** Repository for CRUD on 'model' table */
-  def modelRepo: ModelRepository[Session]
+  def drop(model: Model)
 
-  /** Repository for CRUD on 'query' table */
-  def queryRepo: QueryRepository[Session]
+  def getModels()(implicit user: UserPrincipal): Seq[Model]
 
-  /** Repository for CRUD on 'user' table */
-  def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
+  def getModelByName(name: String)(implicit user: UserPrincipal): Option[Model]
 
-  /** Create the underlying tables */
-  def initializeSchema(): Unit
+  def updateModel(model: Model, newData: JsObject)(implicit user: UserPrincipal): Model
 
-  /** Delete ALL of the underlying tables - useful for unit tests only */
-  private[repository] def dropAllTables(): Unit
 }
