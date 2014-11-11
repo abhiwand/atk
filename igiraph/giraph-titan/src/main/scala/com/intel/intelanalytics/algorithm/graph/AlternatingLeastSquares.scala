@@ -41,21 +41,21 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Als(graph: GraphReference,
-               edge_value_property_list: List[String],
-               input_edge_label_list: List[String],
-               output_vertex_property_list: List[String],
-               vertex_type_property_key: String,
-               edge_type_property_key: String,
-               vector_value: Option[Boolean] = None,
-               max_supersteps: Option[Int] = None,
-               convergence_threshold: Option[Double] = None,
-               als_lambda: Option[Float] = None,
-               feature_dimension: Option[Int] = None,
-               learning_curve_output_interval: Option[Int] = None,
-               bidirectional_check: Option[Boolean] = None,
-               bias_on: Option[Boolean] = None,
-               max_value: Option[Float] = None,
-               min_value: Option[Float] = None)
+               edgeValuePropertyList: List[String],
+               inputEdgeLabelList: List[String],
+               outputVertexPropertyList: List[String],
+               vertexTypePropertyKey: String,
+               edgeTypePropertyKey: String,
+               vectorValue: Option[Boolean] = None,
+               maxSupersteps: Option[Int] = None,
+               convergenceThreshold: Option[Double] = None,
+               alsLambda: Option[Float] = None,
+               featureDimension: Option[Int] = None,
+               learningCurveOutputInterval: Option[Int] = None,
+               validateGraphStructure: Option[Boolean] = None,
+               biasOn: Option[Boolean] = None,
+               maxValue: Option[Float] = None,
+               minValue: Option[Float] = None)
 
 case class AlsResult(value: String)
 
@@ -160,12 +160,13 @@ class AlternatingLeastSquares
                            |        Since each ALS iteration is composed by 2 super steps,
                            |        the default one iteration means two super steps.
                            | 
-                           |    bidirectional_check : boolean (optional)
-                           |        If it is True, Giraph will firstly check whether each edge is
-                           |        bidirectional before executing algorithm.
-                           |        ALS expects a bi-partite input graph and each edge therefore should
-                           |        be bi-directional.
-                           |        This option is mainly for graph integrity check.
+                           |    validate_graph_structure : boolean (optional)
+                           |        Checks if the graph meets certain structural requirements before starting
+                           |        the algorithm.
+                           |
+                           |        At present, this checks that at every vertex, the in-degree equals the
+                           |        out-degree. Because ALS expects an undirected graph, this is a necessary
+                           |        but not sufficient condition.
                            | 
                            |    bias_on : boolean (optional)
                            |        True means turn on the update for bias term and False means turn off
@@ -218,10 +219,10 @@ class AlternatingLeastSquares
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
+    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(false)
-    val biasOn = arguments.bias_on.getOrElse(false)
+    val vectorValue = arguments.vectorValue.getOrElse(false)
+    val biasOn = arguments.biasOn.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
     require(!vectorValue || !biasOn ||
@@ -237,23 +238,23 @@ class AlternatingLeastSquares
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "als.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "als.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "als.featureDimension", arguments.feature_dimension)
-    GiraphConfigurationUtil.set(hConf, "als.bidirectionalCheck", arguments.bidirectional_check)
-    GiraphConfigurationUtil.set(hConf, "als.biasOn", arguments.bias_on)
-    GiraphConfigurationUtil.set(hConf, "als.lambda", arguments.als_lambda)
-    GiraphConfigurationUtil.set(hConf, "als.learningCurveOutputInterval", arguments.learning_curve_output_interval)
-    GiraphConfigurationUtil.set(hConf, "als.maxVal", arguments.max_value)
-    GiraphConfigurationUtil.set(hConf, "als.minVal", arguments.min_value)
+    GiraphConfigurationUtil.set(hConf, "als.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "als.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "als.featureDimension", arguments.featureDimension)
+    GiraphConfigurationUtil.set(hConf, "als.bidirectionalCheck", arguments.validateGraphStructure)
+    GiraphConfigurationUtil.set(hConf, "als.biasOn", arguments.biasOn)
+    GiraphConfigurationUtil.set(hConf, "als.lambda", arguments.alsLambda)
+    GiraphConfigurationUtil.set(hConf, "als.learningCurveOutputInterval", arguments.learningCurveOutputInterval)
+    GiraphConfigurationUtil.set(hConf, "als.maxVal", arguments.maxValue)
+    GiraphConfigurationUtil.set(hConf, "als.minVal", arguments.minValue)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
-    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexTypePropertyKey))
+    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edgeTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
     GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
