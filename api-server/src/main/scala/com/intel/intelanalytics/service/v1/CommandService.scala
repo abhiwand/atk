@@ -130,10 +130,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                             }
                           }
                           catch {
-                            case e: DeserializationException =>
-                              reject(ValidationRejection(
-                                s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
-                                  s" ${e.getMessage}", Some(e)))
+                            case e: DeserializationException => {
+                              val message = s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                s" ${e.getMessage}"
+                              failWith(new DeserializationException(message, e))
+                            }
                           }
                       }
                     }
