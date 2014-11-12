@@ -124,11 +124,30 @@ def upper_first(s):
     return '' if not s else s[0].upper() + s[1:]
 
 
+def lower_first(s):
+    return '' if not s else s[0].lower() + s[1:]
+
+
 def underscores_to_pascal(s):
     return '' if not s else ''.join([upper_first(s) for s in s.split('_')])
 
 
+def pascal_to_underscores(s):
+    return ''.join(["_%s" % c.lower() if c.isupper() else c for c in s])[1:]
+
+
+def get_command_prefix_from_class_name(class_name):
+    if not class_name:
+        raise ValueError("Invalid empty class_name, expected non-empty string")
+    if class_name.startswith("_Base"):
+        return pascal_to_underscores(class_name[5:])
+    pieces = pascal_to_underscores(class_name).split('_')
+    return "%s:%s" % (pieces[-1], '_'.join(pieces[:-1]))
+
+
 def get_loadable_class_name_from_command_prefix(command_prefix):
+    if not command_prefix:
+        raise ValueError("Invalid empty command_prefix, expected non-empty string")
     parts = command_prefix.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
@@ -152,7 +171,7 @@ def get_loadable_class_from_name(class_name, command_prefix):
         if inspect.isclass(item) and item.__name__ == class_name:
             return item
     base_class_name = get_base_class_name_from_prefix(command_prefix)
-    base_class = CommandLoadable if base_class_name == CommandLoadable.__name__\
+    base_class = CommandLoadable if base_class_name == CommandLoadable.__name__ or base_class_name == class_name\
         else get_loadable_class_from_name(base_class_name, command_prefix)
     loadable_class = create_loadable_class(class_name, base_class, api_globals, "", command_prefix)
     api_globals.add(loadable_class)
@@ -225,6 +244,8 @@ def create_loadable_class(new_class_name, base_class, namespace_obj, doc, comman
     globals()[new_class.__name__] = new_class
     _created_classes[new_class.__name__] = new_class
     setattr(new_class, COMMAND_PREFIX, command_prefix)
+    setattr(new_class, COMMAND_PREFIX, command_prefix)
+    #print ("Created new loadable class %s" % new_class)
     return new_class
 
 
@@ -302,14 +323,17 @@ def validate_arguments(arguments, parameters):
     """
     from intelanalytics.core.frame import Frame
     from intelanalytics.core.graph import Graph
+    from intelanalytics.core.model import LogisticRegressionModel
     validated = {}
     for (k, v) in arguments.items():
         try:
             parameter = [p for p in parameters if p.name == k][0]
         except IndexError:
             raise ValueError("No parameter named '%s'" % k)
-        if (parameter.data_type is Frame or parameter.data_type is Graph) and not isinstance(v, int):
+        if (parameter.data_type is Frame or parameter.data_type is Graph or parameter.data_type is LogisticRegressionModel) and not isinstance(v, int):
             v = v._id  # TODO - improve this
+        if parameter.name == 'model':
+            v = v._id
         validated[k] = v
         if parameter.data_type is list:
             if v is not None and (isinstance(v, basestring) or not hasattr(v, '__iter__')):

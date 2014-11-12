@@ -23,18 +23,14 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, CommandTemplate, Command }
-import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
 import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
-import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
 
 import scala.concurrent.Future
-import com.intel.intelanalytics.domain.schema.Schema
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?
@@ -110,6 +106,16 @@ trait Engine {
   def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
 
   def deleteGraph(graph: Graph): Future[Unit]
+
+  def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Future[Model]
+
+  def getModel(id: Identifier): Future[Model]
+
+  def getModels()(implicit user: UserPrincipal): Future[Seq[Model]]
+
+  def getModelByName(name: String)(implicit user: UserPrincipal): Future[Option[Model]]
+
+  def deleteModel(model: Model): Future[Unit]
 
   /**
    * Cancel a running command
