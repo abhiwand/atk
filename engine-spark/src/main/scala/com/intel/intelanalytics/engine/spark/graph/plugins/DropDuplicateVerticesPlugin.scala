@@ -135,7 +135,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
           case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
           case None =>
             // _vid is always unique so don't include it
-            vertexFrame.schema.dropColumn("_vid").columnNames
+            vertexFrame.schema.columnNames.dropWhile(s => s == "_vid")
         }
         schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
