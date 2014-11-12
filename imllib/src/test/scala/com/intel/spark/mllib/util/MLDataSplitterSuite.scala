@@ -23,7 +23,10 @@
 
 package com.intel.spark.mllib.util
 
+import java.util.Date
+
 import com.intel.testutils.TestingSparkContextFunSuite
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.scalatest.matchers.ShouldMatchers
 
 import scala.util.Random
@@ -33,40 +36,44 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatcher
   // test if we can randomly split a RDD according to a percentage distribution
   test("MLDataSplitter") {
 
-    //    val nPoints = 10000
-    //    val percentages = Array(0.7, 0.1, 0.2)
-    //    val labels = Array("bin #1", "bin #2", "bin #3")
-    //
-    //    // generate testRDD
-    //    val rnd = new Random(41)
-    //    val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
-    //    val testRDD = this.sparkContext.parallelize(testData, 2)
-    //
-    //    // test the size of generated RDD
-    //    val nTotal = testRDD.count
-    //    assert(nTotal == nPoints, "# data points generated isn't equal to specified.")
-    //
-    //    // split the RDD by labelling
-    //    val splitter = new MLDataSplitter(percentages, labels, 42)
-    //    val labeledRDD = splitter.randomlyLabelRDD(testRDD)
-    //
-    //    // collect the size of each partition
-    //    val partitionSizes = new Array[Long](percentages.size)
-    //    (0 until percentages.size).foreach { i =>
-    //      val partitionRDD = labeledRDD.filter(p => p.label == labels.apply(i)).map(_.entry)
-    //      partitionSizes(i) = partitionRDD.count
-    //    }
-    //
-    //    // test the total #samples
-    //    val nTotalSamples = partitionSizes.sum
-    //    assert(nTotalSamples == nPoints, "# data points sampled isn't equal to specified.")
-    //
-    //    // check if partition percentages are expected
-    //    (0 until percentages.size).foreach { i =>
-    //      val realPercentage = partitionSizes(i).toDouble / nTotalSamples
-    //      assert(Math.abs(realPercentage - percentages(i)) < 0.05,
-    //        "partition percentage isn't in [%f, %f].".format(percentages(i) - 0.05, percentages(i) + 0.05))
-    //    }
+    val nPoints = 10000
+    val percentages = Array(0.7, 0.1, 0.2)
+    val labels = Array("bin #1", "bin #2", "bin #3")
+
+    // generate testRDD
+    val rnd = new Random(41)
+    val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
+
+    val sc = new SparkContext(new SparkConf().setMaster("local")
+      .setAppName(this.getClass.getSimpleName + " " + new Date())
+    )
+    val testRDD = sc.parallelize(testData, 2)
+
+    // test the size of generated RDD
+    val nTotal = testRDD.count
+    assert(nTotal == nPoints, "# data points generated isn't equal to specified.")
+
+    // split the RDD by labelling
+    val splitter = new MLDataSplitter(percentages, labels, 42)
+    val labeledRDD = splitter.randomlyLabelRDD(testRDD)
+
+    // collect the size of each partition
+    val partitionSizes = new Array[Long](percentages.size)
+    (0 until percentages.size).foreach { i =>
+      val partitionRDD = labeledRDD.filter(p => p.label == labels.apply(i)).map(_.entry)
+      partitionSizes(i) = partitionRDD.count
+    }
+
+    // test the total #samples
+    val nTotalSamples = partitionSizes.sum
+    assert(nTotalSamples == nPoints, "# data points sampled isn't equal to specified.")
+
+    // check if partition percentages are expected
+    (0 until percentages.size).foreach { i =>
+      val realPercentage = partitionSizes(i).toDouble / nTotalSamples
+      assert(Math.abs(realPercentage - percentages(i)) < 0.05,
+        "partition percentage isn't in [%f, %f].".format(percentages(i) - 0.05, percentages(i) + 0.05))
+    }
   }
 
 }
