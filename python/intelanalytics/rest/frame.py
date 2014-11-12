@@ -30,10 +30,14 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict, namedtuple
 import json
 import sys
+import pandas
+import numpy as np
+import intelanalytics.rest.config as config
 
 from intelanalytics.core.frame import Frame
+from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile
+from intelanalytics.core.files import CsvFile, LineFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -64,8 +68,7 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame()
-            initialize_frame(frame, FrameInfo(payload))
+            frame = Frame(source=payload)
             return frame
 
     def create(self, frame, source, name):
@@ -74,29 +77,26 @@ class FrameBackendRest(object):
             source = FrameInfo(source)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
-            return frame.name  # early exit here
-
-        new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
-
-        if isinstance(source, Frame):
-            become_frame(frame, self.copy(source, source.column_names))
+        elif isinstance(source, Frame):
+            become_frame(frame, source.copy(name=name))
         elif isinstance(source, Column):
-            become_frame(frame, self.copy(source.frame, source.name))
+            become_frame(frame, source.frame.copy(columns=source.name, name=name))
         elif isinstance(source, list) and all(isinstance(iter, Column) for iter in source):
-            become_frame(frame, self.copy(source[0].frame, [s.name for s in source]))
-        elif source:
-            self.append(frame, source)
-
-        return new_frame_name
-
-    def _create_new_frame(self, frame, name):
-        """create helper method to call http and initialize frame with results"""
-        payload = {'name': name }
-        r = self.rest_http.post('frames', payload)
-        logger.info("REST Backend: create frame response: " + r.text)
-        frame_info = FrameInfo(r.json())
-        initialize_frame(frame, frame_info)
-        return frame_info.name
+            become_frame(frame, source[0].frame.copy(columns=[s.name for s in source], name=name))
+        else:
+            payload = {'name': name }
+            r = self.rest_http.post('frames', payload)
+            logger.info("REST Backend: create frame response: " + r.text)
+            frame_info = FrameInfo(r.json())
+            initialize_frame(frame, frame_info)
+            if source:
+                try:
+                    self.append(frame, source)
+                except Exception:
+                    self.rest_http.delete("frames/%s" % frame_info.id_number)
+                    raise
+            return frame_info.name
+        return frame.name
 
     def get_name(self, frame):
         return self._get_frame_info(frame).name
@@ -144,29 +144,57 @@ class FrameBackendRest(object):
     def _get_frame_full_uri(self, frame):
         return self.rest_http.create_full_uri('frames/%d' % frame._id)
 
-    def _get_load_arguments(self, frame, data):
-        if isinstance(data, CsvFile):
+    def _get_load_arguments(self, frame, source, data=None):
+        if isinstance(source, CsvFile):
             return {'destination': frame._id,
                     'source': {
                         "source_type": "file",
-                        "uri": data.file_name,
+                        "uri": source.file_name,
                         "parser":{
                             "name": "builtin/line/separator",
                             "arguments": {
-                                "separator": data.delimiter,
-                                "skip_rows": data.skip_header_lines,
+                                "separator": source.delimiter,
+                                "skip_rows": source.skip_header_lines,
                                 "schema":{
-                                    "columns": data._schema_to_json()
+                                    "columns": source._schema_to_json()
                                 }
                             }
-                        }
+                        },
+                        "data": None
                     }
             }
-        if isinstance(data, Frame):
+        if isinstance( source, LineFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "linefile",
+                            "uri": source.file_name,
+                            "parser": {"name": "invalid",
+                                        "arguments":{"separator": ',',
+                                                    "skip_rows": 0,
+                                                    "schema": {"columns": [("data_lines",valid_data_types.to_string(str))]}
+                                        }
+                                },
+                                "data": None
+                                },
+                    }
+        if isinstance(source, Pandas):
+            return{'destination': frame._id,
+                   'source': {"source_type": "strings",
+                              "uri": "pandas",
+                              "parser": {"name": "builtin/upload",
+                                         "arguments": { "separator": ',',
+                                                       "skip_rows": 0,
+                                                       "schema":{ "columns": source._schema_to_json()
+                                    }
+                                }
+                              },
+                              "data": data
+                   }
+            }
+        if isinstance(source, Frame):
             return {'source': { 'source_type': 'frame',
-                                'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
+                                'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
-        raise TypeError("Unsupported data source %s" % type(data))
+        raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -210,6 +238,12 @@ class FrameBackendRest(object):
 
         execute_update_frame_command('add_columns', arguments, frame)
 
+    @staticmethod
+    def _handle_error(result):
+        if result and result.has_key("error_frame_id"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame._id, repr(data)))
         # for now, many data sources requires many calls to append
@@ -218,11 +252,33 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        arguments = self._get_load_arguments(frame, data)
-        result = execute_update_frame_command("frame:/load", arguments, frame)
-        if result and result.has_key("error_frame_id"):
-            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
-            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+        if isinstance(data, Pandas):
+            pan = data.pandas_frame
+            if not data.row_index:
+                pan = pan.reset_index()
+            pan = pan.dropna(thresh=len(pan.columns))
+            #number of columns should match the number of columns in the schema, else throw an error
+            if len(pan.columns) != len(data.field_names):
+                raise ValueError("Number of columns in Pandasframe {0} does not match the number of columns in the "
+                                 " schema provided {1}.".format(len(pan.columns), len(data.field_names)))
+
+            begin_index = 0
+            iteration = 1
+            end_index = config.upload_defaults.rows
+            while True:
+                pandas_rows = pan[begin_index:end_index].values.tolist()
+                arguments = self._get_load_arguments(frame, data, pandas_rows)
+                result = execute_update_frame_command("frame:/load", arguments, frame)
+                self._handle_error(result)
+                if end_index > len(pan.index):
+                    break
+                iteration += 1
+                begin_index = end_index
+                end_index = config.upload_defaults.rows * iteration
+        else:
+            arguments = self._get_load_arguments(frame, data)
+            result = execute_update_frame_command("frame:/load", arguments, frame)
+            self._handle_error(result)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -329,7 +385,7 @@ class FrameBackendRest(object):
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         return execute_new_frame_command('frame:/join', arguments)
 
-    def copy(self, frame, columns=None, where=None):
+    def copy(self, frame, columns=None, where=None, name=None):
         if where:
             if not columns:
                 column_names = frame.column_names
@@ -343,7 +399,8 @@ class FrameBackendRest(object):
             where = prepare_row_function_for_copy_columns(frame, where, column_names)
         arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
-                     'where': where}
+                     'where': where,
+                     'name': name}
         return execute_new_frame_command('frame/copy', arguments)
 
     def group_by(self, frame, group_by_columns, aggregation):
@@ -390,6 +447,18 @@ class FrameBackendRest(object):
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
+    def sort(self, frame, columns, ascending):
+        if isinstance(columns, basestring):
+            columns_and_ascending = [(columns, ascending)]
+        elif isinstance(columns, list):
+            if isinstance(columns[0], basestring):
+                columns_and_ascending = map(lambda x: (x, ascending),columns)
+            else:
+                columns_and_ascending = columns
+        else:
+            raise ValueError("Bad type %s provided as argument; expecting basestring, list of basestring, or list of tuples" % type(columns))
+        arguments = { 'frame': frame._id, 'column_names_and_ascending': columns_and_ascending }
+        execute_update_frame_command("sort", arguments, frame)
 
     def take(self, frame, n, offset, columns):
         def get_take_result():

@@ -40,7 +40,7 @@ object DataTypes {
   sealed trait DataType {
     type ScalaType
 
-    def parse(s: String): Try[ScalaType]
+    def parse(raw: Any): Try[ScalaType]
 
     /** True if the supplied value matches this data type */
     def isType(raw: Any): Boolean
@@ -60,8 +60,8 @@ object DataTypes {
   case object int32 extends DataType {
     override type ScalaType = Int
 
-    override def parse(s: String) = Try {
-      s.trim().toInt
+    override def parse(raw: Any) = Try {
+      toInt(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -88,8 +88,8 @@ object DataTypes {
   case object int64 extends DataType {
     override type ScalaType = Long
 
-    override def parse(s: String): Try[int64.ScalaType] = Try {
-      s.trim().toLong
+    override def parse(raw: Any) = Try {
+      toLong(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -116,8 +116,8 @@ object DataTypes {
   case object float32 extends DataType {
     override type ScalaType = Float
 
-    override def parse(s: String): Try[float32.ScalaType] = Try {
-      s.trim().toFloat
+    override def parse(raw: Any) = Try {
+      toFloat(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -145,8 +145,8 @@ object DataTypes {
 
     override type ScalaType = Double
 
-    override def parse(s: String): Try[float64.ScalaType] = Try {
-      s.trim().toDouble
+    override def parse(raw: Any) = Try {
+      toDouble(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -171,10 +171,11 @@ object DataTypes {
    * Strings
    */
   case object string extends DataType {
+
     override type ScalaType = String
 
-    override def parse(s: String): Try[string.ScalaType] = Try {
-      s
+    override def parse(raw: Any) = Try {
+      toStr(raw)
     }
 
     override def isType(raw: Any): Boolean = {
@@ -184,7 +185,7 @@ object DataTypes {
 
     override def scalaType = classOf[String]
 
-    override def typedJson(raw: Any) = {
+    override def typedJson(raw: Any): JsValue = {
       raw.asInstanceOf[String].toJson
     }
 
@@ -195,6 +196,37 @@ object DataTypes {
       catch {
         case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
       }
+    }
+
+    override def isNumerical = false
+  }
+
+  /**
+   * This is a special type for values that should be ignored while importing from CSV file.
+   *
+   * Any column with this type should be dropped.
+   */
+  case object ignore extends DataType {
+
+    override type ScalaType = Null
+
+    override def parse(s: Any): Try[ignore.ScalaType] = Try {
+      null
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // always report false - we don't every want to match this type
+      false
+    }
+
+    override def scalaType = classOf[Null]
+
+    override def typedJson(raw: Any): JsValue = {
+      JsNull
+    }
+
+    override def asDouble(raw: Any): Double = {
+      throw new IllegalArgumentException("cannot convert ignore type to Double")
     }
 
     override def isNumerical = false
@@ -220,7 +252,7 @@ object DataTypes {
    */
   val supportedTypes: Map[String, DataType] =
     Seq(int32, int64, float32,
-      float64, string)
+      float64, string, ignore)
       .map(t => t.toString -> t)
       .toMap ++
       Map("str" -> string,
@@ -266,18 +298,18 @@ object DataTypes {
    *
    * @param columnTypes the types of the columns. The values in the strings array are assumed to be in
    *                    the same order as the values in the columnTypes array.
-   * @param strings the strings to be converted
+   * @param values the strings to be converted
    * @return the converted values. Any values that cannot be parsed will result in an illegal argument exception.
    */
-  def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
+  def parseMany(columnTypes: Array[DataType])(values: Array[Any]): Array[Any] = {
     val frameColumnCount = columnTypes.length
-    val dataCount = strings.length
+    val dataCount = values.length
 
     if (frameColumnCount != dataCount)
       throw new IllegalArgumentException(s"Expected $frameColumnCount columns, but got $dataCount columns in this row.")
 
     val lifted = columnTypes.lift
-    strings.zipWithIndex.map {
+    values.zipWithIndex.map {
       case (s, i) => {
         s match {
           case null => null
@@ -342,6 +374,8 @@ object DataTypes {
       case l: Long => l.toDouble
       case f: Float => f.toDouble
       case d: Double => d
+      case bd: BigDecimal => bd.toDouble
+      case s: String => s.trim().toDouble
       case _ => throw new IllegalArgumentException(s"The following value is not a numeric data type: $value")
     }
   }
@@ -353,6 +387,8 @@ object DataTypes {
       case l: Long => BigDecimal(l)
       case f: Float => BigDecimal(f)
       case d: Double => BigDecimal(d)
+      case bd: BigDecimal => bd
+      case s: String => BigDecimal(s)
       case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
     }
   }
@@ -364,7 +400,8 @@ object DataTypes {
       case l: Long => l
       case f: Float => f.toLong
       case d: Double => d.toLong
-      case s: String => s.toLong
+      case bd: BigDecimal => bd.toLong
+      case s: String => s.trim().toLong
       case _ => throw new RuntimeException("Not yet implemented")
     }
   }
@@ -376,7 +413,8 @@ object DataTypes {
       case l: Long => l.toInt
       case f: Float => f.toInt
       case d: Double => d.toInt
-      case s: String => s.toInt
+      case bd: BigDecimal => bd.toInt
+      case s: String => s.trim().toInt
       case _ => throw new RuntimeException("Not yet implemented")
     }
   }
@@ -388,7 +426,21 @@ object DataTypes {
       case l: Long => l.toFloat
       case f: Float => f
       case d: Double => d.toFloat
-      case s: String => s.toFloat
+      case bd: BigDecimal => bd.toFloat
+      case s: String => s.trim().toFloat
+      case _ => throw new RuntimeException("Not yet implemented")
+    }
+  }
+
+  def toStr(value: Any): String = {
+    value match {
+      case null => null
+      case i: Int => i.toString
+      case l: Long => l.toString
+      case f: Float => f.toString
+      case d: Double => d.toString
+      case bd: BigDecimal => bd.toString()
+      case s: String => s
       case _ => throw new RuntimeException("Not yet implemented")
     }
   }

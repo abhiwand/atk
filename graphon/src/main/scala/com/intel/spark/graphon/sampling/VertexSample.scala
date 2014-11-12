@@ -25,7 +25,7 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
@@ -77,8 +77,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
    */
   override def name: String = "graph:titan/sampling/vertex_sample"
 
-  //TODO remove when we move the next version of spark
+  //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
+
   /**
    * User documentation exposed in Python.
    *
@@ -144,7 +145,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     sc.addJar(Boot.getJar("graphon").getPath)
 
     // convert graph name and get the graph vertex and edge RDDs
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
     val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
 
@@ -160,7 +161,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
-    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
+    val iatSubgraphName = GraphBackendName.convertGraphUserNameToBackendName(subgraphName)
 
     val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 

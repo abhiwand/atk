@@ -31,7 +31,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -61,7 +61,10 @@ case class PageRankArgs(graph: GraphReference,
                         input_edge_labels: Option[List[String]] = None,
                         max_iterations: Option[Int] = None,
                         reset_probability: Option[Double] = None,
-                        convergence_tolerance: Option[Double] = None)
+                        convergence_tolerance: Option[Double] = None) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * Companion object holds the default values.
@@ -99,7 +102,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph:titan/ml/graphx_pagerank"
 
-  //TODO remove when we move the next version of spark
+  //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
   override def doc = Some(CommandDoc(oneLineSummary = "Page Rank.",
@@ -164,62 +167,51 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(sparkInvocation: SparkInvocation, arguments: PageRankArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): PageRankResult = {
 
-    sparkInvocation.sparkContext.stop
+    val sparkContext = sparkInvocation.sparkContext
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    sparkContext.addJar(Boot.getJar("graphon").getPath)
 
-    val sc = new SparkContext(sparkConf)
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    try {
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      sc.addJar(Boot.getJar("graphon").getPath)
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
+      arguments.input_edge_labels,
+      arguments.max_iterations,
+      arguments.reset_probability,
+      arguments.convergence_tolerance)
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    // Call PageRankRunner to kick off PageRank computation on RDDs
+    val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    val newGraphName = arguments.output_graph_name
+    val iatNewGraphName = GraphBackendName.convertGraphUserNameToBackendName(newGraphName)
+    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+      config.getInt("default-timeout") seconds)
 
-      val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
-        arguments.input_edge_labels,
-        arguments.max_iterations,
-        arguments.reset_probability,
-        arguments.convergence_tolerance)
+    // create titan config copy for newGraph write-back
+    val newTitanConfig = new SerializableBaseConfiguration()
+    newTitanConfig.copy(titanConfig)
+    newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
+    writeToTitan(newTitanConfig, outVertices, outEdges)
 
-      // Call PageRankRunner to kick off PageRank computation on RDDs
-      val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
-
-      val newGraphName = arguments.output_graph_name
-      val iatNewGraphName = GraphName.convertGraphUserNameToBackendName(newGraphName)
-      val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-        config.getInt("default-timeout") seconds)
-
-      // create titan config copy for newGraph write-back
-      val newTitanConfig = new SerializableBaseConfiguration()
-      newTitanConfig.copy(titanConfig)
-      newTitanConfig.setProperty("storage.tablename", iatNewGraphName)
-      writeToTitan(newTitanConfig, outVertices, outEdges)
-
-      PageRankResult(newGraphName)
-    }
-
-    finally {
-      sc.stop
-    }
+    PageRankResult(newGraphName)
   }
 
   // Helper function to write rdds back to Titan

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameCopy, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameCopy, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -71,15 +71,18 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       case None => (sourceFrame.schema, null) // full copy
       case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndices(cols) // partial copy
     }
-    val newFrame = frames.updateSchema(frames.create(DataFrameTemplate(frames.generateFrameName(), Some("copy"))),
-      newSchema)
 
+    // run the operation
+    val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
+    val newFrame = frames.updateSchema(frames.create(template), newSchema)
     if (arguments.where.isEmpty) {
       val rdd: FrameRDD = arguments.columns match {
         case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
         case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
           frames.loadFrameRDD(ctx, sourceFrame)
-            .map(row => { for { i <- indices } yield row(i) }.toArray))
+            .map(row => {
+              for { i <- indices } yield row(i)
+            }.toArray))
       }
       frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
     }
