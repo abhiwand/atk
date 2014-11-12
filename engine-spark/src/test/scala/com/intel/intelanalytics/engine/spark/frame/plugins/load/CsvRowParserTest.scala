@@ -26,9 +26,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import org.scalatest.{ Matchers, WordSpec }
 
-class RowParserTest extends WordSpec with Matchers {
+class CsvRowParserTest extends WordSpec with Matchers {
 
-  val csvRowParser = new RowParser(',', Array[DataTypes.DataType]())
+  val csvRowParser = new CsvRowParser(',', Array[DataTypes.DataType]())
 
   "RowParser" should {
 
@@ -65,7 +65,7 @@ class RowParserTest extends WordSpec with Matchers {
     }
 
     "parse a tab separated string" in {
-      val trow = new RowParser('\t', Array[DataTypes.DataType]())
+      val trow = new CsvRowParser('\t', Array[DataTypes.DataType]())
       trow.splitLineIntoParts("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
     }
   }

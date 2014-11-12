@@ -195,3 +195,49 @@ class CsvFile(DataFile):
                 validated_schema.append((name, data_type))
         self.schema = validated_schema
 
+class LineFile(DataFile):
+    """
+    Define a Line separated file.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of data input file.
+        File must be in the hadoop file system.
+        Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
+        Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
+
+    Returns
+    -------
+    class
+        An object which holds the name of a :term:`Line` file.
+
+    Examples
+    --------
+    For this example, we are going to use a raw data file named "rawline_data.txt".
+    The file has been moved to hdfs://localhost.localdomain/user/iauser/data/.
+    It consists of multiple lines separated by new line character.
+
+    First bring in the stuff::
+
+        import intelanalytics as ia
+
+    Now build a LineFile object::
+
+        my_linefile = ia.LineFile("data/rawline_data.txt")
+
+    .. versionadded:: 0.8
+
+    """
+
+    # TODO - Review docstring
+    annotation = "line_file"
+
+    def __init__(self, file_name):
+        if not file_name or not isinstance(file_name, basestring):
+            raise ValueError("file_name must be a non-empty string")
+        self.file_name = file_name
+
+    def __repr__(self):
+        return repr(self.file_name)
