@@ -887,7 +887,10 @@ class PrettyTable(object):
             value = self._unicode(("%%%sd" % self._int_format[field]) % value)
         elif isinstance(value, float) and field in self._float_format:
             value = self._unicode(("%%%sf" % self._float_format[field]) % value)
-        return self._unicode(value)
+        #This list indexing is to remove the quotes that wrap a represented unicode string
+        value = repr(self._unicode(value))[2:-1]
+        #repr will convert \ to \\ which is not what we want
+        return value.replace("\\\\", "\\")
 
     def _compute_widths(self, rows, options):
         if options["header"]:
@@ -1086,8 +1089,6 @@ class PrettyTable(object):
             lines = value.split("\n")
             new_lines = []
             for line in lines:
-                #This list indexing is to remove the quotes that wrap a represented unicode string
-                line = repr(line)[2:-1]
                 if _str_block_width(line) > width:
                     line = textwrap.fill(line, width)
                 new_lines.append(line)
