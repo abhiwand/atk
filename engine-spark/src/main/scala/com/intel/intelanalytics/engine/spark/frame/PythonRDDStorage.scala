@@ -24,7 +24,7 @@ object PythonRDDStorage {
     decodeBase64(byteStr)
   }
 
-  def pyMappish(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
+  def mapWith(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
     val newSchema = if (schema == null) { data.schema } else { schema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 

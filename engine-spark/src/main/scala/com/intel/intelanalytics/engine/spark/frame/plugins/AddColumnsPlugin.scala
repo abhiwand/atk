@@ -65,12 +65,12 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): DataFrame = {
-    val frame: SparkFrameData = resolve(arguments.frame)
+%    val frame: SparkFrameData = resolve(arguments.frame)
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
     val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
     // Update the data
-    val rdd = PythonRDDStorage.pyMappish(frame.data, arguments.expression, newSchema)
+    val rdd = PythonRDDStorage.mapWith(frame.data, arguments.expression, newSchema)
 
     save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd)).meta
   }
