@@ -69,7 +69,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
     val sourceFrame = frames.expectFrame(arguments.frame)
     val (newSchema, indices) = arguments.columns match {
       case None => (sourceFrame.schema, null) // full copy
-      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndices(cols) // partial copy
+      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndicesForCopy(cols) // partial copy
     }
     val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
 
