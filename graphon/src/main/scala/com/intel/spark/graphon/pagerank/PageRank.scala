@@ -61,7 +61,10 @@ case class PageRankArgs(graph: GraphReference,
                         input_edge_labels: Option[List[String]] = None,
                         max_iterations: Option[Int] = None,
                         reset_probability: Option[Double] = None,
-                        convergence_tolerance: Option[Double] = None)
+                        convergence_tolerance: Option[Double] = None) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * Companion object holds the default values.
