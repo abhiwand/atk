@@ -76,7 +76,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
   override def execute(arguments: FilterPredicate)(implicit invocation: Invocation): DataFrame = {
     val frame: SparkFrameData = resolve(arguments.frame)
 
-    val updated = PythonRDDStorage.pyMappish(frame.data, arguments.predicate)
+    val updated = PythonRDDStorage.mapWith(frame.data, arguments.predicate)
 
     save(new SparkFrameData(frame.meta.withSchema(updated.schema), updated)).meta
   }
