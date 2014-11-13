@@ -90,6 +90,7 @@ from cm_api.endpoints import role_config_groups
 from subprocess import call
 from os import system
 import hashlib, re, time, argparse, os, time, sys, getpass
+import codecs
 
 parser = argparse.ArgumentParser(description="Process cl arguments to avoid prompts in automation")
 parser.add_argument("--host", type=str, help="Cloudera Manager Host")
@@ -572,7 +573,7 @@ def get_old_db_details():
     
     #look for an old application.conf and see if we have any old db configs
     try:
-        application_conf = open("application.conf")
+        application_conf = codecs.open("application.conf", encoding="utf-8", mode="r")
         application_conf_text = application_conf.read()
         application_conf.close()
 
@@ -609,10 +610,10 @@ def set_db_user_access(db_username):
     #update pg_hba conf file with user entry will only ever be for local host
     print "Configuring postgres access for  \"" + db_username + "\" "
     try:
-        pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+        pg_hba = codecs.open(r"/var/lib/pgsql/data/pg_hba.conf", encoding="utf-8", mode="r+")
     except IOError:
         system("service postgresql initdb")
-        pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+        pg_hba = codecs.open(r"/var/lib/pgsql/data/pg_hba.conf", encoding="utf-8", mode="r+")
         restart_db()
 
     pg_hba_text = pg_hba.read()
@@ -676,7 +677,7 @@ def get_IA_log():
     :return:
     """
     try:
-        output_log = open(IA_LOG_PATH)
+        output_log = codecs.open(IA_LOG_PATH, encoding="utf-8", mode="r")
         output_log_text = output_log.read()
         output_log.close()
         return output_log_text
@@ -692,7 +693,7 @@ def restart_IA():
     """
     #Truncate the IA log so we can detect a new 'Bound to' message which would let us know the server is up
     try:
-        output_log = open(IA_LOG_PATH, "w+")
+        output_log = codecs.open(IA_LOG_PATH, encoding="utf-8", mode="w+")
         output_log.write("")
         output_log.close()
     except IOError:
@@ -800,7 +801,8 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     config_file_path = "application.conf"
 
     print "Reading application.conf.tpl"
-    config_tpl = open( config_file_tpl_path, "r")
+    #Reading the application.conf.tpl with utf-8 encoding in order to let more flexible comments 
+    config_tpl = codecs.open(config_file_tpl_path, encoding="utf-8", mode="r")
     config_tpl_text = config_tpl.read()
     config_tpl.close()
 
@@ -839,7 +841,7 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
                                             config_tpl_text)
 
 
-    config = open(config_file_path, "w")
+    config = codecs.open(config_file_path, encoding="utf-8", mode="w")
     config.write(config_tpl_text)
     config.close()
     print color_text("Configuration created for Intel Analytics", GOOD)
@@ -851,7 +853,7 @@ if cloudera_manager_host is None:
     try:
         #look for in the Cloudera agent config.ini file before prompting the user
         #config dir for Cloudera agent /etc/cloudera-scm-agent
-        cloudera_agent_config = open("/etc/cloudera-scm-agent/config.ini", "r")
+        cloudera_agent_config = codecs.open(r"/etc/cloudera-scm-agent/config.ini", encoding="utf-8", mode="r")
         cloudera_manager_host = re.search('(?<=server_host=).*',cloudera_agent_config.read()).group(0)
         cloudera_agent_config.close()
     except IOError:

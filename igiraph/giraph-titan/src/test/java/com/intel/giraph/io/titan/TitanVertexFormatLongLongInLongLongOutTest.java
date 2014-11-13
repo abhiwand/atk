@@ -24,11 +24,13 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation;
 import com.intel.giraph.combiner.MinimumLongCombiner;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongLongNull;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongLongNull;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDLongValue;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
+import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.edge.ByteArrayEdges;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
@@ -52,22 +54,19 @@ import static org.junit.Assert.assertTrue;
  * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
 public class TitanVertexFormatLongLongInLongLongOutTest
-    extends TitanTestBase<LongWritable, LongWritable, NullWritable> {
-    double[] expectedValues = new double[]{
-        4, 4, 4, 4, 4, 24, 24, 24, 36, 36
-    };
+        extends TitanTestBase<LongWritable, LongWritable, NullWritable> {
 
 
     @Override
     protected void configure() throws Exception {
         giraphConf.setComputationClass(ConnectedComponentsComputation.class);
         giraphConf.setMasterComputeClass(ConnectedComponentsComputation.
-            ConnectedComponentsMasterCompute.class);
+                ConnectedComponentsMasterCompute.class);
         giraphConf.setAggregatorWriterClass(ConnectedComponentsComputation.
-            ConnectedComponentsAggregatorWriter.class);
+                ConnectedComponentsAggregatorWriter.class);
         giraphConf.setOutEdgesClass(ByteArrayEdges.class);
         giraphConf.setMessageCombinerClass(MinimumLongCombiner.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongLongNull.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatLongLongNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDLongValue.class);
 
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
@@ -95,33 +94,42 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         };
         */
 
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
+        TitanTransaction tx = graph.newTransaction();
         int numVertices = 10;
         TitanVertex[] nodes = new TitanVertex[numVertices];
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
         }
 
+        int[][] expectedSubgraphs = {
+                {0, 1, 2, 3, 4},
+                {5, 6, 7},
+                {8, 9}};
+
+
         TitanEdge[] edges = new TitanEdge[18];
-        edges[0] = nodes[0].addEdge(edge, nodes[2]);
-        edges[1] = nodes[0].addEdge(edge, nodes[4]);
-        edges[2] = nodes[1].addEdge(edge, nodes[3]);
-        edges[3] = nodes[2].addEdge(edge, nodes[0]);
-        edges[4] = nodes[2].addEdge(edge, nodes[3]);
-        edges[5] = nodes[3].addEdge(edge, nodes[1]);
-        edges[6] = nodes[3].addEdge(edge, nodes[2]);
-        edges[7] = nodes[3].addEdge(edge, nodes[4]);
-        edges[8] = nodes[4].addEdge(edge, nodes[0]);
-        edges[9] = nodes[4].addEdge(edge, nodes[3]);
-        edges[10] = nodes[5].addEdge(edge, nodes[6]);
-        edges[11] = nodes[5].addEdge(edge, nodes[7]);
-        edges[12] = nodes[6].addEdge(edge, nodes[5]);
-        edges[13] = nodes[6].addEdge(edge, nodes[7]);
-        edges[14] = nodes[7].addEdge(edge, nodes[5]);
-        edges[15] = nodes[7].addEdge(edge, nodes[6]);
-        edges[16] = nodes[8].addEdge(edge, nodes[9]);
-        edges[17] = nodes[9].addEdge(edge, nodes[8]);
+        edges[0] = nodes[0].addEdge("edge", nodes[2]);
+        edges[1] = nodes[0].addEdge("edge", nodes[4]);
+        edges[2] = nodes[1].addEdge("edge", nodes[3]);
+        edges[3] = nodes[2].addEdge("edge", nodes[0]);
+        edges[4] = nodes[2].addEdge("edge", nodes[3]);
+        edges[5] = nodes[3].addEdge("edge", nodes[1]);
+        edges[6] = nodes[3].addEdge("edge", nodes[2]);
+        edges[7] = nodes[3].addEdge("edge", nodes[4]);
+        edges[8] = nodes[4].addEdge("edge", nodes[0]);
+        edges[9] = nodes[4].addEdge("edge", nodes[3]);
+        edges[10] = nodes[5].addEdge("edge", nodes[6]);
+        edges[11] = nodes[5].addEdge("edge", nodes[7]);
+        edges[12] = nodes[6].addEdge("edge", nodes[5]);
+        edges[13] = nodes[6].addEdge("edge", nodes[7]);
+        edges[14] = nodes[7].addEdge("edge", nodes[5]);
+        edges[15] = nodes[7].addEdge("edge", nodes[6]);
+        edges[16] = nodes[8].addEdge("edge", nodes[9]);
+        edges[17] = nodes[9].addEdge("edge", nodes[8]);
 
         tx.commit();
 
@@ -129,24 +137,32 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         long[] nid = new long[numVertices];
-        TitanKey resultKey;
+        PropertyKey resultKey;
         String keyName = "component_id";
 
         //check keys are generated for Titan
-        assertTrue(tx.containsType(keyName));
+        assertTrue(tx.containsRelationType(keyName));
         resultKey = tx.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
+        for (int i = 0; i < expectedSubgraphs.length; i++) {
+            TitanVertex firstNode =  tx.getVertex(nodes[expectedSubgraphs[i][0]].getLongId());
+            long expectedComponentId = Long.parseLong(firstNode.getProperty(resultKey).toString());
 
-        for (int i = 0; i < numVertices; i++) {
-            nid[i] = nodes[i].getID();
-            assertTrue(tx.containsVertex(nid[i]));
-            nodes[i] = tx.getVertex(nid[i]);
-            assertEquals(expectedValues[i], Double.parseDouble(nodes[i].getProperty(resultKey).toString()), 0d);
+            for (int j = 0; j < expectedSubgraphs[i].length; j++) {
+                int nodeIndex =  expectedSubgraphs[i][j];
+                nid[nodeIndex] = nodes[nodeIndex].getLongId();
+                assertTrue(tx.containsVertex(nid[nodeIndex]));
+                nodes[nodeIndex] = tx.getVertex(nid[nodeIndex]);
+
+                assertEquals(expectedComponentId, Long.parseLong(nodes[nodeIndex].getProperty(resultKey).toString()), 0l);
+            }
+
         }
+        tx.commit();
     }
 
 }
