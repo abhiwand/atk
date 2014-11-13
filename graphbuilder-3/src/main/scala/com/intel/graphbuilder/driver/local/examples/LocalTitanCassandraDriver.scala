@@ -115,7 +115,7 @@ object LocalTitanCassandraDriver {
     titanConfig.setProperty("storage.hostname", "127.0.0.1")
     titanConfig.setProperty("storage.keyspace", "titan")
     val titanConnector = new TitanGraphConnector(titanConfig)
-    var graph = titanConnector.connect()
+    val graph = titanConnector.connect()
 
     try {
 
@@ -139,8 +139,8 @@ object LocalTitanCassandraDriver {
       })
 
       // Results
-      println(graph.getEdges.iterator().toList.size)
-      println(graph.getVertices.iterator().toList.size)
+      println(graph.getEdges.toList.size)
+      println(TitanGraphConnector.getVertices(graph).toList.size) //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
     }
     finally {

@@ -424,6 +424,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      // if you are deleting an error frame, you need to make sure no other frames reference it first
+      val errorFrameIdColumn = for (f <- frames if f.errorFrameId === id) yield f.errorFrameId
+      errorFrameIdColumn.update(None)
+
+      // perform the actual delete
       frames.where(_.id === id).mutate(f => f.delete())
     }
 

@@ -29,6 +29,7 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 import java.io.File
 import java.net.InetAddress
 
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.tinkerpop.blueprints.Graph
 
 import scala.collection.JavaConversions._
@@ -78,7 +79,7 @@ object ExamplesUtils {
       System.getProperty("user.dir") + "/target/scala-2.10/gb.jar",
       System.getProperty("user.dir") + "/gb.jar",
       // Maven build not working yet
-      System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3.jar",
+      System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3-0.8.6-SNAPSHOT.jar",
       System.getProperty("user.dir") + "/target/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/graphbuilder-3.jar")
     possiblePaths.foreach(path => {
@@ -135,7 +136,7 @@ object ExamplesUtils {
 
     val output = new StringBuilder("---- Graph Dump ----\n")
 
-    graph.getVertices.toList.foreach(v => {
+    TitanGraphConnector.getVertices(graph).toList.foreach(v => {
       output.append(v).append("\n")
       vertexCount += 1
     })
