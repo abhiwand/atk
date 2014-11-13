@@ -266,11 +266,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   override def drop(frame: DataFrame): Unit = {
-
-    //validate the args
-
-    //parse for wild card characters
-
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
       implicit session =>
