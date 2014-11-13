@@ -24,26 +24,23 @@
 
 package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-/**
- * Represents an undirected edge as a pair of vertex identifiers.
- *
- * To avoid duplicate entries of (v,u) and (u,v) for the edge {u,v} we require that the source be less than the
- * destination.
- *
- * @param source Source of the edge.
- * @param destination Destination of the edge.
- */
-case class Edge(source: Long, destination: Long) extends Serializable {
-  require(source < destination)
-}
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
- * Companion object for Edge class that provides the constructor.
+ * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
+ * any one of the vertices from the set neighbors.
+ *
+ * A k clique-extension fact is a clique extension fact where the vertex set contains exactly k vertices.
+ * These are the extension facts obtained after the k'th round of the algorithm.
+ *
+ * Symbolically, a pair (C,V) where:
+ *   - C is a (k-1) clique.
+ *   - For every v in V,  C + v is a k clique.
+ *   - For all v so that C + v is a k clique, v is in V.
+ *
+ * INVARIANT:
+ * when k is odd, every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
+ * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
+ *
  */
-object Edge {
-  def edgeFactory(u: Long, v: Long) = {
-    require(u != v)
-    new Edge(math.min(u, v), math.max(u, v))
-  }
-}
-
+case class CliqueExtension(clique: Clique, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
