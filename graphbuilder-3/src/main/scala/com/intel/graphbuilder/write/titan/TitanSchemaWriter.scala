@@ -26,7 +26,7 @@ package com.intel.graphbuilder.write.titan
 import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
 import com.intel.graphbuilder.util.PrimitiveConverter
 import com.intel.graphbuilder.write.SchemaWriter
-import com.thinkaurelius.titan.core.TitanGraph
+import com.thinkaurelius.titan.core.{ Multiplicity, TitanGraph }
 import com.tinkerpop.blueprints._
 
 /**
@@ -67,17 +67,20 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    * @param propertyDef the definition of a Property
    */
   private def writePropertyDef(propertyDef: PropertyDef): Unit = {
-    if (graph.getType(propertyDef.name) == null) {
-      val property = graph.makeKey(propertyDef.name).dataType(PrimitiveConverter.primitivesToObjects(propertyDef.dataType))
-      if (propertyDef.indexed) {
-        // TODO: future: should we implement INDEX_NAME?
-        property.indexed(indexType(propertyDef.propertyType))
-      }
+    val graphManager = graph.getManagementSystem()
+    if (!graphManager.containsRelationType(propertyDef.name)) {
+      val property = graphManager.makePropertyKey(propertyDef.name).dataType(PrimitiveConverter.primitivesToObjects(propertyDef.dataType)).make()
+
       if (propertyDef.unique) {
-        property.unique()
+        //uniqueness enforced by indexing
+        graphManager.buildIndex(propertyDef.name, indexType(propertyDef.propertyType)).addKey(property).unique().buildCompositeIndex()
       }
-      property.make()
+      else if (propertyDef.indexed) {
+        // TODO: future: should we implement INDEX_NAME? Using property name as index name for now.
+        graphManager.buildIndex(propertyDef.name, indexType(propertyDef.propertyType)).addKey(property).buildCompositeIndex()
+      }
     }
+    graphManager.commit()
   }
 
   /**
@@ -109,9 +112,13 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
     //  ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
     //  signature()
 
-    edgeLabelDefs.foreach(labelSchema =>
-      if (graph.getType(labelSchema.label) == null) {
-        graph.makeLabel(labelSchema.label).make()
-      })
+    edgeLabelDefs.foreach(labelSchema => {
+      val graphManager = graph.getManagementSystem()
+      if (!graphManager.containsRelationType(labelSchema.label)) {
+        //default multiplicity is SIMPLE (at most one edge with this label between a pair of vertices
+        graphManager.makeEdgeLabel(labelSchema.label).multiplicity(Multiplicity.SIMPLE).make()
+      }
+      graphManager.commit()
+    })
   }
 }

@@ -30,7 +30,7 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, TestingTitan, SparkGraphStorage }
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
@@ -58,7 +58,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
     "create an expected graphbuilder config " in {
       val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
       val config = plugin.createGraphBuilderConfig("graphName")
-      config.titanConfig.getProperty("storage.tablename").toString should include("graphName")
+      config.titanConfig.getProperty("storage.hbase.table").toString should include("graphName")
       config.append should be(false)
       config.edgeRules.size should be(0)
       config.vertexRules.size should be(0)
@@ -94,8 +94,11 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         this.titanConfig)
       plugin.loadTitanGraph(config, vertexFrame, edgeFrame)
 
+      // Need to explicitly specify type when getting vertices to resolve the error
+      // "Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+"
+      val titanVertices: Iterable[com.tinkerpop.blueprints.Vertex] = this.titanGraph.getVertices
       this.titanGraph.getEdges().size should be(2)
-      this.titanGraph.getVertices.size should be(3)
+      titanVertices.size should be(3)
 
       val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")

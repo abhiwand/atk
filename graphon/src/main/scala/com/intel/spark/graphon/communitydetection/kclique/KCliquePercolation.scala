@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import spray.json._
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.component.Boot
 import com.typesafe.config.Config
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -132,15 +132,13 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Titan Settings for input
     val config = configuration
-    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Set the graph in Titan
-    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // Start KClique Percolation
     Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
