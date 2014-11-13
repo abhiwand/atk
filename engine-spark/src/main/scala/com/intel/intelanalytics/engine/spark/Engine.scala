@@ -190,7 +190,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
   commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new ExportFromTitanGraph(frames, graphs))
+  commandPluginRegistry.registerCommand(new ExportFromTitanPlugin(frames, graphs))
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new TrainModelPlugin)
