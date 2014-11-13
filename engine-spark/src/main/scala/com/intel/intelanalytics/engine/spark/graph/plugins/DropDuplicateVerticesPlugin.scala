@@ -73,7 +73,9 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
                            |    Extended Summary
                            |    ----------------
                            |    Remove duplicate vertex rows, keeping only one vertex row per uniqueness
-                           |    criteria match
+                           |    criteria match. Edges that were connected to removed vertices are also automatically dropped.
+                           |
+                           |
                            |
                            |    Parameters
                            |    ----------
@@ -135,7 +137,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
           case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
           case None =>
             // _vid is always unique so don't include it
-            vertexFrame.schema.dropColumn("_vid").columnNames
+            vertexFrame.schema.columnNames.dropWhile(s => s == "_vid")
         }
         schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)

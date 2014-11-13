@@ -6,7 +6,7 @@ setup(
     name="intelanalytics",
 
     # Version number (initial):
-    version=u"0.9-" + BUILD_NUMBER,
+    version=u"VERSION",
 
     # Application author details:
     author="Intel",
@@ -23,17 +23,17 @@ setup(
 
     #
     license="LICENSE.txt",
-    description="Intel Analytics Toolkit",
+    description="Intel Analytics Toolkit build ID BUILD_NUMBER",
 
     long_description=open("README").read(),
 
     # Dependent packages (distributions)
-    install_requires=[
-        'bottle >= 0.12',
-        'numpy >= 1.8.1',
-        'requests >= 2.2.1',
-        'ordereddict >= 1.1',
-        'decorator >= 3.4.0',
-        'pandas >= 0.15.0',
-    ],
+    #install_requires=[
+    #    'bottle >= 0.12',
+    #    'numpy >= 1.8.1',
+    #    'requests >= 2.2.1',
+    #    'ordereddict >= 1.1',
+    #    'decorator >= 3.4.0',
+    #    'pandas >= 0.15.0',
+    #],
 )
