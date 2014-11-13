@@ -43,7 +43,7 @@ class TitanVertexWriterTest extends WordSpec with Matchers with MockitoSugar {
       val physicalId = new java.lang.Long(123)
 
       when(gbVertex.gbId).thenReturn(gbId)
-      when(titanVertex.getID).thenReturn(physicalId)
+      when(titanVertex.getLongId()).thenReturn(physicalId)
       when(vertexWriter.write(gbVertex)).thenReturn(titanVertex)
 
       // instantiated class under test

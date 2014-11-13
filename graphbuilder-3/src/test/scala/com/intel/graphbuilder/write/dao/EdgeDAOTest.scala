@@ -23,9 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
+import com.intel.testutils.TestingTitan
 import com.tinkerpop.blueprints.Direction
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 
@@ -36,8 +36,8 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
   before {
     setupTitan()
-    vertexDAO = new VertexDAO(graph)
-    edgeDAO = new EdgeDAO(graph, vertexDAO)
+    vertexDAO = new VertexDAO(titanGraph)
+    edgeDAO = new EdgeDAO(titanGraph, vertexDAO)
   }
 
   after {
@@ -98,19 +98,18 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
       // create an edge
       val gbEdge = new GBEdge(gbId1, gbId2, "myLabel", Set.empty[Property])
       val bpEdgeOriginal = edgeDAO.create(gbEdge)
-      graph.commit()
+      titanGraph.commit()
 
       // define an updated version of the same edge
       val updatedEdge = new GBEdge(gbId1, gbId2, "myLabel", Set(new Property("newKey", "newValue")))
 
       // invoke method under test
       val bpEdgeUpdated = edgeDAO.updateOrCreate(updatedEdge)
-      graph.commit()
+      titanGraph.commit()
 
       titanId(edgeDAO.find(gbEdge).get) shouldBe titanId(edgeDAO.find(updatedEdge).get)
 
       // validate
-      graph.getEdge(bpEdgeOriginal.getId) should be(null) // this is weird but when you update Titan assigns a new id
       bpEdgeUpdated.getProperty("newKey").asInstanceOf[String] shouldBe "newValue"
     }
 
@@ -175,7 +174,7 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
     val bpEdge2 = edgeDAO.create(new GBEdge(gbId2, gbId3, label, Set.empty[Property]))
     val bpEdge3 = edgeDAO.create(new GBEdge(gbId2, gbId4, label, Set.empty[Property]))
 
-    graph.commit()
+    titanGraph.commit()
   }
 
   "EdgeDAO find methods" should {

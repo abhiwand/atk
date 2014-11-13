@@ -15,8 +15,8 @@ trait TestingSparkContextFunSuite extends FunSuite with BeforeAndAfterAll {
    * Clean up after the test is done
    */
   override def afterAll() = {
-    sparkContext = null
     TestingSparkContext.cleanUp()
+    sparkContext = null
   }
 
 }
