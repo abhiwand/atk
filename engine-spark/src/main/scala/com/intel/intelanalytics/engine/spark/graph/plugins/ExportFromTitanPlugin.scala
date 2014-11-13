@@ -49,7 +49,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.SparkContext._
 
-class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[GraphNoArgs, Graph] {
+class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[GraphNoArgs, Graph] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -106,7 +106,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
 
     val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
-    ExportFromTitanGraph.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
+    ExportFromTitanPlugin.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
     val titanDBGraph = graphs.getTitanGraph(graphId)
     saveToVertexFrame(vertices, ctx, labelToIdNameMapping, graph, titanDBGraph)
     vertices.unpersist()
@@ -115,7 +115,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
 
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
 
-    ExportFromTitanGraph.createEdgeFrames(graphs, graph.id, edgeDefinitions)
+    ExportFromTitanPlugin.createEdgeFrames(graphs, graph.id, edgeDefinitions)
     saveToEdgeFrame(edges, ctx, graph, titanDBGraph)
     edges.unpersist()
 
@@ -161,7 +161,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
         gbEdge.getPropertiesValueByColumns(columns, properties) ++ Array(srcVid, destVid)
       })
 
-      val schema = new Schema(ExportFromTitanGraph.getSchemaFromProperties(columns, titanDBGraph) ++ List(Column("_src_vid", int64), Column("_dest_vid", int64)))
+      val schema = new Schema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph) ++ List(Column("_src_vid", int64), Column("_dest_vid", int64)))
       val edgesToAdd = new LegacyFrameRDD(schema, edgeRdd).toFrameRDD()
 
       val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.id)
@@ -208,7 +208,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
       })
 
       val idColumn = labelToIdNameMapping(label)
-      val schema = new Schema(ExportFromTitanGraph.getSchemaFromProperties(columns, titanDBGraph))
+      val schema = new Schema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph))
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
       val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.id)
       val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(source)
@@ -217,7 +217,7 @@ class ExportFromTitanGraph(frames: SparkFrameStorage, graphs: SparkGraphStorage)
   }
 }
 
-object ExportFromTitanGraph {
+object ExportFromTitanPlugin {
 
   /**
    * Create vertex frames for all the vertex types in the input vertex rdd
