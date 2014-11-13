@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame
 import java.util.UUID
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.ClassLoaderAware
+import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
@@ -349,11 +350,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
 
   override def drop(frame: DataFrame): Unit = {
-
-    //TODO: validate the args
-
-    //TODO: parse for wild card characters
-
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
       implicit session =>
@@ -454,21 +450,19 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   override def lookupOrCreateErrorFrame(frame: DataFrame): (DataFrame, DataFrame) = {
     val errorFrame = lookupErrorFrame(frame)
     if (!errorFrame.isDefined) {
-      val (f, err) = metaStore.withTransaction("frame.lookupOrCreateErrorFrame") { implicit session =>
-        val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors",
-          Some("This frame was automatically created to capture parse errors for " + frame.name))
-        val newlyCreatedErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
-        debug(s"Created error frame ${newlyCreatedErrorFrame.id} for frame ${frame.id}")
-        val updated = metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
-        debug(s"Updated frame ${frame.id} to have error frame ${newlyCreatedErrorFrame.id}")
+      metaStore.withSession("frame.lookupOrCreateErrorFrame") {
+        implicit session =>
+          {
+            val errorTemplate = new DataFrameTemplate(Naming.generateName(prefix = Some("parse_errors_frame_")), Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val newlyCreatedErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
+            val updated = metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
 
-        //remove any existing artifacts to prevent collisions when a database is reinitialized.
-        frameFileStorage.delete(newlyCreatedErrorFrame)
+            //remove any existing artifacts to prevent collisions when a database is reinitialized.
+            frameFileStorage.delete(newlyCreatedErrorFrame)
 
-        (updated, newlyCreatedErrorFrame)
+            (updated, newlyCreatedErrorFrame)
+          }
       }
-      debug("Error frame transaction complete")
-      (f, err)
     }
     else {
       (frame, errorFrame.get)
