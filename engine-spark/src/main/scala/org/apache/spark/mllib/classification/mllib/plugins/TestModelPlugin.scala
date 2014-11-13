@@ -105,8 +105,7 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
 
       //create RDD from the frame
       val testFrameRDD = frames.loadFrameRDD(ctx, frameId)
-      val updatedTestRDD = testFrameRDD.selectColumns(List(arguments.labelColumn, arguments.observationColumn))
-      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(updatedTestRDD)
+      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(testFrameRDD, arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
