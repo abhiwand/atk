@@ -25,8 +25,7 @@ package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation
 import com.intel.giraph.io.VertexData4LDAWritable
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LDA
-import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LDA
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LDA, TitanVertexInputFormatPropertyGraph4LDA }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -196,7 +195,6 @@ class LatentDirichletAllocation
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
@@ -213,7 +211,7 @@ class LatentDirichletAllocation
     GiraphConfigurationUtil.set(hConf, "lda.bidirectionalCheck", arguments.bidirectional_check)
     GiraphConfigurationUtil.set(hConf, "lda.numTopics", arguments.num_topics)
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
@@ -223,7 +221,7 @@ class LatentDirichletAllocation
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LDA])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LDA])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LDA[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: com.intel.mahout.math.DoubleWithVectorWritable]])
     giraphConf.setMasterComputeClass(classOf[CVB0LDAComputation.CVB0LDAMasterCompute])
     giraphConf.setComputationClass(classOf[CVB0LDAComputation])

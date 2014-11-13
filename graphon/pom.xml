@@ -110,14 +110,6 @@
             <artifactId>engine-spark</artifactId>
         </dependency>
         <dependency>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>engine-spark</artifactId>
-    </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>interfaces</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>testutils</artifactId>
             <scope>test</scope>
@@ -137,7 +129,6 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.short.version}</artifactId>
-            <version>${dep.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
