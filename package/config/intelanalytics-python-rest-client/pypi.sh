@@ -24,10 +24,13 @@ rm -rf usr
 
 #copy assest files
 cp -Rv assets/* intelanalytics/
+cp -v  requirements-windows.txt intelanalytics/
+cp -v  requirements-linux.txt intelanalytics/
 
 pushd intelanalytics
 
-sed -i "s/BUILD_NUMBER/\"${BUILD_NUMBER}\"/g" setup.py
+sed -i "s/VERSION/${VERSION}/g" setup.py
+sed -i "s/BUILD_NUMBER/${BUILD_NUMBER}/g" setup.py
 
 python setup.py sdist
 
