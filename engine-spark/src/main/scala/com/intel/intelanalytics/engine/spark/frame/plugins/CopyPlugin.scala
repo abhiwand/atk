@@ -69,12 +69,11 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
     val sourceFrame = frames.expectFrame(arguments.frame)
     val (newSchema, indices) = arguments.columns match {
       case None => (sourceFrame.schema, null) // full copy
-      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndices(cols) // partial copy
+      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndicesForCopy(cols) // partial copy
     }
+    val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
 
     // run the operation
-    val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
-    val newFrame = frames.updateSchema(frames.create(template), newSchema)
     if (arguments.where.isEmpty) {
       val rdd: FrameRDD = arguments.columns match {
         case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
@@ -84,7 +83,10 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
               for { i <- indices } yield row(i)
             }.toArray))
       }
-      frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
+      frames.tryNewFrame(template) { newFrame =>
+        val copiedFrame = frames.updateSchema(newFrame, newSchema)
+        frames.saveFrame(copiedFrame, rdd, Some(sourceFrame.rowCount))
+      }
     }
     else {
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
@@ -92,8 +94,11 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       val pythonRDDStorage = new PythonRDDStorage(frames)
       val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where.get, ctx)
       val converter = DataTypes.parseMany(newSchema.columns.map(_.dataType).toArray)(_)
-      val rowCount = pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = false)
-      frames.updateRowCount(newFrame, rowCount)
+      frames.tryNewFrame(template) { newFrame =>
+        val copiedFrame = frames.updateSchema(newFrame, newSchema)
+        val rowCount = pythonRDDStorage.persistPythonRDD(copiedFrame, pyRdd, converter, skipRowCount = false)
+        frames.updateRowCount(copiedFrame, rowCount)
+      }
     }
   }
 }
