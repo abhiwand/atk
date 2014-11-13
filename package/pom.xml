@@ -42,7 +42,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
     </parent>
 
     <properties>
-        <pkg.version>0.8.7</pkg.version>
+        <pkg.version>0.9</pkg.version>
     </properties>
     <profiles>
         <profile>
@@ -163,6 +163,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     </arguments>
                                 </configuration>
                             </execution>
+
 
                             <execution>
                                 <id>zip-ispark-deps</id>
