@@ -10,7 +10,7 @@ class SlickMetaStoreComponentTest extends SlickMetaStoreH2Testing with Matchers 
     while (results.next()) {
       count += 1
     }
-    count shouldEqual 6 // expected number of tables in the meta store
+    count shouldEqual 7 // expected number of tables in the meta store
   }
 
 }

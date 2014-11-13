@@ -25,13 +25,15 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.{ EntityType, UriReference }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution }
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
 import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
-import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.Future
@@ -107,6 +109,16 @@ trait Engine {
   def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
 
   def deleteGraph(graph: Graph): Future[Unit]
+
+  def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Future[Model]
+
+  def getModel(id: Identifier): Future[Model]
+
+  def getModels()(implicit user: UserPrincipal): Future[Seq[Model]]
+
+  def getModelByName(name: String)(implicit user: UserPrincipal): Future[Option[Model]]
+
+  def deleteModel(model: Model): Future[Unit]
 
   /**
    * Cancel a running command
