@@ -90,6 +90,13 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
                              |titan_graph = graph.export_to_titan("titan_graph") """)))
 
   /**
+   * Number of jobs needs to be known to give a single progress bar
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
+   */
+  override def numberOfJobs(arguments: ExportGraph): Int = 4
+
+  /**
    * Plugins must implement this method to do the work requested by the user.
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that

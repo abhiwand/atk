@@ -59,7 +59,10 @@ import java.util.UUID
 case class TriangleCountArgs(graph: GraphReference,
                              output_property: String,
                              output_graph_name: String,
-                             input_edge_labels: Option[List[String]] = None)
+                             input_edge_labels: Option[List[String]] = None) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * The result object

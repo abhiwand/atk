@@ -53,7 +53,10 @@ import java.util.UUID
  */
 case class ConnectedComponentsArgs(graph: GraphReference,
                                    output_property: String,
-                                   output_graph_name: String)
+                                   output_graph_name: String) {
+  require(!output_property.isEmpty, "Output property label must be provided")
+  require(!output_graph_name.isEmpty, "Output graph name must be provided")
+}
 
 /**
  * The result object

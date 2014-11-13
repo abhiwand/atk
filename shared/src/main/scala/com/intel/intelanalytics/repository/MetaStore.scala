@@ -48,6 +48,9 @@ trait MetaStore {
   /** Repository for CRUD on 'command' table */
   def commandRepo: CommandRepository[Session]
 
+  /** Repository for CRUD on 'model' table */
+  def modelRepo: ModelRepository[Session]
+
   /** Repository for CRUD on 'query' table */
   def queryRepo: QueryRepository[Session]
 

@@ -94,7 +94,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
               entity(as[DataFrameCreate]) {
                 frame =>
-                  onComplete(engine.create(frame.toDataFrameTemplate)) {
+                  onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
                     case Failure(ex: DuplicateNameException) => ctx => {
                       ctx.complete(202, ex.getMessage)

@@ -27,6 +27,9 @@ import java.net.URI
 
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
+import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.model._
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.frame.load._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.domain.query.{ RowQuery }
@@ -199,7 +202,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate)
+  implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate.apply)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -263,6 +266,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
   implicit val ecdfLongFormat = jsonFormat3(ECDF)
   implicit val commandActionFormat = jsonFormat1(CommandPost)
+
+  // model service formats
+  implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntity)
+  implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
+  implicit val modelRenameFormat = jsonFormat2(RenameModel)
+  implicit val modelFormat = jsonFormat10(Model)
+  implicit val modelLoadFormat = jsonFormat4(ModelLoad)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntity)
@@ -423,4 +433,5 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   }
 
   implicit val seamlessGraphMetaFormat = jsonFormat2(SeamlessGraphMeta)
+
 }
