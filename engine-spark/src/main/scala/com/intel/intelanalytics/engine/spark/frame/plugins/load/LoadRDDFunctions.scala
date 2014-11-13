@@ -56,8 +56,6 @@ object LoadRDDFunctions extends Serializable {
   def loadAndParseData(sc: SparkContext,
                        data: List[List[Any]],
                        parser: LineParser): ParseResultRddWrapper = {
-
-    //val dataContentRDD: RDD[String] = sc.parallelize(data).map(s => s.mkString(","))
     val dataContentRDD: RDD[Any] = sc.parallelize(data)
     // parse a sample so we can bail early if needed
     parseSampleOfData(dataContentRDD, parser)

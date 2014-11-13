@@ -67,7 +67,7 @@ object QuantilesFunctions extends Serializable {
    * @param columnIndex the index of column to calculate quantile
    * @param dataType data type of the column
    */
-  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
+  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): RDD[Row] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
@@ -98,7 +98,7 @@ object QuantilesFunctions extends Serializable {
       perPartitionResult.toIterator
     })
 
-    quantilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (quantile, value) => Quantile(quantile, value) }
+    quantilesComponentsRDD.map(pair => Array[Any](pair._1, pair._2.toDouble))
   }
 
   /**
