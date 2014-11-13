@@ -74,7 +74,7 @@ private[testutils] object TestingSparkContext {
   }
 
   private def createLocalSparkContext(): SparkContext = {
-    LogUtils.silenceSpark()
+    // LogUtils.silenceSpark()
 
     val conf = new SparkConf()
       .setMaster("local")

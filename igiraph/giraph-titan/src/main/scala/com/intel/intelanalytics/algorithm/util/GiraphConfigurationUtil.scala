@@ -1,9 +1,13 @@
 package com.intel.intelanalytics.algorithm.util
 
+import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
+import scala.util.Try
 
 object GiraphConfigurationUtil {
 
@@ -24,7 +28,7 @@ object GiraphConfigurationUtil {
    * @param key the starting point in the Config object. Defaults to "hadoop".
    * @return a populated Hadoop Configuration object.
    */
-  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") = {
+  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop"): org.apache.hadoop.conf.Configuration = {
     require(config != null, "Config cannot be null")
     require(key != null, "Key cannot be null")
     val hConf = new Configuration()
@@ -37,13 +41,36 @@ object GiraphConfigurationUtil {
   }
 
   /**
+   * Update the Hadoop configuration object with the Titan configuration
+   *
+   * @param hConf the Hadoop configuration object to update
+   * @param config the Config object from which to copy Titan properties to the Hadoop Configuration
+   * @param graph the graph object containing the Titan graph name
+   */
+  def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph): Unit = {
+
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val storageBackend = titanConfig.getString("storage.backend")
+
+    titanConfig.getKeys.foreach {
+      case (titanKey: String) =>
+        val titanGiraphKey = "giraph.titan.input." + titanKey
+        set(hConf, titanGiraphKey, Option[Any](titanConfig.getProperty(titanKey)))
+    }
+
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
+    val numGiraphWorkers = Try(config.getInt("giraph.giraph.maxWorkers")).getOrElse(0)
+    titanAutoPartitioner.setGiraphHBaseInputSplits(hConf, numGiraphWorkers)
+  }
+
+  /**
    * Flatten a nested Config structure down to a simple dictionary that maps complex keys to
    * a string value, similar to java.util.Properties.
    *
    * @param config the config to flatten
    * @return a map of property names to values
    */
-  def flattenConfig(config: Config, prefix: String = ""): Map[String, String] = {
+  private def flattenConfig(config: Config, prefix: String = ""): Map[String, String] = {
     val result = config.root.asScala.foldLeft(Map.empty[String, String]) {
       (map, kv) =>
         kv._2 match {
@@ -55,14 +82,6 @@ object GiraphConfigurationUtil {
         }
     }
     result
-  }
-
-  def initializeTitanConfig(hConf: Configuration, titanConf: Map[String, String], graph: Graph) = {
-    set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
-    set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
-    // TODO - graph should provide backend to retrieve the stored table name in hbase. Keeping iat_graph_ for now
-    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_" + graph.name))
-    set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
   }
 
 }

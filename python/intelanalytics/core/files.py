@@ -49,7 +49,10 @@ class CsvFile(DataFile):
     delimiter : string (optional)
         string indicator of the delimiter for the fields
     skip_header_lines : int (optional)
-        indicates numbers of lines to skip before parsing records
+        indicates numbers of lines to skip before parsing records.
+
+        *NOTE* If the number of lines to be skipped is greater than two, there is a chance that only two
+        lines will get skipped if the dataset is small.
 
     Returns
     -------
