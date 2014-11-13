@@ -266,19 +266,21 @@ case class Schema(columns: List[Column] = List[Column](),
    *
    * @param names victimName -> newName
    */
-  def validateRenameMapping(names: Map[String, String]): Unit = {
+  def validateRenameMapping(names: Map[String, String], forCopy: Boolean = false): Unit = {
     if (names.isEmpty)
       throw new IllegalArgumentException(s"Empty column name map provided.  At least one name is required")
     val victimNames = names.keys.toList
     validateColumnsExist(victimNames)
-    val safeNames = columnNamesExcept(victimNames)
     val newNames = names.values.toList
     if (newNames.size != newNames.distinct.size) {
       throw new IllegalArgumentException(s"Invalid new column names are not unique: $newNames")
     }
-    for (n <- newNames) {
-      if (safeNames.contains(n)) {
-        throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
+    if (!forCopy) {
+      val safeNames = columnNamesExcept(victimNames)
+      for (n <- newNames) {
+        if (safeNames.contains(n)) {
+          throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
+        }
       }
     }
   }
@@ -288,8 +290,8 @@ case class Schema(columns: List[Column] = List[Column](),
    * @param columnNames rename mapping
    * @return new schema and the indices which map it back into this schema
    */
-  def getRenamedSchemaAndIndices(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
-    validateRenameMapping(columnNames)
+  def getRenamedSchemaAndIndicesForCopy(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
+    validateRenameMapping(columnNames, forCopy = true)
     val colsAndIndices: Seq[(Column, Int)] =
       for {
         (c, i) <- columns.zipWithIndex

@@ -68,8 +68,7 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame()
-            initialize_frame(frame, FrameInfo(payload))
+            frame = Frame(source=payload)
             return frame
 
     def create(self, frame, source, name):
