@@ -23,12 +23,12 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
+import com.intel.testutils.TestingTitan
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
 import org.mockito.Mockito._
-import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfter, Matchers, WordSpec }
 import org.scalatest.mock.MockitoSugar
 
 class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar with TestingTitan with BeforeAndAfter {
@@ -37,7 +37,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
 
   before {
     setupTitan()
-    titanSchemaWriter = new TitanSchemaWriter(graph)
+    titanSchemaWriter = new TitanSchemaWriter(titanGraph)
   }
 
   after {
@@ -49,6 +49,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
 
     "write an edge label definition" in {
       // setup
+
       val edgeLabel = new EdgeLabelDef("myLabel")
       val schema = new GraphSchema(List(edgeLabel), Nil)
 
@@ -56,7 +57,9 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("myLabel").isEdgeLabel shouldBe true
+      val titanManager = titanGraph.getManagementSystem
+      titanManager.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      titanManager.commit()
     }
 
     "ignore duplicate edge label definitions" in {
@@ -69,7 +72,9 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("myLabel").isEdgeLabel shouldBe true
+      val titanManager = titanGraph.getManagementSystem
+      titanManager.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      titanManager.commit()
     }
 
     "write a property definition" in {
@@ -80,8 +85,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("propName").isPropertyKey shouldBe true
-      graph.getType("propName").isUnique(Direction.IN) shouldBe false
+      val titanManager = titanGraph.getManagementSystem
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanManager.getGraphIndex("propName") shouldBe null
+      titanManager.commit()
     }
 
     "write a property definition that is unique and indexed" in {
@@ -92,8 +99,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("propName").isPropertyKey shouldBe true
-      graph.getType("propName").isUnique(Direction.IN) shouldBe true
+      val titanManager = titanGraph.getManagementSystem
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanManager.getGraphIndex("propName").isUnique() shouldBe true
+      titanManager.commit()
     }
 
     "ignore duplicate property definitions" in {
@@ -105,8 +114,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("propName").isPropertyKey shouldBe true
-      graph.getType("propName").isUnique(Direction.IN) shouldBe false
+      val titanManager = titanGraph.getManagementSystem
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanManager.getGraphIndex("propName") shouldBe null
+      titanManager.commit()
     }
 
     "handle empty lists" in {
@@ -116,7 +127,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getType("propName") should be(null)
+      titanGraph.getRelationType("propName") should be(null)
     }
 
     "require a graph" in {

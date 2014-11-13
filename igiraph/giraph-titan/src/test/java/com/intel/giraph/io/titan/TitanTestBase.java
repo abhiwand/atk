@@ -23,6 +23,7 @@
 package com.intel.giraph.io.titan;
 
 import com.thinkaurelius.titan.core.TitanTransaction;
+import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -76,10 +77,10 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
     protected void setHbaseProperties() {
         GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
         GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
+        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan_test");
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
+
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
         GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
     }
 
@@ -111,9 +112,9 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
         LOG.info("*** Opening Titan connection ***");
         ImmutableClassesGiraphConfiguration<I, V, E> conf = new ImmutableClassesGiraphConfiguration<>(giraphConf);
 
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-            GIRAPH_TITAN.get(giraphConf));
-        titanConfig = new GraphDatabaseConfiguration(baseConfig);
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.createTitanBaseConfiguration(conf,
+                GIRAPH_TITAN.get(giraphConf));
+        titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
         ensureTitanTableReady();
         graph = new TitanTestGraph(titanConfig);
         startNewTransaction();

@@ -22,8 +22,11 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
@@ -55,13 +58,11 @@ public class TitanGraphWriter {
      * @return TitanGraph Titan graph to which Giraph write results
      */
     public static TitanGraph open(TaskAttemptContext context) throws IOException {
-        TitanGraph graph = null;
-
-        org.apache.commons.configuration.Configuration configuration =
-            GiraphToTitanGraphFactory.generateTitanWriteConfiguration(context.getConfiguration(),
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.createTitanBaseConfiguration(context.getConfiguration(),
                 GIRAPH_TITAN.get(context.getConfiguration()));
+        GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
 
-        graph = TitanFactory.open(configuration);
+        TitanGraph graph = new StandardTitanGraph(titanConfig);
 
         if (null != graph) {
             return graph;
@@ -76,13 +77,11 @@ public class TitanGraphWriter {
      * @return TitanGraph Titan graph to which Giraph write results
      */
     public static TitanGraph open(ImmutableClassesGiraphConfiguration config) throws IOException {
-        TitanGraph graph = null;
-
-        org.apache.commons.configuration.Configuration configuration =
-            GiraphToTitanGraphFactory.generateTitanConfiguration(config,
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.createTitanBaseConfiguration(config,
                 GIRAPH_TITAN.get(config));
+        GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
 
-        graph = TitanFactory.open(configuration);
+        TitanGraph graph = new StandardTitanGraph(titanConfig);
 
         if (null != graph) {
             return graph;
