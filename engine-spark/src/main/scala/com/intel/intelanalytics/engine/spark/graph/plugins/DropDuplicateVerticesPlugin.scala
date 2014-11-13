@@ -73,7 +73,9 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
                            |    Extended Summary
                            |    ----------------
                            |    Remove duplicate vertex rows, keeping only one vertex row per uniqueness
-                           |    criteria match
+                           |    criteria match. Edges that were connected to removed vertices are also automatically dropped.
+                           |
+                           |
                            |
                            |    Parameters
                            |    ----------
