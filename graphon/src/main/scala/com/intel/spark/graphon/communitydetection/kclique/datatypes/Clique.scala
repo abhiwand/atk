@@ -24,26 +24,10 @@
 
 package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-/**
- * Represents an undirected edge as a pair of vertex identifiers.
- *
- * To avoid duplicate entries of (v,u) and (u,v) for the edge {u,v} we require that the source be less than the
- * destination.
- *
- * @param source Source of the edge.
- * @param destination Destination of the edge.
- */
-case class Edge(source: Long, destination: Long) extends Serializable {
-  require(source < destination)
-}
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
- * Companion object for Edge class that provides the constructor.
+ * A set of vertices, all pairs of which are connected in the graph.
+ * @param members The set of vertices comprising the members of this clique.
  */
-object Edge {
-  def edgeFactory(u: Long, v: Long) = {
-    require(u != v)
-    new Edge(math.min(u, v), math.max(u, v))
-  }
-}
-
+case class Clique(members: VertexSet) extends Serializable
