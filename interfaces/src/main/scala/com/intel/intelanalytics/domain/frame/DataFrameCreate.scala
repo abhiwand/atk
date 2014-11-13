@@ -27,8 +27,11 @@ package com.intel.intelanalytics.domain.frame
  * @param name Option name, if not provided, one will be generated
  * @param description Option description
  */
-case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None) {
-  def toDataFrameTemplate: DataFrameTemplate = {
-    DataFrameTemplate(name = FrameName.validateOrGenerate(name), description)
+case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None)
+
+object DataFrameCreate {
+
+  implicit def toDataFrameTemplate(dataFrameCreate: DataFrameCreate): DataFrameTemplate = {
+    DataFrameTemplate(name = FrameName.validateOrGenerate(dataFrameCreate.name), dataFrameCreate.description)
   }
 }
