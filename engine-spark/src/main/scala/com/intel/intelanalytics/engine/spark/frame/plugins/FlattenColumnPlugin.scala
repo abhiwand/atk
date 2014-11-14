@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, FlattenColumn }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
@@ -32,7 +32,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 import scala.concurrent.ExecutionContext
-
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -80,8 +80,8 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     val rowCount = flattenedRDD.count()
 
     // save results
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
+    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(frameMeta.schema, flattenedRDD), Some(rowCount))
+
   }
 
 }
