@@ -34,7 +34,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 // Implicits needed for JSON conversion
 import spray.json._
@@ -142,7 +142,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
         schema.validateColumnsExist(columnNames)
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
 
-        val label = schema.vertexSchema.get.label
+        val label = schema.asInstanceOf[VertexSchema].label
         FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, ctx, new LegacyFrameRDD(schema, duplicatesRemoved))
 
         val rowCount = duplicatesRemoved.count()

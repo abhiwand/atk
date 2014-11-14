@@ -157,7 +157,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
-    val newSchema = new Schema(List(
+    val newSchema = Schema.fromTuples(List(
       (arguments.columnName, valueDataType),
       ("count", DataTypes.float64)
     ))

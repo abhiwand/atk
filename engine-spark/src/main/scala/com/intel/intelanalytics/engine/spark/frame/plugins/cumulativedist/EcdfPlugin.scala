@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame, DataFrameTemplate, ECDF }
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -127,7 +127,7 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF, DataFrame] {
     val frame = frames.expectFrame(arguments.frame.id)
     val sampleColumn = frame.schema.column(arguments.column)
     require(sampleColumn.dataType.isNumerical, s"Invalid column ${sampleColumn.name} for ECDF.  Expected a numeric data type, but got ${sampleColumn.dataType}.")
-    val ecdfSchema = Schema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
+    val ecdfSchema = FrameSchema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
     val ecdfFrameName = arguments.resultFrameName.getOrElse(FrameName.generate(Some("ECDF")))
 
     // run the operation
