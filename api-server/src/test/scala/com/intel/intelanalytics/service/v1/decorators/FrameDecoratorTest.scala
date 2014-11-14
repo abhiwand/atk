@@ -27,13 +27,13 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.domain.frame.DataFrame
 import org.joda.time.DateTime
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 
 class FrameDecoratorTest extends FlatSpec with Matchers {
 
   val baseUri = "http://www.example.com/frames"
   val uri = baseUri + "/1"
-  val frame = new DataFrame(1, "name", None, Schema(), 0L, 1L, new DateTime, new DateTime)
+  val frame = new DataFrame(1, "name", None, FrameSchema(), 0L, 1L, new DateTime, new DateTime)
 
   "FrameDecorator" should "be able to decorate a frame" in {
     val decoratedFrame = FrameDecorator.decorateEntity(uri, Nil, frame)

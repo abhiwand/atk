@@ -39,11 +39,37 @@ class _ApiGlobals(set):
 api_globals = _ApiGlobals()  # holds generated items that should be added to the API
 
 
+
+class _ApiCallStack(object):
+
+    def __init__(self):
+        self._depth = 0
+
+    @property
+    def is_empty(self):
+        return self._depth == 0
+
+    def inc(self):
+        self._depth += 1
+
+    def dec(self):
+        self._depth -= 1
+        if self._depth < 0:
+            self._depth = 0
+            raise RuntimeError("Internal error: API call stack tracking went below zero")
+
+_api_call_stack = _ApiCallStack()
+
+
 def get_api_decorator(logger):
+    """Provides an API decorator which will wrap functions designated as an API"""
 
     # Note: extra whitespace lines in the code below is intentional for pretty-printing when error occurs
+    call_stack = _api_call_stack  # close over local
     def _api(function, *args, **kwargs):
-        log_api_call(function)
+        if call_stack.is_empty:
+            log_api_call(function, *args, **kwargs)
+        call_stack.inc()
         try:
             check_api_is_loaded()
             return function(*args, **kwargs)
@@ -55,6 +81,9 @@ def get_api_decorator(logger):
             raise error  # see intelanalytics.errors.last for details
 
 
+
+        finally:
+            call_stack.dec()
 
     def api(item):
         if inspect.isclass(item):

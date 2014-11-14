@@ -525,6 +525,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
+    @api
     def copy(self, columns=None, where=None, name=None):
         """
         Copy frame.

@@ -138,9 +138,9 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_tally_percent")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }

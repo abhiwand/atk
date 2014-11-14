@@ -2,12 +2,12 @@ package com.intel.intelanalytics.domain
 
 import org.scalatest.{ WordSpec, Matchers, FlatSpec }
 import com.intel.intelanalytics.domain.schema.DataTypes._
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column, Schema }
 
 class SchemaTest extends WordSpec with Matchers {
 
-  val columns: List[(String, DataType)] = List(("a", int64), ("b", float32), ("c", string))
-  val abcSchema = new Schema(columns)
+  val columns = List(Column("a", int64), Column("b", float32), Column("c", string))
+  val abcSchema = new FrameSchema(columns)
 
   "Schema" should {
     "find correct column index for single column" in {
@@ -44,10 +44,6 @@ class SchemaTest extends WordSpec with Matchers {
       abcSchema.hasColumnWithType("a", int64) shouldBe true
       abcSchema.hasColumnWithType("a", string) shouldBe false
 
-    }
-
-    "not have a label for plain old schemas" in {
-      abcSchema.label.isEmpty shouldBe true
     }
 
     def testDropColumn(columnName: String): Unit = {
@@ -125,7 +121,7 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to drop 'ignore' columns" in {
-      val schema = new Schema(List(("a", int64), ("b", ignore), ("c", string))).dropIgnoreColumns()
+      val schema = new FrameSchema(List(Column("a", int64), Column("b", ignore), Column("c", string))).dropIgnoreColumns()
       assert(schema.columnTuples == List(("a", int64), ("c", string)))
     }
 
