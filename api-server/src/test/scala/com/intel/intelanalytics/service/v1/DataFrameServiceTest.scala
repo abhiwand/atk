@@ -30,7 +30,7 @@ import com.intel.intelanalytics.engine.Engine
 import scala.concurrent.Future
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 import org.joda.time.DateTime
 
 class DataFrameServiceTest extends ServiceTest {
@@ -55,7 +55,7 @@ class DataFrameServiceTest extends ServiceTest {
     val engine = mock[Engine]
     val dataFrameService = new DataFrameService(commonDirectives, engine)
 
-    when(engine.getFrames()).thenReturn(Future.successful(Seq(DataFrame(1, "name", None, Schema(), 0, 1, new DateTime(), new DateTime()))))
+    when(engine.getFrames()).thenReturn(Future.successful(Seq(DataFrame(1, "name", None, FrameSchema(), 0, 1, new DateTime(), new DateTime()))))
 
     Get("/frames") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{

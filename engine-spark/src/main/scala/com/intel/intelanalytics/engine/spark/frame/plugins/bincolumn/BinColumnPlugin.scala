@@ -96,18 +96,18 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
     // run the operation and save results
     val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    val allColumns = frameMeta.schema.columnTuples :+ (arguments.binColumnName, DataTypes.int32)
+    val updatedSchema = frameMeta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
     arguments.binType match {
       case "equalwidth" =>
         val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
         val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(updatedSchema, binnedRdd), Some(rowCount))
       case "equaldepth" =>
         val binnedRdd = DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, rdd)
         val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(updatedSchema, binnedRdd), Some(rowCount))
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
-    frames.updateSchema(newFrame, frameMeta.schema.legacyCopy(allColumns))
+    frames.updateSchema(newFrame, updatedSchema)
   }
 }
