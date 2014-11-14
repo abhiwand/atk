@@ -1232,8 +1232,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Returns
         -------
-        Frame
-            A Frame object proxy for the new flattened frame.
+        None
 
         Examples
         --------
@@ -1261,11 +1260,11 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Now, I want to spread out those sub-strings in column *b*::
 
-            your_frame = my_frame.flatten_column('b')
+            my_frame.flatten_column('b')
 
         Now I check again and my result is::
 
-            your_frame.inspect()
+            my_frame.inspect()
 
               a:int32   b:str
             /------------------/
