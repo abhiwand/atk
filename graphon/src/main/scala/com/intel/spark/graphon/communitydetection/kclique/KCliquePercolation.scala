@@ -83,16 +83,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
   override def name: String = "graph:titan/ml/kclique_percolation"
 
   override def numberOfJobs(arguments: KClique): Int = {
-    // TODO: not sure of correct value here
-    // Based on limited experiments:
-    //    2 cliques created 12 jobs
-    //    3,4,5,6 cliques created 7 jobs
-    if (arguments.cliqueSize == 2) {
-      12
-    }
-    else {
-      7
-    }
+   8 + 2 * arguments.cliqueSize
   }
 
   /**
