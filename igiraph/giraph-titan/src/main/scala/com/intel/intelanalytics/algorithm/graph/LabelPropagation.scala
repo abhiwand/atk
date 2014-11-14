@@ -24,8 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LP
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LP, TitanVertexInputFormatPropertyGraph4LP }
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -40,16 +39,16 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lp(graph: GraphReference,
-              vertex_value_property_list: List[String],
-              edge_value_property_list: List[String],
-              input_edge_label_list: List[String],
-              output_vertex_property_list: List[String],
-              vector_value: Boolean,
-              max_supersteps: Option[Int] = None,
-              convergence_threshold: Option[Double] = None,
-              anchor_threshold: Option[Double] = None,
-              lp_lambda: Option[Double] = None,
-              bidirectional_check: Option[Boolean] = None)
+              vertexValuePropertyList: List[String],
+              edgeValuePropertyList: List[String],
+              inputEdgeLabelList: List[String],
+              outputVertexPropertyList: List[String],
+              vectorValue: Boolean,
+              maxSupersteps: Option[Int] = None,
+              convergenceThreshold: Option[Double] = None,
+              anchorThreshold: Option[Double] = None,
+              lpLambda: Option[Double] = None,
+              validateGraphStructure: Option[Boolean] = None)
 case class LpResult(value: String) //TODO
 
 /** Json conversion for arguments and return value case classes */
@@ -129,12 +128,13 @@ class LabelPropagation
                            |        the LP training process.
                            |        The valid value range is [0.0,1.0].
                            |        The default value is 0.
-                           |    bidirectional_check : boolean (optional)
-                           |        If it is true, Giraph will firstly check whether each edge is
-                           |        bidirectional before running algorithm.
-                           |        LP expects an undirected input graph and each edge therefore should be
-                           |        bi-directional.
-                           |        This option is mainly for graph integrity check.
+                           |    validate_graph_structure : boolean (optional)
+                           |        Checks if the graph meets certain structural requirements before starting
+                           |        the algorithm.
+                           |
+                           |        At present, this checks that at every vertex, the in-degree equals the
+                           |        out-degree. Because this algorithm is for undirected graphs, this is a necessary
+                           |        but not sufficient, check for valid input.
                            | 
                            |    Returns
                            |    -------
@@ -157,29 +157,28 @@ class LabelPropagation
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lp.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "lp.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchor_threshold)
-    GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "lp.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "lp.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchorThreshold)
+    GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.validateGraphStructure)
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertex_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LP])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[LabelPropagationComputation.LabelPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LabelPropagationComputation])

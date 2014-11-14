@@ -1,5 +1,7 @@
 package com.intel.graphbuilder.driver.spark.titan
 
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import org.apache.hadoop.io.NullWritable
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.elements._
@@ -93,7 +95,8 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[GraphSchema])
     kryo.register(classOf[InferSchemaFromData])
     kryo.register(classOf[SchemaAccumulableParam])
-
+    kryo.register(classOf[FaunusVertex], new FaunusVertexSerializer())
+    kryo.register(classOf[NullWritable])
     // avoid Spark top(n) issue with Kryo serializer:
     //    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, Vertex)]])
   }

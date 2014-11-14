@@ -16,7 +16,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
     val edgeList: List[(Long, Long)] = List((2.toLong, 6.toLong), (2.toLong, 4.toLong), (4.toLong, 6.toLong),
       (3.toLong, 5.toLong), (3.toLong, 7.toLong), (5.toLong, 7.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    val idAssigner = new GraphIDAssigner[Long](sparkContext)
+    val idAssigner = new GraphIDAssigner[Long]()
   }
 
   "ID assigner" should

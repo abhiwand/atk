@@ -26,6 +26,7 @@ package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
 /**
  * Represents an undirected edge as a pair of vertex identifiers.
+ *
  * To avoid duplicate entries of (v,u) and (u,v) for the edge {u,v} we require that the source be less than the
  * destination.
  *
@@ -37,7 +38,7 @@ case class Edge(source: Long, destination: Long) extends Serializable {
 }
 
 /**
- * Companion object for Edge class that provides constructor.
+ * Companion object for Edge class that provides the constructor.
  */
 object Edge {
   def edgeFactory(u: Long, v: Long) = {

@@ -114,7 +114,6 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetric
       val logRegJsObject = modelMeta.data.get
       val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
 
-
       //predicting and testing
       val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
         val prediction = logRegModel.predict(point.features)

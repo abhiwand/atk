@@ -24,12 +24,11 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.idassigner._
-import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
-import org.apache.spark.SparkContext
-import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator._
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
+import com.intel.spark.graphon.idassigner._
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 
 /**
  * Assign new Long IDs for each K-cliques of the k-clique graphs. Create a new graph using these Long IDs as
@@ -39,37 +38,36 @@ import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.Ve
 object GetConnectedComponents extends Serializable {
 
   /**
-   * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques
-   * @param kCliqueGraphGeneratorOutput KCliqueGraphOutput with set of k-cliques as vertices of new graph and
-   *                           pair of k-cliques having (k-1) vertices common as edges of new graph
-   * @param sc SparkContext
-   * @return connectedComponentsOutput
+   * Run the connected components and get the mappings of cliques to component IDs.
+   *
+   * @return RDD of pairs of (clique, community ID) where each ID is the component of the clique graph to which the clique
+   *         belongs.
    */
-  def run(kCliqueGraphGeneratorOutput: KCliqueGraphGeneratorOutput, sc: SparkContext) = {
-
-    val cliqueGraphVertices = kCliqueGraphGeneratorOutput.cliqueGraphVertices
-    val cliqueGraphEdges = kCliqueGraphGeneratorOutput.cliqueGraphEdges
+  def run(cliqueGraphVertices: RDD[VertexSet], cliqueGraphEdges: RDD[(VertexSet, VertexSet)]): RDD[(VertexSet, Long)] = {
 
     //    Generate new Long IDs for each K-Clique in k-clique graph. These long IDs will be the vertices
     //    of a new graph. In this new graph, the edge between two vertices will exists if the two original
     //    k-cliques corresponding to the two vertices have exactly (k-1) number of elements in common
-    val graphIDAssigner = new GraphIDAssigner[VertexSet](sc)
+    val graphIDAssigner = new GraphIDAssigner[VertexSet]()
     val graphIDAssignerOutput = graphIDAssigner.run(cliqueGraphVertices, cliqueGraphEdges)
+    val cliqueIDsToCliques = graphIDAssignerOutput.newIdsToOld
 
     // Get the vertices of the k-clique graph
-    val newVerticesOfCliqueGraph = graphIDAssignerOutput.vertices
+    val renamedVerticesOfCliqueGraph = graphIDAssignerOutput.vertices
 
     // Get the edges of the k-clique graph
-    val newEdgesOfCliqueGraph = graphIDAssignerOutput.edges
+    val renamedEdgesOfCliqueGraph = graphIDAssignerOutput.edges
 
     // Get the pair of the new vertex Id and the corresponding set of k-clique vertices
     val newVertexIdToOldVertexIdOfCliqueGraph: RDD[(Long, VertexSet)] = graphIDAssignerOutput.newIdsToOld
 
     // Run the connected components of the new k-clique graph
-    val connectedComponents = ConnectedComponentsGraphXDefault.run(newVerticesOfCliqueGraph, newEdgesOfCliqueGraph)
+    val cliqueIdToCommunityId: RDD[(Long, Long)] =
+      ConnectedComponentsGraphXDefault.run(renamedVerticesOfCliqueGraph, renamedEdgesOfCliqueGraph)
 
-    new ConnectedComponentsOutput(connectedComponents, newVertexIdToOldVertexIdOfCliqueGraph)
+    val cliqueToCommunityID: RDD[(VertexSet, Long)] = cliqueIDsToCliques.join(cliqueIdToCommunityId).map(_._2)
 
+    cliqueToCommunityID
   }
 
   /**

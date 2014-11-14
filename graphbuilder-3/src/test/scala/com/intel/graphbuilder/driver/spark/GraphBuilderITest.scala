@@ -24,11 +24,13 @@
 package com.intel.graphbuilder.driver.spark
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.{ TestingTitan, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
@@ -79,17 +81,22 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       // Setup data in Spark
       val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
+      // Connect to the graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
+      val titanConnector = new TitanGraphConnector(titanConfig)
+
       // Build the Graph
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig)
       val gb = new GraphBuilder(config)
       gb.build(inputRdd)
 
       // Validate
-      graph.getEdges.size shouldBe 5
-      graph.getVertices.size shouldBe 5
+      titanGraph.getEdges.size shouldBe 5
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 5 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
       // need to shutdown because only one connection can be open at a time
-      graph.shutdown()
+      titanGraph.shutdown()
 
       // Now we'll append to the existing graph
 
@@ -106,9 +113,9 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       gb2.build(inputRdd2)
 
       // Validate
-      graph = titanConnector.connect()
-      graph.getEdges.size shouldBe 7
-      graph.getVertices.size shouldBe 7
+      titanGraph = titanConnector.connect()
+      titanGraph.getEdges.size shouldBe 7
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 7
 
     }
 
@@ -149,15 +156,17 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Build the Graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, retainDanglingEdges = true)
       val gb = new GraphBuilder(config)
       gb.build(inputRdd)
 
       // Validate
-      graph.getVertices.size shouldBe 6
-      graph.getEdges.size shouldBe 10
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 6 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
+      titanGraph.getEdges.size shouldBe 10
 
-      val obama = graph.getVertices("userId", 1001L).iterator().next()
+      val obama = titanGraph.getVertices("userId", 1001L).iterator().next()
       obama.getProperty("name").asInstanceOf[String] shouldBe "President Obama"
       obama.getEdges(Direction.OUT).size shouldBe 3
     }
@@ -198,16 +207,19 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val vertexRdd = rawVertexRdd.map(v => new GBVertex(new Property("userId", v), Set(new Property("location", "Oregon"))))
 
       // Build the graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
       gb.buildGraphWithSpark(vertexRdd, edgeRdd)
 
       // Validate
-      graph = titanConnector.connect()
+      val titanConnector = new TitanGraphConnector(titanConfig)
+      titanGraph = titanConnector.connect()
 
-      graph.getEdges.size shouldBe 20
-      graph.getVertices.size shouldBe 8
+      titanGraph.getEdges.size shouldBe 20
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 8 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
-      val vertexOne = graph.getVertices("userId", "1").iterator().next()
+      val vertexOne = titanGraph.getVertices("userId", "1").iterator().next()
       vertexOne.getProperty("location").asInstanceOf[String] shouldBe "Oregon"
       vertexOne.getEdges(Direction.OUT).size shouldBe 3
       vertexOne.getEdges(Direction.OUT).iterator().next().getProperty("tweet").asInstanceOf[String] shouldBe "blah blah blah..."
