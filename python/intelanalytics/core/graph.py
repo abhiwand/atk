@@ -535,7 +535,7 @@ class Graph(DocStubsGraph, _BaseGraph):
 
         Examples
         --------
-        graph.vertex_count(
+        graph.vertex_count
 
         The result given is::
 
