@@ -1,8 +1,7 @@
 package com.intel.spark.graphon.idassigner
 
-import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
@@ -25,30 +24,27 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
 
     val partitionVertexCounts: Array[Long] = inVertices.mapPartitions(partitionCount).collect()
 
-    val paritionPredecessors: Array[Long] = partitionVertexCounts.scanLeft(0.toLong)(_ + _)
+    val partitionPredecessors: Array[Long] = partitionVertexCounts.scanLeft(0.toLong)(_ + _)
 
     val oldIdsToNew: RDD[(T, Long)] = inVertices.mapPartitionsWithIndex((i, vertices) =>
       {
-        val offset: Long = paritionPredecessors.apply(i)
-        vertices.zipWithIndex.map({ case (v, i) => (v, i + offset) })
+        val offset: Long = partitionPredecessors.apply(i)
+        vertices.zipWithIndex.map({ case (v, position) => (v, position + offset) })
       })
 
     oldIdsToNew.cache()
 
-    val edgesWithSourcesRenamed : RDD[(Long, T)] =
-      inEdges.join(oldIdsToNew).map({case (_, ((oldSrc, oldDst :T), newSrc)) => (newSrc, oldDst)})
+    val edgesReversedWithSourcesRenamed: RDD[(T, Long)] =
+      inEdges.join(oldIdsToNew).map({ case (oldSrc, (oldDst, newSrc)) => (oldDst, newSrc) })
 
-
-    val edges : RDD[(Long,Long)] = edgesWithSourcesRenamed.map({case (x,y) => (y,x)}).join(oldIdsToNew).map(
-    {case (_, ((oldDst : T, newSrc : Long), newDst: Long)) => (newSrc, newDst)})
-
-
+    val edges: RDD[(Long, Long)] = edgesReversedWithSourcesRenamed.join(oldIdsToNew).map(
+      { case (oldDst, (newDst, newSrc)) => (newSrc, newDst) })
 
     val newIdsToOld: RDD[(Long, T)] = oldIdsToNew.map({ case (x, y) => (y, x) })
     val newVertices = newIdsToOld.map({ case (newId, _) => newId })
 
     oldIdsToNew.unpersist(blocking = false)
-    edgesWithSourcesRenamed.unpersist(blocking = false)
+    edgesReversedWithSourcesRenamed.unpersist(blocking = false)
     new GraphIDAssignerOutput(newVertices, edges, newIdsToOld)
   }
 
@@ -57,11 +53,11 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    * @param vertices vertex list of renamed graph
    * @param edges edge list of renamed graph
    * @param newIdsToOld  pairs mapping new IDs to their corresponding vertices in the base graph
-   * @tparam T Type of the vertex IDs in the input graph
+   * @tparam U Type of the vertex IDs in the input graph
    */
-  case class GraphIDAssignerOutput[T: ClassTag](val vertices: RDD[Long],
-                                                val edges: RDD[(Long, Long)],
-                                                val newIdsToOld: RDD[(Long, T)])
+  case class GraphIDAssignerOutput[U: ClassTag](vertices: RDD[Long],
+                                                edges: RDD[(Long, Long)],
+                                                newIdsToOld: RDD[(Long, U)])
 
   private def partitionCount(it: Iterator[T]): Iterator[Long] = Iterator(it.length)
 
