@@ -34,35 +34,10 @@ object MLLibMethods {
 
   /* This method creates a labeled RDD as required by MLLib */
   def createLabeledRDD(inputRDD: FrameRDD, labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
-    inputRDD.mapRows { row =>
+    inputRDD.mapRows(row =>
+    {
       val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
       new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
-    }
-//    val inputSplitRDD: RDD[DenseVector] =
-//      inputRDD.map { row =>
-//        new DenseVector(row.map(item => item.asInstanceOf[Double]).toArray)
-//      }
-//    inputSplitRDD.map { row =>
-//      val features = new DenseVector(row.toArray.slice(1, row.size))
-//      val label = row(0)
-//      new LabeledPoint(label, features)
-//    }
-  }
-
-  /* This method invokes MLLib's classification metrics. May be replaced with calls to IAT's metrics */
-  def outputClassificationMetrics(scoreAndLabelRDD: RDD[(Double, Double)]) = {
-    val bcm = new BinaryClassificationMetrics(scoreAndLabelRDD)
-    bcm.areaUnderPR()
-    bcm.areaUnderROC()
-    val fMeasure = bcm.fMeasureByThreshold()
-    fMeasure.collect()
-    val precision = bcm.precisionByThreshold()
-    precision.collect()
-    val recall = bcm.recallByThreshold()
-    recall.collect()
-    val roc = bcm.roc()
-    roc.collect()
-    val threshold = bcm.thresholds()
-    threshold.collect()
+    })
   }
 }

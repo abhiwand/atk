@@ -79,7 +79,7 @@ class TrainModelPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ModelLoad) = 2
+  override def numberOfJobs(arguments: ModelLoad) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
