@@ -29,8 +29,9 @@ import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.Altern
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CFCGD;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatPropertyGraph4CF;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatPropertyGraph4CFCGD;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatPropertyGraph4CF;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -151,7 +152,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
         giraphConf.setComputationClass(AlternatingLeastSquaresComputation.class);
         giraphConf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
         giraphConf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4CF.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4CF.class);
         giraphConf.set("als.maxSupersteps", "20");
         giraphConf.set("als.featureDimension", "3");
@@ -205,7 +206,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
         giraphConf.setComputationClass(AlternatingLeastSquaresComputation.class);
         giraphConf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
         giraphConf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4CF.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4CF.class);
         giraphConf.set("als.maxSupersteps", "6");
         giraphConf.set("als.featureDimension", "3");
@@ -253,7 +254,7 @@ public class TitanVertexFormatPropertyGraph4CFTest
         giraphConf.setComputationClass(ConjugateGradientDescentComputation.class);
         giraphConf.setMasterComputeClass(ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute.class);
         giraphConf.setAggregatorWriterClass(ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4CFCGD.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4CFCGD.class);
         giraphConf.setVertexOutputFormatClass(JsonPropertyGraph4CFOutputFormat.class);
         giraphConf.set("cgd.maxSupersteps", "6");
         giraphConf.set("cgd.featureDimension", "3");

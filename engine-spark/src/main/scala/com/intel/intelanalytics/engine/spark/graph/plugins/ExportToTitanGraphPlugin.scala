@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DataFrame }
 import com.intel.intelanalytics.domain.{ Naming }
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
@@ -147,7 +147,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
   def validateLabelNames(edgeFrames: List[DataFrame], edgeLabels: List[String]) = {
     val invalidColumnNames = edgeFrames.flatMap(frame => frame.schema.columnNames.map(columnName => {
       if (edgeLabels.contains(columnName))
-        s"Edge: ${frame.schema.edgeSchema.get.label} Column: $columnName"
+        s"Edge: ${frame.schema.asInstanceOf[EdgeSchema].label} Column: $columnName"
       else
         ""
     })).toList.filter(s => !s.isEmpty)

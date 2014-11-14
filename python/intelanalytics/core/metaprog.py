@@ -321,18 +321,13 @@ def validate_arguments(arguments, parameters):
     Use parameter definitions to make sure the arguments conform.  This function
     is closure over in the dynamically generated execute command function
     """
-    from intelanalytics.core.frame import Frame
-    from intelanalytics.core.graph import Graph
-    from intelanalytics.core.model import LogisticRegressionModel
     validated = {}
     for (k, v) in arguments.items():
         try:
             parameter = [p for p in parameters if p.name == k][0]
         except IndexError:
             raise ValueError("No parameter named '%s'" % k)
-        if (parameter.data_type is Frame or parameter.data_type is Graph or parameter.data_type is LogisticRegressionModel) and not isinstance(v, int):
-            v = v._id  # TODO - improve this
-        if parameter.name == 'model':
+        if hasattr(v, "_id"):
             v = v._id
         validated[k] = v
         if parameter.data_type is list:

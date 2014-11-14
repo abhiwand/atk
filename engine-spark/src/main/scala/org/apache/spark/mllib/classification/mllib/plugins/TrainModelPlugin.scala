@@ -79,7 +79,7 @@ class TrainModelPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ModelLoad) = 2
+  override def numberOfJobs(arguments: ModelLoad) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -105,8 +105,7 @@ class TrainModelPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameRDD(ctx, frameId)
-      val updatedTrainRDD = trainFrameRDD.selectColumns(List(arguments.labelColumn, arguments.observationColumn))
-      val labeledTrainRDD: RDD[LabeledPoint] = createLabeledRDD(updatedTrainRDD)
+      val labeledTrainRDD: RDD[LabeledPoint] = createLabeledRDD(trainFrameRDD, arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
       val logReg = new LogisticRegressionWithSGD()

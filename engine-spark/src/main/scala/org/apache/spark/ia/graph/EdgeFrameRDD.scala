@@ -1,7 +1,7 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, Schema }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
@@ -17,13 +17,13 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class EdgeFrameRDD(schema: Schema,
+class EdgeFrameRDD(schema: EdgeSchema,
                    sqlContext: SQLContext,
                    logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.schema, frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRDD: FrameRDD) = this(frameRDD.schema.asInstanceOf[EdgeSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
 
-  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
+  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema.asInstanceOf[EdgeSchema], new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
 
   /** Edge wrapper provides richer API for working with Vertices */
   val edge = new EdgeWrapper(schema)
@@ -59,7 +59,7 @@ class EdgeFrameRDD(schema: Schema,
    * Map over all edges and assign the label from the schema
    */
   def assignLabelToRows(): EdgeFrameRDD = {
-    new EdgeFrameRDD(schema, mapEdges(edge => edge.setLabel(schema.label.get)))
+    new EdgeFrameRDD(schema, mapEdges(edge => edge.setLabel(schema.label)))
   }
 
   /**

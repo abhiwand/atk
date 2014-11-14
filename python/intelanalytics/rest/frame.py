@@ -68,8 +68,7 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame()
-            initialize_frame(frame, FrameInfo(payload))
+            frame = Frame(source=payload)
             return frame
 
     def create(self, frame, source, name):
@@ -431,9 +430,8 @@ class FrameBackendRest(object):
             else:
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
-        name = self._get_new_frame_name()
         arguments = {'frame': self.get_ia_uri(frame),
-                     'name': name,
+                     'name': "group_by_" + self._get_new_frame_name(),
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 

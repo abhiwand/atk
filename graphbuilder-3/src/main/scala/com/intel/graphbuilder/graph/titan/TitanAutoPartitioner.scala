@@ -27,7 +27,6 @@ import com.google.common.annotations.VisibleForTesting
 import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
-import org.apache.hadoop.conf
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.HBaseAdmin
@@ -67,7 +66,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
   }
 
   /**
-   * Sets the HBase input splits for the HBase table input format.
+   * Sets the HBase input splits for the HBase table input format for Spark.
    *
    * @param sparkContext Spark context
    * @param hBaseAdmin HBase administration
@@ -75,30 +74,43 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    *
    * @return Updated HBase configuration
    */
-  def setHBaseInputSplits(sparkContext: SparkContext,
-                          hBaseAdmin: HBaseAdmin,
-                          titanGraphName: String): org.apache.hadoop.conf.Configuration = {
+  def setSparkHBaseInputSplits(sparkContext: SparkContext,
+                               hBaseAdmin: HBaseAdmin,
+                               titanGraphName: String): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = hBaseAdmin.getConfiguration
-    setHBaseInputSplits(sparkContext, hBaseConfig, titanGraphName)
+    setSparkHBaseInputSplits(sparkContext, hBaseConfig, titanGraphName)
     hBaseConfig
   }
 
   /**
    * Sets the HBase input splits for the HBase table input format in the HBase configuration
-   * that is supplied as input.
+   * that is supplied as input for Spark.
    *
    * @param sparkContext Spark context
    * @param hBaseConfig HBase configuration
    * @param titanGraphName  Titan graph name
    */
-  def setHBaseInputSplits(sparkContext: SparkContext,
-                          hBaseConfig: org.apache.hadoop.conf.Configuration,
-                          titanGraphName: String): Unit = {
+  def setSparkHBaseInputSplits(sparkContext: SparkContext,
+                               hBaseConfig: org.apache.hadoop.conf.Configuration,
+                               titanGraphName: String): Unit = {
     if (enableAutoPartition) {
       val inputSplits = getSparkHBaseInputSplits(sparkContext, new HBaseAdmin(hBaseConfig), titanGraphName)
       if (inputSplits > 1) {
         hBaseConfig.setInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, inputSplits)
       }
+    }
+  }
+
+  /**
+   * Sets the HBase input splits for the HBase table input format in the HBase configuration
+   * that is supplied as input for Giraph.
+   *
+   * @param hBaseConfig HBase configuration
+   * @param numGiraphWorkers Number of Giraph workers
+   */
+  def setGiraphHBaseInputSplits(hBaseConfig: org.apache.hadoop.conf.Configuration, numGiraphWorkers: Int): Unit = {
+    if (enableAutoPartition && numGiraphWorkers > 1) {
+      hBaseConfig.setInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, numGiraphWorkers)
     }
   }
 
@@ -159,7 +171,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    * @return Size of HBase table on disk
    */
   @VisibleForTesting
-  def getTableSizeInMb(hBaseConfig: conf.Configuration, tableName: TableName): Int = {
+  def getTableSizeInMb(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: TableName): Int = {
     val tableSize = Try({
       val tableDir = FSUtils.getTableDir(FSUtils.getRootDir(hBaseConfig), tableName)
       val fileSystem = FileSystem.get(hBaseConfig)

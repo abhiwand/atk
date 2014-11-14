@@ -26,9 +26,11 @@ package com.intel.intelanalytics.domain.model
 /**
  * Arguments for creating the metadata entry for a model.
  * @param name The user's name for the model.
+ * @param modelType The model type
  */
 case class ModelTemplate(name: String, modelType: String) {
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
+  ModelName.validate(name)
   require(modelType != null, "modelType must not be null")
 }

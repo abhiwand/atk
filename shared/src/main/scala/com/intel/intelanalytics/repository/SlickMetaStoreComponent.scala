@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, EdgeSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
@@ -44,7 +44,6 @@ import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
@@ -419,11 +418,16 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, Schema(), 0L, 1L, new DateTime(), new DateTime(), None, None, None, 0)
+      val f = DataFrame(0, frame.name, frame.description, FrameSchema(), 0L, 1L, new DateTime(), new DateTime(), None, None, None, 0)
       framesAutoInc.insert(f)
     }
 
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      // if you are deleting an error frame, you need to make sure no other frames reference it first
+      val errorFrameIdColumn = for (f <- frames if f.errorFrameId === id) yield f.errorFrameId
+      errorFrameIdColumn.update(None)
+
+      // perform the actual delete
       frames.where(_.id === id).mutate(f => f.delete())
     }
 
@@ -434,6 +438,16 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame = {
+      if (frame.isVertexFrame) {
+        require(schema.isInstanceOf[VertexSchema], "vertex frame requires schema to be of type vertex schema")
+      }
+      else if (frame.isEdgeFrame) {
+        require(schema.isInstanceOf[EdgeSchema], "edge frame requires schema to be of type edge schema")
+      }
+      else {
+        require(schema.isInstanceOf[FrameSchema], "frame requires schema to be of type frame schema")
+      }
+
       // this looks crazy but it is how you update only one column
       val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
       schemaColumn.update(schema)

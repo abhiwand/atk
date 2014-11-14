@@ -23,7 +23,8 @@
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.pr.PageRankComputation;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongDoubleNull;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDoubleValue;
 import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanTransaction;
@@ -59,7 +60,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
         giraphConf.setComputationClass(PageRankComputation.class);
         giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
         giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleNull.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatLongDoubleNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
         giraphConf.set("pr.maxSupersteps", "30");
         giraphConf.set("pr.resetProbability", "0.15");

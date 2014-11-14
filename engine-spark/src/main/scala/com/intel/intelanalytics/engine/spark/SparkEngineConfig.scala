@@ -189,6 +189,12 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   * Disable all kryo registration in plugins (this is mainly here for performance testing
+   * and debugging when someone suspects Kryo might be causing some kind of issue).
+   */
+  val disableKryo: Boolean = config.getBoolean("intel.analytics.engine.spark.disable-kryo")
+
+  /**
    * Sorted list of mappings for file size to partition size (larger file sizes first)
    */
   val autoPartitionerConfig: List[FileSizeToPartitionSize] = {
@@ -214,6 +220,7 @@ trait SparkEngineConfig extends EventLogging {
     info("fsRoot: " + fsRoot)
     info("sparkHome: " + sparkHome)
     info("sparkMaster: " + sparkMaster)
+    info("disableKryo: " + disableKryo)
     for ((key: String, value: String) <- sparkConfProperties) {
       info(s"sparkConfProperties: $key = $value")
     }

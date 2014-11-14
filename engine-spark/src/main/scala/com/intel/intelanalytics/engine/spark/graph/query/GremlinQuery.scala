@@ -15,7 +15,8 @@ import spray.json._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{ Await, ExecutionContext, Lock }
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
+import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
@@ -64,7 +65,6 @@ import GremlinQueryFormat._
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
   val gremlinExecutor = new GremlinGroovyScriptEngine()
-  var titanGraphs = Map[String, TitanGraph]()
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -148,18 +148,24 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
-    // Create graph connection
-    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", graph.name)
-    val iatGraphName = GraphBuilderConfigFactory.getTitanGraphName(titanConfiguration)
-    val titanGraph = getTitanGraph(iatGraphName, titanConfiguration)
-    val bindings = gremlinExecutor.createBindings()
-    bindings.put("g", titanGraph)
+    val resultIterator = Try({
+      val titanGraph = getTitanGraph(graph.name, config)
+      val bindings = gremlinExecutor.createBindings()
+      bindings.put("g", titanGraph)
 
-    // Get results
-    val resultIterator = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
+      val results = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
+      titanGraph.shutdown()
+
+      results
+    })
+
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    QueryResult(resultIterator, runtimeInSeconds)
+    val queryResult = resultIterator match {
+      case Success(iterator) => QueryResult(iterator, runtimeInSeconds)
+      case Failure(exception) => throw exception
+    }
+    queryResult
   }
 
   /**
@@ -193,36 +199,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   }
 
   /**
-   * Gets Titan graph, and caches graph connection to reduce overhead of future accesses.
+   * Connects to Titan graph.
    *
    * @param graphName Name of graph
-   * @param titanConfiguration Titan configuration for connecting to graph
+   * @param config Command configuration
    * @return Titan graph
    */
-  private def getTitanGraph(graphName: String, titanConfiguration: SerializableBaseConfiguration): TitanGraph = {
+  private def getTitanGraph(graphName: String, config: Config): TitanGraph = {
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", graphName)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val titanGraph = titanGraphs.getOrElse(graphName, connectToTitanGraph(graphName, titanConnector))
-
-    titanGraph
-  }
-
-  /**
-   * Connects to a Titan Graph and caches it.
-   * @param graphName Name of graph
-   * @param titanConnector Titan graph connector
-   * @return Titan graph
-   */
-  private def connectToTitanGraph(graphName: String, titanConnector: TitanGraphConnector): TitanGraph = {
-    GremlinQuery.lock.acquire()
     val titanGraph = titanConnector.connect()
-    titanGraphs += graphName -> titanGraph
-    GremlinQuery.lock.release()
     titanGraph
   }
-}
 
-object GremlinQuery {
-  private val lock = new Lock()
 }
 

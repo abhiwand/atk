@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.io;
 
-import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat;
+import com.intel.graphbuilder.io.titan.formats.hbase.TitanHBaseInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +51,7 @@ public class GBTitanHBaseInputFormat extends TitanHBaseInputFormat {
             LOG.info("Generated " + splits.size() + " input splits for HBase table");
         }
 
+
         return splits;
     }
 
@@ -82,6 +83,8 @@ public class GBTitanHBaseInputFormat extends TitanHBaseInputFormat {
         LOG.info("Set requested input splits for HBase table to: " + requestedSplitCount);
         return requestedSplitCount;
     }
+
+
 
 }
 
