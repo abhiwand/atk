@@ -124,7 +124,7 @@ class FrameBackendRest(object):
            return ("[1]" for item in iterable if predicate(item))
         http_ready_function = prepare_row_function(frame, where, icountwhere)
         arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
-        return get_command_output("count_where", arguments)
+        return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
         return self._get_frame_info(frame).ia_uri
@@ -736,15 +736,6 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return Frame(frame_info)
-
-
-def get_command_output(command_name, arguments):
-    """Executes command and returns the output"""
-    command_request = CommandRequest('frame:/' + command_name, arguments)
-    command_info = executor.issue(command_request)
-    if (command_info.result.has_key('value') and len(command_info.result) == 1):
-        return command_info.result.get('value')
-    return command_info.result
 
 
 

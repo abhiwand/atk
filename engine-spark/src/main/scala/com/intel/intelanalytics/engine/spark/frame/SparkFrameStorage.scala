@@ -171,7 +171,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): FrameRDD = {
+  def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): FrameRDD = withContext("loadFrameRDD") {
     val sqlContext = new SQLContext(ctx)
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
@@ -180,6 +180,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
+        info(frame.toDebugString + ", partitions:" + rows.partitions.length)
         new FrameRDD(frame.schema, rows)
       case (Some("file/sequence"), Some(absPath)) =>
         val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))

@@ -61,16 +61,21 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
                            |
                            |    Parameters
                            |    ----------
-                           |    columns: [ str | list of str ]
+                           |      columns: [ str | list of str ]
                            |        column name OR list of column names to be removed from the frame
+                           |
+                           |    Returns
+                           |    -------
+                           |      None
                            |
                            |    Notes
                            |    -----
-                           |    Deleting the last column in a frame leaves the frame empty.
+                           |      Cannot delete all columns from a frame. At least one column needs to remain.
+                           |      If you want to delete all columns, then please delete the frame
                            |
                            |    Examples
                            |    --------
-                           |    For this example, BigFrame object *my_frame* accesses a frame with
+                           |    For this example, Frame object *my_frame* accesses a frame with
                            |    columns *column_a*, *column_b*, *column_c* and *column_d*.
                            |    Eliminate columns *column_b* and *column_d*::
                            |

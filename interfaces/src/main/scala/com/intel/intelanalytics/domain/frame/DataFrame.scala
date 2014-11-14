@@ -94,4 +94,11 @@ case class DataFrame(id: Long,
     case e: EdgeSchema => Some(e.label)
     case _ => None
   }
+
+  /**
+   * A minimal toString-like method for debugging messages
+   */
+  def toDebugString: String = {
+    s"frameId: $id, name: $name, rowCount: $rowCount"
+  }
 }
