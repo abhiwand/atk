@@ -24,30 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
-import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.Naming
-import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import DataTypes.DataType
-import java.nio.file.Paths
-import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
-import org.apache.spark.sql.execution.ExistingRdd
-
-import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityManager }
+import com.intel.intelanalytics.domain.EntityManager
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.engine.{ FrameStorage, _ }
-import scala.io.Codec
-import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark._
-import org.apache.spark.{ sql, SparkContext }
-import scala.util.matching.Regex
-import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.engine._
+import org.apache.spark.sql
+import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.engine.FrameStorage
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
@@ -59,9 +43,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import com.intel.event.EventLogging
-import scala.util.parsing.combinator.RegexParsers
+import scala.language.implicitConversions
 import scala.util.{ Failure, Success, Try }
 
 import scala.util.control.NonFatal
@@ -172,7 +155,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @return the newly created FrameRDD
    */
   def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): FrameRDD = withContext("loadFrameRDD") {
-    val sqlContext = new SQLContext(ctx)
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
@@ -185,7 +167,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       case (Some("file/sequence"), Some(absPath)) =>
         val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
         new LegacyFrameRDD(frame.schema, rows).toFrameRDD()
-      case (Some(storage), _) => illegalArg(s"Cannot load frame with storage")
+      case (Some(s), _) => illegalArg(s"Cannot load frame with storage '$s'")
     }
   }
 
