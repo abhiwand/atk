@@ -269,6 +269,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   // model service formats
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference]("models", "model", n => ModelReference(n))
+  implicit val modelCreateFormat = jsonFormat2(ModelCreate.apply)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModel)
   implicit val modelFormat = jsonFormat10(Model)
