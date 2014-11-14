@@ -23,6 +23,12 @@
 
 package com.intel.intelanalytics.domain.model
 
+/**
+ * Arguments for RenameModel
+ * @param model The ModelReference of the model to be renamed
+ * @param newName The name to which the model will be renamed
+ */
+
 case class RenameModel(model: ModelReference, newName: String) {
   require(model != null, "model is required")
   require(newName != null && newName.size > 0, "newName is required")

@@ -21,14 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.mllib.plugins
+package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.mllib.linalg.{ SparseVector, DenseVector }
+import org.apache.spark.mllib.classification.ia.plugins.MLLibJsonProtocol
+import MLLibJsonProtocol._
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.scalatest.WordSpec
 import spray.json._
-import LogisticRegressionJsonProtocol._
 
-class LogisticRegressionJsonProtocolTest extends WordSpec {
+class MLLibJsonProtocolTest extends WordSpec {
   "DenseVectorFormat" should {
 
     "be able to serialize" in {
