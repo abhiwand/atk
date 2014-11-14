@@ -76,7 +76,8 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
                            |
                            |    Returns
                            |    -------
-                           |    DataFrame
+                           |    Frame
+                           |      A new Frame with two columns (float64): requested Quantiles and their respective values
                            |
                            |    Examples
                            |    --------
@@ -102,7 +103,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
                            |
                            |        quantiles_frame = my_frame.quantiles('final_sale_price', [10, 50, 100])
                            |  
-                           |    A new DataFrame containing the requested Quantiles and their respective values will be
+                           |    A new Frame containing the requested Quantiles and their respective values will be
                            |     returned ::
                            |
                            |       quantiles_frame.inspect()

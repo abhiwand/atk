@@ -98,7 +98,7 @@ object QuantilesFunctions extends Serializable {
       perPartitionResult.toIterator
     })
 
-    quantilesComponentsRDD.map(pair => Array[Any](pair._1, pair._2.toDouble))
+    quantilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).map(pair => Array[Any](pair._1, pair._2.toDouble))
   }
 
   /**
