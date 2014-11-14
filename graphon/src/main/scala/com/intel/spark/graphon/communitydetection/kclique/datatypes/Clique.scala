@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,21 +22,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.graph
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
- * Arguments for defining an edge
- * @param graphRef
- * @param label the label for this edge list
- * @param srcVertexLabel the src "type" of vertices this edge connects
- * @param destVertexLabel the destination "type" of vertices this edge connects
- * @param directed true if edges are directed, false if they are undirected
+ * A set of vertices, all pairs of which are connected in the graph.
+ * @param members The set of vertices comprising the members of this clique.
  */
-case class DefineEdge(graphRef: GraphReference, label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) {
-
-  def edgeSchema: EdgeSchema = {
-    new EdgeSchema(GraphSchema.edgeSystemColumns, label, srcVertexLabel, destVertexLabel, directed)
-  }
-}
+case class Clique(members: VertexSet) extends Serializable

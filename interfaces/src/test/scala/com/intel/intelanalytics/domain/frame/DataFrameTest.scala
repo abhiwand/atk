@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.domain.frame
 
 import org.scalatest.WordSpec
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 import org.joda.time.DateTime
 
 class DataFrameTest extends WordSpec {

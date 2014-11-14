@@ -27,6 +27,11 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.model.{ ModelMeta, ModelLoad, Model }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
+import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
+import com.intel.intelanalytics.domain.model.{ ModelLoad, Model }
+import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.mllib.classification.LogisticRegressionModel
@@ -41,7 +46,7 @@ import scala.concurrent.ExecutionContext
 import MLLibMethods._
 
 /* Run the LogisticRegressionWithSGD model on the test frame*/
-class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
+class TestModelPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
@@ -79,7 +84,7 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ModelLoad) = 2
+  override def numberOfJobs(arguments: ModelLoad) = 9
   /**
    * Get the predictions for observations in a test frame
    *
@@ -89,32 +94,28 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): Model =
+  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): ClassificationMetricValue =
     {
-      val models = engine.models
-      val frames = engine.frames
-      val fsRoot = engine.fsRoot
 
       val inputFrame: SparkFrameData = resolve(arguments.frame)
       val modelMeta: ModelMeta = resolve(arguments.model)
 
-      val updatedTestRDD = inputFrame.data.selectColumns(List(arguments.labelColumn, arguments.observationColumn))
-      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(updatedTestRDD)
+      //create RDD from the frame
+      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(inputFrame.data, arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
       val logRegJsObject = modelMeta.meta.data.get
       val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
 
       //predicting and testing
-      val scoreAndLabelRDD: RDD[(Double, Double)] = labeledTestRDD.map { point =>
-        val score = logRegModel.predict(point.features)
-        (score, point.label)
-      }.cache()
+      val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
+        val prediction = logRegModel.predict(point.features)
+        Array[Any](point.label, prediction)
+      }
 
-      //Run Binary classification metrics -- Using MLLib, can replace with calls to our classification metrics
-      outputClassificationMetrics(scoreAndLabelRDD)
-      scoreAndLabelRDD.unpersist(blocking = false)
-      modelMeta.meta
+      //Run Binary classification metrics
+      val posLabel: String = "1.0"
+      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRDD, 0, 1, posLabel, 1)
+
     }
-
 }
