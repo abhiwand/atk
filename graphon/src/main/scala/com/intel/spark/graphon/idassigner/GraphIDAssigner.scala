@@ -23,35 +23,32 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    */
   def run(inVertices: RDD[T], inEdges: RDD[(T, T)]) = {
 
-    val verticesGroupedByHashCodes = inVertices.map(v => (v.hashCode(), v)).groupBy(_._1).map(p => p._2)
+    val partitionVertexCounts: Array[Long] = inVertices.mapPartitions(partitionCount).collect()
 
-    val hashGroupsWithPositions = verticesGroupedByHashCodes.flatMap(seq => seq.zip(1 to seq.size))
+    val paritionPredecessors: Array[Long] = partitionVertexCounts.scanLeft(0.toLong)(_ + _)
 
-    val newIdsToOld = hashGroupsWithPositions.map(
-      { case ((hashCode, vertex), bucketPosition) => ((hashCode.toLong << 32) + bucketPosition.toLong, vertex) })
+    val oldIdsToNew: RDD[(T, Long)] = inVertices.mapPartitionsWithIndex((i, vertices) =>
+      {
+        val offset: Long = paritionPredecessors.apply(i)
+        vertices.zipWithIndex.map({ case (v, i) => (v, i + offset) })
+      })
 
-    val oldIdsToNew = newIdsToOld.map({ case (newId, oldId) => (oldId, newId) })
+    oldIdsToNew.cache()
 
+    val edgesWithSourcesRenamed : RDD[(Long, T)] =
+      inEdges.join(oldIdsToNew).map({case (_, ((oldSrc, oldDst :T), newSrc)) => (newSrc, oldDst)})
+
+
+    val edges : RDD[(Long,Long)] = edgesWithSourcesRenamed.map({case (x,y) => (y,x)}).join(oldIdsToNew).map(
+    {case (_, ((oldDst : T, newSrc : Long), newDst: Long)) => (newSrc, newDst)})
+
+
+
+    val newIdsToOld: RDD[(Long, T)] = oldIdsToNew.map({ case (x, y) => (y, x) })
     val newVertices = newIdsToOld.map({ case (newId, _) => newId })
 
-    val edgesGroupedWithNewIdsOfSources = inEdges.cogroup(oldIdsToNew).map(_._2)
-
-    // the id list is always a singleton list because there is one new ID for each incoming vertex
-    // this keeps the serialization of the closure relatively small
-
-    val edgesWithSourcesRenamed = edgesGroupedWithNewIdsOfSources.
-      flatMap({ case (dstList, srcIdList) => dstList.flatMap(dst => srcIdList.map(srcId => (srcId, dst))) })
-
-    val partlyRenamedEdgesGroupedWithNewIdsOfDestinations = edgesWithSourcesRenamed
-      .map({ case (srcWithNewId, dstWithOldId) => (dstWithOldId, srcWithNewId) })
-      .cogroup(oldIdsToNew).map(_._2)
-
-    // the id list is always a singleton list because there is one new ID for each incoming vertex
-    // this keeps the serialization of the closure relatively small
-
-    val edges = partlyRenamedEdgesGroupedWithNewIdsOfDestinations
-      .flatMap({ case (srcList, idList) => srcList.flatMap(src => idList.map(dstId => (src, dstId))) })
-
+    oldIdsToNew.unpersist(blocking = false)
+    edgesWithSourcesRenamed.unpersist(blocking = false)
     new GraphIDAssignerOutput(newVertices, edges, newIdsToOld)
   }
 
@@ -62,8 +59,10 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    * @param newIdsToOld  pairs mapping new IDs to their corresponding vertices in the base graph
    * @tparam T Type of the vertex IDs in the input graph
    */
-  case class GraphIDAssignerOutput[T: ClassManifest](val vertices: RDD[Long],
-                                                     val edges: RDD[(Long, Long)],
-                                                     val newIdsToOld: RDD[(Long, T)])
+  case class GraphIDAssignerOutput[T: ClassTag](val vertices: RDD[Long],
+                                                val edges: RDD[(Long, Long)],
+                                                val newIdsToOld: RDD[(Long, T)])
+
+  private def partitionCount(it: Iterator[T]): Iterator[Long] = Iterator(it.length)
 
 }
