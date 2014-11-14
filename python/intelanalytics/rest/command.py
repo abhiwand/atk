@@ -549,7 +549,7 @@ class Executor(object):
             functions[(tuple(intermediates), command_name)] = f
         return functions
 
-    def get_command_output(self,command_type, command_name, arguments):
+    def get_command_output(self, command_type, command_name, arguments):
         """Executes command and returns the output"""
         command_request = CommandRequest( "%s:/%s" % (command_type, command_name), arguments)
         command_info = executor.issue(command_request)
