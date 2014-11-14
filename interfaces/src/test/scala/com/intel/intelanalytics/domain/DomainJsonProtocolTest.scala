@@ -44,9 +44,7 @@ class DomainJsonProtocolTest extends WordSpec {
           |{
           |   "columns": [
           |          {"name": "foo", "data_type": "str", "index": -1 }
-          |   ],
-          |   "vertex_schema": null,
-          |   "edge_schema": null
+          |   ]
           |}
         """.
           stripMargin
@@ -54,7 +52,6 @@ class DomainJsonProtocolTest extends WordSpec {
       val schema = json.convertTo[Schema]
       assert(schema.columnNames.length == 1)
       assert(schema.columnDataType("foo") == DataTypes.string)
-      assert(schema.vertexSchema.isEmpty)
     }
   }
 }

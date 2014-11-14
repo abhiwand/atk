@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema._
 import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, GenericRow }
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
  * This class wraps raw row data adding schema information - this allows for a richer easier to use API.
@@ -280,14 +280,14 @@ trait AbstractRow {
   def valuesForSchema(updatedSchema: Schema): Row = {
     val content = new Array[Any](updatedSchema.columnTuples.length)
     for (columnName <- updatedSchema.columnNames) {
-      if (schema.hasColumnWithType(columnName, updatedSchema.columnDataType(columnName))) {
+      if (columnName == "_label" && updatedSchema.isInstanceOf[GraphElementSchema]) {
+        content(updatedSchema.columnIndex(columnName)) = updatedSchema.asInstanceOf[GraphElementSchema].label
+      }
+      else if (schema.hasColumnWithType(columnName, updatedSchema.columnDataType(columnName))) {
         content(updatedSchema.columnIndex(columnName)) = value(columnName)
       }
       else if (schema.hasColumn(columnName)) {
         content(updatedSchema.columnIndex(columnName)) = DataTypes.convertToType(value(columnName), updatedSchema.columnDataType(columnName))
-      }
-      else if (columnName == "_label" && updatedSchema.label.isDefined) {
-        content(updatedSchema.columnIndex(columnName)) = updatedSchema.label.get
       }
       else {
         // it is non-intuitive but even primitives can be null with Rows

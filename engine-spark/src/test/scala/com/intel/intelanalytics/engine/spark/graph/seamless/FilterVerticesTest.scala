@@ -42,7 +42,7 @@ class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
     val edgeRdd = sparkContext.parallelize(edgeArray)
 
     val columns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("distance", DataTypes.int32))
-    val schema = new Schema(columns, edgeSchema = Some(EdgeSchema("label", "srclabel", "destlabel")))
+    val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
     val edgeLegacyRdd = new LegacyFrameRDD(schema, edgeRdd)
 
     val vertexArray = Array((5, Array(5, "Jack")), (13, Array(13, "Doris")))

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain.{ IAUri, HasId }
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 
 /**
@@ -47,7 +47,7 @@ import org.joda.time.DateTime
 case class DataFrame(id: Long,
                      name: String,
                      description: Option[String] = None,
-                     schema: Schema = Schema(),
+                     schema: Schema = FrameSchema(),
                      rowCount: Long = 0,
                      status: Long,
                      createdOn: DateTime,
@@ -69,17 +69,26 @@ case class DataFrame(id: Long,
 
   def entity = "frame"
 
-  def isVertexFrame: Boolean = schema.vertexSchema.isDefined
+  def isVertexFrame: Boolean = schema.isInstanceOf[VertexSchema]
 
-  def isEdgeFrame: Boolean = schema.edgeSchema.isDefined
+  def isEdgeFrame: Boolean = schema.isInstanceOf[EdgeSchema]
 
+  /** Prefix used by plugin system */
   def commandPrefix: String = {
     if (isVertexFrame) "frame:vertex"
     else if (isEdgeFrame) "frame:edge"
     else "frame:"
   }
 
+  /** create a FrameReference for this frame */
   def frameReference: FrameReference = {
     FrameReference(id)
+  }
+
+  /** label if this is a vertex or edge frame */
+  def label: Option[String] = schema match {
+    case v: VertexSchema => Some(v.label)
+    case e: EdgeSchema => Some(e.label)
+    case _ => None
   }
 }

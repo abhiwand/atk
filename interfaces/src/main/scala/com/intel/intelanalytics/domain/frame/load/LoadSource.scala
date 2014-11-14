@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain.frame.load
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ SchemaUtil, FrameSchema, Schema }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call
@@ -121,6 +121,6 @@ case class SchemaArgs(columns: List[(String, DataType)]) {
    * Convert args to our internal format
    */
   def schema: Schema = {
-    new Schema(columns)
+    Schema.fromTuples(columns)
   }
 }
