@@ -38,18 +38,25 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
   require(name != null, "name must not be null")
 
   /** Initial Status, currently building or initializing */
-  def isInit: Boolean = id.equals(1)
+  def isInit: Boolean = id.equals(StatusId.init.id)
 
   /** Active and can be interacted with */
-  def isActive: Boolean = id.equals(2)
+  def isActive: Boolean = id.equals(StatusId.active.id)
 
   /** Partially created, failure occurred during construction */
-  def isIncomplete: Boolean = id.equals(3)
+  def isIncomplete: Boolean = id.equals(StatusId.complete.id)
 
   /** Deleted but can still be un-deleted, no action has yet been taken on disk */
-  def isDeleted: Boolean = id.equals(4)
+  def isDeleted: Boolean = id.equals(StatusId.deleted.id)
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  def isDeleteFinal: Boolean = id.equals(5)
+  def isDeleteFinal: Boolean = id.equals(StatusId.deletedFinal.id)
 }
 
+object StatusId extends Enumeration {
+  val init = Value(1)
+  val active = Value(2)
+  val complete = Value(3)
+  val deleted = Value(4)
+  val deletedFinal = Value(5)
+}

@@ -38,7 +38,7 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.{ StatusId, Naming }
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
@@ -95,6 +95,21 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   /**
+   * Update status id of the graph
+   * @param graph graph instance
+   * @param newStatusId status id
+   */
+  override def updateStatus(graph: Graph, newStatusId: StatusId.Value): Unit = {
+    metaStore.withSession("spark.graphstorage.rename") {
+      implicit session =>
+        {
+          val newGraph = graph.copy(statusId = newStatusId.id)
+          metaStore.graphRepo.update(newGraph).get
+        }
+    }
+  }
+
+  /**
    * Registers a new graph.
    * @param graph The graph being registered.
    * @param user The user creating the graph.
@@ -106,11 +121,20 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val check = metaStore.graphRepo.lookupByName(graph.name)
-          if (check.isDefined) {
-            throw new RuntimeException("Graph with same name exists. Create aborted.")
+          check match {
+            case Some(g) => {
+              if (g.statusId == StatusId.active.id) {
+                throw new RuntimeException("Graph with same name exists. Create aborted.")
+              }
+              else {
+                metaStore.graphRepo.delete(g.id)
+              }
+            }
+            case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
           backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
-          metaStore.graphRepo.insert(graph).get
+          val g = Graph(1, graph.name, None, "", if (graph.storageFormat == "hbase/titan") StatusId.init.id else StatusId.active.id, graph.storageFormat, new DateTime(), new DateTime(), None, None)
+          metaStore.graphRepo.insert(g).get
         }
     }
   }
