@@ -38,8 +38,8 @@ trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
    * Clean up after the test is done
    */
   after {
-    sparkContext = null
     TestingSparkContext.cleanUp()
+    sparkContext = null
   }
 
 }

@@ -35,9 +35,9 @@ object MLLibMethods {
   /* This method creates a labeled RDD as required by MLLib */
   def createLabeledRDD(inputRDD: FrameRDD, labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
     inputRDD.mapRows(row =>
-    {
-      val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-      new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
-    })
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
+      })
   }
 }

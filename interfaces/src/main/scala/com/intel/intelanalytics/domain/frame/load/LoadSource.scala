@@ -77,14 +77,14 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
   /**
    * True if source is a file
    */
-  def isParsableFile: Boolean = {
+  def isFieldDelimited: Boolean = {
     source_type == "file"
   }
 
   /**
    * True if source is a Line File
    */
-  def isUnparsableFile: Boolean = {
+  def isFile: Boolean = {
     source_type == "linefile"
   }
 }
@@ -106,7 +106,7 @@ case class LineParser(name: String, arguments: LineParserArguments)
  */
 case class LineParserArguments(separator: Char, schema: SchemaArgs, skip_rows: Option[Int]) {
   skip_rows match {
-    case e: Some[Int] => require(skip_rows.get >= 0 && skip_rows.get < 3, "valid values for skip_header_lines are: 0, 1, 2")
+    case e: Some[Int] => require(skip_rows.get >= 0, "value for skip_header_lines cannot be negative")
     case _ =>
   }
 }
