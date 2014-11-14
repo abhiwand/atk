@@ -105,8 +105,7 @@ class TrainModelPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameRDD(ctx, frameId)
-      val updatedTrainRDD = trainFrameRDD.selectColumns(List(arguments.labelColumn, arguments.observationColumn))
-      val labeledTrainRDD: RDD[LabeledPoint] = createLabeledRDD(updatedTrainRDD)
+      val labeledTrainRDD: RDD[LabeledPoint] = createLabeledRDD(trainFrameRDD, arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
       val logReg = new LogisticRegressionWithSGD()
