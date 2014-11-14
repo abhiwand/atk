@@ -65,9 +65,11 @@ case class VertexSchema(columns: List[Column] = List[Column](), label: String, i
   }
 
   override def dropColumn(columnName: String): Schema = {
-    if (idColumnName.isDefined){
+    if (idColumnName.isDefined) {
       require(idColumnName.get != columnName, s"The id column is not allowed to be dropped: $columnName")
     }
+    // TODO: check for system column names
+
     super.dropColumn(columnName)
   }
 
