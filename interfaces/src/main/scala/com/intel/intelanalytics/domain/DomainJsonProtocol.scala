@@ -97,9 +97,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  implicit val vertexSchemaFormat = jsonFormat2(VertexSchema)
-  implicit val edgeSchemaFormat = jsonFormat4(EdgeSchema)
   implicit val columnFormat = jsonFormat3(Column)
+  implicit val frameSchemaFormat = jsonFormat(FrameSchema, "columns")
+  implicit val vertexSchemaFormat = jsonFormat(VertexSchema, "columns", "label", "idColumnName")
+  implicit val edgeSchemaFormat = jsonFormat(EdgeSchema, "columns", "label", "srcVertexLabel", "destVertexLabel", "directed")
   implicit val schemaArgsForamt = jsonFormat1(SchemaArgs)
 
   /**
@@ -110,20 +111,33 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     /** same format as the old one */
     case class LegacySchema(columns: List[(String, DataType)])
     implicit val legacyFormat = jsonFormat1(LegacySchema)
-    implicit val schemaFormat = jsonFormat(Schema, "columns", "vertex_schema", "edge_schema")
 
-    override def write(obj: Schema): JsValue = schemaFormat.write(obj)
+    override def write(obj: Schema): JsValue = obj match {
+      case f: FrameSchema => frameSchemaFormat.write(f)
+      case v: VertexSchema => vertexSchemaFormat.write(v)
+      case e: EdgeSchema => edgeSchemaFormat.write(e)
+      case _ => throw new IllegalArgumentException("New type not yet implemented")
+    }
 
     /**
-     * If the new format can't be deserialized, then try the old format that
-     * might still be used in the database
+     *
      */
     override def read(json: JsValue): Schema = {
       try {
-        schemaFormat.read(json)
+        if (json.asJsObject.fields.contains("src_vertex_label")) {
+          edgeSchemaFormat.read(json)
+        }
+        if (json.asJsObject.fields.contains("label")) {
+          vertexSchemaFormat.read(json)
+        }
+        else {
+          frameSchemaFormat.read(json)
+        }
       }
       catch {
-        case e: Exception => new Schema(legacyFormat.read(json).columns)
+        //  If the new format can't be deserialized, then try the old format that
+        // might still be used in the database
+        case e: Exception => Schema.fromTuples(legacyFormat.read(json).columns)
       }
     }
   }
@@ -268,6 +282,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // model service formats
+  implicit val modelCreateFormat = jsonFormat2(ModelCreate.apply)
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntity)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModel)

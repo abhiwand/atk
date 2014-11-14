@@ -31,6 +31,10 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
 
 // Implicits needed for JSON conversion
@@ -130,8 +134,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     edgesWithoutVids.cache()
     edgeDataToAdd.unpersist(blocking = false)
 
-    val srcLabel = edgeFrameMeta.schema.edgeSchema.get.srcVertexLabel
-    val destLabel = edgeFrameMeta.schema.edgeSchema.get.destVertexLabel
+    val srcLabel = edgeFrameMeta.schema.asInstanceOf[EdgeSchema].srcVertexLabel
+    val destLabel = edgeFrameMeta.schema.asInstanceOf[EdgeSchema].destVertexLabel
 
     // create vertices from edge data and append to vertex frames
     if (arguments.isCreateMissingVertices) {

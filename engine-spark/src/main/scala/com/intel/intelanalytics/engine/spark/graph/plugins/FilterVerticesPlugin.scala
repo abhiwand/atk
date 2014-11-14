@@ -28,6 +28,8 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage, LegacyFrameRDD, PythonRDDStorage }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -42,6 +44,7 @@ import com.intel.intelanalytics.domain.FilterVertexRows
 import org.apache.spark.api.python.EnginePythonRDD
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 import spray.json._
@@ -91,9 +94,10 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
 
         val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
 
-        val updated = FilterVerticesFunctions.removeDanglingEdges(schema.vertexSchema.get.label, frames, seamlessGraph, sc, filteredRdd)
+        val vertexSchema: VertexSchema = schema.asInstanceOf[VertexSchema]
+        val updated = FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-        updated.vertexMeta(vertexFrame.meta.schema.label.get)
+        updated.vertexMeta(vertexSchema.label)
 
       }
       case _ => vertexFrame.meta
@@ -123,23 +127,26 @@ object FilterVerticesFunctions {
     val droppedVerticesPairRdd = droppedVerticesRdd.map(row => (row(vidColumnIndex), row))
 
     val newFrameMetas = seamlessGraph.frameMetas.map(frame => {
-      val edgeSchema = frame.schema.edgeSchema
-      edgeSchema match {
-        case Some(schema) => {
-          if (schema.srcVertexLabel.equals(vertexLabel)) {
-            FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
-          }
-          else if (schema.destVertexLabel.equals(vertexLabel)) {
-            FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
-          }
-          else {
-            frame
-          }
-        }
-
-        case _ => frame
+      val edgeSchema = frame.schema.asInstanceOf[EdgeSchema]
+      if (edgeSchema.srcVertexLabel.equals(vertexLabel)) {
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
+      }
+      else if (edgeSchema.destVertexLabel.equals(vertexLabel)) {
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
+      }
+      else {
+        frame
       }
     })
+    //    seamlessGraph.edgeFrames.foreach(frame => {
+    //      val schema = frame.schema.asInstanceOf[EdgeSchema]
+    //      if (schema.srcVertexLabel.equals(vertexLabel)) {
+    //        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
+    //      }
+    //      if (schema.destVertexLabel.equals(vertexLabel)) {
+    //        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
+    //      }
+    //    })
 
     seamlessGraph.copy(frameMetas = newFrameMetas)
   }

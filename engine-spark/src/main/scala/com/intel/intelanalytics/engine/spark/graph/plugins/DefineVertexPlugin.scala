@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.domain.graph.{ DefineVertex, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.security.UserPrincipal
@@ -35,6 +36,7 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.UnitReturn
 
 // Implicits needed for JSON conversion
+
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -53,22 +55,22 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
 
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Define vertex type.",
     extendedSummary = Some("""
-                           |    Extended Summary
-                           |    ----------------
-                           |    Define a vertex type by label
-                           |
-                           |    Parameters
-                           |    ----------
-                           |    label: str
-                           |        label of the vertex type
-                           |
-                           |    Examples
-                           |    --------
-                           |    ::
-                           |        graph = new Graph()
-                           |        graph.define_vertex_type('users')
-                           |
-                           |
+                              |    Extended Summary
+                              |    ----------------
+                              |    Define a vertex type by label
+                              |
+                              |    Parameters
+                              |    ----------
+                              |    label: str
+                              |        label of the vertex type
+                              |
+                              |    Examples
+                              |    --------
+                              |    ::
+                              |        graph = new Graph()
+                              |        graph.define_vertex_type('users')
+                              |
+                              |
                             """.stripMargin)))
 
   /**
@@ -80,7 +82,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @return data frame which represent the vertex of this type
    */
   override def execute(arguments: DefineVertex)(implicit invocation: Invocation): UnitReturn = {
-    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(arguments.label, None))
+    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }
 

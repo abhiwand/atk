@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameGroupByColumn, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameGroupByColumn, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -54,15 +54,15 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
     val originalFrame = frames.expectFrame(originalFrameID)
     val schema = originalFrame.schema
     val aggregation_arguments = arguments.aggregations
+    val newFrameName = FrameName.validate(arguments.name)
 
     // run the operation and save results
 
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     val args_pair = for {
       (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
     } yield (schema.columnIndex(column_to_apply), aggregation_function)
 
-    if (arguments.groupByColumns.length > 0) {
+    val (resultRdd, rowCount) = if (arguments.groupByColumns.length > 0) {
       val groupByColumns = arguments.groupByColumns
 
       val columnIndices: Seq[(Int, DataType)] = for {
@@ -76,13 +76,15 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
       }.seq)
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, columnIndices.map(_._2).toArray, arguments)
       val rowCount = resultRdd.count()
-      frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount))
+      (resultRdd, rowCount)
     }
     else {
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => Seq[Any]())
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
       val rowCount = resultRdd.count()
-      frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount))
+      (resultRdd, rowCount)
     }
+    val template = DataFrameTemplate(newFrameName, None)
+    frames.tryNewFrame(template) { newFrame => frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount)) }
   }
 }

@@ -40,9 +40,9 @@ import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class ConnectedComponentsCommand(graph: GraphReference,
-                                      input_edge_label: String,
-                                      output_vertex_property: String,
-                                      convergence_progress_output_interval: Option[Int] = None)
+                                      inputEdgeLabel: String,
+                                      outputVertexProperty: String,
+                                      convergenceProgressOutputInterval: Option[Int] = None)
 
 case class ConnectedComponentsResult(value: String) //TODO
 
@@ -117,12 +117,12 @@ class ConnectedComponents
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
     GiraphConfigurationUtil.set(hConf, "cc.convergenceProgressOutputInterval",
-      arguments.convergence_progress_output_interval)
+      arguments.convergenceProgressOutputInterval)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabel))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexProperty))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

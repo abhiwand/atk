@@ -24,34 +24,28 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact, Edge }
 
-class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+/**
+ * Assign to each vertex the list of communities to which it belongs, given the assignment of cliques to communities.
+ */
 
-  trait KCliqueEnumTest {
+object VertexCommunityAssigner extends Serializable {
 
-    val vertexWithAdjacencyList: List[(Long, Array[Long])] = List((1, Array(2, 3, 4)), (2, Array(3, 4)), (3, Array(4, 5))).map(
-      { case (v, nbrs) => (v.toLong, nbrs.map(_.toLong)) })
+  /**
+   * Assign to each vertex the list of communities to which it belongs, given the assignment of cliques to communities.
+   *
+   * @param cliquesToCommunities Mapping from cliques to the community ID of that clique.
+   * @return Mapping from vertex IDs to the list of communities to which that vertex belongs.If a vertex belongs to no
+   *         cliques, its list of communities will be empty.
+   */
+  def run(cliquesToCommunities: RDD[(VertexSet, Long)]): RDD[(Long, Set[Long])] = {
 
-    val edgeList: List[(Long, Long)] = List((1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4), (3, 5)).map({ case (x, y) => (x.toLong, y.toLong) })
+    val vertexCommunityPairs: RDD[(Long, Long)] =
+      cliquesToCommunities.flatMap({ case (clique, communityID) => clique.map(v => (v, communityID)) })
 
-    val fourCliques = List((Array(1, 2, 3), Array(4))).map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-
+    vertexCommunityPairs.groupByKey().map({ case (vertex, communitySeq) => (vertex, communitySeq.toSet) })
   }
-
-  "K-Clique enumeration" should
-    "create all set of k-cliques" in new KCliqueEnumTest {
-
-      val rddOfEdgeList: RDD[Edge] = sparkContext.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
-      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-
-      val enumeratedFourCliques = CliqueEnumerator.run(rddOfEdgeList, 4)
-
-      enumeratedFourCliques.collect().toSet shouldEqual rddOfFourCliques.collect().toSet
-
-    }
-
 }
