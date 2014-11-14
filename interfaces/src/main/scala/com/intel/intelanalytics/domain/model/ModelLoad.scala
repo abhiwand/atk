@@ -24,7 +24,6 @@
 package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.
