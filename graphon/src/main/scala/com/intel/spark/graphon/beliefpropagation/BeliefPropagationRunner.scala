@@ -51,7 +51,7 @@ object BeliefPropagationRunner extends Serializable {
       Some(inVertices.first())
     }
     catch {
-      case e => None
+      case e: UnsupportedOperationException => None
     }
 
     if (firstVertexOption.isEmpty) {
@@ -70,7 +70,7 @@ object BeliefPropagationRunner extends Serializable {
         val firstPrior = firstPropertyOption.get.value
 
         val stateSpaceSize: Int = firstPrior match {
-          case v: Vector[Double] => v.length
+          case v: Vector[_] => v.length
           case s: String => s.split(separators).filter(_.nonEmpty).map(_.toDouble).toVector.length
         }
 
@@ -139,7 +139,7 @@ object BeliefPropagationRunner extends Serializable {
     }
     else {
       property.get.value match {
-        case v: Vector[Double] => v
+        case v: Vector[_] => v.asInstanceOf[Vector[Double]]
         case s: String => s.split(separators).filter(_.nonEmpty).map(_.toDouble).toVector
       }
     }
