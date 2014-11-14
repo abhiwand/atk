@@ -1278,7 +1278,7 @@ class Frame(DocStubsFrame, _BaseFrame):
         .. versionadded:: 0.8
 
         """
-        return self._backend.flatten_column(self, column_name)
+        self._backend.flatten_column(self, column_name)
 
 
 @api
