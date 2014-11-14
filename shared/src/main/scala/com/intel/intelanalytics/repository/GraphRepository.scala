@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 /**
  * Repository for graphs
  */
-trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] with NameableRepository[Session, Graph] {
+trait GraphRepository[Session] extends Repository[Session, Graph, Graph] with NameableRepository[Session, Graph] {
   /**
    * Return all the graphs
    * @param session current session

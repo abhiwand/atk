@@ -757,17 +757,14 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class SlickGraphRepository extends GraphRepository[Session]
       with EventLogging {
-    this: Repository[Session, GraphTemplate, Graph] =>
+    this: Repository[Session, Graph, Graph] =>
 
     protected val graphsAutoInc = graphs returning graphs.map(_.id) into {
       case (graph, id) => graph.copy(id = id)
     }
 
-    override def insert(graph: GraphTemplate)(implicit session: Session): Try[Graph] = Try {
-      // TODO: table name
-      // TODO: user name
-      val g = Graph(1, graph.name, None, "", 1L, graph.storageFormat, new DateTime(), new DateTime(), None, None)
-      graphsAutoInc.insert(g)
+    override def insert(graph: Graph)(implicit session: Session): Try[Graph] = Try {
+      graphsAutoInc.insert(graph)
     }
 
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {

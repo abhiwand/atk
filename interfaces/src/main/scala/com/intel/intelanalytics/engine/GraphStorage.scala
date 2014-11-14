@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.StatusId
 
 /**
  * Manages multiple graphs in the underlying graph database.
@@ -44,6 +45,8 @@ trait GraphStorage {
   def renameGraph(graph: Graph, newName: String): Graph
 
   def drop(graph: Graph)
+
+  def updateStatus(graph: Graph, newStatusId: StatusId.Value)
 
   def getGraphs()(implicit user: UserPrincipal): Seq[Graph]
 
