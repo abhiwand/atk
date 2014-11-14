@@ -54,7 +54,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
     require(frame.isVertexFrame, "vertex frame required for this plugin")
     frame.schema.dropColumns(arguments.columns)
     DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns.toList, systemFields)
-    
+
     // let the frame plugin do the actual work
     super.execute(arguments)
   }
