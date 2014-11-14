@@ -107,6 +107,7 @@ import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.ClassificationMetric
 import com.intel.intelanalytics.domain.frame.BinColumn
+import com.intel.intelanalytics.domain.frame.QuantileValues
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
