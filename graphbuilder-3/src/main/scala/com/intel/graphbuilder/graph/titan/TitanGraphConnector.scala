@@ -60,7 +60,6 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
    */
   override def connect(): TitanGraph = {
     TitanFactory.open(config)
-    //new StandardTitanGraph(new GraphDatabaseConfiguration(new CommonsConfiguration(config)))
   }
 
 }

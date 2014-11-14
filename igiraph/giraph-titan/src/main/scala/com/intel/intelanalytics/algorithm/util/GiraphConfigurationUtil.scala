@@ -1,11 +1,13 @@
 package com.intel.intelanalytics.algorithm.util
 
+import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 object GiraphConfigurationUtil {
 
@@ -48,12 +50,17 @@ object GiraphConfigurationUtil {
   def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph): Unit = {
 
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val storageBackend = titanConfig.getString("storage.backend")
 
     titanConfig.getKeys.foreach {
       case (titanKey: String) =>
         val titanGiraphKey = "giraph.titan.input." + titanKey
         set(hConf, titanGiraphKey, Option[Any](titanConfig.getProperty(titanKey)))
     }
+
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
+    val numGiraphWorkers = Try(config.getInt("giraph.giraph.maxWorkers")).getOrElse(0)
+    titanAutoPartitioner.setGiraphHBaseInputSplits(hConf, numGiraphWorkers)
   }
 
   /**

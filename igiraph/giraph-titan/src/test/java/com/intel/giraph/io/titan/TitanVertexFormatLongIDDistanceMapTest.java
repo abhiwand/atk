@@ -24,7 +24,8 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.intel.giraph.io.DistanceMapWritable;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongDistanceMapNull;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDistanceMap;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -53,7 +54,7 @@ public class TitanVertexFormatLongIDDistanceMapTest
         giraphConf.setComputationClass(AveragePathLengthComputation.class);
         giraphConf.setMasterComputeClass(AveragePathLengthComputation.AveragePathLengthMasterCompute.class);
         giraphConf.setAggregatorWriterClass(AveragePathLengthComputation.AveragePathLengthAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDistanceMapNull.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatLongDistanceMapNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDistanceMap.class);
 
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");

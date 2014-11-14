@@ -197,8 +197,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, vertexSchema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -226,8 +225,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, edgeSchema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }

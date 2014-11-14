@@ -36,7 +36,7 @@ object SchemaUtil {
   /**
    * Schema for Error Frames
    */
-  val ErrorFrameSchema = new Schema(List(("original_row", DataTypes.str), ("error_message", DataTypes.str)))
+  val ErrorFrameSchema = new FrameSchema(List(Column("original_row", DataTypes.str), Column("error_message", DataTypes.str)))
 
   /**
    * Resolve naming conflicts when both left and right side of join operation have same column names
@@ -114,10 +114,11 @@ object SchemaUtil {
       val groupedColumns = appendedColumns.groupBy { case (name, dataTypes) => name }
 
       val newColumns = columnOrdering.map(key => {
-        (key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
+        Column(key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
       })
 
-      new Schema(newColumns)
+      originalSchema.copy(newColumns)
     }
   }
+
 }

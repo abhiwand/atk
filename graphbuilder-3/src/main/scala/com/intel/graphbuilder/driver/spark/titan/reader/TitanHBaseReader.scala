@@ -61,7 +61,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     // Auto-configure number of input splits
     val tableName = titanConfig.getString(TITAN_STORAGE_HBASE_TABLE)
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContext, hBaseConfig, tableName)
 
     hBaseConfig
   }

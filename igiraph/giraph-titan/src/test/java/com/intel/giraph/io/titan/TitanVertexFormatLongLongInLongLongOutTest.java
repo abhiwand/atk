@@ -24,7 +24,8 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation;
 import com.intel.giraph.combiner.MinimumLongCombiner;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongLongNull;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongLongNull;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDLongValue;
 import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanTransaction;
@@ -65,7 +66,7 @@ public class TitanVertexFormatLongLongInLongLongOutTest
                 ConnectedComponentsAggregatorWriter.class);
         giraphConf.setOutEdgesClass(ByteArrayEdges.class);
         giraphConf.setMessageCombinerClass(MinimumLongCombiner.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongLongNull.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatLongLongNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDLongValue.class);
 
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");

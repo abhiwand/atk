@@ -24,8 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LBP
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LBP, TitanVertexInputFormatPropertyGraph4LBP }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -40,19 +39,19 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lbp(graph: GraphReference,
-               vertex_value_property_list: List[String],
-               edge_value_property_list: List[String],
-               input_edge_label_list: List[String],
-               output_vertex_property_list: List[String],
-               vertex_type: String,
-               vector_value: Boolean,
-               max_supersteps: Option[Int] = None,
-               convergence_threshold: Option[Double] = None,
-               anchor_threshold: Option[Double] = None,
+               vertexValuePropertyList: List[String],
+               edgeValuePropertyList: List[String],
+               inputEdgeLabelList: List[String],
+               outputVertexPropertyList: List[String],
+               vertexType: String,
+               vectorValue: Boolean,
+               maxSupersteps: Option[Int] = None,
+               convergenceThreshold: Option[Double] = None,
+               anchorThreshold: Option[Double] = None,
                smoothing: Option[Double] = None,
-               bidirectional_check: Option[Boolean] = None,
-               ignore_vertex_type: Option[Boolean] = None,
-               max_product: Option[Boolean] = None,
+               validateGraphStructure: Option[Boolean] = None,
+               ignoreVertexType: Option[Boolean] = None,
+               maxProduct: Option[Boolean] = None,
                power: Option[Double] = None)
 
 case class LbpResult(value: String) //TODO
@@ -148,15 +147,13 @@ class LoopyBeliefPropagation
                            |        important.
                            |        The default value is 2.0.
                            |
-                           |    bidirectional_check : boolean (optional)
-                           |        If it is true, Giraph will firstly check whether each edge is
-                           |        bidirectional before running algorithm.
-                           |        This option is mainly for graph integrity check.
-                           |        Turning it on only makes sense when all nodes are labeled as "TR",
-                           |        otherwise the algorithm will terminate, because all edges connected to
-                           |        "VA"/"TE" nodes will be treated internally as single directional even
-                           |        though they are defined as bi-directional input graph.
-                           |        The default value is false.
+                           |    validate_graph_structure : boolean (optional)
+                           |        Checks if the graph meets certain structural requirements before starting
+                           |        the algorithm.
+                           |
+                           |        At present, this checks that at every vertex, the in-degree equals the
+                           |        out-degree. Because this algorithm is for undirected graphs, this is a necessary
+                           |        but not sufficient, check for valid input.
                            |
                            |    ignore_vertex_type : boolean (optional)
                            |        If true, all vertex will be treated as training data.
@@ -197,26 +194,26 @@ class LoopyBeliefPropagation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lbp.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
-    GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "lbp.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchorThreshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.validateGraphStructure)
     GiraphConfigurationUtil.set(hConf, "lbp.power", arguments.power)
     GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
-    GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
+    GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignoreVertexType)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertex_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type))
-    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexType))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LBP])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])

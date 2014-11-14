@@ -1,19 +1,15 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import java.nio.ByteBuffer
-
 import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.io.titan.formats.cassandra.TitanCassandraInputFormat
 import com.thinkaurelius.titan.diskstorage.Backend
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.SliceQuery
 import com.thinkaurelius.titan.hadoop.FaunusVertex
-import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat
 import org.apache.cassandra.hadoop.ConfigHelper
-import org.apache.cassandra.thrift.{ SliceRange, SlicePredicate }
+import org.apache.cassandra.thrift.{ SlicePredicate, SliceRange }
 import org.apache.hadoop.io.NullWritable
-import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -83,6 +79,5 @@ class TitanCassandraReader(sparkContext: SparkContext, titanConnector: TitanGrap
     sliceRange.setStart(Array.empty[Byte])
     sliceRange.setFinish(Array.empty[Byte])
     predicate.setSlice_range(sliceRange)
-    predicate
   }
 }

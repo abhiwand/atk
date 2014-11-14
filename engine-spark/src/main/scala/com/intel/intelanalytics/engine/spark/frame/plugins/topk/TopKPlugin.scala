@@ -151,13 +151,12 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
-    val newFrameName = FrameName.generate()
-    val newFrame = frames.create(DataFrameTemplate(newFrameName, None))
+    val newFrameName = FrameName.generate(prefix = Some("topk_frame_"))
     val useBottomK = arguments.k < 0
     val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
-    val newSchema = new Schema(List(
+    val newSchema = Schema.fromTuples(List(
       (arguments.columnName, valueDataType),
       ("count", DataTypes.float64)
     ))
@@ -165,7 +164,9 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val rowCount = topRdd.count()
 
     // save results
-    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(newSchema, topRdd), Some(rowCount))
+    frames.tryNewFrame(DataFrameTemplate(newFrameName, None)) { newFrame =>
+      frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(newSchema, topRdd), Some(rowCount))
+    }
   }
 
   // TODO: replace getColumnIndexAndType() with methods on Schema

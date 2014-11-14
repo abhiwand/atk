@@ -2,8 +2,10 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation;
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatPropertyGraph4LBP;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatPropertyGraph4LP;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatPropertyGraph4LBP;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatPropertyGraph4LP;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -147,7 +149,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 LoopyBeliefPropagationMasterCompute.class);
         giraphConf.setAggregatorWriterClass(LoopyBeliefPropagationComputation.
                 LoopyBeliefPropagationAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4LBP.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4LBP.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4LBP.class);
         giraphConf.set("lbp.maxSupersteps", "5");
 
@@ -188,7 +190,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 LoopyBeliefPropagationMasterCompute.class);
         giraphConf.setAggregatorWriterClass(LoopyBeliefPropagationComputation.
                 LoopyBeliefPropagationAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4LBP.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4LBP.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4LBP.class);
         giraphConf.set("lbp.maxSupersteps", "5");
 
@@ -233,7 +235,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 LabelPropagationMasterCompute.class);
         giraphConf.setAggregatorWriterClass(LabelPropagationComputation.
                 LabelPropagationAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4LP.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4LP.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4LP.class);
         giraphConf.set("lp.maxSupersteps", "5");
         giraphConf.set("lp.convergenceThreshold", "0.1");
@@ -275,7 +277,7 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
                 LabelPropagationMasterCompute.class);
         giraphConf.setAggregatorWriterClass(LabelPropagationComputation.
                 LabelPropagationAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4LP.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatPropertyGraph4LP.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4LP.class);
         giraphConf.set("lp.maxSupersteps", "5");
         giraphConf.set("lp.convergenceThreshold", "0.1");

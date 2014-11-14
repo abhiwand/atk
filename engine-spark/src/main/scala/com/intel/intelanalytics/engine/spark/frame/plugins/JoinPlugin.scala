@@ -93,8 +93,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     val leftOn: String = arguments.frames(0)._2
     val rightOn: String = arguments.frames(1)._2
 
-    val leftSchema = new Schema(leftColumns)
-    val rightSchema = new Schema(rightColumns)
+    val leftSchema = Schema.fromTuples(leftColumns)
+    val rightSchema = Schema.fromTuples(rightColumns)
 
     require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
     require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")
@@ -106,7 +106,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
       arguments.how)
 
     val joinRowCount = joinResultRDD.count()
-    frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
+    frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
   def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {

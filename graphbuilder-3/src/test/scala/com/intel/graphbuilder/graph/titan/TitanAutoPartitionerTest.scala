@@ -83,7 +83,7 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
     titanConfig.setProperty(TitanAutoPartitioner.HBASE_MIN_INPUT_SPLIT_SIZE_MB, 10)
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
+    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
     //TODO: Fix test
     //hBaseAdminMock.getConfiguration.getInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, -1) shouldBe (20)
   }
@@ -97,7 +97,7 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
     titanConfig.setProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE, "4")
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setHBaseInputSplits(sparkContext, hBaseAdminMock, hBaseTableName)
+    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContext, hBaseAdminMock, hBaseTableName)
 
     val numSparkWorkers = hBaseRegionServers //HBase region servers used to estimate Spark workers
     val expectedHBaseSplits = Runtime.getRuntime.availableProcessors() * numSparkWorkers * 4
