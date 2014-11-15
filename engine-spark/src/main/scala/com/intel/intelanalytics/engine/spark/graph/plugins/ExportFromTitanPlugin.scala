@@ -124,11 +124,23 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
   }
 
   def getEdgeDefinitions(titanIAGraph: Graph): List[EdgeSchema] = {
-    titanIAGraph.frameSchemaList.get.schemas.flatMap(schema => schema.edgeSchema).map(e => EdgeSchema(e.label, e.srcVertexLabel, e.destVertexLabel))
+    titanIAGraph.frameSchemaList.get.schemas.filter(schema => {
+      schema match {
+        case s: EdgeSchema => true
+        case _ => false
+      }
+    }).asInstanceOf[List[EdgeSchema]]
   }
 
   def getVertexLabelToIdColumnMapping(titanIAGraph: Graph): Map[String, String] = {
-    titanIAGraph.frameSchemaList.get.schemas.flatMap(schema => schema.vertexSchema).map(e => e.label -> e.idColumnName.get).toMap
+    val vertexSchemas = titanIAGraph.frameSchemaList.get.schemas.filter(schema => {
+      schema match {
+        case s: VertexSchema => true
+        case _ => false
+      }
+    }).asInstanceOf[List[VertexSchema]]
+
+    vertexSchemas.map(v => v.label -> v.idColumnName.get).toMap
   }
 
   /**
@@ -140,7 +152,9 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    */
   def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph) {
     graphs.expectSeamless(graph.id).edgeFrames.foreach(edgeFrame => {
-      val label = edgeFrame.schema.edgeSchema.get.label
+      val label = edgeFrame.schema.asInstanceOf[EdgeSchema].label
+      val srcLabel = edgeFrame.schema.asInstanceOf[EdgeSchema].srcVertexLabel
+      val destLabel = edgeFrame.schema.asInstanceOf[EdgeSchema].destVertexLabel
       val typeEdge: RDD[GBEdge] = edges.filter(e => e.label.equalsIgnoreCase(label))
 
       val firstEdge: GBEdge = typeEdge.take(1)(0)
@@ -158,10 +172,10 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
           }
         })
 
-        gbEdge.getPropertiesValueByColumns(columns, properties) ++ Array(srcVid, destVid)
+        gbEdge.getPropertiesValueByColumns(columns, properties) ++ Array(srcVid, destVid, label)
       })
 
-      val schema = new Schema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph) ++ List(Column("_src_vid", int64), Column("_dest_vid", int64)))
+      val schema = new EdgeSchema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph) ++ List(Column("_src_vid", int64), Column("_dest_vid", int64), Column("_label", string)), label, srcLabel, destLabel)
       val edgesToAdd = new LegacyFrameRDD(schema, edgeRdd).toFrameRDD()
 
       val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.id)
@@ -183,7 +197,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    */
   def saveToVertexFrame(vertices: RDD[GBVertex], ctx: SparkContext, labelToIdNameMapping: Map[String, String], graph: Graph, titanDBGraph: TitanGraph) {
     graphs.expectSeamless(graph.id).vertexFrames.foreach(vertexFrame => {
-      val label = vertexFrame.schema.vertexSchema.get.label
+      val label = vertexFrame.schema.asInstanceOf[VertexSchema].label
       val typeVertex: RDD[GBVertex] = vertices.filter(v => {
         v.getProperty("_label") match {
           case Some(p) => p.value.toString.equalsIgnoreCase(label)
@@ -208,7 +222,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
       })
 
       val idColumn = labelToIdNameMapping(label)
-      val schema = new Schema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph))
+      val schema = new VertexSchema(ExportFromTitanPlugin.getSchemaFromProperties(columns, titanDBGraph), label, Some(idColumn))
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
       val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.id)
       val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(source)
@@ -227,7 +241,7 @@ object ExportFromTitanPlugin {
    */
   def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String]) {
     vertexLabels.foreach(label => {
-      graphs.defineVertexType(graphId, VertexSchema(label, None))
+      graphs.defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = label, idColumnName = None))
     })
   }
 
