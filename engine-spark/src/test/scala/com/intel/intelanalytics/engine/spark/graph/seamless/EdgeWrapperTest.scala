@@ -32,7 +32,7 @@ class EdgeWrapperTest extends FlatSpec with Matchers {
 
   val columns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("distance", DataTypes.int32))
 
-  val schema = new Schema(columns, edgeSchema = Some(EdgeSchema("label", "srclabel", "destlabel")))
+  val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
 
   "EdgeWrapper" should "allow access to underlying edge data" in {
     val wrapper = new EdgeWrapper(schema)

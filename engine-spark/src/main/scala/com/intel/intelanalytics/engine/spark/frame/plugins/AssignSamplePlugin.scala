@@ -143,9 +143,9 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
     val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
-    val allColumns = frame.schema.columnTuples :+ (outputColumn, DataTypes.string)
+    val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
 
     // save results
-    frames.saveLegacyFrame(frame, new LegacyFrameRDD(new Schema(allColumns), splitRDD))
+    frames.saveLegacyFrame(frame, new LegacyFrameRDD(updatedSchema, splitRDD))
   }
 }

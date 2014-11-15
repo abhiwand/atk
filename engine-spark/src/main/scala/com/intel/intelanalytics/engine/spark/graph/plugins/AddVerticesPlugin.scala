@@ -27,6 +27,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, Graph }
 import com.intel.intelanalytics.domain.graph.construction.AddVertices
+import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -126,7 +127,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
 
     // handle id column
-    val idColumnName = vertexFrameMeta.schema.vertexSchema.get.determineIdColumnName(arguments.idColumnName)
+    val idColumnName = vertexFrameMeta.schema.asInstanceOf[VertexSchema].determineIdColumnName(arguments.idColumnName)
     val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(arguments.idColumnName, idColumnName)
 
     // assign unique ids

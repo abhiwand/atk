@@ -24,144 +24,81 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact, Edge }
+import org.scalatest.{ FlatSpec, Matchers }
+
+/**
+ * This test checks that end-to-end run of k-clique percolation works with k = 2 on a small graph consisting of
+ * two non-trivial connected components and an isolated vertex.
+ *
+ * It is intended as "base case" functionality.
+ */
 
 class StartToFinishCliqueSizeTwoTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
-  trait StartToFinishClqSzTwoTest {
-
-    //    val edgeList: List[(Long, Long)] = List((1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4), (3, 5))
-    //      .map({ case (x, y) => (x.toLong, y.toLong) })
-    val edgeList: List[(Long, Long)] = List((1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4),
-      (2, 7), (2, 8), (3, 4), (4, 7), (4, 8), (5, 6))
-      .map({ case (x, y) => (x.toLong, y.toLong) })
-    val rddOfEdgeList: RDD[Edge] = sparkContext.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
+  trait KCliquePropertyNames {
+    val vertexIdPropertyName = "id"
+    val srcIdPropertyName = "srcId"
+    val dstIdPropertyName = "dstId"
+    val edgeLabel = "label"
+    val communityProperty = "communities"
   }
 
-  // Test for CliqueEnumerator
-  "For CliqueSize = 2, CliqueEnumerator" should
-    "create all set of 2-clique extenders fact" in new StartToFinishClqSzTwoTest {
+  "Two clique community analysis" should "create communities according to expected equivalance classes" in new KCliquePropertyNames {
 
-      val expectedTwoCliques = List((Array(5), Array(6)), (Array(3), Array(4)), (Array(4), Array(7, 8)),
-        (Array(2), Array(3, 4, 7, 8)), (Array(1), Array(3, 4, 5, 6)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfExpectedTwoCliques: RDD[ExtendersFact] = sparkContext.parallelize(expectedTwoCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+    /*
+   The graph has vertex set 1, 2, 3 , 4, 5, 6, 7 and edge set 13, 35, 24, 26, 46
+   So that the 2-clique communities (the connected components that are not isolated vertices) are going to be:
+   {1, 3, 5},  {2, 4, 6},  Note that 7 belongs to no 2 clique community.
+   */
 
-      val cliqueEnumeratorOutput = CliqueEnumerator.run(rddOfEdgeList, 2)
+    val edgeSet: Set[(Long, Long)] = Set((1, 3), (3, 5), (2, 4), (2, 6), (4, 6))
+      .map({ case (x, y) => (x.toLong, y.toLong) }).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-      cliqueEnumeratorOutput.collect().toSet shouldEqual rddOfExpectedTwoCliques.collect().toSet
-    }
+    val vertexSet: Set[Long] = Set(1, 2, 3, 4, 5, 6, 7)
 
-  // Test for GraphGenerator vertex list
-  "For CliqueSize = 2, GraphGenerator" should
-    "have each 2-cliques as the vertex of the new graph" in new StartToFinishClqSzTwoTest {
+    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set()))
 
-      val expectedVertexListOfTwoCliqueGraph = List(Array(1, 3), Array(1, 4), Array(1, 5), Array(1, 6),
-        Array(2, 3), Array(2, 4), Array(2, 7), Array(2, 8),
-        Array(3, 4), Array(4, 7), Array(4, 8), Array(5, 6))
-        .map(clique => clique.map(_.toLong).toSet)
-      val rddOfExpectedVertexListOfTwoCliqueGraph = sparkContext.parallelize(expectedVertexListOfTwoCliqueGraph)
+    val gbEdgeSet =
+      edgeSet.map({
+        case (src, dst) =>
+          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+      })
 
-      val twoCliques = List((Array(5), Array(6)), (Array(3), Array(4)), (Array(4), Array(7, 8)),
-        (Array(2), Array(3, 4, 7, 8)), (Array(1), Array(3, 4, 5, 6)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfTwoCliques = sparkContext.parallelize(twoCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+    val inVertexRDD: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
+    val inEdgeRDD: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-      val twoCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfTwoCliques)
-      val vertexListFromGraphGeneratorOutput = twoCliqueGraphFromGraphGeneratorOutput.cliqueGraphVertices
+    val (outVertices, outEdges) = KCliquePercolationRunner.run(inVertexRDD, inEdgeRDD, 2, communityProperty)
 
-      vertexListFromGraphGeneratorOutput.collect().toSet shouldEqual
-        rddOfExpectedVertexListOfTwoCliqueGraph.collect().toSet
-    }
+    val outEdgesSet = outEdges.collect().toSet
+    val outVertexSet = outVertices.collect().toSet
 
-  // Test for GraphGenerator edge list
-  "For CliqueSize = 2, GraphGenerator" should
-    "produce correct edge list where edges between two 2-cliques " +
-    "(which is the vertices of new graph) exists if they share 1 element" in new StartToFinishClqSzTwoTest {
+    outEdgesSet shouldBe gbEdgeSet
 
-      val edgeListOfTwoCliqueGraph = List(
-        (Array(2, 4), Array(4, 7)), (Array(3, 4), Array(4, 8)), (Array(1, 4), Array(2, 4)),
-        (Array(2, 3), Array(2, 8)), (Array(3, 4), Array(1, 4)), (Array(1, 4), Array(4, 7)),
-        (Array(1, 4), Array(1, 6)), (Array(1, 3), Array(1, 6)), (Array(3, 4), Array(2, 4)),
-        (Array(4, 7), Array(2, 7)), (Array(2, 7), Array(2, 8)), (Array(1, 3), Array(1, 5)),
-        (Array(1, 4), Array(1, 5)), (Array(5, 6), Array(1, 6)),
-        (Array(2, 3), Array(1, 3)), (Array(2, 3), Array(2, 4)), (Array(2, 4), Array(2, 7)),
-        (Array(1, 3), Array(1, 4)), (Array(5, 6), Array(1, 5)), (Array(1, 4), Array(4, 8)),
-        (Array(3, 4), Array(2, 3)), (Array(2, 3), Array(2, 7)), (Array(1, 5), Array(1, 6)),
-        (Array(3, 4), Array(1, 3)), (Array(4, 7), Array(4, 8)), (Array(2, 4), Array(4, 8)),
-        (Array(4, 8), Array(2, 8)), (Array(3, 4), Array(4, 7)), (Array(2, 4), Array(2, 8))
-      ).map(edges => (edges._1.map(_.toLong).toSet, edges._2.map(_.toLong).toSet))
-      val rddOfEdgeListOfTwoCliqueGraph = sparkContext.parallelize(edgeListOfTwoCliqueGraph)
+    val testVerticesToCommunities = outVertexSet.map(v => (v.gbId.value.asInstanceOf[Long],
+      v.getProperty(communityProperty).get.value.asInstanceOf[java.util.Set[Long]])).toMap
 
-      val twoCliques = List((Array(5), Array(6)), (Array(3), Array(4)), (Array(4), Array(7, 8)),
-        (Array(2), Array(3, 4, 7, 8)), (Array(1), Array(3, 4, 5, 6)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfTwoCliques: RDD[ExtendersFact] = sparkContext.parallelize(twoCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+    // vertex 7 gets no community (poor lonley little guy)
+    testVerticesToCommunities(7) should be('empty)
 
-      val twoCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfTwoCliques)
-      val edgeListFromGraphGeneratorOutput = twoCliqueGraphFromGraphGeneratorOutput.cliqueGraphEdges
+    // no vertex gets more than one two-clique community (this is a general property of two-clique communities...
+    // they're just the connected components of the non-isolated vertices)
 
-      edgeListFromGraphGeneratorOutput.collect().toSet shouldEqual
-        rddOfEdgeListOfTwoCliqueGraph.collect().toSet
-    }
+    testVerticesToCommunities(1).size() shouldBe 1
+    testVerticesToCommunities(2).size() shouldBe 1
 
-  // Test for GetConnectedComponents
-  "For CliqueSize = 2, K-Clique GetConnectedComponents" should
-    "produce the same number of pairs of vertices and component ID " +
-    "as the number of vertices in the input graph" in new StartToFinishClqSzTwoTest {
+    // vertex 1 and vertex 2 get distinct two-clique communities
+    testVerticesToCommunities(1) should not be testVerticesToCommunities(2)
 
-      val twoCliques = List((Array(5), Array(6)), (Array(3), Array(4)), (Array(4), Array(7, 8)),
-        (Array(2), Array(3, 4, 7, 8)), (Array(1), Array(3, 4, 5, 6)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfTwoCliques: RDD[ExtendersFact] = sparkContext.parallelize(twoCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+    // vertex 3 and vertex 5 have the same two-clique community as vertex 1
+    testVerticesToCommunities(3) shouldBe testVerticesToCommunities(1)
+    testVerticesToCommunities(5) shouldBe testVerticesToCommunities(1)
 
-      val vertexListOfTwoCliqueGraph = List(Array(1, 3), Array(1, 4), Array(1, 5), Array(1, 6),
-        Array(2, 3), Array(2, 4), Array(2, 7), Array(2, 8),
-        Array(3, 4), Array(4, 7), Array(4, 8), Array(5, 6))
-        .map(clique => clique.map(_.toLong).toSet)
-      val rddOfVertexListOfTwoCliqueGraph = sparkContext.parallelize(vertexListOfTwoCliqueGraph)
+    // vertex 4 and vertex 6 have the same two-clique community as vertex 2
+    testVerticesToCommunities(4) shouldBe testVerticesToCommunities(2)
+    testVerticesToCommunities(6) shouldBe testVerticesToCommunities(2)
+  }
 
-      val twoCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfTwoCliques)
-      val twoCliqueGraphCCOutput = GetConnectedComponents.run(twoCliqueGraphFromGraphGeneratorOutput, sparkContext)
-      val twoCliqueGraphCC = twoCliqueGraphCCOutput.connectedComponents
-
-      twoCliqueGraphCC.count() shouldEqual vertexListOfTwoCliqueGraph.size
-    }
-
-  // Test for CommunityAssigner
-  "Assignment of communities to the vertices" should
-    "produce the pair of original 2-clique vertex and set of communities it belongs to" in new StartToFinishClqSzTwoTest {
-
-      val twoCliques = List((Array(5), Array(6)), (Array(3), Array(4)), (Array(4), Array(7, 8)),
-        (Array(2), Array(3, 4, 7, 8)), (Array(1), Array(3, 4, 5, 6)))
-        .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
-      val rddOfTwoCliques: RDD[ExtendersFact] = sparkContext.parallelize(twoCliques)
-        .map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-
-      val vertexWithNormalizedCommunity = List(
-        (1, Array(1)),
-        (2, Array(1)),
-        (3, Array(1)),
-        (4, Array(1)),
-        (5, Array(1)),
-        (6, Array(1)),
-        (7, Array(1)),
-        (8, Array(1)))
-        .map(vertexCommunity => (vertexCommunity._1.toLong, vertexCommunity._2.map(_.toLong).toSet))
-      val rddOfVertexWithNormalizedCommunity = sparkContext.parallelize(vertexWithNormalizedCommunity)
-
-      val twoCliqueGraphFromGraphGeneratorOutput = GraphGenerator.run(rddOfTwoCliques)
-      val twoCliqueGraphCCOutput = GetConnectedComponents.run(twoCliqueGraphFromGraphGeneratorOutput, sparkContext)
-      val vertexNormalizedCommunityAsCommunityAssignerOutput =
-        CommunityAssigner.run(twoCliqueGraphCCOutput.connectedComponents, twoCliqueGraphCCOutput.newVertexIdToOldVertexIdOfCliqueGraph, sparkContext)
-
-      vertexNormalizedCommunityAsCommunityAssignerOutput.collect().toSet shouldEqual rddOfVertexWithNormalizedCommunity.collect().toSet
-    }
 }

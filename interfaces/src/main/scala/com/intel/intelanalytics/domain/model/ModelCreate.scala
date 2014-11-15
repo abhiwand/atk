@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -20,22 +21,18 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.domain.graph
-
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema }
+package com.intel.intelanalytics.domain.model
 
 /**
- * Arguments for defining an edge
- * @param graphRef
- * @param label the label for this edge list
- * @param srcVertexLabel the src "type" of vertices this edge connects
- * @param destVertexLabel the destination "type" of vertices this edge connects
- * @param directed true if edges are directed, false if they are undirected
+ * Specifies model creation, used in REST API to support optional name
+ * @param name Option name, if not provided, one will be generated
+ * @param modelType Option description
  */
-case class DefineEdge(graphRef: GraphReference, label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) {
+case class ModelCreate(name: Option[String] = None, modelType: String)
 
-  def edgeSchema: EdgeSchema = {
-    new EdgeSchema(GraphSchema.edgeSystemColumns, label, srcVertexLabel, destVertexLabel, directed)
+object ModelCreate {
+
+  implicit def toDataFrameTemplate(modelCreate: ModelCreate): ModelTemplate = {
+    ModelTemplate(name = ModelName.validateOrGenerate(modelCreate.name), modelCreate.modelType)
   }
 }

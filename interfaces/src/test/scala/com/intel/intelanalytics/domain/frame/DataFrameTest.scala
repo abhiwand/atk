@@ -1,12 +1,12 @@
 package com.intel.intelanalytics.domain.frame
 
 import org.scalatest.WordSpec
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 import org.joda.time.DateTime
 
 class DataFrameTest extends WordSpec {
 
-  val frame = new DataFrame(1, "name", None, Schema(), 0L, 1L, new DateTime, new DateTime)
+  val frame = new DataFrame(1, "name", None, FrameSchema(), 0L, 1L, new DateTime, new DateTime)
 
   "DataFrame" should {
 
