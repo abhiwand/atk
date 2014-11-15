@@ -34,6 +34,7 @@ from intelanalytics.core.column import Column
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.frame import FrameInfo
 from intelanalytics.core.frame import VertexFrame, EdgeFrame
+from intelanalytics.rest.command import executor
 
 
 def initialize_graph(graph, graph_info):
@@ -118,6 +119,14 @@ class GraphBackendRest(object):
     def get_edge_frame(self,graphid, label):
         r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
         return EdgeFrame(r.json())
+
+    def get_vertex_count(self, graph):
+        arguments = {'graph': self.get_ia_uri(graph)}
+        return executor.get_command_output("graph", "vertex_count", arguments)
+
+    def get_edge_count(self, graph):
+        arguments = {'graph': self.get_ia_uri(graph)}
+        return executor.get_command_output("graph", "edge_count", arguments)
 
 
 # GB JSON Payload objects:

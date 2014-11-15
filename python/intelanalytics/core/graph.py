@@ -492,13 +492,13 @@ class Graph(DocStubsGraph, _BaseGraph):
         else:
             raise ValueError("Invalid source value of type %s" % type(source))
 
-        self.vertices = GraphFrameCollection(self.get_vertex_frame, self.get_vertex_frames)
-        self.edges = GraphFrameCollection(self.get_edge_frame, self.get_edge_frames)
+        self.vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
+        self.edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
 
         _BaseGraph.__init__(self)
 
     @api
-    def get_vertex_frame(self, label):
+    def _get_vertex_frame(self, label):
         """
         return a VertexFrame for the associated label
         :param label: the label of the frame to return
@@ -506,14 +506,14 @@ class Graph(DocStubsGraph, _BaseGraph):
         return self._backend.get_vertex_frame(self._id, label)
 
     @api
-    def get_vertex_frames(self):
+    def _get_vertex_frames(self):
         """
         return all VertexFrames for this graph
         """
         return self._backend.get_vertex_frames(self._id)
 
     @api
-    def get_edge_frame(self, label):
+    def _get_edge_frame(self, label):
         """
         return an EdgeFrame for the associated label
         :param label: the label of the frame to return
@@ -521,11 +521,49 @@ class Graph(DocStubsGraph, _BaseGraph):
         return self._backend.get_edge_frame(self._id, label)
 
     @api
-    def get_edge_frames(self):
+    def _get_edge_frames(self):
         """
         return all EdgeFrames for this graph
         """
         return self._backend.get_edge_frames(self._id)
+
+    @property
+    @api
+    def vertex_count(self):
+        """
+        Get the total number of vertices in the graph.
+
+        Examples
+        --------
+        graph.vertex_count
+
+        The result given is::
+
+            1194
+
+        .. versionadded:: 0.9
+
+        """
+        return self._backend.get_vertex_count(self)
+
+    @property
+    @api
+    def edge_count(self):
+        """
+        Get the total number of edges in the graph.
+
+        Examples
+        --------
+        graph.edge_count
+
+        The result given is::
+
+            1194
+
+        .. versionadded:: 0.9
+
+        """
+        return self._backend.get_edge_count(self)
 
 
 class GraphFrameCollection(object):
