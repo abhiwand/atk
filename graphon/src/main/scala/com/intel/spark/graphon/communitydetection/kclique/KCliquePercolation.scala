@@ -82,6 +82,14 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
 
+  /**
+    * The number of jobs varies with the number of supersteps required to find the connected components
+    * of the derived clique-shadow graph.... we cannot properly anticipate this without doing a full analysis of
+    * the graph.
+    *
+    * @param arguments command arguments: used if a command can produce variable number of jobs
+    * @return number of jobs in this command
+    */
   override def numberOfJobs(arguments: KClique): Int = {
    8 + 2 * arguments.cliqueSize
   }
@@ -105,6 +113,17 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
                              |        Name of the community property of vertex that will be updated/created in the graph.
                              |        This property will contain for each vertex the set of communities that contain
                              |        that vertex.
+                             |
+                             |    Note on Progress Bars
+                             |    ---------------------
+                             |        K clique percolation spawns a number of Spark jobs that cannot be calculated
+                             |        before execution (it is bounded by the diameter of the clique graph derived from
+                             |        the input graph).
+                             |        For this reason, the initial loading, clique enumeration and clique-graph construction
+                             |        steps are tracked with a single progress bar (this is most of the time),
+                             |        and then successive iterations of analysis of the clique graph are tracked with
+                             |        many short-lived progress bars, and then finally the result is written out.
+                             |
                              |
                              |    Examples
                              |    --------
