@@ -126,6 +126,6 @@ trait AbstractEdge extends AbstractRow with Serializable {
     val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
     val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
-    GBEdge(null, null, GBProperty("_vid", srcVertexId()), GBProperty("_vid", destVertexId()), schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+    GBEdge(None, null, null, GBProperty("_vid", srcVertexId()), GBProperty("_vid", destVertexId()), schema.asInstanceOf[EdgeSchema].label, properties.toSet)
   }
 }

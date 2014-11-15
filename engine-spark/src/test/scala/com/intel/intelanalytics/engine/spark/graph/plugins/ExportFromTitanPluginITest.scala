@@ -13,7 +13,7 @@ class ExportFromTitanPluginITest extends FlatSpec with Matchers with MockitoSuga
     val graphId = 1
     ExportFromTitanPlugin.createVertexFrames(graphs, graphId, List("user", "movie"))
 
-    verify(graphs).defineVertexType(graphId, VertexSchema("user", None))
-    verify(graphs).defineVertexType(graphId, VertexSchema("movie", None))
+    verify(graphs).defineVertexType(graphId, VertexSchema(label = "user", idColumnName = None))
+    verify(graphs).defineVertexType(graphId, VertexSchema(label = "movie", idColumnName = None))
   }
 }
