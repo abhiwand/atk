@@ -52,7 +52,7 @@ import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.classification.mllib.plugins.{ TestModelPlugin, TrainModelPlugin }
+import org.apache.spark.mllib.classification.ia.plugins.{ LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
@@ -194,8 +194,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
 
   //Registering model plugins
-  commandPluginRegistry.registerCommand(new TrainModelPlugin)
-  commandPluginRegistry.registerCommand(new TestModelPlugin)
+  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
+  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
