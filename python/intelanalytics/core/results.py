@@ -64,6 +64,6 @@ def return_metrics(json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
 
-@postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent')
+@postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns')
 def return_none(json_result):
     return None
