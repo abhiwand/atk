@@ -21,29 +21,27 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.mllib.plugins
+package org.apache.spark.mllib.classification.ia.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.model.{ ModelLoad, Model }
+import com.intel.intelanalytics.domain.model.ModelLoad
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+import MLLibJsonProtocol._
+import scala.concurrent.ExecutionContext
+
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import LogisticRegressionJsonProtocol._
-import scala.concurrent.ExecutionContext
-import MLLibMethods._
+import MLLibJsonProtocol._
 
 /* Run the LogisticRegressionWithSGD model on the test frame*/
-class TestModelPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetricValue] {
+class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
@@ -107,8 +105,8 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetric
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val testFrameRDD = frames.loadFrameRDD(ctx, frameId)
-      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(testFrameRDD, arguments.labelColumn, List(arguments.observationColumn))
+      val testFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
