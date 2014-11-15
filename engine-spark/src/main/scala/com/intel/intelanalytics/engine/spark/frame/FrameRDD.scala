@@ -26,6 +26,8 @@ package com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
+import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
@@ -69,6 +71,17 @@ class FrameRDD(val schema: Schema,
    */
   def toLegacyFrameRDD: LegacyFrameRDD = {
     new LegacyFrameRDD(this.schema, this.baseSchemaRDD)
+  }
+
+  /**
+   * Convert FrameRDD into RDD[LabeledPoint] format required by MLLib
+   */
+  def toLabeledPointRDD(labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
+    this.mapRows(row =>
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
+      })
   }
 
   /**
