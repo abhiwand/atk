@@ -1,6 +1,19 @@
 from intelanalytics.core.orddict import OrderedDict
 from intelanalytics.core.iatypes import valid_data_types
 
+import json
+import intelanalytics.core.iatypes as iatypes
+
+
+class NumpyJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, iatypes.float32) or isinstance(obj, iatypes.float64):
+            return float(obj)
+        if isinstance(obj, iatypes.int32) or isinstance(obj, iatypes.float64):
+            return int(obj)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
 
 class Row(object):
 
@@ -8,11 +21,11 @@ class Row(object):
         """
         Expects schema to as list of tuples
         """
-        self.schema_dict = OrderedDict(schema)
-        self.data = [] if data is None else data  # data is an array of strings right now
+        self.__schema_dict = OrderedDict(schema)
+        self.__data = [] if data is None else data  # data is an array of strings right now
 
     def __getattr__(self, name):
-        if name != "_schema" and name in self.schema_dict.keys():
+        if name != "_Row__schema_dict" and name in self.__schema_dict.keys():
             return self[name]
         return super(Row, self).__getattribute__(name)
 
@@ -29,31 +42,54 @@ class Row(object):
             raise KeyError("Column name " + str(key) + " not present.")
 
     def __len__(self):
-        return len(self.schema_dict)
+        return len(self.__schema_dict)
 
     def __iter__(self):
         return self.items().__iter__()
 
+    def json_dumps(self):
+        return json.dumps(self.__data, cls=NumpyJSONEncoder)
+
+    def _get_data(self):
+        return self.__data
+
+    def _set_data(self, value):
+        self.__data = value
+
     def keys(self):
-        return self.schema_dict.keys()
+        return self.__schema_dict.keys()
 
     def values(self):
         return [self._get_cell_value(k) for k in self.keys()]
 
     def types(self):
-        return self.schema_dict.values()
+        return self.__schema_dict.values()
 
     def items(self):
         return zip(self.keys(), self.values())
 
     def get_cell_type(self, key):
-        return self.schema_dict[key]
+        try:
+            return self.__schema_dict[key]
+        except KeyError:
+            raise ValueError("'%s' is not in the schema" % key)
 
     def _get_cell_value(self, key):
-        index = self.schema_dict.keys().index(key)  # could improve speed here...
+        try:
+            index = self.__schema_dict.keys().index(key)  # could improve speed here...
+        except ValueError:
+            raise KeyError(key)
         return self._get_cell_value_by_index(index)
 
     def _get_cell_value_by_index(self, index):
         # converts the value into the proper data type
-        dtype = self.schema_dict.values()[index]
-        return valid_data_types.cast(self.data[index], dtype)
+        try:
+            dtype = self.__schema_dict.values()[index]
+        except IndexError:
+            raise IndexError("Internal Error: improper index %d used in schema with %d columns"
+                             % (index, len(self.__schema_dict)))
+        try:
+            return valid_data_types.cast(self.__data[index], dtype)
+        except IndexError:
+            raise IndexError("Internal Error: improper index %d used in row data with %d columns"
+                             % (index, len(self.__data)))

@@ -31,4 +31,4 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param execution query execution instance
  * @param schema schema to describe the data
  */
-case class PagedQueryResult(execution: QueryExecution, schema: Option[Schema])
+case class PagedQueryResult(execution: QueryExecution, schema: Option[Schema]) extends QueryResult(schema)

@@ -4,24 +4,9 @@ Python API
 .. contents:: Table of Contents
     :local:
 
-Files
------
-.. automodule:: intelanalytics.core.files
-    :members:
+.. toctree::
+    :maxdepth: 2
 
-Frame
------
-.. automodule:: intelanalytics.core.frame
-    :members:
-    :inherited-members:
-
-
-Graph
------
-.. automodule:: intelanalytics.core.graph
-    :members:
-    :inherited-members:
-
-.. automodule:: intelanalytics.core.autograph
-    :members:
-    :inherited-members:
+    api_datasources.rst
+    api_frames.rst
+    api_graphs.rst

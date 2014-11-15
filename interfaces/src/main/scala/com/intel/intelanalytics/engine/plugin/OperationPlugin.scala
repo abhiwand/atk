@@ -23,32 +23,59 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin, Component }
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
-import spray.json.JsObject
+import spray.json._
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
  *
  * Plugin authors should implement the execute() method
  *
- * @tparam Argument the type of the arguments that the plugin expects to receive from
+ * @tparam Arguments the type of the arguments that the plugin expects to receive from
  *           the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return] extends ((Invocation, Any) => Return)
+sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return] extends ((Invocation, Any) => Return)
     with Plugin
     with ClassLoaderAware {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   *
+   * The colon ":" is used to to indicate command destination base classes, default classes or classes of a
+   * specific storage type:
+   *
+   * - graph:titan means command is loaded into class TitanGraph
+   * - graph: means command is loaded into class Graph, our default type which will be the Parquet-backed graph
+   * - graph would mean command is loaded into class BaseGraph, which applies to all graph classes
+   * - frame: and means command is loaded in class Frame.  Example: "frame:/assign_sample"
+   * - model:logistic_regression  means command is loaded into class LogisticRegressionModel
    */
   def name: String
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   def doc: Option[CommandDoc] = None
+
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
+  def parseArguments(arguments: JsObject): Arguments = arguments.convertTo[Arguments]
+
+  /**
+   * Convert the given argument to a JsObject
+   */
+  def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -56,7 +83,7 @@ sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
 
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
@@ -70,7 +97,7 @@ sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      val result = execute(invocation, arguments.asInstanceOf[Argument])(invocation.user, invocation.executionContext)
+      val result = execute(invocation, arguments.asInstanceOf[Arguments])(invocation.user, invocation.executionContext)
       if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
       result
     }
@@ -80,48 +107,34 @@ sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return
 /**
  * Base trait for command plugins
  */
-abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Product: ClassManifest]
-    extends OperationPlugin[Argument, Return] {
+abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest]
+    extends OperationPlugin[Arguments, Return] {
 
-  val argumentManifest = implicitly[ClassManifest[Argument]]
+  val argumentManifest = implicitly[ClassManifest[Arguments]]
   val returnManifest = implicitly[ClassManifest[Return]]
-
-  /**
-   * Convert the given JsObject to an instance of the Argument type
-   */
-  def parseArguments(arguments: JsObject): Argument
-
-  /**
-   * Convert the given argument to a JsObject
-   */
-  def serializeArguments(arguments: Argument): JsObject
 
   /**
    * Convert the given object to a JsObject
    */
-  def serializeReturn(returnValue: Return): JsObject
+  def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
 
   /**
    * Number of jobs needs to be known to give a single progress bar
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  def numberOfJobs(arguments: Argument): Int = 1
+  def numberOfJobs(arguments: Arguments): Int = 1
+
+  /**
+   * Name of the custom kryoclass this plugin needs.
+   * kryoRegistrator = None means use JavaSerializer
+   */
+  def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
 }
 
 /**
  * Base trait for query plugins
  */
-abstract class QueryPlugin[Argument <: Product: ClassManifest] extends OperationPlugin[Argument, Any] {
-  /**
-   * Convert the given JsObject to an instance of the Argument type
-   */
-  def parseArguments(arguments: JsObject): Argument
+abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest] extends OperationPlugin[Arguments, Any] {
 
-  /**
-   * Convert the given argument to a JsObject
-   */
-  def serializeArguments(arguments: Argument): JsObject
-
-  override def doc: Option[CommandDoc] = None
 }

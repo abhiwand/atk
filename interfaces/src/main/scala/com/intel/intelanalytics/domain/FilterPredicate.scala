@@ -23,7 +23,9 @@
 
 package com.intel.intelanalytics.domain
 
-case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: String) {
+import com.intel.intelanalytics.domain.frame.FrameReference
+
+case class FilterPredicate(frame: FrameReference, predicate: String) {
   require(frame != null, "frame is required")
   require(predicate != null, "predicate is required")
 }

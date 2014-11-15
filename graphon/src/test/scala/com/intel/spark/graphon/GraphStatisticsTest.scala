@@ -23,7 +23,7 @@
 
 package com.intel.spark.graphon
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.scalatest.Matchers
 import com.intel.testutils.TestingSparkContextWordSpec
 
@@ -74,14 +74,14 @@ class GraphStatisticsTest extends TestingSparkContextWordSpec with Matchers {
     GraphStatistics.inDegreesByEdgeType(edgeRDD, validEdgeLabel).collect().length shouldBe 1
   }
 
-  private def createVertexWithOneEdge: (Seq[Vertex], Seq[Edge]) = {
+  private def createVertexWithOneEdge: (Seq[GBVertex], Seq[GBEdge]) = {
     val alice_gbId = new Property("gbId", 10001)
-    val alice = new Vertex(alice_gbId, List(new Property("Name", "Alice")))
+    val alice = new GBVertex(alice_gbId, Set(new Property("Name", "Alice")))
 
     val bob_gbId = new Property("gbId", 10002)
-    val bob = new Vertex(bob_gbId, List(new Property("Name", "Bob")))
+    val bob = new GBVertex(bob_gbId, Set(new Property("Name", "Bob")))
 
-    val edge1 = new Edge(alice_gbId, bob_gbId, validEdgeLabel, List(new Property("time", 20)))
+    val edge1 = new GBEdge(alice_gbId, bob_gbId, validEdgeLabel, Set(new Property("time", 20)))
     (Seq(alice, bob), Seq(edge1))
   }
 }

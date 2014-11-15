@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ StorageFormats, IAUri, HasId }
 import org.joda.time.DateTime
 
 /**
@@ -33,22 +33,49 @@ import org.joda.time.DateTime
  * @param description description of the graph (a good default might say what frames it came from)
  * @param storage name used in physical data store, the HBase table name
  * @param statusId lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
+ * @param storageFormat e.g. "ia/frame", "cassandra/titan", "hbase/titan"
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdByUserId user who created this row
  * @param modifiedByUserId  user who last modified this row
+ * @param idCounter idCounter counter for generating unique ids for vertices and edges with Seamless Graph.
  */
 case class Graph(id: Long,
                  name: String,
                  description: Option[String],
                  storage: String,
                  statusId: Long,
+                 storageFormat: String,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None) extends HasId {
+                 modifiedByUserId: Option[Long] = None,
+                 idCounter: Option[Long] = None,
+                 elementIDNames: Option[ElementIDNames] = None) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
+  def entity = "graph"
+  StorageFormats.validateGraphFormat(storageFormat)
 
+  def isSeamless: Boolean = {
+    StorageFormats.isSeamlessGraph(storageFormat)
+  }
+
+  def isTitan: Boolean = {
+    !StorageFormats.isSeamlessGraph(storageFormat)
+  }
+
+  def commandPrefix: String = {
+    if (isTitan) "graph:titan"
+    else if (isSeamless) "graph:"
+    else throw new RuntimeException("New graph type is not yet implemented!")
+  }
+
+  /**
+   * Get the next id from the idCounter
+   */
+  def nextId(): Long = {
+    idCounter.getOrElse(0L) + 1L
+  }
 }

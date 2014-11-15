@@ -1,13 +1,18 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
-import com.intel.intelanalytics.engine.spark.graph.TestingTitan
 import com.intel.testutils.MatcherUtils._
-import org.scalatest.{ FlatSpec, Matchers }
-import org.mockito.Mockito._
+import com.intel.testutils.TestingTitan
+import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json.JsNumber
-import org.scalatest.mock.MockitoSugar
 
-class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with MockitoSugar {
+class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
+  before {
+    setupTitan()
+  }
+
+  after {
+    cleanupTitan()
+  }
 
   "executeGremlinQuery" should "execute valid Gremlin queries" in {
     val vertex1 = titanGraph.addVertex(null)
@@ -18,6 +23,8 @@ class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with Mo
     vertex1.setProperty("age", 23)
     vertex2.setProperty("name", "bob")
     vertex2.setProperty("age", 27)
+
+    titanGraph.commit()
 
     val gremlinQuery = new GremlinQuery()
     val gremlinScript = """g.V("name", "alice").out("knows")"""

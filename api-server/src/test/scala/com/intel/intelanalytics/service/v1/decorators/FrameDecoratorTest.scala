@@ -27,25 +27,26 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.domain.frame.DataFrame
 import org.joda.time.DateTime
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 
 class FrameDecoratorTest extends FlatSpec with Matchers {
 
-  val baseUri = "http://www.example.com/dataframes"
+  val baseUri = "http://www.example.com/frames"
   val uri = baseUri + "/1"
-  val frame = new DataFrame(1, "name", None, Schema(), 0L, 1L, new DateTime, new DateTime)
+  val frame = new DataFrame(1, "name", None, FrameSchema(), 0L, 1L, new DateTime, new DateTime)
 
   "FrameDecorator" should "be able to decorate a frame" in {
     val decoratedFrame = FrameDecorator.decorateEntity(uri, Nil, frame)
     decoratedFrame.id should be(1)
     decoratedFrame.name should be("name")
-    decoratedFrame.links.head.uri should be("http://www.example.com/dataframes/1")
+    decoratedFrame.ia_uri should be("ia://frame/1")
+    decoratedFrame.links.head.uri should be("http://www.example.com/frames/1")
   }
 
   it should "set the correct URL in decorating a list of frames" in {
     val frameHeaders = FrameDecorator.decorateForIndex(baseUri, Seq(frame))
     val frameHeader = frameHeaders.toList.head
-    frameHeader.url should be("http://www.example.com/dataframes/1")
+    frameHeader.url should be("http://www.example.com/frames/1")
   }
 
   it should "add a RelLink for error frames" in {
@@ -55,9 +56,9 @@ class FrameDecoratorTest extends FlatSpec with Matchers {
 
     // error frame link
     decoratedFrame.links.head.rel should be("ia-error-frame")
-    decoratedFrame.links.head.uri should be("http://www.example.com/dataframes/5")
+    decoratedFrame.links.head.uri should be("http://www.example.com/frames/5")
 
     // self link
-    decoratedFrame.links.last.uri should be("http://www.example.com/dataframes/1")
+    decoratedFrame.links.last.uri should be("http://www.example.com/frames/1")
   }
 }

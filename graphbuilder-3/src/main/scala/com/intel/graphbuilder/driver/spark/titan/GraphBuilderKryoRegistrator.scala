@@ -1,5 +1,7 @@
 package com.intel.graphbuilder.driver.spark.titan
 
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import org.apache.hadoop.io.NullWritable
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.elements._
@@ -13,10 +15,10 @@ import com.intel.graphbuilder.schema._
 import com.intel.graphbuilder.parser.rule.ParsedValue
 import com.intel.graphbuilder.parser.rule.SingleEdgeRuleParser
 import com.intel.graphbuilder.schema.EdgeLabelDef
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule.PropertyRuleParser
-import com.intel.graphbuilder.elements.Edge
+import com.intel.graphbuilder.elements.GBEdge
 import com.intel.graphbuilder.parser.rule.SinglePropertyRuleParser
 import com.intel.graphbuilder.parser.rule.SingleVertexRuleParser
 import com.intel.graphbuilder.parser.InputSchema
@@ -49,11 +51,11 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 
     // elements package
-    kryo.register(classOf[Edge])
+    kryo.register(classOf[GBEdge])
     kryo.register(classOf[GbIdToPhysicalId])
     kryo.register(classOf[GraphElement])
     kryo.register(classOf[Property])
-    kryo.register(classOf[Vertex])
+    kryo.register(classOf[GBVertex])
 
     // graph package
     kryo.register(classOf[TitanGraphConnector])
@@ -93,7 +95,8 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[GraphSchema])
     kryo.register(classOf[InferSchemaFromData])
     kryo.register(classOf[SchemaAccumulableParam])
-
+    kryo.register(classOf[FaunusVertex], new FaunusVertexSerializer())
+    kryo.register(classOf[NullWritable])
     // avoid Spark top(n) issue with Kryo serializer:
     //    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, Vertex)]])
   }

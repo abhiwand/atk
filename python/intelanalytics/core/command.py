@@ -56,7 +56,6 @@ class CommandDefinition(object):
         # do doc last, so we can send populated self to create CommandNumpydoc
         self.doc = '' if doc is None else get_numpy_doc(self, doc.one_line_summary, doc.extended_summary)
 
-
     def __repr__(self):
         return "\n".join([self.full_name,
                           "\n".join([repr(p) for p in self.parameters]),
@@ -65,26 +64,6 @@ class CommandDefinition(object):
                           self.doc])
 
 
-def validate_arguments(arguments, parameters):
-    """
-    Returns validated and possibly re-cast arguments
-
-    Use parameter definitions to make sure the arguments conform.  This function
-    is closure over in the dynamically generated execute command function
-    """
-    validated = {}
-    for (k, v) in arguments.items():
-        try:
-            parameter = [p for p in parameters if p.name == k][0]
-        except IndexError:
-            raise ValueError("No parameter named '%s'" % k)
-        validated[k] = v
-        if parameter.use_self:
-            validated[k] = v._get_id()
-        if parameter.data_type is list:
-            if isinstance(v, basestring) or not hasattr(v, '__iter__'):
-                validated[k] = [v]
-    return validated
 
 
 # TODO - Remove the rest of this file (it moved to metaprog.py)

@@ -34,7 +34,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <groupId>com.intel.ia</groupId>
     <artifactId>IntelAnalytics</artifactId>
     <packaging>pom</packaging>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.6-SNAPSHOT</version>
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
@@ -103,17 +103,21 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <maven>3.0</maven>
     </prerequisites>
     <properties>
-        <project.version>0.8.0-SNAPSHOT</project.version>
+        <project.version>0.8.6-SNAPSHOT</project.version>
         <top.dir>${project.basedir}</top.dir>
         <buildtype>test</buildtype>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- START TITAN -->
+        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
+        <dep.reflections>0.9.9-RC1</dep.reflections>
+        <!-- END TITAN -->
 
-        <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
-        <dep.gremlin.version>2.4.0</dep.gremlin.version>
         <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
         <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
-
+        <dep.zookeeper.version>3.4.5-cdh5.1.2</dep.zookeeper.version>
         <dep.mahout.version>0.9</dep.mahout.version>
 
         <dep.spark.version>1.0.0-cdh5.1.2</dep.spark.version>
@@ -125,8 +129,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
-        <scala.long.version>2.10.3</scala.long.version>
+        <scala.long.version>2.10.4</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
+        <scalatest.version>2.1.6</scalatest.version>
 
         <akka.version>2.3.2</akka.version>
 
@@ -327,7 +332,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                                 <junitxml>.</junitxml>
                                 <filereports>WDF TestSuite.txt</filereports>
-                                <parallel>true</parallel>
+                                <parallel>false</parallel>
+                                <stdout>FTD</stdout>
+                                <argLine>-Xmx512m -XX:PermSize=256m</argLine>
                             </configuration>
                             <executions>
                                 <execution>
@@ -354,7 +361,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <dependency>
                         <groupId>org.scalatest</groupId>
                         <artifactId>scalatest_${scala.short.version}</artifactId>
-                        <version>2.1.6</version>
+                        <version>${scalatest.version}</version>
                         <scope>test</scope>
                     </dependency>
                 </dependencies>
@@ -362,7 +369,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependencies>
                 <dependency>
                     <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest_2.10</artifactId>
+                    <artifactId>scalatest_${scala.short.version}</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -372,7 +379,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                  Scoverage is should only be used on a single module at a time or it produces inaccurate results.
 
                  The right way to use it is to run "mvn install" on the full project.  Change directory to the
-                 submodule and run "mvn clean test scoverage:report".
+                 submodule and run "mvn -Pscala-coverage clean test scoverage:report".
             -->
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -619,10 +626,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scalariform-maven-plugin</artifactId>
             </plugin>
 
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -753,7 +760,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>ititan-core</artifactId>
-                <version>${dep.aurelius.version}</version>
+                <version>${dep.ititan.version}</version>
+                <!--<exclusions>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions> -->
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -762,19 +775,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
-                <artifactId>ititan-core</artifactId>
+                <artifactId>titan-hadoop-2</artifactId>
                 <version>${dep.aurelius.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro</artifactId>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.thinkaurelius.faunus</groupId>
-                <artifactId>faunus</artifactId>
-                <version>${dep.aurelius.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -785,6 +793,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hbase</artifactId>
                 <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -802,13 +816,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${dep.reflections}</version>
+            </dependency>
             <!--ENDititan-->
 
             <!--STARTgremlin-groovy -->
             <dependency>
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
-                <version>${dep.gremlin.version}</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <!--ENDgremlin-groovy -->
             <!--org.scala-->
@@ -827,7 +846,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
-                <version>3.3.3</version>
+                <version>${dep.zookeeper.version}</version>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
@@ -916,6 +935,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>spark-mllib_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-graphx_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
             <!--org.apache.mahout-->
             <dependency>
                 <groupId>org.apache.mahout</groupId>
@@ -1001,6 +1025,19 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>hbase-client</artifactId>
                 <version>${dep.hbase.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-testing-util</artifactId>
+                <version>${dep.hbase.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <!--commons-->
             <dependency>
@@ -1070,7 +1107,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>io.spray</groupId>
                 <artifactId>spray-json_${scala.short.version}</artifactId>
-                <version>1.2.5</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>
@@ -1142,12 +1179,22 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.tinkerpop.blueprints</groupId>
                 <artifactId>blueprints-core</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-json-org</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.tinkerpop</groupId>
                 <artifactId>frames</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>

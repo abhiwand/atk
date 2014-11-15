@@ -5,16 +5,23 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>graphon</artifactId>
     <packaging>jar</packaging>
-    <name>IntelAnalytics graph algorithms</name>
+    <name>graphon (graph algorithms)</name>
 
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+          -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -28,6 +35,53 @@
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadeTestJar>true</shadeTestJar>
+                            <finalName>${project.artifactId}</finalName>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <shadedClassifierName>${project.artifactId}</shadedClassifierName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.apache.maven:*</exclude>
+                                    <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>*.html</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -60,7 +114,18 @@
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_${scala.short.version}</artifactId>
+            <!--<scope>provided</scope>-->
+        </dependency>
+
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_${scala.short.version}</artifactId>
+        </dependency>
         <!--END GAO dependencies-->
+
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.short.version}</artifactId>

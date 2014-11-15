@@ -23,20 +23,32 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.shared.{ EventLogging, SharedConfig }
-import com.typesafe.config.Config
+import com.typesafe.config.{ ConfigFactory, Config }
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
+import com.intel.event.EventLogging
 
 /**
  * Configuration Settings for the SparkEngine,
  *
  * This is our wrapper for Typesafe config.
  */
-object SparkEngineConfig extends SharedConfig with EventLogging {
+object SparkEngineConfig extends SparkEngineConfig
+
+/**
+ * Configuration Settings for the SparkEngine,
+ *
+ * This is our wrapper for Typesafe config.
+ */
+trait SparkEngineConfig extends EventLogging {
+
+  val config = ConfigFactory.load()
 
   // val's are not lazy because failing early is better
 
@@ -86,11 +98,11 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-sample-rows")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
   val frameLoadTestFailThresholdPercentage: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-fail-threshold-percentage")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
@@ -123,9 +135,37 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   def createTitanConfiguration(commandConfig: Config, titanPath: String): SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanDefaultConfig = commandConfig.getConfig(titanPath)
+
+    //Prevents errors in Titan/HBase reader when storage.hostname is converted to list
+    titanConfiguration.setDelimiterParsingDisabled(true)
     for (entry <- titanDefaultConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
+
+    setTitanAutoPartitions(titanConfiguration)
+  }
+
+  /**
+   * Update Titan configuration with auto-generated settings.
+   *
+   * At present, auto-partitioner for graph construction only sets HBase pre-splits.
+   *
+   * @param titanConfiguration
+   * @return Updated Titan configuration
+   */
+  def setTitanAutoPartitions(titanConfiguration: SerializableBaseConfiguration): SerializableBaseConfiguration = {
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
+    val storageBackend = titanConfiguration.getString("storage.backend")
+
+    storageBackend.toLowerCase match {
+      case "hbase" => {
+        val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
+        titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
+        info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+      }
+      case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
+    }
+
     titanConfiguration
   }
 
@@ -147,6 +187,12 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   val maxPartitions: Int = {
     config.getInt("intel.analytics.engine-spark.auto-partitioner.max-partitions")
   }
+
+  /**
+   * Disable all kryo registration in plugins (this is mainly here for performance testing
+   * and debugging when someone suspects Kryo might be causing some kind of issue).
+   */
+  val disableKryo: Boolean = config.getBoolean("intel.analytics.engine.spark.disable-kryo")
 
   /**
    * Sorted list of mappings for file size to partition size (larger file sizes first)
@@ -174,6 +220,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     info("fsRoot: " + fsRoot)
     info("sparkHome: " + sparkHome)
     info("sparkMaster: " + sparkMaster)
+    info("disableKryo: " + disableKryo)
     for ((key: String, value: String) <- sparkConfProperties) {
       info(s"sparkConfProperties: $key = $value")
     }
@@ -181,4 +228,20 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+
+  // val's are not lazy because failing early is better
+  val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
+  val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
+  val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
+  val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+
+  /**
+   * Get a String but throw Exception if it is empty
+   */
+  protected def nonEmptyString(key: String): String = {
+    config.getString(key) match {
+      case "" => throw new IllegalArgumentException(key + " cannot be empty!")
+      case s: String => s
+    }
+  }
 }

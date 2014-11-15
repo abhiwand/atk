@@ -26,7 +26,7 @@ package com.intel.graphbuilder.write.titan
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.graphbuilder.write.VertexWriter
 import com.thinkaurelius.titan.core.TitanVertex
 
@@ -37,13 +37,13 @@ class TitanVertexWriterTest extends WordSpec with Matchers with MockitoSugar {
     "use the underlying writer and populate the gbIdToPhysicalId mapping" in {
       // setup mocks
       val vertexWriter = mock[VertexWriter]
-      val gbVertex = mock[Vertex]
+      val gbVertex = mock[GBVertex]
       val titanVertex = mock[TitanVertex]
       val gbId = mock[Property]
       val physicalId = new java.lang.Long(123)
 
       when(gbVertex.gbId).thenReturn(gbId)
-      when(titanVertex.getID).thenReturn(physicalId)
+      when(titanVertex.getLongId()).thenReturn(physicalId)
       when(vertexWriter.write(gbVertex)).thenReturn(titanVertex)
 
       // instantiated class under test

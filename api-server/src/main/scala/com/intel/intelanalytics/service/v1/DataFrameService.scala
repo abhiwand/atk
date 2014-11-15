@@ -24,21 +24,18 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query, RowQuery }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, Query, RowQuery }
 import org.joda.time.DateTime
 import spray.json._
 import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ DataFrameCreate, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
@@ -48,6 +45,7 @@ import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
 
 import scala.util.matching.Regex
+import com.intel.event.EventLogging
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -58,7 +56,7 @@ import ExecutionContext.Implicits.global
 class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
   def frameRoutes() = {
-    val prefix = "dataframes"
+    val prefix = "frames"
 
     commonDirectives(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
@@ -71,7 +69,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 case Some(name) => {
                   onComplete(engine.getFrameByName(name)) {
                     case Success(Some(frame)) => {
-                      // uri comes in looking like /dataframes?name=abc
+                      // uri comes in looking like /frames?name=abc
                       val baseUri = StringUtils.substringBeforeLast(uri.toString(), "/")
                       complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }
@@ -91,9 +89,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
           } ~
             post {
               import spray.httpx.SprayJsonSupport._
-              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+              implicit val format = DomainJsonProtocol.dataFrameCreateFormat
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
-              entity(as[DataFrameTemplate]) {
+              entity(as[DataFrameCreate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
@@ -138,18 +136,39 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   {
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQuery[Long](id, offset, count)
-                    val exec = engine.getRowsLarge(queryArgs)
-                    //we require a commands uri to point the query completion to.
-                    val pattern = new Regex(prefix + ".*")
-                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
-                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
+                    val results = engine.getRows(queryArgs)
+                    results match {
+                      case r: QueryDataResult => {
+                        complete(GetQuery(id = None, error = None,
+                          name = "getRows", arguments = None, complete = true,
+                          result = Some(GetQueryPage(
+                            Some(dataToJson(r.data)), None, None, r.schema)),
+                          links = List(Rel.self(uri.toString))))
+                      }
+                      case exec: PagedQueryResult => {
+                        val pattern = new Regex(prefix + ".*")
+                        val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
+                        complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
+                      }
+                    }
                   }
               }
             }
-
           }
         }
     }
   }
 
+  /**
+   * Convert an Iterable of Any to a List of JsValue. Required due to how spray-json handles AnyVals
+   * @param data iterable to return in response
+   * @return JSON friendly version of data
+   */
+  def dataToJson(data: Iterable[Array[Any]]): List[JsValue] = {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    data.map(row => row.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson).toList
+  }
 }

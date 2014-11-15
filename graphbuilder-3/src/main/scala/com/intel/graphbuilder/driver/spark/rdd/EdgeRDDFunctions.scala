@@ -44,14 +44,14 @@ import org.apache.spark.rdd.RDD
  *                          It is hard to tell what the right number is for this one.
  *                          I think somewhere larger than 400k is getting too big.
  */
-class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) extends Serializable {
+class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 50000L) extends Serializable {
 
   /**
    * Merge duplicate Edges, creating a new Edge that has a combined set of properties.
    *
    * @return an RDD without duplicates
    */
-  def mergeDuplicates(): RDD[Edge] = {
+  def mergeDuplicates(): RDD[GBEdge] = {
     self.groupBy(m => m.id).mapValues(dups => dups.reduce((m1, m2) => m1.merge(m2))).values
   }
 
@@ -63,7 +63,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * need to merge duplicates after.
    * </p>
    */
-  def biDirectional(): RDD[Edge] = {
+  def biDirectional(): RDD[GBEdge] = {
     self.flatMap(edge => List(edge, edge.reverse()))
   }
 
@@ -88,8 +88,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * This functionality was called "retain dangling edges" in GB version 2.
    * </p>
    */
-  def verticesFromEdges(): RDD[Vertex] = {
-    self.flatMap(edge => List(new Vertex(edge.tailVertexGbId, Nil), new Vertex(edge.headVertexGbId, Nil)))
+  def verticesFromEdges(): RDD[GBVertex] = {
+    self.flatMap(edge => List(new GBVertex(edge.tailVertexGbId, Set.empty[Property]), new GBVertex(edge.headVertexGbId, Set.empty[Property])))
   }
 
   /**
@@ -97,7 +97,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    *
    * This is an inner join.  Edges that can't be joined are dropped.
    */
-  def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[Edge] = {
+  def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[GBEdge] = {
 
     val idsByGbId = ids.groupBy(idMap => idMap.gbId)
 
@@ -113,7 +113,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
 
     // set physical ids for head vertices
     val edgesByHead = edgesWithTail.groupBy(e => e.headVertexGbId)
-    val edgesWithPhysicalIds: RDD[Edge] = idsByGbId.join(edgesByHead).flatMapValues(value => {
+    val edgesWithPhysicalIds: RDD[GBEdge] = idsByGbId.join(edgesByHead).flatMapValues(value => {
       val gbIdToPhysicalIds = value._1
       //      val physicalId = gbIdToPhysicalIds(0).physicalId
       val physicalId = gbIdToPhysicalIds.head.physicalId
@@ -127,7 +127,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
   /**
    * Filter Edges that do NOT have physical ids
    */
-  def filterEdgesWithoutPhysicalIds(): RDD[Edge] = {
+  def filterEdgesWithoutPhysicalIds(): RDD[GBEdge] = {
     self.filter(edge => {
       if (edge.tailPhysicalId == null || edge.headPhysicalId == null) false
       else true
@@ -140,7 +140,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def write(titanConnector: TitanGraphConnector, append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
 
       EnvironmentValidator.validateISparkDepsAvailable
 
@@ -175,7 +175,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: Broadcast[Map[Property, AnyRef]], append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
       val graph = titanConnector.connect()
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)

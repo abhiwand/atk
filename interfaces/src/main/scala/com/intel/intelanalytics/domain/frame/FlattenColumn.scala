@@ -27,8 +27,8 @@ package com.intel.intelanalytics.domain.frame
  * Command for flatten the specified column of the data frame and store the result to a
  * new data frame.
  * @param name name of the new data frame to be created
- * @param frameId id of the data frame to perform column flattening
+ * @param frameId FrameReference of the data frame to perform column flattening
  * @param column name of the target column to be flattened
  * @param separator separator for the data in the target column
  */
-case class FlattenColumn(name: String, frameId: Long, column: String, separator: String)
+case class FlattenColumn(name: String, frameId: FrameReference, column: String, separator: String)

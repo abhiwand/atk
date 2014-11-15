@@ -1,8 +1,8 @@
 package com.intel.intelanalytics.engine.spark.util
 
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.commons.lang3.StringUtils
 import sys.process.Process
+import com.intel.event.EventLogging
 
 object DiskSpaceReporter extends EventLogging {
 

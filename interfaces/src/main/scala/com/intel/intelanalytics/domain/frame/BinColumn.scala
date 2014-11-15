@@ -32,9 +32,8 @@ package com.intel.intelanalytics.domain.frame
  * @param numBins number of bins requested
  * @param binType the type of binning algorithm to use: "equalwidth", "equaldepth"
  * @param binColumnName name for the created binned column
- * @tparam FrameRef
  */
-case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String, numBins: Int, binType: String, binColumnName: String) {
+case class BinColumn(name: String, frame: FrameReference, columnName: String, numBins: Int, binType: String, binColumnName: String) {
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
   require(numBins >= 1, "at least one bin is required")

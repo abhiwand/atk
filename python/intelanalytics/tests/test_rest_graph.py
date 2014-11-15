@@ -29,9 +29,8 @@ from mock import patch, Mock
 from intelanalytics.core.orddict  import OrderedDict
 import json
 
-from intelanalytics.core.graph import BigGraph, VertexRule, EdgeRule
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.frame import Frame
+from intelanalytics.core.column import Column
 
 def get_sorted_json_str(json_obj):
     return json.dumps(json_obj, indent=2, sort_keys=True)
@@ -40,7 +39,7 @@ def get_sorted_json_str(json_obj):
 def get_sorted_json_str_from_str(json_str):
     return get_sorted_json_str(json.loads(json_str))
 
-#http://localhost:8090/v1/dataframes/17",
+#http://localhost:8090/v1/frames/17",
 
 
 class TestGraphBackendRest(unittest.TestCase):
@@ -51,7 +50,7 @@ class TestGraphBackendRest(unittest.TestCase):
   "frames":
   [
     {
-      "frame_uri" : "hardcoded.com:9999/v1/dataframes/0",
+      "frame_uri" : "hardcoded.com:9999/v1/frames/0",
       "vertex_rules" :
       [
         {
@@ -102,7 +101,7 @@ class TestGraphBackendRest(unittest.TestCase):
               "value" : { "type": "column", "value": "popcorn" }
             }
           ],
-          "is_directed": false
+          "bidirectional": false
         }
       ]
     }
@@ -112,8 +111,8 @@ class TestGraphBackendRest(unittest.TestCase):
 
     @patch("intelanalytics.core.frame._get_backend")
     def create_mock_frame(self, schema, uri, mock_backend):
-        frame = BigFrame()
-        frame._columns = OrderedDict([(k, BigColumn(frame, k, v)) for k, v in schema])
+        frame = Frame()
+        frame._columns = OrderedDict([(k, Column(frame, k, v)) for k, v in schema])
         for col in frame._columns.values():
             col._frame = frame
         frame._uri = uri
@@ -125,7 +124,7 @@ class TestGraphBackendRest(unittest.TestCase):
                                         ('rating', str),
                                         ('popcorn', str),
                                         ('released', str)],
-                                       "hardcoded.com:9999/v1/dataframes/0")
+                                       "hardcoded.com:9999/v1/frames/0")
         movie_vertex = VertexRule("movie", frame.movie, {"year": frame.released})
         user_vertex = VertexRule("user", frame.user)
         rules = [movie_vertex,
@@ -134,7 +133,7 @@ class TestGraphBackendRest(unittest.TestCase):
                           user_vertex,
                           movie_vertex,
                           {"with_popcorn": frame['popcorn']},
-                          is_directed=False)]
+                          bidirectional=True)]
         #print "\n".join(repr(r) for r in rules)
         return frame, rules
 '''
@@ -153,12 +152,12 @@ class TestGraphBackendRest(unittest.TestCase):
         frame, rules = self.get_mock_frame_and_rules_1()
         from intelanalytics.core.loggers import loggers
         loggers.set(10, "intelanalytics.rest.graph")
-        graph = BigGraph(rules)
+        graph = TitanGraph(rules)
 
     @patch("intelanalytics.rest.graph.rest_http")
     def test_als(self, mock_http):
         frame, rules = self.get_mock_frame_and_rules_1()
-        graph = BigGraph(rules)
+        graph = TitanGraph(rules)
         from intelanalytics.core.loggers import loggers
         loggers.set(10, "intelanalytics.rest.graph")
         graph.ml.als(['input_edge_property_list'], "input_edge_label", ["output_vertex_property_list"], "vertex_type", "edge_type")

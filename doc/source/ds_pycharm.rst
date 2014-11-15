@@ -13,11 +13,11 @@ Prerequisites
 
 These instructions assume you have already installed
 
-- Python 2.6 
-- Intel Analytics Python Rest Client and required dependencies
+- Python 2.7 
+- |IA| Python Rest Client and required dependencies
 - `PyCharm <http://www.jetbrains.com/pycharm/>`_
 
-The Intel Analytics Toolkit should work with any version of PyCharm but these instructions were tested with PyCharm
+The |IA| Toolkit should work with any version of PyCharm but these instructions were tested with PyCharm
 Community Edition 3.4.1.
 
 -----
@@ -28,16 +28,16 @@ Setup
 
     #)  Give your project a name, e.g "myproject"
 
-    #)  Choose "Python 2.6" as the Python Interpreter and choose the "OK" button
+    #)  Choose "Python 2.7" as the Python Interpreter and choose the "OK" button
 
 
-        i)  If "Python 2.6" does not appear in the list you will need to configure a Python 2.6 Intepreter.
+        i)  If "Python 2.7" does not appear in the list you will need to configure a Python 2.7 Intepreter.
 
             1)  Choose the button that looks like a "gear"
 
             #)  Choose "Add Local"
 
-            #)  Browse for your local Python 2.6 installation.  On RedHat or Centos this is probably /usr/bin/python.
+            #)  Browse for your local Python 2.7 installation.  On RedHat or Centos this is probably /usr/bin/python.
 
             #)  Choose the "OK" button
 
@@ -46,7 +46,7 @@ Setup
 
     a)  Choose "Project Structure"
 
-    #)  Choose "Add Content Root" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat or Centos
+    #)  Choose "Add Content Root" and browse to the |IA| Python Rest Client libraries.  On RedHat or Centos
         these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose "Apply" button
@@ -60,6 +60,7 @@ Setup
 
             import intelanalytics as ia
             ia.server.host = "correct host name or IP address"
+            ia.connect()
             ia.server.ping()
 
     #)  If you see a yellow bar across the top of the file warning about "Package requirements" not being satisfied then
@@ -76,3 +77,4 @@ Setup
 
 #)  Next take a look at the included examples
 
+.. |IA| replace:: Intel Analytics

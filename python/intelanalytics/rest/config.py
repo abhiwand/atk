@@ -23,7 +23,6 @@
 """
 config file for rest client
 """
-from intelanalytics.core.deprecate import raise_deprecation_warning
 
 # default connection config
 class server_defaults:
@@ -35,31 +34,8 @@ class server_defaults:
                'Accept': 'application/json,text/plain',
                'Authorization': "test_api_key_1"}
 
-
-class deprecated_server(object):
-
-    @property
-    def host(self):
-        raise_deprecation_warning("config.server.host", "use server.host")
-        return server_defaults.host
-
-    @host.setter
-    def host(self, value):
-        raise_deprecation_warning("config.server.host", "use server.host")
-        server_defaults.host = value
-
-    @property
-    def port(self):
-        raise_deprecation_warning("config.server.port", "use server.port")
-        return server_defaults.port
-
-    @port.setter
-    def port(self, value):
-        raise_deprecation_warning("config.server.port", "use server.port")
-        server_defaults.port = value
-
-server = deprecated_server()
-
+class upload_defaults:
+    rows = 10000
 
 class polling_defaults:
     start_interval_secs = 1

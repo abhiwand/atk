@@ -25,12 +25,7 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.repository.MetaStore
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
 import spray.http.HttpHeader
-import spray.routing._
 
 import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,17 +33,14 @@ import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
 import spray.routing._
-import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
-import spray.json._
-import com.intel.intelanalytics.repository.MetaStore
-import scala.concurrent.duration._
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.commons.lang.StringUtils
+import com.intel.intelanalytics.engine.Engine
+import com.intel.event.EventLogging
 
 /**
- * Uses authorization HTTP header and metaStore to authenticate a user
+ * Uses authorization HTTP header and engine to authenticate a user
  */
-class AuthenticationDirective(val metaStore: MetaStore) extends Directives with EventLogging {
+class AuthenticationDirective(val engine: Engine) extends Directives with EventLogging {
 
   /**
    * Gets authorization header and authenticates a user
@@ -66,23 +58,15 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
       case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), ApiServiceConfig.defaultTimeout)
     }
 
-  protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
+  protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = withContext("AuthenticationDirective") {
+    if (StringUtils.isBlank(apiKey)) {
+      warn("Api key was not provided")
+      throw new SecurityException("Api key was not provided")
+    }
     future {
-      metaStore.withSession("Getting user principal") { implicit session =>
-        if (StringUtils.isBlank(apiKey)) {
-          throw new SecurityException("Api key was not provided")
-        }
-        val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
-        users match {
-          case Nil => throw new SecurityException("User not found with apiKey:" + apiKey)
-          case us if us.length > 1 => throw new SecurityException("Problem accessing user credentials")
-          case user => {
-            val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
-            info("Authenticated user " + userPrincipal)
-            userPrincipal
-          }
-        }
-      }
+      val userPrincipal = engine.getUserPrincipal(apiKey)
+      info("authenticated " + userPrincipal)
+      userPrincipal
     }
   }
 }
