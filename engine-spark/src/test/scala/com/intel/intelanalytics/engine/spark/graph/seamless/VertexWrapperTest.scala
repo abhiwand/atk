@@ -32,7 +32,7 @@ class VertexWrapperTest extends FlatSpec with Matchers {
 
   val columns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("from", DataTypes.string), Column("to", DataTypes.string), Column("fair", DataTypes.int32))
 
-  val schema = new Schema(columns, Some(VertexSchema("label", null)))
+  val schema = new VertexSchema(columns, "label", null)
 
   "VertexWrapper" should "allow accessing underlying vertex data" in {
     val wrapper = new VertexWrapper(schema)

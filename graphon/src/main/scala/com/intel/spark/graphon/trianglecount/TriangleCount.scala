@@ -97,6 +97,10 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     extendedSummary = Some("""
                              |    ** Experimental Feature **
                              |    Triangle Count.
+                             |    Counts the number of triangles among vertices in an undirected graph.
+                             |    If an edge is marked bidirectional, the implementation opts for canonical
+                             |    orientation of edges hence counting it only once (as would have been for an
+                             |    undirected graph)
                              |
                              |    Parameters
                              |    ----------

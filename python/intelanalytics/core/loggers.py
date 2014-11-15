@@ -30,7 +30,7 @@ import sys
 API_LOGGER_NAME = 'IA Python API'
 HTTP_LOGGER_NAME = 'intelanalytics.rest.connection'
 LINE_FORMAT = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
-
+API_LINE_FORMAT = '|api|  %(message)s'
 
 # add a null handler to root logger to avoid handler warning messages
 class NullHandler(logging.Handler):
@@ -43,14 +43,6 @@ class NullHandler(logging.Handler):
 _null_handler = NullHandler()
 _null_handler.name = ''  # add name explicitly for python 2.6
 logging.getLogger('').addHandler(_null_handler)
-
-# API logger instance
-_api_logger = logging.getLogger(API_LOGGER_NAME)
-
-
-def log_api_call(function, *args, **kwargs):
-    """Logs the call of the given function with the API logger"""
-    _api_logger.info("%s" % function.__name__)
 
 
 class Loggers(object):
@@ -111,7 +103,7 @@ class Loggers(object):
         """
         self.set(level, HTTP_LOGGER_NAME, output)
 
-    def set_api(self, level=logging.INFO, output=sys.stdout):
+    def set_api(self, level=logging.INFO, output=sys.stdout, line_format=API_LINE_FORMAT):
         """
         Sets the level of logging for py api calls (command tracing)
 
@@ -126,13 +118,16 @@ class Loggers(object):
             To turn OFF the logger, set level to 0 or None
         output: file or str, or list of such, optional
             The file object or name of the file to log to.  If empty, then stderr is used
+        line_format: str, optional
+            By default, the api logger has a simple format suitable for interactive use
+            To get the standard logger formatting with timestamps, etc., set line_format=None
 
         Examples
         --------
         >>> loggers.set_api()       # Enables api logging to stdout
         >>> loggers.set_api(None)   # Disables api logging
         """
-        self.set(level, API_LOGGER_NAME, output)
+        self.set(level, API_LOGGER_NAME, output, line_format)
 
     def set(self, level=logging.DEBUG, logger_name='', output=None, line_format=None):
         """
@@ -161,7 +156,7 @@ class Loggers(object):
         if not level:
             return self._turn_logger_off(logger_name)
 
-        line_format = line_format if line_format else LINE_FORMAT
+        line_format = line_format if line_format is not None else LINE_FORMAT
         logger = logging.getLogger(logger_name)
         if not output:
             output = sys.stderr
@@ -216,3 +211,54 @@ class Loggers(object):
         return logger
 
 loggers = Loggers()
+
+
+# API logger
+_api_logger = logging.getLogger(API_LOGGER_NAME)
+
+
+def log_api_call(function, *args, **kwargs):
+    """Logs the call of the given function with the API logger"""
+    _api_logger.info(ApiLogFormat.format_call(function, *args, **kwargs))
+
+
+class ApiLogFormat(object):
+    """Formats api calls for logging"""
+
+    @staticmethod
+    def format_call(function, *args, **kwargs):
+        try:
+            param_names = function.func_code.co_varnames[0:function.func_code.co_argcount]
+            named_args = zip(param_names, args)
+            self = None
+            try:
+                if param_names[0] == "self":
+                    self = args[0]
+                    named_args = named_args[1:]
+            except:
+                self = None
+            named_args.extend(kwargs.items())
+            formatted_args = '' if not named_args else "(%s)" % (", ".join([ApiLogFormat.format_named_arg(k,v) for k, v in named_args]))
+
+            return "%s%s%s" % (ApiLogFormat.format_self(self), ApiLogFormat.format_function(function), formatted_args)
+        except Exception as e:
+            return str(e)
+
+    @staticmethod
+    def format_named_arg(name, value):
+        return "%s=%s" % (name, ApiLogFormat.format_value(value))
+
+    @staticmethod
+    def format_function(f):
+        return f.__name__
+
+    @staticmethod
+    def format_self(v):
+        return (ApiLogFormat.format_value(v) + ".") if v is not None else ''
+
+    @staticmethod
+    def format_value(v):
+        if hasattr(v, "_id"):
+            return "<%s:%s>" % (type(v).__name__, hex(id(v))[2:])
+        return repr(v)
+
