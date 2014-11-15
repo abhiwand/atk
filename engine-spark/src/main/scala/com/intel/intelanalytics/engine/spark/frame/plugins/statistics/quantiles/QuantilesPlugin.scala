@@ -25,14 +25,14 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles
 
 import com.intel.intelanalytics.algorithm.{ Quantile, QuantileComposingElement, QuantileTarget }
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameReference, QuantileValues, Quantiles }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column, Schema, DataTypes }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -48,7 +48,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate quantiles on the given column
  */
-class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
+class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -76,11 +76,12 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
                            |
                            |    Returns
                            |    -------
-                           |    dictionary
+                           |    Frame
+                           |      A new Frame with two columns (float64): requested Quantiles and their respective values
                            |
                            |    Examples
                            |    --------
-                           |    Consider BigFrame *my_frame*, which accesses a frame that contains a single
+                           |    Consider Frame *my_frame*, which accesses a frame that contains a single
                            |    column *final_sale_price*::
                            |
                            |        my_frame.inspect()
@@ -100,15 +101,19 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
                            |                    
                            |    To calculate 10th, 50th, and 100th quantile::
                            |
-                           |        my_frame.quantiles('final_sale_price', [10, 50, 100])
+                           |        quantiles_frame = my_frame.quantiles('final_sale_price', [10, 50, 100])
                            |  
-                           |    The dictionary will be returned.
-                           |    key is the quantile and value is the quantile value.
-                           |    ::
+                           |    A new Frame containing the requested Quantiles and their respective values will be
+                           |     returned ::
                            |
-                           |        {10: 95, 50: 315, 100: 660}
-                           |   
-                           |   
+                           |       quantiles_frame.inspect()
+                           |
+                           |        Quantiles:float64   final_sale_price_QuantileValue:float64
+                           |       /-----------------------------------------------------------/
+                           |               10.0                      95.0
+                           |               50.0                     250.0
+                           |              100.0                     660.0
+                           |
                            |    .. versionchanged:: 0.8
                            |
                             """.stripMargin)))
@@ -129,22 +134,26 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: Quantiles)(implicit user: UserPrincipal, executionContext: ExecutionContext): QuantileValues = {
+  override def execute(invocation: SparkInvocation, arguments: Quantiles)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val ctx = invocation.sparkContext
 
     // validate arguments
-    val frameId: FrameReference = arguments.frame
-    val frameMeta: DataFrame = frames.expectFrame(frameId.id)
-    val frameSchema = frameMeta.schema
+    val frame = frames.expectFrame(arguments.frame.id)
+    val frameSchema = frame.schema
     val columnIndex = frameSchema.columnIndex(arguments.columnName)
     val columnDataType = frameSchema.columnDataType(arguments.columnName)
+    val quantilesFrameName = FrameName.generate(Some("quantiles"))
+    val schema = FrameSchema(List(Column("Quantiles", DataTypes.float64), Column(arguments.columnName + "_QuantileValue", DataTypes.float64)))
 
     // run the operation and give the results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
-    val quantileValues = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType).toList
-    QuantileValues(quantileValues)
+    val template = DataFrameTemplate(quantilesFrameName, Some("Generated by Quantiles"))
+    frames.tryNewFrame(template) { quantilesFrame =>
+      val rdd = frames.loadLegacyFrameRdd(ctx, frame)
+      val quantileValuesRdd = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType)
+      frames.saveLegacyFrame(quantilesFrame, new LegacyFrameRDD(schema, quantileValuesRdd), Some(quantileValuesRdd.count()))
+    }
   }
 }
 
