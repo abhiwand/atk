@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,21 +22,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.graph
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
- * Arguments for defining an edge
- * @param graphRef
- * @param label the label for this edge list
- * @param srcVertexLabel the src "type" of vertices this edge connects
- * @param destVertexLabel the destination "type" of vertices this edge connects
- * @param directed true if edges are directed, false if they are undirected
+ * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
+ * any one of the vertices from the set neighbors.
+ *
+ * A k clique-extension fact is a clique extension fact where the vertex set contains exactly k vertices.
+ * These are the extension facts obtained after the k'th round of the algorithm.
+ *
+ * Symbolically, a pair (C,V) where:
+ *   - C is a (k-1) clique.
+ *   - For every v in V,  C + v is a k clique.
+ *   - For all v so that C + v is a k clique, v is in V.
+ *
+ * INVARIANT:
+ * when k is odd, every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
+ * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
+ *
  */
-case class DefineEdge(graphRef: GraphReference, label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) {
-
-  def edgeSchema: EdgeSchema = {
-    new EdgeSchema(GraphSchema.edgeSystemColumns, label, srcVertexLabel, destVertexLabel, directed)
-  }
-}
+case class CliqueExtension(clique: Clique, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable

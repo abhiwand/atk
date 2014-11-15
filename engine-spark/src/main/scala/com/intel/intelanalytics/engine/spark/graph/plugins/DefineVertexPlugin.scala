@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineVertex, SeamlessGraphMeta }
-import com.intel.intelanalytics.domain.schema.VertexSchema
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.security.UserPrincipal
@@ -79,7 +79,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @return data frame which represent the vertex of this type
    */
   override def execute(invocation: SparkInvocation, arguments: DefineVertex)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
-    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(arguments.label, None))
+    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }
 

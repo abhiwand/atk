@@ -25,6 +25,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
@@ -56,7 +57,7 @@ import com.intel.intelanalytics.UnitReturn
  * Implicit conversions for domain objects to/from JSON
  */
 
-object DomainJsonProtocol extends IADefaultJsonProtocol {
+object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   /**
    * ***********************************************************************
@@ -85,9 +86,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val dateTimeFormat = new DateTimeJsonFormat {}
 
-  implicit val vertexSchemaFormat = jsonFormat2(VertexSchema)
-  implicit val edgeSchemaFormat = jsonFormat4(EdgeSchema)
   implicit val columnFormat = jsonFormat3(Column)
+  implicit val frameSchemaFormat = jsonFormat(FrameSchema, "columns")
+  implicit val vertexSchemaFormat = jsonFormat(VertexSchema, "columns", "label", "id_column_name")
+  implicit val edgeSchemaFormat = jsonFormat(EdgeSchema, "columns", "label", "src_vertex_label", "dest_vertex_label", "directed")
   implicit val schemaArgsForamt = jsonFormat1(SchemaArgs)
 
   /**
@@ -98,20 +100,36 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     /** same format as the old one */
     case class LegacySchema(columns: List[(String, DataType)])
     implicit val legacyFormat = jsonFormat1(LegacySchema)
-    implicit val schemaFormat = jsonFormat(Schema, "columns", "vertex_schema", "edge_schema")
 
-    override def write(obj: Schema): JsValue = schemaFormat.write(obj)
+    override def write(obj: Schema): JsValue = obj match {
+      case f: FrameSchema => frameSchemaFormat.write(f)
+      case v: VertexSchema => vertexSchemaFormat.write(v)
+      case e: EdgeSchema => edgeSchemaFormat.write(e)
+      case _ => throw new IllegalArgumentException("New type not yet implemented: " + obj.getClass.getName)
+    }
 
     /**
-     * If the new format can't be deserialized, then try the old format that
-     * might still be used in the database
+     * Read json
      */
     override def read(json: JsValue): Schema = {
       try {
-        schemaFormat.read(json)
+        if (json.asJsObject.fields.contains("src_vertex_label")) {
+          edgeSchemaFormat.read(json)
+        }
+        else if (json.asJsObject.fields.contains("label")) {
+          vertexSchemaFormat.read(json)
+        }
+        else {
+          frameSchemaFormat.read(json)
+        }
       }
       catch {
-        case e: Exception => new Schema(legacyFormat.read(json).columns)
+        //  If the new format can't be deserialized, then try the old format that
+        // might still be used in the database
+        case e: Exception => {
+          info("couldn't deserialize schema using any of the current formats, trying old format for json: " + json.compactPrint)
+          Schema.fromTuples(legacyFormat.read(json).columns)
+        }
       }
     }
   }
@@ -255,6 +273,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   // model service formats
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference]("models", "model", n => ModelReference(n))
+  implicit val modelCreateFormat = jsonFormat2(ModelCreate.apply)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModel)
   implicit val modelFormat = jsonFormat10(Model)

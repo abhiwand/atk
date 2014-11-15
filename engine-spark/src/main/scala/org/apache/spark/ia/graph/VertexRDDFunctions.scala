@@ -1,6 +1,6 @@
 package org.apache.spark.ia.graph
 
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, Schema }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
@@ -15,10 +15,10 @@ class VertexRDDFunctions(parent: RDD[Vertex]) {
    * @param schemas by providing the list of schemas you can prevent an extra map/reduce to collect them
    * @return the VertexFrameRDD - one vertex type per RDD
    */
-  def splitByLabel(schemas: List[Schema]): List[VertexFrameRDD] = {
+  def splitByLabel(schemas: List[VertexSchema]): List[VertexFrameRDD] = {
     parent.cache()
 
-    val split = schemas.map(_.label.get).map(label => parent.filter(vertex => vertex.label() == label))
+    val split = schemas.map(_.label).map(label => parent.filter(vertex => vertex.label() == label))
     split.foreach(_.cache())
 
     val rowRdds = split.map(rdd => rdd.map(vertex => vertex.row))
@@ -37,7 +37,7 @@ class VertexRDDFunctions(parent: RDD[Vertex]) {
    */
   def splitByLabel(): List[VertexFrameRDD] = {
     parent.cache()
-    val schemas = parent.map(vertex => vertex.schema).distinct().collect().toList
+    val schemas = parent.map(vertex => vertex.schema.asInstanceOf[VertexSchema]).distinct().collect().toList
     splitByLabel(schemas)
   }
 

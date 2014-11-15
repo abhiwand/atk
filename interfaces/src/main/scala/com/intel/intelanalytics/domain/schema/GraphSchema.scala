@@ -40,17 +40,10 @@ object GraphSchema {
     Column("_dest_vid", DataTypes.int64) ::
     Column("_label", DataTypes.string) ::
     Nil
+
   /** ordered list */
   val edgeSystemColumnNames = edgeSystemColumns.map(column => column.name)
   val edgeSystemColumnNamesSet = edgeSystemColumnNames.toSet
-
-  def defineVertexType(vertexSchema: VertexSchema): Schema = {
-    new Schema(vertexSystemColumns, vertexSchema = Some(vertexSchema))
-  }
-
-  def defineEdgeType(edgeSchema: EdgeSchema): Schema = {
-    new Schema(edgeSystemColumns, edgeSchema = Some(edgeSchema))
-  }
 
   def isVertexSystemColumn(name: String): Boolean = {
     vertexSystemColumnNames.contains(name)

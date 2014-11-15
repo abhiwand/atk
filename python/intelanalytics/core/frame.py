@@ -525,6 +525,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
+    @api
     def copy(self, columns=None, where=None, name=None):
         """
         Copy frame.
@@ -1231,8 +1232,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Returns
         -------
-        Frame
-            A Frame object proxy for the new flattened frame.
+        None
 
         Examples
         --------
@@ -1260,11 +1260,11 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Now, I want to spread out those sub-strings in column *b*::
 
-            your_frame = my_frame.flatten_column('b')
+            my_frame.flatten_column('b')
 
         Now I check again and my result is::
 
-            your_frame.inspect()
+            my_frame.inspect()
 
               a:int32   b:str
             /------------------/
@@ -1278,7 +1278,7 @@ class Frame(DocStubsFrame, _BaseFrame):
         .. versionadded:: 0.8
 
         """
-        return self._backend.flatten_column(self, column_name)
+        self._backend.flatten_column(self, column_name)
 
 
 @api
