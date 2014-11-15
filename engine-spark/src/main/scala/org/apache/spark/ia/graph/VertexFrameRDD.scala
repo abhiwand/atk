@@ -100,11 +100,7 @@ class VertexFrameRDD(schema: VertexSchema,
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
   def append(other: FrameRDD, preferNewVertexData: Boolean = true): VertexFrameRDD = {
-<<<<<<< HEAD
-    val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.vertexSystemColumnNames)
-=======
-    val unionedSchema = schema.union(other.schema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
->>>>>>> sprint_21
+    val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
 
     val part2 = new VertexFrameRDD(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue(), (vertex.data, preferNewVertexData)))
 
