@@ -68,8 +68,7 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
 
         Returns
         -------
-        Frame
-            The original frame containing the original columns appended with a column containing the cumulative sums
+        None
 
         Notes
         -----
@@ -82,7 +81,7 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
              my_frame.inspect()
 
              obs int32
-             |---------|
+                             |---------|
                0
                1
                2
@@ -97,10 +96,10 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
         The Frame *my_frame* accesses the original frame that now contains two columns, *obs* that contains the original column values, and
         *obsCumulativeSum* that contains the cumulative percent count::
 
-            cs_frame.inspect()
+            my_frame.inspect()
 
              obs int32   obs_cumulative_sum int32
-             |----------------------------------|
+                             |----------------------------------|
                0                     0
                1                     1
                2                     3
@@ -109,7 +108,6 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
                2                     6
 
         .. versionadded:: 0.8 """)))
-
   /**
    * Compute a cumulative sum
    *
@@ -134,9 +132,9 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
     val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }

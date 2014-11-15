@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage, LegacyFrameRDD, PythonRDDStorage }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -96,7 +96,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
 
         val filteredRdd = new LegacyFrameRDD(schema, pythonRDDStorage.getRddFromPythonRdd(filteredPyRdd, converter))
 
-        FilterVerticesFunctions.removeDanglingEdges(vertexFrame.schema.vertexSchema.get.label, frames, seamlessGraph, ctx, filteredRdd)
+        FilterVerticesFunctions.removeDanglingEdges(vertexFrame.schema.asInstanceOf[VertexSchema].label, frames, seamlessGraph, ctx, filteredRdd)
         val rowCount = pythonRDDStorage.persistPythonRDD(vertexFrame, filteredPyRdd, converter, skipRowCount = false)
         frames.updateRowCount(vertexFrame, rowCount)
       }
@@ -125,19 +125,13 @@ object FilterVerticesFunctions {
     val vidColumnIndex = vertexFrameSchema.columnIndex("_vid")
     val droppedVerticesPairRdd = droppedVerticesRdd.map(row => (row(vidColumnIndex), row))
 
-    seamlessGraph.frameMetas.foreach(frame => {
-      val edgeSchema = frame.schema.edgeSchema
-      edgeSchema match {
-        case Some(schema) => {
-          if (schema.srcVertexLabel.equals(vertexLabel)) {
-            FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
-          }
-          else if (schema.destVertexLabel.equals(vertexLabel)) {
-            FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
-          }
-        }
-
-        case _ => //do nothing
+    seamlessGraph.edgeFrames.foreach(frame => {
+      val schema = frame.schema.asInstanceOf[EdgeSchema]
+      if (schema.srcVertexLabel.equals(vertexLabel)) {
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
+      }
+      if (schema.destVertexLabel.equals(vertexLabel)) {
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
       }
     })
   }
