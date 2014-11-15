@@ -51,16 +51,16 @@ graph.define_edge_type('ratings', 'users', 'movies', directed=False)
 
 print "add user vertices"
 graph.vertices['users'].add_vertices( frame, 'user')
-graph.vertex_count()
+graph.vertex_count
 
 graph.vertices['users'].inspect(20)
 
 print "add movie vertices"
 graph.vertices['movies'].add_vertices( frame, 'movie')
-graph.vertex_count()
+graph.vertex_count
 graph.edges['ratings'].add_edges(frame, 'user', 'movie', ['rating'], create_missing_vertices=False)
 
-graph.vertex_count()
-graph.edge_count()
+print ("vertex count: " + str(graph.vertex_count))
+print ("edge count: " + str(graph.edge_count))
 
 print "done"

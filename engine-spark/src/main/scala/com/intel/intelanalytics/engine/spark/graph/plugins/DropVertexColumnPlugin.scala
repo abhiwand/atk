@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameDropColumns }
@@ -45,7 +46,15 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
   val systemFields = Set("_vid", "_label")
 
   override def execute(invocation: SparkInvocation, arguments: FrameDropColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+    val frames = invocation.engine.frames
+
+    // validate arguments
+    val frame = frames.expectFrame(arguments.frame)
+    require(frame.isVertexFrame, "vertex frame required for this plugin")
+    frame.schema.dropColumns(arguments.columns)
     DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns.toList, systemFields)
+
+    // let the frame plugin do the actual work
     super.execute(invocation, arguments)
   }
 
