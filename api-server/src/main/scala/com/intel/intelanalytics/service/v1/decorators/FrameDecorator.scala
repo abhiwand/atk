@@ -26,6 +26,7 @@ import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.{ Rel, RelLink, GetDataFrame, GetDataFrames }
 import spray.http.Uri
 import org.apache.commons.lang.StringUtils
+import spray.json.JsString
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
@@ -52,7 +53,18 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       links = RelLink("ia-error-frame", baseUri + "/" + entity.errorFrameId.get, "GET") :: links
     }
 
-    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, rowCount = entity.rowCount, links, entity.errorFrameId)
+    GetDataFrame(id = entity.id,
+      name = entity.name,
+      ia_uri = entity.uri,
+      schema = entity.schema,
+      rowCount = entity.rowCount,
+      links,
+      entity.errorFrameId,
+      entity.commandPrefix)
+  }
+
+  def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[DataFrame]): List[GetDataFrame] = {
+    entities.map(frame => decorateEntity(uri, additionalLinks, frame)).toList
   }
 
   /**
@@ -67,4 +79,5 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }
+
 }

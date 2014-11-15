@@ -62,6 +62,7 @@ object RocCounts {
  * @param args String with ROC threshold parameters in "min:step:max" format
  */
 case class RocParams(args: List[Double]) {
+  // TODO: list positions shouldn't have special meaning, this class should take three args, please fix me!
   require(args.size == 3, "Please input roc threshold in 'min:step:max' format")
 
   val min = args(0)

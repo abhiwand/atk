@@ -25,9 +25,8 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import spray.json._
@@ -41,6 +40,7 @@ import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
+import com.intel.event.EventLogging
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -62,9 +62,9 @@ import scala.collection.mutable
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
- * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
+ * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextFactory: SparkContextFactory)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -89,14 +89,14 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
       withContext("ce.execute") {
         withContext(command.name) {
 
-          val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
+          def sparkContextFunc(): SparkContext = createContextForCommand(command, arguments, user, cmd)
 
           val cmdFuture = future {
             withCommand(cmd) {
               try {
                 val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = commands)
+                  sparkContextFunc = sparkContextFunc, commandStorage = commands)
 
                 executeCommand(command, arguments, invocation)
               }
@@ -129,11 +129,17 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
     val commandId = cmd.id
     val commandName = cmd.name
-    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
-    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
-    val progressPrinter = new ProgressPrinter(listener)
-    context.addSparkListener(listener)
-    context.addSparkListener(progressPrinter)
+    val context: SparkContext = contextFactory.context(user, s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
+    try {
+      val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
+      val progressPrinter = new ProgressPrinter(listener)
+      context.addSparkListener(listener)
+      context.addSparkListener(progressPrinter)
+    }
+    catch {
+      // exception only shows up here due to dev error, but it is hard to debug without this logging
+      case e: Exception => error("could not create progress listeners", exception = e)
+    }
     commandIdContextMapping += (commandId -> context)
     context
   }

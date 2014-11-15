@@ -30,8 +30,8 @@ import json
 
 from intelanalytics.core.command import CommandDefinition, Parameter, Return, Doc, Version
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.graph import BigGraph
+from intelanalytics.core.frame import Frame
+from intelanalytics.core.graph import Graph
 
 __all__ = ['get_command_def']
 
@@ -47,8 +47,8 @@ json_type_id_to_data_type  = {
 }
 
 json_str_formats_to_data_type = {
-    "uri/ia-frame": BigFrame,
-    "uri/ia-graph": BigGraph,
+    "uri/ia-frame": Frame,
+    "uri/ia-graph": Graph,
 }
 
 
@@ -129,7 +129,7 @@ def get_return(return_schema):
     # 4. return None  (no return value)
     data_type = get_data_type(return_schema)
     use_self = return_schema.get('self', False)
-    if use_self and data_type not in [BigFrame, BigGraph]:
+    if use_self and data_type not in [Frame, Graph]:
         raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
     doc = get_doc(return_schema)
     return Return(data_type, use_self, doc)

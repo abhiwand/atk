@@ -23,4 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import com.intel.intelanalytics.domain.Naming
+
 case class FrameName(name: String)
+
+object FrameName extends Naming("frame")

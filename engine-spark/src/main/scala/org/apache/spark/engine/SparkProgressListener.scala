@@ -23,6 +23,7 @@
 
 package org.apache.spark.engine
 
+import com.intel.intelanalytics.domain.command.Command
 import org.apache.spark.SparkConf
 import org.apache.spark.scheduler._
 import org.apache.spark.ui.jobs.JobProgressListener
@@ -44,7 +45,7 @@ object SparkProgressListener {
   var progressUpdater: CommandProgressUpdater = null
 }
 
-class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val commandId: Long, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
+class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val command: Command, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
 
   val jobIdToStagesIds = new HashMap[Int, Array[Int]]
 
@@ -72,7 +73,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
     val runningStages = activeStages.filter { case (id, _) => totalStageIds.contains(id) }.map { case (id, stage) => stage }
 
     val totalStageCount: Int = totalStageIds.length
-    var progress: Float = (100 * finishedCount.toFloat) / totalStageCount.toFloat
+    var progress: Float = if (totalStageCount == 0) 100 else (100 * finishedCount.toFloat) / totalStageCount.toFloat
 
     runningStages.foreach(stage => {
       val totalTasksCount = stage.numTasks
@@ -120,7 +121,26 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
     } yield ProgressInfo(progress, Some(taskInfo))
 
     result ++= unexpected
-    result.toList
+    val allProgress: List[ProgressInfo] = result.toList
+
+    /**
+     * If there are multiple progress, mark every one to 100 except the last one
+     */
+    if (allProgress.length >= 2) {
+      allProgress.zipWithIndex.map {
+        case (value, index) => {
+          if (index == result.length - 1) {
+            ProgressInfo(value.progress, value.tasksInfo)
+          }
+          else {
+            ProgressInfo(100, value.tasksInfo)
+          }
+        }
+      }
+    }
+    else {
+      allProgress
+    }
   }
 
   /**
@@ -128,7 +148,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
    */
   private def updateProgress() {
     val progressInfo = getCommandProgress()
-    progressUpdater.updateProgress(commandId, progressInfo)
+    progressUpdater.updateProgress(command.id, progressInfo)
   }
 }
 

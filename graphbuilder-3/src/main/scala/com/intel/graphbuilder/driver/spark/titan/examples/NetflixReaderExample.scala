@@ -23,6 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
+// $COVERAGE-OFF$
+// This is example code only, not part of the main product
+
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -60,7 +63,7 @@ object NetflixReaderExample {
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
     titanConfig.setProperty("storage.hostname", hBaseZookeeperQuorum)
-    titanConfig.setProperty("storage.tablename", tableName)
+    titanConfig.setProperty("storage.hbase.table", tableName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 

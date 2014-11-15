@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.HasId
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.{ IAUri, HasId }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 
 /**
@@ -42,21 +42,60 @@ import org.joda.time.DateTime
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
  * @param revision the current revision number of the frame - incremented with each change to the data frame
+ * @param graphId a value means the frame is owned by a graph and shouldn't be exposed to the user in the same way
  */
 case class DataFrame(id: Long,
                      name: String,
                      description: Option[String] = None,
-                     schema: Schema = Schema(),
-                     rowCount: Long,
+                     schema: Schema = FrameSchema(),
+                     rowCount: Long = 0,
                      status: Long,
                      createdOn: DateTime,
                      modifiedOn: DateTime,
                      createdBy: Option[Long] = None,
                      modifiedBy: Option[Long] = None,
                      errorFrameId: Option[Long] = None,
-                     revision: Int = 0) extends HasId {
+                     revision: Int = 0,
+                     graphId: Option[Long] = None) extends HasId with IAUri {
+
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(revision >= 0, "revision must be a positive integer")
+
+  if (isVertexFrame || isEdgeFrame) {
+    require(graphId != null, "graphId is required for vertex and edge frames")
+  }
+
+  def entity = "frame"
+
+  def isVertexFrame: Boolean = schema.isInstanceOf[VertexSchema]
+
+  def isEdgeFrame: Boolean = schema.isInstanceOf[EdgeSchema]
+
+  /** Prefix used by plugin system */
+  def commandPrefix: String = {
+    if (isVertexFrame) "frame:vertex"
+    else if (isEdgeFrame) "frame:edge"
+    else "frame:"
+  }
+
+  /** create a FrameReference for this frame */
+  def frameReference: FrameReference = {
+    FrameReference(id)
+  }
+
+  /** label if this is a vertex or edge frame */
+  def label: Option[String] = schema match {
+    case v: VertexSchema => Some(v.label)
+    case e: EdgeSchema => Some(e.label)
+    case _ => None
+  }
+
+  /**
+   * A minimal toString-like method for debugging messages
+   */
+  def toDebugString: String = {
+    s"frameId: $id, name: $name, rowCount: $rowCount"
+  }
 }

@@ -25,10 +25,11 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json._
 import scala.concurrent._
@@ -61,66 +62,86 @@ case class VertexSampleArguments(graph: GraphReference, size: Int, sampleType: S
  */
 case class VertexSampleResult(name: String)
 
-class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
-
+/** Json conversion for arguments and return value case classes */
+object VertexSampleJsonFormat {
   import DomainJsonProtocol._
-
   implicit val vertexSampleFormat = jsonFormat4(VertexSampleArguments)
   implicit val vertexSampleResultFormat = jsonFormat1(VertexSampleResult)
+}
 
-  override def doc = Some(CommandDoc(oneLineSummary = "Create a vertex induced subgraph obtained by vertex sampling.",
+import VertexSampleJsonFormat._
+
+class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
+
+  /**
+   * The name of the command
+   */
+  override def name: String = "graph:titan/sampling/vertex_sample"
+
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
+  override def doc = Some(CommandDoc(oneLineSummary = "Subgraph from vertex sampling.",
     extendedSummary = Some("""
-    Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
-    is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
-    its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
-    have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
-    given by the out-degree histogram bin size.
-
-    Parameters
-    ----------
-    size : int
-        the number of vertices to sample from the graph
-    sample_type : str
-        the type of vertex sample among: ['uniform', 'degree', 'degreedist']
-    seed : (optional) int
-        random seed value
-
-    Returns
-    -------
-    BigGraph
-        a new BigGraph object representing the vertex induced subgraph
-
-    Examples
-    --------
-    Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge rule.
-    The BigGraph created from this data can be vertex sampled to obtain a vertex induced subgraph::
-
-        graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-        subgraph = graph.sampling.vertex_sample(1000, 'uniform')
-""")))
+                           |    Create a vertex induced subgraph obtained by vertex sampling.
+                           |    Three types of vertex sampling are provided: 'uniform', 'degree', and
+                           |    'degreedist'.
+                           |    A 'uniform' vertex sample is obtained by sampling vertices uniformly at
+                           |    random.
+                           |    For 'degree' vertex sampling, each vertex is weighted by its out-degree.
+                           |    For 'degreedist' vertex sampling, each vertex is weighted by the total
+                           |    number of vertices that have the same out-degree as it.
+                           |    That is, the weight applied to each vertex for 'degreedist' vertex sampling
+                           |    is given by the out-degree histogram bin size.
+                           | 
+                           |    Parameters
+                           |    ----------
+                           |    size : int
+                           |        the number of vertices to sample from the graph
+                           |    sample_type : str
+                           |        the type of vertex sample among: ['uniform', 'degree', 'degreedist']
+                           |    seed : (optional) int
+                           |        random seed value
+                           | 
+                           |    Returns
+                           |    -------
+                           |    BigGraph
+                           |        a new BigGraph object representing the vertex induced subgraph
+                           | 
+                           |    Examples
+                           |    --------
+                           |    Assume a set of rules created on a BigFrame that specifies 'user' and
+                           |    'product' vertices as well as an edge rule.
+                           |    The BigGraph created from this data can be vertex sampled to obtain a vertex
+                           |    induced subgraph::
+                           | 
+                           |        graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
+                           |        subgraph = graph.sampling.vertex_sample(1000, 'uniform')
+                           | 
+                           |    .. versionadded:: 0.8
+                            """)))
 
   override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
     // Titan Settings
     val config = configuration
-    val titanConfigInput = config.getConfig("titan.load")
-
-    // create titanConfig
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
-    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
     // get the input graph object
     import scala.concurrent.duration._
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+
+    // create titanConfig
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
     sc.addJar(Boot.getJar("graphon").getPath)
 
     // convert graph name and get the graph vertex and edge RDDs
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
     val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
 
     val vertexSample = arguments.sampleType match {
@@ -135,32 +156,15 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
-    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = new SerializableBaseConfiguration()
-    subgraphTitanConfig.copy(titanConfig)
-    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
     VertexSampleResult(subgraphName)
   }
-
-  /**
-   * The name of the command
-   */
-  override def name: String = "graphs/sampling/vertex_sample"
-
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[VertexSampleArguments]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: VertexSampleResult): JsObject = returnValue.toJson.asJsObject
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: VertexSampleArguments): JsObject = arguments.toJson.asJsObject()
 
 }

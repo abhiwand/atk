@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.util
 
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import org.scalatest.FlatSpec
 
 class PrimitiveConverterTest extends FlatSpec {
@@ -38,7 +38,7 @@ class PrimitiveConverterTest extends FlatSpec {
   }
 
   it should "NOT convert non-primitive types like Vertex" in {
-    PrimitiveConverter.primitivesToObjects(classOf[Vertex]) == classOf[Vertex]
+    PrimitiveConverter.primitivesToObjects(classOf[GBVertex]) == classOf[GBVertex]
   }
 
   it should "NOT convert non-primitive types like List" in {

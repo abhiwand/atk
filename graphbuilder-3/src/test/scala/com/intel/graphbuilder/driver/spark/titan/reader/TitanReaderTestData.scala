@@ -2,10 +2,12 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import java.io.File
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.DirectoryUtils
+import com.thinkaurelius.titan.core.TitanVertex
+import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ BeforeAndAfterAll, Suite }
 
 import scala.collection.JavaConversions._
@@ -19,7 +21,6 @@ import scala.collection.JavaConversions._
  * 3. Serialized Titan rows, where each row represents a vertex and its adjacency list
  * 4. Serialized HBase rows, where each row represents a vertex and its adjacency list
  *
- * @todo Use Stephen's TestingTitan class for scalatest
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
@@ -28,24 +29,25 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   val gbID = TitanReader.TITAN_READER_DEFAULT_GB_ID
   private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
-  var titanConfig = new SerializableBaseConfiguration()
+  val titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.backend", "berkeleyje")
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-  val transaction = graph.newTransaction(graph.buildTransaction())
+  val titanConnector = new TitanGraphConnector(titanConfig)
+  val graph = titanConnector.connect()
 
   // Create a test graph which is a subgraph of Titan's graph of the gods
-  graph.makeLabel("brother").make()
-  graph.makeLabel("lives").make()
+  val graphManager = graph.getManagementSystem()
+  graphManager.makeEdgeLabel("brother").make()
+  graphManager.makeEdgeLabel("lives").make()
 
   // Ordering properties alphabetically to ensure to that tests pass
   // Since properties are represented as a sequence, graph elements with different property orders are not considered equal
-  graph.makeKey("age").dataType(classOf[Integer]).make()
-  graph.makeKey("name").dataType(classOf[String]).make()
-  graph.makeKey("reason").dataType(classOf[String]).make()
-  graph.makeKey("type").dataType(classOf[String]).make()
-  graph.commit()
+  graphManager.makePropertyKey("age").dataType(classOf[Integer]).make()
+  graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+  graphManager.makePropertyKey("reason").dataType(classOf[String]).make()
+  graphManager.makePropertyKey("type").dataType(classOf[String]).make()
+  graphManager.commit()
 
   // Titan graph elements
   val neptuneTitanVertex = {
@@ -53,14 +55,14 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
     vertex.setProperty("age", 4500)
     vertex.setProperty("name", "neptune")
     vertex.setProperty("type", "god")
-    vertex
+    vertex.asInstanceOf[TitanVertex]
   }
 
   val seaTitanVertex = {
     val vertex = graph.addVertex(null)
     vertex.setProperty("name", "sea")
     vertex.setProperty("type", "location")
-    vertex
+    vertex.asInstanceOf[TitanVertex]
   }
 
   val plutoTitanVertex = {
@@ -68,7 +70,7 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
     vertex.setProperty("age", 4000)
     vertex.setProperty("name", "pluto")
     vertex.setProperty("type", "god")
-    vertex
+    vertex.asInstanceOf[TitanVertex]
   }
 
   val seaTitanEdge = {
@@ -82,37 +84,35 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   // GraphBuilder graph elements
   val neptuneGbVertex = {
     val gbNeptuneProperties = createGbProperties(neptuneTitanVertex.getProperties())
-    new Vertex(neptuneTitanVertex.getID(), Property(gbID, neptuneTitanVertex.getID()), gbNeptuneProperties)
+    new GBVertex(neptuneTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), gbNeptuneProperties)
   }
 
   val seaGbVertex = {
     val gbSeaProperties = createGbProperties(seaTitanVertex.getProperties())
-    new Vertex(seaTitanVertex.getID(), Property(gbID, seaTitanVertex.getID()), gbSeaProperties)
+    new GBVertex(seaTitanVertex.getId, Property(gbID, seaTitanVertex.getId), gbSeaProperties)
   }
 
   val plutoGbVertex = {
     val gbPlutoProperties = createGbProperties(plutoTitanVertex.getProperties())
-    new Vertex(plutoTitanVertex.getID(), Property(gbID, plutoTitanVertex.getID()), gbPlutoProperties)
+    new GBVertex(plutoTitanVertex.getId, Property(gbID, plutoTitanVertex.getId), gbPlutoProperties)
   }
 
   val seaGbEdge = {
-    val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
-    new Edge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
+    val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
+    new GBEdge(neptuneTitanVertex.getId, seaTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, seaTitanVertex.getId), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), List[Property]())
+    new GBEdge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
-  // Serialized Titan rows created using the Titan graph elements defined above.
-  val titanRowMap = createTestTitanRows(graph)
+  // Faunus graph elements
+  val neptuneFaunusVertex = createFaunusVertex(neptuneTitanVertex)
+  val plutoFaunusVertex = createFaunusVertex(plutoTitanVertex)
+  val seaFaunusVertex = createFaunusVertex(seaTitanVertex)
 
-  // Serialized HBase rows
-  val hBaseRowMap = createTestHBaseRows(titanRowMap)
-
-  override def afterAll = {
-    cleanupTitan()
-  }
+  // HBase rows
+  val hBaseRows = Seq((NullWritable.get(), neptuneFaunusVertex)) //, (NullWritable.get(), plutoFaunusVertex), (NullWritable.get(), seaFaunusVertex))
 
   /**
    * IMPORTANT! removes temporary files
@@ -120,19 +120,12 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   def cleanupTitan(): Unit = {
     try {
       if (graph != null) {
-        transaction.commit()
         graph.shutdown()
       }
     }
     finally {
       DirectoryUtils.deleteTempDirectory(tmpDir)
     }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
 
 }

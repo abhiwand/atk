@@ -13,22 +13,27 @@
 #       execfile('/path/to/movie.py')
 #
 
-from intelanalytics import *
+import intelanalytics as ia
+
+# show full stack traces
+ia.errors.show_details = True
+
+ia.connect()
 
 #loggers.set_http()
 
 print("server ping")
-server.ping()
+ia.server.ping()
 
 print("define csv file")
-csv = CsvFile("/movie.csv", schema= [('user', int32),
-                                              ('vertexType', str),
-                                              ('movie', int32),
-                                              ('rating', str),
-                                              ('splits', str)])
+csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
+                                        ('vertexType', str),
+                                        ('movie', ia.int32),
+                                        ('rating', str),
+                                        ('splits', str)])
 
 print("create big frame")
-frame = BigFrame(csv)
+frame = ia.Frame(csv)
 
 errors = frame.get_error_frame()
 
@@ -41,10 +46,10 @@ print errors.inspect(10)
 print("frame row count " + str(errors.row_count))
 
 print("define graph parsing rules")
-movie = VertexRule("movie", frame.movie)
-user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-rates = EdgeRule("rating", user, movie, { "splits": frame.splits }, is_directed = True)
+movie = ia.VertexRule("movie", frame.movie)
+user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+rates = ia.EdgeRule("rating", user, movie, { "splits": frame.splits }, bidirectional = False)
 
 print("create graph")
-graph = BigGraph([user, movie, rates])
+graph = ia.TitanGraph([user, movie, rates])
 print("created graph " + graph.name)

@@ -23,6 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
+// $COVERAGE-OFF$
+// This is example code only, not part of the main product
+
 import java.util.Date
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
@@ -40,21 +43,22 @@ object NetflixExampleDriver {
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "hbase")
-  titanConfig.setProperty("storage.tablename", "netflix")
+  titanConfig.setProperty("storage.table", "netflix124")
   //titanConfig.setProperty("storage.backend", "cassandra")
   //titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")
   titanConfig.setProperty("storage.buffer-size", "2048")
-  titanConfig.setProperty("storage.attempt-wait", "300")
-  titanConfig.setProperty("storage.lock-wait-time", "400")
-  titanConfig.setProperty("storage.lock-retries", "15")
-  titanConfig.setProperty("storage.idauthority-retries", "30")
-  titanConfig.setProperty("storage.write-attempts", "10")
-  titanConfig.setProperty("storage.read-attempts", "6")
+  titanConfig.setProperty("storage.lock.wait.time", "400")
+  titanConfig.setProperty("storage.lock.retries", "15")
+  titanConfig.setProperty("storage.parallel-backend-ops", "true")
+  titanConfig.setProperty("ids.authority.randomized-conflict-avoidance-retries", "30")
   titanConfig.setProperty("ids.block-size", "300000")
-  titanConfig.setProperty("ids.renew-timeout", "150000")
+  titanConfig.setProperty("ids.flush", "true")
+  titanConfig.setProperty("ids.renew-timeout", "120000")
+  titanConfig.setProperty("ids.num-partitions", "10")
+  titanConfig.setProperty("ids.authority.conflict-avoidance-mode", "GLOBAL_AUTO")
 
   // Input Schema
   val inputSchema = new InputSchema(List(

@@ -44,14 +44,14 @@ case class Property(key: String, value: Any) {
 object Property {
 
   /**
-   * Merge two lists of properties so that keys appear once.
+   * Merge two set of properties so that keys appear once.
    *
    * Conflicts are handled arbitrarily.
    */
-  def merge(listA: Seq[Property], listB: Seq[Property]): Seq[Property] = {
-    val listWithDuplicates = listA ++ listB
-    val mapWithoutDuplicates = listWithDuplicates.map(p => (p.key, p)).toMap
-    mapWithoutDuplicates.valuesIterator.toList
+  def merge(setA: Set[Property], setB: Set[Property]): Set[Property] = {
+    val unionPotentialKeyConflicts = setA ++ setB
+    val mapWithoutDuplicates = unionPotentialKeyConflicts.map(p => (p.key, p)).toMap
+    mapWithoutDuplicates.valuesIterator.toSet
   }
 
 }

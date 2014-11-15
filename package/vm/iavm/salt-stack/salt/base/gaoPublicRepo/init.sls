@@ -4,3 +4,6 @@
     - template: jinja
     - defaults:
       baseUrl: {{ pillar['gaoRepo']['public']['baseUrl'] }}
+
+echo "public";yum clean all:
+  cmd.run

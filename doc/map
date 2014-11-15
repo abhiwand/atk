@@ -1,34 +1,53 @@
 index
-    ia_intro_0: Introduction
-        ia_intro_1
-        ia_intro_2
-    ad_over: Overview
-        ad_reqs: Requirements
+    ia_intro: Technical Summary
+        ia_intro_0: Overview
+        ia_intro_1: Capabilities
+        ia_intro_2: 0.8 Preview Release
+    ad_over: Administration
+        ad_reqs: System Requirements
         ad_inst: Installation
-            ad_inst_pre_cloudera
-            ad_inst_cloudera
-            ad_inst_IA
-            ad_psql
-            ad_psql_cs
-            ad_plug
-    ds_over: Overview
+            ad_inst_pre_cloudera: Physical Machine Configuration
+            ad_inst_cloudera: Cloudera Hadoop 5 Configuration
+            ad_inst_IA: Intel Analytics Package Installation
+            ad_psql: Tracking Metadata
+                ad_psql_cs: PostgreSQL Cheatsheet
+            ad_ipython: IPython Setup Instructions
+            ad_inst_vm: Virtual Machines
+                ad_log: Intel Analytics Logging
+            ad_plug: Plugin Authoring Guide
+        ad_python: Python Client Setup
+        ad_bkm: Best Known Methods (Admin)
+    ds_over: User Manual
         ds_strt: Getting Started
-        ds_db: Databases
-        ds_dflw: Data Flow
-        ds_samp: Sampling
+            ds_eclipse: Eclipse Setup Instructions
+            ds_intellij: IntelliJ IDEA Setup Instructions
+            ds_pycharm: PyCharm Setup Instructions
+        ds_db: Graph Database
+        ds_dflw: Process Flow Examples
+            ds_apir: Python User Functions
         ds_ml: Machine Learning
-        ds_mlal: Machine Learning Algorithms
-        ds_apim: Python API
-            ds_apio: Python API Overview
-            ds_apic: Python API in Detail
-                intelanalytics.core.files
-                intelanalytics.core.frame
-                intelanalytics.core.graph
-        ds_supp: Supplemental (future)
-        ds_bkm: Best Known Methods (future)
-        ds_resc: Resources (future)
-    intel_legal: Legal
+            ds_mlal_0: Machine Learning Algorithms
+                ds_mlal_cf: Collaborative Filtering
+                ds_mlal_als: Using ALS Optimization to Solve the Collaborative Filtering Problem
+                ds_mlal_cgd: Matrix Factorization based on Conjugate Gradient Descent (CGD)
+                ds_mlal_pr: Page Rank (PR)
+                ds_mlal_lp: Label Propagation (LP)
+                ds_mlal_lbp: Loopy Belief Propagation (LBP)
+                ds_mlal_glbp: Gaussian Loopy Belief Propagation
+                ds_mlal_lda: Topic Modeling with Latent Dirichlet Allocation (LDA)
+                ds_mlal_apl: Average Path Length (APL)
+                ds_mlal_cc: Connected Components (CC)
+                ds_mlal_k: K-Clique Percolation
+        ds_bkm: Best Known Methods (User)
+    ds_apic: Python API
+        intelanalytics.core.files
+        intelanalytics.core.frame
+            intelanalytics.core.autoframe
+        intelanalytics.core.graph
+            intelanalytics.core.autograph
     glossary: Glossary
+    intel_legal: Legal
     genindex
-    modindex
     search
+    errata
+    PDF

@@ -1,6 +1,6 @@
-=======================
-Intel Analytics Logging
-=======================
+============
+|IA| Logging
+============
 
 .. contents:: Table of Contents
     :local:
@@ -9,7 +9,7 @@ Intel Analytics Logging
 Introduction
 ------------
 
-Logging, in Intel Analytics service, is done with the help of LOGback.
+Logging, in |IA| service, is done with the help of LOGback.
 The full documentation for LOGback can be found on their site.
 For a deep dive into LOGback please refer to their documentation, as we will only cover the basics.
 
@@ -17,24 +17,24 @@ For a deep dive into LOGback please refer to their documentation, as we will onl
 Log Files
 ---------
 
-The Intel Analytics service writes two log files to the system, both of which are located in ``/var/log/intelanalytics/rest-server/``.
+The |IA| service writes two log files to the system, both of which are located in ``/var/log/intelanalytics/rest-server/``.
 
 output.log
 ==========
 
 Contains all log messages sent to the console.
-This will contain messages from many of the services Intel Analytics uses like spark, yarn, hdfs, etc. as well as the Intel Analytics service.
+This will contain messages from many of the services |IA| uses like spark, yarn, hdfs, etc. as well as the |IA| service.
 
 application.log
 ===============
 
-Contains log messages from the Intel Analytics service only.
+Contains log messages from the |IA| service only.
 
 ----------
 Log Levels
 ----------
 
-The possible log levels for Intel Analytics are the same as those that are available for LOGback.
+The possible log levels for |IA| are the same as those that are available for LOGback.
 
 *   TRACE
 *   DEBUG
@@ -45,7 +45,7 @@ The possible log levels for Intel Analytics are the same as those that are avail
 Updating The Log Level
 ======================
 
-Changing the log level for the Intel Analytics service is easy.
+Changing the log level for the |IA| service is easy.
 
 Open The Configuration File
 ---------------------------
@@ -59,7 +59,8 @@ You should see somethings like this::
         <appender name="FILE" class="ch.qos.logback.core.FileAppender">
             <file>/var/log/intelanalytics/rest-server/application.log</file>
             <encoder>
-                <pattern>%date - [%level] - from %logger in %thread %message %n%ex{full}%n</pattern>
+                <pattern>%date - [%level] - from %logger in %thread %message
+                    %n%ex{full}%n</pattern>
             </encoder>
         </appender>
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -97,10 +98,11 @@ Update the "level" attribute for the "root" xml tag::
     </root>
     ...
 
-After updating the level attribute, save the file and either restart the Intel Analytics service or wait one minute for the configuration to be reloaded.
+After updating the level attribute, save the file and either restart the |IA| service or wait one minute for the configuration to be reloaded.
 
 .. warning::
 
     Be careful while changing the LOGback configuration.
     You might cause undue strain on the server or the Intel Analytics service by setting DEBUG logging level in a production environment.
 
+.. |IA| replace:: Intel Analytics
