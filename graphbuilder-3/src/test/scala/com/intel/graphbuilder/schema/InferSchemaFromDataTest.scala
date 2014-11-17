@@ -32,7 +32,7 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
   "InferSchemaFromData" should {
 
     "infer one Edge label from one Edges" in {
-      val edge = new GBEdge(null, null, "myLabel", Set.empty[Property])
+      val edge = new GBEdge(None, null, null, "myLabel", Set.empty[Property])
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
@@ -43,8 +43,8 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer one Edge label from two Edges with the same label" in {
-      val edge1 = new GBEdge(null, null, "myLabel", Set.empty[Property])
-      val edge2 = new GBEdge(null, null, "myLabel", Set.empty[Property])
+      val edge1 = new GBEdge(None, null, null, "myLabel", Set.empty[Property])
+      val edge2 = new GBEdge(None, null, null, "myLabel", Set.empty[Property])
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge1)
@@ -56,8 +56,8 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer two Edge labels from two Edges with different labels" in {
-      val edge1 = new GBEdge(null, null, "myLabel", Set.empty[Property])
-      val edge2 = new GBEdge(null, null, "secondLabel", Set.empty[Property])
+      val edge1 = new GBEdge(None, null, null, "myLabel", Set.empty[Property])
+      val edge2 = new GBEdge(None, null, null, "secondLabel", Set.empty[Property])
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge1)
@@ -70,7 +70,7 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer no properties from an Edge when none are present" in {
-      val edge = new GBEdge(null, null, null, Set.empty[Property])
+      val edge = new GBEdge(None, null, null, null, Set.empty[Property])
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
@@ -79,7 +79,7 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer an Edge property from an Edge" in {
-      val edge = new GBEdge(null, null, null, Set(new Property("key", "value")))
+      val edge = new GBEdge(None, null, null, null, Set(new Property("key", "value")))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
@@ -91,8 +91,8 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer one Edge property from two Edges with the same property" in {
-      val edge1 = new GBEdge(null, null, null, Set(new Property("key", "value1")))
-      val edge2 = new GBEdge(null, null, null, Set(new Property("key", "value2")))
+      val edge1 = new GBEdge(None, null, null, null, Set(new Property("key", "value1")))
+      val edge2 = new GBEdge(None, null, null, null, Set(new Property("key", "value2")))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge1)
@@ -105,7 +105,7 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "infer two Edge properties from an Edge" in {
-      val edge = new GBEdge(null, null, null, Set(new Property("key1", "value1"), new Property("key2", new Date())))
+      val edge = new GBEdge(None, null, null, null, Set(new Property("key1", "value1"), new Property("key2", new Date())))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
@@ -166,7 +166,7 @@ class InferSchemaFromDataTest extends WordSpec with Matchers {
     }
 
     "combine results from Edges and Vertices" in {
-      val edge = new GBEdge(null, null, "myLabel", Set(new Property("key3", "value3")))
+      val edge = new GBEdge(None, null, null, "myLabel", Set(new Property("key3", "value3")))
       val vertex = new GBVertex(new Property("gbId", 10001L), Set(new Property("key1", "value1"), new Property("key2", new Date())))
       val inferSchemaFromData = new InferSchemaFromData()
 
