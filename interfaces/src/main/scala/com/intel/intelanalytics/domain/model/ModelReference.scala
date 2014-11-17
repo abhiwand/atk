@@ -25,7 +25,8 @@ package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain.HasId
 
-/*
-  ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
+/**
+ * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
+ * @param id Model's id
  */
 case class ModelReference(id: Long) extends HasId

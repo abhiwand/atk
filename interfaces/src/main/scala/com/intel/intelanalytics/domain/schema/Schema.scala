@@ -25,8 +25,6 @@ package com.intel.intelanalytics.domain.schema
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
-import scala.collection.parallel.mutable
-
 /**
  * Column - this is a nicer wrapper for columns than just tuples
  *
@@ -42,7 +40,12 @@ case class Column(name: String, dataType: DataType, var index: Int = -1)
 /**
  * Extra schema if this is a vertex frame
  */
-case class VertexSchema(label: String, idColumnName: Option[String] = None) {
+case class VertexSchema(columns: List[Column] = List[Column](), label: String, idColumnName: Option[String] = None) extends GraphElementSchema {
+  require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
+  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  if (idColumnName != null) {
+    //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
+  }
 
   /**
    * If the id column name had already been defined, use that name, otherwise use the supplied name
@@ -51,6 +54,23 @@ case class VertexSchema(label: String, idColumnName: Option[String] = None) {
    */
   def determineIdColumnName(nameIfNotAlreadyDefined: String): String = {
     idColumnName.getOrElse(nameIfNotAlreadyDefined)
+  }
+
+  override def copy(columns: List[Column]): VertexSchema = {
+    new VertexSchema(columns, label, idColumnName)
+  }
+
+  def copy(idColumnName: Option[String]): VertexSchema = {
+    new VertexSchema(columns, label, idColumnName)
+  }
+
+  override def dropColumn(columnName: String): Schema = {
+    if (idColumnName.isDefined) {
+      require(idColumnName.get != columnName, s"The id column is not allowed to be dropped: $columnName")
+    }
+    // TODO: check for system column names
+
+    super.dropColumn(columnName)
   }
 
 }
@@ -62,48 +82,62 @@ case class VertexSchema(label: String, idColumnName: Option[String] = None) {
  * @param destVertexLabel the destination "type" of vertices this edge connects
  * @param directed true if edges are directed, false if they are undirected
  */
-case class EdgeSchema(label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false)
+case class EdgeSchema(columns: List[Column] = List[Column](), label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) extends GraphElementSchema {
+  require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
+  require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
+  require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
+  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+
+  override def copy(columns: List[Column]): EdgeSchema = {
+    new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
+  }
+
+}
 
 /**
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
-case class Schema(columns: List[Column] = List[Column](),
-                  vertexSchema: Option[VertexSchema] = None,
-                  edgeSchema: Option[EdgeSchema] = None) {
+case class FrameSchema(columns: List[Column] = List[Column]()) extends Schema {
+
+  override def copy(columns: List[Column]): FrameSchema = {
+    new FrameSchema(columns)
+  }
+
+}
+
+/**
+ * Common interface for Vertices and Edges
+ */
+trait GraphElementSchema extends Schema {
+
+  /** Vertex or Edge label */
+  def label: String
+
+}
+
+object Schema {
 
   /**
-   * Legacy signature
-   *
-   * Schema was defined previously as a list of tuples.  This constructor was introduced to so
-   * all of the dependent code wouldn't need to be changed.
-   *
-   * @param columnTuples columns as tuples
+   * A lot of code was using Tuples before we introduced column objects
+   * @deprecated use column objects and the other constructors
    */
-  def this(columnTuples: List[(String, DataType)]) = {
-    this(columnTuples.map { case (name, dataType) => Column(name, dataType) }, None, None)
+  def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
+    val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
+    new FrameSchema(columns)
   }
 
+}
+
+/**
+ * Schema for a data frame. Contains the columns with names and data types.
+ */
+trait Schema {
+
+  val columns: List[Column]
+
   require(columns != null, "columns must not be null")
-  require({
-    val names = columns.map(x => x.name).toList
-    names.size == names.distinct.size
-  }, "column names must be unique")
-  require(vertexSchema != null, "vertexSchema must not be null")
-  require(edgeSchema != null, "edgeSchema must not be null")
-  if (vertexSchema.isDefined) {
-    require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
-    require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
-    if (vertexSchema.get.idColumnName != null) {
-      //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
-    }
-  }
-  else if (edgeSchema.isDefined) {
-    require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
-    require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
-    require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
-    require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
-  }
+  require(columns.size == columnNames.size, "column names must be unique")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -113,20 +147,7 @@ case class Schema(columns: List[Column] = List[Column](),
    */
   private lazy val namesToColumns = columns.map(col => (col.name, col)).toMap
 
-  /**
-   * Label column if this is an edge or vertex frame, None otherwise
-   */
-  def label: Option[String] = {
-    if (vertexSchema.isDefined) {
-      Some(vertexSchema.get.label)
-    }
-    else if (edgeSchema.isDefined) {
-      Some(edgeSchema.get.label)
-    }
-    else {
-      None
-    }
-  }
+  def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
     namesToColumns.keys.toList
@@ -207,7 +228,7 @@ case class Schema(columns: List[Column] = List[Column](),
   def copySubset(columnNames: Seq[String]): Schema = {
     val indices = columnIndices(columnNames)
     val columnSubset = indices.map(i => columns(i)).toList
-    Schema(columnSubset, vertexSchema, edgeSchema)
+    copy(columnSubset)
   }
 
   /**
@@ -225,7 +246,7 @@ case class Schema(columns: List[Column] = List[Column](),
       }
     }
     val combinedColumns = (this.namesToColumns ++ schema.namesToColumns).values.toList
-    Schema(combinedColumns, vertexSchema, edgeSchema)
+    copy(combinedColumns)
   }
 
   /**
@@ -298,7 +319,7 @@ case class Schema(columns: List[Column] = List[Column](),
         if columnNames.contains(c.name)
       } yield (Column(columnNames(c.name), c.dataType), i)
     val (cols, indices) = colsAndIndices.unzip
-    (Schema(cols.toList), indices)
+    (copy(cols.toList), indices)
   }
 
   /**
@@ -463,5 +484,6 @@ case class Schema(columns: List[Column] = List[Column](),
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
   }
+
 }
 

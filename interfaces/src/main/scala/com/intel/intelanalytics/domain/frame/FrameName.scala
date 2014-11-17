@@ -27,19 +27,4 @@ import com.intel.intelanalytics.domain.Naming
 
 case class FrameName(name: String)
 
-object FrameName {
-
-  def validate(name: String): String = Naming.validateAlphaNumericUnderscore(name)
-
-  def validateOrGenerate(name: Option[String]): String = Naming.validateAlphaNumericUnderscoreOrGenerate(name, { generate() })
-
-  /**
-   * Automatically generate a unique name for a frame.
-   *
-   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
-   *
-   * @param annotation Optional annotation to add to frame name
-   * @return Frame name
-   */
-  def generate(annotation: Option[String] = None): String = Naming.generateName(Some("frame_"), annotation)
-}
+object FrameName extends Naming("frame")

@@ -86,17 +86,20 @@ class _NamedObjectsFunctionFactory(object):
         obj_class = self._class
         http = self._http
         execute_command = self._execute_command
+        module_logger = self._module_logger
 
         def get_name(self):
             r = http.get(rest_target + str(self._id))  # TODO: update w/ URI jazz
             payload = r.json()
             return payload['name']
         get_name.__name__ = 'name'
+        api_get_name = get_api_decorator(module_logger)(get_name)
 
         def set_name(self, value):
             arguments = {obj_term: self._id, "new_name": value}
             execute_command(getattr(obj_class, COMMAND_PREFIX) + "/rename", **arguments)
         set_name.__name__ = 'name'
+        api_set_name = get_api_decorator(module_logger)(set_name)
 
         doc = """The name of the {term} object.
 
@@ -113,7 +116,7 @@ class _NamedObjectsFunctionFactory(object):
             >>> my_{term}.name
             "cleaned_data"
         """.format(term=self._term)
-        return property(fget=get_name, fset=set_name, fdel=None, doc=doc)
+        return property(fget=api_get_name, fset=api_set_name, fdel=None, doc=doc)
 
     def create_get_object_names(self):
         get_object_names_name = "get_%s_names" % self._term
@@ -121,7 +124,6 @@ class _NamedObjectsFunctionFactory(object):
         module_logger = self._module_logger
         http = self._http
 
-        @get_api_decorator(module_logger)
         def get_object_names():
             module_logger.info(get_object_names_name)
             r = http.get(rest_collection)
@@ -138,7 +140,7 @@ class _NamedObjectsFunctionFactory(object):
         Names of the all {obj_term} objects
     """.format(obj_term=self._term)
         set_function_doc_stub_text(get_object_names, '')
-        return get_object_names
+        return get_api_decorator(module_logger)(get_object_names)
 
     def create_get_object(self):
         get_object_name = "get_%s" % self._term
@@ -149,7 +151,6 @@ class _NamedObjectsFunctionFactory(object):
         obj_class = self._class
         get_class = get_loadable_class_from_command_prefix
 
-        @get_api_decorator(module_logger)
         def get_object(name):
             module_logger.info("%s(%s)", get_object_name, name)
             r = http.get(rest_target+name)
@@ -177,7 +178,7 @@ class _NamedObjectsFunctionFactory(object):
     {obj_term}
         {obj_term} object""".format(obj_term=self._term)
         set_function_doc_stub_text(get_object, 'name')
-        return get_object
+        return get_api_decorator(module_logger)(get_object)
 
     def create_drop_objects(self, get_item_function):
         # create local vars for better closures:
@@ -189,7 +190,6 @@ class _NamedObjectsFunctionFactory(object):
         http = self._http
         get_item = get_item_function
 
-        @get_api_decorator(module_logger)
         def drop_objects(items):
             if not isinstance(items, list) and not isinstance(items, tuple):
                 items = [items]
@@ -214,4 +214,4 @@ class _NamedObjectsFunctionFactory(object):
     items : string, {obj_term} object, or a list of strings or objects
         Either the name of the {obj_term} object to delete or the {obj_term} object itself""".format(obj_term=obj_term)
         set_function_doc_stub_text(drop_objects, 'items')
-        return drop_objects
+        return get_api_decorator(module_logger)(drop_objects)

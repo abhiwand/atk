@@ -42,20 +42,20 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lda(graph: GraphReference,
-               edge_value_property_list: List[String],
-               input_edge_label_list: List[String],
-               output_vertex_property_list: List[String],
-               vertex_type: String,
-               vector_value: Boolean,
-               max_supersteps: Option[Int] = None,
+               edgeValuePropertyList: List[String],
+               inputEdgeLabelList: List[String],
+               outputVertexPropertyList: List[String],
+               vertexType: String,
+               vectorValue: Boolean,
+               maxSupersteps: Option[Int] = None,
                alpha: Option[Float] = None,
                beta: Option[Float] = None,
-               convergence_threshold: Option[Double] = None,
-               evaluation_cost: Option[Boolean] = None,
-               max_value: Option[Float] = None,
-               min_value: Option[Float] = None,
-               bidirectional_check: Option[Boolean] = None,
-               num_topics: Option[Int] = None)
+               convergenceThreshold: Option[Double] = None,
+               evaluationCost: Option[Boolean] = None,
+               maxValue: Option[Float] = None,
+               minValue: Option[Float] = None,
+               validateGraphStructure: Option[Boolean] = None,
+               numTopics: Option[Int] = None)
 
 case class LdaResult(value: String)
 
@@ -158,12 +158,14 @@ class LatentDirichletAllocation
                            |        is mainly for graph integrity check.
                            |        Valid value range is all float.
                            |        The default value is "-Infinity".
-                           | 
-                           |    bidirectional_check : boolean (optional)
-                           |        True means to turn on bidirectional check. False means to turn
-                           |        off bidirectional check. LDA expects a bi-partite input graph and
-                           |        each edge therefore should be bi-directional. This option is mainly
-                           |        for graph integrity check.
+                           |
+                           |    validate_graph_structure : boolean (optional)
+                           |        Checks if the graph meets certain structural requirements before starting
+                           |        the algorithm.
+                           |
+                           |        At present, this checks that at every vertex, the in-degree equals the
+                           |        out-degree. Because this algorithm is for undirected graphs, this is a necessary
+                           |        but not sufficient, check for valid input.
                            | 
                            |    num_topics : integer (optional)
                            |        The number of topics to identify in the LDA model. Using fewer
@@ -201,23 +203,23 @@ class LatentDirichletAllocation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lda.maxSupersteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lda.maxSupersteps", arguments.maxSupersteps)
     GiraphConfigurationUtil.set(hConf, "lda.alpha", arguments.alpha)
     GiraphConfigurationUtil.set(hConf, "lda.beta", arguments.beta)
-    GiraphConfigurationUtil.set(hConf, "lda.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "lda.evaluateCost", arguments.evaluation_cost)
-    GiraphConfigurationUtil.set(hConf, "lda.maxVal", arguments.max_value)
-    GiraphConfigurationUtil.set(hConf, "lda.minVal", arguments.min_value)
-    GiraphConfigurationUtil.set(hConf, "lda.bidirectionalCheck", arguments.bidirectional_check)
-    GiraphConfigurationUtil.set(hConf, "lda.numTopics", arguments.num_topics)
+    GiraphConfigurationUtil.set(hConf, "lda.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "lda.evaluateCost", arguments.evaluationCost)
+    GiraphConfigurationUtil.set(hConf, "lda.maxVal", arguments.maxValue)
+    GiraphConfigurationUtil.set(hConf, "lda.minVal", arguments.minValue)
+    GiraphConfigurationUtil.set(hConf, "lda.bidirectionalCheck", arguments.validateGraphStructure)
+    GiraphConfigurationUtil.set(hConf, "lda.numTopics", arguments.numTopics)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type))
-    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexType))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

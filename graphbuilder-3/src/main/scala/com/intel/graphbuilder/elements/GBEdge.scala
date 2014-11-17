@@ -38,14 +38,14 @@ import com.intel.graphbuilder.util.StringUtils
  * @param label the Edge label
  * @param properties the set of properties associated with this edge
  */
-case class GBEdge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) extends GraphElement with Mergeable[GBEdge] {
+case class GBEdge(eid: Option[Long], var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) extends GraphElement with Mergeable[GBEdge] {
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) {
-    this(null, null, tailVertexGbId, headVertexGbId, label, properties)
+  def this(eid: Option[Long], tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) {
+    this(eid, null, null, tailVertexGbId, headVertexGbId, label, properties)
   }
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: Any, properties: Set[Property]) {
-    this(tailVertexGbId, headVertexGbId, StringUtils.nullSafeToString(label), properties)
+  def this(eid: Option[Long], tailVertexGbId: Property, headVertexGbId: Property, label: Any, properties: Set[Property]) {
+    this(eid, tailVertexGbId, headVertexGbId, StringUtils.nullSafeToString(label), properties)
   }
 
   /**
@@ -69,14 +69,14 @@ case class GBEdge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGb
     if (id != other.id) {
       throw new IllegalArgumentException("You can't merge edges with different ids or labels")
     }
-    new GBEdge(tailVertexGbId, headVertexGbId, label, Property.merge(this.properties, other.properties))
+    new GBEdge(eid, tailVertexGbId, headVertexGbId, label, Property.merge(this.properties, other.properties))
   }
 
   /**
    * Create edge with head and tail in reverse order
    */
   def reverse(): GBEdge = {
-    new GBEdge(headVertexGbId, tailVertexGbId, label, properties)
+    new GBEdge(eid, headVertexGbId, tailVertexGbId, label, properties)
   }
 
   /**

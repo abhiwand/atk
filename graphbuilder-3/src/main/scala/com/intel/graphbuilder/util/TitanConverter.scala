@@ -65,10 +65,10 @@ object TitanConverter {
     val titanToVertex = titanEdge.getVertex(Direction.IN)
     val fromGbId = getGbId(titanFromVertex, gbIdPropertyName)
     val toGbId = getGbId(titanToVertex, gbIdPropertyName)
-
+    val eid = titanEdge.getLongId
     val edgeProperties = titanEdge.getPropertyKeys.map(key => Property(key, titanEdge.getProperty(key))).toSet
 
-    GBEdge(titanFromVertex.getId, titanToVertex.getId, fromGbId, toGbId, titanEdge.getLabel, edgeProperties)
+    GBEdge(Some(eid), titanFromVertex.getId, titanToVertex.getId, fromGbId, toGbId, titanEdge.getLabel, edgeProperties)
   }
 
   /**

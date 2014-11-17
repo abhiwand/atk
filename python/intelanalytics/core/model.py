@@ -111,9 +111,6 @@ class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
             self._create(source, name)
         except:
             error = IaError(logger)
-
-
-
             raise error
 
 
