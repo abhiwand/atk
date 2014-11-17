@@ -114,10 +114,11 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
         },
         StorageFormats.HBaseTitan))
     val ctx = invocation.sparkContext
+    val graph = graphs.expectGraph(seamlessGraph.id)
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
-      graphs.loadGbVertices(ctx, seamlessGraph.id),
-      graphs.loadGbEdges(ctx, seamlessGraph.id))
-    graphs.updateElementIDNames(titanGraph, seamlessGraph.vertexIdColumnNames)
+      graphs.loadGbVertices(ctx, graph),
+      graphs.loadGbEdges(ctx, graph))
+    graphs.updateFrameSchemaList(titanGraph, seamlessGraph.getFrameSchemaList)
   }
 
   /**

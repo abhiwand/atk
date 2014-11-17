@@ -65,7 +65,7 @@ class SparkComponent extends EngineComponent
   SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextFactory,
-    commandExecutor, commands, frameStorage, graphStorage, models, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
+    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
 
@@ -93,7 +93,7 @@ class SparkComponent extends EngineComponent
 
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory), frameStorage)
 
-  val models: SparkModelStorage = new SparkModelStorage(metaStore.asInstanceOf[SlickMetaStore])
+  val modelStorage: SparkModelStorage = new SparkModelStorage(metaStore.asInstanceOf[SlickMetaStore])
 
   val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 

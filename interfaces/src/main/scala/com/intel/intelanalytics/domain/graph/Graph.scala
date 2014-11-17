@@ -39,6 +39,7 @@ import org.joda.time.DateTime
  * @param createdByUserId user who created this row
  * @param modifiedByUserId  user who last modified this row
  * @param idCounter idCounter counter for generating unique ids for vertices and edges with Seamless Graph.
+ * @param frameSchemaList a list of schema objects corresponding to the frames. This is only required for graphs exported from a Seamless Graph.
  */
 case class Graph(id: Long,
                  name: String,
@@ -51,7 +52,7 @@ case class Graph(id: Long,
                  createdByUserId: Option[Long] = None,
                  modifiedByUserId: Option[Long] = None,
                  idCounter: Option[Long] = None,
-                 elementIDNames: Option[ElementIDNames] = None) extends HasId with IAUri {
+                 frameSchemaList: Option[SchemaList] = None) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")

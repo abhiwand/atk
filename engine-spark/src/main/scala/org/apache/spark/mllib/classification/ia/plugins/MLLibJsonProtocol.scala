@@ -21,19 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.mllib.plugins
+package org.apache.spark.mllib.classification.ia.plugins
 
-import org.apache.spark.mllib.linalg.DenseVector
-import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
  */
 
-object LogisticRegressionJsonProtocol {
+object MLLibJsonProtocol {
 
   implicit object SparseVectorFormat extends JsonFormat[SparseVector] {
     /**
