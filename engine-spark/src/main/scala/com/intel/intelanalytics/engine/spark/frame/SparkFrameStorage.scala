@@ -282,7 +282,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
               val existing = metaStore.frameRepo.lookup(entity.id).get
               val newFrame = metaStore.frameRepo.update(existing.copy(
                 rowCount = Some(count),
-                schema = frameRDD.schema,
+                schema = frameRDD.frameSchema,
                 storageFormat = Some(storage),
                 storageLocation = Some(path),
                 parent = parent.map(p => p.id)))

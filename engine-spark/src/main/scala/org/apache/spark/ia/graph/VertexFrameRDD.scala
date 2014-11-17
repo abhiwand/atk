@@ -22,7 +22,7 @@ class VertexFrameRDD(schema: VertexSchema,
                      sqlContext: SQLContext,
                      logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.schema.asInstanceOf[VertexSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRDD: FrameRDD) = this(frameRDD.frameSchema.asInstanceOf[VertexSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
 
   def this(schema: VertexSchema, frameRDD: FrameRDD) = this(schema, frameRDD.sqlContext, frameRDD.logicalPlan)
 
@@ -100,7 +100,7 @@ class VertexFrameRDD(schema: VertexSchema,
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
   def append(other: FrameRDD, preferNewVertexData: Boolean = true): VertexFrameRDD = {
-    val unionedSchema = schema.union(other.schema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
+    val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
 
     val part2 = new VertexFrameRDD(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue(), (vertex.data, preferNewVertexData)))
 

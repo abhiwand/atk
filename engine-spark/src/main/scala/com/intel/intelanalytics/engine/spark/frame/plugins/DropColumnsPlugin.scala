@@ -103,7 +103,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
 
     // run the operation
     val result = frame.data.selectColumns(schema.columnNamesExcept(arguments.columns))
-    assert(result.schema.columnNames.intersect(arguments.columns).isEmpty, "Column was not removed from schema!")
+    assert(result.frameSchema.columnNames.intersect(arguments.columns).isEmpty, "Column was not removed from schema!")
 
     // save results
     save(new SparkFrameData(frame.meta, result)).meta
