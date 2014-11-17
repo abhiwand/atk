@@ -62,10 +62,6 @@ public class GiraphToTitanGraphFactory {
             if (key.startsWith(prefix)) {
                 titanConfig.setProperty(key.substring(prefix.length() + 1), value);
             }
-
-            //make sure batch-loading is OFF for read
-            String key1 = GIRAPH_TITAN_STORAGE_BATCH_LOADING.getKey();
-            titanConfig.setProperty(key1.substring(prefix.length() + 1), "false"); //GIRAPH_TITAN_STORAGE_BATCH_LOADING.getDefaultValue();
         }
         return titanConfig;
     }

@@ -7,6 +7,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapreduce.InputSplit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,10 +18,10 @@ import java.util.List;
  */
 public class HBaseUniformSplitter {
 
-    // Uses a similar formula to com.thinkaurelius.titan.diskstorage.hbase.HBaseKeyColumnValueStore
-    public static final byte[] maxIntRowKey = Bytes.toBytes(((1L << 32) - 1L));
-    public static final byte[] maxLongRowKey = Bytes.toBytes(((1L << 63) - 1L));
+    public static final byte xFF = (byte) 0xFF;
 
+    // Uses a similar formula to com.thinkaurelius.titan.diskstorage.hbase.HBaseKeyColumnValueStore
+    public static final byte[] maxRowKey = Bytes.toBytes(((1L << 32) - 1L));
     private final List<InputSplit> initialSplits;
 
     public HBaseUniformSplitter(List<InputSplit> initialSplits) {
@@ -65,13 +66,14 @@ public class HBaseUniformSplitter {
         if (!Bytes.equals(endKey, HConstants.EMPTY_BYTE_ARRAY)) {
             regionSplits = createUniformSplits(inputSplit, startKey, endKey, splitsPerRegion);
         } else {
-            regionSplits = createUniformSplits(inputSplit, startKey, getLastRegionKey(startKey), splitsPerRegion);
+            byte[] lastRegionKey = getLastRegionKey(inputSplit, startKey);
+            regionSplits = createUniformSplits(inputSplit, startKey, lastRegionKey, splitsPerRegion);
 
             if (regionSplits.size() > 0) {
                 int lastSplitIdx = regionSplits.size() - 1;
                 TableSplit lastSplit = (TableSplit) regionSplits.get(lastSplitIdx);
                 TableSplit newLastSplit = new TableSplit(lastSplit.getTable(), lastSplit.getStartRow(),
-                        HConstants.EMPTY_BYTE_ARRAY, lastSplit.getRegionLocation());
+                        HConstants.EMPTY_BYTE_ARRAY, lastSplit.getRegionLocation(), lastSplit.getLength());
                 regionSplits.set(lastSplitIdx, newLastSplit);
             }
 
@@ -98,7 +100,7 @@ public class HBaseUniformSplitter {
         if (splitKeys != null) {
             for (int i = 0; i < splitKeys.length - 1; i++) {
                 TableSplit tableSplit = new TableSplit(initialSplit.getTable(), splitKeys[i],
-                        splitKeys[i + 1], initialSplit.getRegionLocation());
+                        splitKeys[i + 1], initialSplit.getRegionLocation(), initialSplit.getLength());
                 splits.add(tableSplit);
             }
         } else {
@@ -153,22 +155,27 @@ public class HBaseUniformSplitter {
 
     /**
      * Estimate the end key for the last region.
-     *
+     * <p/>
      * The end key of the last region is empty in a HBase table.
      *
-     * @param startKey Start key for the region
-     * @return MAX_INT - 1, if start key is less than MAX_INT else MAX_LONG-1
+     * @param inputSplit Input region split
+     * @param startKey   Start key for the region
+     * @return Estimated end key
      */
-    public byte[] getLastRegionKey(byte[] startKey) {
+    public byte[] getLastRegionKey(TableSplit inputSplit, byte[] startKey) {
 
-        // Compute end key using pre-split formula in
-        byte[] endKey = maxIntRowKey;
+        byte[] endKey = maxRowKey;
 
-        if (!Bytes.equals(startKey, HConstants.EMPTY_BYTE_ARRAY)) {
-            if (Bytes.compareTo(startKey, endKey) > 0) { //Start key > end key
-                endKey = maxLongRowKey;
+        if (startKey != null) {
+            int keyLength = startKey.length;
+            if (keyLength > 0) {
+                endKey = new byte[keyLength];
+                Arrays.fill(endKey, xFF);
             }
         }
+
+        Log.info("Setting last key for HBase region to:" + endKey);
+
         return (endKey);
     }
 
