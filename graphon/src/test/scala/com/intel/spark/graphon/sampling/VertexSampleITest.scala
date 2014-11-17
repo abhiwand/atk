@@ -67,26 +67,26 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
     (1.5, GBVertex(gbIds(7), gbIds(7), Set(new Property("location", "Oregon")))),
     (1.4, GBVertex(gbIds(8), gbIds(8), Set(new Property("location", "Oregon")))))
 
-  val inputEdgeList = Seq(GBEdge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(2), gbIds(5), gbIds(2), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(3), gbIds(6), gbIds(3), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(3), gbIds(7), gbIds(3), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(3), gbIds(8), gbIds(3), gbIds(8), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(5), gbIds(2), gbIds(5), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(5), gbIds(6), gbIds(5), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(5), gbIds(7), gbIds(5), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(6), gbIds(3), gbIds(6), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(6), gbIds(5), gbIds(6), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(7), gbIds(3), gbIds(7), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(7), gbIds(5), gbIds(7), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-    GBEdge(gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
+  val inputEdgeList = Seq(GBEdge(None, gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(2), gbIds(5), gbIds(2), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(3), gbIds(6), gbIds(3), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(3), gbIds(7), gbIds(3), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(3), gbIds(8), gbIds(3), gbIds(8), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(5), gbIds(2), gbIds(5), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(5), gbIds(6), gbIds(5), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(5), gbIds(7), gbIds(5), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(6), gbIds(3), gbIds(6), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(6), gbIds(5), gbIds(6), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(7), gbIds(3), gbIds(7), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(7), gbIds(5), gbIds(7), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    GBEdge(None, gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
   "Generating a uniform vertex sample" should {
 
@@ -178,14 +178,14 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
         GBVertex(gbIds(3), gbIds(3), Set(new Property("location", "Oregon"))),
         GBVertex(gbIds(4), gbIds(4), Set(new Property("location", "Oregon"))))
 
-      val sampleEdgeList = Seq(GBEdge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
-        GBEdge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
+      val sampleEdgeList = Seq(GBEdge(None, gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        GBEdge(None, gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
       val sampleVertexRdd = sparkContext.parallelize(sampleVertexList, 2)
       val sampleEdgeRdd = sparkContext.parallelize(sampleEdgeList, 2)

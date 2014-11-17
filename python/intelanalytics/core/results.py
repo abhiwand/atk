@@ -54,7 +54,7 @@ def add_postprocessor(command_full_name, function):
 
 # post-processor methods --all take a json object argument
 
-@postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan')
+@postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_from_titan')
 def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['name'])
@@ -63,3 +63,7 @@ def return_graph(json_result):
 def return_metrics(json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
+
+@postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns')
+def return_none(json_result):
+    return None

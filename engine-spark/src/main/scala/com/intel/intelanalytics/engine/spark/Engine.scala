@@ -189,7 +189,10 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
   commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
   commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
+  commandPluginRegistry.registerCommand(new DropVertexColumnPlugin)
+  commandPluginRegistry.registerCommand(new DropEdgeColumnPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
+  commandPluginRegistry.registerCommand(new ExportFromTitanPlugin(frames, graphs))
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new TrainModelPlugin)
