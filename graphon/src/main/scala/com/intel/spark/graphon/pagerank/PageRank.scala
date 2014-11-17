@@ -121,7 +121,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |        If None, all edges are considered
                              |    max_iterations : integer (optional)
                              |        The maximum number of iterations that the algorithm will execute.
-                             |        The valid value range is all positive integer.
+                             |        The valid value range is all positive integer else the algorithm will terminate
+                             |        with vertex page rank set to reset_probability.
                              |        The default value is 20.
                              |    convergence_tolerance : float (optional)
                              |        The amount of change in cost function that will be tolerated at

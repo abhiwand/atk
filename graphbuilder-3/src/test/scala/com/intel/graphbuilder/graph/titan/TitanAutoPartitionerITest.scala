@@ -1,37 +1,37 @@
 package com.intel.graphbuilder.graph.titan
 
 import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.commons.configuration.BaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.hadoop.hbase.{ HRegionInfo, TableName, ClusterStatus, HBaseConfiguration }
-import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.hadoop.hbase.{ClusterStatus, HBaseConfiguration, HRegionInfo, TableName}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest._
+import org.scalatest.{BeforeAndAfter, Matchers}
 
-class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
+class TitanAutoPartitionerITest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar  {
   val hBaseTableName = "testtable"
   val hBaseRegionServers = 3
-  val hBaseTableRegions = 5
+  val hBaseTableRegions = 30
   val hBaseTableSizeMB = 2000
 
   val hBaseAdminMock = mock[HBaseAdmin]
   val clusterStatusMock = mock[ClusterStatus]
   val tableRegionsMock = mock[java.util.List[HRegionInfo]]
 
-  override def beforeEach() = {
-    val hBaseConfig = HBaseConfiguration.create()
+  val hBaseConfig = HBaseConfiguration.create()
 
-    when(hBaseAdminMock.getConfiguration).thenReturn(hBaseConfig)
+  when(hBaseAdminMock.getConfiguration).thenReturn(hBaseConfig)
 
-    //Mock number of HBase region servers
-    when(hBaseAdminMock.getClusterStatus()).thenReturn(clusterStatusMock)
-    when(hBaseAdminMock.getClusterStatus.getServersSize).thenReturn(hBaseRegionServers)
+  //Mock number of HBase region servers
+  when(hBaseAdminMock.getClusterStatus()).thenReturn(clusterStatusMock)
+  when(hBaseAdminMock.getClusterStatus.getServersSize).thenReturn(hBaseRegionServers)
 
-    //Mock number of regions in HBase table
-    when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName))).thenReturn(tableRegionsMock)
-    when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName)).size()).thenReturn(hBaseTableRegions)
-  }
+  //Mock number of regions in HBase table
+  when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName))).thenReturn(tableRegionsMock)
+  when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName)).size()).thenReturn(hBaseTableRegions)
+
 
   "enableAutoPartition" should "return true when auto-partitioner is enabled" in {
     val titanConfig = new BaseConfiguration()
@@ -69,7 +69,7 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
     val newTitanConfig = titanAutoPartitioner.setHBasePreSplits(hBaseAdminMock)
     newTitanConfig.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT) shouldBe (null)
   }
-  "setHBaseInputSplits" should "set input splits for Titan/HBase reader to spark.cores.max" in {
+  "getHBaseInputSplits" should "get input splits for Titan/HBase reader using spark.cores.max" in {
     val sparkConfig = new SparkConf()
     val sparkContextMock = mock[SparkContext]
     val tableName = TableName.valueOf(hBaseTableName)
@@ -80,29 +80,13 @@ class TitanAutoPartitionerTest extends FlatSpec with Matchers with MockitoSugar 
 
     val titanConfig = new BaseConfiguration()
     titanConfig.setProperty(TitanAutoPartitioner.ENABLE_AUTO_PARTITION, "true")
-    titanConfig.setProperty(TitanAutoPartitioner.HBASE_MIN_INPUT_SPLIT_SIZE_MB, 10)
+    titanConfig.setProperty(TitanAutoPartitioner.HBASE_MIN_INPUT_SPLIT_SIZE_MB, 0)
+    titanConfig.setProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE, 1)
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
-    //TODO: Fix test
-    //hBaseAdminMock.getConfiguration.getInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, -1) shouldBe (20)
-  }
-  "setHBaseInputSplits" should "set input splits for Titan/HBase reader to estimated Spark cores when spark.cores.max not specified" in {
-    val sparkContext = mock[SparkContext]
-    val sparkConfig = new SparkConf()
-    when(sparkContext.getConf).thenReturn(sparkConfig)
+    val inputSplits = titanAutoPartitioner.getSparkHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
 
-    val titanConfig = new BaseConfiguration()
-    titanConfig.setProperty(TitanAutoPartitioner.ENABLE_AUTO_PARTITION, "true")
-    titanConfig.setProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE, "4")
-
-    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContext, hBaseAdminMock, hBaseTableName)
-
-    val numSparkWorkers = hBaseRegionServers //HBase region servers used to estimate Spark workers
-    val expectedHBaseSplits = Runtime.getRuntime.availableProcessors() * numSparkWorkers * 4
-    //TODO: Fix test
-    //hBaseAdminMock.getConfiguration.getInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, -1) shouldBe (expectedHBaseSplits)
+    inputSplits shouldBe (20)
   }
 
 }
