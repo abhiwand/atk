@@ -31,8 +31,9 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 
-/*
-  ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
+/**
+ * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
+ * @param id Model's id
  */
 case class ModelReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 

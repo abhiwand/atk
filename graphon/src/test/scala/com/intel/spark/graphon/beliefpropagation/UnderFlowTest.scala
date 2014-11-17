@@ -50,7 +50,7 @@ class UnderFlowTest extends FlatSpec with Matchers with TestingSparkContextFlatS
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
