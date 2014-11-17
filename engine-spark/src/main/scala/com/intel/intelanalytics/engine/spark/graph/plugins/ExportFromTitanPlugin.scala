@@ -34,7 +34,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.graphbuilder.elements.Property
 import com.thinkaurelius.titan.core.TitanGraph
-import com.intel.intelanalytics.domain.graph.{GraphMeta, Graph, GraphNoArgs, GraphTemplate}
+import com.intel.intelanalytics.domain.graph.{ GraphMeta, Graph, GraphNoArgs, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
@@ -86,9 +86,9 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @return a value of type declared as the Return type.
    */
 
-  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation)= {
+  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation) = {
 
-    val titanIAGraph : GraphMeta = resolve(arguments.graph)
+    val titanIAGraph: GraphMeta = resolve(arguments.graph)
 
     val (vertices, edges) = graphs.loadFromTitan(sc, titanIAGraph.meta)
     vertices.cache()
@@ -141,8 +141,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @param graph destination graph instance
    * @param titanDBGraph titan graph
    */
-  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph)
-                     (implicit user: UserPrincipal) {
+  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph)(implicit user: UserPrincipal) {
     graphs.expectSeamless(graph.id).edgeFrames.foreach(edgeFrame => {
       val label = edgeFrame.schema.asInstanceOf[EdgeSchema].label
       val srcLabel = edgeFrame.schema.asInstanceOf[EdgeSchema].srcVertexLabel
@@ -189,8 +188,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    */
   def saveToVertexFrame(vertices: RDD[GBVertex], ctx: SparkContext,
                         labelToIdNameMapping: Map[String, String],
-                        graph: Graph, titanDBGraph: TitanGraph)
-                       (implicit user: UserPrincipal) {
+                        graph: Graph, titanDBGraph: TitanGraph)(implicit user: UserPrincipal) {
     graphs.expectSeamless(graph.id).vertexFrames.foreach(vertexFrame => {
       val label = vertexFrame.schema.asInstanceOf[VertexSchema].label
       val typeVertex: RDD[GBVertex] = vertices.filter(v => {
