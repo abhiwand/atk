@@ -191,8 +191,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   /**
    * Creates an object of the requested type.
    */
-  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)
-                                        (implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
+  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
     invocation.resolver.create[T](annotation)
   }
 
@@ -208,14 +207,13 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * to convert them to [[com.intel.intelanalytics.domain.HasMetaData]] or
    * [[com.intel.intelanalytics.domain.HasData]] instances
    */
-  implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)
-                                                               (implicit invocation: Invocation,
-                                                                 ev: Out <:< In,
-                                                                 tagIn: TypeTag[In],
-                                                                 tagOut: TypeTag[Out]): Out =
+  implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
+                                                                         ev: Out <:< In,
+                                                                         tagIn: TypeTag[In],
+                                                                         tagOut: TypeTag[Out]): Out =
     withPluginContext("resolve") {
       invocation.resolver.resolve[Out](ref).get
-  }
+    }
 }
 
 /**
