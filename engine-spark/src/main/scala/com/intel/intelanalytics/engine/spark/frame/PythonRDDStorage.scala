@@ -4,7 +4,7 @@ import java.util
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.{FrameSchema, DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -38,9 +38,9 @@ object PythonRDDStorage {
 
     val baseRdd: RDD[String] = rdd
       .map(x => x.map {
-      case null => JsNull
-      case a => a.toJson
-    }.toJson.toString())
+        case null => JsNull
+        case a => a.toJson
+      }.toJson.toString())
 
     val pythonExec = SparkEngineConfig.pythonWorkerExec
     val environment = new util.HashMap[String, String]()
