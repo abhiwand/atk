@@ -4,7 +4,7 @@ import java.util
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{FrameSchema, DataTypes, Schema}
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -25,7 +25,7 @@ object PythonRDDStorage {
   }
 
   def mapWith(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
-    val newSchema = if (schema == null) { data.schema } else { schema }
+    val newSchema = if (schema == null) { data.frameSchema } else { schema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
     val pyRdd = RDDToPyRDD(pyExpression, data.toLegacyFrameRDD)
@@ -37,10 +37,10 @@ object PythonRDDStorage {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
     val baseRdd: RDD[String] = rdd
-      .map(x => x.map(t => t match {
-        case null => JsNull
-        case a => a.toJson
-      }).toJson.toString)
+      .map(x => x.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson.toString())
 
     val pythonExec = SparkEngineConfig.pythonWorkerExec
     val environment = new util.HashMap[String, String]()

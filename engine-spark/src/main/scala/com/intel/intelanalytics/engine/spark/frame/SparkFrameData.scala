@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrame, FrameRefere
  * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
 class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
-    extends FrameMeta(frame.withSchema(rdd.schema))
+    extends FrameMeta(frame.withSchema(rdd.frameSchema))
     with HasData {
 
   /**

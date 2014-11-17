@@ -78,6 +78,6 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
 
     val updated = PythonRDDStorage.mapWith(frame.data, arguments.predicate)
 
-    save(new SparkFrameData(frame.meta.withSchema(updated.schema), updated)).meta
+    save(new SparkFrameData(frame.meta.withSchema(updated.frameSchema), updated)).meta
   }
 }
