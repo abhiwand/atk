@@ -51,7 +51,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
@@ -98,7 +98,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
@@ -148,7 +148,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
@@ -212,7 +212,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =

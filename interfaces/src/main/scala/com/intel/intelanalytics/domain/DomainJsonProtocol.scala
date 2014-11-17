@@ -25,6 +25,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
@@ -56,7 +57,7 @@ import com.intel.intelanalytics.UnitReturn
  * Implicit conversions for domain objects to/from JSON
  */
 
-object DomainJsonProtocol extends IADefaultJsonProtocol {
+object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   /**
    * ***********************************************************************
@@ -87,8 +88,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val columnFormat = jsonFormat3(Column)
   implicit val frameSchemaFormat = jsonFormat(FrameSchema, "columns")
-  implicit val vertexSchemaFormat = jsonFormat(VertexSchema, "columns", "label", "idColumnName")
-  implicit val edgeSchemaFormat = jsonFormat(EdgeSchema, "columns", "label", "srcVertexLabel", "destVertexLabel", "directed")
+  implicit val vertexSchemaFormat = jsonFormat(VertexSchema, "columns", "label", "id_column_name")
+  implicit val edgeSchemaFormat = jsonFormat(EdgeSchema, "columns", "label", "src_vertex_label", "dest_vertex_label", "directed")
   implicit val schemaArgsForamt = jsonFormat1(SchemaArgs)
 
   /**
@@ -104,18 +105,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       case f: FrameSchema => frameSchemaFormat.write(f)
       case v: VertexSchema => vertexSchemaFormat.write(v)
       case e: EdgeSchema => edgeSchemaFormat.write(e)
-      case _ => throw new IllegalArgumentException("New type not yet implemented")
+      case _ => throw new IllegalArgumentException("New type not yet implemented: " + obj.getClass.getName)
     }
 
     /**
-     *
+     * Read json
      */
     override def read(json: JsValue): Schema = {
       try {
         if (json.asJsObject.fields.contains("src_vertex_label")) {
           edgeSchemaFormat.read(json)
         }
-        if (json.asJsObject.fields.contains("label")) {
+        else if (json.asJsObject.fields.contains("label")) {
           vertexSchemaFormat.read(json)
         }
         else {
@@ -125,7 +126,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       catch {
         //  If the new format can't be deserialized, then try the old format that
         // might still be used in the database
-        case e: Exception => Schema.fromTuples(legacyFormat.read(json).columns)
+        case e: Exception => {
+          info("couldn't deserialize schema using any of the current formats, trying old format for json: " + json.compactPrint)
+          Schema.fromTuples(legacyFormat.read(json).columns)
+        }
       }
     }
   }
@@ -282,8 +286,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphNoArgsFormat = jsonFormat1(GraphNoArgs)
 
-  implicit val graphElementIDNameFormat = jsonFormat2(ElementIDName)
-  implicit val graphElementIDNamesFormat = jsonFormat1(ElementIDNames)
+  implicit val schemaListFormat = jsonFormat1(SchemaList)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 

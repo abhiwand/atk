@@ -48,7 +48,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
@@ -93,7 +93,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
