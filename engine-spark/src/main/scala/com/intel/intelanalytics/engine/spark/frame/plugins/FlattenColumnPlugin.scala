@@ -55,6 +55,8 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    */
   override def doc: Option[CommandDoc] = None
 
+  override def numberOfJobs(arguments: FlattenColumn): Int = 2
+
   /**
    * Take a row with multiple values in a column and 'flatten' it into multiple rows.
    *
