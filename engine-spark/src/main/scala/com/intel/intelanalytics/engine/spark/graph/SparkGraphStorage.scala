@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
+import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
@@ -38,6 +38,11 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.component.Boot
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.thinkaurelius.titan.core.TitanGraph
 import com.intel.intelanalytics.domain.Naming
 
 /**
@@ -192,8 +197,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val schema = GraphSchema.defineVertexType(vertexSchema)
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), None, vertexSchema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -221,8 +225,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val schema = GraphSchema.defineEdgeType(edgeSchema)
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, schema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), None, edgeSchema, 0, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -256,28 +259,63 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    new EdgeFrameRDD(frameRdd)
   //  }
 
-  def loadGbVertices(ctx: SparkContext, graphId: Long): RDD[GBVertex] = {
-    val graphMeta = expectGraph(graphId)
+  def loadGbVertices(ctx: SparkContext, graph: Graph): RDD[GBVertex] = {
+    val graphMeta = expectGraph(graph.id)
     if (graphMeta.isSeamless) {
-      val graphMeta = expectSeamless(graphId)
+      val graphMeta = expectSeamless(graph.id)
       graphMeta.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      ???
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
+      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+      gbVertices
     }
   }
 
-  def loadGbEdges(ctx: SparkContext, graphId: Long): RDD[GBEdge] = {
-    val graphMeta = expectGraph(graphId)
+  def loadGbEdges(ctx: SparkContext, graph: Graph): RDD[GBEdge] = {
+    val graphMeta = expectGraph(graph.id)
     if (graphMeta.isSeamless) {
-      val graphMeta = expectSeamless(graphId)
+      val graphMeta = expectSeamless(graph.id)
       graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      ???
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
+      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+      gbEdges
     }
+  }
+
+  def getTitanReaderRDD(ctx: SparkContext, graph: Graph): RDD[GraphElement] = {
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val titanConnector = new TitanGraphConnector(titanConfig)
+
+    // Read the graph from Titan
+    val titanReader = new TitanReader(ctx, titanConnector)
+    val titanReaderRDD = titanReader.read()
+    titanReaderRDD
+  }
+
+  def loadFromTitan(ctx: SparkContext, graph: Graph): (RDD[GBVertex], RDD[GBEdge]) = {
+    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    (gbVertices, gbEdges)
+  }
+
+  def getTitanGraph(graphId: Long): TitanGraph = {
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val graph = lookup(graphId).get
+
+    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.hbase.table", iatGraphName)
+
+    val titanConnector = new TitanGraphConnector(titanConfig)
+    titanConnector.connect()
   }
 
   def loadGbVerticesForFrame(ctx: SparkContext, frameId: Long): RDD[GBVertex] = {
@@ -310,11 +348,11 @@ class SparkGraphStorage(metaStore: MetaStore,
     frames.saveFrame(frameMeta, edgeFrameRDD, rowCount)
   }
 
-  def updateElementIDNames(graphMeta: Graph, elementIDColumns: List[ElementIDName]): Graph = {
+  def updateFrameSchemaList(graphMeta: Graph, schemas: List[Schema]): Graph = {
     metaStore.withSession("spark.graphstorage.updateElementIDNames") {
       implicit session =>
         {
-          val updatedGraph = graphMeta.copy(elementIDNames = Some(new ElementIDNames(elementIDColumns)))
+          val updatedGraph = graphMeta.copy(frameSchemaList = Some(new SchemaList(schemas)))
           metaStore.graphRepo.update(updatedGraph).get
         }
     }

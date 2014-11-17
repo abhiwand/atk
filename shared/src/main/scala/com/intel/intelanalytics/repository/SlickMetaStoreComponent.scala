@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, EdgeSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
@@ -44,7 +44,6 @@ import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
@@ -85,9 +84,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
-  implicit val elementIDNamesColumnType = MappedColumnType.base[ElementIDNames, String](
+  implicit val elementIDNamesColumnType = MappedColumnType.base[SchemaList, String](
     { elementIDNames => elementIDNames.toJson.prettyPrint }, // Schema to String
-    { string => JsonParser(string).convertTo[ElementIDNames] } // String to Schema
+    { string => JsonParser(string).convertTo[SchemaList] } // String to Schema
   )
 
   private[repository] val database = withContext("Connecting to database") {
@@ -419,7 +418,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, Schema(), 0L, 1L, new DateTime(), new DateTime(), None, None, None, 0)
+      val f = DataFrame(0, frame.name, frame.description, FrameSchema(), 0L, 1L, new DateTime(), new DateTime(), None, None, None, 0)
       framesAutoInc.insert(f)
     }
 
@@ -439,6 +438,16 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame = {
+      if (frame.isVertexFrame) {
+        require(schema.isInstanceOf[VertexSchema], "vertex frame requires schema to be of type vertex schema")
+      }
+      else if (frame.isEdgeFrame) {
+        require(schema.isInstanceOf[EdgeSchema], "edge frame requires schema to be of type edge schema")
+      }
+      else {
+        require(schema.isInstanceOf[FrameSchema], "frame requires schema to be of type frame schema")
+      }
+
       // this looks crazy but it is how you update only one column
       val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
       schemaColumn.update(schema)
@@ -732,10 +741,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def idCounter = column[Option[Long]]("id_counter")
 
-    def elementIDNames = column[Option[ElementIDNames]]("element_id_names")
+    def frameSchemas = column[Option[SchemaList]]("frame_schemas")
 
     /** projection to/from the database */
-    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, elementIDNames) <> (Graph.tupled, Graph.unapply)
+    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas) <> (Graph.tupled, Graph.unapply)
 
     // foreign key relationships
 

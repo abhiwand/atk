@@ -21,50 +21,49 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.mllib.plugins
+package org.apache.spark.mllib.classification.ia.plugins
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ ModelLoad, Model }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.domain.model.ModelLoad
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+
+import scala.concurrent.ExecutionContext
+
+//Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import LogisticRegressionJsonProtocol._
-import scala.concurrent.ExecutionContext
-import MLLibMethods._
+import MLLibJsonProtocol._
 
-/* Run the LogisticRegressionWithSGD model on the test frame*/
-class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
+class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression/test"
+  override def name: String = "model:logistic_regression/train"
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Predict the labels for a test frame",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a LogisticRegression Model using the observation column and label column of the tarin Frame",
     extendedSummary = Some("""
 
     Parameters
     ----------
     frame: Frame
-        frame whose labels are to be predicted
+        Frame to train the model on
     observation_column: str
         column containing the observations
     label_column: str
-        column containing the actual label for each observation
+        column containing the label for each observation
 
     Examples
     --------
@@ -77,10 +76,9 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-
-  override def numberOfJobs(arguments: ModelLoad) = 2
+  override def numberOfJobs(arguments: ModelLoad) = 109
   /**
-   * Get the predictions for observations in a test frame
+   * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -89,11 +87,10 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ModelLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): Model =
+  override def execute(invocation: SparkInvocation, arguments: ModelLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn =
     {
       val models = invocation.engine.models
       val frames = invocation.engine.frames
-      val fsRoot = invocation.engine.fsRoot
       val ctx = invocation.sparkContext
 
       //validate arguments
@@ -104,24 +101,16 @@ class TestModelPlugin extends SparkCommandPlugin[ModelLoad, Model] {
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val testFrameRDD = frames.loadFrameRDD(ctx, frameId)
-      val updatedTestRDD = testFrameRDD.selectColumns(List(arguments.labelColumn, arguments.observationColumn))
-      val labeledTestRDD: RDD[LabeledPoint] = createLabeledRDD(updatedTestRDD)
+      val trainFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
-      val logRegJsObject = modelMeta.data.get
-      val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
+      val logReg = new LogisticRegressionWithSGD()
+      val logRegModel = logReg.run(labeledTrainRDD)
+      val modelObject = logRegModel.toJson.asJsObject
 
-      //predicting and testing
-      val scoreAndLabelRDD: RDD[(Double, Double)] = labeledTestRDD.map { point =>
-        val score = logRegModel.predict(point.features)
-        (score, point.label)
-      }.cache()
-
-      //Run Binary classification metrics -- Using MLLib, can replace with calls to our classification metrics
-      outputClassificationMetrics(scoreAndLabelRDD)
-      scoreAndLabelRDD.unpersist(blocking = false)
-      modelMeta
+      models.updateModel(modelMeta, modelObject)
+      new UnitReturn
     }
 
 }

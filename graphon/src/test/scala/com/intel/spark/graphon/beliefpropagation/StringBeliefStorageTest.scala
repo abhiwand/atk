@@ -48,7 +48,7 @@ class StringBeliefStorageTest extends FlatSpec with Matchers with TestingSparkCo
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut = vertexSet.map(vid => GBVertex(vid, Property(vertexIdPropertyName, vid),

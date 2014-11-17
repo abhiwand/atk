@@ -90,7 +90,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameRDD(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+  def loadFrameRDD(ctx: SparkContext, frame: DataFrame): FrameRDD = withContext("loadFrameRDD") {
     val sqlContext = new SQLContext(ctx)
     if (frame.revision == 0) {
       // revision zero is special and means nothing has been saved to disk yet)
@@ -102,6 +102,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         throw new IllegalStateException(s"Frame: ${frame.id} is not stored in the parquet format")
       val sqlContext = new SQLContext(ctx)
       val rows = sqlContext.parquetFile(absPath.toString)
+      info(frame.toDebugString + ", partitions:" + rows.partitions.length)
       new FrameRDD(frame.schema, rows)
     }
   }
@@ -134,7 +135,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD = {
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD = withContext("loadLegacyFrameRDD") {
     if (frame.revision == 0) {
       // revision zero is special and means nothing has been saved to disk yet
       new LegacyFrameRDD(frame.schema, ctx.parallelize[Row](Nil))
@@ -147,6 +148,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
         else {
           val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+          info(frame.toDebugString + ", partitions:" + rows.partitions.length)
           new LegacyFrameRDD(frame.schema, rows)
         }
       f
@@ -197,8 +199,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.saveFrame") {
       implicit session =>
         {
-          if (frameRDD.schema != null) {
-            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema)
+          if (frameRDD.frameSchema != null) {
+            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.frameSchema)
           }
           if (rowCount.isDefined) {
             metaStore.frameRepo.updateRowCount(frameEntity, rowCount.get)
@@ -369,7 +371,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
         implicit session =>
           {
-            val errorTemplate = new DataFrameTemplate(Naming.generateName(prefix=Some("parse_errors_frame_")), Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val errorTemplate = new DataFrameTemplate(Naming.generateName(prefix = Some("parse_errors_frame_")), Some("This frame was automatically created to capture parse errors for " + frame.name))
             val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
             metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
 

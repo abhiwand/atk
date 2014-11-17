@@ -8,7 +8,7 @@ import com.intel.graphbuilder.io.titan.formats.cassandra.TitanCassandraInputForm
 import com.thinkaurelius.titan.diskstorage.Backend
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.cassandra.hadoop.ConfigHelper
-import org.apache.cassandra.thrift.{SlicePredicate, SliceRange}
+import org.apache.cassandra.thrift.{ SlicePredicate, SliceRange }
 import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

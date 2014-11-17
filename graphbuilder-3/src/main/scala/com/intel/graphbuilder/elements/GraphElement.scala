@@ -45,4 +45,14 @@ trait GraphElement {
    */
   def getPropertyValueAsString(key: String): String
 
+  /**
+   * Get property values to a array in the order specified.
+   * @param columns specifed columns to retrieve property values
+   * @param properties properties
+   * @return array of column values
+   */
+  def getPropertiesValueByColumns(columns: List[String], properties: Set[Property]): Array[Any] = {
+    val mapping = properties.map(p => p.key -> p.value).toMap
+    columns.map(c => mapping(c)).toArray
+  }
 }
