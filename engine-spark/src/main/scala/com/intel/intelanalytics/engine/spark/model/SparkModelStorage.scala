@@ -78,6 +78,12 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
     }
   }
 
+  /**
+   * Renames a model in the metastore.
+   * @param model The model being renamed
+   * @param newName The name the model is being renamed to.
+   * @return Model metadata
+   */
   override def renameModel(model: Model, newName: String): Model = {
     metaStore.withSession("spark.modelstorage.rename") {
       implicit session =>

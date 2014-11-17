@@ -86,9 +86,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
-  implicit val elementIDNamesColumnType = MappedColumnType.base[ElementIDNames, String](
+  implicit val elementIDNamesColumnType = MappedColumnType.base[SchemaList, String](
     { elementIDNames => elementIDNames.toJson.prettyPrint }, // Schema to String
-    { string => JsonParser(string).convertTo[ElementIDNames] } // String to Schema
+    { string => JsonParser(string).convertTo[SchemaList] } // String to Schema
   )
 
   private[repository] val database = withContext("Connecting to database") {
@@ -767,10 +767,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def idCounter = column[Option[Long]]("id_counter")
 
-    def elementIDNames = column[Option[ElementIDNames]]("element_id_names")
+    def frameSchemas = column[Option[SchemaList]]("frame_schemas")
 
     /** projection to/from the database */
-    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, elementIDNames) <> (Graph.tupled, Graph.unapply)
+    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas) <> (Graph.tupled, Graph.unapply)
 
     // foreign key relationships
 

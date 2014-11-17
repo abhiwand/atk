@@ -36,8 +36,8 @@ class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Mat
     // is somewhat expensive to spin up a testing SparkContext
     "pass integration test" in {
 
-      val edge1 = new GBEdge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
-      val edge2 = new GBEdge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
+      val edge1 = new GBEdge(None, Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
+      val edge2 = new GBEdge(None, Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
 
       val vertex = new GBVertex(Property("gbId", 2L), Set.empty[Property])
 

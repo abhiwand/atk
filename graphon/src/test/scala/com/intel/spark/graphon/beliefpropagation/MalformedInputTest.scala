@@ -48,7 +48,7 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =
@@ -85,7 +85,7 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val expectedVerticesOut =

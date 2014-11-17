@@ -64,7 +64,7 @@ class StartToFinishCliqueSizeTwoTest extends FlatSpec with Matchers with Testing
     val gbEdgeSet =
       edgeSet.map({
         case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
     val inVertexRDD: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)

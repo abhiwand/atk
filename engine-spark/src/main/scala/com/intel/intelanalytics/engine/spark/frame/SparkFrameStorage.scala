@@ -29,7 +29,6 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.EntityManager
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine._
-import org.apache.spark.sql
 import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.engine.FrameStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -40,14 +39,15 @@ import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.{ DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
+import org.apache.spark.sql
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import com.intel.event.EventLogging
-import scala.language.implicitConversions
 import scala.util.{ Failure, Success, Try }
-
 import scala.util.control.NonFatal
+
+import scala.language.implicitConversions
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
