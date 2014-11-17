@@ -135,7 +135,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     graphs.updateIdCounter(graph.id, edgeDataToAdd.count())
 
     // convert to appropriate schema, adding edge system columns
-    val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.schema.addColumn("_src_vid", DataTypes.int64).addColumn("_dest_vid", DataTypes.int64))
+    val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn("_src_vid", DataTypes.int64).addColumn("_dest_vid", DataTypes.int64))
     edgesWithoutVids.cache()
     edgeDataToAdd.unpersist(blocking = false)
 
@@ -177,7 +177,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       edgeRows.map(e => edgesWithoutVids.rowWrapper(e).setValue("_dest_vid", vid))
     }.values
 
-    val edgesByHead = new FrameRDD(edgesWithoutVids.schema, edgesWithTail).groupByRows(row => row.value(arguments.columnNameForSourceVertexId))
+    val edgesByHead = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithTail).groupByRows(row => row.value(arguments.columnNameForSourceVertexId))
     val edgesWithVids = srcVertexIds.join(edgesByHead).flatMapValues(value => {
       val idMap = value._1
       val vid = idMap.head
@@ -190,11 +190,11 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     edgesWithoutVids.unpersist(blocking = false)
 
     // convert convert edges to add to correct schema
-    val correctedSchema = edgesWithoutVids.schema
+    val correctedSchema = edgesWithoutVids.frameSchema
       //.convertType("_src_vid", DataTypes.int64)
       //.convertType("_dest_vid", DataTypes.int64)
       .dropColumns(List(arguments.columnNameForSourceVertexId, arguments.columnNameForDestVertexId))
-    val edgesToAdd = new FrameRDD(edgesWithoutVids.schema, edgesWithVids).convertToNewSchema(correctedSchema)
+    val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
     val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrameMeta.id)

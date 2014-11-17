@@ -199,8 +199,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.saveFrame") {
       implicit session =>
         {
-          if (frameRDD.schema != null) {
-            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema)
+          if (frameRDD.frameSchema != null) {
+            metaStore.frameRepo.updateSchema(frameEntity, frameRDD.frameSchema)
           }
           if (rowCount.isDefined) {
             metaStore.frameRepo.updateRowCount(frameEntity, rowCount.get)

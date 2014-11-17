@@ -63,7 +63,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
       " stageId:" + stageInfo.stageId +
       " stageInfoName:" + stageInfo.name +
       " numTasks:" + stageInfo.numTasks +
-      " emittedTaskSizeWarning:" + stageInfo.emittedTaskSizeWarning +
+      //      " emittedTaskSizeWarning:" + stageInfo.emittedTaskSizeWarning +
       " failureReason:" + stageInfo.failureReason.getOrElse("")
   }
 

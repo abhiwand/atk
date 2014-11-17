@@ -38,6 +38,8 @@ import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar
 
+import scala.collection.immutable.HashMap
+
 class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
 
   class FakeTask(stageId: Int) extends Task[Int](stageId, 0) {
@@ -103,6 +105,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val stageInfo = mock[StageInfo]
     when(stageInfo.numTasks).thenReturn(numTasks)
     when(stageInfo.stageId).thenReturn(stageId)
+    when(stageInfo.attemptId).thenReturn(1)
 
     val submitted = SparkListenerStageSubmitted(stageInfo, null)
     listener.onStageSubmitted(submitted)
@@ -111,7 +114,9 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   private def sendStageCompletedToListener(listener: SparkProgressListener, stageId: Int) {
     val stageInfo = mock[StageInfo]
     when(stageInfo.stageId).thenReturn(stageId)
+    when(stageInfo.attemptId).thenReturn(1)
     when(stageInfo.failureReason).thenReturn(None)
+    when(stageInfo.accumulables).thenReturn(new scala.collection.mutable.HashMap[Long, AccumulableInfo])
     listener.onStageCompleted(SparkListenerStageCompleted(stageInfo))
   }
 
@@ -174,7 +179,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   "finish first task in first stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
-    listener.stageIdToTasksComplete(1) = listener.stageIdToTasksComplete.getOrElse(1, 0) + 1
+    listener.stageIdToData((1, 1)).numCompleteTasks = listener.stageIdToData((1, 1)).numCompleteTasks + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(3.33f, Some(TaskProgressInfo(0))))
   }
 
@@ -184,19 +189,20 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 2
     listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(0))))
   }
-  //
+
   "finish second task in second stage, second task in third stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 2
 
     sendStageSubmittedToListener(listener, 3, 10)
-    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 2
+    listener.stageIdToData((3, 1)).numCompleteTasks = listener.stageIdToData((3, 1)).numCompleteTasks + 2
+
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(46.66f)
   }
 
@@ -210,16 +216,17 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     sendStageSubmittedToListener(listener, 1, 3)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 3)
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 3
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 3
     listener
   }
-  //
+
   "finish all tasks in second stage-2" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 3)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 3)
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 3
+
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 3
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
     sendStageCompletedToListener(listener, 2)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
@@ -241,7 +248,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   "failed at middle of stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
-    listener.stageIdToTasksComplete(1) = listener.stageIdToTasksComplete.getOrElse(1, 0) + 6
+    listener.stageIdToData((1, 1)).numCompleteTasks = listener.stageIdToData((1, 1)).numCompleteTasks + 6
 
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(20)
     val stage = mock[Stage]
@@ -256,24 +263,26 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
 
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
-    listener.stageIdToTasksFailed(2) = listener.stageIdToTasksFailed.getOrElse(2, 0) + 1
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 2
+
+    listener.stageIdToData((2, 1)).numFailedTasks = listener.stageIdToData((2, 1)).numFailedTasks + 1
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(1))))
 
     sendStageSubmittedToListener(listener, 4, 10)
-    listener.stageIdToTasksFailed(4) = listener.stageIdToTasksFailed.getOrElse(4, 0) + 1
+    listener.stageIdToData((4, 1)).numFailedTasks = listener.stageIdToData((4, 1)).numFailedTasks + 1
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(2))))
-    listener.stageIdToTasksComplete(4) = listener.stageIdToTasksComplete.getOrElse(4, 0) + 1
+
+    listener.stageIdToData((4, 1)).numCompleteTasks = listener.stageIdToData((4, 1)).numCompleteTasks + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(21.25f, Some(TaskProgressInfo(2))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
 
-    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 10
+    listener.stageIdToData((3, 1)).numCompleteTasks = listener.stageIdToData((3, 1)).numCompleteTasks + 10
     sendStageCompletedToListener(listener, 3)
-    listener.getCommandProgress().map(info => info.tasksInfo) shouldEqual List(Some(TaskProgressInfo(2)))
+    listener.getCommandProgress().map(info => info.tasksInfo) shouldEqual List(Some(TaskProgressInfo(1)))
   }
 
   "get two progress info for a single command, expected number of jobs is 1 less than actual" in {
@@ -283,24 +292,25 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
 
-    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
-    listener.stageIdToTasksFailed(2) = listener.stageIdToTasksFailed.getOrElse(2, 0) + 1
+    listener.stageIdToData((2, 1)).numCompleteTasks = listener.stageIdToData((2, 1)).numCompleteTasks + 2
+    listener.stageIdToData((2, 1)).numFailedTasks = listener.stageIdToData((2, 1)).numFailedTasks + 1
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(0))))
 
     sendStageSubmittedToListener(listener, 4, 10)
 
-    listener.stageIdToTasksFailed(4) = listener.stageIdToTasksFailed.getOrElse(4, 0) + 1
+    listener.stageIdToData((4, 1)).numFailedTasks = listener.stageIdToData((4, 1)).numFailedTasks + 1
+
     listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(1))))
-    listener.stageIdToTasksComplete(4) = listener.stageIdToTasksComplete.getOrElse(4, 0) + 1
+    listener.stageIdToData((4, 1)).numCompleteTasks = listener.stageIdToData((4, 1)).numCompleteTasks + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
 
-    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 10
+    listener.stageIdToData((3, 1)).numCompleteTasks = listener.stageIdToData((3, 1)).numCompleteTasks + 10
     sendStageCompletedToListener(listener, 3)
 
-    listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
+    listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(0))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
   }
 }
