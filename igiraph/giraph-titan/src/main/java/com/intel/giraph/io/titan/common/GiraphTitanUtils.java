@@ -55,16 +55,10 @@ public class GiraphTitanUtils {
      * @param conf : Giraph configuration
      */
     public static void sanityCheckInputParameters(Configuration conf) {
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
 
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "host name" + CONFIG_PREFIX +
                     GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
-        }
-
-        if (tableName.equals("")) {
-            throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
-                    GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
         }
 
         if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
@@ -112,11 +106,6 @@ public class GiraphTitanUtils {
                     GIRAPH_TITAN_STORAGE_BACKEND.getKey() + NO_VERTEX_READ);
         }
 
-        if (GIRAPH_TITAN_STORAGE_TABLENAME.get(conf).equals("")) {
-            throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
-                    GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
-        }
-
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "host name" + CONFIG_PREFIX +
                     GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
@@ -160,7 +149,6 @@ public class GiraphTitanUtils {
 
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
 
-        // TODO: Need locks?
         TitanManagement graphManager = graph.getManagementSystem();
 
         for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {
@@ -181,8 +169,8 @@ public class GiraphTitanUtils {
      * @param conf : Giraph configuration
      */
     public static void disableSpeculativeExe(ImmutableClassesGiraphConfiguration conf) {
-        conf.setBoolean("mapred.map.tasks.speculative.execution", false);
-        conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+        conf.setBoolean("mapreduce.map.tasks.speculative.execution", false);
+        conf.setBoolean("mapreduce.reduce.tasks.speculative.execution", false);
     }
 
     /**

@@ -68,7 +68,7 @@ public class TitanVertexInputFormatLongDistanceMapNull extends
     /**
      * Uses the RecordReader to return HBase data
      */
-    public static class LongDistanceMapNullVertexReader extends TitanHBaseVertexReader<LongWritable, DistanceMapWritable, NullWritable> {
+    public static class LongDistanceMapNullVertexReader extends TitanVertexReader<LongWritable, DistanceMapWritable, NullWritable> {
 
         private Vertex<LongWritable, DistanceMapWritable, NullWritable> giraphVertex = null;
 

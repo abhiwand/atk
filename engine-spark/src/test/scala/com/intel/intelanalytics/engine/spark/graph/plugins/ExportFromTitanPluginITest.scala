@@ -5,8 +5,8 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.intel.intelanalytics.domain.schema.{Column, VertexSchema}
-import com.intel.intelanalytics.domain.schema.DataTypes.{string, int64}
+import com.intel.intelanalytics.domain.schema.{ Column, VertexSchema }
+import com.intel.intelanalytics.domain.schema.DataTypes.{ string, int64 }
 
 class ExportFromTitanPluginITest extends FlatSpec with Matchers with MockitoSugar {
   "createVertexFrames" should "vertex frame by label" in {

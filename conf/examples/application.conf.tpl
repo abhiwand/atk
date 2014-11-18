@@ -64,6 +64,26 @@ intel.analytics {
 # specifics of your cluster and workload.
 
 intel.analytics {
+  engine-spark {
+    auto-partitioner {
+        # auto-partitioning spark based on the file size
+        file-size-to-partition-size = [{ upper-bound="1MB", partitions = 15 }
+                                       { upper-bound="1GB", partitions = 45 },
+                                       { upper-bound="5GB", partitions = 100 },
+                                       { upper-bound="10GB", partitions = 200 },
+                                       { upper-bound="15GB", partitions = 375 },
+                                       { upper-bound="25GB", partitions = 500 },
+                                       { upper-bound="50GB", partitions = 750 },
+                                       { upper-bound="100GB", partitions = 1000 },
+                                       { upper-bound="200GB", partitions = 1500 },
+                                       { upper-bound="300GB", partitions = 2000 },
+                                       { upper-bound="400GB", partitions = 2500 },
+                                       { upper-bound="600GB", partitions = 3750 }]
+
+        # max-partitions is used if value is above the max upper-bound
+        max-partitions = 10000
+    }
+  }
 
   # Configuration for the Intel Analytics REST API server
   api {
@@ -215,10 +235,9 @@ intel.analytics {
             regions-per-server = 2
 
             # Number of input splits for Titan reader is based on number of available cores
-            # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
-            #     graph size in HBase/minimum-input-splits-size-mb)
+            # and size of the graph in HBase as follows:
+            #    Number of splits = input-splits-per-spark-core * log(available spark-cores) * log(graph size in HBase in MB),
             input-splits-per-spark-core = 2
-            minimum-input-splits-size-mb = 64
           }
 
           enable = false
