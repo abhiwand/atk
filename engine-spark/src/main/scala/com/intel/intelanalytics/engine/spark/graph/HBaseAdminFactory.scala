@@ -17,8 +17,10 @@ class HBaseAdminFactory {
   def createHBaseAdmin(): HBaseAdmin = {
     val config = new Configuration()
     // for some reason HBaseConfiguration wasn't picking up hbase-default.xml automatically, so manually adding here
-    val hbaseDefault = this.getClass.getClassLoader.getResourceAsStream("hbase-default.xml")
-    config.addResource(hbaseDefault)
+    val hBaseDefault = this.getClass.getClassLoader.getResourceAsStream("hbase-default.xml")
+    val hBaseSite = this.getClass.getClassLoader.getResourceAsStream("hbase-site.xml")
+    config.addResource(hBaseDefault)
+    config.addResource(hBaseSite)
     new HBaseAdmin(HBaseConfiguration.addHbaseResources(config))
   }
 
