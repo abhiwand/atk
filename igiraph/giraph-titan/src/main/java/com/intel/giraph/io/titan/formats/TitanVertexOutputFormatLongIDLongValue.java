@@ -56,25 +56,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  */
 public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
     V extends LongWritable, E extends Writable>
-    extends TextVertexOutputFormat<I, V, E> {
+    extends TitanVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
         .getLogger(TitanVertexOutputFormatLongIDLongValue.class);
-
-
-    /**
-     * set up Titan based on users' configuration
-     *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        GiraphTitanUtils.setupTitanOutput(conf);
-        super.setConf(conf);
-    }
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
@@ -86,26 +74,17 @@ public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDLongValueWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDLongValueWriter extends TitanVertexWriterToEachLine {
 
-        /**
-         * TitanFactory to write back results
-         */
-        private TitanGraph graph = null;
         /**
          * Vertex value properties to filter
          */
         private String[] vertexValuePropertyKeyList = null;
-        /**
-         * regular expression of the deliminators for a property list
-         */
-        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
-            this.graph = TitanGraphWriter.open(context);
             vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
@@ -124,22 +103,8 @@ public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
                 throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
                     CURRENT_VERTEX + vertex.getId());
             }
-
+            commitVerticesInBatches();
             return null;
-        }
-
-        /**
-         * close
-         *
-         * @param context Task attempt context
-         * @throws IOException
-         */
-        @Override
-        public void close(TaskAttemptContext context) throws IOException, InterruptedException {
-            this.graph.commit();
-            this.graph.shutdown();
-            LOG.info(CLOSED_GRAPH);
-            super.close(context);
         }
     }
 }
