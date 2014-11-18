@@ -29,7 +29,7 @@ print("define csv file")
 csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
                                               ('vertexType', str),
                                               ('movie', ia.int32),
-                                              ('rating', str),
+                                              ('rating', ia.int32),
                                               ('splits', str)])
 
 print("create big frame")
@@ -62,5 +62,10 @@ graph.edges['ratings'].add_edges(frame, 'user', 'movie', ['rating'], create_miss
 
 print ("vertex count: " + str(graph.vertex_count))
 print ("edge count: " + str(graph.edge_count))
+
+
+graph.edges['ratings'].bin_column('rating', 3, 'equalwidth', 'rating_binned')
+
+graph.edges['ratings'].inspect(20)
 
 print "done"
