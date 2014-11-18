@@ -55,20 +55,10 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTE
  */
 public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
     V extends DistanceMapWritable, E extends NullWritable>
-    extends TextVertexOutputFormat<I, V, E> {
+    extends TitanVertexOutputFormat<I,V,E> {
 
     private static final Logger LOG = Logger.getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
 
-    /**
-     * set up Titan based on users' configuration
-     *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        GiraphTitanUtils.setupTitanOutput(conf);
-        super.setConf(conf);
-    }
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
@@ -80,32 +70,32 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDDistanceMapWriter extends TextVertexWriterToEachLine {
-
-        /**
-         * TitanFactory to write back results
-         */
-        private TitanGraph graph = null;
+    public class TitanLongIDDistanceMapWriter extends TitanVertexWriterToEachLine {
         /**
          * Vertex value properties to filter
          */
-        private String[] vertexValuePropertyKeyList = null;
-        /**
-         * regular expression of the deliminators for a property list
-         */
-        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
+        protected String[] vertexValuePropertyKeyList = null;
 
+        /**
+         * Initialize Titan vertex writer and open graph
+         * @param context Task attempt context
+         */
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
-            InterruptedException {
+                InterruptedException {
             super.initialize(context);
-            this.graph = TitanGraphWriter.open(context);
             vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
+        /**
+         * Write results to Titan vertex
+         *
+         * @param vertex Giraph vertex
+         * @return   Text line to be written
+         * @throws IOException
+         */
         @Override
         public Text convertVertexToLine(Vertex<I, V, E> vertex) throws IOException {
-
             long vertexId = vertex.getId().get();
             long numSources = 0;
             long sumHopCounts = 0;
@@ -119,21 +109,9 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
 
             bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], Long.toString(numSources));
             bluePrintVertex.setProperty(vertexValuePropertyKeyList[1], Long.toString(sumHopCounts));
+            commitVerticesInBatches();
             return null;
         }
 
-        /**
-         * close
-         *
-         * @param context Task attempt context
-         * @throws IOException
-         */
-        @Override
-        public void close(TaskAttemptContext context) throws IOException, InterruptedException {
-            this.graph.commit();
-            this.graph.shutdown();
-            LOG.info(CLOSED_GRAPH);
-            super.close(context);
-        }
     }
 }
