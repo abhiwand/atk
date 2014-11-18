@@ -74,7 +74,7 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class PropertyGraph4LPVertexReader extends TitanHBaseVertexReader<LongWritable, VertexData4LPWritable, DoubleWritable> {
+    public static class PropertyGraph4LPVertexReader extends TitanVertexReader<LongWritable, VertexData4LPWritable, DoubleWritable> {
 
         private Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> giraphVertex = null;
 

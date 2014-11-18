@@ -83,8 +83,8 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class PropertyGraph4CFVertexReader extends TitanHBaseVertexReader<
-            LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+    public static class PropertyGraph4CFVertexReader extends TitanVertexReader<
+                LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
 
         private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> giraphVertex = null;
 
