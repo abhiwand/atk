@@ -43,6 +43,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugi
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovarianceMatrixPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
@@ -89,6 +90,7 @@ import com.intel.intelanalytics.domain.frame.CumulativeCount
 import com.intel.intelanalytics.domain.frame.CumulativePercentCount
 import com.intel.intelanalytics.domain.frame.CumulativePercentSum
 import com.intel.intelanalytics.domain.frame.Quantiles
+import com.intel.intelanalytics.domain.frame.CovarianceMatrixArguments
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
@@ -164,6 +166,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new AddColumnsPlugin)
   commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
   commandPluginRegistry.registerCommand(new QuantilesPlugin)
+  commandPluginRegistry.registerCommand(new CovarianceMatrixPlugin)
   commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
   commandPluginRegistry.registerCommand(new EcdfPlugin)
   commandPluginRegistry.registerCommand(new TallyPercentPlugin)
