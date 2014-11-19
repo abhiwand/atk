@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.StringUtils
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
@@ -35,7 +36,12 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
  *              everywhere so it seemed better to encapsulate it)
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1)
+case class Column(name: String, dataType: DataType, var index: Int = -1) {
+  require(name != null, "column name is required")
+  require(dataType != null, "column data type is required")
+  require(name != "", "column name can't be empty")
+  require(StringUtils.isAlphanumericUnderscore(name), "column name must be alpha-numeric with underscores")
+}
 
 /**
  * Extra schema if this is a vertex frame
