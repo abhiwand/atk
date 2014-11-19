@@ -8,3 +8,7 @@ Data Sources
 .. autoclass:: intelanalytics.CsvFile
     :members:
     :inherited-members:
+
+.. autoclass:: intelanalytics.LineFile
+        :members:
+        :inherited-members:
