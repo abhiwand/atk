@@ -501,5 +501,20 @@ trait Schema {
     copy(columns = updated)
   }
 
+  /**
+   * Convert the current schema to a FrameSchema.
+   *
+   * This is useful when copying a Schema whose internals might be a VertexSchema
+   * or EdgeSchema but you need to make sure it is a FrameSchema.
+   */
+  def toFrameSchema: FrameSchema = {
+    if (isInstanceOf[FrameSchema]) {
+      this.asInstanceOf[FrameSchema]
+    }
+    else {
+      new FrameSchema(columns)
+    }
+  }
+
 }
 
