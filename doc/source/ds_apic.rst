@@ -10,3 +10,4 @@ Python API
     api_datasources.rst
     api_frames.rst
     api_graphs.rst
+    api_models.rst
