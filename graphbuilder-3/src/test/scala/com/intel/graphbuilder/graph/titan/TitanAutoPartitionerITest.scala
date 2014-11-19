@@ -7,9 +7,11 @@ import org.apache.hadoop.hbase.{ ClusterStatus, HBaseConfiguration, HRegionInfo,
 import org.apache.spark.{ SparkConf, SparkContext }
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+
 import org.scalatest.{ FlatSpec, Matchers }
 
-class TitanAutoPartitionerITest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
+class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar {
+
   val hBaseTableName = "testtable"
   val hBaseRegionServers = 3
   val hBaseTableRegions = 5

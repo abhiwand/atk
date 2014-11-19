@@ -53,9 +53,7 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
 
     Parameters
     -----------
-    source: object (Optional)
-        None is only supported value right now
-    name: string (Optional)
+    name: string
         The name of the newly created model
 
     Returns
@@ -102,6 +100,23 @@ except Exception as e:
 @api
 @name_support('model')
 class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
+    """
+    LogisticRegressionModel model instantiation.
+
+    Parameters
+    ----------
+    name: str
+        Name of the LogisticRegressionModel
+
+    Returns
+    -------
+    LogisticRegressionModel object
+        An object with access to the LogisticRegressionModel
+
+    Examples
+    --------
+    model = ia.LogisticRegressionModel(name='LogReg')
+    """
     _command_prefix = "model:logistic_regression"
 
     def __init__(self, source=None, name=None):
