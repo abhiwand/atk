@@ -16,7 +16,7 @@ class HBaseAdminFactory {
    */
   def createHBaseAdmin(): HBaseAdmin = {
     val hBaseConfig = HBaseConfiguration.create()
-    new HBaseAdmin(HBaseConfiguration.addHbaseResources(config))
+    new HBaseAdmin(HBaseConfiguration.addHbaseResources(hBaseConfig))
   }
 
 }
