@@ -53,7 +53,7 @@ def execute_command(command_name, selfish, **arguments):
     if is_frame:
         parent = command_info.result.get('parent')
         if parent and parent == getattr(selfish, '_id'):
-            print "Changing ID for existing proxy"
+            #print "Changing ID for existing proxy"
             selfish._id = command_info.result['id']
     postprocessor = get_postprocessor(command_name)
     if postprocessor:
@@ -66,7 +66,7 @@ def execute_command(command_name, selfish, **arguments):
         if parent:
             result = selfish
         else:
-            print "Returning new proxy"
+            #print "Returning new proxy"
             result = get_frame(command_info.result['name'])
     else:
         result = command_info.result
