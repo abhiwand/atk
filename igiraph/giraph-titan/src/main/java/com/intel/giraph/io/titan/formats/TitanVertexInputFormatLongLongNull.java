@@ -69,7 +69,7 @@ public class TitanVertexInputFormatLongLongNull extends
     /**
      * Vertex Reader that constructs Giraph vertices from Titan Vertices
      */
-    protected static class LongLongNullVertexReader extends TitanHBaseVertexReader<LongWritable, LongWritable, NullWritable> {
+    protected static class LongLongNullVertexReader extends TitanVertexReader<LongWritable, LongWritable, NullWritable> {
 
         private Vertex<LongWritable, LongWritable, NullWritable> giraphVertex = null;
 
