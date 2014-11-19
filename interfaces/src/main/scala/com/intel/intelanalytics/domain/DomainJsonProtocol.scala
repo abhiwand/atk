@@ -248,7 +248,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
-  implicit val binColumnFormat = jsonFormat6(BinColumn)
+  implicit val binColumnFormat = jsonFormat5(BinColumn)
   implicit val sortByColumnsFormat = jsonFormat2(SortByColumns)
 
   implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatistics)

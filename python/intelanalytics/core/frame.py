@@ -441,12 +441,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         bin_column_name : str (optional)
             The name for the new binned column.
 
-        Returns
-        -------
-        Frame
-            A Frame accessing a new frame, with a bin column appended to the original frame structure
-            The type of the new column will be int32 and the bin numbers start at 1.
-
         Notes
         -----
         1)  Unicode in column names is not supported and will likely cause the drop_frames() function
@@ -479,11 +473,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
                55
                89
 
-        Create a new frame with a column showing what bin the data is in.
+        Modify the frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
 
-            binnedEW = my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
-            binnedEW.inspect( n=11 )
+            my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+            my_frame.inspect( n=11 )
 
               a:int32     aEWBinned:int32
             /-----------------------------/
@@ -499,12 +493,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
               55                   4
               89                   5
 
-        Create a new frame with a column showing what bin the data is in.
+        Modify the frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
 
 
-            binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
-            binnedED.inspect( n=11 )
+            my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+            my_frame.inspect( n=11 )
 
               a:int32     aEDBinned:int32
             /-----------------------------/
