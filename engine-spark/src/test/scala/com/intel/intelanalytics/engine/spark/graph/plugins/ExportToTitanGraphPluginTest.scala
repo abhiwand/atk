@@ -46,7 +46,7 @@ import scala.collection.JavaConversions._
 
 class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Matchers with MockitoSugar {
   val edgeColumns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
-  val edgeSchema = new EdgeSchema(edgeColumns, "worksUnder", "srclabel", "destlabel")
+  val edgeSchema = new EdgeSchema(edgeColumns, "worksUnder", "srclabel", "destlabel", true)
 
   val employeeColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("employee", DataTypes.int64))
   val employeeSchema = new VertexSchema(employeeColumns, "employee", null)
