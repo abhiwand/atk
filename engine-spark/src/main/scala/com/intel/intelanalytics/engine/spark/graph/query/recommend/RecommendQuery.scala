@@ -27,6 +27,8 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  *                     get recommendation on user, please input "L" because user is your left-side
  *                     vertex. Similarly, please input "R if you want to get recommendation for movie.
  *                     The default value is "L".
+ * @param left_vertex_id_property_key The property name for left side vertex id.
+ * @param right_vertex_id_property_key The property name for right side vertex id.
  * @param output_vertex_property_list The property name for ALS/CGD results.When bias is enabled,
  *                                    the last property name in the output_vertex_property_list is for bias.
  *                                    The default value is "als_result".
@@ -39,14 +41,14 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  *                The default value is "false"
  * @param train_str The label for training data. The default value is "TR".
  * @param num_output_results The number of recommendations to output. The default value is 10.
- * @param left_vertex_name The real name for left side vertex. The default value is "user".
- * @param right_vertex_name The real name for right side vertex. The default value is "movie".
- * @param left_vertex_id_property_key The property name for left side vertex id. The default value is "user_id".
- * @param right_vertex_id_property_key The property name for right side vertex id. The default value is "movie_id".
+ * @param left_vertex_name The real name for left side vertex.
+ * @param right_vertex_name The real name for right side vertex.
  */
 case class RecommendParams(graph: GraphReference,
                            vertex_id: String,
-                           vertex_type: Option[String],
+                           vertex_type: String,
+                           left_vertex_id_property_key: String,
+                           right_vertex_id_property_key: String,
                            output_vertex_property_list: Option[String],
                            vertex_type_property_key: Option[String],
                            edge_type_property_key: Option[String],
@@ -55,9 +57,7 @@ case class RecommendParams(graph: GraphReference,
                            train_str: Option[String],
                            num_output_results: Option[Int],
                            left_vertex_name: Option[String],
-                           right_vertex_name: Option[String],
-                           left_vertex_id_property_key: Option[String],
-                           right_vertex_id_property_key: Option[String]) {
+                           right_vertex_name: Option[String]) {
 }
 
 /**
@@ -109,7 +109,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |    vertex_id : string
                            |        The vertex id to get recommendation for
                            |
-                           |    vertex_type : string (optional)
+                           |    vertex_type : string
                            |        The vertex type to get recommendation for.
                            |        The valid value is either "L" or "R".
                            |        "L" stands for left-side vertices of a bipartite graph.
@@ -118,7 +118,12 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |        you want to get recommendations on user, input "L" because
                            |        user is your left-side vertex.
                            |        Similarly, input "R" if you want to get recommendations for movie.
-                           |        The default value is "L".
+                           |
+                           |    left_vertex_id_property_key : string
+                           |        The property name for left side vertex id.
+                           |
+                           |    right_vertex_id_property_key : string
+                           |        The property name for right side vertex id.
                            |
                            |    output_vertex_property_list : comma-separated string (optional)
                            |        The property name for ALS/CGD results.
@@ -155,19 +160,10 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |
                            |    left_vertex_name : string (optional)
                            |        The real name for left side vertex.
-                           |        The default value is "user".
                            |
                            |    right_vertex_name : string (optional)
                            |        The real name for right side vertex.
-                           |        The default value is "movie".
                            |
-                           |    left_vertex_id_property_key : string (optional)
-                           |        The property name for left side vertex id.
-                           |        The default value is "user_id".
-                           |
-                           |    right_vertex_id_property_key : string (optional)
-                           |        The property name for right side vertex id.
-                           |        The default value is "movie_id".
                            |
                            |    Returns
                            |    -------
@@ -211,11 +207,9 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
         "and bias_on are enabled")
 
     val vertexId = arguments.vertex_id
-    val vertexType = arguments.vertex_type.getOrElse(config.getString("vertex_type")).toLowerCase
-    val leftVertexIdPropertyKey = arguments.left_vertex_id_property_key.getOrElse(
-      config.getString("left_vertex_id_property_key"))
-    val rightVertexIdPropertyKey = arguments.right_vertex_id_property_key.getOrElse(
-      config.getString("right_vertex_id_property_key"))
+    val vertexType = arguments.vertex_type.toLowerCase
+    val leftVertexIdPropertyKey = arguments.left_vertex_id_property_key
+    val rightVertexIdPropertyKey = arguments.right_vertex_id_property_key
     val vertexTypePropertyKey = arguments.vertex_type_property_key.getOrElse(
       config.getString("vertex_type_property_key"))
     val edgeTypePropertyKey = arguments.edge_type_property_key.getOrElse(
