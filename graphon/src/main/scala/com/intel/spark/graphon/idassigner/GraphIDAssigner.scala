@@ -1,8 +1,7 @@
 package com.intel.spark.graphon.idassigner
 
-import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
@@ -23,35 +22,29 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    */
   def run(inVertices: RDD[T], inEdges: RDD[(T, T)]) = {
 
-    val verticesGroupedByHashCodes = inVertices.map(v => (v.hashCode(), v)).groupBy(_._1).map(p => p._2)
+    val partitionVertexCounts: Array[Long] = inVertices.mapPartitions(partitionCount).collect()
 
-    val hashGroupsWithPositions = verticesGroupedByHashCodes.flatMap(seq => seq.zip(1 to seq.size))
+    val partitionPredecessors: Array[Long] = partitionVertexCounts.scanLeft(0.toLong)(_ + _)
 
-    val newIdsToOld = hashGroupsWithPositions.map(
-      { case ((hashCode, vertex), bucketPosition) => ((hashCode.toLong << 32) + bucketPosition.toLong, vertex) })
+    val oldIdsToNew: RDD[(T, Long)] = inVertices.mapPartitionsWithIndex((i, vertices) =>
+      {
+        val offset: Long = partitionPredecessors.apply(i)
+        vertices.zipWithIndex.map({ case (v, position) => (v, position + offset) })
+      })
 
-    val oldIdsToNew = newIdsToOld.map({ case (newId, oldId) => (oldId, newId) })
+    oldIdsToNew.cache()
 
+    val edgesReversedWithSourcesRenamed: RDD[(T, Long)] =
+      inEdges.join(oldIdsToNew).map({ case (oldSrc, (oldDst, newSrc)) => (oldDst, newSrc) })
+
+    val edges: RDD[(Long, Long)] = edgesReversedWithSourcesRenamed.join(oldIdsToNew).map(
+      { case (oldDst, (newDst, newSrc)) => (newSrc, newDst) })
+
+    val newIdsToOld: RDD[(Long, T)] = oldIdsToNew.map({ case (x, y) => (y, x) })
     val newVertices = newIdsToOld.map({ case (newId, _) => newId })
 
-    val edgesGroupedWithNewIdsOfSources = inEdges.cogroup(oldIdsToNew).map(_._2)
-
-    // the id list is always a singleton list because there is one new ID for each incoming vertex
-    // this keeps the serialization of the closure relatively small
-
-    val edgesWithSourcesRenamed = edgesGroupedWithNewIdsOfSources.
-      flatMap({ case (dstList, srcIdList) => dstList.flatMap(dst => srcIdList.map(srcId => (srcId, dst))) })
-
-    val partlyRenamedEdgesGroupedWithNewIdsOfDestinations = edgesWithSourcesRenamed
-      .map({ case (srcWithNewId, dstWithOldId) => (dstWithOldId, srcWithNewId) })
-      .cogroup(oldIdsToNew).map(_._2)
-
-    // the id list is always a singleton list because there is one new ID for each incoming vertex
-    // this keeps the serialization of the closure relatively small
-
-    val edges = partlyRenamedEdgesGroupedWithNewIdsOfDestinations
-      .flatMap({ case (srcList, idList) => srcList.flatMap(src => idList.map(dstId => (src, dstId))) })
-
+    oldIdsToNew.unpersist(blocking = false)
+    edgesReversedWithSourcesRenamed.unpersist(blocking = false)
     new GraphIDAssignerOutput(newVertices, edges, newIdsToOld)
   }
 
@@ -60,10 +53,12 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    * @param vertices vertex list of renamed graph
    * @param edges edge list of renamed graph
    * @param newIdsToOld  pairs mapping new IDs to their corresponding vertices in the base graph
-   * @tparam T Type of the vertex IDs in the input graph
+   * @tparam U Type of the vertex IDs in the input graph
    */
-  case class GraphIDAssignerOutput[T: ClassManifest](val vertices: RDD[Long],
-                                                     val edges: RDD[(Long, Long)],
-                                                     val newIdsToOld: RDD[(Long, T)])
+  case class GraphIDAssignerOutput[U: ClassTag](vertices: RDD[Long],
+                                                edges: RDD[(Long, Long)],
+                                                newIdsToOld: RDD[(Long, U)])
+
+  private def partitionCount(it: Iterator[T]): Iterator[Long] = Iterator(it.length)
 
 }
