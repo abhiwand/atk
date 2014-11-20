@@ -26,6 +26,11 @@ package com.intel.intelanalytics.domain.frame
 case class FrameAddColumns(frame: FrameReference, columnNames: List[String], columnTypes: List[String], expression: String) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
+  for {
+    i <- 0 until columnNames.size
+  } {
+    require(columnNames(i) != "", "column name is required")
+  }
   require(columnTypes != null, "column types is required")
   require(columnNames.size == columnTypes.size, "Equal number of column names and types is required")
   require(expression != null, "expression is required")

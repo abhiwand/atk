@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.StringUtils
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
@@ -35,7 +36,12 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
  *              everywhere so it seemed better to encapsulate it)
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1)
+case class Column(name: String, dataType: DataType, var index: Int = -1) {
+  require(name != null, "column name is required")
+  require(dataType != null, "column data type is required")
+  require(name != "", "column name can't be empty")
+  require(StringUtils.isAlphanumericUnderscore(name), "column name must be alpha-numeric with underscores")
+}
 
 /**
  * Extra schema if this is a vertex frame
@@ -483,6 +489,21 @@ trait Schema {
   def legacyCopy(columnTuples: List[(String, DataType)]): Schema = {
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
+  }
+
+  /**
+   * Convert the current schema to a FrameSchema.
+   *
+   * This is useful when copying a Schema whose internals might be a VertexSchema
+   * or EdgeSchema but you need to make sure it is a FrameSchema.
+   */
+  def toFrameSchema: FrameSchema = {
+    if (isInstanceOf[FrameSchema]) {
+      this.asInstanceOf[FrameSchema]
+    }
+    else {
+      new FrameSchema(columns)
+    }
   }
 
 }

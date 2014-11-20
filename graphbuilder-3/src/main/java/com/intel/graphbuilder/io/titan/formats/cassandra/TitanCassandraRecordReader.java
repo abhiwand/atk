@@ -1,8 +1,12 @@
 package com.intel.graphbuilder.io.titan.formats.cassandra;
 
+import com.intel.graphbuilder.io.titan.formats.util.TitanInputFormat;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.thinkaurelius.titan.hadoop.FaunusVertexQueryFilter;
+import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;
 import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraHadoopGraph;
+import com.thinkaurelius.titan.hadoop.formats.util.input.TitanHadoopSetup;
+import com.thinkaurelius.titan.util.system.ConfigurationUtil;
 import org.apache.cassandra.hadoop.ColumnFamilyRecordReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -15,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import static com.thinkaurelius.titan.hadoop.compat.HadoopCompatLoader.DEFAULT_COMPAT;
+import static com.thinkaurelius.titan.hadoop.config.TitanHadoopConfiguration.TITAN_INPUT_VERSION;
 
 /**
  * A temporary fix for Issue#817 KCVSLog$MessagePuller does not shut down when using the TitanInputFormat
@@ -34,10 +39,15 @@ public class TitanCassandraRecordReader extends RecordReader<NullWritable, Faunu
     private TitanCassandraHadoopGraph graph;
     private FaunusVertexQueryFilter vertexQuery;
     private Configuration configuration;
+    private TitanHadoopSetup titanSetup;
     private FaunusVertex vertex;
 
-    public TitanCassandraRecordReader(final TitanCassandraHadoopGraph graph, final FaunusVertexQueryFilter vertexQuery, final ColumnFamilyRecordReader reader) {
-        this.graph = graph;
+    public TitanCassandraRecordReader(final ModifiableHadoopConfiguration faunusConf, final FaunusVertexQueryFilter vertexQuery, final ColumnFamilyRecordReader reader) {
+        String titanVersion = faunusConf.get(TITAN_INPUT_VERSION);
+        String className = TitanInputFormat.SETUP_PACKAGE_PREFIX + titanVersion + TitanInputFormat.SETUP_CLASS_NAME;
+
+        this.titanSetup = ConfigurationUtil.instantiate(className, new Object[]{faunusConf.getHadoopConfiguration()}, new Class[]{Configuration.class});
+        this.graph = new TitanCassandraHadoopGraph(this.titanSetup);
         this.vertexQuery = vertexQuery;
         this.reader = reader;
     }
