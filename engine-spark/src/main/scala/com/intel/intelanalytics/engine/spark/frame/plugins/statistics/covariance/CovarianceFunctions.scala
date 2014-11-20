@@ -1,14 +1,14 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 
+import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows.Row
-import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.{Vectors, Vector}
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.types.DataType
 
 object Covariance extends Serializable {
 
@@ -37,18 +37,42 @@ object Covariance extends Serializable {
 
     val n = rdd.first().size
 
-     val dataRDD: RDD[Vector] = rdd.map(_).to[Vector]
+    val denseData = Seq(
+       Vectors.dense(90,60,90),
+       Vectors.dense(90,90,30),
+       Vectors.dense(60,60,60),
+       Vectors.dense(60,60,90),
+       Vectors.dense(30,30,30)
+     )
 
+     def row :RowMatrix = new RowMatrix( sc.parallelize(denseData) )
 
-    /*val (m, mean) = rdd.aggregate[(Long, Array)]((0L, Array(n) = 0.0)
-      ( (s: (Long, Array), v: RDD[Row]) => (s._1 + 1L, s._2[0] += v[]),
-        (s1: (Long, Array), s2: (Long, Array)) =>  (s1._1 + s2._1, s1._2 += s2._2)
-    ))*/
+     val (m, mean) = row.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](3)))(
+       seqOp = (s: (Long, DenseVector[Double]), v: Vector) => (s._1 + 1L, s._2 += DenseVector(v.toArray)),
+       combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
+         (s1._1 + s2._1, s1._2 += s2._2)
+     )
 
+     mean :/= m.toDouble
 
+     var Gram = row.computeGramianMatrix()
+     var matrix: DenseMatrix[Double] = DenseMatrix.create(3,3, Gram.toArray)
 
+     var i = 0
+     var j = 0
+     val m1 = m
+     var alpha = 0.0
+     while (i < 3) {
+       alpha = m / m1 * mean(i)
+       j = 0
+       while (j < 3) {
+         matrix(i, j) = matrix(i, j) / m1 - alpha * mean(j)
+         j += 1
+       }
+       i += 1
+     }
 
-   // rdd.sparkContext.parallelize(covMatrix)
+     println(matrix.flatten())
   }
 
 }
