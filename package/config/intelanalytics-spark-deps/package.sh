@@ -18,12 +18,21 @@ rm $package-source.tar.gz
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib
 
-jars="ispark-deps.jar engine-spark.jar graphon.jar"
+jars="ispark-deps.jar"
 for jar in $jars
 do
 	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
 	echo $jarPath
     cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib/
+done
+
+mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+jars="engine-spark.jar graphon.jar"
+for jar in $jars
+do
+	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
+	echo $jarPath
+    cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 done
 
 pushd tarballs/$package
