@@ -76,6 +76,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     Examples
     --------
     ::
+
         graph = ia.Graph()
         graph.define_vertex_type('users')
         graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
