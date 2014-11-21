@@ -69,7 +69,7 @@ public class TitanVertexInputFormatLongDoubleNull extends
     /**
      * Uses the RecordReader to return HBase data
      */
-    public static class LongDoubleNullVertexReader extends TitanHBaseVertexReader<LongWritable, DoubleWritable, NullWritable> {
+    public static class LongDoubleNullVertexReader extends TitanVertexReader<LongWritable, DoubleWritable, NullWritable> {
 
         private Vertex<LongWritable, DoubleWritable, NullWritable> giraphVertex = null;
 

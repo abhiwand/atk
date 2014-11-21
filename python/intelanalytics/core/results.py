@@ -59,7 +59,7 @@ def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['name'])
 
-@postprocessor('frame/classification_metrics')
+@postprocessor('frame/classification_metrics', 'model:logistic_regression/test')
 def return_metrics(json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
