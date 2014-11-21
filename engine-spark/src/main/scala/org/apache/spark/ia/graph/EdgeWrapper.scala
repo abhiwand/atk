@@ -129,7 +129,6 @@ trait AbstractEdge extends AbstractRow with Serializable {
    */
   def toReversedGbEdge(): GBEdge = createGBEdge(true)
 
-
   /**
    * create a GBEdge object from this row
    * @param reversed: if true this will reverse the source and destination vids. This is used with a bidirect graph.
@@ -141,7 +140,7 @@ trait AbstractEdge extends AbstractRow with Serializable {
     // TODO: eid() will be included as a property, is that good enough?
     val srcProperty: GBProperty = GBProperty("_vid", srcVertexId())
     val destProperty: GBProperty = GBProperty("_vid", destVertexId())
-    if(reversed)
+    if (reversed)
       GBEdge(None, null, null, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
     else
       GBEdge(None, null, null, srcProperty, destProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
