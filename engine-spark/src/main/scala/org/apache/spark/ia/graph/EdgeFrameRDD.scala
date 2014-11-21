@@ -89,7 +89,10 @@ class EdgeFrameRDD(schema: EdgeSchema,
    * Convert this EdgeFrameRDD to a GB Edge RDD
    */
   def toGbEdgeRDD: RDD[GBEdge] = {
-    this.mapEdges(_.toGbEdge)
+    if(schema.directed)
+      this.mapEdges(_.toGbEdge)
+    else
+      this.mapEdges(_.toGbEdge) union this.mapEdges(_.toReversedGbEdge)
   }
 
 }

@@ -84,7 +84,7 @@ public class TitanVertexInputFormatPropertyGraph4LDA extends
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class PropertyGraph4LDAVertexReader extends TitanHBaseVertexReader<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
+    public static class PropertyGraph4LDAVertexReader extends TitanVertexReader<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
 
         private Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> giraphVertex;
 
