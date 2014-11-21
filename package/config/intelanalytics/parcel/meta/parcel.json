@@ -1,0 +1,39 @@
+{
+  "schema_version":     1,
+  "name":               "INTELANALYTICS",
+  "version":            "VERSION",
+  "depends": "CDH (>= 5.1), CDH (<< 6.0)",
+  "setActiveSymlink":   true,
+
+  "provides": [
+      "hbase-plugin",
+      "hdfs-plugin",
+      "yarn-plugin",
+      "spark-plugin",
+      "zookeeper-plugin",
+      "INTEL-ANALYTICS"
+  ],
+
+  "scripts": {
+    "defines": "IA_ENV.sh"
+  },
+  "packages": [],
+  "components": [
+    { "name":     "intel-analytics-rest-server",
+      "version":  "VERSION"
+    }
+    ,{ "name":     "intel-analytics-python-rest-client",
+      "version":  "VERSION"
+    }
+  ],
+  "users": {
+     "iauser": {
+       "longname"    : "iauser",
+       "home"        : "/var/lib/intelanalytics",
+       "shell"       : "/bin/bash",
+       "extra_groups": ["hadoop"]
+     }
+  },
+
+  "groups": [ ]
+}

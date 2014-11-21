@@ -1,0 +1,44 @@
+{
+    "intel-analytics-default": {
+      "destination": "/etc/default/intelanalytics-rest-server",
+      "source": "etc/default/intelanalytics-rest-server",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-init": {
+      "destination": "/etc/init/intelanalytics-rest-server.conf",
+      "source": "etc/init/intelanalytics-rest-server.conf",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-initd": {
+      "destination": "/etc/init.d/intelanalytics",
+      "source": "etc/init.d/intelanalytics",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-config": {
+      "destination": "/etc/intelanalytics/rest-server",
+      "source": "etc/intelanalytics/rest-server",
+      "priority": 10,
+      "isDirectory": true
+    },
+    "intel-analytics-logrotate.d": {
+      "destination": "/etc/logrotate.d/intelanalytics-rest-server",
+      "source": "etc/logrotate.d/intelanalytics-rest-server",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-logrotate.d": {
+      "destination": "/etc/logrotate.d/intelanalytics-rest-server",
+      "source": "etc/logrotate.d/intelanalytics-rest-server",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-python": {
+      "destination": "/usr/lib/python2.7/site-packages/intelanalytics",
+      "source": "usr/lib/intelanalytics/rest-client/python",
+      "priority": 10,
+      "isDirectory": true
+    }
+}
