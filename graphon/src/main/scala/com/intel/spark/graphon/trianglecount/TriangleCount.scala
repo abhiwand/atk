@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -146,7 +147,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
     val sparkContext = sparkInvocation.sparkContext
 
-    sparkContext.addJar(Boot.getJar("graphon").getPath)
+    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
