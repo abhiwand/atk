@@ -42,7 +42,7 @@ The following changes have been made as part of the ATK 0.8.7 release.\\n
 
 "
 
-REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
+REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, intelanalytics-spark-deps >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
 
 PRE="
 restUser=iauser
