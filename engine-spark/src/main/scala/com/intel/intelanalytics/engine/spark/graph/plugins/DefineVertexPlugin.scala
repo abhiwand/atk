@@ -64,6 +64,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
                            |    Examples
                            |    --------
                            |    ::
+                           |    
                            |        graph = ia.Graph()
                            |        graph.define_vertex_type('users')
                            |
