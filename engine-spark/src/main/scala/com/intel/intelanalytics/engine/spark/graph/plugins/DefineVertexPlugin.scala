@@ -55,22 +55,23 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
 
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Define vertex type.",
     extendedSummary = Some("""
-                              |    Extended Summary
-                              |    ----------------
-                              |    Define a vertex type by label
-                              |
-                              |    Parameters
-                              |    ----------
-                              |    label: str
-                              |        label of the vertex type
-                              |
-                              |    Examples
-                              |    --------
-                              |    ::
-                              |        graph = new Graph()
-                              |        graph.define_vertex_type('users')
-                              |
-                              |
+                           |    Extended Summary
+                           |    ----------------
+                           |    Define a vertex type by label
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    label: str
+                           |        label of the vertex type
+                           |
+                           |    Examples
+                           |    --------
+                           |    ::
+                           |
+                           |        graph = ia.Graph()
+                           |        graph.define_vertex_type('users')
+                           |
+                           |
                             """.stripMargin)))
 
   /**

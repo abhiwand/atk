@@ -26,6 +26,7 @@ package com.intel.spark.graphon.pagerank
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -169,7 +170,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(arguments: PageRankArgs)(implicit invocation: Invocation): PageRankResult = {
 
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

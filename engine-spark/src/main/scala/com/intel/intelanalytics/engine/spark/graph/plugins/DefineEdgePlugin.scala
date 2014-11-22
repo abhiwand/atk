@@ -68,11 +68,13 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
 
     Examples
     --------
-                             |graph = new Graph()
-                             |graph.define_vertex_type('users')
-                             |graph.define_vertex_type('movie')
-                             |graph.define_edge_type('ratings', 'users', 'movie', directed=True)
-                           """)))
+    ::
+
+        graph = ia.Graph()
+        graph.define_vertex_type('users')
+        graph.define_vertex_type('movie')
+        graph.define_edge_type('ratings', 'users', 'movie', directed=True)
+    """)))
 
   /**
    * Define edge type
