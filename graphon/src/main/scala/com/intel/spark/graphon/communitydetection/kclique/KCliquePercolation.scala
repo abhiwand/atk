@@ -32,6 +32,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -143,7 +144,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

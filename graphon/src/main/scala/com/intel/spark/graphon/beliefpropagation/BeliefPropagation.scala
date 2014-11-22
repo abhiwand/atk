@@ -1,7 +1,9 @@
 package com.intel.spark.graphon.beliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
@@ -158,7 +160,8 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
   override def execute(arguments: BeliefPropagationArgs)(implicit invocation: Invocation): BeliefPropagationResult = {
 
     val start = System.currentTimeMillis()
-    sc.addJar(Boot.getJar("graphon").getPath)
+    val sparkContext = sc
+    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
