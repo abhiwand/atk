@@ -6,11 +6,6 @@
   "setActiveSymlink":   true,
 
   "provides": [
-      "hbase-plugin",
-      "hdfs-plugin",
-      "yarn-plugin",
-      "spark-plugin",
-      "zookeeper-plugin",
       "INTEL-ANALYTICS"
   ],
 
