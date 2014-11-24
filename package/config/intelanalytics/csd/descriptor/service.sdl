@@ -80,20 +80,12 @@
                     "default": ""
                 },
                 {
-                    "name": "atk_user",
-                    "label": "ATK user",
-                    "description": "The user of the ATK process",
-                    "required": "true",
-                    "type": "string",
-                    "default": "iauser"
-                },
-                {
-                    "name": "atk_classpath",
+                    "name": "atk_classpath_add",
                     "label": "ATK Class Path",
-                    "description": "Class path used to start atk. You need at least the default value start the server. ",
+                    "description": "Additional classpath to use with ATK",
                     "required": "true",
                     "type": "string",
-                    "default": "/etc/intelanalytics/rest-server:/usr/lib/intelanalytics/rest-server/lib/logback-*:/usr/lib/intelanalytics/rest-server/launcher.jar:/etc/hbase/conf:/etc/hadoop/conf"
+                    "default": ""
                 },
                 {
                     "name": "port_num",
@@ -110,8 +102,7 @@
                 "environmentVariables": {
                     "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                     "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
-                    "ATK_USER": "${atk_user}",
-                    "ATK_CLASSPATH": "${atk_classpath}"
+                    "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
                 }
             },
             "externalLink" : {
@@ -141,8 +132,7 @@
                     "environmentVariables": {
                         "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                         "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
-                        "ATK_USER": "${atk_user}",
-                        "ATK_CLASSPATH": "${atk_classpath}"
+                        "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
                     }
                   }
                 }
