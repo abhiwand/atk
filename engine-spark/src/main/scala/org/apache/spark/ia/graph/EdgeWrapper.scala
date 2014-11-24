@@ -120,12 +120,29 @@ trait AbstractEdge extends AbstractRow with Serializable {
   }
 
   /**
-   * Convert this row to a GbEdge
+   * Convert this row to a GBEdge
    */
-  def toGbEdge: GBEdge = {
+  def toGbEdge(): GBEdge = createGBEdge(false)
+
+  /**
+   * Convert this row to a GBEdge that has the source and destination vertices reversed
+   */
+  def toReversedGbEdge(): GBEdge = createGBEdge(true)
+
+  /**
+   * create a GBEdge object from this row
+   * @param reversed: if true this will reverse the source and destination vids. This is used with a bidirect graph.
+   *
+   */
+  private def createGBEdge(reversed: Boolean): GBEdge = {
     val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
     val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
-    GBEdge(None, null, null, GBProperty("_vid", srcVertexId()), GBProperty("_vid", destVertexId()), schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+    val srcProperty: GBProperty = GBProperty("_vid", srcVertexId())
+    val destProperty: GBProperty = GBProperty("_vid", destVertexId())
+    if (reversed)
+      GBEdge(None, null, null, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+    else
+      GBEdge(None, null, null, srcProperty, destProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
   }
 }
