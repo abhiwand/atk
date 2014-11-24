@@ -35,6 +35,7 @@ fi
 
 
 cp -v ../conf/examples/application.conf.tpl ${BUILD_DIR}/etc/intelanalytics/rest-server
+cp -v ../conf/examples/parcel.conf.tpl      ${BUILD_DIR}/etc/intelanalytics/rest-server
 cp -v ../conf/examples/application.conf.single-system.tpl ${BUILD_DIR}/etc/intelanalytics/rest-server
 
 pushd $SCRIPTPATH

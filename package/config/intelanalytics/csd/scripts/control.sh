@@ -18,8 +18,8 @@ case "$1" in
     log `pwd`
     pwd
     ls -l
-    echo java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_JVM_OPT -cp $ATK_CLASSPATH com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
-    exec  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_JVM_OPT -cp $ATK_CLASSPATH com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
+    echo  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
+    exec  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
     popd
     log "startted intelanalytics start"
 	;;

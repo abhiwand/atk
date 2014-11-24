@@ -59,7 +59,7 @@
             "name" : "atk_init_config",
             "label" : "Initialize configuration",
             "description" : "Service Cmd1 Help",
-            "roleCommand" : "role_cmd1",
+            "roleCommand" : "Start-IA",
             "roleName" : "INTEL_ANALYTICS_REST_SERVER",
             "runMode" : "all"
         }
@@ -98,7 +98,8 @@
                     "default": ""
                 },
                 {
-                    "name": "port_num",
+                    "name": "atk_api_port",
+                    "configName": "intel.analytics.api.port"
                     "label": "Webserver port",
                     "description": "The web server port number",
                     "required": "true",
@@ -145,8 +146,35 @@
                         "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
                     }
                   }
+                },
+                {
+                  "name" : "Init-Config-IA",
+                  "label" : "Initialize ATK Config",
+                  "description" : "Initialize ATK config",
+                  "expectedExitCodes" : [0],
+                  "requiredRoleState" : "stopped",
+                  "commandRunner" : {
+                    "program" : "scripts/control.sh",
+                    "args" : ["init-config"],
+                    "environmentVariables": {
+                        "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
+                        "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
+                        "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
+                    }
+                  }
                 }
              ]
         }
-    ]
+    ],
+    "configWriter" : {
+        [
+            {
+              "filename" : "sample_xml_file.xml",
+              "configFormat" : "properties",
+              "includedParams" : [
+                "atk_api_port"
+              ]
+            }
+          ]
+    }
 }

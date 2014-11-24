@@ -29,6 +29,7 @@ log "packageName: $packageName"
 #call package.sh for rest-server
 package intelanalytics-rest-server
 packageName=$1
+cp ${BUILD_DIR}/etc/intelanalytics/rest-server/parcel.conf.tpl  ${BUILD_DIR}/etc/intelanalytics/rest-server/application.conf
 
 log "packageName: $packageName"
 #call package.sh for rest server
