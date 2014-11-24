@@ -54,6 +54,16 @@
             "permissions": "0755"
         }
     ],
+    "commands": [
+        {
+            "name" : "atk_init_config",
+            "label" : "Initialize configuration",
+            "description" : "Service Cmd1 Help",
+            "roleCommand" : "role_cmd1",
+            "roleName" : "INTEL_ANALYTICS_REST_SERVER",
+            "runMode" : "all"
+        }
+    ],
     "roles": [
         {
             "name": "INTEL_ANALYTICS_REST_SERVER",
