@@ -112,19 +112,17 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val testFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
-      val testRowRDD: RDD[Row] = testFrameRDD.toLegacyFrameRDD.rows
+      val predictFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val predictRowRDD: RDD[Row] = predictFrameRDD.toLegacyFrameRDD.rows
 
-      //TODO: create
-      //val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(List(arguments.observationColumn))
-      val observationsVector = testFrameRDD.toVectorRDD(List(arguments.observationColumn))
-      val x = Array(observationsVector)
+      val observationsVector = predictFrameRDD.toVectorRDD(List(arguments.observationColumn))
+
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
       val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
 
-      //predicting
-      val LabeledRDD: RDD[Row] = observationsVector.map { point =>
+      //predicting a label for the observation columns
+      val labeledRDD: RDD[Row] = observationsVector.map { point =>
         val prediction = logRegModel.predict(point)
         Array[Any](prediction)
       }
@@ -132,26 +130,27 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
       //creating a new frame
       val newPredictedFrame = frames.create(DataFrameTemplate(generatePredictedFrameName(arguments.frame.id.toString), None))
 
-      val indexedTestRowRDD = testRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
-      val indexedLabeledRDD = LabeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
+      // Creating a new RDD with existing frame's entries and an additional column for predicted label
+      val indexedPredictedRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
+      val indexedLabeledRowRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
+      val result: RDD[sql.Row] = indexedPredictedRowRDD.join(indexedLabeledRowRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
 
-      val result = indexedTestRowRDD.join(indexedLabeledRDD).map { case (index, data) => data._1 ++ data._2 } map (s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
-      // Take original rowCount
-      val rowCount = result.count
+      // Creating schema for the new frame
+      val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
 
-      val newSchema = testFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.str)
-      //println("\n @@@3 newSchema's column names:" +newSchema.columnNamesAsString)
-      //val newColumns = List(Column("predicted_label", DataTypes.str))
-
-      println("\n @@@3 result:" + result.toString() + "::: " + result.count())
       val outputFrameRDD = new FrameRDD(newSchema, result)
-      println("\n @@@4 outputFrameRDD's schema: " + outputFrameRDD.frameSchema.columnNamesAsString)
+      val copiedFrame = frames.updateSchema(newPredictedFrame, newSchema)
 
-      frames.saveFrame(newPredictedFrame, outputFrameRDD, Some(rowCount))
-
+      frames.saveFrame(copiedFrame, outputFrameRDD, Some(inputFrame.rowCount))
     }
 
-  def generatePredictedFrameName(originalFrame: String): String = {
-    "predicted_frame_" + originalFrame
+
+  /**
+   * Generates the predicted frame name having the original frame's id as part of the frame name
+   * @param originalFrameId The predicted frame id as a string
+   * @return Name for the predicted frame
+   */
+  def generatePredictedFrameName(originalFrameId: String): String = {
+    "predicted_frame_" + originalFrameId
   }
 }
