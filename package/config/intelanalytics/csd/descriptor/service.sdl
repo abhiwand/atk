@@ -99,13 +99,86 @@
                 },
                 {
                     "name": "atk_api_port",
-                    "configName": "intel.analytics.api.port"
+                    "configName": "intel.analytics.api.port",
                     "label": "Webserver port",
                     "description": "The web server port number",
                     "required": "true",
                     "type": "port",
                     "default": 9099
+                },
+                {
+                    "name": "atk_api_host",
+                    "configName": "intel.analytics.api.host",
+                    "label": "Webserver host",
+                    "description": "The Web servers bind address. Set to 0.0.0.0 to bind to all address",
+                    "required": "true",
+                    "type": "string",
+                    "default": "127.0.0.1"
+                },
+                {
+                     "name": "atk_postgres_host",
+                     "configName": "intel.analytics.metastore.connection-postgresql.host",
+                     "label": "Postgres host",
+                     "description": "Postgresql host name",
+                     "required": "true",
+                     "type": "string",
+                     "default": "localhost"
+                },
+                {
+                     "name": "atk_postgres_port",
+                     "configName": "intel.analytics.metastore.connection-postgresql.port",
+                     "label": "Postgres port",
+                     "description": "Postgresql port",
+                     "required": "true",
+                     "type": "port",
+                     "default": 5432
+                },
+                {
+                     "name": "atk_postgres_database",
+                     "configName": "intel.analytics.metastore.connection-postgresql.database",
+                     "label": "Postgres database",
+                     "description": "Postgresql database",
+                     "required": "true",
+                     "type": "string",
+                     "default": "ia-metastore"
+                },
+                {
+                     "name": "atk_postgres_username",
+                     "configName": "intel.analytics.metastore.connection-postgresql.username",
+                     "label": "Postgres username",
+                     "description": "Postgresql username",
+                     "required": "true",
+                     "type": "string",
+                     "default": "iauser"
+                },
+                {
+                     "name": "atk_postgres_password",
+                     "configName": "intel.analytics.metastore.connection-postgresql.password",
+                     "label": "Postgres password",
+                     "description": "Postgresql password",
+                     "required": "true",
+                     "type": "string",
+                     "default": "RANDOM"
+                },
+                {
+                     "name": "atk_postgres_url",
+                     "configName": "intel.analytics.metastore.connection-postgresql.url",
+                     "label": "Postgres url",
+                     "description": "Postgresql url",
+                     "required": "true",
+                     "type": "string",
+                     "default": "\"jdbc:postgresql://\"${intel.analytics.metastore.connection-postgresql.host}\":\"${intel.analytics.metastore.connection-postgresql.port}\"/\"${intel.analytics.metastore.connection-postgresql.database}"
+                },
+                {
+                     "name": "atk_postgres",
+                     "configName": "intel.analytics.metastore.connection",
+                     "label": "Postgres",
+                     "description": "Postgresql",
+                     "required": "true",
+                     "type": "string",
+                     "default": "${intel.analytics.metastore.connection-postgresql}"
                 }
+
             ],
             "startRunner": {
                 "program": "scripts/control.sh",
@@ -119,7 +192,7 @@
             "externalLink" : {
                 "name" : "rest_server_test_uri",
                 "label" : "Rest Server Home Page",
-                "url" : "http://${host}:${port_num}"
+                "url" : "http://${host}:${atk_api_port}"
             },
             "topology" : {
                 "minInstances" : "1",
@@ -163,18 +236,27 @@
                     }
                   }
                 }
-             ]
+             ],
+             "configWriter" : {
+                     "generators": [
+                         {
+                           "filename" : "application.conf",
+                           "configFormat" : "properties",
+                           "includedParams" : [
+                             "atk_api_port",
+                             "atk_api_host",
+                             "atk_postgres_host",
+                             "atk_postgres_port",
+                             "atk_postgres_database",
+                             "atk_postgres_username",
+                             "atk_postgres_password",
+                             "atk_postgres_url",
+                             "atk_postgres"
+
+                           ]
+                         }
+                       ]
+                 }
         }
-    ],
-    "configWriter" : {
-        [
-            {
-              "filename" : "sample_xml_file.xml",
-              "configFormat" : "properties",
-              "includedParams" : [
-                "atk_api_port"
-              ]
-            }
-          ]
-    }
+    ]
 }
