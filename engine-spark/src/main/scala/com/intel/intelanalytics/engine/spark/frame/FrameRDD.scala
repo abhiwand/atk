@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.linalg.{Vectors, DenseVector}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
