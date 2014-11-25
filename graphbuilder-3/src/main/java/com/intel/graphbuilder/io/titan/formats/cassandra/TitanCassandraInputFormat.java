@@ -1,12 +1,13 @@
 package com.intel.graphbuilder.io.titan.formats.cassandra;
 
+import com.intel.graphbuilder.io.titan.formats.util.TitanInputFormat;
 import com.thinkaurelius.titan.diskstorage.Backend;
+import com.thinkaurelius.titan.diskstorage.StaticBuffer;
 import com.thinkaurelius.titan.diskstorage.cassandra.AbstractCassandraStoreManager;
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.SliceQuery;
+import com.thinkaurelius.titan.diskstorage.util.StaticArrayBuffer;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
-import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraHadoopGraph;
-import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.hadoop.ColumnFamilyRecordReader;
 import org.apache.cassandra.hadoop.ConfigHelper;
@@ -24,7 +25,7 @@ import java.util.List;
 
 /**
  * A temporary fix for Issue#817 KCVSLog$MessagePuller does not shut down when using the TitanInputFormat
- *
+ * <p/>
  * The Spark context does no shut down due to a runaway KCVSLog$MessagePuller thread that maintained a
  * connection to the underlying graph. Affects Titan 0.5.0 and 0.5.1. This code should be replaced once
  * Titan checks in a fix.
@@ -32,13 +33,14 @@ import java.util.List;
  * @link https://github.com/thinkaurelius/titan/issues/817
  */
 public class TitanCassandraInputFormat extends TitanInputFormat {
+    private static final StaticBuffer DEFAULT_COLUMN = StaticArrayBuffer.of(new byte[0]);
+    private static final SliceQuery DEFAULT_SLICE_QUERY = new SliceQuery(DEFAULT_COLUMN, DEFAULT_COLUMN);
 
     // Copied these private constants from Cassandra's ConfigHelper circa 2.0.9
     private static final String INPUT_WIDEROWS_CONFIG = "cassandra.input.widerows";
     private static final String RANGE_BATCH_SIZE_CONFIG = "cassandra.range.batch.size";
 
     private final ColumnFamilyInputFormat columnFamilyInputFormat = new ColumnFamilyInputFormat();
-    private TitanCassandraHadoopGraph graph;
     private Configuration config;
 
     @Override
@@ -50,15 +52,13 @@ public class TitanCassandraInputFormat extends TitanInputFormat {
     public RecordReader<NullWritable, FaunusVertex> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext)
             throws IOException, InterruptedException {
 
-        return new TitanCassandraRecordReader(this.graph, this.vertexQuery,
+        return new TitanCassandraRecordReader(this.faunusConf, this.vertexQuery,
                 (ColumnFamilyRecordReader) this.columnFamilyInputFormat.createRecordReader(inputSplit, taskAttemptContext));
     }
 
     @Override
     public void setConf(final Configuration config) {
         super.setConf(config);
-
-        this.graph = new TitanCassandraHadoopGraph(titanSetup);
 
         // Copy some Titan configuration keys to the Hadoop Configuration keys used by Cassandra's ColumnFamilyInputFormat
         ConfigHelper.setInputInitialAddress(config, titanInputConf.get(GraphDatabaseConfiguration.STORAGE_HOSTS)[0]);
@@ -77,9 +77,9 @@ public class TitanCassandraInputFormat extends TitanInputFormat {
         // Set the column slice bounds via Faunus's vertex query filter
         final SlicePredicate predicate = new SlicePredicate();
         final int rangeBatchSize = config.getInt(RANGE_BATCH_SIZE_CONFIG, Integer.MAX_VALUE);
-        predicate.setSlice_range(getSliceRange(titanSetup.inputSlice(vertexQuery), rangeBatchSize));
+        predicate.setSlice_range(getSliceRange(DEFAULT_SLICE_QUERY, rangeBatchSize));
         ConfigHelper.setInputSlicePredicate(config, predicate);
-
+        ConfigHelper.setInputPartitioner(config, "Murmur3Partitioner");
         this.config = config;
     }
 

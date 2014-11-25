@@ -84,7 +84,7 @@ public class TitanVertexInputFormatPropertyGraph4CFCGD extends
      * Uses the RecordReader to get HBase data
      */
     public static class PropertyGraph4CFCGDVertexReader extends
-            TitanHBaseVertexReader<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> {
+            TitanVertexReader<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> {
 
         private Vertex<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> giraphVertex;
 

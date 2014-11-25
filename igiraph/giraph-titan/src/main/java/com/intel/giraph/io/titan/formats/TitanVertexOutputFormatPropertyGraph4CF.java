@@ -71,7 +71,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  */
 public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
     V extends VertexData4CFWritable, E extends Writable>
-    extends TextVertexOutputFormat<I, V, E> {
+    extends TitanVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
@@ -79,17 +79,6 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
     private static final Logger LOG = Logger
         .getLogger(TitanVertexOutputFormatPropertyGraph4CF.class);
 
-
-    /**
-     * set up Titan based on users' configuration
-     *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        GiraphTitanUtils.setupTitanOutput(conf);
-        super.setConf(conf);
-    }
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
@@ -101,12 +90,8 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanVertexPropertyGraph4CFWriter extends TextVertexWriterToEachLine {
+    protected class TitanVertexPropertyGraph4CFWriter extends TitanVertexWriterToEachLine {
 
-        /**
-         * TitanFactory to write back results
-         */
-        private TitanGraph graph = null;
         /**
          * Vertex value properties to filter
          */
@@ -119,17 +104,11 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
          * Enable vector value
          */
         private String enableVectorValue = "true";
-        /**
-         * regular expression of the deliminators for a property list
-         */
-        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
-            this.graph = TitanGraphWriter.open(context);
-            LOG.info(OPENED_GRAPH);
             enableVertexBias = OUTPUT_VERTEX_BIAS.get(context.getConfiguration());
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
             vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
@@ -179,10 +158,12 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
                     generateErrorMsg(vector.size(), vertex.getId().get());
                 }
             }
+            commitVerticesInBatches();
             return null;
         }
 
         /**
+         * Generate error message if vertex is not in the expected format.
          *
          * @param size  The number of vertex value properties
          * @param vertexId  The vertex Id
@@ -192,20 +173,6 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
                 REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
             throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
                 CURRENT_VERTEX + vertexId);
-        }
-
-        /**
-         * close
-         *
-         * @param context Task attempt context
-         * @throws IOException
-         */
-        @Override
-        public void close(TaskAttemptContext context) throws IOException, InterruptedException {
-            this.graph.commit();
-            this.graph.shutdown();
-            LOG.info(CLOSED_GRAPH);
-            super.close(context);
         }
     }
 }

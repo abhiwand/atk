@@ -80,7 +80,7 @@ class SparkComponent extends EngineComponent
 
   metaStore.initializeSchema()
 
-  val sparkContextFactory = new SparkContextFactory()
+  val sparkContextFactory = SparkContextFactory
 
   val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
