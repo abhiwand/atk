@@ -10,7 +10,7 @@
   ],
 
   "scripts": {
-    "defines": "IA_ENV.sh"
+    "defines": "ATK_ENV.sh"
   },
   "packages": [],
   "components": [
