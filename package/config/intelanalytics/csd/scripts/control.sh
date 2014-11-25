@@ -5,7 +5,6 @@ env
 function log {
 timestamp=$(date)
 echo "==$timestamp: $1" #stdout
-echo "==$timestamp: $1" 1>&2; #stderr
 }
 
 CLOUDERA_PARCEL_HOME="/opt/cloudera/parcels"
