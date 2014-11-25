@@ -159,26 +159,7 @@
                      "required": "true",
                      "type": "string",
                      "default": "RANDOM"
-                },
-                {
-                     "name": "atk_postgres_url",
-                     "configName": "intel.analytics.metastore.connection-postgresql.url",
-                     "label": "Postgres url",
-                     "description": "Postgresql url",
-                     "required": "true",
-                     "type": "string",
-                     "default": "\"jdbc:postgresql://\"${intel.analytics.metastore.connection-postgresql.host}\":\"${intel.analytics.metastore.connection-postgresql.port}\"/\"${intel.analytics.metastore.connection-postgresql.database}"
-                },
-                {
-                     "name": "atk_postgres",
-                     "configName": "intel.analytics.metastore.connection",
-                     "label": "Postgres",
-                     "description": "Postgresql",
-                     "required": "true",
-                     "type": "string",
-                     "default": "${intel.analytics.metastore.connection-postgresql}"
                 }
-
             ],
             "startRunner": {
                 "program": "scripts/control.sh",
@@ -221,18 +202,40 @@
                   }
                 },
                 {
-                  "name" : "Init-Config-IA",
-                  "label" : "Initialize ATK Config",
-                  "description" : "Initialize ATK config",
+                  "name" : "Config-db",
+                  "label" : "Configure Database",
+                  "description" : "Configure the database for ATK it's local to the node.",
                   "expectedExitCodes" : [0],
                   "requiredRoleState" : "stopped",
                   "commandRunner" : {
-                    "program" : "scripts/control.sh",
-                    "args" : ["init-config"],
+                    "program" : "scripts/config.db.sh",
+                    "args" : [""],
                     "environmentVariables": {
-                        "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
-                        "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
-                        "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
+                        "ATK_POSTGRES_HOST": "${atk_postgres_host}",
+                        "ATK_POSTGRES_PORT": "${atk_postgres_port}",
+                        "ATK_POSTGRES_USERNAME": "${atk_postgres_username}",
+                        "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}",
+                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}"
+
+                    }
+                  }
+                },
+                {
+                  "name" : "Insert",
+                  "label" : "Configure Database",
+                  "description" : "Configure the database for ATK it's local to the node.",
+                  "expectedExitCodes" : [0],
+                  "requiredRoleState" : "stopped",
+                  "commandRunner" : {
+                    "program" : "scripts/config.db.sh",
+                    "args" : [""],
+                    "environmentVariables": {
+                        "ATK_POSTGRES_HOST": "${atk_postgres_host}",
+                        "ATK_POSTGRES_PORT": "${atk_postgres_port}",
+                        "ATK_POSTGRES_USERNAME": "${atk_postgres_username}",
+                        "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}",
+                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}"
+
                     }
                   }
                 }
@@ -249,10 +252,7 @@
                              "atk_postgres_port",
                              "atk_postgres_database",
                              "atk_postgres_username",
-                             "atk_postgres_password",
-                             "atk_postgres_url",
-                             "atk_postgres"
-
+                             "atk_postgres_password"
                            ]
                          }
                        ]
