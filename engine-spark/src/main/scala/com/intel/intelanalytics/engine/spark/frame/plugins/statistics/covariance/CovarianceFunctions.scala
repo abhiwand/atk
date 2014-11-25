@@ -81,7 +81,7 @@ object Covariance extends Serializable {
     if (weighted)
     {
       var idx = 0
-      while (idx < m) {
+      while (idx < n) {
         mean(idx) *= weights(idx)
         idx += 1
       }
