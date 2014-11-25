@@ -38,7 +38,7 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
       inEdges.join(oldIdsToNew).map({ case (oldSrc, (oldDst, newSrc)) => (oldDst, newSrc) })
 
     val edges: RDD[(Long, Long)] = edgesReversedWithSourcesRenamed.join(oldIdsToNew).map(
-      { case (oldDst, (newDst, newSrc)) => (newSrc, newDst) })
+      { case (oldDst, (newSrc, newDst)) => (newSrc, newDst) })
 
     val newIdsToOld: RDD[(Long, T)] = oldIdsToNew.map({ case (x, y) => (y, x) })
     val newVertices = newIdsToOld.map({ case (newId, _) => newId })
