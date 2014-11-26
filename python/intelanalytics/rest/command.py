@@ -354,6 +354,7 @@ class CommandServerError(Exception):
             message = command_info.error['message']
         except KeyError:
             message = "(Server response insufficient to provide details)"
+        message = message + (" (command: %s, corId: %s)" % (command_info.id, command_info.correlationId))
         Exception.__init__(self, message)
 
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])
