@@ -143,16 +143,10 @@ trait Schema {
   val columns: List[Column]
 
   require(columns != null, "columns must not be null")
-  require(columns.size == columnNames.size, "column names must be unique")
   require({
     val distinct = columns.map(_.name).distinct
     distinct.length == columns.length
   }, "invalid schema, duplicate column names")
-
-  require({
-    val names = columns.map(x => x.name).toList
-    names.size == names.distinct.size
-  }, "column names must be unique")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }

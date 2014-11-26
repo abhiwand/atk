@@ -25,5 +25,8 @@ UPDATE frame SET storage_format = 'file/parquet', storage_uri = frame.frame_id |
 
 ALTER TABLE frame DROP COLUMN revision;
 
+-- Add correlation id to commands:
+ALTER TABLE command ADD COLUMN correlation VARCHAR(50) NOT NULL DEFAULT '';
+
 
 

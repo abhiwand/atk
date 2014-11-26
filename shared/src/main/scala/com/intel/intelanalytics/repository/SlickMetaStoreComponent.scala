@@ -551,6 +551,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def arguments = column[Option[JsObject]]("arguments")
 
+    def correlationId = column[String]("correlation")
+
     def error = column[Option[Error]]("error")
 
     def progress = column[List[ProgressInfo]]("progress")
@@ -566,7 +568,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def createdById = column[Option[Long]]("created_by")
 
     /** projection to/from the database */
-    def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+    def * = (id, name, arguments, correlationId, error, progress, complete, result, createdOn, modifiedOn, createdById) <>
+      (Command.tupled, Command.unapply)
 
     def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
   }
@@ -588,7 +591,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), complete = false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, "", None, List(), complete = false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -603,7 +606,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Command] = {
-      commandTable.drop(offset).take(count).list
+      //Since sortBy.drop.take seems to be producing results in random order, try this...
+      commandTable.filter(_.id >= offset.toLong)
+                  .filter(_.id < (offset + count).toLong)
+                  .sortBy(_.id).list
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[Command] = {

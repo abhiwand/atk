@@ -221,8 +221,10 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   }
 
   override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
+    require(offset >= 0, "offset cannot be negative")
+    require(count >= 0, "count cannot be negative")
     future {
-      commandStorage.scan(offset, count)
+      commandStorage.scan(offset, Math.min(count, SparkEngineConfig.pageSize))
     }
   }
 

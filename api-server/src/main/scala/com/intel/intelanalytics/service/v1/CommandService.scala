@@ -114,9 +114,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     //TODO: cursor
                     import spray.json._
                     import ViewModelJsonImplicits._
-                    onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
-                      case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                      case Failure(ex) => throw ex
+                    parameters("offset" ? 0, "count" ? ApiServiceConfig.defaultCount) { (offset, count) =>
+                      onComplete(engine.getCommands(offset, count)) {
+                        case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.withQuery().toString(), commands))
+                        case Failure(ex) => throw ex
+                      }
                     }
                   } ~
                     post {
