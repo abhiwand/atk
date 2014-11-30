@@ -59,8 +59,6 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
     val frameId: Long = arguments.frame.id
     val frame = frames.expectFrame(frameId)
 
-    val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
-
     val matrixName = if (arguments.matrixName.nonEmpty) {
       Some(arguments.matrixName.get).toString
     }
@@ -71,17 +69,15 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
     // load frame as RDD
     val rdd = frames.loadFrameRDD(ctx, frameId).cache()
 
-    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ row => Column(row, frame.schema.columnTuples(frame.schema.columnIndex(row))._2) }).toList
-    val matrixRowNames = List(Column("row_names", DataTypes.string))
-    val outputDataColumnNamesAndTypes: List[Column] = matrixRowNames ++ inputDataColumnNamesAndTypes
-
-    /*val covarianceRDD = Covariance.covarianceMatrix(rdd, dataColumnIndicesAndTypes, weightColumnIndicesAndTypes, usePopulationVariance, arguments.dataColumnNames).cache()
-    val rowCount = covarianceRDD.count()*/
+    //val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ row => Column(row, frame.schema.columnTuples(frame.schema.columnIndex(row))._2) }).toList
+    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ row => Column(row, DataTypes.float64) }).toList
+    val d = arguments.dataColumnNames.length
+    val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames).cache()
 
     // create covariance matrix as DataFrame
     val covarianceFrame = frames.create(DataFrameTemplate(matrixName, None))
-    val schema = FrameSchema(outputDataColumnNamesAndTypes)
-    frames.saveFrame(covarianceFrame, new FrameRDD(schema, rdd), Some(10))
+    val schema = FrameSchema(inputDataColumnNamesAndTypes)
+    frames.saveFrame(covarianceFrame, new FrameRDD(schema, rdd))
 
   }
 }
