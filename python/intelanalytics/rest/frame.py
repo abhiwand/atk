@@ -483,7 +483,7 @@ class FrameBackendRest(object):
                 data.extend(result.data)
             return TakeResult(data, schema)
 
-        if n == 0:
+        if n <= 0:
             return TakeResult([], frame.schema)
         result = get_take_result()
 
