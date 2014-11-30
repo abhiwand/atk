@@ -221,6 +221,10 @@ class CommandInfo(object):
         return self._payload['id']
 
     @property
+    def correlation_id(self):
+        return self._payload['correlation_id']
+
+    @property
     def name(self):
         return self._payload['name']
 
@@ -354,7 +358,7 @@ class CommandServerError(Exception):
             message = command_info.error['message']
         except KeyError:
             message = "(Server response insufficient to provide details)"
-        message = message + (" (command: %s, corId: %s)" % (command_info.id, command_info.correlationId))
+        message = message + (" (command: %s, corId: %s)" % (command_info.id_number, command_info.correlation_id))
         Exception.__init__(self, message)
 
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])
