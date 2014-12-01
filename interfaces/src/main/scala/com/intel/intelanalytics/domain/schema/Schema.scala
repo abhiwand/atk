@@ -238,6 +238,15 @@ trait Schema {
   }
 
   /**
+   * Produces a renamed subset schema from this schema
+   * @param columnNames rename mapping
+   * @return new schema
+   */
+  def copySubsetWithRename(columnNames: Map[String, String]): Schema = {
+    copySubset(columnNames.keys.toSeq).renameColumns(columnNames)
+  }
+
+  /**
    * Union schemas together, keeping as much info as possible.
    *
    * Vertex and/or Edge schema information will be maintained for this schema only
@@ -310,22 +319,6 @@ trait Schema {
         }
       }
     }
-  }
-
-  /**
-   * Produces a renamed subset schema and the indices from this schema of the subset
-   * @param columnNames rename mapping
-   * @return new schema and the indices which map it back into this schema
-   */
-  def getRenamedSchemaAndIndicesForCopy(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
-    validateRenameMapping(columnNames, forCopy = true)
-    val colsAndIndices: Seq[(Column, Int)] =
-      for {
-        (c, i) <- columns.zipWithIndex
-        if columnNames.contains(c.name)
-      } yield (Column(columnNames(c.name), c.dataType), i)
-    val (cols, indices) = colsAndIndices.unzip
-    (copy(cols.toList), indices)
   }
 
   /**
