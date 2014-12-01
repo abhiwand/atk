@@ -247,9 +247,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  /**
-   * @deprecated schema should be updated when you save a FrameRDD, this method shouldn't be needed
-   */
+  @deprecated("schema should be updated when you save a FrameRDD, this method shouldn't be needed")
   def updateSchema(frame: DataFrame, schema: Schema): DataFrame = {
     metaStore.withSession("frame.updateSchema") {
       implicit session =>
