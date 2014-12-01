@@ -2,6 +2,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covarianc
 
 import breeze.linalg.DenseVector
 import breeze.linalg.{ DenseMatrix, DenseVector }
+import com.intel.intelanalytics.domain.frame.CovarianceReturn
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -23,7 +24,7 @@ object Covariance extends Serializable {
    * @return
    */
   def covariance(frameRDD: FrameRDD,
-                 dataColumnNames: List[String]): Double = {
+                 dataColumnNames: List[String]): CovarianceReturn = {
     // compute multivariate statistics and return covariance
 
     val a = frameRDD.mapRows(row => {
@@ -56,7 +57,7 @@ object Covariance extends Serializable {
     }, combOp = (s1: Double, s2: Double) => (s1 + s2))
 
     val covariance = product / sample - mean(1) * mean(2) * m / sample
-    covariance
+    CovarianceReturn(covariance)
   }
   /**
    * Compute covariance for two or more columns

@@ -59,8 +59,6 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
 
     // parse arguments
     val frameId: Long = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
-
     val matrixName = if (arguments.matrixName.nonEmpty) {
       Some(arguments.matrixName.get).toString
     }

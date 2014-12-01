@@ -32,7 +32,6 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, 
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
-//import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovarianceFunctions
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
@@ -70,7 +69,6 @@ class EngineKryoRegistrator extends KryoRegistrator {
     kryo.register(ColumnStatistics.getClass)
     kryo.register(StatisticsRDDFunctions.getClass)
     kryo.register(QuantilesFunctions.getClass)
-    //  kryo.register(CovarianceFunctions.getClass)
     kryo.register(TopKRDDFunctions.getClass)
     kryo.register(EntropyRDDFunctions.getClass)
 
