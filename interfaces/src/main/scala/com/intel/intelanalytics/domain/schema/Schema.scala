@@ -126,8 +126,8 @@ object Schema {
 
   /**
    * A lot of code was using Tuples before we introduced column objects
-   * @deprecated use column objects and the other constructors
    */
+  @deprecated("use column objects and the other constructors")
   def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
     val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     new FrameSchema(columns)
@@ -464,9 +464,8 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated legacy use only - use nicer API instead
    */
+  @deprecated("legacy use only - use nicer API instead")
   def columnTuples: List[(String, DataType)] = {
     columns.map(column => (column.name, column.dataType))
   }
@@ -476,9 +475,8 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated don't use - legacy support only
    */
+  @deprecated("don't use - legacy support only")
   def legacyCopy(columnTuples: List[(String, DataType)]): Schema = {
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
