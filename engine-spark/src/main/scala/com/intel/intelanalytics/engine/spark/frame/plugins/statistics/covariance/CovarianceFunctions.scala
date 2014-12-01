@@ -23,9 +23,40 @@ object Covariance extends Serializable {
    * @return
    */
   def covariance(frameRDD: FrameRDD,
-                 dataColumnNames: List[String]): Int = {
+                 dataColumnNames: List[String]): Double = {
     // compute multivariate statistics and return covariance
-    10000 / 5
+
+    val a = frameRDD.mapRows(row => {
+      val array = row.valuesAsArray(dataColumnNames)
+      val b = array.map(i => DataTypes.toDouble(i))
+      Vectors.dense(b)
+    })
+
+    val q = frameRDD.mapRows(row => {
+      val array = row.valuesAsArray(dataColumnNames)
+      val b = array.map(i => DataTypes.toDouble(i))
+      b(0) * b(1)
+    })
+
+    def rowMatrix: RowMatrix = new RowMatrix(a)
+
+    //
+    val (m, mean) = rowMatrix.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](a.first().size)))(
+      seqOp = (s: (Long, DenseVector[Double]), v: Vector) => (s._1 + 1L, s._2 += DenseVector(v.toArray)),
+      combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
+        (s1._1 + s2._1, s1._2 += s2._2)
+    )
+    mean :/= m.toDouble
+
+    val sample = m - 1.0
+
+    val product = rowMatrix.rows.aggregate[Double](1)((s: Double, v: Vector) => {
+      val d = v.toArray
+      d(0) * d(1)
+    }, combOp = (s1: Double, s2: Double) => (s1 + s2))
+
+    val covariance = product / sample - mean(1) * mean(2) * m / sample
+    covariance
   }
   /**
    * Compute covariance for two or more columns
@@ -46,15 +77,17 @@ object Covariance extends Serializable {
     def rowMatrix: RowMatrix = new RowMatrix(a)
 
     val covariance = rowMatrix.computeCovariance()
-    val matrix: DenseMatrix[Double] = DenseMatrix.create(covariance.numCols, covariance.numCols, covariance.toArray)
-    val rows = covariance.numRows
+    val rowOrCols = covariance.numCols //it is a square matrix
+
+    //now convert the covariance matrix into a RDD[sql.Row] is there a better way?
+    val matrix: DenseMatrix[Double] = DenseMatrix.create(rowOrCols, rowOrCols, covariance.toArray)
     var i, j = 0
 
-    val array: Array[GenericRow] = new Array[GenericRow](covariance.numRows)
-    while (i < rows) {
-      val arrayCols = new Array[Any](covariance.numCols)
+    val array: Array[GenericRow] = new Array[GenericRow](rowOrCols)
+    while (i < rowOrCols) {
+      val arrayCols = new Array[Any](rowOrCols)
       j = 0
-      while (j < rows) {
+      while (j < rowOrCols) {
         arrayCols(j) = matrix(i, j)
         j += 1
       }
