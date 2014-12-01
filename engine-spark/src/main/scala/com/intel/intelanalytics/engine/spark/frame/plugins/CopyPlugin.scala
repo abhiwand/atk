@@ -78,8 +78,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
     if (arguments.where.isEmpty) {
       val rdd = frames.loadFrameRDD(ctx, sourceFrame).convertToNewSchema(newSchema)
       frames.tryNewFrame(template) { newFrame =>
-        val copiedFrame = frames.updateSchema(newFrame, newSchema)
-        frames.saveFrame(copiedFrame, rdd, Some(sourceFrame.rowCount))
+        frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
       }
     }
     else {
