@@ -10,6 +10,8 @@ import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 object Covariance extends Serializable {
 
@@ -33,7 +35,7 @@ object Covariance extends Serializable {
    * @return
    */
   def covarianceMatrix(frameRDD: FrameRDD,
-                       dataColumnNames: List[String]): RDD[Matrix] = {
+                       dataColumnNames: List[String]): RDD[sql.Row] = {
 
     val a = frameRDD.mapRows(row => {
       val array = row.valuesAsArray(dataColumnNames)
@@ -44,10 +46,24 @@ object Covariance extends Serializable {
     def rowMatrix: RowMatrix = new RowMatrix(a)
 
     val covariance = rowMatrix.computeCovariance()
+    val matrix: DenseMatrix[Double] = DenseMatrix.create(covariance.numCols, covariance.numCols, covariance.toArray)
+    val rows = covariance.numRows
+    var i, j = 0
 
-    //val result: Row = indexedPredictedRowRDD.join(indexedLabeledRowRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
+    val array: Array[GenericRow] = new Array[GenericRow](covariance.numRows)
+    while (i < rows) {
+      val arrayCols = new Array[Any](covariance.numCols)
+      j = 0
+      while (j < rows) {
+        arrayCols(j) = matrix(i, j)
+        j += 1
+      }
+      val genRow = new GenericRow(arrayCols)
+      array(i) = genRow
+      i += 1
+    }
 
-    frameRDD.sparkContext.parallelize(Seq(covariance))
+    frameRDD.sparkContext.parallelize(array)
   }
 }
 

@@ -5,9 +5,11 @@ import com.intel.intelanalytics.domain.frame.{ CovarianceMatrixArguments, DataFr
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
 
@@ -77,7 +79,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
     // create covariance matrix as DataFrame
     val covarianceFrame = frames.create(DataFrameTemplate(matrixName, None))
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    frames.saveFrame(covarianceFrame, new FrameRDD(schema, rdd))
+    frames.saveFrame(covarianceFrame, new FrameRDD(schema, covarianceRDD))
 
   }
 }
