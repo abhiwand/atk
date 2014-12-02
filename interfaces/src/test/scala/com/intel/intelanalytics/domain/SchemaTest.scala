@@ -179,6 +179,7 @@ class SchemaTest extends WordSpec with Matchers {
       added.columns.length shouldBe 5
       added.column("str").dataType shouldBe string
       added.column("str").index shouldBe 4
+      assert(added.isInstanceOf[VertexSchema])
     }
 
     "be able to validate a column has a given type" in {
@@ -191,6 +192,7 @@ class SchemaTest extends WordSpec with Matchers {
       val result = vertexSchema.dropColumn(columnName)
       assert(result.columns.length == 2, "length was not 2: " + result)
       assert(!result.hasColumn(columnName), "column was still present: " + result)
+      assert(result.isInstanceOf[VertexSchema])
     }
 
     "not be able to drop _vid column" in {
@@ -217,6 +219,7 @@ class SchemaTest extends WordSpec with Matchers {
       assert(result.hasColumn("_vid"))
       assert(result.hasColumn("_label"))
       assert(result.hasColumn("movie_id"))
+      assert(result.isInstanceOf[VertexSchema])
     }
 
     "be able to copy a subset of columns" in {
@@ -228,6 +231,7 @@ class SchemaTest extends WordSpec with Matchers {
       renamed.hasColumn("name") shouldBe false
       renamed.hasColumn("title") shouldBe true
       renamed.columnNames shouldBe List("_vid", "_label", "movie_id", "title")
+      assert(renamed.isInstanceOf[VertexSchema])
     }
 
     // TODO: fix this in Schema
@@ -261,6 +265,7 @@ class SchemaTest extends WordSpec with Matchers {
       assert(schema.column("_vid").index == 0)
       assert(schema.column("_label").index == 1)
       assert(schema.column(2).name == "m_id")
+      assert(schema.isInstanceOf[VertexSchema])
     }
 
     "be convertible to a FrameSchema" in {
@@ -268,28 +273,44 @@ class SchemaTest extends WordSpec with Matchers {
       assert(schema.isInstanceOf[FrameSchema])
     }
 
-    "should require a _vid and _label column" in {
+    "require a _vid and _label column" in {
       intercept[IllegalArgumentException] {
         new VertexSchema(columns, "movies", None)
       }
     }
 
-    "should require a _vid column" in {
+    "require a _vid column" in {
       intercept[IllegalArgumentException] {
         new VertexSchema(List(Column("_label", str)), "movies", None)
       }
     }
 
-    "should require a _label column" in {
+    "require a _label column" in {
       intercept[IllegalArgumentException] {
         new VertexSchema(List(Column("_vid", int64)), "movies", None)
       }
     }
 
-    "should require a _vid column to be int64" in {
+    "require a _vid column to be int64" in {
       intercept[IllegalArgumentException] {
         new VertexSchema(List(Column("_vid", str), Column("_label", str)), "movies", None)
       }
+    }
+
+    "determine id column name when already defined" in {
+      assert(vertexSchema.determineIdColumnName("other_name") == "movie_id")
+    }
+
+    "determine id column name when not already defined" in {
+      val v2 = new VertexSchema(List(Column("_vid", int64), Column("_label", str)), "movies", None)
+      assert(v2.determineIdColumnName("other_name") == "other_name")
+    }
+
+    "be able to reassign idColumnName in copy" in {
+      val v1 = new VertexSchema(List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64)), "movies", None)
+      val v2 = v1.copy(idColumnName = Some("movie_id"))
+      assert(v1.columns == v2.columns)
+      assert(v2.idColumnName == Some("movie_id"))
     }
   }
 
@@ -408,31 +429,31 @@ class SchemaTest extends WordSpec with Matchers {
       assert(schema.isInstanceOf[FrameSchema])
     }
 
-    "should require a _eid column" in {
+    "require a _eid column" in {
       intercept[IllegalArgumentException] {
         new EdgeSchema(List(Column("_label", str), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
-    "should require a _label column" in {
+    "require a _label column" in {
       intercept[IllegalArgumentException] {
         new EdgeSchema(List(Column("_eid", int64), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
-    "should require a _src_vid column" in {
+    "require a _src_vid column" in {
       intercept[IllegalArgumentException] {
         new EdgeSchema(List(Column("_eid", int64), Column("_label", str), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
-    "should require a _dest_vid column" in {
+    "require a _dest_vid column" in {
       intercept[IllegalArgumentException] {
         new EdgeSchema(List(Column("_eid", int64), Column("_label", str), Column("_src_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
-    "should require a _eid column to be int64" in {
+    "require a _eid column to be int64" in {
       intercept[IllegalArgumentException] {
         new EdgeSchema(List(Column("_eid", str), Column("_label", str), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
