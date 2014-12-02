@@ -47,7 +47,7 @@ object Covariance extends Serializable {
       combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
         (s1._1 + s2._1, s1._2 += s2._2)
     )
-    //mean :/= m.toDouble
+    mean :/= m.toDouble
 
     print("mean0:" + mean(0))
     print("mean1" + mean(1))
@@ -57,7 +57,7 @@ object Covariance extends Serializable {
       d(0) * d(1)
     }, combOp = (s1: Double, s2: Double) => (s1 + s2))
     print("mean1" + product)
-    val covariance = product / m - 1 - (mean(0) * mean(1) / m - 1)
+    val covariance = product / m - 1 - (mean(0) * mean(1) * m / m - 1)
     CovarianceReturn(covariance)
   }
   /**
