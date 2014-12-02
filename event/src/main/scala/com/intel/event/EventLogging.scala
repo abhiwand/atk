@@ -29,9 +29,9 @@ import scala.util.control.NonFatal
 import com.intel.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
 
 /**
- * Mixin for logging with the Event library.
+ * Global (per classloader, of course) settings for Event logging
  */
-trait EventLogging {
+object EventLogging {
 
   var _profile = false
 
@@ -60,6 +60,12 @@ trait EventLogging {
       case false => EventLogger.setImplementation(new SLF4JLogAdapter)
     }
   }
+}
+
+/**
+ * Mixin for logging with the Event library.
+ */
+trait EventLogging {
 
   /**
    * Starts a new event context. Usually this method is not the one you want,
@@ -86,6 +92,7 @@ trait EventLogging {
     require(context.trim() != "", "event context name must have non-whitespace characters")
     val ctx = EventContext.enter(context.trim())
     val start = System.currentTimeMillis()
+    val profiling = EventLogging.profiling
     println(s"Profiling? $profiling")
     if (profiling) {
       info("Entering context")
