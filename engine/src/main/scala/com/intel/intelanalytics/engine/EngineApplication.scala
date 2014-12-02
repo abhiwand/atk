@@ -31,7 +31,14 @@ import scala.util.control.NonFatal
 import com.intel.event.EventLogging
 
 class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
-  raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
+  if (raw) {
+    info("Engine setting log adapter from configuration")
+    raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
+    info("Engine set log adapter from configuration")
+  } // else api-server already installed an SLF4j adapter
+
+  profiling = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.profile")
+  info(s"Engine profiling: $profiling")
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 

@@ -164,6 +164,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
+                <module>event-api</module>
                 <module>event</module>
                 <module>ispark-deps</module>
                 <module>testutils</module>
@@ -190,6 +191,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>event-api</module>
                 <module>event</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
@@ -209,6 +211,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <!--<module>ititan</module>-->
+                <module>event-api</module>
                 <module>event</module>
                 <!--module>python</module-->
                 <module>ispark-deps</module>
@@ -669,6 +672,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <dependencyManagement>
         <dependencies>
             <!--START bda dependencies-->
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>event-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>event</artifactId>

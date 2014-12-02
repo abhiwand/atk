@@ -21,23 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.event.adapter;
-
-import com.intel.event.Event;
-import com.intel.event.EventLog;
-
-import java.io.PrintStream;
-
 /**
- * A simple event logger that logs events to System.out in JSON format
- *
- * This is the default logger used if no other is configured.
+ * Event logging and notification library
  */
-public class ConsoleEventLog implements EventLog {
-
-    @Override
-    public void log(Event e) {
-        PrintStream out = System.out;
-        out.println(JsonFormatter.toJson(e).toString());
-    }
-}
+package com.intel.event;

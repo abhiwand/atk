@@ -44,7 +44,14 @@ import scala.reflect.ClassTag
  */
 class ApiServiceApplication extends Archive with EventLogging {
 
+  raw = true
+  info("API server setting log adapter from configuration")
+
   raw = ConfigFactory.load().getBoolean("intel.analytics.api.logging.raw")
+  info("API server set log adapter from configuration")
+
+  profiling = ConfigFactory.load().getBoolean("intel.analytics.api.logging.profile")
+  info(s"API server profiling: $profiling")
 
   //Direct subsequent archive messages to the normal log
   Archive.logger = s => info(s)
@@ -59,7 +66,6 @@ class ApiServiceApplication extends Archive with EventLogging {
    * Main entry point to start the API Service Application
    */
   override def start() = {
-    Archive.logger = (s: String) => debug(s)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }

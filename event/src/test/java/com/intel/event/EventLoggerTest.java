@@ -65,8 +65,10 @@ public class EventLoggerTest {
             events.add(e);
         }
     }
-    @Test
-    public void EventLogger_logs_to_console_by_default() {
+
+
+    @Test(expected = Exception.class)
+    public void EventLogger_throws_if_no_implementation_set() {
         EventLogger.setImplementation(null);
         PrintStream out = System.out;
         try {
@@ -76,7 +78,6 @@ public class EventLoggerTest {
                     EventContext.event(Msg.SOMETHING_HAPPENED).build()
 
             );
-            assertThat(stream.toString().length(), is(greaterThan(0)));
         } finally {
             System.setOut(out);
         }

@@ -26,33 +26,46 @@ package com.intel.event
 import org.apache.commons.configuration.ConfigurationFactory
 
 import scala.util.control.NonFatal
-import com.intel.event.adapter.SLF4JLogAdapter
+import com.intel.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
 
 /**
  * Mixin for logging with the Event library.
  */
 trait EventLogging {
 
+  var _profile = false
+
+  /**
+   * If true, generate log entries for each context entry and exit, with timing information
+   */
+  def profiling: Boolean = _profile
+
+  def profiling_=(prof: Boolean) = {
+    _profile = prof
+  }
+
   /**
    * If true, events will be dumped directly to stdout. Otherwise (the default),
    * the events will be further processed with some logging system such as SLF4j.
    */
-  def raw: Boolean = EventLogger.getImplementation == null
+  def raw: Boolean = EventLogger.getImplementation match {
+    case null => true
+    case x: ConsoleEventLog => true
+    case _ => false
+  }
 
   def raw_=(value: Boolean) = {
-    if (raw != value) {
-      value match {
-        case true => EventLogger.setImplementation(null)
-        case false => EventLogger.setImplementation(new SLF4JLogAdapter)
-      }
+    value match {
+      case true => EventLogger.setImplementation(new ConsoleEventLog)
+      case false => EventLogger.setImplementation(new SLF4JLogAdapter)
     }
   }
 
   /**
    * Starts a new event context. Usually this method is not the one you want,
-   * more likely you're looking for [[withContext(String)]], which will manage
+   * more likely you're looking for [[withContext( S t r i n g )]], which will manage
    * the disposal/exit of the event context as well. Event contexts created with
-   * [[enter(String)]] must be manually closed.
+   * [[enter( S t r i n g )]] must be manually closed.
    * @param context name of the new context to enter
    * @return the created event context
    */
@@ -63,7 +76,7 @@ trait EventLogging {
    * running the block, the context is closed.
    *
    * @param context name of the context to create
-   * @param logErrors if true, any errors that occur in the block will be logged with the [[error()]] method
+   * @param logErrors if true, any errors that occur in the block will be logged with the [[error( )]] method
    * @param block code to run in the new context
    * @tparam T result type of the block
    * @return the return value of the block
@@ -72,6 +85,11 @@ trait EventLogging {
     require(context != null, "event context name cannot be null")
     require(context.trim() != "", "event context name must have non-whitespace characters")
     val ctx = EventContext.enter(context.trim())
+    val start = System.currentTimeMillis()
+    println(s"Profiling? $profiling")
+    if (profiling) {
+      info("Entering context")
+    }
     try {
       block
     }
@@ -91,6 +109,10 @@ trait EventLogging {
       }
     }
     finally {
+      if (profiling) {
+        val end = System.currentTimeMillis()
+        info(s"Completing context, elapsed time ${end - start} milliseconds")
+      }
       ctx.close()
     }
   }
@@ -137,7 +159,7 @@ trait EventLogging {
 
   /**
    * Constructs an event using the provided arguments. Usually it is preferable to use one of the
-   * more specific methods such as [[debug()]], [[error()]] and so on, but this method is provided
+   * more specific methods such as [[debug( )]], [[error( )]] and so on, but this method is provided
    * for the sake of completeness.
    *
    * @param message log or error message

@@ -608,8 +608,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Command] = {
       //Since sortBy.drop.take seems to be producing results in random order, try this...
       commandTable.filter(_.id >= offset.toLong)
-                  .filter(_.id < (offset + count).toLong)
-                  .sortBy(_.id).list
+        .filter(_.id < (offset + count).toLong)
+        .sortBy(_.id).list
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[Command] = {

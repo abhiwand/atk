@@ -23,10 +23,6 @@
 
 package com.intel.event;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,12 +39,6 @@ import java.util.UUID;
  */
 public class Event {
 
-    private static final DateFormat ISO_8601_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-
-    static {
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        ISO_8601_FORMAT.setTimeZone(tz);
-    }
 
     private final String id = UUID.randomUUID().toString();
     private final EventData data;
@@ -101,6 +91,10 @@ public class Event {
         if (data.getData() != null) {
             map.putAll(data.getData());
         }
+        map.put("id", id);
+        if (context != null) {
+            map.put("corId", context.getCorrelationId());
+        }
         return map;
     }
 
@@ -120,91 +114,40 @@ public class Event {
         return names.toArray(new String[names.size()]);
     }
 
-    /**
-     * Returns the details of the event and contexts in JSON format
-     *
-     * @return a JSON string describing the event
-     */
-    @Override
-    public String toString() {
-        JSONObject json = toJson();
-        return json.toJSONString();
-    }
 
-    @SuppressWarnings("unchecked")
-    JSONObject toJson() {
-        List<JSONObject> contexts = new ArrayList<>();
-        EventContext current = context;
-        while (current != null) {
-            contexts.add(current.toJson());
-            current = current.getParent();
-        }
-        JSONObject json = new JSONObject();
-        json.put("id", getId());
-        json.put("corId", getCorrelationId());
-        json.put("severity", getSeverity().name());
-        json.put("messageCode", getMessageCode());
-        json.put("message", getMessage());
-        json.put("machine", getMachine());
-        json.put("user", getUser());
-        json.put("threadId", getThreadId());
-        json.put("threadName", getThreadName());
-        json.put("date", ISO_8601_FORMAT.format(getDate()));
-        json.put("substitutions", toJsonArray(getSubstitutions()));
-        json.put("markers", toJsonArray(getMarkers()));
-        json.put("errors", toJsonArray(getErrors()));
-        json.put("contexts", contexts);
-        json.put("data", getData());
-        json.put("directory", getWorkingDirectory());
-        json.put("process", getProcessId());
-        return json;
-    }
-
-    private JSONArray toJsonArray(Object[] array) {
-        JSONArray jsonArray = new JSONArray();
-        for (Object anArray : array) {
-            if (anArray instanceof Throwable){
-                jsonArray.add(ExceptionUtils.getStackTrace((Throwable) anArray));
-
-            }
-            //noinspection unchecked
-            jsonArray.add(String.valueOf(anArray));
-        }
-        return jsonArray;
-    }
 
     /**
      * Returns the instant at which the event occurred.
      */
-    Date getDate() {
+    public Date getDate() {
         return instant.getDate();
     }
 
     /**
      * Returns the name of the thread on which the event occurred.
      */
-    private String getThreadName() {
+    public String getThreadName() {
         return instant.getThreadName();
     }
 
     /**
      * The numeric ID of the thread on which the event occurred.
      */
-    private long getThreadId() {
+    public long getThreadId() {
         return instant.getThreadId();
     }
 
     /**
      * The logged in user for the application in which the event occurred
      */
-    private String getUser() {
+    public String getUser() {
         return instant.getUser();
     }
 
     /**
      * The hostname of the machine on which the event occurred
      */
-    private String getMachine() {
+    public String getMachine() {
         return Host.getMachineName();
     }
 
@@ -269,5 +212,7 @@ public class Event {
     public String getProcessId() {
         return Host.getProcessId();
     }
+
+    public EventContext getContext() { return context; }
 }
 

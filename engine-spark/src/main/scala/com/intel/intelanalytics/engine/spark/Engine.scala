@@ -298,9 +298,10 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   /**
    * All the command definitions available
    */
-  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
-    commandPluginRegistry.getCommandDefinitions()
-  }
+  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] =
+    withContext("se.getCommandDefinitions") {
+      commandPluginRegistry.getCommandDefinitions()
+    }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
     future {
