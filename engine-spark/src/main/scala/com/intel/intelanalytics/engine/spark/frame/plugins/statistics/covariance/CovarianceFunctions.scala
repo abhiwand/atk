@@ -57,7 +57,7 @@ object Covariance extends Serializable {
       d(0) * d(1)
     }, combOp = (s1: Double, s2: Double) => (s1 + s2))
     print("mean1" + product)
-    val covariance = product / m - 1 - (mean(0) * mean(1) * m / m - 1)
+    val covariance = (product / (m - 1)) - (mean(0) * mean(1) * m / (m - 1))
     CovarianceReturn(covariance)
   }
   /**
