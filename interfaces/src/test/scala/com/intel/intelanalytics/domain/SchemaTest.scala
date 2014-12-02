@@ -125,6 +125,19 @@ class SchemaTest extends WordSpec with Matchers {
       assert(schema.columnTuples == List(("a", int64), ("c", string)))
     }
 
+    "be able to select a subset and rename in one step" in {
+      val schema = abcSchema.copySubsetWithRename(Map(("a", "a_renamed"), ("c", "c_renamed")))
+      assert(schema.columns.length == 2)
+      assert(schema.column("a_renamed").index == 0)
+      assert(schema.column(1).name == "c_renamed")
+    }
+
+    "be able to select a subset and rename to same names" in {
+      val schema = abcSchema.copySubsetWithRename(Map(("a", "a"), ("c", "c")))
+      assert(schema.columns.length == 2)
+      assert(schema.column("a").index == 0)
+      assert(schema.column(1).name == "c")
+    }
   }
 
 }
