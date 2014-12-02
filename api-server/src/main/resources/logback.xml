@@ -3,7 +3,7 @@
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${application.home}/logs/application.log</file>
         <encoder>
-            <pattern>%date - [%level] - from %logger in %thread %message %n%ex{full}</pattern>
+            <pattern>%date - [%level] - <%mdc{corId:-?}> - from %logger in %thread %message %n%ex{full}</pattern>
         </encoder>
     </appender>
 

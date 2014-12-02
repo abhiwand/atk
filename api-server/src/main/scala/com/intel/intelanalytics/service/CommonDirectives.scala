@@ -44,22 +44,20 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
    */
   def apply(eventCtx: String): Directive1[UserPrincipal] = {
     eventContext(eventCtx) &
+      logRequestResponse(eventCtx, Logging.InfoLevel) &
       addCommonResponseHeaders &
       handleExceptions(errorHandler) &
-      logResponse(eventCtx, Logging.InfoLevel) &
       authenticationDirective.authenticateKey
   }
 
   def errorHandler = {
     ExceptionHandler {
-      case e: IllegalArgumentException => {
+      case e: IllegalArgumentException =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
-      }
-      case NonFatal(e) => {
+      case NonFatal(e) =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.InternalServerError, "An internal server error occurred")
-      }
     }
   }
 
@@ -67,7 +65,7 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
    * Adds header fields common to all responses
    * @return directive to wrap route with headers
    */
-  def addCommonResponseHeaders: Directive0 =
+  def addCommonResponseHeaders(): Directive0 =
     mapInnerRoute {
       route => respondWithBuildId { route }
     }
