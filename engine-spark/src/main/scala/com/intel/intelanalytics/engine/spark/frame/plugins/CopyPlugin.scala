@@ -67,25 +67,18 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
     val ctx = invocation.sparkContext
 
     val sourceFrame = frames.expectFrame(arguments.frame)
-    val (newSchema, indices) = arguments.columns match {
-      case None => (sourceFrame.schema.toFrameSchema, null) // full copy
-      case Some(cols) => sourceFrame.schema.toFrameSchema.getRenamedSchemaAndIndicesForCopy(cols) // partial copy
+    val newSchema = arguments.columns match {
+      case None => sourceFrame.schema.toFrameSchema // full copy
+      case Some(cols) => sourceFrame.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
     }
+
     val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
 
     // run the operation
     if (arguments.where.isEmpty) {
-      val rdd: FrameRDD = arguments.columns match {
-        case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
-        case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
-          frames.loadFrameRDD(ctx, sourceFrame)
-            .map(row => {
-              for { i <- indices } yield row(i)
-            }.toArray))
-      }
+      val rdd = frames.loadFrameRDD(ctx, sourceFrame).convertToNewSchema(newSchema)
       frames.tryNewFrame(template) { newFrame =>
-        val copiedFrame = frames.updateSchema(newFrame, newSchema)
-        frames.saveFrame(copiedFrame, rdd, Some(sourceFrame.rowCount))
+        frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
       }
     }
     else {
