@@ -78,6 +78,18 @@ trait EventLogging {
    */
   def enter(context: String): EventContext = EventContext.enter(context)
 
+  private def ensureSaneContext(ev: EventContext) {
+    //Look for the given context somewhere in the parent chain
+    //for this thread.
+    var current = EventContext.getCurrent()
+    while (current != null && ev != null) {
+      if (current != ev)
+        current = current.getParent()
+    }
+    //Didn't find it. Assume this thread got recycled in an Executor or something.
+    if (current == null)
+      EventContext.setCurrent(ev)
+  }
   /**
    * Creates a new event context and runs the given block using that context. After
    * running the block, the context is closed.
@@ -91,7 +103,8 @@ trait EventLogging {
   def withContext[T](context: String, logErrors: Boolean = true)(block: => T)(implicit ev: EventContext): T = {
     require(context != null, "event context name cannot be null")
     require(context.trim() != "", "event context name must have non-whitespace characters")
-    EventContext.setCurrent(ev)
+
+    ensureSaneContext(ev)
     val ctx = EventContext.enter(context.trim())
     val start = System.currentTimeMillis()
     val profiling = EventLogging.profiling
