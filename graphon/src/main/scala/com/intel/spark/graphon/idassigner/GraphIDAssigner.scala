@@ -1,13 +1,12 @@
 package com.intel.spark.graphon.idassigner
 
-import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
 /**
- * Renames the vertices of a graph from some arbitrary type T (that provides a ClassManifest for Spark's benefit)
+ * Renames the vertices of a graph from some arbitrary type T (that provides a ClassTag for Spark's benefit)
  * to Long IDs.
  *
  * @tparam T type of the vertex IDs in the incoming graph
@@ -62,8 +61,8 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    * @param newIdsToOld  pairs mapping new IDs to their corresponding vertices in the base graph
    * @tparam T Type of the vertex IDs in the input graph
    */
-  case class GraphIDAssignerOutput[T: ClassManifest](val vertices: RDD[Long],
-                                                     val edges: RDD[(Long, Long)],
-                                                     val newIdsToOld: RDD[(Long, T)])
+  case class GraphIDAssignerOutput[T: ClassTag](val vertices: RDD[Long],
+                                                val edges: RDD[(Long, Long)],
+                                                val newIdsToOld: RDD[(Long, T)])
 
 }

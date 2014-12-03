@@ -1,19 +1,19 @@
 package com.intel.graphbuilder.graph.titan
 
-import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
-import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.commons.configuration.BaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.hadoop.hbase.{ClusterStatus, HBaseConfiguration, HRegionInfo, TableName}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.hadoop.hbase.{ ClusterStatus, HBaseConfiguration, HRegionInfo, TableName }
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{BeforeAndAfter, Matchers}
 
-class TitanAutoPartitionerITest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar  {
+import org.scalatest.{ FlatSpec, Matchers }
+
+class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar {
+
   val hBaseTableName = "testtable"
   val hBaseRegionServers = 3
-  val hBaseTableRegions = 30
+  val hBaseTableRegions = 5
   val hBaseTableSizeMB = 2000
 
   val hBaseAdminMock = mock[HBaseAdmin]
@@ -31,7 +31,6 @@ class TitanAutoPartitionerITest extends TestingSparkContextFlatSpec with Matcher
   //Mock number of regions in HBase table
   when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName))).thenReturn(tableRegionsMock)
   when(hBaseAdminMock.getTableRegions(TableName.valueOf(hBaseTableName)).size()).thenReturn(hBaseTableRegions)
-
 
   "enableAutoPartition" should "return true when auto-partitioner is enabled" in {
     val titanConfig = new BaseConfiguration()
@@ -80,13 +79,13 @@ class TitanAutoPartitionerITest extends TestingSparkContextFlatSpec with Matcher
 
     val titanConfig = new BaseConfiguration()
     titanConfig.setProperty(TitanAutoPartitioner.ENABLE_AUTO_PARTITION, "true")
-    titanConfig.setProperty(TitanAutoPartitioner.HBASE_MIN_INPUT_SPLIT_SIZE_MB, 0)
-    titanConfig.setProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE, 1)
+    titanConfig.setProperty(TitanAutoPartitioner.HBASE_INPUT_SPLITS_PER_CORE, 2)
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
     val inputSplits = titanAutoPartitioner.getSparkHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
 
-    inputSplits shouldBe (20)
+    val expectedHBaseSplits = Math.round(Math.log1p(20) / Math.log(2)) * 2
+    inputSplits shouldBe (expectedHBaseSplits)
   }
 
 }

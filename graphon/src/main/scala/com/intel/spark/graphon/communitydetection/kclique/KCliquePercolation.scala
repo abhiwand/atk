@@ -30,6 +30,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -83,15 +84,15 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
   override def name: String = "graph:titan/ml/kclique_percolation"
 
   /**
-    * The number of jobs varies with the number of supersteps required to find the connected components
-    * of the derived clique-shadow graph.... we cannot properly anticipate this without doing a full analysis of
-    * the graph.
-    *
-    * @param arguments command arguments: used if a command can produce variable number of jobs
-    * @return number of jobs in this command
-    */
+   * The number of jobs varies with the number of supersteps required to find the connected components
+   * of the derived clique-shadow graph.... we cannot properly anticipate this without doing a full analysis of
+   * the graph.
+   *
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
+   */
   override def numberOfJobs(arguments: KClique): Int = {
-   8 + 2 * arguments.cliqueSize
+    8 + 2 * arguments.cliqueSize
   }
 
   /**
@@ -142,7 +143,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Get the SparkContext as one the input parameters for Driver
     val sc = sparkInvocation.sparkContext
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

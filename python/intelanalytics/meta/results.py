@@ -51,6 +51,9 @@ def add_postprocessor(command_full_name, function):
         raise RuntimeError("Internal Error: duplicate command name '%s' in results post-processors" % command_full_name)
     _postprocessors[command_full_name] = function
 
+def add_return_none_postprocessor(command_full_name):
+    add_postprocessor(command_full_name, return_none)
+
 
 # post-processor methods --all take a json object argument
 
@@ -59,7 +62,7 @@ def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['name'])
 
-@postprocessor('frame/classification_metrics')
+@postprocessor('frame/classification_metrics', 'model:logistic_regression/test')
 def return_metrics(json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
