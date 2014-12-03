@@ -82,7 +82,7 @@ trait EventLogging {
     //Look for the given context somewhere in the parent chain
     //for this thread.
     var current = EventContext.getCurrent()
-    while (current != null && ev != null) {
+    while (current != null && current != ev) {
       if (current != ev)
         current = current.getParent()
     }
