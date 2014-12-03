@@ -26,14 +26,14 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
-from intelanalytics.core.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.meta.namedobj import name_support
 import uuid
 
-from intelanalytics.core.serialize import to_json
+from intelanalytics.meta.serialize import to_json
 from intelanalytics.core.column import Column
 
 from intelanalytics.core.deprecate import raise_deprecation_warning
@@ -59,7 +59,7 @@ Example:
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
-    from intelanalytics.core.config import get_graph_backend
+    from intelanalytics.meta.config import get_graph_backend
     return get_graph_backend()
 
 

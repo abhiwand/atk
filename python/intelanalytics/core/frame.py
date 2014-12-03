@@ -25,21 +25,21 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.userfunction import has_python_user_function_arg
+from intelanalytics.meta.udf import has_python_user_function_arg
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.core.namedobj import name_support
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
+from intelanalytics.meta.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
 
 #from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
 
 
 def _get_backend():
-    from intelanalytics.core.config import get_frame_backend
+    from intelanalytics.meta.config import get_frame_backend
     return get_frame_backend()
 
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]

@@ -51,6 +51,9 @@ def add_postprocessor(command_full_name, function):
         raise RuntimeError("Internal Error: duplicate command name '%s' in results post-processors" % command_full_name)
     _postprocessors[command_full_name] = function
 
+def add_return_none_postprocessor(command_full_name):
+    add_postprocessor(command_full_name, return_none)
+
 
 # post-processor methods --all take a json object argument
 

@@ -111,7 +111,7 @@ class _Api(object):
         if not _Api.is_loaded():
             from intelanalytics.rest.connection import http
             from intelanalytics.rest.jsonschema import get_command_def
-            from intelanalytics.core.metaprog import install_command_defs, delete_docstubs
+            from intelanalytics.meta.metaprog import install_command_defs, delete_docstubs
             logger.info("Requesting available commands from server")
             response = http.get("commands/definitions")
             commands_json_schema = response.json()
