@@ -77,7 +77,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference.id))
 
     override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference =
-      storage.create(DataFrameTemplate(FrameName.generate(annotation)))
+      storage.create(DataFrameTemplate(FrameName.validateOrGenerate(annotation)))
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(id)
 
