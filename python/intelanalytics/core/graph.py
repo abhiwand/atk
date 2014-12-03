@@ -384,9 +384,9 @@ class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
 @api
 class Graph(DocStubsGraph, _BaseGraph):
     """
-    Creates a graph.
+    Creates a property Graph.
 
-    This graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
+    This Graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
     operations against graph data.  Many frame methods are available against vertices and edges.
     Vertex and Edge properties are stored as columns.
 
