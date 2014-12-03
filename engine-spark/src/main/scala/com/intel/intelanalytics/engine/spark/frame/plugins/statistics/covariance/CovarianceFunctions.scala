@@ -78,27 +78,14 @@ object Covariance extends Serializable {
 
     def rowMatrix: RowMatrix = new RowMatrix(a)
 
-    val covariance = rowMatrix.computeCovariance()
-    val rowOrCols = covariance.numCols //it is a square matrix
+    val covariance: Matrix = rowMatrix.computeCovariance()
+    val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
+    val arrGenericRow = vecArray.map(row => {
+      val temp: Array[Any] = row.map(x => x)
+      new GenericRow(temp)
+    })
 
-    //now convert the covariance matrix into a RDD[sql.Row] is there a better way?
-    val matrix: DenseMatrix[Double] = DenseMatrix.create(rowOrCols, rowOrCols, covariance.toArray)
-    var i, j = 0
-
-    val array: Array[GenericRow] = new Array[GenericRow](rowOrCols)
-    while (i < rowOrCols) {
-      val arrayCols = new Array[Any](rowOrCols)
-      j = 0
-      while (j < rowOrCols) {
-        arrayCols(j) = matrix(i, j)
-        j += 1
-      }
-      val genRow = new GenericRow(arrayCols)
-      array(i) = genRow
-      i += 1
-    }
-
-    frameRDD.sparkContext.parallelize(array)
+    frameRDD.sparkContext.parallelize(arrGenericRow)
   }
 }
 
