@@ -118,6 +118,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
+  @deprecated("use FrameRDD and related methods instead")
   def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long): LegacyFrameRDD = {
     val frame = lookup(frameId).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: $frameId"))
@@ -135,6 +136,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
+  @deprecated("use FrameRDD and related methods instead")
   def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD = withContext("loadLegacyFrameRDD") {
     if (frame.revision == 0) {
       // revision zero is special and means nothing has been saved to disk yet
@@ -175,6 +177,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
+  @deprecated("use FrameRDD and related methods instead")
   def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None): DataFrame = {
     saveFrame(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
   }
@@ -247,9 +250,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  /**
-   * @deprecated schema should be updated when you save a FrameRDD, this method shouldn't be needed
-   */
+  @deprecated("schema should be updated when you save a FrameRDD, this method shouldn't be needed")
   def updateSchema(frame: DataFrame, schema: Schema): DataFrame = {
     metaStore.withSession("frame.updateSchema") {
       implicit session =>

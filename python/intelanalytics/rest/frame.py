@@ -320,9 +320,8 @@ class FrameBackendRest(object):
         colTypes = dict(frame.schema)
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
-        return execute_new_frame_command('bin_column', arguments)
+        arguments = {'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        return execute_update_frame_command('bin_column', arguments, frame)
 
 
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
@@ -473,7 +472,7 @@ class FrameBackendRest(object):
                 data.extend(result.data)
             return TakeResult(data, schema)
 
-        if n == 0:
+        if n <= 0:
             return TakeResult([], frame.schema)
         result = get_take_result()
 

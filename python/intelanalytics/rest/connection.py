@@ -26,12 +26,14 @@ Connection to the Intel Analytics REST Server
 import os
 import sys
 import json
-import requests
 import logging
+
+import requests
+
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
-from intelanalytics.core.api import error_if_api_already_loaded, _Api
+from intelanalytics.meta.api import error_if_api_already_loaded, _Api
 
 
 class Server(object):

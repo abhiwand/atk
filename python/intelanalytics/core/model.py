@@ -27,11 +27,11 @@ Model
 import logging
 import json
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator
+from intelanalytics.meta.api import get_api_decorator
 api = get_api_decorator(logger)
 
-from intelanalytics.core.namedobj import name_support
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, get_command_prefix_from_class_name
+from intelanalytics.meta.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import, get_command_prefix_from_class_name
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.rest.connection import http
 
@@ -53,9 +53,7 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
 
     Parameters
     -----------
-    source: object (Optional)
-        None is only supported value right now
-    name: string (Optional)
+    name: string
         The name of the newly created model
 
     Returns
@@ -102,6 +100,23 @@ except Exception as e:
 @api
 @name_support('model')
 class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
+    """
+    LogisticRegressionModel model instantiation.
+
+    Parameters
+    ----------
+    name: str
+        Name of the LogisticRegressionModel
+
+    Returns
+    -------
+    LogisticRegressionModel object
+        An object with access to the LogisticRegressionModel
+
+    Examples
+    --------
+    model = ia.LogisticRegressionModel(name='LogReg')
+    """
     _command_prefix = "model:logistic_regression"
 
     def __init__(self, source=None, name=None):

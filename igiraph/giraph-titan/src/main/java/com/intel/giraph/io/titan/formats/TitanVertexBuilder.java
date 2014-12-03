@@ -10,6 +10,7 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.conf.StrConfOption;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.DenseVector;
@@ -21,6 +22,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PR
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 public class TitanVertexBuilder {
+
 
     /** Enable vector value */
     protected boolean enableVectorValue = false;
@@ -53,7 +55,7 @@ public class TitanVertexBuilder {
      *
      * @param conf Giraph configuration file.
      */
-    public TitanVertexBuilder(final ImmutableClassesGiraphConfiguration conf) {
+    public TitanVertexBuilder(final Configuration conf) {
         this.vertexValuePropertyKeys = getPropertyKeyMap(conf, INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST);
         this.edgeValuePropertyKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
         this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_LABEL_LIST);
@@ -242,7 +244,7 @@ public class TitanVertexBuilder {
      * @param confOption Configuration option with delimited list of property keys
      * @return Hashmap with name of configuration parameter, and corresponding index in list
      */
-    private Map<String, Integer> getPropertyKeyMap(final ImmutableClassesGiraphConfiguration conf,
+    private Map<String, Integer> getPropertyKeyMap(final Configuration conf,
                                                    final StrConfOption confOption) {
         String propertyKeyString = confOption.get(conf).trim();
         Map<String, Integer> propertyKeyMap = new HashMap<>();

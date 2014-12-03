@@ -25,21 +25,21 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.userfunction import has_python_user_function_arg
+from intelanalytics.meta.udf import has_python_user_function_arg
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.core.namedobj import name_support
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
+from intelanalytics.meta.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
 
 #from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
 
 
 def _get_backend():
-    from intelanalytics.core.config import get_frame_backend
+    from intelanalytics.meta.config import get_frame_backend
     return get_frame_backend()
 
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
@@ -441,12 +441,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         bin_column_name : str (optional)
             The name for the new binned column.
 
-        Returns
-        -------
-        Frame
-            A Frame accessing a new frame, with a bin column appended to the original frame structure
-            The type of the new column will be int32 and the bin numbers start at 1.
-
         Notes
         -----
         1)  Unicode in column names is not supported and will likely cause the drop_frames() function
@@ -479,11 +473,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
                55
                89
 
-        Create a new frame with a column showing what bin the data is in.
+        Modify the frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
 
-            binnedEW = my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
-            binnedEW.inspect( n=11 )
+            my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+            my_frame.inspect( n=11 )
 
               a:int32     aEWBinned:int32
             /-----------------------------/
@@ -499,12 +493,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
               55                   4
               89                   5
 
-        Create a new frame with a column showing what bin the data is in.
+        Modify the frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
 
 
-            binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
-            binnedED.inspect( n=11 )
+            my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+            my_frame.inspect( n=11 )
 
               a:int32     aEDBinned:int32
             /-----------------------------/
@@ -1284,51 +1278,52 @@ class Frame(DocStubsFrame, _BaseFrame):
 @api
 class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     """
-    Data handle.
+    A list of Vertices owned by a Graph..
 
-    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
-    Has information needed to modify data and table structure.
+    A VertexFrame is similar to a Frame but with a few important differences:
 
-    Parameters
-    ----------
-    graph: Associated Graph Object
-    label: Vertex Label
-
-    Returns
-    -------
-    VertexFrame
-        An object with access to the frame for an appropriate label
-
-    Notes
-    -----
-
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    - VertexFrames are not instantiated directly by the user, instead they are created by defining a Vertex type in a Graph
+    - Each row of a VertexFrame represents a Vertex in a Graph
+    - VertexFrames have many of the same methods as found on Frames but not all (e.g. flatten_column())
+    - VertexFrames have extra methods not found on Frames (e.g. add_vertices())
+    - Removing a Vertex (or row) from a VertexFrame also removes Edges connected to that Vertex from the Graph
+    - VertexFrames have special system columns (_vid, _label) that are maintained automatically by the system and cannot be modified by the user
+    - VertexFrames have a special user defined id column whose value uniquely identifies a Vertex
+    - "Columns" on a VertexFrame can also be thought of as "properties" on Vertices
 
     Examples
     --------
-    Retrieve a defined Vertex Frame from Graph object.
+    Define a new VertexFrame and add data to it::
+
+        # create a frame as the source for a graph
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('rating', str)])
+        frame = ia.Frame(csv)
+
+        # create a Graph
+        graph = ia.Graph()
+        graph.define_vertex_type('users')
+        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
+
+    Retrieve a previously defined VertexFrame::
+
+        # Retrieve a defined Vertex Frame from Graph object.
         g = ia.get_graph("your_graph")
 
-    Create a new VertexFrame type with the associated label.
-    This creates a new empty vertex frame
-        g.define_vertex_type("your_label")
-
-    Retrieve the new VertexFrame from the graph
+        # Retrieve a VertexFrame from the graph
         f = g.vertices["your_label"]
 
-    A Vertex Frame has been created and f is its proxy.
-    It has no data yet, but it does have the label *your_label*
+    Calling methods on a VertexFrame::
+
+        g.vertices["your_label"].inspect(20)
+
+    Convert a VertexFrame to a Frame::
+
+        # The copy method creates a new Frame
+        f = g.vertices["label"].copy()
 
     .. versionadded:: 0.8
 
@@ -1391,58 +1386,61 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 @api
 class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     """
-    Data handle.
+    A list of Edges owned by a Graph..
 
-    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
-    Has information needed to modify data and table structure.
+    An EdgeFrame is similar to a Frame but with a few important differences:
 
-    Parameters
-    ----------
-    graph: Associated Graph Object
-    label: Edge Label
-    source_vertex_label: label of the source vertex type
-    destination_vertex_label: label of the destination vertex type
-    directed: is the edge directed
-
-    Returns
-    -------
-    EdgeFrame
-        An object with access to the frame for an appropriate label
-
-    Notes
-    -----
-
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    - EdgeFrames are not instantiated directly by the user, instead they are created by defining an Edge type in a Graph
+    - Each row of an EdgeFrame represents an Edge in a Graph
+    - EdgeFrames have many of the same methods as found on Frames but not all
+    - EdgeFrames have extra methods not found on Frames (e.g. add_edges())
+    - EdgeFrames have a dependency on one or two VertexFrames.  Adding an Edge to an EdgeFrame requires either Vertices to be present or for the user to specify create_missing_vertices=True.
+    - EdgeFrames have special system columns (_eid, _label, _src_vid, _dest_vid) that are maintained automatically by the system and cannot be modified by the user
+    - "Columns" on an EdgeFrame can also be thought of as "properties" on Edges
 
     Examples
     --------
-    Retrieve a defined Vertex Frame from Graph object.
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices
+    connected by 'rating' edges::
+
+        # create a frame as the source for a graph
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('rating', str)])
+        frame = ia.Frame(csv)
+
+        # create a graph
+        graph = ia.Graph()
+
+        # define the types of vertices and edges this graph will be made of
+        graph.define_vertex_type('users')
+        graph.define_vertex_type('movies')
+        # 'ratings' are directed edges from 'user' vertices to 'movie' vertices
+        graph.define_edge_type('ratings','users','movies',directed=True)
+
+        # add data to the graph
+        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name'])
+        graph.vertices['movies].add_vertices(frame, 'movie_id', ['movie_title])
+        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+
+    Retrieve a previously defined EdgeFrame::
+
+        # Retrieve a defined Vertex Frame from Graph object.
         g = ia.get_graph("your_graph")
 
-    Create a two VertexFrame types.
-        g.define_vertex_type("first_vertex")
-        g.define_vertex_type("second_vertex")
+        # Retrieve an EdgeFrame from the graph
+        f = g.edges["your_label"]
 
-    Create a new EdgeFrame type
-    This creates a new Empty frame consisting of a directed edge list between the two vertices
-        g.define_edge_type("edge_label", "first_vertex", "second_vertex", True)
+    Calling methods on an EdgeFrame::
 
-    Retrieve the new EdgeFrame from the graph
-        f = g.edges["edge_label"]
+        g.edges["your_label"].inspect(20)
 
-    A EdgeFrame has been created and f is its proxy.
-    It has no data yet, but it does have the label *edge_label*
+    Convert an EdgeFrame to a Frame::
+
+        # The copy method creates a new Frame
+        f = g.edges["label"].copy()
 
     .. versionadded:: 0.8
 

@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import Column
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.frame import FrameInfo
 from intelanalytics.core.frame import VertexFrame, EdgeFrame
 from intelanalytics.rest.command import executor
 
@@ -198,7 +197,7 @@ class JsonRules(object):
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
         #validate the input frames
-        from intelanalytics.core.config import get_frame_backend
+        from intelanalytics.meta.config import get_frame_backend
         frame_backend = get_frame_backend()
 
         try:

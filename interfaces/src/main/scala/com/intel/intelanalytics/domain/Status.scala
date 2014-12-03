@@ -25,6 +25,8 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
+// TODO: we added status when first creating the frame and graph tables but then little has been done in terms of actually implementing --Todd 12/3/2014
+
 /**
  * Lifecycle Status for Graphs and Frames
  * @param id unique id in the database

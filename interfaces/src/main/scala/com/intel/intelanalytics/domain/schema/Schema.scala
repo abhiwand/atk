@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.StringUtils
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
@@ -35,7 +36,12 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
  *              everywhere so it seemed better to encapsulate it)
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1)
+case class Column(name: String, dataType: DataType, var index: Int = -1) {
+  require(name != null, "column name is required")
+  require(dataType != null, "column data type is required")
+  require(name != "", "column name can't be empty")
+  require(StringUtils.isAlphanumericUnderscore(name), "column name must be alpha-numeric with underscores")
+}
 
 /**
  * Extra schema if this is a vertex frame
@@ -120,8 +126,8 @@ object Schema {
 
   /**
    * A lot of code was using Tuples before we introduced column objects
-   * @deprecated use column objects and the other constructors
    */
+  @deprecated("use column objects and the other constructors")
   def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
     val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     new FrameSchema(columns)
@@ -232,6 +238,15 @@ trait Schema {
   }
 
   /**
+   * Produces a renamed subset schema from this schema
+   * @param columnNames rename mapping
+   * @return new schema
+   */
+  def copySubsetWithRename(columnNames: Map[String, String]): Schema = {
+    copySubset(columnNames.keys.toSeq).renameColumns(columnNames)
+  }
+
+  /**
    * Union schemas together, keeping as much info as possible.
    *
    * Vertex and/or Edge schema information will be maintained for this schema only
@@ -304,22 +319,6 @@ trait Schema {
         }
       }
     }
-  }
-
-  /**
-   * Produces a renamed subset schema and the indices from this schema of the subset
-   * @param columnNames rename mapping
-   * @return new schema and the indices which map it back into this schema
-   */
-  def getRenamedSchemaAndIndicesForCopy(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
-    validateRenameMapping(columnNames, forCopy = true)
-    val colsAndIndices: Seq[(Column, Int)] =
-      for {
-        (c, i) <- columns.zipWithIndex
-        if columnNames.contains(c.name)
-      } yield (Column(columnNames(c.name), c.dataType), i)
-    val (cols, indices) = colsAndIndices.unzip
-    (copy(cols.toList), indices)
   }
 
   /**
@@ -465,9 +464,8 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated legacy use only - use nicer API instead
    */
+  @deprecated("legacy use only - use nicer API instead")
   def columnTuples: List[(String, DataType)] = {
     columns.map(column => (column.name, column.dataType))
   }
@@ -477,12 +475,26 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated don't use - legacy support only
    */
+  @deprecated("don't use - legacy support only")
   def legacyCopy(columnTuples: List[(String, DataType)]): Schema = {
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
+  }
+
+  /**
+   * Convert the current schema to a FrameSchema.
+   *
+   * This is useful when copying a Schema whose internals might be a VertexSchema
+   * or EdgeSchema but you need to make sure it is a FrameSchema.
+   */
+  def toFrameSchema: FrameSchema = {
+    if (isInstanceOf[FrameSchema]) {
+      this.asInstanceOf[FrameSchema]
+    }
+    else {
+      new FrameSchema(columns)
+    }
   }
 
 }

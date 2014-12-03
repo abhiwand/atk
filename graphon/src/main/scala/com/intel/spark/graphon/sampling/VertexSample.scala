@@ -26,6 +26,7 @@ package com.intel.spark.graphon.sampling
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -139,7 +140,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // convert graph name and get the graph vertex and edge RDDs
     val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)

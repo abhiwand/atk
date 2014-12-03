@@ -67,28 +67,25 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
     val ctx = invocation.sparkContext
 
     val sourceFrame = frames.expectFrame(arguments.frame)
-    val (newSchema, indices) = arguments.columns match {
-      case None => (sourceFrame.schema, null) // full copy
-      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndicesForCopy(cols) // partial copy
-    }
     val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
 
     // run the operation
     if (arguments.where.isEmpty) {
-      val rdd: FrameRDD = arguments.columns match {
-        case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
-        case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
-          frames.loadFrameRDD(ctx, sourceFrame)
-            .map(row => {
-              for { i <- indices } yield row(i)
-            }.toArray))
+      val rdd = arguments.columns match {
+        case None => frames.loadFrameRDD(ctx, sourceFrame).toPlainFrame() // full copy
+        case Some(cols) => frames.loadFrameRDD(ctx, sourceFrame).toPlainFrame().selectColumnsWithRename(cols) // partial copy
       }
       frames.tryNewFrame(template) { newFrame =>
-        val copiedFrame = frames.updateSchema(newFrame, newSchema)
-        frames.saveFrame(copiedFrame, rdd, Some(sourceFrame.rowCount))
+        frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
       }
     }
     else {
+      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename
+      val newSchema = arguments.columns match {
+        case None => sourceFrame.schema.toFrameSchema // full copy
+        case Some(cols) => sourceFrame.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
+      }
+
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // TODO - update if UDF wrapping logic ever moves out of the client and into the server
       val pythonRDDStorage = new PythonRDDStorage(frames)
