@@ -9,7 +9,7 @@
     },
     "parcel" : {
         "repoUrl" : "http://10.23.129.86/parcels",
-        "requiredTags" : [ "INTEL-ANALYTICS" ]
+        "requiredTags" : [ "cdh", "spark", "ATK" ]
     },
     "compatibility": {
         "generation": 2,
@@ -38,9 +38,9 @@
     ],
     "serviceInit" : {
         "preStartSteps" : [
-        {
-            "commandName" : "CreateUserHomeDirCommand"
-        }
+            {
+                "commandName" : "CreateUserHomeDirCommand"
+            }
         ]
     },
     "inExpressWizard": true,
@@ -56,14 +56,15 @@
     ],
     "commands": [
         {
-            "name" : "atk_init_config",
-            "label" : "Initialize configuration",
-            "description" : "Service Cmd1 Help",
-            "roleCommand" : "Start-IA",
+            "name" : "atk_insert_meta",
+            "label" : "Insert meta user",
+            "description" : "Insert our meta user into the ATK meta store to enable rest client requests",
+            "roleCommand" : "ATK-Insert-meta-user",
             "roleName" : "INTEL_ANALYTICS_REST_SERVER",
             "runMode" : "all"
         }
     ],
+    "rolesWithExternalLinks":["INTEL_ANALYTICS_REST_SERVER"],
     "roles": [
         {
             "name": "INTEL_ANALYTICS_REST_SERVER",
@@ -122,7 +123,8 @@
                      "description": "Postgresql host name",
                      "required": "true",
                      "type": "string",
-                     "default": "localhost"
+                     "default": "localhost",
+                     "configurableInWizard": true
                 },
                 {
                      "name": "atk_postgres_port",
@@ -131,7 +133,8 @@
                      "description": "Postgresql port",
                      "required": "true",
                      "type": "port",
-                     "default": 5432
+                     "default": 5432,
+                     "configurableInWizard": true
                 },
                 {
                      "name": "atk_postgres_database",
@@ -140,7 +143,8 @@
                      "description": "Postgresql database",
                      "required": "true",
                      "type": "string",
-                     "default": "ia-metastore"
+                     "default": "ia_metastore",
+                     "configurableInWizard": true
                 },
                 {
                      "name": "atk_postgres_username",
@@ -149,7 +153,8 @@
                      "description": "Postgresql username",
                      "required": "true",
                      "type": "string",
-                     "default": "iauser"
+                     "default": "iauser",
+                     "configurableInWizard": true
                 },
                 {
                      "name": "atk_postgres_password",
@@ -158,8 +163,46 @@
                      "description": "Postgresql password",
                      "required": "true",
                      "type": "string",
-                     "default": "RANDOM"
+                     "default": "SOMETHING",
+                     "configurableInWizard": true
+                },
+                {
+                     "name": "atk_cdh_host",
+                     "label": "Cloudera Manager Hostname/ip",
+                     "description": "The Cloudera manager host/ip is pulled from the agent by default. You only need to set this if you suspect networking issues.",
+                     "required": "true",
+                     "type": "string",
+                     "default": "localhost",
+                     "configurableInWizard": true
+                },
+                {
+                     "name": "atk_cdh_port",
+                     "label": "Cloudera Manager port",
+                     "description": "The Cloudera manager port, usually 7180",
+                     "required": "true",
+                     "type": "string",
+                     "default": "7180",
+                     "configurableInWizard": true
+                },
+                {
+                     "name": "atk_cdh_username",
+                     "label": "Cloudera Manager username",
+                     "description": "The Cloudera manager username",
+                     "required": "true",
+                     "type": "string",
+                     "default": "admin",
+                     "configurableInWizard": true
+                },
+                {
+                     "name": "atk_cdh_password",
+                     "label": "Cloudera Manager password",
+                     "description": "The Cloudera manager password",
+                     "required": "true",
+                     "type": "password",
+                     "default": "admin",
+                     "configurableInWizard": true
                 }
+
             ],
             "startRunner": {
                 "program": "scripts/control.sh",
@@ -167,7 +210,11 @@
                 "environmentVariables": {
                     "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                     "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
-                    "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
+                    "ATK_CLASSPATH_ADD": "${atk_classpath_add}",
+                    "ATK_CDH_HOST": "${atk_cdh_host}",
+                    "ATK_CDH_PORT": "${atk_cdh_port}",
+                    "ATK_CDH_USERNAME": "${atk_cdh_username}",
+                    "ATK_CDH_PASSWORD": "${atk_cdh_password}"
                 }
             },
             "externalLink" : {
@@ -180,13 +227,14 @@
                 "maxInstances" : "1"
             },
             "logging" : {
-                "dir" : "/var/log/intelanalytics/rest-server/",
-                "filename" : "output.log",
-                "isModifiable" : false
+                "dir" : "/var/log/intelanalytics/rest-server",
+                "filename" : "application.log",
+                "loggingType" : "log4j",
+                "isModifiable" : true
             },
             "commands" : [
                 {
-                  "name" : "Start-IA",
+                  "name" : "ATK-Start-IA",
                   "label" : "Start",
                   "description" : "Start Intel Analytics Rest Server",
                   "expectedExitCodes" : [0],
@@ -197,44 +245,30 @@
                     "environmentVariables": {
                         "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                         "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
-                        "ATK_CLASSPATH_ADD": "${atk_classpath_add}"
+                        "ATK_CLASSPATH_ADD": "${atk_classpath_add}",
+                        "ATK_CDH_HOST": "${atk_cdh_host}",
+                        "ATK_CDH_PORT": "${atk_cdh_port}",
+                        "ATK_CDH_USERNAME": "${atk_cdh_username}",
+                        "ATK_CDH_PASSWORD": "${atk_cdh_password}"
                     }
                   }
                 },
                 {
-                  "name" : "Config-db",
-                  "label" : "Configure Database",
-                  "description" : "Configure the database for ATK it's local to the node.",
+                  "name" : "ATK-Insert-meta-user",
+                  "label" : "Insert meta user",
+                  "description" : "Will insert the fist user in the ATK metastore. needs to be done after the service is running.",
                   "expectedExitCodes" : [0],
-                  "requiredRoleState" : "stopped",
+                  "requiredRoleState" : "running",
                   "commandRunner" : {
                     "program" : "scripts/config.db.sh",
-                    "args" : [""],
+                    "args" : ["insertUser"],
                     "environmentVariables": {
                         "ATK_POSTGRES_HOST": "${atk_postgres_host}",
                         "ATK_POSTGRES_PORT": "${atk_postgres_port}",
                         "ATK_POSTGRES_USERNAME": "${atk_postgres_username}",
                         "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}",
-                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}"
-
-                    }
-                  }
-                },
-                {
-                  "name" : "Insert",
-                  "label" : "Configure Database",
-                  "description" : "Configure the database for ATK it's local to the node.",
-                  "expectedExitCodes" : [0],
-                  "requiredRoleState" : "stopped",
-                  "commandRunner" : {
-                    "program" : "scripts/config.db.sh",
-                    "args" : [""],
-                    "environmentVariables": {
-                        "ATK_POSTGRES_HOST": "${atk_postgres_host}",
-                        "ATK_POSTGRES_PORT": "${atk_postgres_port}",
-                        "ATK_POSTGRES_USERNAME": "${atk_postgres_username}",
-                        "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}",
-                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}"
+                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}",
+                        "PGPASSWORD": "${atk_postgres_password}"
 
                     }
                   }

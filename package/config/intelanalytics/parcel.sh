@@ -10,13 +10,21 @@ rm -rf $SCRIPTPATH/$parcelDir
 pushd $SCRIPTPATH
 
 
-mkdir -p $parcelDir
+mkdir -p $parcelDir/tmp
 
 cp -Rv parcel/* $parcelDir
 
 sed -i "s/VERSION/${VERSION}/g" $parcelDir/meta/parcel.json
 
 tar -xvf $2 -C $parcelDir/
+
+for pythonPackage in `ls python/`
+do
+    echo $pythonPackage
+    tar -xvf python/${pythonPackage} -C $parcelDir/
+done
+
+mv $parcelDir/usr/lib/intelanalytics/rest-client/python $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root
 

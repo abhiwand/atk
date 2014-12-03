@@ -24,21 +24,23 @@ echo "==$timestamp: $1=="
 #restart ATK
 
 #insert metauser
-
+log `whoami`
+local=$(echo $ATK_POSTGRES_HOST | grep "localhost\|127.0.0" )
+log "local= $local"
 
 case "$1" in
     configDB)
-        local=$(echo $ATK_POSTGRES_HOST | grep "localhost\|127.0.0" )
-        if [ $local == "" ]; then
+
+        if [ "$local" != "" ]; then
             log "start database configuration"
             #check if postgres config file exists
             #if it doesn't posgres hasn't been initialized
-            if [ ! -d /var/lib/pgsql/data/pg_hba.conf ]; then
+            if [ ! -f /var/lib/pgsql/data/pg_hba.conf ]; then
                 log "initialize postgres: service postgresql initdb"
                 service postgresql initdb
             fi
             log "insert access line into /var/lib/pgsql/data/pg_hba.conf"
-            echo "host    all         ${ATK_POSTGRES_USERNAME}      127.0.0.1/32            md5 #ATKINSERT\n" > /var/lib/pgsql/data/pg_hba.conf
+            sed -i "1ihost    all         ${ATK_POSTGRES_USERNAME}      127.0.0.1/32            md5 #ATKINSERT\n" /var/lib/pgsql/data/pg_hba.conf
 
             log "create postgres user ${ATK_POSTGRES_USERNAME}"
             su -c "echo \"create user ${ATK_POSTGRES_USERNAME} with createdb encrypted password '${ATK_POSTGRES_PASSWORD}';\" | psql "  postgres
@@ -48,7 +50,23 @@ case "$1" in
         fi
         ;;
     insertUser)
-        su -c " echo \" \c ${ATK_POSTGRES_DATABASE}; \\\\  insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );\" | psql " postgres
+        log "Inserting Meta User"
+        env
+        if [ "$local" != "" ]; then
+            existingKey=$(echo " \c ${ATK_POSTGRES_DATABASE}; \\\\  select * from users where api_key = 'test_api_key_1'; " | psql -d ${ATK_POSTGRES_DATABASE} -U ${ATK_POSTGRES_USERNAME} -w -h localhost | grep 'test_api_key_1')
+            if [ "$existingKey" == "" ]; then
+
+                echo " \c ${ATK_POSTGRES_DATABASE}; \\\\  insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );" | psql -d ${ATK_POSTGRES_DATABASE} -U ${ATK_POSTGRES_USERNAME} -w -h localhost
+                log "Inserted Meta User"
+                else
+                echo "Meta User was already inserted"
+            fi
+            else
+                log "Postgres is not local"
+                echo "The Meta User can only be inserted into a localally running postgresql server"
+                echo "To insert the metauser loginto the remote machine running postgres and run this command"
+                echo "echo \" \c ${ATK_POSTGRES_DATABASE}; \\\\\\\\  insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );\" | psql -d ${ATK_POSTGRES_DATABASE} -U ${ATK_POSTGRES_USERNAME} -w -h localhost"
+        fi
         ;;
     *)
         log "Don't understand [$1]"

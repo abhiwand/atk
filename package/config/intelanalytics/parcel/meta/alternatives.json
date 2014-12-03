@@ -34,11 +34,5 @@
       "source": "etc/logrotate.d/intelanalytics-rest-server",
       "priority": 10,
       "isDirectory": false
-    },
-    "intel-analytics-python": {
-      "destination": "/usr/lib/python2.7/site-packages/intelanalytics",
-      "source": "usr/lib/intelanalytics/rest-client/python",
-      "priority": 10,
-      "isDirectory": true
     }
 }

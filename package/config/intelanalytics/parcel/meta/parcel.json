@@ -6,7 +6,7 @@
   "setActiveSymlink":   true,
 
   "provides": [
-      "INTEL-ANALYTICS"
+      "ATK"
   ],
 
   "scripts": {
@@ -26,7 +26,7 @@
        "longname"    : "iauser",
        "home"        : "/var/lib/intelanalytics",
        "shell"       : "/bin/bash",
-       "extra_groups": ["hadoop"]
+       "extra_groups": ["hadoop", "postgres"]
      }
   },
 
