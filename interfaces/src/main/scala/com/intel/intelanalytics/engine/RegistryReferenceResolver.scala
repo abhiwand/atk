@@ -74,6 +74,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
    */
   def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
                                                        e: T DefaultsTo UriReference): Try[T] = Try {
+    require(invocation != null, "invocation is required")
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
       .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))

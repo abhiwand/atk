@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.Call
+import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
@@ -60,7 +60,7 @@ class SparkComponent extends EngineComponent
     with EventLogging
     with EventLoggingImplicits {
 
-  implicit val startupCall = Call(null)
+  implicit lazy val startupCall = Call(null)
 
   EnvironmentLogger.log()
 
@@ -78,7 +78,7 @@ class SparkComponent extends EngineComponent
       driver,
       username = SparkEngineConfig.metaStoreConnectionUsername,
       password = SparkEngineConfig.metaStoreConnectionPassword)
-  }
+  }(startupCall.eventContext)
 
   metaStore.initializeSchema()
 

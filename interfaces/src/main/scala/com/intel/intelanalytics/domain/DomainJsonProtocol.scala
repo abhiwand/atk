@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.frame.load._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
-import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults }
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, QueryPluginResults }
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
@@ -173,7 +173,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = {
-      implicit val invocation: Invocation = null
+      implicit val invocation: Invocation = Call(null)
       json match {
         case JsString(name) => ReferenceResolver.resolve[T](name).get
         case JsNumber(n) => ReferenceResolver.resolve[T](s"ia://${entity.name.plural}/$n").get
