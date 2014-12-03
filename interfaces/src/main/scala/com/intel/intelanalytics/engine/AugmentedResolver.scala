@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.{ NotNothing, DefaultsTo }
 import com.intel.intelanalytics.domain.{ UriReference, HasData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
@@ -56,6 +57,12 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    */
   override def create[T <: UriReference: ru.TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T =
     base.create(annotation)
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete[T <: UriReference: ru.TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit =
+    base.delete(reference)
 
   def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
 

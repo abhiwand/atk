@@ -217,7 +217,7 @@ class ConjugateGradientDescent
         "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
-    val graphFuture = context.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 

@@ -60,7 +60,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(load: Load) = 8
+  override def numberOfJobs(load: Load)(implicit invocation: Invocation) = 8
 
   /**
    * Parsing data to load and append to data frames

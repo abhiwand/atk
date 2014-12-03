@@ -92,7 +92,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: DropDuplicates) = 2
+  override def numberOfJobs(arguments: DropDuplicates)(implicit invocation: Invocation) = 2
 
   /**
    * Remove duplicate rows, keeping only one row per uniqueness criteria match

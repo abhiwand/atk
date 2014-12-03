@@ -60,7 +60,7 @@ class GraphInfoPlugin extends SparkCommandPlugin[GraphNoArgs, SeamlessGraphMeta]
    * @return
    */
   override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): SeamlessGraphMeta = {
-    val graphs = invocation.engine.graphs.asInstanceOf[SparkGraphStorage]
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     graphs.expectSeamless(arguments.graph.id)
   }
 

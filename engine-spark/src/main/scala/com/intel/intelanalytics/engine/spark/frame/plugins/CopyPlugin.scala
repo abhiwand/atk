@@ -46,7 +46,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
 
   override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
 
-  override def numberOfJobs(arguments: FrameCopy) = {
+  override def numberOfJobs(arguments: FrameCopy)(implicit invocation: Invocation) = {
     arguments.where match {
       case Some(function) => 2 // predicated copy requires a row count operation
       case None => 1

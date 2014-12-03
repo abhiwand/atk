@@ -68,7 +68,7 @@ class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
    * @return the count
    */
   override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): LongValue = {
-    val graphs = invocation.engine.graphs.asInstanceOf[SparkGraphStorage]
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     val graph = graphs.expectSeamless(arguments.graph.id)
     LongValue(graph.edgeCount.get)
   }

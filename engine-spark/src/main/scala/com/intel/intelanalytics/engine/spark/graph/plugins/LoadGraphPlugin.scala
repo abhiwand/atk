@@ -64,7 +64,7 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: GraphLoad) = 2
+  override def numberOfJobs(arguments: GraphLoad)(implicit invocation: Invocation) = 2
 
   /**
    * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
@@ -77,8 +77,8 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
    */
   override def execute(arguments: GraphLoad)(implicit invocation: Invocation): Graph = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = invocation.engine.graphs
-    val frames = invocation.engine.frames.asInstanceOf[SparkFrameStorage]
+    val graphs = engine.graphs
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
     // validate arguments
     arguments.frameRules.foreach(frule => frames.expectFrame(frule.frame))

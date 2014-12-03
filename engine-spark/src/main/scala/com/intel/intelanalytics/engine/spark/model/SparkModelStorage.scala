@@ -65,7 +65,7 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
    * @param user The user creating the model.
    * @return Model metadata.
    */
-  override def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Model = {
+  override def createModel(model: ModelTemplate)(implicit invocation: Invocation): Model = {
     metaStore.withSession("spark.modelstorage.create") {
       implicit session =>
         {
@@ -113,7 +113,7 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
     }
   }
 
-  override def getModelByName(name: String)(implicit user: UserPrincipal): Option[Model] = {
+  override def getModelByName(name: String)(implicit invocation: Invocation): Option[Model] = {
     metaStore.withSession("spark.modelstorage.getModelByName") {
       implicit session =>
         {
@@ -127,7 +127,7 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
    * @param user The user listing the model.
    * @return Sequence of model metadata objects.
    */
-  override def getModels()(implicit user: UserPrincipal): Seq[Model] = {
+  override def getModels()(implicit invocation: Invocation): Seq[Model] = {
     metaStore.withSession("spark.modelstorage.getModels") {
       implicit session =>
         {
@@ -142,7 +142,7 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
    * @param newData JsObject storing the result of training.
    */
 
-  override def updateModel(model: Model, newData: JsObject)(implicit user: UserPrincipal): Model = {
+  override def updateModel(model: Model, newData: JsObject)(implicit invocation: Invocation): Model = {
     metaStore.withSession("spark.modelstorage.updateModel") {
       implicit session =>
         {

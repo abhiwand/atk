@@ -66,7 +66,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
 
   override def kryoRegistrator: Option[String] = None
 
-  override def numberOfJobs(arguments: GraphNoArgs): Int = {
+  override def numberOfJobs(arguments: GraphNoArgs)(implicit invocation: Invocation): Int = {
     val graphId: Long = arguments.graph.id
     val titanIAGraph = graphs.expectGraph(graphId)
     val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph)
@@ -141,7 +141,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @param graph destination graph instance
    * @param titanDBGraph titan graph
    */
-  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph)(implicit user: UserPrincipal) {
+  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph)(implicit invocation: Invocation) {
     graphs.expectSeamless(graph.id).edgeFrames.foreach(edgeFrame => {
       val label = edgeFrame.schema.asInstanceOf[EdgeSchema].label
       val srcLabel = edgeFrame.schema.asInstanceOf[EdgeSchema].srcVertexLabel
@@ -188,7 +188,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    */
   def saveToVertexFrame(vertices: RDD[GBVertex], ctx: SparkContext,
                         labelToIdNameMapping: Map[String, String],
-                        graph: Graph, titanDBGraph: TitanGraph)(implicit user: UserPrincipal) {
+                        graph: Graph, titanDBGraph: TitanGraph)(implicit invocation: Invocation) {
     graphs.expectSeamless(graph.id).vertexFrames.foreach(vertexFrame => {
       val label = vertexFrame.schema.asInstanceOf[VertexSchema].label
       val typeVertex: RDD[GBVertex] = vertices.filter(v => {
@@ -232,7 +232,7 @@ object ExportFromTitanPlugin {
    * @param graphId destination graph id
    * @param vertexLabels vertex labels
    */
-  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String]) {
+  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String])(implicit invocation: Invocation) {
     vertexLabels.foreach(label => {
       graphs.defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = label, idColumnName = None))
     })
@@ -244,7 +244,7 @@ object ExportFromTitanPlugin {
    * @param graphId destination graph id
    * @param edgeDefinitions definitions for edge types
    */
-  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema]) {
+  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema])(implicit invocation: Invocation) {
     edgeDefinitions.foreach(edgeDef => {
       graphs.defineEdgeType(graphId, edgeDef)
     })

@@ -32,12 +32,14 @@ import com.intel.event.EventLogging
  */
 trait EventLoggingDirectives extends EventLogging {
   import BasicDirectives._
-  def eventContext(context: String): Directive0 =
-    mapRequestContext { ctx =>
-      withContext(context) {
-        ctx.withRouteResponseMapped {
-          response => response
-        }
-      }
-    }
+  //  def eventContext(context: String): Directive0 =
+  //    mapRequestContext { ctx =>
+  //      ctx.withRouteResponseMapped {
+  //        withContext(ctx.request.uri.toString()) {
+  //          withContext(context) {
+  //            response => response
+  //          }
+  //        }
+  //      }
+  //    }
 }

@@ -44,7 +44,7 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: Type
                                                                                                                                             override val doc: Option[CommandDoc] = None)
     extends CommandPlugin[Arguments, Return] {
 
-  override def numberOfJobs(arguments: Arguments) = numberOfJobsFunc(arguments)
+  override def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation) = numberOfJobsFunc(arguments)
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.

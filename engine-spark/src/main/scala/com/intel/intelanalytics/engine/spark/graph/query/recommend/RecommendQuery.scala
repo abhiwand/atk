@@ -90,7 +90,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: RecommendParams) = 2
+  override def numberOfJobs(arguments: RecommendParams)(implicit invocation: Invocation) = 2
   /**
    * User documentation exposed in Python.
    *

@@ -23,10 +23,11 @@
 
 package com.intel.event
 
-import org.apache.commons.configuration.ConfigurationFactory
+import java.nio.file.attribute.UserPrincipal
+
+import com.intel.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
 
 import scala.util.control.NonFatal
-import com.intel.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
 
 /**
  * Global (per classloader, of course) settings for Event logging
@@ -87,13 +88,13 @@ trait EventLogging {
    * @tparam T result type of the block
    * @return the return value of the block
    */
-  def withContext[T](context: String, logErrors: Boolean = true)(block: => T): T = {
+  def withContext[T](context: String, logErrors: Boolean = true)(block: => T)(implicit ev: EventContext): T = {
     require(context != null, "event context name cannot be null")
     require(context.trim() != "", "event context name must have non-whitespace characters")
+    EventContext.setCurrent(ev)
     val ctx = EventContext.enter(context.trim())
     val start = System.currentTimeMillis()
     val profiling = EventLogging.profiling
-    println(s"Profiling? $profiling")
     if (profiling) {
       info("Entering context")
     }

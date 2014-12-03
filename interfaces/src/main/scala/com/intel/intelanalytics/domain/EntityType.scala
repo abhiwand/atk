@@ -112,9 +112,14 @@ trait EntityManager[E <: EntityType] { self =>
 
   def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference
 
-  def getReference(id: Long): Reference
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  def delete(reference: Reference)(implicit invocation: Invocation): Unit
 
-  def getMetaData(reference: Reference): MetaData
+  def getReference(id: Long)(implicit invocation: Invocation): Reference
+
+  def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData
 
   def getData(reference: Reference)(implicit invocation: Invocation): Data
 

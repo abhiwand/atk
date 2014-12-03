@@ -25,34 +25,13 @@ package com.intel.intelanalytics.engine
 
 import java.net.URI
 
+import com.intel.intelanalytics.{ NotNothing, DefaultsTo }
 import com.intel.intelanalytics.domain.{ UriReference, HasData, HasMetaData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-
-/**
- * http://stackoverflow.com/questions/4403906/is-it-possible-in-scala-to-force-the-caller-to-specify-a-type-parameter-for-a-po
- */
-sealed class DefaultsTo[A, B]
-
-trait LowPriorityDefaultsTo {
-  implicit def overrideDefault[A, B] = new DefaultsTo[A, B]
-}
-
-object DefaultsTo extends LowPriorityDefaultsTo {
-  implicit def default[B] = new DefaultsTo[B, B]
-}
-
-/**
- * http://stackoverflow.com/a/4580176
- */
-sealed trait NotNothing[T] { type U }
-object NotNothing {
-  implicit val nothingIsNothing = new NotNothing[Nothing] { type U = Any }
-  implicit def notNothing[T] = new NotNothing[T] { type U = T }
-}
 
 /**
  * Provides a way to get access to arbitrary objects in the system by using an URI.
@@ -63,14 +42,14 @@ object NotNothing {
  */
 class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResolver {
 
-  var resolvers: Map[String, Long => UriReference] = registry.entities.flatMap {
+  var resolvers: Map[String, (Long, Invocation) => UriReference] = registry.entities.flatMap {
     case (entity, manager) =>
-      val resolver: Long => UriReference = manager.getReference
+      val resolver: (Long, Invocation) => UriReference = (id: Long, invocation: Invocation) => manager.getReference(id)(invocation)
       (Seq(entity.name) ++ entity.alternatives).flatMap { name =>
         Seq(name.name -> resolver,
           name.plural -> resolver)
       }
-  }.toMap[String, Long => UriReference]
+  }.toMap[String, (Long, Invocation) => UriReference]
 
   val regex = resolvers.keys match {
     case keys if keys.isEmpty => "<invalid>".r
@@ -115,7 +94,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     val resolver = resolvers.getOrElse(entity,
       throw new IllegalArgumentException(s"No resolver found for entity: $entity"))
 
-    val uriReference = resolver(id)
+    val uriReference = resolver(id, invocation)
 
     val manager = registry.entityManager(uriReference.entity).getOrElse(
       throw new IllegalArgumentException(s"No entity manager found for entity type '$entity' (or '$typeTag[T]')"))
@@ -135,6 +114,13 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
 
   def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]) = {
     registry.create[T](annotation)
+  }
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete[T <: UriReference: ru.TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit = {
+    registry.delete(reference)
   }
 
   /**

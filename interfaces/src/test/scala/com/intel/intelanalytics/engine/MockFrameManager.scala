@@ -50,11 +50,11 @@ class MockFrameManager extends EntityManager[FrameEntity.type] {
 
   override def getData(reference: Reference)(implicit invocation: Invocation): Data = new D(reference.id)
 
-  override def getMetaData(reference: Reference): MetaData = new M(reference.id)
+  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
 
   override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = new FrameReference({ id += 1; id }, Some(true))
 
-  override def getReference(id: Long): Reference = new FrameReference(id, Some(true))
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id, Some(true))
 
   override type Data = D
 
@@ -62,4 +62,9 @@ class MockFrameManager extends EntityManager[FrameEntity.type] {
    * Save data of the given type, possibly creating a new object.
    */
   override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete(reference: Reference)(implicit invocation: Invocation): Unit = ???
 }

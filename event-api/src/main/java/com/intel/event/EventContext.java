@@ -77,7 +77,7 @@ public class EventContext implements AutoCloseable {
      *
      * @param current the context to set as the current context for this thread
      */
-    static void setCurrent(EventContext current) {
+    public static void setCurrent(EventContext current) {
         EventContext.CURRENT.set(current);
     }
 

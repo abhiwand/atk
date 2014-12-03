@@ -47,7 +47,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
   val systemFields = Set("_vid", "_label")
 
   override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): DataFrame = {
-    val frames = invocation.engine.frames
+    val frames = engine.frames
 
     // validate arguments
     val frame = frames.expectFrame(arguments.frame)

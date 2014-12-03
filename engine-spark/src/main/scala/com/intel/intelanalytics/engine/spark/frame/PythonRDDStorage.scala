@@ -2,9 +2,11 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.util
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -79,10 +81,9 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * Create a Python RDD
    * @param frameId source frame for the parent RDD
    * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
-   * @param user current user
    * @return the RDD
    */
-  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
+  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit invocation: Invocation): EnginePythonRDD[String] = {
     withMyClassLoader {
 
       val rdd: LegacyFrameRDD = frames.loadLegacyFrameRdd(ctx, frameId)

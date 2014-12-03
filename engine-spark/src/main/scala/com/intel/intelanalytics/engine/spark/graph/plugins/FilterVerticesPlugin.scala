@@ -70,7 +70,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: FilterVertexRows) = 4
+  override def numberOfJobs(arguments: FilterVertexRows)(implicit invocation: Invocation) = 4
 
   /**
    * Select all rows which satisfy a predicate
@@ -82,7 +82,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FilterVertexRows)(implicit invocation: Invocation): DataFrame = {
-    val frames = invocation.engine.frames.asInstanceOf[SparkFrameStorage]
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
     val vertexFrame: SparkFrameData = resolve(arguments.frameId)
 
@@ -116,7 +116,7 @@ object FilterVerticesFunctions {
    * @param filteredRdd rdd with predicate applied
    */
   def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta,
-                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit user: UserPrincipal): SeamlessGraphMeta = {
+                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit invocation: Invocation): SeamlessGraphMeta = {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
     val vertexFrameSchema = vertexFrame.schema
 
@@ -164,7 +164,7 @@ object FilterVerticesFunctions {
                                ctx: SparkContext,
                                droppedVerticesPairRdd: RDD[(Any, Row)],
                                edgeFrame: DataFrame,
-                               vertexIdColumn: String)(implicit user: UserPrincipal): DataFrame = {
+                               vertexIdColumn: String)(implicit invocation: Invocation): DataFrame = {
     val edgeRdd = frameStorage.loadLegacyFrameRdd(ctx, edgeFrame)
     val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd,
       edgeFrame.schema.columnIndex(vertexIdColumn), droppedVerticesPairRdd)

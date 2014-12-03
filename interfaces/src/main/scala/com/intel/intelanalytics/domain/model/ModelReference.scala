@@ -33,7 +33,6 @@ import ru._
 
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
- * @param id Model's id
  */
 case class ModelReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 
@@ -89,11 +88,11 @@ object ModelReferenceManagement extends EntityManager[ModelEntity.type] { self =
 
   override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
 
-  override def getMetaData(reference: Reference): MetaData = ???
+  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
   override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long): Reference = new ModelReference(id, None)
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new ModelReference(id, None)
 
   override type Data = ModelReference with NoData
 
@@ -101,5 +100,10 @@ object ModelReferenceManagement extends EntityManager[ModelEntity.type] { self =
    * Save data of the given type, possibly creating a new object.
    */
   override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete(reference: ModelReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
 }
 

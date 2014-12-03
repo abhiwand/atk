@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain
+import com.intel.intelanalytics.{ NotNothing, domain }
 import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityType, EntityManager }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
@@ -92,6 +92,14 @@ class EntityRegistry {
     val manager: EntityManager[_] = entityManager[R]().get
     val reference = manager.create()
     resolver.resolve[R](reference).get
+  }
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  def delete[R <: UriReference: TypeTag](reference: R)(implicit invocation: Invocation, ev: NotNothing[R]): Unit = {
+    val manager: EntityManager[_] = entityManager[R]().get
+    manager.delete(reference.asInstanceOf[manager.type#Reference])
   }
 
   /**

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
 import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.{ CommonDirectives, ServiceTest }
 import org.joda.time.DateTime
@@ -35,8 +36,9 @@ import scala.concurrent.Future
 class QueryServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
+  implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("queries")).thenReturn(provide(userPrincipal))
+  when(commonDirectives.apply("commands")).thenReturn(provide(call))
 
   "QueryService" should "give an empty set when there are no results" in {
 

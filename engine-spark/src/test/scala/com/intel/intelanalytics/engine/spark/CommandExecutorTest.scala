@@ -19,7 +19,7 @@ import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, CommandPlugin }
 import scala.collection.immutable.HashMap
 import org.scalatest.mock.MockitoSugar
 
@@ -64,7 +64,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val commandStorage = new FakeCommandStorage
     val contextFactory = mock[SparkContextFactory]
     val sc = mock[SparkContext]
-    when(contextFactory.context(any(classOf[UserPrincipal]), anyString(), Some(anyString()))).thenReturn(sc)
+    when(contextFactory.context(anyString(), Some(anyString()))(any[Invocation])).thenReturn(sc)
 
     new CommandExecutor(engine, commandStorage, contextFactory)
   }
@@ -84,8 +84,9 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
+    implicit val call = Call(user)
     val execution = executor.execute(CommandTemplate(name = "dummy", arguments = Some(args.toJson.asJsObject())),
-      user, implicitly[ExecutionContext], commandPluginRegistry)
+      commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 1
     containsKey1DuringExecution shouldBe true
@@ -107,8 +108,10 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
+    implicit val call = Call(user)
+
     val execution = executor.execute(CommandTemplate(name = "dummy", arguments = Some(args.toJson.asJsObject())),
-      user, implicitly[ExecutionContext], commandPluginRegistry)
+      commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountAfterCancel shouldBe 0
   }

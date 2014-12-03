@@ -21,23 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.plugin
+package com.intel.intelanalytics
 
-import com.intel.intelanalytics.engine.plugin.{ QueryPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.SparkEngine
+import com.intel.event.EventContext
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 
 /**
- * Base trait for query plugins that need direct access to a SparkContext
- *
- * @tparam Argument the argument type for the query
+ * Implicits for working with invocations and event logging
  */
-trait SparkQueryPlugin[Argument <: Product]
-    extends QueryPlugin[Argument] {
+trait EventLoggingImplicits {
 
-  def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
+  implicit def eventContext[T <: Invocation](implicit inv: T): EventContext = {
+    require(inv != null, "invocation cannot be null")
+    inv.eventContext
+  }
+  implicit def executionContext[T](implicit inv: Invocation): ExecutionContext = inv.executionContext
+  implicit def user[T](implicit inv: Invocation): UserPrincipal = inv.user
 
-  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
 }

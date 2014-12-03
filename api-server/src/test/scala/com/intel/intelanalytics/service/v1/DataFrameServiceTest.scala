@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.mockito.Mockito._
 
@@ -36,9 +37,9 @@ import org.joda.time.DateTime
 class DataFrameServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
+  implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("frames")).thenReturn(provide(userPrincipal))
-
+  when(commonDirectives.apply("commands")).thenReturn(provide(call))
   "DataFrameService" should "give an empty set when there are no frames" in {
 
     val engine = mock[Engine]

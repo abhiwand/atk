@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.{ CommandStorage, ReferenceResolver }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.event.EventContext
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
+import com.intel.intelanalytics.engine.{ CommandStorage, ReferenceResolver }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import spray.json.JsObject
@@ -50,4 +50,10 @@ case class SparkInvocation(engine: SparkEngine,
                            arguments: Option[JsObject],
                            sparkContext: SparkContext,
                            commandStorage: CommandStorage,
-                           resolver: ReferenceResolver) extends Invocation
+                           resolver: ReferenceResolver,
+                           eventContext: EventContext) extends CommandInvocation
+
+object SparkInvocation {
+  implicit def invocationToUser(inv: SparkInvocation): UserPrincipal = inv.user
+  implicit def invocationToEventContext(inv: SparkInvocation): EventContext = inv.eventContext
+}

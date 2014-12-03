@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.event.{ EventContext, EventLogger, EventLogging }
+import com.intel.intelanalytics.NotNothing
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
-import com.intel.intelanalytics.domain.{ User, HasData, UriReference }
+import com.intel.intelanalytics.domain.{ HasMetaData, User, HasData, UriReference }
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.NotNothing
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
@@ -65,7 +65,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
         case NonFatal(e) => EventContext.getCurrent.put("user-name-error", e.toString)
       }
       expr
-    }
+    }(invocation.eventContext)
   }
 
   /**
@@ -146,7 +146,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
 abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] with EventLogging {
 
-  def engine(implicit invocation: Invocation) = invocation.engine
+  def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 
   val argumentManifest = implicitly[ClassManifest[Arguments]]
   val returnManifest = implicitly[ClassManifest[Return]]
@@ -172,7 +172,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  def numberOfJobs(arguments: Arguments): Int = 1
+  def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
 
   //TODO: This needs to move somewhere else,
   //this is very spark specific
@@ -196,10 +196,32 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   }
 
   /**
+   * Deletes an object of the requested type.
+   */
+  def delete[T <: UriReference: TypeTag](entity: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit = withPluginContext("create") {
+    invocation.resolver.delete[T](entity)
+  }
+  /**
    * Save data, possibly creating a new object
    */
   def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = withPluginContext("save") {
     invocation.resolver.saveData(data)
+  }
+
+  /**
+   * Create a new object of the requested type, pass it to the block. If block throws an exception,
+   * delete the newly created object and rethrow the exception.
+   */
+  def tryNew[T <: UriReference with HasMetaData: TypeTag](name: String)(block: T => T)(implicit invocation: Invocation) = {
+    val thing = create[T](Some(name))
+    try {
+      block(thing)
+    }
+    catch {
+      case NonFatal(e) =>
+        delete(thing)
+        throw e
+    }
   }
 
   /**

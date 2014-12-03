@@ -23,17 +23,48 @@
 
 package com.intel.intelanalytics.engine.plugin
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.engine.{ ReferenceResolver, CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
 
+import Invocation._
+
 /**
  * Provides context for an invocation of a command or query.
  *
  */
 trait Invocation {
+  /**
+   * The user that invoked the operation
+   */
+  private[intelanalytics] def user: UserPrincipal
+
+  /**
+   * A Scala execution context for use with methods that require one
+   */
+  private[intelanalytics] def executionContext: ExecutionContext
+
+  /**
+   * Reference resolver to enable de-referencing of UriReference objects
+   */
+  private[intelanalytics] def resolver: ReferenceResolver
+
+  /**
+   * EventContext of the caller
+   */
+  private[intelanalytics] def eventContext: EventContext
+
+}
+
+case class Call(user: UserPrincipal,
+                executionContext: ExecutionContext = ExecutionContext.Implicits.global,
+                resolver: ReferenceResolver = ReferenceResolver,
+                eventContext: EventContext = null) extends Invocation
+
+trait CommandInvocation extends Invocation {
   /**
    * An instance of the engine that the plugin can use to execute its work
    */
@@ -50,28 +81,14 @@ trait Invocation {
   private[intelanalytics] def arguments: Option[JsObject]
 
   /**
-   * The user that invoked the operation
-   */
-  private[intelanalytics] def user: UserPrincipal
-
-  /**
-   * A Scala execution context for use with methods that require one
-   */
-  private[intelanalytics] def executionContext: ExecutionContext
-
-  /**
    * Command Storage to read/update command progress
    */
   private[intelanalytics] def commandStorage: CommandStorage
 
-  /**
-   * Reference resolver to enable de-referencing of UriReference objects
-   */
-  private[intelanalytics] def resolver: ReferenceResolver
-
 }
 
 object Invocation {
-  implicit def invocationToUser(inv: Invocation): UserPrincipal = inv.user
+  implicit def invocationToUser(implicit inv: Invocation): UserPrincipal = inv.user
+  implicit def invocationToEventContext(implicit inv: Invocation): EventContext = inv.eventContext
 }
 
