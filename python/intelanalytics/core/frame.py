@@ -1278,51 +1278,43 @@ class Frame(DocStubsFrame, _BaseFrame):
 @api
 class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     """
-    Data handle.
+    A list of Vertices owned by a Graph..
 
-    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
-    Has information needed to modify data and table structure.
+    A VertexFrame is similar to a Frame but with a few important differences:
 
-    Parameters
-    ----------
-    graph: Associated Graph Object
-    label: Vertex Label
-
-    Returns
-    -------
-    VertexFrame
-        An object with access to the frame for an appropriate label
-
-    Notes
-    -----
-
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    - VertexFrames are not instantiated directly by the user, instead they are created by defining a Vertex type in a Graph
+    - Each row of a VertexFrame represents a Vertex in a Graph
+    - VertexFrames have many of the same methods as found on Frames but not all (e.g. flatten_column())
+    - VertexFrames have extra methods not found on Frames (e.g. add_vertices())
+    - Removing a Vertex (or row) from a VertexFrame also removes Edges connected to that Vertex from the Graph
+    - VertexFrames have special system columns (_vid, _label) that are maintained automatically by the system and cannot be modified by the user
+    - VertexFrames have a special user defined id column whose value uniquely identifies a Vertex
+    - "Columns" on a VertexFrame can also be thought of as "properties" on Vertices
 
     Examples
     --------
-    Retrieve a defined Vertex Frame from Graph object.
+    Define a new VertexFrame and add data to it::
+
+        graph = ia.Graph()
+        graph.define_vertex_type('users')
+        graph.vertices['users'].add_vertices(source_frame, 'user_id', ['user_name', 'age'])
+
+    Retrieve a previously defined VertexFrame::
+
+        # Retrieve a defined Vertex Frame from Graph object.
         g = ia.get_graph("your_graph")
 
-    Create a new VertexFrame type with the associated label.
-    This creates a new empty vertex frame
-        g.define_vertex_type("your_label")
-
-    Retrieve the new VertexFrame from the graph
+        # Retrieve the new VertexFrame from the graph
         f = g.vertices["your_label"]
 
-    A Vertex Frame has been created and f is its proxy.
-    It has no data yet, but it does have the label *your_label*
+    Calling methods on a VertexFrame::
+
+        g.vertices["your_label"].inspect(20)
+
+    Convert a VertexFrame to a Frame::
+
+        # The copy method creates a new Frame
+        f = g.vertices["label"].copy()
 
     .. versionadded:: 0.8
 
