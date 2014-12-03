@@ -126,7 +126,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: TopK) = 3
+  override def numberOfJobs(arguments: TopK)(implicit invocation: Invocation) = 3
 
   /**
    * Calculate the top (or bottom) K distinct values by count for specified data column.

@@ -37,13 +37,13 @@ import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.{ DuplicateNameException, NotFoundException }
+import com.intel.intelanalytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 
@@ -52,9 +52,8 @@ import scala.language.implicitConversions
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
-                        sparkAutoPartitioner: SparkAutoPartitioner,
-                        getContext: (UserPrincipal) => SparkContext)
-    extends FrameStorage with EventLogging with ClassLoaderAware {
+                        sparkAutoPartitioner: SparkAutoPartitioner)
+    extends FrameStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
   storage =>
 
   override type Context = SparkContext
@@ -75,18 +74,16 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       new SparkFrameData(meta.meta, storage.loadFrameData(sc, meta.meta))
     }
 
-    override def getMetaData(reference: Reference): MetaData = new FrameMeta(expectFrame(reference.id))
+    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference.id))
 
     override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference =
       storage.create(DataFrameTemplate(FrameName.generate(annotation)))
 
-    override def getReference(id: Long): Reference = expectFrame(id)
+    override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(id)
 
-    implicit def frameToRef(frame: DataFrame): Reference = FrameReference(frame.id, Some(true))
+    implicit def frameToRef(frame: DataFrame)(implicit invocation: Invocation): Reference = FrameReference(frame.id, Some(true))
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
-
-    implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
     /**
      * Save data of the given type, possibly creating a new object.
@@ -94,6 +91,14 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     override def saveData(data: Data)(implicit invocation: Invocation): Data = {
       val meta = saveFrameData(data.meta, data.data)
       new SparkFrameData(meta, data.data)
+    }
+
+    /**
+     * Creates an (empty) instance of the given type, reserving a URI
+     */
+    override def delete(reference: SparkFrameStorage.this.SparkFrameManagement.Reference)(implicit invocation: Invocation): Unit = {
+      val meta = getMetaData(reference)
+      drop(meta.meta)
     }
   }
 
@@ -125,11 +130,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   import com.intel.intelanalytics.engine.Rows.Row
 
-  override def expectFrame(frameId: Long): DataFrame = {
+  override def expectFrame(frameId: Long)(implicit invocation: Invocation): DataFrame = {
     lookup(frameId).getOrElse(throw new NotFoundException("frame", frameId.toString))
   }
 
-  override def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
+  override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): DataFrame = expectFrame(frameRef.id)
 
   /**
    * Create an FrameRDD from a frame data file
@@ -140,7 +145,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId the id for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frameId: Long)(implicit user: UserPrincipal): FrameRDD = {
+  def loadFrameData(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): FrameRDD = {
     val frame = expectFrame(frameId)
     loadFrameData(ctx, frame)
   }
@@ -154,7 +159,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): FrameRDD = withContext("loadFrameRDD") {
+  def loadFrameData(ctx: SparkContext, frame: DataFrame)(implicit invocation: Invocation): FrameRDD = withContext("loadFrameRDD") {
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
@@ -182,7 +187,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long)(implicit user: UserPrincipal): LegacyFrameRDD = {
+  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): LegacyFrameRDD = {
     val frame = lookup(frameId).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: $frameId"))
     loadLegacyFrameRdd(ctx, frame)
@@ -199,7 +204,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame)(implicit user: UserPrincipal): LegacyFrameRDD =
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame)(implicit invocation: Invocation): LegacyFrameRDD =
     loadFrameData(ctx, frame).toLegacyFrameRDD
 
   /**
@@ -222,7 +227,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
-  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)(implicit user: UserPrincipal): DataFrame = {
+  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)(implicit invocation: Invocation): DataFrame = {
     saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
   }
 
@@ -235,7 +240,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
    */
-  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit user: UserPrincipal): DataFrame =
+  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit invocation: Invocation): DataFrame =
     withContext("SFS.saveFrame") {
 
       val entity = expectFrame(frameEntity.id)
@@ -298,7 +303,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
+  def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
     withContext("frame.getPagedRowsRDD") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
@@ -319,7 +324,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param user logged in user
    * @return records in the dataframe starting from offset with a length of count
    */
-  override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
+  override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
@@ -332,7 +337,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  override def drop(frame: DataFrame): Unit = {
+  override def drop(frame: DataFrame)(implicit invocation: Invocation): Unit = {
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
       implicit session =>
@@ -343,7 +348,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
+  override def renameFrame(frame: DataFrame, newName: String)(implicit invocation: Invocation): DataFrame = {
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
@@ -359,7 +364,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
+  override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): DataFrame =
     metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
@@ -367,7 +372,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
     }
 
-  override def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame] = {
+  override def lookupByName(name: String)(implicit invocation: Invocation): Option[DataFrame] = {
     metaStore.withSession("frame.lookupByName") {
       implicit session =>
         {
@@ -382,13 +387,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
    */
-  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)(implicit user: UserPrincipal): ParseResultRddWrapper = {
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame)(implicit invocation: Invocation): ParseResultRddWrapper = {
     val frameRdd = loadFrameData(ctx, frame)
     val errorFrameRdd = loadFrameData(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
-  override def lookup(id: Long): Option[DataFrame] = {
+  override def lookup(id: Long)(implicit invocation: Invocation): Option[DataFrame] = {
     metaStore.withSession("frame.lookup") {
       implicit session =>
         {
@@ -397,7 +402,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def getFrames()(implicit user: UserPrincipal): Seq[DataFrame] = {
+  override def getFrames()(implicit invocation: Invocation): Seq[DataFrame] = {
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
@@ -406,7 +411,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(FrameName.generate()))(implicit user: UserPrincipal): DataFrame = {
+  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(FrameName.generate()))(implicit invocation: Invocation): DataFrame = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
@@ -430,7 +435,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the 'good' frame
    * @return the updated frame, plus another frame with parse errors for the 'good' frame
    */
-  override def lookupOrCreateErrorFrame(frame: DataFrame): (DataFrame, DataFrame) = {
+  override def lookupOrCreateErrorFrame(frame: DataFrame)(implicit invocation: Invocation): (DataFrame, DataFrame) = {
     val errorFrame = lookupErrorFrame(frame)
     if (!errorFrame.isDefined) {
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
@@ -457,7 +462,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the 'good' frame
    * @return the parse errors for the 'good' frame
    */
-  override def lookupErrorFrame(frame: DataFrame): Option[DataFrame] = {
+  override def lookupErrorFrame(frame: DataFrame)(implicit invocation: Invocation): Option[DataFrame] = {
     if (frame.errorFrameId.isDefined) {
       val errorFrame = lookup(frame.errorFrameId.get)
       if (!errorFrame.isDefined) {
@@ -480,11 +485,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    *
    * @param template - template describing a new frame
    * @param work - Frame to Frame function.  This function typically loads RDDs, does work, and saves RDDS
-   * @param user user
    * @return - the frame result of work if successful, otherwise an exception is raised
    */
   // TODO: change to return a Try[DataFrame] instead of raising exception?
-  def tryNewFrame(template: DataFrameTemplate)(work: DataFrame => DataFrame)(implicit user: UserPrincipal): DataFrame = {
+  def tryNewFrame(template: DataFrameTemplate)(work: DataFrame => DataFrame)(implicit invocation: Invocation): DataFrame = {
     val frame = create(template)
     Try {
       work(frame)

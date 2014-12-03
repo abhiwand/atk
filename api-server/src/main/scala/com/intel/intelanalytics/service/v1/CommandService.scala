@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine
@@ -67,13 +69,15 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * The spray routes defining the command service.
    */
   def commandRoutes() = {
-    commonDirectives("commands") { implicit principal: UserPrincipal =>
+    commonDirectives("commands") { implicit invocation: Invocation =>
       pathPrefix("commands" / LongNumber) {
         id =>
           pathEnd {
             requestUri {
               uri =>
                 get {
+                  info("In GET /commands")
+                  println("Should have logged 'In GET /commands'")
                   onComplete(engine.getCommand(id)) {
                     case Success(Some(command)) =>
                       complete(decorate(uri, command))

@@ -34,16 +34,16 @@ trait ModelStorage {
 
   def lookup(id: Long): Option[Model]
 
-  def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Model
+  def createModel(model: ModelTemplate)(implicit invocation: Invocation): Model
 
   def renameModel(model: Model, newName: String): Model
 
   def drop(model: Model)
 
-  def getModels()(implicit user: UserPrincipal): Seq[Model]
+  def getModels()(implicit invocation: Invocation): Seq[Model]
 
-  def getModelByName(name: String)(implicit user: UserPrincipal): Option[Model]
+  def getModelByName(name: String)(implicit invocation: Invocation): Option[Model]
 
-  def updateModel(model: Model, newData: JsObject)(implicit user: UserPrincipal): Model
+  def updateModel(model: Model, newData: JsObject)(implicit invocation: Invocation): Model
 
 }

@@ -28,7 +28,7 @@ import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * HDFS Access
@@ -38,6 +38,7 @@ import com.intel.event.EventLogging
  * @param fsRoot the root directory for IntelAnalytics e.g. "/user/iauser"
  */
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
+  implicit val eventContext = EventContext.enter("HDFSFileStorage")
 
   val configuration = withContext("HDFSFileStorage.configuration") {
 
@@ -56,7 +57,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
       "Could not load local filesystem for Hadoop")
     hadoopConfig
-  }
+  }(null)
 
   val fs = FileSystem.get(configuration)
 

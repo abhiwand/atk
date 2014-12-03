@@ -87,7 +87,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def numberOfJobs(arguments: BeliefPropagationArgs): Int = {
+  override def numberOfJobs(arguments: BeliefPropagationArgs)(implicit invocation: Invocation): Int = {
     // TODO: not sure this is right but it seemed to work with testing
     //    when max iterations was 1, number of jobs was 11
     //    when max iterations was 2, number of jobs was 13

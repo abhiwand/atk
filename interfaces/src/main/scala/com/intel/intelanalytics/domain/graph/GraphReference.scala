@@ -79,11 +79,16 @@ object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =
 
   override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
 
-  override def getMetaData(reference: Reference): MetaData = ???
+  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
   override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long): Reference = new GraphReference(id, None)
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id, None)
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete(reference: GraphReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
 
   override type Data = Reference with NoData
 

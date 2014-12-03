@@ -109,7 +109,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
-  def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext)(implicit user: UserPrincipal): List[RDD[(Any, Array[Any])]] = {
+  def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext)(implicit invocation: Invocation): List[RDD[(Any, Array[Any])]] = {
     val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = arguments.frames.map {
       frame =>
         {

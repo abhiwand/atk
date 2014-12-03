@@ -112,7 +112,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ModelLoad) = 9
+  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 9
   /**
    * Get the predictions for observations in a test frame
    *

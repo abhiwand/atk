@@ -27,7 +27,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdges, AddVertices }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -91,7 +91,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: AddEdges): Int = {
+  override def numberOfJobs(arguments: AddEdges)(implicit invocation: Invocation): Int = {
     if (arguments.isCreateMissingVertices) {
       // TODO: this this right?
       10
@@ -112,8 +112,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    */
   override def execute(arguments: AddEdges)(implicit invocation: Invocation): UnitReturn = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = invocation.engine.graphs.asInstanceOf[SparkGraphStorage]
-    val frames = invocation.engine.frames.asInstanceOf[SparkFrameStorage]
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     // validate arguments
     val edgeFrameMeta = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameMeta.isEdgeFrame, "add edges requires an edge frame")

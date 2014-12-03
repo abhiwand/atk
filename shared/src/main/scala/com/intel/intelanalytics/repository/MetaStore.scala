@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
 
 /**
@@ -31,9 +32,9 @@ import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
  */
 trait MetaStore {
   type Session
-  def withSession[T](name: String)(f: Session => T): T
+  def withSession[T](name: String)(f: Session => T)(implicit evc: EventContext = EventContext.getCurrent()): T
 
-  def withTransaction[T](name: String)(f: Session => T): T
+  def withTransaction[T](name: String)(f: Session => T)(implicit evc: EventContext = EventContext.getCurrent()): T
 
   /** Repository for CRUD on 'status' table */
   def statusRepo: Repository[Session, Status, Status]

@@ -23,17 +23,14 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ EntityType, UriReference }
-import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
+import com.intel.event.EventContext
+import com.intel.intelanalytics.domain.{ UriReference, EntityType }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution }
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.Future
@@ -54,71 +51,72 @@ trait Engine {
    * Stores the results of the command execution back in the persistent command object.
    *
    * @param command the command to run, including name and arguments
-   * @param user the user running the command
    * @return an Execution that can be used to track the completion of the command
    */
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
+  def execute(command: CommandTemplate)(implicit invocation: Invocation): Execution
 
   /**
    * All the command definitions available
    */
-  def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
+  def getCommandDefinitions()(implicit invocation: Invocation): Iterable[CommandDefinition]
 
-  def getCommands(offset: Int, count: Int): Future[Seq[Command]]
+  def getCommands(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Command]]
 
-  def getCommand(id: Identifier): Future[Option[Command]]
+  def getCommand(id: Identifier)(implicit invocation: Invocation): Future[Option[Command]]
 
-  def getQueries(offset: Int, count: Int): Future[Seq[Query]]
+  def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]]
 
-  def getQuery(id: Identifier): Future[Option[Query]]
+  def getQuery(id: Identifier)(implicit invocation: Invocation): Future[Option[Query]]
 
-  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): QueryDataResult
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit invocation: Invocation): QueryDataResult
 
-  def getUserPrincipal(apiKey: String): UserPrincipal
+  //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
 
-  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+  def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult
+  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[DataFrame]]
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult
+  def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
-  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
-  def delete(frame: DataFrame): Future[Unit]
+  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[DataFrame]
 
-  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def delete(frame: DataFrame)(implicit invocation: Invocation): Future[Unit]
 
-  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
+  def getFrames()(implicit invocation: Invocation): Future[Seq[DataFrame]]
+
+  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
 
   def shutdown(): Unit
 
-  def getGraph(id: Identifier): Future[Graph]
+  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[Graph]
 
-  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit invocation: Invocation): Future[Seq[Graph]]
 
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
+  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[Graph]]
 
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[Graph]
 
-  def getVertex(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
 
-  def getVertices(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
+  def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]]
 
-  def getEdge(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
 
-  def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]]
+  def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]]
 
-  def deleteGraph(graph: Graph): Future[Unit]
+  def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit]
 
-  def createModel(model: ModelTemplate)(implicit user: UserPrincipal): Future[Model]
+  def createModel(model: ModelTemplate)(implicit invocation: Invocation): Future[Model]
 
-  def getModel(id: Identifier): Future[Model]
+  def getModel(id: Identifier)(implicit invocation: Invocation): Future[Model]
 
-  def getModels()(implicit user: UserPrincipal): Future[Seq[Model]]
+  def getModels()(implicit invocation: Invocation): Future[Seq[Model]]
 
-  def getModelByName(name: String)(implicit user: UserPrincipal): Future[Option[Model]]
+  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[Model]]
 
-  def deleteModel(model: Model): Future[Unit]
+  def deleteModel(model: Model)(implicit invocation: Invocation): Future[Unit]
 
   /**
    * Cancel a running command
@@ -126,5 +124,5 @@ trait Engine {
    * @param user current user
    * @return optional command instance
    */
-  def cancelCommand(id: Identifier)(implicit user: UserPrincipal): Future[Unit]
+  def cancelCommand(id: Identifier)(implicit invocation: Invocation): Future[Unit]
 }

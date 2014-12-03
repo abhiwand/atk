@@ -62,7 +62,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: FilterPredicate) = 2
+  override def numberOfJobs(arguments: FilterPredicate)(implicit invocation: Invocation) = 2
 
   /**
    * Select all rows which satisfy a predicate

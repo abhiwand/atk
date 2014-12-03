@@ -123,7 +123,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: Quantiles) = 7
+  override def numberOfJobs(arguments: Quantiles)(implicit invocation: Invocation) = 7
 
   /**
    * Calculate quantiles on the given column

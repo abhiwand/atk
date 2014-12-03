@@ -93,7 +93,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: KClique): Int = {
+  override def numberOfJobs(arguments: KClique)(implicit invocation: Invocation): Int = {
     8 + 2 * arguments.cliqueSize
   }
 

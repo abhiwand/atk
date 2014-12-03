@@ -124,7 +124,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: DropDuplicates)(implicit invocation: Invocation): DataFrame = {
-    val frames = invocation.engine.frames.asInstanceOf[SparkFrameStorage]
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     val vertexFrame = frames.expectFrame(arguments.frame.id)
 
     vertexFrame.graphId match {

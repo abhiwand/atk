@@ -21,23 +21,26 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.plugin
-
-import com.intel.intelanalytics.engine.plugin.{ QueryPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
+package com.intel.intelanalytics
 
 /**
- * Base trait for query plugins that need direct access to a SparkContext
- *
- * @tparam Argument the argument type for the query
+ * http://stackoverflow.com/questions/4403906/is-it-possible-in-scala-to-force-the-caller-to-specify-a-type-parameter-for-a-po
  */
-trait SparkQueryPlugin[Argument <: Product]
-    extends QueryPlugin[Argument] {
+sealed class DefaultsTo[A, B]
 
-  def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
+trait LowPriorityDefaultsTo {
+  implicit def overrideDefault[A, B] = new DefaultsTo[A, B]
+}
 
-  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
+object DefaultsTo extends LowPriorityDefaultsTo {
+  implicit def default[B] = new DefaultsTo[B, B]
+}
+
+/**
+ * http://stackoverflow.com/a/4580176
+ */
+sealed trait NotNothing[T] { type U }
+object NotNothing {
+  implicit val nothingIsNothing = new NotNothing[Nothing] { type U = Any }
+  implicit def notNothing[T] = new NotNothing[T] { type U = T }
 }

@@ -50,9 +50,10 @@ public class EventLogger {
      */
     public static void log(Event event) {
         if (EVENT_LOG == null) {
-            throw new RuntimeException("Event log not configured, please set the event logger before logging.");
+            System.err.println("Event log not configured, please set the event logger before logging.");
+        } else {
+            EVENT_LOG.log(event);
         }
-        EVENT_LOG.log(event);
     }
 
     /**

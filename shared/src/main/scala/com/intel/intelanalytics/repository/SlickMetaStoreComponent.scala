@@ -51,7 +51,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
@@ -95,7 +95,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     info("JDBC Connection String: " + profile.connectionString)
     info("JDBC Driver: " + profile.driver)
     Database.forURL(profile.connectionString, driver = profile.driver, user = profile.username, password = profile.password)
-  }
+  }(null)
 
   type Session = profile.profile.simple.Session
 
@@ -189,13 +189,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
 
-    override def withSession[T](name: String)(f: (Session) => T): T = {
+    override def withSession[T](name: String)(f: (Session) => T)(implicit evc: EventContext = EventContext.getCurrent()): T = {
       withContext(name) {
         database.withSession(f)
       }
     }
 
-    override def withTransaction[T](name: String)(f: (Session) => T): T = {
+    override def withTransaction[T](name: String)(f: (Session) => T)(implicit evc: EventContext = EventContext.getCurrent()): T = {
       withContext(name) {
         database.withTransaction(f)
       }

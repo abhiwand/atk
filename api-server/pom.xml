@@ -128,7 +128,7 @@
         </dependency>
         <dependency>
             <groupId>io.spray</groupId>
-            <artifactId>spray-testkit</artifactId>
+            <artifactId>spray-testkit_${scala.short.version}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.{ ReferenceResolver, CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -39,5 +40,6 @@ case class SimpleInvocation(engine: Engine,
                             arguments: Option[JsObject],
                             commandId: Long,
                             user: UserPrincipal,
-                            resolver: ReferenceResolver) extends Invocation {
+                            resolver: ReferenceResolver,
+                            eventContext: EventContext) extends Invocation {
 }

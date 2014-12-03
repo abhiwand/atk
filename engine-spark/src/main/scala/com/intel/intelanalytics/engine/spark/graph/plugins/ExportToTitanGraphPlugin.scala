@@ -95,7 +95,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: ExportGraph): Int = 4
+  override def numberOfJobs(arguments: ExportGraph)(implicit invocation: Invocation): Int = 4
 
   /**
    * Plugins must implement this method to do the work requested by the user.

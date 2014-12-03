@@ -25,7 +25,9 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import spray.can.Http
+import spray.http._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
@@ -66,6 +68,7 @@ class ApiServiceApplication extends Archive with EventLogging {
    * Main entry point to start the API Service Application
    */
   override def start() = {
+    implicit val call = Call(null)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -73,7 +76,7 @@ class ApiServiceApplication extends Archive with EventLogging {
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
-  private def initializeDependencies(): ApiService = {
+  private def initializeDependencies()(implicit invocation: Invocation): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")

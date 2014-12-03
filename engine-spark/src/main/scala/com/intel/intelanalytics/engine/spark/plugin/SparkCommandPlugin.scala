@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
@@ -38,7 +38,7 @@ import com.intel.intelanalytics.engine.spark.{ SparkEngine, EngineKryoRegistrato
 trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     extends CommandPlugin[Argument, Return] {
 
-  override def engine(implicit invocation: Invocation): SparkEngine = invocation.engine.asInstanceOf[SparkEngine]
+  override def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[CommandInvocation].engine.asInstanceOf[SparkEngine]
 
   def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
 

@@ -29,7 +29,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import spray.json._
 
@@ -44,7 +44,7 @@ import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
 
 case class CommandContext(
@@ -54,6 +54,7 @@ case class CommandContext(
     user: UserPrincipal,
     plugins: CommandPluginRegistry,
     resolver: ReferenceResolver,
+    eventContext: EventContext,
     dynamic: mutable.Map[String, Any] = mutable.Map.empty,
     cleaners: mutable.Map[String, () => Unit] = mutable.Map.empty) {
 
@@ -103,6 +104,7 @@ case class CommandContext(
  */
 class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
     extends EventLogging
+    with EventLoggingImplicits
     with ClassLoaderAware {
 
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
@@ -143,22 +145,19 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * @return an Execution object that can be used to track the command's execution
    */
   private def executeContext[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext,
-                                                                           firstExecution: Boolean = true): Execution = {
-    implicit val ec = commandContext.executionContext
+                                                                           firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
     withMyClassLoader {
       withContext(commandContext.command.name) {
         val plugin = expectFunction[A, R](commandContext.plugins, commandContext.command)
-        val tempInvocation = SimpleInvocation(engine, commands, ec, commandContext.command.arguments, commandContext.command.id,
-          commandContext.user, commandContext.resolver)
-        val arguments = plugin.parseArguments(commandContext.command.arguments.get)(tempInvocation)
-        implicit val invocation = getInvocation(plugin, arguments, commandContext)
+        val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+        implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
         val cmdFuture = future {
           withContext("cmdFuture") {
             withCommand(commandContext.command) {
 
               val returnValue = if (commandContext.action) {
                 val res = if (firstExecution) {
-                  this.runDependencies(arguments, commandContext)(plugin.argumentTag, invocation)
+                  this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
                 }
                 else commandContext.resolver
                 val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
@@ -194,6 +193,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    */
   private def runDependencies[A <: Product: TypeTag](arguments: A,
                                                      commandContext: CommandContext)(implicit invocation: Invocation): ReferenceResolver = {
+    implicit val eventContext = invocation.eventContext
+    implicit val user = invocation.user
     val dependencies = Dependencies.getComputables(arguments)
     val newResolver = dependencies match {
       case x if x.isEmpty => ReferenceResolver
@@ -241,13 +242,13 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
 
   private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
                                                                           arguments: A,
-                                                                          commandContext: CommandContext): Invocation with Product with Serializable = {
+                                                                          commandContext: CommandContext)(implicit invocation: Invocation): Invocation with Product with Serializable = {
     val cmd = commandContext.command
     command match {
       case c: SparkCommandPlugin[A, R] =>
         val context: SparkContext = commandContext("sparkContext") match {
           case None =>
-            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.user, commandContext.command)
+            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.command)
             commandContext.put("sparkContext", sc, () => sc.stop())
             sc
           case Some(sc) => sc
@@ -260,7 +261,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
           executionContext = commandContext.executionContext,
           sparkContext = context,
           commandStorage = commands,
-          resolver = commandContext.resolver)
+          resolver = commandContext.resolver,
+          eventContext = commandContext.eventContext)
 
       case c: CommandPlugin[A, R] =>
         SimpleInvocation(engine,
@@ -269,7 +271,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
           arguments = cmd.arguments,
           user = commandContext.user,
           executionContext = commandContext.executionContext,
-          resolver = commandContext.resolver
+          resolver = commandContext.resolver,
+          eventContext = commandContext.eventContext
         )
     }
   }
@@ -297,11 +300,10 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
 
   def createSparkContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R],
                                                                arguments: A,
-                                                               user: UserPrincipal,
-                                                               cmd: Command): SparkContext = withMyClassLoader {
+                                                               cmd: Command)(implicit invocation: Invocation): SparkContext = withMyClassLoader {
     val commandId = cmd.id
     val commandName = cmd.name
-    val context: SparkContext = contextFactory.context(user, s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
+    val context: SparkContext = contextFactory.context(s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
     try {
       val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
       val progressPrinter = new ProgressPrinter(listener)
@@ -324,14 +326,11 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * This overload requires that the command already is registered in the plugin registry using registerCommand.
    *
    * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
-   * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
   def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
-                                          user: UserPrincipal,
-                                          executionContext: ExecutionContext,
                                           commandPluginRegistry: CommandPluginRegistry,
-                                          referenceResolver: ReferenceResolver = ReferenceResolver): Execution =
+                                          referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
     withContext("ce.execute(ct)") {
       val cmd = commands.create(commandTemplate)
       val plugin = expectFunction[A, R](commandPluginRegistry, cmd)
@@ -341,10 +340,11 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
         user,
         commandPluginRegistry,
         referenceResolver,
+        eventContext,
         mutable.Map.empty,
         mutable.Map.empty)
 
-      executeContext(context)(plugin.argumentTag, plugin.returnTag)
+      executeContext(context)(plugin.argumentTag, plugin.returnTag, invocation)
     }
 
   private def expectFunction[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {

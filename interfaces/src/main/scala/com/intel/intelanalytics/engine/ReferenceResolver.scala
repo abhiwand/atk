@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.{ DefaultsTo, NotNothing }
 import com.intel.intelanalytics.domain.{ HasData, UriReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
@@ -40,6 +41,12 @@ object ReferenceResolver extends ReferenceResolver {
     EntityRegistry.resolver.create(annotation)
 
   /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  def delete[T <: UriReference: TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit =
+    EntityRegistry.resolver.delete(reference)
+
+  /**
    * Save data of the given type, possibly creating a new object.
    */
   def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = EntityRegistry.resolver.saveData(data)
@@ -73,6 +80,11 @@ trait ReferenceResolver {
    * Creates an (empty) instance of the given type, reserving a URI
    */
   def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  def delete[T <: UriReference: TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit
 
   /**
    * Save data of the given type, possibly creating a new object.
