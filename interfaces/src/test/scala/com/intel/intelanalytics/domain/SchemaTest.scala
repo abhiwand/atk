@@ -25,6 +25,20 @@ class SchemaTest extends WordSpec with Matchers {
       abcSchema.columnIndices(Seq()) shouldBe List(0, 1, 2)
     }
 
+    "be able to convert the type of a column from int64 to string" in {
+      val result = abcSchema.convertType("a", string)
+      assert(result.column("a").dataType == string)
+      assert(result.column("b").dataType == float32)
+      assert(result.column("c").dataType == string)
+    }
+
+    "be able to convert the type of a column from string to int" in {
+      val result = abcSchema.convertType("b", int64)
+      assert(result.column("a").dataType == int64)
+      assert(result.column("b").dataType == int64)
+      assert(result.column("c").dataType == string)
+    }
+
     "be able to report column data types for first column" in {
       abcSchema.columnDataType("a") shouldBe int64
     }
@@ -43,7 +57,6 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to validate a column has a given type" in {
       abcSchema.hasColumnWithType("a", int64) shouldBe true
       abcSchema.hasColumnWithType("a", string) shouldBe false
-
     }
 
     def testDropColumn(columnName: String): Unit = {
@@ -84,6 +97,31 @@ class SchemaTest extends WordSpec with Matchers {
 
     "be able to drop multiple columns with list of 1" in {
       val result = abcSchema.dropColumns(List("a"))
+      assert(result.columns.length == 2)
+      assert(result.hasColumn("b"))
+      assert(result.hasColumn("c"))
+    }
+
+    "be able to drop multiple columns by index 1" in {
+      val result = abcSchema.dropColumnsByIndex(Seq(0, 2))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("b"))
+    }
+
+    "be able to drop multiple columns by index 2" in {
+      val result = abcSchema.dropColumnsByIndex(Seq(0, 1))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("c"))
+    }
+
+    "be able to drop multiple columns by index 3" in {
+      val result = abcSchema.dropColumnsByIndex(Seq(1, 2))
+      assert(result.columns.length == 1)
+      assert(result.hasColumn("a"))
+    }
+
+    "be able to drop multiple columns by index with list of 1" in {
+      val result = abcSchema.dropColumnsByIndex(Seq(0))
       assert(result.columns.length == 2)
       assert(result.hasColumn("b"))
       assert(result.hasColumn("c"))
@@ -144,6 +182,40 @@ class SchemaTest extends WordSpec with Matchers {
         abcSchema.renameColumn("c", "a")
       }
     }
+
+    "optionally get a column when no column name is provided" in {
+      assert(abcSchema.column(None) == None)
+    }
+
+    "optionally get a column when column name is provided" in {
+      assert(abcSchema.column(Some("a")).get.name == "a")
+    }
+
+    "union schemas without overlapping columns" in {
+      val result = abcSchema.union(vertexSchema)
+      assert(result.columns.length == 7)
+      assert(result.isInstanceOf[FrameSchema])
+    }
+
+    "union schemas with completely overlapping columns" in {
+      val result = abcSchema.union(abcSchema)
+      assert(result == abcSchema)
+    }
+
+    "union schemas with partially overlapping columns" in {
+      val abSchema = abcSchema.copySubset(Seq("a", "b"))
+      val bcSchema = abcSchema.copySubset(Seq("b", "c"))
+      val result = abSchema.union(bcSchema)
+      assert(result == abcSchema)
+    }
+
+    "not union schemas with columns of same name but different types" in {
+      intercept[IllegalArgumentException] {
+        val differentTypeSchema = abcSchema.copySubset(Seq("a", "b")).convertType("a", str)
+        abcSchema.union(differentTypeSchema)
+      }
+    }
+
   }
 
   val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
@@ -219,6 +291,7 @@ class SchemaTest extends WordSpec with Matchers {
       assert(result.hasColumn("_vid"))
       assert(result.hasColumn("_label"))
       assert(result.hasColumn("movie_id"))
+      assert(result.isInstanceOf[VertexSchema])
       assert(result.isInstanceOf[VertexSchema])
     }
 
