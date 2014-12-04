@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.service
 
 import com.intel.event.EventContext
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.http.HttpHeaders.RawHeader
@@ -77,6 +78,9 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
       case e: IllegalArgumentException =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
+      case e: NotFoundException =>
+        error("An error occurred during request processing.", exception = e)
+        complete(StatusCodes.NotFound, e.getMessage)
       case NonFatal(e) =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.InternalServerError, "An internal server error occurred")

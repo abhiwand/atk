@@ -1,22 +1,33 @@
-<configuration>
+<configuration scan="true">
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${application.home}/logs/application.log</file>
+        <file>/var/log/intelanalytics/rest-server/application.log</file>
         <encoder>
-            <pattern>%date - [%level] - <%mdc{corId:-?}> - from %logger in %thread %message %n%ex{full}</pattern>
+            <pattern>%date - [%level] - %mdc{corId:-?} %thread - %logger :  %message %n%ex{full}%n</pattern>
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date - [%level] - from %logger in %thread %message %n%ex{full}</pattern>
+            <pattern>%logger{15} - %mdc{corId:-?} - %message %n %ex{short}%n</pattern>
         </encoder>
     </appender>
 
     <logger name="play" level="INFO" />
     <logger name="application" level="INFO" />
-
-    <root level="INFO">
+    <logger name="scala.slick" level="INFO" />
+    <logger name="org.apache.spark" level="INFO" />
+    <logger name="org.eclipse.jetty" level="INFO" />
+    <logger name="org.apache.hadoop" level="INFO" />
+    <!--
+        log levels
+        TRACE
+        DEBUG
+        INFO
+        WARN
+        ERROR
+    -->
+    <root level="DEBUG">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>
