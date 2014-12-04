@@ -64,30 +64,31 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
    */
   override def execute(arguments: FrameCopy)(implicit invocation: Invocation): DataFrame = {
 
-    val sourceFrame: SparkFrameData = resolve(arguments.frame)
-    val (newSchema, indices) = arguments.columns match {
-      case None => (sourceFrame.meta.schema.toFrameSchema, null) // full copy
-      case Some(cols) => sourceFrame.meta.schema.toFrameSchema.getRenamedSchemaAndIndicesForCopy(cols) // partial copy
+    val sourceFrame : SparkFrameData = resolve(arguments.frame)
+
+    // run the operation
+    if (arguments.where.isEmpty) {
+      val rdd = arguments.columns match {
+        case None => sourceFrame.data.toPlainFrame() // full copy
+        case Some(cols) => sourceFrame.data.toPlainFrame().selectColumnsWithRename(cols) // partial copy
+      }
+      tryNew(arguments.name) { newFrame : FrameMeta =>
+        save(new SparkFrameData(newFrame.meta, rdd))
+      }.meta
     }
-    val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
+    else {
+      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename
+      val newSchema = arguments.columns match {
+        case None => sourceFrame.meta.schema.toFrameSchema // full copy
+        case Some(cols) => sourceFrame.meta.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
+      }
 
-    val newFrame: FrameMeta = create[FrameMeta](arguments.name)
-
-    val data: FrameRDD = arguments.where match {
-      case None =>
-        arguments.columns match {
-          case None => sourceFrame.data // full copy
-          case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
-            sourceFrame.data
-              .map(row => indices.map(row(_)).toArray))
-        }
-      case Some(where) =>
-        // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
-        // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-        PythonRDDStorage.mapWith(sourceFrame.data, where, sourceFrame.meta.schema)
+      // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
+      // TODO - update if UDF wrapping logic ever moves out of the client and into the server
+      val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, newSchema)
+      tryNew(arguments.name) { newFrame: FrameMeta =>
+        save(new SparkFrameData(newFrame.meta, pyRdd))
+      }.meta
     }
-
-    // save results
-    save(new SparkFrameData(newFrame.meta.withSchema(newSchema), data)).meta
   }
 }

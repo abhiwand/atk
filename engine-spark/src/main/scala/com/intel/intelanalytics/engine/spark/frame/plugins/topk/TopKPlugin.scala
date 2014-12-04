@@ -177,8 +177,8 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * @param frame Data frame
    * @param columnName Column name
    * @return Option with the column index and data type
-   * @deprecated use methods on Schema instead
    */
+  @deprecated("use methods on Schema instead")
   private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
 
     val (columnIndexOption, dataTypeOption) = columnName match {

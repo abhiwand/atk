@@ -24,7 +24,6 @@ import iatest
 iatest.init()
 
 import unittest
-from intelanalytics.core.serialize import to_json
 from intelanalytics.core.files import *
 from intelanalytics.core.iatypes import *
 

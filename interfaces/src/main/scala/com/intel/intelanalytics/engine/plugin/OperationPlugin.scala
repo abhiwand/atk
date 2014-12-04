@@ -212,8 +212,8 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * Create a new object of the requested type, pass it to the block. If block throws an exception,
    * delete the newly created object and rethrow the exception.
    */
-  def tryNew[T <: UriReference with HasMetaData: TypeTag](name: String)(block: T => T)(implicit invocation: Invocation) = {
-    val thing = create[T](Some(name))
+  def tryNew[T <: UriReference with HasMetaData: TypeTag](name: Option[String])(block: T => T)(implicit invocation: Invocation) = {
+    val thing = create[T](name)
     try {
       block(thing)
     }

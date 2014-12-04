@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from intelanalytics.core.command import CommandDefinition, Parameter, Return, Doc, Version
+from intelanalytics.meta.command import CommandDefinition, Parameter, Return, Doc, Version
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.graph import Graph
@@ -109,14 +109,15 @@ def get_parameters(argument_schema):
     # Note - using the common convention that "parameters" are the variables in function definitions
     # and arguments are the values being passed in.  'argument_schema' is used in the rest API however.
     parameters = []
-    for name in argument_schema['order']:
-        properties = argument_schema['properties'][name]
-        data_type = get_data_type(properties)
-        use_self = properties.get('self', False)
-        optional = name not in argument_schema['required']
-        default = properties.get('default', None)
-        doc = get_doc(properties)
-        parameters.append(Parameter(name, data_type, use_self, optional, default, doc))
+    if 'order' in argument_schema:
+        for name in argument_schema['order']:
+            properties = argument_schema['properties'][name]
+            data_type = get_data_type(properties)
+            use_self = properties.get('self', False)
+            optional = name not in argument_schema['required']
+            default = properties.get('default', None)
+            doc = get_doc(properties)
+            parameters.append(Parameter(name, data_type, use_self, optional, default, doc))
     return parameters
 
 

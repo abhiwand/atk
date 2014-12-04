@@ -25,8 +25,9 @@ Named objects - object that have 'names' and are stored server side
 """
 import sys
 import logging
-from intelanalytics.core.api import get_api_decorator, api_globals
-from intelanalytics.core.metaprog import COMMAND_PREFIX, set_function_doc_stub_text, get_loadable_class_from_command_prefix
+
+from intelanalytics.meta.api import get_api_decorator, api_globals
+from intelanalytics.meta.metaprog import COMMAND_PREFIX, set_function_doc_stub_text, get_loadable_class_from_command_prefix
 
 
 def name_support(term):

@@ -130,11 +130,11 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF, DataFrame] {
     val ecdfFrameName: String = FrameName.validateOrGenerate(arguments.resultFrameName, Some("ECDF"))
 
     // run the operation
-    (tryNew(ecdfFrameName) { ecdfFrame: FrameMeta =>
+    tryNew(arguments.resultFrameName) { ecdfFrame: FrameMeta =>
       val rdd = frame.data.toLegacyFrameRDD
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
       save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),
         new LegacyFrameRDD(ecdfSchema, ecdfRdd).toFrameRDD()))
-    }).meta
+    }.meta
   }
 }

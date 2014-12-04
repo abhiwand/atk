@@ -24,12 +24,12 @@
 Command objects
 """
 import datetime
-
 import time
 import json
 import logging
 import sys
 import re
+
 from requests import HTTPError
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    from intelanalytics.core.results import get_postprocessor
+    from intelanalytics.meta.results import get_postprocessor
     is_frame = command_info.result.has_key('name') and command_info.result.has_key('schema')
     parent = None
     if is_frame:
