@@ -34,7 +34,7 @@ import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
- * Class for calculating covariance and the covariance matrix
+ * Object for calculating covariance and the covariance matrix
  */
 
 object Covariance extends Serializable {
@@ -50,15 +50,15 @@ object Covariance extends Serializable {
                  dataColumnNames: List[String]): CovarianceReturn = {
     // compute multivariate statistics and return covariance
 
-    val vectorRDD = frameRDD.mapRows(row => {
+    val rowsAsVectorRDD = frameRDD.mapRows(row => {
       val array = row.valuesAsArray(dataColumnNames)
       val b = array.map(i => DataTypes.toDouble(i))
       Vectors.dense(b)
     })
 
-    def rowMatrix: RowMatrix = new RowMatrix(vectorRDD)
+    def rowMatrix: RowMatrix = new RowMatrix(rowsAsVectorRDD)
 
-    val (rowCount, mean) = rowMatrix.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](vectorRDD.first().size)))(
+    val (rowCount, mean) = rowMatrix.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](rowsAsVectorRDD.first().size)))(
       seqOp = (s: (Long, DenseVector[Double]), v: Vector) => (s._1 + 1L, s._2 += DenseVector(v.toArray)),
       combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
         (s1._1 + s2._1, s1._2 += s2._2)
