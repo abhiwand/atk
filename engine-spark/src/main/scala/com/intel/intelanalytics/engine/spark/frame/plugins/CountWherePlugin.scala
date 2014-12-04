@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  */
 class CountWherePlugin extends SparkCommandPlugin[FrameCountWhere, JustALong] {
 
-  override def name: String = "frame:/count_where"
+  override def name: String = "frame/count_where"
 
   override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
 
