@@ -134,8 +134,6 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    *
    * @param invocation information about the user and the circumstances at the time of the call
    * @param arguments Gremlin script to execute
-   * @param user Principal representing an authenticated API user
-   * @param executionContext Execution context
    * @return Results of executing Gremlin query
    */
   override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {

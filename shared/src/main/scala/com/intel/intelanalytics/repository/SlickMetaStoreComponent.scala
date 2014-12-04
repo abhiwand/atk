@@ -443,7 +443,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
       val now: DateTime = new DateTime()
       val f = DataFrame(id = 0, name = frame.name, description = frame.description,
-        schema = FrameSchema(), status = 1L, createdOn = now, modifiedOn = Some(now))
+        schema = FrameSchema(), status = 1L, createdOn = now, modifiedOn = Some(now), rowCount = Some(0))
       framesAutoInc.insert(f)
     }
 
