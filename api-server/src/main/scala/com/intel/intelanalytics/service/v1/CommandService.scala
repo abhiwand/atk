@@ -76,8 +76,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             requestUri {
               uri =>
                 get {
-                  info("In GET /commands")
-                  println("Should have logged 'In GET /commands'")
                   onComplete(engine.getCommand(id)) {
                     case Success(Some(command)) =>
                       complete(decorate(uri, command))

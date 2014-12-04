@@ -25,12 +25,12 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameReference, FrameReferenceManagement, FrameEntity }
 import com.intel.intelanalytics.domain.graph.GraphEntity
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import org.scalatest.{ FlatSpec, Matchers }
 
 class EntityRegistryTest extends FlatSpec with Matchers {
 
-  implicit val invocation: Invocation = null
+  implicit val invocation: Invocation = Call(null)
 
   "Adding a second manager for the same entity" should "replace the original" in {
     val registry = new EntityRegistry

@@ -51,6 +51,7 @@ object Dependencies {
    * extracting all the string values that are recognized as valid entity URIs.
    */
   def getUriReferencesFromJsObject(source: JsObject)(implicit invocation: Invocation): Seq[UriReference] = {
+    require(invocation != null, "invocation is required")
     val results = source.deepFind((s: String) => ReferenceResolver.isReferenceUriFormat(s))
     results.flatMap(js => ReferenceResolver.resolve(js).toOption.toList)
   }
