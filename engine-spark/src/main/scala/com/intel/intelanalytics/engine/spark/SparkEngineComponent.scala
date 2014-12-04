@@ -25,8 +25,10 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
@@ -41,12 +43,9 @@ import com.intel.intelanalytics.engine.spark.util.{ DiskSpaceReporter, JvmVersio
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.hadoop.fs.{ Path => HPath }
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
 import com.intel.intelanalytics.engine.spark.user.UserStorage
-import com.intel.event.EventLogging
 
 /**
  * Main class for initializing the Spark Engine
@@ -58,7 +57,10 @@ class SparkComponent extends EngineComponent
     with CommandComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
-    with EventLogging {
+    with EventLogging
+    with EventLoggingImplicits {
+
+  implicit lazy val startupCall = Call(null)
 
   EnvironmentLogger.log()
 
@@ -76,7 +78,7 @@ class SparkComponent extends EngineComponent
       driver,
       username = SparkEngineConfig.metaStoreConnectionUsername,
       password = SparkEngineConfig.metaStoreConnectionPassword)
-  }
+  }(startupCall.eventContext)
 
   metaStore.initializeSchema()
 
@@ -88,8 +90,7 @@ class SparkComponent extends EngineComponent
 
   val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
 
-  val getContextFunc = (user: UserPrincipal) => sparkContextFactory.context(user, "query")
-  val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
+  val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory), frameStorage)
 

@@ -21,12 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.HasMetaData
 
-sealed abstract class Alteration {}
+/**
+ * A GraphReference with metadata
+ */
+class GraphMeta(graph: Graph) extends GraphReference(graph.id, Some(true)) with HasMetaData {
 
-case class RemoveColumn[T](name: String) extends Alteration
+  type Meta = Graph
 
-case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
+  val meta = graph
+
+}

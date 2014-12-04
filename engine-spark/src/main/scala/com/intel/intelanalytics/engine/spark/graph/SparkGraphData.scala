@@ -21,10 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.HasData
+import com.intel.intelanalytics.domain.graph.{ GraphMeta, Graph }
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 
-case class FrameName(name: String)
+/**
+ * A GraphReference with metadata and a Spark RDD representing the data in the frame
+ */
+class SparkGraphData(graph: Graph, rdd: FrameRDD)
+    extends GraphMeta(graph)
+    with HasData {
 
-object FrameName extends Naming("frame")
+  type Data = FrameRDD
+
+  val data = rdd
+
+}

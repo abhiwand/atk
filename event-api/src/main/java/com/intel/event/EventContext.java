@@ -23,9 +23,6 @@
 
 package com.intel.event;
 
-import com.google.common.base.Strings;
-import org.json.simple.JSONObject;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -53,7 +50,7 @@ public class EventContext implements AutoCloseable {
      * @param name the name of the context as it should appear in logs
      */
     EventContext(String name) {
-        if (Strings.isNullOrEmpty(name)) {
+        if (name == null || name == "") {
             throw new IllegalArgumentException("Event context name cannot be null or empty");
         }
         this.name = name;
@@ -80,7 +77,7 @@ public class EventContext implements AutoCloseable {
      *
      * @param current the context to set as the current context for this thread
      */
-    static void setCurrent(EventContext current) {
+    public static void setCurrent(EventContext current) {
         EventContext.CURRENT.set(current);
     }
 
@@ -116,7 +113,6 @@ public class EventContext implements AutoCloseable {
         return map;
     }
 
-    //TODO: Should we really take a dependency on Hadoop just for Writable?
     /**
      * Serializes the event context (and all its parents) to the given DataOutput
      */
@@ -174,7 +170,7 @@ public class EventContext implements AutoCloseable {
      * @return the EventContext read from the String
      */
     public static EventContext deserialize(String s) {
-        if (Strings.isNullOrEmpty(s)) {
+        if (s == null || s == "") {
             throw new IllegalArgumentException("Dehydrated event context cannot be null or empty");
         }
         try (DataInputStream is = new DataInputStream(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))) {
@@ -268,11 +264,4 @@ public class EventContext implements AutoCloseable {
         return event(Severity.INFO, message, substitutions);
     }
 
-    @SuppressWarnings("unchecked")
-    JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("name", getName());
-        json.put("data", getData());
-        return json;
-    }
 }

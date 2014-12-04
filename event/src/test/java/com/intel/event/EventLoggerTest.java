@@ -25,6 +25,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
@@ -65,18 +67,20 @@ public class EventLoggerTest {
             events.add(e);
         }
     }
+
+
     @Test
-    public void EventLogger_logs_to_console_by_default() {
+    public void EventLogger_throws_if_no_implementation_set() throws UnsupportedEncodingException {
         EventLogger.setImplementation(null);
         PrintStream out = System.out;
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(stream));
+            System.setErr(new PrintStream(stream));
             EventLogger.log(
                     EventContext.event(Msg.SOMETHING_HAPPENED).build()
-
             );
-            assertThat(stream.toString().length(), is(greaterThan(0)));
+            String result = stream.toString("UTF-8");
+            assertThat(result, containsString("not configured"));
         } finally {
             System.setOut(out);
         }

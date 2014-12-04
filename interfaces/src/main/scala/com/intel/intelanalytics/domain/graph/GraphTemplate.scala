@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.StorageFormats
  * Arguments for creating the metadata entry for a graph.
  * @param name The user's name for the graph.
  */
-case class GraphTemplate(name: String, storageFormat: String) {
+case class GraphTemplate(name: String, storageFormat: String = StorageFormats.SeamlessGraph) {
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
 

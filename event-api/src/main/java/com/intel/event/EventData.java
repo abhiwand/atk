@@ -66,7 +66,7 @@ class EventData {
         this.messageCode = messageCode;
         String formatted;
         try {
-            formatted = MessageFormat.format(message, substitutions);
+            formatted = MessageFormat.format(message, (Object[])substitutions);
         } catch (Exception e) {
             formatted = message;
             this.data.put("eventdata_formatting_exception", e.getMessage());
