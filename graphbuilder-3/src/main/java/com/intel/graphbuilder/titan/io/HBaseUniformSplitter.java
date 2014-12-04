@@ -1,4 +1,4 @@
-package com.intel.graphbuilder.io;
+package com.intel.graphbuilder.titan.io;
 
 import com.esotericsoftware.minlog.Log;
 import org.apache.hadoop.hbase.HConstants;

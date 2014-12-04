@@ -83,3 +83,10 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
  * @param partitionCount number of partitions to use
  */
 case class FileSizeToPartitionSize(fileSizeUpperBound: Long, partitionCount: Int)
+
+object SparkAutoPartitioner {
+  /**
+   * Minimum number of default partitions
+   */
+  val minDefaultPartitions = 2
+}

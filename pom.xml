@@ -109,16 +109,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
-        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.ititan.version>0.5.2-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.2</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
-        <dep.reflections>0.9.9-RC1</dep.reflections>
+        <dep.reflections>0.9.9</dep.reflections>
         <!-- END TITAN -->
 
         <dep.hbase.version>0.98.6-cdh5.2.0</dep.hbase.version>
         <dep.hadoop2.version>2.5.0-cdh5.2.0</dep.hadoop2.version>
 
-        <dep.zookeeper.version>3.4.5-cdh5.1.2</dep.zookeeper.version>
+        <dep.zookeeper.version>3.4.5-cdh5.2.0</dep.zookeeper.version>
         <dep.mahout.version>0.9</dep.mahout.version>
 
         <dep.spark.version>1.1.0-cdh5.2.0</dep.spark.version>
@@ -832,13 +832,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <!--ENDititan-->
 
-            <!--STARTgremlin-groovy -->
+            <!--gremlin-groovy -->
             <dependency>
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
                 <version>${dep.tinkerpop.version}</version>
             </dependency>
-            <!--ENDgremlin-groovy -->
+            <!--guava-cache-->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>18.0</version>
+            </dependency>
             <!--org.scala-->
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -1111,7 +1116,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.7.5</version>
             </dependency>
-
             <!--io.spray-->
             <dependency>
                 <groupId>io.spray</groupId>
