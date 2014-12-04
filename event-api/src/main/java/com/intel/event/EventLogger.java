@@ -23,8 +23,6 @@
 
 package com.intel.event;
 
-import com.intel.event.adapter.ConsoleEventLog;
-
 /**
  * EventLogger logs events to log files, message queues, or other destinations based on
  * configuration, in a manner similar to log4j, and in fact log4j is one possible destination
@@ -52,9 +50,10 @@ public class EventLogger {
      */
     public static void log(Event event) {
         if (EVENT_LOG == null) {
-            EVENT_LOG = new ConsoleEventLog();
+            System.err.println("Event log not configured, please set the event logger before logging.");
+        } else {
+            EVENT_LOG.log(event);
         }
-        EVENT_LOG.log(event);
     }
 
     /**

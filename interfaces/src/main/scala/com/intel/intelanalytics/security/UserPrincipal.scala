@@ -30,6 +30,4 @@ import com.intel.intelanalytics.domain.User
  * @param user user DB entity representing the API user
  * @param roles roles of the authenticated user
  */
-case class UserPrincipal(user: User, roles: List[String]) {
-
-}
+case class UserPrincipal(user: User, roles: List[String])

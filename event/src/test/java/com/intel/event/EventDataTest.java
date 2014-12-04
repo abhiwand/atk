@@ -35,7 +35,7 @@ public class EventDataTest {
     @Test(expected = IllegalArgumentException.class)
     public void EventData_requires_message() {
 
-        new EventData(Severity.INFO, null, null, null, 0, null, null);
+        new EventData(Severity.INFO, null, null, null, 0, null, (String[])null);
 
     }
 

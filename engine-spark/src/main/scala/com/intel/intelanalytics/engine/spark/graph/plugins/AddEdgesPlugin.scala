@@ -25,19 +25,17 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, Graph }
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdges, AddVertices }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RowWrapper }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
-import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -93,7 +91,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: AddEdges): Int = {
+  override def numberOfJobs(arguments: AddEdges)(implicit invocation: Invocation): Int = {
     if (arguments.isCreateMissingVertices) {
       // TODO: this this right?
       10
@@ -110,15 +108,12 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: AddEdges)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
+  override def execute(arguments: AddEdges)(implicit invocation: Invocation): UnitReturn = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = invocation.engine.graphs
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
-
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     // validate arguments
     val edgeFrameMeta = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameMeta.isEdgeFrame, "add edges requires an edge frame")
@@ -129,7 +124,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // run the operation
 
     // load source data
-    val sourceRdd = frames.loadFrameRDD(ctx, sourceFrameMeta)
+    val sourceRdd = frames.loadFrameData(sc, sourceFrameMeta)
 
     // assign unique ids to source data
     val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds("_eid", startId = graph.nextId())
@@ -148,18 +143,18 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(ctx, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
-    val srcVertexIds = graphs.loadVertexRDD(ctx, graph.id, srcLabel).idColumns.groupByKey()
+    val srcVertexIds = graphs.loadVertexRDD(sc, graph.id, srcLabel).idColumns.groupByKey()
     srcVertexIds.cache()
     val destVertexIds = if (srcLabel == destLabel) {
       srcVertexIds
     }
     else {
-      graphs.loadVertexRDD(ctx, graph.id, destLabel).idColumns.groupByKey()
+      graphs.loadVertexRDD(sc, graph.id, destLabel).idColumns.groupByKey()
     }
 
     // check that at least some source and destination vertices actually exist
@@ -199,7 +194,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
-    val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrameMeta.id)
+    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameMeta.id)
     val combinedRdd = existingEdgeData.append(edgesToAdd)
     combinedRdd.cache()
     graphs.saveEdgeRdd(edgeFrameMeta.id, combinedRdd, Some(combinedRdd.count()))

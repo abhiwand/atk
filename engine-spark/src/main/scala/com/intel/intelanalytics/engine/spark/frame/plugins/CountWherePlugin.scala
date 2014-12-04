@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.domain.frame.{ JustALong, FrameCountWhere }
 import scala.concurrent.ExecutionContext
@@ -49,16 +50,12 @@ class CountWherePlugin extends SparkCommandPlugin[FrameCountWhere, JustALong] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameCountWhere)(implicit user: UserPrincipal, executionContext: ExecutionContext): JustALong = {
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
-
-    val sourceFrame = frames.expectFrame(arguments.frame)
-    val pythonRDDStorage = new PythonRDDStorage(frames)
-    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where, ctx)
+  override def execute(arguments: FrameCountWhere)(implicit invocation: Invocation): JustALong = {
+    val sourceFrame = engine.frames.expectFrame(arguments.frame)
+    val pythonRDDStorage = new PythonRDDStorage(engine.frames)
+    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where, sc)
     JustALong(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
   }
 }

@@ -24,6 +24,8 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineVertex, SeamlessGraphMeta }
+import com.intel.intelanalytics.domain.schema.VertexSchema
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.DataFrame
@@ -34,6 +36,7 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.UnitReturn
 
 // Implicits needed for JSON conversion
+
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -79,7 +82,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @param arguments specification of the vertex type
    * @return data frame which represent the vertex of this type
    */
-  override def execute(invocation: SparkInvocation, arguments: DefineVertex)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
+  override def execute(arguments: DefineVertex)(implicit invocation: Invocation): UnitReturn = {
     graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }

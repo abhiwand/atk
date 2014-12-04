@@ -1,7 +1,12 @@
 package com.intel.intelanalytics.engine.spark.frame
 
+import java.util
+
+import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -15,65 +20,46 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-/**
- * Loading and saving Python RDD's
- */
-class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
+object PythonRDDStorage {
 
-  /**
-   * Create a Python RDD
-   * @param frameId source frame for the parent RDD
-   * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
-   * @param user current user
-   * @return the RDD
-   */
-  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
-    withMyClassLoader {
-      val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
-
-      val baseRdd: RDD[String] = frames.loadLegacyFrameRdd(ctx, frameId)
-        .map(x => x.map(t => t match {
-          case null => JsNull
-          case a => a.toJson
-        }).toJson.toString)
-
-      val pythonExec = SparkEngineConfig.pythonWorkerExec
-      val environment = new java.util.HashMap[String, String]()
-
-      val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-
-      val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
-
-      val pyRdd = new EnginePythonRDD[String](
-        baseRdd, predicateInBytes, environment,
-        new JArrayList, preservePartitioning = false,
-        pythonExec = pythonExec,
-        broadcastVars, accumulator)
-      pyRdd
-    }
+  private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
+    decodeBase64(byteStr)
   }
 
-  /**
-   * Persists a PythonRDD after python computation is complete to HDFS
-   *
-   * @param dataFrame DataFrame associated with this RDD
-   * @param pyRdd PythonRDD instance
-   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
-   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
-   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
-   */
-  def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[Any] => Array[Any], skipRowCount: Boolean = false): Long = {
-    withMyClassLoader {
+  def mapWith(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
+    val newSchema = if (schema == null) { data.frameSchema } else { schema }
+    val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-      val resultRdd: RDD[Array[Any]] = getRddFromPythonRdd(pyRdd, converter)
-
-      val rowCount = if (skipRowCount) 0 else resultRdd.count()
-      frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
-      rowCount
-    }
+    val pyRdd = RDDToPyRDD(pyExpression, data.toLegacyFrameRDD)
+    val frameRdd = getRddFromPythonRdd(pyRdd, converter)
+    new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
   }
 
-  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[Any]) => Array[Any]): RDD[Array[Any]] = {
+  def RDDToPyRDD(py_expression: String, rdd: LegacyFrameRDD): EnginePythonRDD[String] = {
+    val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
+
+    val baseRdd: RDD[String] = rdd
+      .map(x => x.map {
+        case null => JsNull
+        case a => a.toJson
+      }.toJson.toString())
+
+    val pythonExec = SparkEngineConfig.pythonWorkerExec
+    val environment = new util.HashMap[String, String]()
+
+    val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+
+    val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+    val pyRdd = new EnginePythonRDD[String](
+      baseRdd, predicateInBytes, environment,
+      new JArrayList, preservePartitioning = false,
+      pythonExec = pythonExec,
+      broadcastVars, accumulator)
+    pyRdd
+  }
+
+  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
     val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
       case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
       case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value
@@ -84,9 +70,25 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
       .map(converter)
     resultRdd
   }
+}
 
-  private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
-    decodeBase64(byteStr)
+/**
+ * Loading and saving Python RDD's
+ */
+class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
+
+  /**
+   * Create a Python RDD
+   * @param frameId source frame for the parent RDD
+   * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
+   * @return the RDD
+   */
+  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit invocation: Invocation): EnginePythonRDD[String] = {
+    withMyClassLoader {
+
+      val rdd: LegacyFrameRDD = frames.loadLegacyFrameRdd(ctx, frameId)
+
+      PythonRDDStorage.RDDToPyRDD(py_expression, rdd)
+    }
   }
-
 }

@@ -25,9 +25,10 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, BinColumn, DataFrame }
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -49,7 +50,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
  */
-class BinColumnPlugin extends SparkCommandPlugin[BinColumn, UnitReturn] {
+class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -70,7 +71,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, UnitReturn] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: BinColumn) = 7
+  override def numberOfJobs(arguments: BinColumn)(implicit invocation: Invocation) = 7
 
   /**
    * Column values into bins.
@@ -87,24 +88,18 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, UnitReturn] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: BinColumn)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
-
-    // validate arguments
-    val frameMeta = frames.expectFrame(arguments.frame.id)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.columnName)
+  override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = resolve(arguments.frame)
+    val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
+    if (frame.meta.schema.hasColumn(arguments.binColumnName))
+      throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
-    val updatedSchema = frameMeta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
-    val binnedRdd = DiscretizationFunctions.bin(columnIndex, arguments.binType, arguments.numBins, rdd)
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(updatedSchema, binnedRdd), None)
-
-    new UnitReturn
+    val updatedSchema = frame.meta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
+    val rdd = frame.data
+    val binnedRdd = DiscretizationFunctions.bin(columnIndex, arguments.binType, arguments.numBins, rdd.toLegacyFrameRDD)
+    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), FrameRDD.toFrameRDD(updatedSchema, binnedRdd))).meta
   }
 }

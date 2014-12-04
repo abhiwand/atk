@@ -25,7 +25,9 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import spray.can.Http
+import spray.http._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
@@ -44,6 +46,15 @@ import scala.reflect.ClassTag
  */
 class ApiServiceApplication extends Archive with EventLogging {
 
+  EventLogging.raw = true
+  info("API server setting log adapter from configuration")
+
+  EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.api.logging.raw")
+  info("API server set log adapter from configuration")
+
+  EventLogging.profiling = ConfigFactory.load().getBoolean("intel.analytics.api.logging.profile")
+  info(s"API server profiling: ${EventLogging.profiling}")
+
   //Direct subsequent archive messages to the normal log
   Archive.logger = s => info(s)
   Archive.logger("Archive logger installed")
@@ -57,7 +68,7 @@ class ApiServiceApplication extends Archive with EventLogging {
    * Main entry point to start the API Service Application
    */
   override def start() = {
-    Archive.logger = (s: String) => debug(s)
+    implicit val call = Call(null)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -65,7 +76,7 @@ class ApiServiceApplication extends Archive with EventLogging {
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
-  private def initializeDependencies(): ApiService = {
+  private def initializeDependencies()(implicit invocation: Invocation): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
