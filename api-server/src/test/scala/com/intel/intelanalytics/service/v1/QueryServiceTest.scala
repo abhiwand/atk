@@ -38,7 +38,7 @@ class QueryServiceTest extends ServiceTest {
   implicit val userPrincipal = mock[UserPrincipal]
   implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("commands")).thenReturn(provide(call))
+  when(commonDirectives.apply("queries")).thenReturn(provide(call))
 
   "QueryService" should "give an empty set when there are no results" in {
 

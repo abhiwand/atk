@@ -39,7 +39,7 @@ class ModelServiceTest extends ServiceTest {
   implicit val userPrincipal = mock[UserPrincipal]
   implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("commands")).thenReturn(provide(call))
+  when(commonDirectives.apply("models")).thenReturn(provide(call))
 
   "ModelService" should "give an empty set when there are no models" in {
     val engine = mock[Engine]

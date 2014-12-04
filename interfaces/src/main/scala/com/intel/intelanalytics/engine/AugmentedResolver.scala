@@ -40,6 +40,7 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    */
   override def resolve[T <: UriReference: TypeTag](uri: String)(implicit invocation: Invocation,
                                                                 e: T DefaultsTo UriReference): Try[T] = {
+    require(invocation != null, "invocation is required")
     base.resolve(uri).map { ref =>
       //TODO: this could fail if URIs are not normalized
       val resolved = data.find(d => d.uri == ref.uri).getOrElse(ref)

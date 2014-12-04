@@ -2,14 +2,14 @@ package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference, FrameReferenceManagement }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference, GraphReferenceManagement }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.engine.{ EntityRegistry, ReferenceResolver }
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.Success
 
 class UriReferenceTest extends FlatSpec with Matchers {
-  implicit val invocation: Invocation = null
+  implicit val invocation: Invocation = Call(null)
 
   "A frame uri" should "fail to resolve when no resolvers are registered" in {
     val uri: String = "ia://frame/1"

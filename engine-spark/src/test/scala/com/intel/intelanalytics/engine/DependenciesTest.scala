@@ -24,19 +24,20 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.engine.spark.command.{ Typeful, Dependencies }
 import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
 class DependenciesTest extends FlatSpec with Matchers {
+
   "getUriReferencesForJson" should "find UriReferences in case classes" in {
     case class Foo(frameId: Int, frame: FrameReference)
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
     implicit val fmt = jsonFormat2(Foo)
 
     val reference = List(FrameReference(3, None))
-    implicit val invocation: Invocation = null
+    implicit val invocation: Invocation = Call(null)
     FrameReferenceManagement //reference to ensure it's loaded and registered
     Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
   }
