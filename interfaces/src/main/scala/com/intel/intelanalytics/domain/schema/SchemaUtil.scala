@@ -27,8 +27,8 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
  * TODO: we should move this implementation to Schema class or be using implementation that is already there
- * @deprecated use Schema instead
  */
+@deprecated("use Schema instead")
 object SchemaUtil {
 
   // TODO: remove hard coded strings
@@ -103,8 +103,8 @@ object SchemaUtil {
    * Merge schema for the purpose of appending two datasets.
    * @param originalSchema Schema of the original DataFrame
    * @return a single Schema with columns from both using the ordering of the originalSchema
-   * @deprecated use union() implementation in Schema
    */
+  @deprecated("use union() implementation in Schema")
   def mergeSchema(originalSchema: Schema, appendedSchema: Schema): Schema = {
     if (originalSchema == appendedSchema)
       originalSchema

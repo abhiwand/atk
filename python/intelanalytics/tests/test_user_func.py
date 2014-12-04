@@ -20,9 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import sys
 import iatest
-from intelanalytics.core.userfunction import has_python_user_function_arg
+from intelanalytics.meta.udf import has_python_user_function_arg
 
 iatest.init()
 

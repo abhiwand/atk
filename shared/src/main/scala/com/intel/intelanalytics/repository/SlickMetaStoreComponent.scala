@@ -465,13 +465,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     //TODO: All these updates should update the modifiedOn and modifiedBy fields
     override def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame = {
       if (frame.isVertexFrame) {
-        require(schema.isInstanceOf[VertexSchema], "vertex frame requires schema to be of type vertex schema")
+        require(schema.isInstanceOf[VertexSchema], s"vertex frame requires schema to be of type vertex schema but found ${schema.getClass.getName}")
       }
       else if (frame.isEdgeFrame) {
-        require(schema.isInstanceOf[EdgeSchema], "edge frame requires schema to be of type edge schema")
+        require(schema.isInstanceOf[EdgeSchema], s"edge frame requires schema to be of type edge schema but found ${schema.getClass.getName}")
       }
       else {
-        require(schema.isInstanceOf[FrameSchema], "frame requires schema to be of type frame schema")
+        require(schema.isInstanceOf[FrameSchema], s"frame requires schema to be of type frame schema but found ${schema.getClass.getName}")
       }
 
       // this looks crazy but it is how you update only one column

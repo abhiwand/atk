@@ -36,8 +36,8 @@ import inspect
 from collections import deque
 from decorator import decorator
 
-from intelanalytics.core.api import get_api_decorator
-from intelanalytics.core.mute import muted_commands
+from intelanalytics.meta.api import get_api_decorator
+from intelanalytics.meta.mute import muted_commands
 
 _created_classes = {}
 """All the dynamically created loadable classes, added as they are created"""
@@ -165,7 +165,7 @@ def get_base_class_name_from_prefix(command_prefix):
 
 
 def get_loadable_class_from_name(class_name, command_prefix):
-    from intelanalytics.core.api import api_globals
+    from intelanalytics.meta.api import api_globals
     import inspect
     for item in api_globals:
         if inspect.isclass(item) and item.__name__ == class_name:

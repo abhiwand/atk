@@ -26,9 +26,9 @@ iatest.init()
 import unittest
 import mock
 import intelanalytics.core.iatypes as iatypes
-from intelanalytics.core.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_command_prefix
-from intelanalytics.core.command import CommandDefinition, Parameter, Return
-from intelanalytics.core.loggers import loggers
+from intelanalytics.meta.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_command_prefix
+from intelanalytics.meta.command import CommandDefinition, Parameter, Return
+
 
 class Numbers(CommandLoadable):
     _command_prefix = 'numbers'
@@ -75,9 +75,9 @@ def get_numbers(cmd_name, selfish, **args):
 
 class TestCommandsLoadable(unittest.TestCase):
 
-    @mock.patch("intelanalytics.core.api.check_api_is_loaded", mock.Mock())
+    @mock.patch("intelanalytics.meta.api.check_api_is_loaded", mock.Mock())
     def test_loadable_with_intermediates(self):
-        #loggers.set(10, 'intelanalytics.core.metaprog')
+        #loggers.set(10, 'intelanalytics.meta.metaprog')
         for cmd_def in cmd_defs:
             load_loadable(Numbers, cmd_def, get_numbers)
         n = Numbers('A')
@@ -88,29 +88,29 @@ class TestCommandsLoadable(unittest.TestCase):
 class TestNaming(unittest.TestCase):
 
     def test_upper_first(self):
-        from intelanalytics.core.metaprog import upper_first
+        from intelanalytics.meta.metaprog import upper_first
         self.assertEqual("Apple", upper_first('apple'))
         self.assertEqual("Apple", upper_first('Apple'))
         self.assertEqual('', upper_first(''))
         self.assertEqual('', upper_first(None))
 
     def test_lower_first(self):
-        from intelanalytics.core.metaprog import lower_first
+        from intelanalytics.meta.metaprog import lower_first
         self.assertEqual("apple", lower_first('apple'))
         self.assertEqual("apple", lower_first('Apple'))
         self.assertEqual('', lower_first(''))
         self.assertEqual('', lower_first(None))
 
     def test_underscores_to_pascal(self):
-        from intelanalytics.core.metaprog import underscores_to_pascal
+        from intelanalytics.meta.metaprog import underscores_to_pascal
         self.assertEqual("LogisticRegressionModel", underscores_to_pascal("logistic_regression_model"))
 
     def test_pascal_to_underscores(self):
-        from intelanalytics.core.metaprog import pascal_to_underscores
+        from intelanalytics.meta.metaprog import pascal_to_underscores
         self.assertEqual("logistic_regression_model", pascal_to_underscores("LogisticRegressionModel"))
 
     def test_get_command_prefix_from_class_name(self):
-        from intelanalytics.core.metaprog import get_command_prefix_from_class_name
+        from intelanalytics.meta.metaprog import get_command_prefix_from_class_name
         self.assertEqual("model:logistic_regression", get_command_prefix_from_class_name("LogisticRegressionModel"))
         self.assertEqual("model", get_command_prefix_from_class_name("_BaseModel"))
         with self.assertRaises(ValueError) as cm:
@@ -118,7 +118,7 @@ class TestNaming(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Invalid empty class_name, expected non-empty string")
 
     def test_get_loadable_class_name_from_command_prefix(self):
-        from intelanalytics.core.metaprog import get_loadable_class_name_from_command_prefix
+        from intelanalytics.meta.metaprog import get_loadable_class_name_from_command_prefix
         self.assertEqual("LogisticRegressionModel", get_loadable_class_name_from_command_prefix("model:logistic_regression"))
         self.assertEqual("_BaseModel", get_loadable_class_name_from_command_prefix("model"))
         with self.assertRaises(ValueError) as cm:

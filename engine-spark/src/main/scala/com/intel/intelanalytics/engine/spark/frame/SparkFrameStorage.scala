@@ -187,6 +187,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
+  @deprecated("use FrameRDD and related methods instead")
   def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): LegacyFrameRDD = {
     val frame = lookup(frameId).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: $frameId"))
@@ -204,6 +205,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
+  @deprecated("use FrameRDD and related methods instead")
   def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame)(implicit invocation: Invocation): LegacyFrameRDD =
     loadFrameData(ctx, frame).toLegacyFrameRDD
 
@@ -227,6 +229,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
+  @deprecated("use FrameRDD and related methods instead")
   def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)(implicit invocation: Invocation): DataFrame = {
     saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
   }

@@ -42,6 +42,7 @@ import org.apache.spark.{ SparkContext, Partition, TaskContext }
  *
  * @param schema the schema describing the columns of this frame
  */
+@deprecated("use FrameRDD instead")
 class LegacyFrameRDD(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](rows) {
 
   def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.map(row => row.toArray))
