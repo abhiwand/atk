@@ -98,7 +98,7 @@ class _NamedObjectsFunctionFactory(object):
 
         def set_name(self, value):
             arguments = {obj_term: self._id, "new_name": value}
-            execute_command(getattr(obj_class, COMMAND_PREFIX) + "/rename", **arguments)
+            execute_command(getattr(obj_class, COMMAND_PREFIX) + "/rename", self, **arguments)
         set_name.__name__ = 'name'
         api_set_name = get_api_decorator(module_logger)(set_name)
 
