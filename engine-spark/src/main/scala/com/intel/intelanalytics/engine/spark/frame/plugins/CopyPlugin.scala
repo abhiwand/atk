@@ -64,7 +64,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
    */
   override def execute(arguments: FrameCopy)(implicit invocation: Invocation): DataFrame = {
 
-    val sourceFrame : SparkFrameData = resolve(arguments.frame)
+    val sourceFrame: SparkFrameData = resolve(arguments.frame)
 
     // run the operation
     if (arguments.where.isEmpty) {
@@ -72,7 +72,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
         case None => sourceFrame.data.toPlainFrame() // full copy
         case Some(cols) => sourceFrame.data.toPlainFrame().selectColumnsWithRename(cols) // partial copy
       }
-      tryNew(arguments.name) { newFrame : FrameMeta =>
+      tryNew(arguments.name) { newFrame: FrameMeta =>
         save(new SparkFrameData(newFrame.meta, rdd))
       }.meta
     }

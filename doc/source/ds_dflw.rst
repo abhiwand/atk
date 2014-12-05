@@ -636,9 +636,9 @@ Now I check again and my result is::
 
     Discuss statistics, mean, standard deviation, etcetra.
 
-----------------------------------
-Graph (TitanGraph & Parquet Graph)
-----------------------------------
+----------
+TitanGraph
+----------
 
 For the examples below, we will use a Frame *my_frame*, which accesses an arbitrary frame of data
 consisting of the following columns:
