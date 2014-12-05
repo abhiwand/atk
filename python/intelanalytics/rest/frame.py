@@ -482,8 +482,10 @@ class FrameBackendRest(object):
                     break
                 data.extend(result.data)
             return TakeResult(data, schema)
+        if n < 0:
+            raise ValueError("Count value needs to be positive. Provided %s" % n)
 
-        if n <= 0:
+        if n == 0:
             return TakeResult([], frame.schema)
         result = get_take_result()
 
