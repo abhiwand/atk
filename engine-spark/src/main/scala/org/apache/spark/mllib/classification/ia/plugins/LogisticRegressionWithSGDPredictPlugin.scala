@@ -63,22 +63,20 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
 
   Parameters
   ----------
-  frame: Frame
-  frame whose labels are to be predicted
-  observation_column: str
-  column containing the observations
-    label_column: str
-  column containing the actual label for each observation
+  predict_frame: Frame
+    frame whose labels are to be predicted
+  predict_for_observation_column: str
+    column containing the observations
 
   Returns
   -------
-  Frame
+  Frame containing the original frame's columns and a column for the predicted values.
 
   Examples
   -----
   model = ia.LogisticRegressionModel(name='LogReg')
   model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-  new_frame = model.predict(train_frame, 'name_of_observation_column')
+  new_frame = model.predict(predict_frame, 'predict_for_observation_column')
   """)))
   /**
    * Number of Spark jobs that get created by running this command
@@ -143,7 +141,6 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
 
       frames.saveFrame(copiedFrame, outputFrameRDD, Some(inputFrame.rowCount))
     }
-
 
   /**
    * Generates the predicted frame name having the original frame's id as part of the frame name
