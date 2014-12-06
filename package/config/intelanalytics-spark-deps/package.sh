@@ -20,24 +20,23 @@ echo $BUILD_DIR
 
 echo "$SCRIPTPATH"
 
-jars="ispark-deps.jar"
 pwd
 
 mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib
-
-jars="ispark-deps.jar engine-spark.jar graphon.jar"
+jars="ispark-deps.jar"
 for jar in $jars
 do
-	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
+	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
 	echo $jarPath
-    cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib/
+    cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib/
 done
+
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 jars="engine-spark.jar graphon.jar"
 for jar in $jars
 do
-	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
+	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
 	echo $jarPath
     cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/rest-server/lib
     cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib/

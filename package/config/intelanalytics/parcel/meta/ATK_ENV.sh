@@ -6,6 +6,8 @@ echo "ATK env sh"
 
 export ATK_PARCEL_HOME="$PARCELS_ROOT/INTELANALYTICS"
 
+export ATK_LOG="${ATK_PARCEL_HOME}/log"
+
 export ATK_LAUNCHER_DIR="$ATK_PARCEL_HOME/usr/lib/intelanalytics/rest-server"
 
 export ATK_LAUNCHER_LIB_DIR="$ATK_PARCEL_HOME/usr/lib/intelanalytics/rest-server/lib"
@@ -17,6 +19,8 @@ export ATK_SPARK_DEPS_JAR="ispark-deps.jar"
 export ATK_CONFIG_DIR="$ATK_PARCEL_HOME/etc/intelanalytics/rest-server"
 
 export ATK_LOGBACK_JARS="$ATK_LAUNCHER_LIB_DIR/logback-classic-1.1.1.jar:$ATK_LAUNCHER_LIB_DIR/logback-core-1.1.1.jar"
+
+export ATK_PYTHON="$PARCELS_ROOT/INTELANALYTICS/usr/bin/python2.7"
 
 alias python="$PARCELS_ROOT/INTELANALYTICS/usr/bin/python2.7"
 

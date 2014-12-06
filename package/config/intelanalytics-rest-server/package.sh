@@ -68,4 +68,5 @@ cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib/
 
 popd
 
+log "createArchive $packageName"
 createArchive $packageName

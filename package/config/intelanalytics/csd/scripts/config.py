@@ -43,7 +43,7 @@ parser.add_argument("--classpath-lib", type=str, help="fullpath for the classpat
 args = parser.parse_args()
 
 def color_text(text, color):
-    return color + text + RESET
+    return text
 
 def poll_commands(service, command_name):
     """

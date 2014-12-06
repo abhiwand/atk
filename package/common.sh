@@ -178,7 +178,8 @@ function createArchive(){
     log "archive for $packageName dir: $BUILD_DIR"
     pushd ${BUILD_DIR}
     if [ $packageName == $PACKAGE_NAME ]; then
-
+        log "tar zcvf ../$packageName-source.tar.gz . --owner=root --group=root"
+        log "`pwd`"
         tar zcvf ../$packageName-source.tar.gz . --owner=root --group=root
         #tar -pczf ../$package-source.tar.gz .
     fi
@@ -285,6 +286,7 @@ echo "%files"
 if [ ! -z "$FILES" ]; then
     echo "$FILES"
 fi
+
 cat $TAR_FILES
 
 if [ ! -z "$CONFIG" ]; then

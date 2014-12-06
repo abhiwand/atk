@@ -2,7 +2,7 @@
     "name": "INTELANALYTICS",
     "label": "Intel Analytics",
     "description": "The Intel Analytics graph machine learning platform",
-    "version": "VERSION",
+    "version": "VERSION.BUILD",
     "runAs": {
         "user": "iauser",
         "group": "iauser"
@@ -102,7 +102,7 @@
                     "name": "atk_api_port",
                     "configName": "intel.analytics.api.port",
                     "label": "Webserver port",
-                    "description": "The web server port number",
+                    "description": "This port number is used by the python client for communication with the rest server",
                     "required": "true",
                     "type": "port",
                     "default": 9099
@@ -162,7 +162,7 @@
                      "label": "Postgres password",
                      "description": "Postgresql password",
                      "required": "true",
-                     "type": "string",
+                     "type": "password",
                      "default": "SOMETHING",
                      "configurableInWizard": true
                 },
@@ -180,7 +180,7 @@
                      "label": "Cloudera Manager port",
                      "description": "The Cloudera manager port, usually 7180",
                      "required": "true",
-                     "type": "string",
+                     "type": "port",
                      "default": "7180",
                      "configurableInWizard": true
                 },
@@ -201,6 +201,33 @@
                      "type": "password",
                      "default": "admin",
                      "configurableInWizard": true
+                },
+                {
+                     "name": "atk_default_count",
+                     "configName": "intel.analytics.api.default-count",
+                     "label": "Page size",
+                     "description": "The default page size for result pagination",
+                     "required": "false",
+                     "type": "long",
+                     "default": "20"
+                },
+                {
+                     "name": "atk_default_timeout",
+                     "configName": "intel.analytics.api.default-timeout",
+                     "label": "Default Timeout",
+                     "description": "Timeout for waiting for results from the engine in seconds.",
+                     "required": "false",
+                     "type": "long",
+                     "default": "30"
+                },
+                {
+                     "name": "atk_spark_akka_framesize",
+                     "configName": "intel.analytics.engine.spark.conf.properties.spark.akka.frameSize",
+                     "label": "Akka frame size",
+                     "description": "Increased Akka frame size from default of 10MB to 100MB to allow tasks to send large results to Spark driver (e.g., using collect() on large datasets)",
+                     "required": "false",
+                     "type": "long",
+                     "default": "100"
                 }
 
             ],
@@ -208,13 +235,16 @@
                 "program": "scripts/control.sh",
                 "args": ["start"],
                 "environmentVariables": {
+                    "ATK_USER": "${user}",
                     "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                     "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
                     "ATK_CLASSPATH_ADD": "${atk_classpath_add}",
                     "ATK_CDH_HOST": "${atk_cdh_host}",
                     "ATK_CDH_PORT": "${atk_cdh_port}",
                     "ATK_CDH_USERNAME": "${atk_cdh_username}",
-                    "ATK_CDH_PASSWORD": "${atk_cdh_password}"
+                    "ATK_CDH_PASSWORD": "${atk_cdh_password}",
+                    "ATK_DEFAULT_TIMEOUT": "${atk_default_timeout}",
+                    "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}"
                 }
             },
             "externalLink" : {
@@ -243,13 +273,16 @@
                     "program" : "scripts/control.sh",
                     "args" : ["start"],
                     "environmentVariables": {
+                        "ATK_USER": "${user}",
                         "ATK_MAX_HEAPSIZE": "${atk_max_heapsize}",
                         "ATK_ADD_JVM_OPT": "${atk_add_jvm_opt}",
                         "ATK_CLASSPATH_ADD": "${atk_classpath_add}",
                         "ATK_CDH_HOST": "${atk_cdh_host}",
                         "ATK_CDH_PORT": "${atk_cdh_port}",
                         "ATK_CDH_USERNAME": "${atk_cdh_username}",
-                        "ATK_CDH_PASSWORD": "${atk_cdh_password}"
+                        "ATK_CDH_PASSWORD": "${atk_cdh_password}",
+                        "ATK_DEFAULT_TIMEOUT": "${atk_default_timeout}",
+                        "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}"
                     }
                   }
                 },
@@ -286,7 +319,8 @@
                              "atk_postgres_port",
                              "atk_postgres_database",
                              "atk_postgres_username",
-                             "atk_postgres_password"
+                             "atk_default_count",
+                             "atk_spark_akka_framesize"
                            ]
                          }
                        ]

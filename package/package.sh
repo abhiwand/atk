@@ -88,7 +88,7 @@ export BUILD_DIR=$buildDir/$PACKAGE_NAME
 #do a verbose extract of the tar file to get a list of all the files in the tar file
 
 
-if [ $makePackage == "no" ]; then
+if [ $makePackage == "yes" ]; then
     log "make package $PACKAGE_NAME"
     if [ -f $configDir/package.sh ]; then
         cleanBuild $PACKAGE_NAME
@@ -101,7 +101,7 @@ if [ $makePackage == "no" ]; then
 fi
 tarFile=$BUILD_DIR/../$PACKAGE_NAME-source.tar.gz
 echo $tarFile
-#tarFiles $tarFile
+tarFiles $tarFile
 for package in $packages
 do 
 	if [ -f $configDir/$package.sh  ]; then

@@ -1,7 +1,12 @@
 {
   "schema_version":     1,
   "name":               "INTELANALYTICS",
-  "version":            "VERSION",
+  "version":            "VERSION-BUILD.cdh5.2.0",
+  "extraVersionInfo": {
+    "fullVersion":      "VERSION-BUILD.cdh5.2.0",
+    "baseVersion":      "VERSION",
+    "patchCount":       "BUILD"
+  },
   "depends": "CDH (>= 5.1), CDH (<< 6.0)",
   "setActiveSymlink":   true,
 
@@ -26,9 +31,9 @@
        "longname"    : "iauser",
        "home"        : "/var/lib/intelanalytics",
        "shell"       : "/bin/bash",
-       "extra_groups": ["hadoop", "postgres"]
+       "extra_groups": ["hadoop"]
      }
   },
 
-  "groups": [ ]
+  "groups": []
 }

@@ -3,18 +3,22 @@ source common.sh
 log create parcel
 
 PACKAGE_NAME=INTELANALYTICS
-parcelDir=$PACKAGE_NAME-$VERSION
+parcelDir=$PACKAGE_NAME-$VERSION-$BUILD_NUMBER.cdh5.2.0
 tarFile=$2
+
 rm -rf $SCRIPTPATH/$parcelDir
+
 
 pushd $SCRIPTPATH
 
 
 mkdir -p $parcelDir/tmp
+mkdir -p $parcelDir/log
 
 cp -Rv parcel/* $parcelDir
 
 sed -i "s/VERSION/${VERSION}/g" $parcelDir/meta/parcel.json
+sed -i "s/BUILD/${BUILD_NUMBER}/g" $parcelDir/meta/parcel.json
 
 tar -xvf $2 -C $parcelDir/
 
@@ -28,7 +32,7 @@ mv $parcelDir/usr/lib/intelanalytics/rest-client/python $parcelDir/usr/lib/pytho
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root
 
-mv $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
+cp $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
 python /home/rodorad/Documents/parcels/cm_ext/make_manifest/make_manifest.py /home/rodorad/Documents/parcels/parcels/
 popd
 
