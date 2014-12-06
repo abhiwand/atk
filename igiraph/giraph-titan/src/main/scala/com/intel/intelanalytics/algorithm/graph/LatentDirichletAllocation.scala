@@ -193,12 +193,12 @@ class LatentDirichletAllocation
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Lda)(implicit user: UserPrincipal, executionContext: ExecutionContext): LdaResult = {
+  override def execute(arguments: Lda)(implicit invocation: Invocation): LdaResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from

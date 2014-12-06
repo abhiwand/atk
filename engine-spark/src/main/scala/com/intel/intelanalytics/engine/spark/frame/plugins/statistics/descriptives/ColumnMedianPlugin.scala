@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descripti
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ColumnMedian, ColumnMedianReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -102,13 +103,12 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments Input specification for column median.
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ColumnMedian)(implicit user: UserPrincipal, executionContext: ExecutionContext): ColumnMedianReturn = {
+  override def execute(arguments: ColumnMedian)(implicit invocation: Invocation): ColumnMedianReturn = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId: Long = arguments.frame.id

@@ -128,7 +128,7 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to copy a subset of columns" in {
-      abcSchema.copySubset(Seq("a", "c")).columns.length shouldBe 2
+      abcSchema.copySubset(Seq("a", "c")).columnNames shouldBe List("a", "c")
     }
 
     "be able to rename columns" in {

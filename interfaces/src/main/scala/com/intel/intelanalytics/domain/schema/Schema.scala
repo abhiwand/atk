@@ -143,7 +143,10 @@ trait Schema {
   val columns: List[Column]
 
   require(columns != null, "columns must not be null")
-  require(columns.size == columnNames.size, "column names must be unique")
+  require({
+    val distinct = columns.map(_.name).distinct
+    distinct.length == columns.length
+  }, "invalid schema, duplicate column names")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -340,6 +343,13 @@ trait Schema {
       throw new IllegalArgumentException(s"Cannot add a duplicate column name: $columnName")
     }
     copy(columns = columns :+ Column(columnName, dataType))
+  }
+
+  /**
+   * Returns a new schema with the given columns appended.
+   */
+  def addColumns(newColumns: Seq[Column]): Schema = {
+    copy(columns = columns ++ newColumns)
   }
 
   /**

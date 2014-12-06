@@ -1301,20 +1301,21 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
                                             ('movie_id', int32),
                                             ('movie_title', str),
                                             ('rating', str)])
-        frame = ia.Frame(csv)
+        my_frame = ia.Frame(csv)
 
         # create a Graph
-        graph = ia.Graph()
-        graph.define_vertex_type('users')
-        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
+        my_graph = ia.Graph()
+        my_graph.define_vertex_type('users')
+        my_vertex_frame = my_graph.vertices['users']
+        my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
 
     Retrieve a previously defined VertexFrame::
 
-        # Retrieve a defined Vertex Frame from Graph object.
-        g = ia.get_graph("your_graph")
+        # Retrieve a Graph object.
+        my_graph = ia.get_graph("your_graph")
 
         # Retrieve a VertexFrame from the graph
-        f = g.vertices["your_label"]
+        my_vertex_frame = my_graph.vertices["your_label"]
 
     Calling methods on a VertexFrame::
 
@@ -1409,25 +1410,26 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
                                             ('movie_id', int32),
                                             ('movie_title', str),
                                             ('rating', str)])
-        frame = ia.Frame(csv)
+        my_frame = ia.Frame(csv)
 
         # create a graph
-        graph = ia.Graph()
+        my_graph = ia.Graph()
 
         # define the types of vertices and edges this graph will be made of
-        graph.define_vertex_type('users')
-        graph.define_vertex_type('movies')
+        my_graph.define_vertex_type('users')
+        my_graph.define_vertex_type('movies')
         # 'ratings' are directed edges from 'user' vertices to 'movie' vertices
-        graph.define_edge_type('ratings','users','movies',directed=True)
+        my_graph.define_edge_type('ratings','users','movies',directed=True)
 
         # add data to the graph
-        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name'])
-        graph.vertices['movies].add_vertices(frame, 'movie_id', ['movie_title])
-        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+        graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+        graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+        my_edge_frame = graph.edges['ratings']
+        my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
 
     Retrieve a previously defined EdgeFrame::
 
-        # Retrieve a defined Vertex Frame from Graph object.
+        # Retrieve a Graph object.
         g = ia.get_graph("your_graph")
 
         # Retrieve an EdgeFrame from the graph

@@ -134,18 +134,16 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    *
    * @param invocation information about the user and the circumstances at the time of the call
    * @param arguments Gremlin script to execute
-   * @param user Principal representing an authenticated API user
-   * @param executionContext Execution context
    * @return Results of executing Gremlin query
    */
-  override def execute(invocation: Invocation, arguments: QueryArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): QueryResult = {
+  override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {
     import scala.concurrent.duration._
 
     val start = System.currentTimeMillis()
     val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     val resultIterator = Try({

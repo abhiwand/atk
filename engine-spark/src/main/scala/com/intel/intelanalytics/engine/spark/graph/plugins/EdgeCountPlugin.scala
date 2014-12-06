@@ -26,6 +26,8 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphNoArgs
 import com.intel.intelanalytics.domain.LongValue
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -65,10 +67,10 @@ class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
    * @param arguments the arguments passed by the user
    * @return the count
    */
-  override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): LongValue = {
-    val graphs = invocation.engine.graphs
+  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): LongValue = {
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     val graph = graphs.expectSeamless(arguments.graph.id)
-    LongValue(graph.edgeCount)
+    LongValue(graph.edgeCount.get)
   }
 
 }

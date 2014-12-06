@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropDuplicatesPlugin
@@ -31,7 +32,7 @@ import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRDD }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
@@ -122,17 +123,16 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: DropDuplicates)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    val frames = invocation.engine.frames
+  override def execute(arguments: DropDuplicates)(implicit invocation: Invocation): DataFrame = {
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     val vertexFrame = frames.expectFrame(arguments.frame.id)
 
     vertexFrame.graphId match {
       case Some(graphId) => {
         val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(graphId)
 
-        val ctx: SparkContext = invocation.sparkContext
         val schema = vertexFrame.schema
-        val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+        val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
         val columnNames = arguments.unique_columns match {
           case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
           case None =>
@@ -143,7 +143,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
         val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
 
         val label = schema.asInstanceOf[VertexSchema].label
-        FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, ctx, new LegacyFrameRDD(schema, duplicatesRemoved))
+        FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, new LegacyFrameRDD(schema, duplicatesRemoved))
 
         val rowCount = duplicatesRemoved.count()
         // save results
