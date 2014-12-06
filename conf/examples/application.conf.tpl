@@ -103,7 +103,7 @@ intel.analytics {
 
 	#Configuration for the IAT processing engine
 	engine {
-	    //default-timeout = 30s
+	    //default-timeout = 30
         //page-size = 1000
 
     spark {
@@ -130,9 +130,9 @@ intel.analytics {
           # (e.g., using collect() on large datasets)
           //spark.akka.frameSize=100
 
-          #spark.akka.retry.wait=30000
-          #spark.akka.timeout=200
-          #spark.akka.timeout=30000
+          //spark.akka.retry.wait=30000
+          //spark.akka.timeout=200
+          //spark.akka.timeout=30000
 
           //spark.shuffle.consolidateFiles=true
 

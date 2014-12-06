@@ -3,5 +3,25 @@
     "user":  "iauser",
     "group": "iauser",
     "permissions": "0700"
+  },
+  "log": {
+      "user":  "iauser",
+      "group": "iauser",
+      "permissions": "0744"
+  },
+  "etc/intelanalytics/rest-server": {
+     "user":  "iauser",
+     "group": "iauser",
+     "permissions": "0740"
+  },
+  "usr/lib/intelanalytics/graphbuilder/lib/": {
+     "user":  "iauser",
+     "group": "iauser",
+     "permissions": "0775"
+  },
+  "usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar": {
+     "user":  "iauser",
+     "group": "iauser",
+     "permissions": "0775"
   }
 }
