@@ -43,20 +43,31 @@ from collections import namedtuple
 
 
 
-def execute_command(command_name, **arguments):
+def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     from intelanalytics.meta.results import get_postprocessor
+    is_frame = command_info.result.has_key('name') and command_info.result.has_key('schema')
+    parent = None
+    if is_frame:
+        parent = command_info.result.get('parent')
+        if parent and parent == getattr(selfish, '_id'):
+            #print "Changing ID for existing proxy"
+            selfish._id = command_info.result['id']
     postprocessor = get_postprocessor(command_name)
     if postprocessor:
         result = postprocessor(command_info.result)
     elif command_info.result.has_key('value') and len(command_info.result) == 1:
         result = command_info.result.get('value')
-    elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
+    elif is_frame:
         # TODO: remove this hack for plugins that return data frame
         from intelanalytics.core.frame import get_frame
-        result = get_frame(command_info.result['name'])
+        if parent:
+            result = selfish
+        else:
+            #print "Returning new proxy"
+            result = get_frame(command_info.result['name'])
     else:
         result = command_info.result
     return result
@@ -210,6 +221,10 @@ class CommandInfo(object):
         return self._payload['id']
 
     @property
+    def correlation_id(self):
+        return self._payload['correlation_id']
+
+    @property
     def name(self):
         return self._payload['name']
 
@@ -343,6 +358,7 @@ class CommandServerError(Exception):
             message = command_info.error['message']
         except KeyError:
             message = "(Server response insufficient to provide details)"
+        message = message + (" (command: %s, corId: %s)" % (command_info.id_number, command_info.correlation_id))
         Exception.__init__(self, message)
 
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])

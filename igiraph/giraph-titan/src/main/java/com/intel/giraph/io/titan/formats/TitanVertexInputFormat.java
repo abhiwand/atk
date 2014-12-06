@@ -24,7 +24,7 @@ package com.intel.giraph.io.titan.formats;
 
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.intel.graphbuilder.io.titan.formats.util.TitanInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;

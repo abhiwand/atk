@@ -342,9 +342,9 @@ def create_execute_command_function(command_def, execute_command_function):
     over the parameter info for validating the arguments during usage
     """
     parameters = command_def.parameters
-    def execute_command(name, **kwargs):
+    def execute_command(name, selfish, **kwargs):
         arguments = validate_arguments(kwargs, parameters)
-        return execute_command_function(name, **arguments)
+        return execute_command_function(name, selfish, **arguments)
     return execute_command
 
 
@@ -381,7 +381,7 @@ def {func_name}({parameters}):
 
 
 def get_call_execute_command_text(command_def):
-    return "%s('%s', %s)" % (EXECUTE_COMMAND_FUNCTION_NAME,
+    return "%s('%s', self, %s)" % (EXECUTE_COMMAND_FUNCTION_NAME,
                              command_def.full_name,
                              get_function_kwargs(command_def))
 

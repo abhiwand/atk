@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -32,21 +35,21 @@ import com.intel.intelanalytics.security.UserPrincipal
 trait GraphStorage {
 
   /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphId: Long): Graph
+  def expectGraph(graphId: Long)(implicit invocation: Invocation): Graph
 
   /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphRef: GraphReference): Graph
+  def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): Graph
 
-  def lookup(id: Long): Option[Graph]
+  def lookup(id: Long)(implicit invocation: Invocation): Option[Graph]
 
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Graph
 
-  def renameGraph(graph: Graph, newName: String): Graph
+  def renameGraph(graph: Graph, newName: String)(implicit invocation: Invocation): Graph
 
-  def drop(graph: Graph)
+  def drop(graph: Graph)(implicit invocation: Invocation)
 
-  def getGraphs()(implicit user: UserPrincipal): Seq[Graph]
+  def getGraphs()(implicit invocation: Invocation): Seq[Graph]
 
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph]
+  def getGraphByName(name: String)(implicit invocation: Invocation): Option[Graph]
 
 }

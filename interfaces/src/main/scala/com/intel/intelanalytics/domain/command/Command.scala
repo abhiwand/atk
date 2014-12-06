@@ -49,6 +49,7 @@ import com.intel.intelanalytics.engine.ProgressInfo
 case class Command(id: Long,
                    name: String,
                    arguments: Option[JsObject] = None,
+                   correlationId: String = "",
                    error: Option[Error] = None,
                    progress: List[ProgressInfo] = List(),
                    complete: Boolean = false,
@@ -60,21 +61,7 @@ case class Command(id: Long,
   /**
    * Convenience method for getting the args as a String for logging/debugging
    */
-  def compactArgs: String = {
-    if (arguments.nonEmpty) {
-      arguments.get.compactPrint
-    }
-    else {
-      ""
-    }
-  }
+  def compactArgs: String = arguments.map { _.compactPrint }.getOrElse("")
+
 }
-//
-//case class CommandTemplate(name: String, arguments: Option[JsObject])
-//case class Definition(language: String, serialization: String, data: String)
-//case class Operation(name: String, definition: Option[Definition])
-//case class Partial[+Arguments](operation: Operation, arguments: Arguments)
-//
-//case class Error(message: String, stackTrace: Option[String], code: Option[Int],
-//                 details: Option[String], additional: Option[JsObject])
 
