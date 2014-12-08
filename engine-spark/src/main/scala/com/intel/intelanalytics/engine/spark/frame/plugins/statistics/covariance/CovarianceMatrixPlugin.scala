@@ -24,12 +24,13 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CovarianceMatrixArguments, DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, CovarianceMatrixArguments, DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
@@ -86,7 +87,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-    override def numberOfJobs(arguments: CovarianceMatrixArguments) = 7
+  override def numberOfJobs(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation) = 7
 
   /**
    * Calculate covariance matrix for the specified columns
@@ -94,32 +95,20 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
    * @param invocation information about the user and the circumstances at the time of the call, as well as a function
    *                   that can be called to produce a SparkContext that can be used during this invocation
    * @param arguments input specification for covariance matrix
-   * @param user current user
    * @return value of type declared as the Return type
    */
-  override def execute(invocation: SparkInvocation, arguments: CovarianceMatrixArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+  override def execute(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation): DataFrame = {
 
-    // parse arguments
-    val frameId: Long = arguments.frame.id
-    val matrixName = if (arguments.matrixName.nonEmpty) {
-      Some(arguments.matrixName.get).toString
-    }
-    else {
-      Naming.generateName()
-    }
-
+    val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
-    val rdd = frames.loadFrameRDD(ctx, frameId).cache()
+    val rdd = frame.data
 
     val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
     val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames).cache()
 
-    // create covariance matrix as DataFrame
-    val covarianceFrame = frames.create(DataFrameTemplate(matrixName, None))
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    frames.saveFrame(covarianceFrame, new FrameRDD(schema, covarianceRDD))
-
+    tryNew(arguments.matrixName) { newFrame: FrameMeta =>
+      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, covarianceRDD)))
+    }.meta
   }
 }
