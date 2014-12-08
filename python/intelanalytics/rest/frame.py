@@ -37,7 +37,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile, LineFile
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -187,6 +187,29 @@ class FrameBackendRest(object):
                                 "data": None
                                 },
                     }
+
+        if isinstance( source, XmlFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "xmlfile",
+                               "uri": source.file_name,
+                               "start_tag":source.start_tag,
+                               "end_tag":source.end_tag,
+                               "data": None
+                    },
+                    }
+
+
+
+        if isinstance( source, MultiLineFile):
+            return {'destination': frame._id,
+                'source': {"source_type": "multilinefile",
+                           "uri": source.file_name,
+                           "start_tag":source.start_tag,
+                           "end_tag":source.end_tag,
+                           "data": None
+                        },
+                    }
+
         if isinstance(source, Pandas):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
