@@ -86,7 +86,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  //  override def numberOfJobs(arguments: CovarianceMatrixArguments) = 3
+    override def numberOfJobs(arguments: CovarianceMatrixArguments) = 7
 
   /**
    * Calculate covariance matrix for the specified columns
