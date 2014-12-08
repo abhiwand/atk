@@ -4,6 +4,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -89,7 +90,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: RecommendParams) = 2
+  override def numberOfJobs(arguments: RecommendParams)(implicit invocation: Invocation) = 2
   /**
    * User documentation exposed in Python.
    *
@@ -185,13 +186,12 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |
                             """.stripMargin)))
 
-  override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
-    implicit user: UserPrincipal, executionContext: ExecutionContext): RecommendResult = {
+  override def execute(arguments: RecommendParams)(implicit invocation: Invocation): RecommendResult = {
     import scala.concurrent.duration._
 
     System.out.println("*********Start to execute Recommend query********")
     val config = configuration
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val pattern = "[\\s,\\t]+"
     val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
@@ -231,7 +231,6 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
-    val sc = invocation.sparkContext
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
     val vertexRDD = titanReaderRDD.filterVertices().distinct()

@@ -29,6 +29,9 @@ import org.apache.commons.configuration.AbstractConfiguration;
 /**
  * An implementation that implements Serializable that was
  * otherwise copied from Apache's BaseConfiguration.
+ *
+ * This implementation also overrides the hashcode and equality methods to enable
+ * comparison of configuration objects based on their key values.
  */
 public class SerializableBaseConfiguration extends AbstractConfiguration implements Serializable {
 
@@ -115,5 +118,58 @@ public class SerializableBaseConfiguration extends AbstractConfiguration impleme
     public Iterator getKeys() {
         return store.keySet().iterator();
     }
+
+    /**
+     * Compute the hashcode based on the property values.
+     *
+     * The hashcode allows us to compare two configuration objects with the same property entries.
+     *
+     * @return Hashcode based on property values
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+
+        for (Object property : store.keySet()) {
+            String value = store.get(property).toString();
+            if (value != null) {
+                result = prime * result + value.hashCode();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Configuration objects are considered equal if they contain the same property keys and values.
+     *
+     * @param obj Configuration object to compare
+     * @return True if the configuration objects have matching property keys and values
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        SerializableBaseConfiguration that = (SerializableBaseConfiguration) obj;
+        for (Object property : store.keySet()) {
+            String thisValue = this.store.get(property).toString();
+            String thatValue = that.store.get(property).toString();
+
+            if (thisValue == thatValue) {
+                continue;
+            }
+            if (thisValue == null || !thisValue.equals(thatValue)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
 }

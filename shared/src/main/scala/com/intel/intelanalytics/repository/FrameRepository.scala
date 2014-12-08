@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import com.intel.intelanalytics.security.UserPrincipal
@@ -32,16 +33,13 @@ trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, Da
 
   def insert(frame: DataFrame)(implicit session: Session): DataFrame
 
+  def updateRowCount(frame: DataFrame, rowCount: Option[Long])(implicit session: Session): DataFrame
   def lookupByName(name: String)(implicit session: Session): Option[DataFrame]
 
   def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame
 
-  def updateRowCount(frame: DataFrame, rowCount: Long)(implicit session: Session): DataFrame
-
   /** Update the errorFrameId column */
   def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
-
-  def updateRevision(frame: DataFrame, revision: Int)(implicit session: Session): DataFrame
 
   /**
    * Return all the frames

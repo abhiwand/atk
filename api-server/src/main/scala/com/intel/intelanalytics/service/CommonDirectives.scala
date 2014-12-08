@@ -23,12 +23,16 @@
 
 package com.intel.intelanalytics.service
 
-import akka.event.Logging
-import spray.http.StatusCodes
+import com.intel.event.EventContext
+import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.routing._
-import scala.util.control.NonFatal
 import spray.http.HttpHeaders.RawHeader
+import spray.http.{ HttpRequest, StatusCodes }
+import spray.routing._
+import spray.routing.directives.LoggingMagnet
+
+import scala.util.control.NonFatal
 
 /**
  * Directives common to all services
@@ -37,29 +41,49 @@ import spray.http.HttpHeaders.RawHeader
  */
 class CommonDirectives(val authenticationDirective: AuthenticationDirective) extends Directives with EventLoggingDirectives {
 
+  def logReqResp(contextName: String)(req: HttpRequest) = {
+    //In case we're re-using a thread that already had an event context
+    EventContext.setCurrent(null)
+    val ctx = EventContext.enter(contextName)
+    info(req.method.toString() + " " + req.uri.toString())
+    (res: Any) => {
+      EventContext.setCurrent(ctx)
+      info("RESPONSE: " + res.toString())
+      ctx.close()
+    }
+  }
+
   /**
    * Directives common to all services
    * @param eventCtx name of the current context for logging
    * @return directives with authenticated user
    */
-  def apply(eventCtx: String): Directive1[UserPrincipal] = {
-    eventContext(eventCtx) &
+  def apply(eventCtx: String): Directive1[Invocation] = {
+    //eventContext(eventCtx) &
+    logRequestResponse(LoggingMagnet(logReqResp(eventCtx))) &
+      //      logRequest(LoggingMagnet((req: HttpRequest) => {
+      //        EventContext.enter(eventCtx)
+      //        info(req.method.toString() + " " + req.uri.toString())
+      //      })) &
+      //      logResponse(LoggingMagnet((res: Any) => {
+      //        info("RESPONSE: " + res.toString())
+      //      })) &
       addCommonResponseHeaders &
       handleExceptions(errorHandler) &
-      logResponse(eventCtx, Logging.InfoLevel) &
       authenticationDirective.authenticateKey
   }
 
   def errorHandler = {
     ExceptionHandler {
-      case e: IllegalArgumentException => {
+      case e: IllegalArgumentException =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
-      }
-      case NonFatal(e) => {
+      case e: NotFoundException =>
+        error("An error occurred during request processing.", exception = e)
+        complete(StatusCodes.NotFound, e.getMessage)
+      case NonFatal(e) =>
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.InternalServerError, "An internal server error occurred")
-      }
     }
   }
 
@@ -67,9 +91,12 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
    * Adds header fields common to all responses
    * @return directive to wrap route with headers
    */
-  def addCommonResponseHeaders: Directive0 =
+  def addCommonResponseHeaders(): Directive0 =
     mapInnerRoute {
-      route => respondWithBuildId { route }
+      route =>
+        respondWithBuildId {
+          route
+        }
     }
 
   def respondWithBuildId = respondWithHeader(RawHeader("build_id", ApiServiceConfig.buildId))

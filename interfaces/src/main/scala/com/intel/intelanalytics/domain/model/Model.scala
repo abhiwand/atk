@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.{ HasId, IAUri }
+import com.intel.intelanalytics.domain.HasId
 import org.joda.time.DateTime
-import spray.json.{ JsValue, JsObject }
+import spray.json.JsObject
 
 /**
  *
@@ -50,7 +50,7 @@ case class Model(id: Long,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None) extends HasId with IAUri {
+                 modifiedByUserId: Option[Long] = None) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(!name.isEmpty, "name must not be empty")
@@ -68,5 +68,7 @@ case class Model(id: Long,
   def isLogisticRegressionModel: Boolean = {
     modelType.equals("LogisticRegression")
   }
+
+  def uri: String = ModelReference(id, None).uri
 
 }

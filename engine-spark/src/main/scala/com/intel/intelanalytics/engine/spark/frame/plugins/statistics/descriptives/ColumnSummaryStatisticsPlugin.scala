@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descripti
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatistics, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -202,13 +203,12 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments Input specification for column summary statistics.
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal, executionContext: ExecutionContext): ColumnSummaryStatisticsReturn = {
+  override def execute(arguments: ColumnSummaryStatistics)(implicit invocation: Invocation): ColumnSummaryStatisticsReturn = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId: Long = arguments.frame.id

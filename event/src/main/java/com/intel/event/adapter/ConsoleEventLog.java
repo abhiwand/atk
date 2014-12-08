@@ -38,6 +38,6 @@ public class ConsoleEventLog implements EventLog {
     @Override
     public void log(Event e) {
         PrintStream out = System.out;
-        out.println(e.toString());
+        out.println(JsonFormatter.toJson(e).toString());
     }
 }

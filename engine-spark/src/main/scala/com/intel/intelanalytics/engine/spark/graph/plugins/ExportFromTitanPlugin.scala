@@ -23,22 +23,19 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameStorage }
 import com.intel.intelanalytics.domain.schema.DataTypes._
+import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.graphbuilder.elements.Property
 import com.thinkaurelius.titan.core.TitanGraph
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphNoArgs, GraphTemplate }
-import scala.Some
+import com.intel.intelanalytics.domain.graph.{ GraphMeta, Graph, GraphNoArgs, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import org.apache.spark.SparkContext
@@ -69,7 +66,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
 
   override def kryoRegistrator: Option[String] = None
 
-  override def numberOfJobs(arguments: GraphNoArgs): Int = {
+  override def numberOfJobs(arguments: GraphNoArgs)(implicit invocation: Invocation): Int = {
     val graphId: Long = arguments.graph.id
     val titanIAGraph = graphs.expectGraph(graphId)
     val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph)
@@ -89,26 +86,24 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @return a value of type declared as the Return type.
    */
 
-  override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
-    val ctx = invocation.sparkContext
-    val graphId: Long = arguments.graph.id
+  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation) = {
 
-    val titanIAGraph = graphs.expectGraph(graphId)
+    val titanIAGraph: GraphMeta = resolve(arguments.graph)
 
-    val (vertices, edges) = graphs.loadFromTitan(ctx, titanIAGraph)
+    val (vertices, edges) = graphs.loadFromTitan(sc, titanIAGraph.meta)
     vertices.cache()
 
     val maxVertexId = vertices.map(v => v.physicalId.asInstanceOf[Long]).reduce((a, b) => Math.max(a, b))
 
     //record id column information for each vertex type
-    val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph)
-    val edgeDefinitions = getEdgeDefinitions(titanIAGraph)
+    val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph.meta)
+    val edgeDefinitions = getEdgeDefinitions(titanIAGraph.meta)
 
     val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
 
     ExportFromTitanPlugin.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
-    val titanDBGraph = graphs.getTitanGraph(graphId)
-    saveToVertexFrame(vertices, ctx, labelToIdNameMapping, graph, titanDBGraph)
+    val titanDBGraph = graphs.getTitanGraph(titanIAGraph.id)
+    saveToVertexFrame(vertices, sc, labelToIdNameMapping, graph, titanDBGraph)
     vertices.unpersist()
 
     edges.cache()
@@ -116,7 +111,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
 
     ExportFromTitanPlugin.createEdgeFrames(graphs, graph.id, edgeDefinitions)
-    saveToEdgeFrame(edges, ctx, graph, titanDBGraph)
+    saveToEdgeFrame(edges, sc, graph, titanDBGraph)
     edges.unpersist()
 
     graphs.updateIdCounter(graph.id, Math.max(maxVertexId, maxEdgeId))
@@ -124,21 +119,17 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
   }
 
   def getEdgeDefinitions(titanIAGraph: Graph): List[EdgeSchema] = {
-    titanIAGraph.frameSchemaList.get.schemas.filter(schema => {
-      schema match {
-        case s: EdgeSchema => true
-        case _ => false
-      }
-    }).asInstanceOf[List[EdgeSchema]]
+    titanIAGraph.frameSchemaList.get.schemas.filter {
+      case s: EdgeSchema => true
+      case _ => false
+    }.asInstanceOf[List[EdgeSchema]]
   }
 
   def getVertexLabelToIdColumnMapping(titanIAGraph: Graph): Map[String, String] = {
-    val vertexSchemas = titanIAGraph.frameSchemaList.get.schemas.filter(schema => {
-      schema match {
-        case s: VertexSchema => true
-        case _ => false
-      }
-    }).asInstanceOf[List[VertexSchema]]
+    val vertexSchemas = titanIAGraph.frameSchemaList.get.schemas.filter {
+      case s: VertexSchema => true
+      case _ => false
+    }.asInstanceOf[List[VertexSchema]]
 
     vertexSchemas.map(v => v.label -> v.idColumnName.get).toMap
   }
@@ -150,7 +141,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @param graph destination graph instance
    * @param titanDBGraph titan graph
    */
-  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph) {
+  def saveToEdgeFrame(edges: RDD[GBEdge], ctx: SparkContext, graph: Graph, titanDBGraph: TitanGraph)(implicit invocation: Invocation) {
     graphs.expectSeamless(graph.id).edgeFrames.foreach(edgeFrame => {
       val label = edgeFrame.schema.asInstanceOf[EdgeSchema].label
       val srcLabel = edgeFrame.schema.asInstanceOf[EdgeSchema].srcVertexLabel
@@ -195,7 +186,9 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
    * @param graph destination graph instance
    * @param titanDBGraph titan graph
    */
-  def saveToVertexFrame(vertices: RDD[GBVertex], ctx: SparkContext, labelToIdNameMapping: Map[String, String], graph: Graph, titanDBGraph: TitanGraph) {
+  def saveToVertexFrame(vertices: RDD[GBVertex], ctx: SparkContext,
+                        labelToIdNameMapping: Map[String, String],
+                        graph: Graph, titanDBGraph: TitanGraph)(implicit invocation: Invocation) {
     graphs.expectSeamless(graph.id).vertexFrames.foreach(vertexFrame => {
       val label = vertexFrame.schema.asInstanceOf[VertexSchema].label
       val typeVertex: RDD[GBVertex] = vertices.filter(v => {
@@ -239,7 +232,7 @@ object ExportFromTitanPlugin {
    * @param graphId destination graph id
    * @param vertexLabels vertex labels
    */
-  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String]) {
+  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String])(implicit invocation: Invocation) {
     vertexLabels.foreach(label => {
       graphs.defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = label, idColumnName = None))
     })
@@ -251,7 +244,7 @@ object ExportFromTitanPlugin {
    * @param graphId destination graph id
    * @param edgeDefinitions definitions for edge types
    */
-  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema]) {
+  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema])(implicit invocation: Invocation) {
     edgeDefinitions.foreach(edgeDef => {
       graphs.defineEdgeType(graphId, edgeDef)
     })

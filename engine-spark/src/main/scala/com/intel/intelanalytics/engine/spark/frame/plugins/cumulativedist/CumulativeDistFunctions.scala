@@ -61,6 +61,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     val numValues = pairedRdd.count().toDouble
 
     // group identical values together
+    // TODO: can't this be a reduceByKey() --Todd 12/3/2014
     val groupedRdd = pairedRdd.groupByKey()
 
     // count number of each distinct value and sort by distinct value

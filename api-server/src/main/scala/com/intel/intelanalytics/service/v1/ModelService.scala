@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json._
 import spray.http.Uri
 import scala.Some
@@ -70,7 +71,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
     }
 
     commonDirectives(prefix) {
-      implicit userProfile: UserPrincipal =>
+      implicit invocation: Invocation =>
         (path(prefix) & pathEnd) {
           requestUri {
             uri =>
