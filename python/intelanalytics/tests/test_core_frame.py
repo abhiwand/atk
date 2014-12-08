@@ -30,10 +30,8 @@ import unittest
 from mock import patch, Mock
 
 from intelanalytics.core.frame import Frame
-from intelanalytics.core.column import Column
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.config import get_frame_backend
 
 
 def get_simple_frame_abcde():
@@ -51,7 +49,7 @@ def get_simple_frame_abfgh():
                                           ('G', float64),
                                           ('H', str)]))
 
-@patch('intelanalytics.core.config.get_frame_backend')
+@patch('intelanalytics.meta.config.get_frame_backend')
 class FrameConstruction(unittest.TestCase):
 
     def validate_column_names(self, frame, column_names):
@@ -125,7 +123,7 @@ class FrameConstruction(unittest.TestCase):
         self.validate_column_names(f1, names)
 '''
 
-#@patch('intelanalytics.core.config.get_frame_backend', new=FrameBackendSimplePrint)
+#@patch('intelanalytics.meta.config.get_frame_backend', new=FrameBackendSimplePrint)
 class Debug(unittest.TestCase):
     # container to isolate a test
     pass

@@ -23,14 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.domain.UriReference
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameAddColumns, DataFrame }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.Column
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -62,53 +62,16 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameAddColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val pythonRDDStorage = new PythonRDDStorage(frames)
-    val ctx = invocation.sparkContext
-
-    // validate arguments
-    val frameId = arguments.frame.id
-    val columnNames = arguments.columnNames
-    val columnTypes = arguments.columnTypes
-    val expression = arguments.expression // Python Wrapper containing lambda expression
-    val frameMeta = frames.expectFrame(arguments.frame)
-    val schema = frameMeta.schema
-    val oldColumns = schema.columnTuples
-
-    // run the operation and save results
-    var newColumns = schema.columnTuples
-    for {
-      i <- 0 until columnNames.size
-    } {
-      val columnName = columnNames(i)
-      val columnType = columnTypes(i)
-
-      if (schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == columnName) >= 0)
-        throw new IllegalArgumentException(s"Duplicate column name: $columnName")
-
-      // Update the schema
-      newColumns = newColumns :+ (columnName, DataTypes.toDataType(columnType))
-    }
+  override def execute(arguments: FrameAddColumns)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = resolve(arguments.frame)
+    val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
+    val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
     // Update the data
-    val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
-    val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    var newFrame = frames.updateSchema(frameMeta, frameMeta.schema.legacyCopy(newColumns))
-    try {
-      pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
-    }
-    catch {
-      case ex: Exception => {
-        //reverting back to old schema
-        newFrame = frames.updateSchema(frameMeta, frameMeta.schema)
-        throw ex
-      }
-    }
-    newFrame
+    val rdd = PythonRDDStorage.mapWith(frame.data, arguments.expression, newSchema)
+
+    save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd)).meta
   }
 }

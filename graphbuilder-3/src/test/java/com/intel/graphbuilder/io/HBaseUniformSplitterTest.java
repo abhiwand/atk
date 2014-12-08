@@ -1,5 +1,6 @@
 package com.intel.graphbuilder.io;
 
+import com.intel.graphbuilder.titan.io.HBaseUniformSplitter;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;

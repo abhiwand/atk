@@ -25,6 +25,8 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, GraphNoArgs }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -57,8 +59,8 @@ class GraphInfoPlugin extends SparkCommandPlugin[GraphNoArgs, SeamlessGraphMeta]
    * @param arguments the arguments passed by the user
    * @return
    */
-  override def execute(invocation: SparkInvocation, arguments: GraphNoArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): SeamlessGraphMeta = {
-    val graphs = invocation.engine.graphs
+  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): SeamlessGraphMeta = {
+    val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     graphs.expectSeamless(arguments.graph.id)
   }
 

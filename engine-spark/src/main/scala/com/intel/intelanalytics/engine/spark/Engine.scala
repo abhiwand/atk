@@ -25,13 +25,14 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.frame.plugins._
@@ -50,7 +51,7 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
@@ -122,10 +123,9 @@ import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
-import com.intel.event.EventLogging
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -143,7 +143,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
                   val sparkAutoPartitioner: SparkAutoPartitioner,
                   commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
+    with EventLoggingImplicits
     with ClassLoaderAware {
+
+  type Data = FrameRDD
+  type Context = SparkContext
 
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
@@ -207,6 +211,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
 
     var lastUpdateTime = System.currentTimeMillis()
+
     /**
      * save the progress update
      * @param commandId id of the command
@@ -221,13 +226,17 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
-    future {
-      commandStorage.scan(offset, count)
+  override def getCommands(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Command]] = {
+    withContext("se.getCommands") {
+      require(offset >= 0, "offset cannot be negative")
+      require(count >= 0, "count cannot be negative")
+      future {
+        commandStorage.scan(offset, Math.min(count, SparkEngineConfig.pageSize))
+      }
     }
   }
 
-  override def getCommand(id: Long): Future[Option[Command]] = withContext("se.getCommand") {
+  override def getCommand(id: Long)(implicit invocation: Invocation): Future[Option[Command]] = withContext("se.getCommand") {
     future {
       commandStorage.lookup(id)
     }
@@ -239,18 +248,18 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param count Number of queries to obtain.
    * @return sequence of queries
    */
-  override def getQueries(offset: Int, count: Int): Future[Seq[Query]] = withContext("se.getQueries") {
+  override def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]] = withContext("se.getQueries") {
     future {
       queryStorage.scan(offset, count)
     }
   }
 
   /**
-   *  return a query object
+   * return a query object
    * @param id query id
    * @return Query
    */
-  override def getQuery(id: Long): Future[Option[Query]] = withContext("se.getQuery") {
+  override def getQuery(id: Long)(implicit invocation: Invocation): Future[Option[Query]] = withContext("se.getQuery") {
     future {
       queryStorage.lookup(id)
     }
@@ -264,9 +273,9 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user current user
    * @return data of specific page
    */
-  override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
+  override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextFactory.context(user, "query")
+      val ctx = sparkContextFactory.context("query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
@@ -277,7 +286,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def getUserPrincipal(apiKey: String): UserPrincipal = {
+  override def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal = {
     users.getUserPrincipal(apiKey)
   }
 
@@ -290,34 +299,36 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user the user running the command
    * @return an Execution that can be used to track the completion of the command
    */
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
-    commands.execute(command, user, implicitly[ExecutionContext], commandPluginRegistry)
+  def execute(command: CommandTemplate)(implicit invocation: Invocation): Execution = {
+    commands.execute(command, commandPluginRegistry)
+  }
 
   /**
    * All the command definitions available
    */
-  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
-    commandPluginRegistry.getCommandDefinitions()
-  }
+  override def getCommandDefinitions()(implicit invocation: Invocation): Iterable[CommandDefinition] =
+    withContext("se.getCommandDefinitions") {
+      commandPluginRegistry.getCommandDefinitions()
+    }
 
-  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
+  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[DataFrame] =
     future {
       frames.create(frame)
     }
 
-  def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
+  def delete(frame: DataFrame)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
     future {
       frames.drop(frame)
     }
   }
 
-  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+  def getFrames()(implicit invocation: Invocation): Future[Seq[DataFrame]] = withContext("se.getFrames") {
     future {
       frames.getFrames()
     }
   }
 
-  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
+  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
     future {
       frames.lookupByName(name)
     }
@@ -326,15 +337,15 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   /**
    * Execute getRows Query plugin
    * @param arguments RowQuery object describing id, offset, and count
-   * @param user current user
    * @return the QueryExecution
    */
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult = {
-    val queryExecution = queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult = {
+    val queryExecution = queries.execute(getRowsQuery, arguments)
     val frame = frames.lookup(arguments.id).get
     val schema = frame.schema
     PagedQueryResult(queryExecution, Some(schema))
   }
+
   val getRowsQuery = queries.registerQuery("frames/data", getRowsSimple)
 
   /**
@@ -346,13 +357,13 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @return RDD consisting of the requested number of rows
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
+    implicit val inv = invocation
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
       val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
       val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }
     else {
-      implicit val impUser: UserPrincipal = user
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
       val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
       rows
@@ -366,7 +377,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user current user
    * @return A QueryResult describing the data and schema of this take
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult = {
+  def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult = {
     withMyClassLoader {
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
       if (frames.isParquet(frame)) {
@@ -379,7 +390,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
+  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[DataFrame]] =
     withContext("se.getFrame") {
       future {
         frames.lookup(id)
@@ -392,7 +403,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user IMPLICIT. The user creating the graph.
    * @return Future of the graph to be created.
    */
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation) = {
     future {
       withMyClassLoader {
         graphs.createGraph(graph)
@@ -405,7 +416,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param id Unique identifier for the graph provided by the metastore.
    * @return A future of the graph metadata entry.
    */
-  def getGraph(id: Identifier): Future[Graph] = {
+  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[Graph] = {
     future {
       graphs.lookup(id).get
     }
@@ -416,14 +427,14 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user IMPLICIT. User listing the graphs.
    * @return Future of the sequence of graph metadata entries to be returned.
    */
-  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]] =
+  def getGraphs()(implicit invocation: Invocation): Future[Seq[Graph]] =
     withContext("se.getGraphs") {
       future {
         graphs.getGraphs()
       }
     }
 
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]] =
+  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[Graph]] =
     withContext("se.getGraphByName") {
       future {
         graphs.getGraphByName(name)
@@ -435,7 +446,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param graph The graph to be deleted.
    * @return A future of unit.
    */
-  def deleteGraph(graph: Graph): Future[Unit] = {
+  def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletegraph") {
       future {
         graphs.drop(graph)
@@ -451,7 +462,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param user IMPLICIT. The user creating the model.
    * @return Future of the model to be created.
    */
-  def createModel(model: ModelTemplate)(implicit user: UserPrincipal) = {
+  def createModel(model: ModelTemplate)(implicit invocation: Invocation) = {
     future {
       withMyClassLoader {
         models.createModel(model)
@@ -463,20 +474,20 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param id Unique identifier for the model provided by the metastore.
    * @return A future of the model metadata entry.
    */
-  def getModel(id: Identifier): Future[Model] = {
+  def getModel(id: Identifier)(implicit invocation: Invocation): Future[Model] = {
     future {
       models.lookup(id).get
     }
   }
 
-  def getModelByName(name: String)(implicit user: UserPrincipal): Future[Option[Model]] =
+  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[Model]] =
     withContext("se.getModelByName") {
       future {
         models.getModelByName(name)
       }
     }
 
-  def getModels()(implicit user: UserPrincipal): Future[Seq[Model]] =
+  def getModels()(implicit invocation: Invocation): Future[Seq[Model]] =
     withContext("se.getModels") {
       future {
         models.getModels()
@@ -487,7 +498,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Delete a model from the metastore.
    * @param model Model
    */
-  def deleteModel(model: Model): Future[Unit] = {
+  def deleteModel(model: Model)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
         models.drop(model)
@@ -495,7 +506,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
+  override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {
       commands.stopCommand(id)
     }
@@ -505,28 +516,28 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     //do nothing
   }
 
-  override def getVertex(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       Some(seamless.vertexMeta(label))
     }
   }
 
-  override def getVertices(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+  override def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       seamless.vertexFrames
     }
   }
 
-  override def getEdge(graphId: Identifier, label: String)(implicit user: UserPrincipal): Future[Option[DataFrame]] = {
+  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       Some(seamless.edgeMeta(label))
     }
   }
 
-  override def getEdges(graphId: Identifier)(implicit user: UserPrincipal): Future[Seq[DataFrame]] = {
+  override def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       seamless.edgeFrames
