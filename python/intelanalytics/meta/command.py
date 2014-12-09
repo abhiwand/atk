@@ -47,7 +47,7 @@ class CommandDefinition(object):
         self.json_schema = json_schema
         self.full_name = full_name
         parts = self.full_name.split('/')
-        self.prefix = parts[0]
+        self.entity_type = parts[0]
         self.intermediates = tuple(parts[1:-1])
         self.name = parts[-1]
         self.parameters = parameters

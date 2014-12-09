@@ -85,8 +85,9 @@ except Exception as e:
 
 
 @api
+@name_support('frame')
 class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
-    _command_prefix = 'frame'
+    _entity_type = 'frame'
 
     def __init__(self):
         CommandLoadable.__init__(self)
@@ -1094,7 +1095,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
 
 @api
-@name_support('frame')
 class Frame(DocStubsFrame, _BaseFrame):
     """
     Data handle.
@@ -1157,7 +1157,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:'
+    _entity_type = 'frame:'
 
     def __init__(self, source=None, name=None):
         try:
@@ -1333,7 +1333,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:vertex'
+    _entity_type = 'frame:vertex'
 
     def __init__(self, source=None, graph=None, label=None):
         try:
@@ -1451,7 +1451,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:edge'
+    _entity_type = 'frame:edge'
 
     def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None):
         try:

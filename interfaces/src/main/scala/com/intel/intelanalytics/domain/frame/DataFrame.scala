@@ -77,7 +77,7 @@ case class DataFrame(id: Long,
   def isEdgeFrame: Boolean = schema.isInstanceOf[EdgeSchema]
 
   /** Prefix used by plugin system */
-  def commandPrefix: String = {
+  def entityType: String = {
     if (isVertexFrame) "frame:vertex"
     else if (isEdgeFrame) "frame:edge"
     else "frame:"

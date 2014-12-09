@@ -508,12 +508,12 @@ class Executor(object):
                 setattr(clazz, name, staticmethod(v))
                 logger.debug("Loaded class %s with static method %s", clazz, name)
 
-    def get_command_functions(self, prefixes, update_function, new_function):
+    def get_command_functions(self, entity_types, update_function, new_function):
         functions = dict()
         for cmd in executor.commands:
             full_name = cmd['name']
             parts = full_name.split('/')
-            if parts[0] not in prefixes:
+            if parts[0] not in entity_types:
                 continue
             args = cmd['argument_schema']
             intermediates = parts[1:-1]

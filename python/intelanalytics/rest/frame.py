@@ -610,7 +610,10 @@ class FrameInfo(object):
 
     @property
     def row_count(self):
-        return int(self._payload['row_count'])
+        try:
+            return int(self._payload['row_count'])
+        except KeyError:
+            return 0
 
     @property
     def error_frame_id(self):
