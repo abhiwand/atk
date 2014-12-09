@@ -94,7 +94,7 @@ object DiscretizationFunctions extends Serializable {
 
     // find the minimum and maximum values in the column RDD
     val min: Double = pairedRdd.sortByKey().first()._1
-    val max: Double = pairedRdd.sortByKey(false).first()._1
+    val max: Double = pairedRdd.sortByKey(ascending = false).first()._1
 
     // determine bin width and cutoffs
     val binWidth = (max - min) / numBins.toDouble

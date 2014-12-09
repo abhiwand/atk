@@ -212,9 +212,9 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     filteredFeatureRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     // Compute histograms
-    val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, false, numBuckets)
+    val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = false, numBuckets)
     val posteriorHistograms = if (arguments.posterior_property_list != None) {
-      Some(FeatureVector.getHistograms(filteredFeatureRDD, true, numBuckets))
+      Some(FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = true, numBuckets))
     }
     else None
 
