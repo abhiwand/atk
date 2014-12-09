@@ -324,7 +324,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame Frame to retrieve records from
    * @param offset offset in frame before retrieval
    * @param count number of records to retrieve
-   * @param user logged in user
    * @return records in the dataframe starting from offset with a length of count
    */
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row] =
