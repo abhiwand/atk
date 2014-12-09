@@ -270,7 +270,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    *
    * @param id query id
    * @param pageId page id
-   * @param user current user
    * @return data of specific page
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
@@ -296,7 +295,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Stores the results of the command execution back in the persistent command object.
    *
    * @param command the command to run, including name and arguments
-   * @param user the user running the command
    * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit invocation: Invocation): Execution = {
@@ -374,7 +372,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Return a sequence of Rows from an RDD starting from a supplied offset
    *
    * @param arguments RowQuery object describing id, offset, and count
-   * @param user current user
    * @return A QueryResult describing the data and schema of this take
    */
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult = {
@@ -400,7 +397,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   /**
    * Register a graph name with the metadata store.
    * @param graph Metadata for graph creation.
-   * @param user IMPLICIT. The user creating the graph.
    * @return Future of the graph to be created.
    */
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation) = {
@@ -424,7 +420,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
 
   /**
    * Get the metadata for a range of graph identifiers.
-   * @param user IMPLICIT. User listing the graphs.
    * @return Future of the sequence of graph metadata entries to be returned.
    */
   def getGraphs()(implicit invocation: Invocation): Future[Seq[Graph]] =
@@ -459,7 +454,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   /**
    * Register a model name with the metadate store.
    * @param model Metadata for model creation.
-   * @param user IMPLICIT. The user creating the model.
    * @return Future of the model to be created.
    */
   def createModel(model: ModelTemplate)(implicit invocation: Invocation) = {

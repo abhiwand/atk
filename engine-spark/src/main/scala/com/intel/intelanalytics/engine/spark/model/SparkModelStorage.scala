@@ -62,7 +62,6 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
   /**
    * Registers a new model.
    * @param model The model being registered.
-   * @param user The user creating the model.
    * @return Model metadata.
    */
   override def createModel(model: ModelTemplate)(implicit invocation: Invocation): Model = {
@@ -124,7 +123,6 @@ class SparkModelStorage(metaStore: MetaStore) extends ModelStorage with EventLog
 
   /**
    * Obtain the model metadata for a range of model IDs.
-   * @param user The user listing the model.
    * @return Sequence of model metadata objects.
    */
   override def getModels()(implicit invocation: Invocation): Seq[Model] = {
