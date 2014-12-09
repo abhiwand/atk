@@ -159,7 +159,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
@@ -181,7 +181,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataRDD: RDD[Double] = rowRDD.map(row => dataType.asDouble(row(dataColumnIndex)))
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
