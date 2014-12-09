@@ -435,7 +435,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(frame: DataFrame): JsValue = {
       JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields +
         ("ia_uri" -> JsString(frame.uri)) +
-        ("command_prefix" -> JsString(frame.commandPrefix)))
+        ("entity_type" -> JsString(frame.entityType)))
     }
   }
 
@@ -449,7 +449,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(graph: Graph): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
-        ("command_prefix" -> JsString(graph.commandPrefix)))
+        ("entity_type" -> JsString(graph.entityType)))
     }
   }
 

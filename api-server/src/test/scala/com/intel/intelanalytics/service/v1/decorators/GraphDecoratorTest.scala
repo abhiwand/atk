@@ -39,6 +39,7 @@ class GraphDecoratorTest extends FlatSpec with Matchers {
     decoratedGraph.id should be(1)
     decoratedGraph.name should be("name")
     decoratedGraph.iaUri should be("ia://graph/1")
+    decoratedGraph.entityType should be("graph:titan")
     decoratedGraph.links.head.uri should be("http://www.example.com/graphs")
   }
 
@@ -46,5 +47,6 @@ class GraphDecoratorTest extends FlatSpec with Matchers {
     val graphHeaders = GraphDecorator.decorateForIndex(uri, Seq(graph))
     val graphHeader = graphHeaders.toList.head
     graphHeader.url should be("http://www.example.com/graphs/1")
+    graphHeader.entityType should be("graph:titan")
   }
 }

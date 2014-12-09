@@ -235,8 +235,8 @@ class GraphInfo(object):
         return self._payload['name']
 
     @property
-    def command_prefix(self):
-        return self._payload['command_prefix']
+    def entity_type(self):
+        return self._payload['entity_type']
 
     @property
     def ia_uri(self):
