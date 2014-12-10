@@ -4,12 +4,11 @@ import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArgume
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
-import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.{ Text, LongWritable }
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SchemaRDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.hadoop.io.Text
 
 import scala.reflect.ClassTag
 
@@ -37,11 +36,11 @@ object LoadRDDFunctions extends Serializable {
       startTag match {
         case Some(s) =>
           val conf = new org.apache.hadoop.conf.Configuration()
-          conf.setStrings(XmlInputFormat.START_TAG_KEY, s: _*) //Treat s as a Varargs parameter
+          conf.setStrings(MultiLineHeaderFooterInputFormat.START_TAG_KEY, s: _*) //Treat s as a Varargs parameter
           val e = endTag.get
-          conf.setStrings(XmlInputFormat.END_TAG_KEY, e: _*)
-          conf.setBoolean(XmlInputFormat.IS_XML_KEY, isXml)
-          sc.newAPIHadoopFile[LongWritable, Text, XmlInputFormat](fileName, classOf[XmlInputFormat], classOf[LongWritable], classOf[Text], conf)
+          conf.setStrings(MultiLineHeaderFooterInputFormat.END_TAG_KEY, e: _*)
+          conf.setBoolean(MultiLineHeaderFooterInputFormat.IS_XML_KEY, isXml)
+          sc.newAPIHadoopFile[LongWritable, Text, MultiLineHeaderFooterInputFormat](fileName, classOf[MultiLineHeaderFooterInputFormat], classOf[LongWritable], classOf[Text], conf)
             .map(row => row._2.toString).filter(_.trim() != "")
         case None => sc.textFile(fileName, partitions).filter(_.trim() != "")
       }
