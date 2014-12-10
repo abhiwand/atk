@@ -31,10 +31,6 @@ case class CovarianceArguments(frame: FrameReference,
                                dataColumnNames: List[String]) {
   require(frame != null, "frame is required")
   require(dataColumnNames.size == 2, "exactly two data columns are required")
+  require(dataColumnNames.forall(_ != null), "data columns names cannot be null")
+  require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")
 }
-
-/**
- * return class for covariance
- */
-
-case class CovarianceReturn(covariance: Double)
