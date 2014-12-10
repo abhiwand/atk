@@ -239,9 +239,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    *
    * This is our preferred path for saving RDDs as data frames.
    *
-   * @param frameEntity DataFrame representation
-   * @param frameRDD the RDD
-   * @param rowCount the number of rows in the RDD
+   * @param frameEntity DataFrame representation stored in DB
+   * @param frameRDD the RDD containing the actual data
+   * @param rowCount the number of rows in the RDD - plugins need to supply this value if they are changing it.
+   *                 We don't want to calculate count ourselves in this method because it can result in an RDD being re-computed.
    */
   def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit invocation: Invocation): DataFrame =
     withContext("SFS.saveFrame") {
@@ -267,10 +268,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
       }
       val path = frameFileStorage.frameBaseDirectory(entity.id).toString
-      val count = rowCount.getOrElse {
-        frameRDD.cache()
-        frameRDD.count()
-      }
       try {
 
         val storage = entity.storageFormat.getOrElse("file/parquet")
@@ -288,8 +285,17 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
           implicit session =>
             {
               val existing = metaStore.frameRepo.lookup(entity.id).get
+
+              val updatedRowCount = if (rowCount.isDefined) {
+                // only modify is something was supplied
+                rowCount
+              }
+              else {
+                existing.rowCount
+              }
+
               val newFrame = metaStore.frameRepo.update(existing.copy(
-                rowCount = Some(count),
+                rowCount = updatedRowCount,
                 schema = frameRDD.frameSchema,
                 storageFormat = Some(storage),
                 storageLocation = Some(path),
