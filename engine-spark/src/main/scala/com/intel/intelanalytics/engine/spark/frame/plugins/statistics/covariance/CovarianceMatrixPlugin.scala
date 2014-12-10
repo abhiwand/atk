@@ -104,7 +104,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
     val rdd = frame.data
 
     val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
-    val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames).cache()
+    val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     tryNew(arguments.matrixName) { newFrame: FrameMeta =>
