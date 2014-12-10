@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.graph.titan
 
 import com.google.common.annotations.VisibleForTesting
-import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
+import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -94,10 +94,16 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
                                hBaseConfig: org.apache.hadoop.conf.Configuration,
                                titanGraphName: String): Unit = {
     if (enableAutoPartition) {
-      val inputSplits = getSparkHBaseInputSplits(sparkContext, new HBaseAdmin(hBaseConfig), titanGraphName)
-      if (inputSplits > 1) {
+      val tableName = TableName.valueOf(titanGraphName)
+
+      val hBaseAdmin = new HBaseAdmin(hBaseConfig)
+      val regionCount = Math.max(1, Try(hBaseAdmin.getTableRegions(tableName).size()).getOrElse(0))
+
+      val inputSplits = getSparkHBaseInputSplits(sparkContext, hBaseAdmin, titanGraphName)
+      if (inputSplits > regionCount) {
         hBaseConfig.setInt(GBTitanHBaseInputFormat.NUM_REGION_SPLITS, inputSplits)
       }
+      println("Region count: " + regionCount + ", input splits: " + inputSplits)
     }
   }
 
@@ -119,10 +125,9 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    *
    * The default input split policy for HBase tables is one Spark partition per HBase region. This
    * function computes the desired number of HBase input splits based on the number of available Spark
-   * cores in the cluster, the user-defined configuration for splits/core, and the minimum size of an
-   * input split
+   * cores in the cluster, the user-defined configuration for splits/core, and the graph size.
    *
-   * Number of input splits = min((HBase Table size MB/minimum split size MB), (available Spark cores*input splits/core))
+   * Desired input splits = input-splits-per-spark-core * log(available spark-cores) * log(graph size in HBase in MB),
    *
    * @param sparkContext Spark context
    * @param hBaseAdmin HBase administration
@@ -132,35 +137,18 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
   def getSparkHBaseInputSplits(sparkContext: SparkContext,
                                hBaseAdmin: HBaseAdmin,
                                titanGraphName: String): Int = {
-    val maxSplitsBySize = getMaxInputSplitsBySize(hBaseAdmin, titanGraphName)
-    val maxSparkCores = getMaxSparkCores(sparkContext, hBaseAdmin)
-    val splitsPerCore = titanConfig.getInt(HBASE_INPUT_SPLITS_PER_CORE, 1)
-    Math.min(splitsPerCore * maxSparkCores, maxSplitsBySize)
-  }
-
-  /**
-   * Get the maximum number of input splits based on the graph size in HBase, and the minimum size of an input split
-   *
-   * @param hBaseAdmin HBase configuration
-   * @param titanGraphName Titan graph name
-   * @return Maximum number of input splits
-   *
-   */
-  @VisibleForTesting
-  def getMaxInputSplitsBySize(hBaseAdmin: HBaseAdmin, titanGraphName: String): Int = {
-    val minSplitSizeMb = titanConfig.getInt(HBASE_MIN_INPUT_SPLIT_SIZE_MB, 0)
-    val hBaseConfig = hBaseAdmin.getConfiguration
     val tableName = TableName.valueOf(titanGraphName)
 
-    val regionCount = Try(hBaseAdmin.getTableRegions(tableName).size()).getOrElse(0)
-    val tableSizeMb = getTableSizeInMb(hBaseConfig, tableName)
+    // Set minimum values to 1
+    val regionCount = Math.max(1, Try(hBaseAdmin.getTableRegions(tableName).size()).getOrElse(0))
+    val tableSizeMb = Math.max(1, getTableSizeInMb(hBaseAdmin.getConfiguration, tableName))
+    val TableSizeMbLog2 = Math.round(Math.log1p(tableSizeMb) / Math.log(2))
 
-    val maxSplitsBySize = if (minSplitSizeMb > 0) {
-      Math.max(tableSizeMb / minSplitSizeMb, regionCount)
-    }
-    else regionCount
+    val maxSparkCores = Math.max(1, getMaxSparkCores(sparkContext, hBaseAdmin))
+    val maxSparkCoresLog2 = Math.round(Math.log1p(maxSparkCores) / Math.log(2))
+    val splitsPerCore = titanConfig.getInt(HBASE_INPUT_SPLITS_PER_CORE, 1)
 
-    maxSplitsBySize
+    Math.max((TableSizeMbLog2 * maxSparkCoresLog2 * splitsPerCore).toInt, regionCount)
   }
 
   /**
@@ -170,14 +158,17 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    * @param tableName HBase table name
    * @return Size of HBase table on disk
    */
-  def getTableSizeInMb(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: TableName): Int = {
+  @VisibleForTesting
+  def getTableSizeInMb(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: TableName): Long = {
     val tableSize = Try({
       val tableDir = FSUtils.getTableDir(FSUtils.getRootDir(hBaseConfig), tableName)
+      println("Table dir:" + tableDir)
       val fileSystem = FileSystem.get(hBaseConfig)
       (fileSystem.getContentSummary(tableDir).getLength / (1024 * 1024))
     }).getOrElse(0L)
 
-    if (tableSize > Integer.MAX_VALUE) Integer.MAX_VALUE else tableSize.toInt
+    println("Table size:" + tableSize)
+    tableSize
   }
 
   /**
@@ -242,7 +233,6 @@ object TitanAutoPartitioner {
   val ENABLE_AUTO_PARTITION = "auto-partitioner.enable"
   val HBASE_REGIONS_PER_SERVER = "auto-partitioner.hbase.regions-per-server"
   val HBASE_INPUT_SPLITS_PER_CORE = "auto-partitioner.hbase.input-splits-per-spark-core"
-  val HBASE_MIN_INPUT_SPLIT_SIZE_MB = "auto-partitioner.hbase.minimum-input-splits-size-mb"
   val SPARK_MAX_CORES = "spark.cores.max"
-  val TITAN_HBASE_REGION_COUNT = "storage.region-count"
+  val TITAN_HBASE_REGION_COUNT = "storage.hbase.region-count"
 }

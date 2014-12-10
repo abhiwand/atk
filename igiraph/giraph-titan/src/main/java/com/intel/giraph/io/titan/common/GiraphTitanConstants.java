@@ -43,10 +43,15 @@ public class GiraphTitanConstants {
     public static final StrConfOption GIRAPH_TITAN_STORAGE_HOSTNAME = new StrConfOption(
         "giraph.titan.input.storage.hostname", "", "Titan/Hbase hostname - required");
     /**
-     * Titan Stroage table name .
+     * Titan/HBase Storage table name .
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_TABLENAME = new StrConfOption(
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_HBASE_TABLE = new StrConfOption(
         "giraph.titan.input.storage.hbase.table", "", "Titan/Hbase tablename - required");
+    /**
+     * Titan/Cassandra Storage table name .
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_CASSANDRA_KEYSPACE = new StrConfOption(
+            "giraph.titan.input.storage.cassandra.keyspace", "", "Titan/Hbase tablename - required");
     /**
      * port where to contact Titan storage.
      */
@@ -116,6 +121,12 @@ public class GiraphTitanConstants {
      */
     public static final StrConfOption VECTOR_VALUE = new StrConfOption(
         "vector.value", "true", "whether to vertex property value for vertex and edge");
+
+    /**
+     * Maximum number of Titan vertices per commit,
+     * Used to commit Titan vertices in batches.
+     */
+    public static int TITAN_MAX_VERTICES_PER_COMMIT = 20000;
 
     /**
      * the id offset used by Titan

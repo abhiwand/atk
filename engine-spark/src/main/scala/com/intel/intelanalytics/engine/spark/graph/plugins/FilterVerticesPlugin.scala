@@ -23,8 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.UnitReturn
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage, LegacyFrameRDD, PythonRDDStorage }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
@@ -41,12 +45,13 @@ import com.intel.intelanalytics.domain.FilterVertexRows
 import org.apache.spark.api.python.EnginePythonRDD
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVertexRows, DataFrame] {
+class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVertexRows, UnitReturn] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -66,7 +71,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: FilterVertexRows) = 4
+  override def numberOfJobs(arguments: FilterVertexRows)(implicit invocation: Invocation) = 4
 
   /**
    * Select all rows which satisfy a predicate
@@ -75,33 +80,21 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FilterVertexRows)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    val frames = invocation.engine.frames
+  override def execute(arguments: FilterVertexRows)(implicit invocation: Invocation): UnitReturn = {
 
-    val pythonRDDStorage = new PythonRDDStorage(frames)
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
-    val vertexFrame = frames.expectFrame(arguments.frameId.id)
+    val vertexFrame: SparkFrameData = resolve(arguments.frameId)
+    require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
 
-    vertexFrame.graphId match {
-      case Some(graphId) => {
-        val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(graphId)
+    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
+    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
+    val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
+    FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-        val ctx: SparkContext = invocation.sparkContext
-        val filteredPyRdd = pythonRDDStorage.createPythonRDD(vertexFrame.id, arguments.predicate, ctx)
-        val schema = vertexFrame.schema
-        val converter = DataTypes.parseMany(schema.columnTuples.map(_._2).toArray)(_)
-
-        val filteredRdd = new LegacyFrameRDD(schema, pythonRDDStorage.getRddFromPythonRdd(filteredPyRdd, converter))
-
-        FilterVerticesFunctions.removeDanglingEdges(vertexFrame.schema.asInstanceOf[VertexSchema].label, frames, seamlessGraph, ctx, filteredRdd)
-        val rowCount = pythonRDDStorage.persistPythonRDD(vertexFrame, filteredPyRdd, converter, skipRowCount = false)
-        frames.updateRowCount(vertexFrame, rowCount)
-      }
-      case _ => null //abort
-    }
+    new UnitReturn
   }
 }
 
@@ -115,7 +108,8 @@ object FilterVerticesFunctions {
    * @param ctx spark context
    * @param filteredRdd rdd with predicate applied
    */
-  def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta, ctx: SparkContext, filteredRdd: LegacyFrameRDD) {
+  def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta,
+                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit invocation: Invocation): Unit = {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
     val vertexFrameSchema = vertexFrame.schema
 
@@ -125,12 +119,13 @@ object FilterVerticesFunctions {
     val vidColumnIndex = vertexFrameSchema.columnIndex("_vid")
     val droppedVerticesPairRdd = droppedVerticesRdd.map(row => (row(vidColumnIndex), row))
 
-    seamlessGraph.edgeFrames.foreach(frame => {
-      val schema = frame.schema.asInstanceOf[EdgeSchema]
-      if (schema.srcVertexLabel.equals(vertexLabel)) {
+    // drop edges connected to the vertices
+    seamlessGraph.edgeFrames.map(frame => {
+      val edgeSchema = frame.schema.asInstanceOf[EdgeSchema]
+      if (edgeSchema.srcVertexLabel.equals(vertexLabel)) {
         FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
       }
-      if (schema.destVertexLabel.equals(vertexLabel)) {
+      else if (edgeSchema.destVertexLabel.equals(vertexLabel)) {
         FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
       }
     })
@@ -145,11 +140,16 @@ object FilterVerticesFunctions {
    * @param vertexIdColumn source vertex id column or destination id column
    * @return dataframe object
    */
-  def dropDanglingEdgesAndSave(frameStorage: SparkFrameStorage, ctx: SparkContext, droppedVerticesPairRdd: RDD[(Any, Row)], edgeFrame: DataFrame, vertexIdColumn: String): DataFrame = {
+  def dropDanglingEdgesAndSave(frameStorage: SparkFrameStorage,
+                               ctx: SparkContext,
+                               droppedVerticesPairRdd: RDD[(Any, Row)],
+                               edgeFrame: DataFrame,
+                               vertexIdColumn: String)(implicit invocation: Invocation): DataFrame = {
     val edgeRdd = frameStorage.loadLegacyFrameRdd(ctx, edgeFrame)
-    val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd, edgeFrame.schema.columnIndex(vertexIdColumn), droppedVerticesPairRdd)
+    val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd,
+      edgeFrame.schema.columnIndex(vertexIdColumn), droppedVerticesPairRdd)
     val toFrameRDD: FrameRDD = new LegacyFrameRDD(edgeFrame.schema, remainingEdges).toFrameRDD()
-    frameStorage.saveFrame(edgeFrame, toFrameRDD, Some(toFrameRDD.count()))
+    frameStorage.saveFrameData(edgeFrame, toFrameRDD, Some(toFrameRDD.count()))
   }
 
   /**

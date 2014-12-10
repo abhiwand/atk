@@ -26,6 +26,8 @@ package com.intel.spark.graphon.connectedcomponents
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, Property }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -129,25 +131,25 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
                              |
                            """.stripMargin)))
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: ConnectedComponentsArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
+  override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsResult = {
 
-    val sparkContext = sparkInvocation.sparkContext
+    val sparkContext = sc
 
-    sparkContext.addJar(Boot.getJar("graphon").getPath)
+    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
-    val titanReader = new TitanReader(sparkContext, titanConnector)
+    val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
     val gbVertices = titanReaderRDD.filterVertices()
@@ -166,7 +168,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
     val newGraphName = arguments.output_graph_name
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
@@ -174,6 +176,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     writeToTitan(newTitanConfig, outVertices, gbEdges)
 
     ConnectedComponentsResult(newGraphName)
+
   }
 
   // Helper function to write rdds back to Titan

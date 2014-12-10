@@ -94,6 +94,10 @@
             <artifactId>launcher</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>event-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-json_${scala.short.version}</artifactId>
         </dependency>

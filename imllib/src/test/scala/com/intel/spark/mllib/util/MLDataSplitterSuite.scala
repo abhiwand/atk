@@ -23,7 +23,10 @@
 
 package com.intel.spark.mllib.util
 
+import java.util.Date
+
 import com.intel.testutils.TestingSparkContextFunSuite
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.scalatest.matchers.ShouldMatchers
 
 import scala.util.Random
@@ -40,7 +43,11 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatcher
     // generate testRDD
     val rnd = new Random(41)
     val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
-    val testRDD = this.sparkContext.parallelize(testData, 2)
+
+    val sc = new SparkContext(new SparkConf().setMaster("local")
+      .setAppName(this.getClass.getSimpleName + " " + new Date())
+    )
+    val testRDD = sc.parallelize(testData, 2)
 
     // test the size of generated RDD
     val nTotal = testRDD.count
@@ -61,7 +68,7 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatcher
     val nTotalSamples = partitionSizes.sum
     assert(nTotalSamples == nPoints, "# data points sampled isn't equal to specified.")
 
-    // check if partition percentages are expected 
+    // check if partition percentages are expected
     (0 until percentages.size).foreach { i =>
       val realPercentage = partitionSizes(i).toDouble / nTotalSamples
       assert(Math.abs(realPercentage - percentages(i)) < 0.05,

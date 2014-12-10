@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.{ Boot, DefaultArchive }
 import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.engine.plugin.Call
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
@@ -51,6 +52,8 @@ class CommandDumper extends DefaultArchive
     with SlickMetaStoreComponent
     with EventLogging {
 
+  implicit val eventContext = EventContext.enter("CommandDumper")
+
   override lazy val profile = withContext("command dumper connecting to metastore") {
     // Initialize a Profile from settings in the config
     val driver = CommandDumperConfig.metaStoreConnectionDriver
@@ -63,6 +66,8 @@ class CommandDumper extends DefaultArchive
 
   override def start() = {
     metaStore.initializeSchema()
+    val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
+    implicit val call = Call(impUser)
     val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
     val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], null)
     lazy val engine = new SparkEngine(
@@ -80,13 +85,13 @@ class CommandDumper extends DefaultArchive
     Await.ready(engine.getCommands(0, 1), 30 seconds) //make sure engine is initialized
     lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, null)
     lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, null)
-    implicit val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
     val commandDefs = engine.getCommandDefinitions()
     val commandDump = "{ \"commands\": [" + commandDefs.map(_.toJson).mkString(",\n") + "] }"
     val currentDir = System.getProperty("user.dir")
     val fileName = currentDir + "/target/command_dump.json"
     Boot.writeFile(fileName, commandDump)
     println("Command Dump written to " + fileName)
+    eventContext.close()
   }
 }
 

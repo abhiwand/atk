@@ -37,7 +37,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile, LineFile
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -97,6 +97,17 @@ class FrameBackendRest(object):
                     raise
             return frame_info.name
         return frame.name
+
+        return new_frame_name
+
+    def _create_new_frame(self, frame, name):
+        """create helper method to call http and initialize frame with results"""
+        payload = {'name': name }
+        r = self.rest_http.post('frames', payload)
+        logger.info("REST Backend: create frame response: " + r.text)
+        frame_info = FrameInfo(r.json())
+        initialize_frame(frame, frame_info)
+        return frame_info.name
 
     def get_name(self, frame):
         return self._get_frame_info(frame).name
@@ -176,6 +187,29 @@ class FrameBackendRest(object):
                                 "data": None
                                 },
                     }
+
+        if isinstance( source, XmlFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "xmlfile",
+                               "uri": source.file_name,
+                               "start_tag":source.start_tag,
+                               "end_tag":source.end_tag,
+                               "data": None
+                    },
+                    }
+
+
+
+        if isinstance( source, MultiLineFile):
+            return {'destination': frame._id,
+                'source': {"source_type": "multilinefile",
+                           "uri": source.file_name,
+                           "start_tag":source.start_tag,
+                           "end_tag":source.end_tag,
+                           "data": None
+                        },
+                    }
+
         if isinstance(source, Pandas):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
@@ -320,9 +354,8 @@ class FrameBackendRest(object):
         colTypes = dict(frame.schema)
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
-        return execute_new_frame_command('bin_column', arguments)
+        arguments = {'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        return execute_update_frame_command('bin_column', arguments, frame)
 
 
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
@@ -472,6 +505,8 @@ class FrameBackendRest(object):
                     break
                 data.extend(result.data)
             return TakeResult(data, schema)
+        if n < 0:
+            raise ValueError("Count value needs to be positive. Provided %s" % n)
 
         if n == 0:
             return TakeResult([], frame.schema)
@@ -575,7 +610,10 @@ class FrameInfo(object):
 
     @property
     def row_count(self):
-        return int(self._payload['row_count'])
+        try:
+            return int(self._payload['row_count'])
+        except KeyError:
+            return 0
 
     @property
     def error_frame_id(self):

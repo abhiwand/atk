@@ -3,13 +3,13 @@ package com.intel.intelanalytics.engine.spark.util
 import java.text.NumberFormat
 import java.util.Locale
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * Make sure some settings get logged that are useful for debugging on clusters
  */
 object EnvironmentLogger extends EventLogging {
-  def log() = withContext("EnvironmentLogger") {
+  def log()(implicit eventContext: EventContext) = withContext("EnvironmentLogger") {
     withContext("environmentVariables") {
       System.getenv().keySet().toArray(Array[String]()).sorted.foreach(environmentVariable =>
         info(environmentVariable + "=" + System.getenv(environmentVariable))

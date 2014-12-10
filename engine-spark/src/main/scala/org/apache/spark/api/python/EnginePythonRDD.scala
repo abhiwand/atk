@@ -47,7 +47,7 @@ class EnginePythonRDD[T: ClassTag](
   pythonExec: String,
   broadcastVars: JList[Broadcast[Array[Byte]]],
   accumulator: Accumulator[JList[Array[Byte]]])
-    extends PythonRDD[T](parent, command, envVars, pythonIncludes,
+    extends PythonRDD(parent, command, envVars, pythonIncludes,
       preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
 }

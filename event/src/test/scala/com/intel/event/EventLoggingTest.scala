@@ -31,6 +31,7 @@ import org.mockito.ArgumentMatcher
 class EventLoggingTest extends FlatSpec with Matchers with MockitoSugar {
 
   val rawLogger = new EventLogging {}
+  implicit val rootEc = EventContext.enter("root")
 
   "A call to withContext" should "throw IllegalArgument when called with null context" in {
     intercept[IllegalArgumentException] {

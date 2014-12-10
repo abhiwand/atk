@@ -53,6 +53,13 @@ abstract class Naming(val term: String) {
  * General user object naming
  */
 object Naming {
+
+  implicit class Name(val name: String) {
+    Naming.validateAlphaNumericUnderscore(name)
+  }
+
+  implicit def nameToString(name: Name): String = name.name
+
   private lazy val alphaNumericUnderscorePattern = "^[a-zA-Z0-9_]+$".r
 
   /**
@@ -91,7 +98,7 @@ object Naming {
    * @param text subject
    * @return subject or empty string
    */
-  def validateAlphaNumericUnderscoreOrGenerate(text: Option[String], generate: => String): String = {
+  def validateAlphaNumericUnderscoreOrGenerate(text: Option[String], generate: => String): Name = {
     text match {
       case Some(name) => validateAlphaNumericUnderscore(name)
       case None => generate
@@ -105,9 +112,9 @@ object Naming {
    * @param suffix Optional annotation suffix  (must be alphanumeric or underscore)
    * @return generated name
    */
-  def generateName(prefix: Option[String] = None, suffix: Option[String] = None): String = {
+  def generateName(prefix: Option[String] = None, suffix: Option[String] = None): Name = {
     val p = validateAlphaNumericUnderscoreOrNone(prefix)
     val s = validateAlphaNumericUnderscoreOrNone(suffix)
-    p + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + s
+    p + java.util.UUID.randomUUID().toString.filterNot(_ == '-') + s
   }
 }

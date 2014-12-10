@@ -21,7 +21,7 @@ class EdgeFrameRDD(schema: EdgeSchema,
                    sqlContext: SQLContext,
                    logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.schema.asInstanceOf[EdgeSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRDD: FrameRDD) = this(frameRDD.frameSchema.asInstanceOf[EdgeSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
 
   def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema.asInstanceOf[EdgeSchema], new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
 
@@ -68,7 +68,7 @@ class EdgeFrameRDD(schema: EdgeSchema,
    * - no overwrite
    */
   def append(other: FrameRDD): EdgeFrameRDD = {
-    val unionedSchema = schema.union(other.schema).reorderColumns(GraphSchema.edgeSystemColumnNames)
+    val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.edgeSystemColumnNames)
 
     // TODO: better way to check for empty?
     if (take(1).length > 0) {
@@ -89,7 +89,10 @@ class EdgeFrameRDD(schema: EdgeSchema,
    * Convert this EdgeFrameRDD to a GB Edge RDD
    */
   def toGbEdgeRDD: RDD[GBEdge] = {
-    this.mapEdges(_.toGbEdge)
+    if (schema.directed)
+      this.mapEdges(_.toGbEdge)
+    else
+      this.mapEdges(_.toGbEdge) union this.mapEdges(_.toReversedGbEdge)
   }
 
 }
