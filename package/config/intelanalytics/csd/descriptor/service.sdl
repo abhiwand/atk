@@ -41,6 +41,12 @@
             {
                 "commandName" : "CreateUserHomeDirCommand"
             }
+        ],
+        "postStartSteps": [
+            {
+                "commandName": "atk_insert_meta",
+                "failureAllowed": false
+            }
         ]
     },
     "inExpressWizard": true,
