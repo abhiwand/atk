@@ -242,7 +242,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frameEntity DataFrame representation stored in DB
    * @param frameRDD the RDD containing the actual data
    * @param rowCount the number of rows in the RDD - plugins need to supply this value if they are changing it.
-   *                 We don't want to calculate count ourselves in this method because it can result in an RDD being re-computed.
+   *                 We need to be careful about calculating row count ourselves in this method because it can result in an RDD being re-computed.
+   *                 Also, many plugins like add_column, drop_column never change the row count so it could result in extra stages for these plugins.
+   *                 TODO: we should change rowCount parameter to a boolean that indicates if row count needs to be re-calculated
+   *                 TODO: better would be our own Spark save operation that also calculates row count without extra overhead
    */
   def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit invocation: Invocation): DataFrame =
     withContext("SFS.saveFrame") {
