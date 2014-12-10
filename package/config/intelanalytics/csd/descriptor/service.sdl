@@ -228,6 +228,33 @@
                      "required": "false",
                      "type": "long",
                      "default": "100"
+                },
+                {
+                      "name": "atk_spark_rdd_compression",
+                      "configName": "intel.analytics.engine.spark.conf.properties.spark.rdd.compress",
+                      "label": "Spark rdd compression",
+                      "description": "Whether to compress serialized RDD partitions. Can save substantial space at the cost of some extra CPU time.",
+                      "required": "false",
+                      "type": "boolean",
+                      "default": "true"
+                },
+                {
+                      "name": "atk_spark_io_compression_codec",
+                      "configName": "intel.analytics.engine.spark.conf.properties.spark.io.compression.codec",
+                      "label": "Spark io compression codec",
+                      "description": "The codec used to compress internal data such as RDD partitions and shuffle outputs. By default, Spark provides three codecs: lz4, lzf, and snappy. You can also use fully qualified class names to specify the codec, e.g. org.apache.spark.io.LZ4CompressionCodec, org.apache.spark.io.LZFCompressionCodec, and org.apache.spark.io.SnappyCompressionCodec",
+                      "required": "false",
+                      "type": "string",
+                      "default": "org.apache.spark.io.SnappyCompressionCodec"
+                },
+                {
+                      "name": "atk_spark_storage_block_manager_heartbeat",
+                      "configName": "intel.analytics.engine.spark.conf.properties.spark.storage.blockManagerHeartBeatMs",
+                      "label": "Spark storage block manager heart beat",
+                      "description": "The grace period in milliseconds before considering a the worker process dead.If set too low the spark master might kill worker process prematurely. If you have long running GC operation this might prevent heartbeats from going out.",
+                      "required": "false",
+                      "type": "long",
+                      "default": "300000"
                 }
 
             ],
@@ -257,7 +284,7 @@
                 "maxInstances" : "1"
             },
             "logging" : {
-                "dir" : "/var/log/intelanalytics/rest-server",
+                "dir" : "/var/log/atk",
                 "filename" : "application.log",
                 "loggingType" : "log4j",
                 "isModifiable" : true
@@ -320,7 +347,10 @@
                              "atk_postgres_database",
                              "atk_postgres_username",
                              "atk_default_count",
-                             "atk_spark_akka_framesize"
+                             "atk_spark_akka_framesize",
+                             "atk_spark_rdd_compression",
+                             "atk_spark_io_compression_codec",
+                             "atk_spark_storage_block_manager_heartbeat"
                            ]
                          }
                        ]

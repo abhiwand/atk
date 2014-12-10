@@ -42,7 +42,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
     </parent>
 
     <properties>
-        <pkg.version>0.9</pkg.version>
+        <pkg.version>0.9.0</pkg.version>
     </properties>
     <profiles>
         <profile>
@@ -75,7 +75,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     </arguments>
                                 </configuration>
                             </execution>
-                            <execution>
+                            <!--execution>
                                 <id>tar-gz-rest-server</id>
                                 <phase>package</phase>
                                 <goals>
@@ -88,7 +88,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                         <argument>${basedir}/config/intelanalytics-rest-server-tar/package.sh</argument>
                                     </arguments>
                                 </configuration>
-                            </execution>
+                            </execution-->
                             <execution>
                                 <id>package-rest-server</id>
                                 <phase>package</phase>

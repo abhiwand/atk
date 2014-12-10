@@ -11,6 +11,9 @@ rm -rf $SCRIPTPATH/$parcelDir
 
 pushd $SCRIPTPATH
 
+if [ -d /root/python ]; then
+    cp -Rv /root/python/* python/
+fi
 
 mkdir -p $parcelDir/tmp
 mkdir -p $parcelDir/log
@@ -36,6 +39,7 @@ cp $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
 python /home/rodorad/Documents/parcels/cm_ext/make_manifest/make_manifest.py /home/rodorad/Documents/parcels/parcels/
 popd
 
+rm -rf $parcelDir
 #[name]-[version]-[distro suffix].parcel
 
 
