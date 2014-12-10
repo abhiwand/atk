@@ -45,3 +45,5 @@ packageName=$1
 #call package.sh for client
 log "packageName: $packageName"
 createArchive $packageName
+
+

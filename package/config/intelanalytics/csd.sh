@@ -28,3 +28,5 @@ scp $pkgFolder/$pkgFolder.jar tungsten:~
 ssh wolverine sudo cp /home/hadoop/$pkgFolder.jar /opt/cloudera/csd
 ssh tungsten sudo cp /home/hadoop/$pkgFolder.jar /opt/cloudera/csd
 popd
+
+rm -rf $pkgFolder

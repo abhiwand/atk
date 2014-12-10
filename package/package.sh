@@ -95,11 +95,11 @@ if [ $makePackage == "yes" ]; then
         #make build directory
         mkdir -p $BUILD_DIR/$PACKAGE_NAME
         $configDir/package.sh ${PACKAGE_NAME}
-
+        rm -rf $BUILD_DIR/$PACKAGE_NAME
     fi
     tarFile=$BUILD_DIR/../$PACKAGE_NAME-source.tar.gz
 fi
-tarFile=$BUILD_DIR/../$PACKAGE_NAME-source.tar.gz
+
 echo $tarFile
 tarFiles $tarFile
 for package in $packages

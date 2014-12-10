@@ -141,11 +141,11 @@ intel.analytics {
           //spark.rdd.compress=true
           //spark.io.compression.codec=org.apache.spark.io.SnappyCompressionCodec
 
-          #spark.storage.blockManagerHeartBeatMs=300000
-          #spark.storage.blockManagerSlaveTimeoutMs=300000
+          //spark.storage.blockManagerHeartBeatMs=300000
+          //spark.storage.blockManagerSlaveTimeoutMs=300000
 
-          #spark.worker.timeout=600
-          #spark.worker.timeout=30000
+          //spark.worker.timeout=600
+          //spark.worker.timeout=30000
         }
 
       }

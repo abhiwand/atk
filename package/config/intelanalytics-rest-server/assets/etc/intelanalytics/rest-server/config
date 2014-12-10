@@ -102,7 +102,7 @@ parser.add_argument("--password", type=str, help="Cloudera Manager Password")
 parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by "
                                                 "Cloudera Manager.")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
-parser.add_argument("--db-only", type=str, help="configure only database")
+parser.add_argument("--db-only", type=str, help="configure only the database yes/no")
 parser.add_argument("--db-host", type=str, help="Database host name")
 parser.add_argument("--db-port", type=str, help="Database port number")
 parser.add_argument("--db", type=str, help="Database name")
@@ -616,7 +616,7 @@ def set_db_user_access(db_username):
     except IOError:
         system("service postgresql initdb")
         pg_hba = codecs.open(r"/var/lib/pgsql/data/pg_hba.conf", encoding="utf-8", mode="r+")
-        restart_db()
+
 
     pg_hba_text = pg_hba.read()
     pg_hba.seek(0)
@@ -873,6 +873,18 @@ if skip == "yes":
     create_db_user(db_username, db_password)
 
     create_db(db, db_username)
+
+
+    db_properties="database=" + db + "\n"
+    db_properties+="username=" + db_username + "\n"
+    db_properties+="password=" + db_password + "\n"
+
+    config_tpl = codecs.open("db.properties", encoding="utf-8", mode="w")
+    config_tpl.write(db_properties)
+    config_tpl.close()
+
+    restart_db()
+
     exit(0)
 
 #get the Cloudera manager host
