@@ -25,7 +25,7 @@ package com.intel.intelanalytics.algorithm.util
 
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
@@ -86,17 +86,19 @@ object GiraphJobManager {
     val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
-    GiraphJobListener.commandIdMap(invocation.commandId) = invocation.commandStorage
+    val commandInvocation = invocation.asInstanceOf[CommandInvocation]
+
+    GiraphJobListener.commandIdMap(commandInvocation.commandId) = commandInvocation.commandStorage
     giraphConf.setJobObserverClass(classOf[GiraphJobListener])
 
-    giraphConf.setLong("giraph.ml.commandId", invocation.commandId)
+    giraphConf.setLong("giraph.ml.commandId", commandInvocation.commandId)
 
     val job = new GiraphJob(giraphConf, jobName)
     val internalJob: Job = job.getInternalJob
 
     // Clear Giraph Report Directory
     val fs = FileSystem.get(new Configuration())
-    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
+    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + commandInvocation.commandId
     if (config.getBoolean("output.overwrite")) {
       fs.delete(getFullyQualifiedPath(output_dir_path, fs), true)
     }

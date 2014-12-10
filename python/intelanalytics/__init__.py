@@ -38,10 +38,10 @@ except Exception as e:
     errors._doc_stubs = e
     del e
 
-from intelanalytics.core.files import CsvFile, LineFile
+from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.frame import Frame, VertexFrame
-from intelanalytics.core.graph import TitanGraph, VertexRule, EdgeRule
+from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.core.model import LogisticRegressionModel
 
 from intelanalytics.rest.connection import server
@@ -51,7 +51,7 @@ connect = server.connect
 # do api_globals last because other imports may have added to the api_globals
 
 def _refresh_api_namespace():
-    from intelanalytics.core.api import api_globals
+    from intelanalytics.meta.api import api_globals
     for item in api_globals:
         globals()[item.__name__] = item
     del api_globals

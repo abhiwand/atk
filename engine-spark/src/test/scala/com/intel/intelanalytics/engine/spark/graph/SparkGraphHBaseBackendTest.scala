@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.intelanalytics.engine.plugin.Call
 import org.scalatest.{ Matchers, WordSpec }
 import org.mockito.Mockito._
 
@@ -7,6 +8,8 @@ import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.scalatest.mock.MockitoSugar
 
 class SparkGraphHBaseBackendTest extends WordSpec with Matchers with MockitoSugar {
+
+  implicit val call = Call(null)
 
   "Not quietly deleting a table that does not exist" should {
     "throw an illegal argument exception" in {

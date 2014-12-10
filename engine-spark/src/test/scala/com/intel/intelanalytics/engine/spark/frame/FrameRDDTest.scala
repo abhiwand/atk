@@ -45,7 +45,7 @@ class FrameRDDTest extends TestingSparkContextWordSpec with Matchers {
       val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
       val rdd = FrameRDD.toFrameRDD(schema, rows)
-      rdd.schema should be(schema)
+      rdd.frameSchema should be(schema)
       rdd.first should equal(rows.first)
     }
 
@@ -65,7 +65,7 @@ class FrameRDDTest extends TestingSparkContextWordSpec with Matchers {
       val rdd = FrameRDD.toFrameRDD(schema, rows)
 
       val rddWithUniqueIds = rdd.assignUniqueIds("_vid")
-      rddWithUniqueIds.schema.columnTuples.size should be(3)
+      rddWithUniqueIds.frameSchema.columnTuples.size should be(3)
       val ids = rddWithUniqueIds.map(x => x(2)).collect
 
       val uniqueIds = ids.distinct
@@ -79,7 +79,7 @@ class FrameRDDTest extends TestingSparkContextWordSpec with Matchers {
       val rdd = FrameRDD.toFrameRDD(schema, rows)
 
       val rddWithUniqueIds = rdd.assignUniqueIds("num")
-      rddWithUniqueIds.schema.columnTuples.size should be(2)
+      rddWithUniqueIds.frameSchema.columnTuples.size should be(2)
       val values = rddWithUniqueIds.collect()
       val ids = values.map(x => x(0))
 

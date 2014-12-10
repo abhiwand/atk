@@ -22,6 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
+import spray.json.JsonFormat
+
 /**
  * Generic String value that can be used by plugins that return a single String
  * @param value "value" is a special string meaning don't treat this return type like a dictionary

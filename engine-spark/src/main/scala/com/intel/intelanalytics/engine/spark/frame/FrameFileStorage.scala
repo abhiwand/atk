@@ -23,22 +23,22 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import org.apache.hadoop.fs.Path
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * Frame storage in HDFS.
- *
- * Each frame revision is stored into a new location so that we don't get problems
- * with reading and writing to the same location at the same time.
  *
  * @param fsRoot root for our application, e.g. "hdfs://hostname/user/iauser"
  * @param hdfs methods for interacting with underlying storage (e.g. HDFS)
  */
 class FrameFileStorage(fsRoot: String,
-                       val hdfs: HdfsFileStorage) extends EventLogging {
+                       val hdfs: HdfsFileStorage)(implicit startupInvocation: Invocation)
+    extends EventLogging with EventLoggingImplicits {
 
   private val framesBaseDirectory = new Path(fsRoot + "/intelanalytics/dataframes")
 
@@ -47,53 +47,26 @@ class FrameFileStorage(fsRoot: String,
     info("data frames base directory: " + framesBaseDirectory)
   }
 
-  /** Current revision for a frame */
-  def currentFrameRevision(dataFrame: DataFrame): Path = {
-    require(dataFrame.revision > 0, "Revision should be larger than zero")
-    frameRevisionDirectory(dataFrame.id, dataFrame.revision)
+  def frameBaseDirectoryExists(dataFrame: DataFrame) = {
+    val path = frameBaseDirectory(dataFrame.id)
+    hdfs.exists(path)
   }
 
-  /**
-   * Create the Next revision for a frame.
-   */
-  def createFrameRevision(dataFrame: DataFrame, revision: Int): Path = withContext("createFrameRevision") {
-    require(revision > 0, "Revision should be larger than zero")
-    require(revision > dataFrame.revision, s"New revision should be larger than the old revision: $dataFrame $revision")
+  def createFrame(dataFrame: DataFrame): Path = withContext("createFrame") {
 
-    val path = frameRevisionDirectory(dataFrame.id, revision)
-    if (hdfs.exists(path)) {
-      error("Next frame revision already exists " + path
-        + " You may be attempting to modify a data frame that is already in the process of being modified")
-
-      // TODO: It would be nice to throw an Exception here but we probably need to handle locking first
-      hdfs.delete(path)
+    if (frameBaseDirectoryExists(dataFrame)) {
+      throw new IllegalArgumentException(s"Frame already exists at ${frameBaseDirectory(dataFrame.id)}")
     }
-    path
+    //TODO: actually create the file?
+    frameBaseDirectory(dataFrame.id)
   }
 
   /**
    * Remove the directory and underlying data for a particular revision of a data frame
    * @param dataFrame the data frame to act on
-   * @param revision the revision to remove
-   */
-  def deleteFrameRevision(dataFrame: DataFrame, revision: Int): Unit = {
-    if (revision > 0) {
-      hdfs.delete(frameRevisionDirectory(dataFrame.id, revision), recursive = true)
-    }
-  }
-
-  /**
-   * Remove the underlying data file from HDFS - remove any revision that exists
-   *
-   * @param dataFrame the frame to completely remove
    */
   def delete(dataFrame: DataFrame): Unit = {
     hdfs.delete(frameBaseDirectory(dataFrame.id), recursive = true)
-  }
-
-  /** Base dir for a particular revision of a frame */
-  private[frame] def frameRevisionDirectory(frameId: Long, revision: Int): Path = {
-    new Path(frameBaseDirectory(frameId) + "/rev" + revision)
   }
 
   /** Base dir for a frame */
@@ -107,7 +80,7 @@ class FrameFileStorage(fsRoot: String,
    * @return true if the data frame is saved in the parquet format
    */
   private[frame] def isParquet(dataFrame: DataFrame): Boolean = {
-    val path = currentFrameRevision(dataFrame)
+    val path = frameBaseDirectory(dataFrame.id)
     hdfs.globList(path, "*.parquet").length > 0
   }
 

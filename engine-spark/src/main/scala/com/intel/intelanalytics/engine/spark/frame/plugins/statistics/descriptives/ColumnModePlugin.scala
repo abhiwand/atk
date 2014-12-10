@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descripti
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ColumnMode, ColumnModeReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -130,13 +131,12 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ColumnMode)(implicit user: UserPrincipal, executionContext: ExecutionContext): ColumnModeReturn = {
+  override def execute(arguments: ColumnMode)(implicit invocation: Invocation): ColumnModeReturn = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.frame.id

@@ -69,7 +69,7 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
       file <- files if currentCount < capped
     ) {
       val metaData = file.getParquetMetadata
-      val schema = metaData.getFileMetaData.getSchema;
+      val schema = metaData.getFileMetaData.getSchema
 
       val reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
       var store: PageReadStore = reader.readNextRowGroup()

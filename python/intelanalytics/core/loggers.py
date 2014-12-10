@@ -162,7 +162,6 @@ class Loggers(object):
             output = sys.stderr
         if isinstance(output, basestring):
             handler = logging.FileHandler(output)
-            handler_name = output
         elif isinstance(output, list) or isinstance(output, tuple):
             logger = None
             for o in output:
@@ -171,9 +170,13 @@ class Loggers(object):
         else:
             try:
                 handler = logging.StreamHandler(output)
-                handler_name = output.name
             except:
                 raise ValueError("Bad output argument %s.  Expected stream or file name." % output)
+
+        try:
+            handler_name = output.name
+        except:
+            handler_name = str(output)
 
         if isinstance(level, basestring):
             c = str(level)[0].lower()  # only require first letter

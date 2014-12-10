@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineEdge, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.EdgeSchema
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.DataFrame
@@ -67,11 +68,13 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
 
     Examples
     --------
-                             |graph = new Graph()
-                             |graph.define_vertex_type('users')
-                             |graph.define_vertex_type('movie')
-                             |graph.define_edge_type('ratings', 'users', 'movie', directed=True)
-                           """)))
+    ::
+
+        graph = ia.Graph()
+        graph.define_vertex_type('users')
+        graph.define_vertex_type('movie')
+        graph.define_edge_type('ratings', 'users', 'movie', directed=True)
+    """)))
 
   /**
    * Define edge type
@@ -81,7 +84,7 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
    * @param arguments specification of the edge type
    * @return data frame which represent the edge of this type
    */
-  override def execute(invocation: SparkInvocation, arguments: DefineEdge)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
+  override def execute(arguments: DefineEdge)(implicit invocation: Invocation): UnitReturn = {
     graphStorage.defineEdgeType(arguments.graphRef.id, arguments.edgeSchema)
     UnitReturn()
   }

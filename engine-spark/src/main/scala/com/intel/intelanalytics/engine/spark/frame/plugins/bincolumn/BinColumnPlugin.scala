@@ -23,10 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, BinColumn, DataFrame }
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -69,45 +71,35 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: BinColumn) = 7
+  override def numberOfJobs(arguments: BinColumn)(implicit invocation: Invocation) = 7
 
   /**
+   * Column values into bins.
    *
+   * Two types of binning are provided: equalwidth and equaldepth.
+   *
+   * Equal width binning places column values into bins such that the values in each bin fall within the same
+   * interval and the interval width for each bin is equal.
+   *
+   * Equal depth binning attempts to place column values into bins such that each bin contains the same number
+   * of elements
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: BinColumn)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
-
-    // validate arguments
-    val frameId: Long = arguments.frame.id
-    val frameMeta = frames.expectFrame(frameId)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.columnName)
-    if (frameMeta.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+  override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = resolve(arguments.frame)
+    val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
+    if (frame.meta.schema.hasColumn(arguments.binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    val updatedSchema = frameMeta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
-    arguments.binType match {
-      case "equalwidth" =>
-        val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
-        val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(updatedSchema, binnedRdd), Some(rowCount))
-      case "equaldepth" =>
-        val binnedRdd = DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, rdd)
-        val rowCount = binnedRdd.count()
-        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(updatedSchema, binnedRdd), Some(rowCount))
-      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
-    }
-    frames.updateSchema(newFrame, updatedSchema)
+    val updatedSchema = frame.meta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
+    val rdd = frame.data
+    val binnedRdd = DiscretizationFunctions.bin(columnIndex, arguments.binType, arguments.numBins, rdd.toLegacyFrameRDD)
+    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), FrameRDD.toFrameRDD(updatedSchema, binnedRdd))).meta
   }
 }
