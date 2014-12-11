@@ -161,49 +161,59 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val start = System.currentTimeMillis()
     val sparkContext = sc
-    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Titan Settings for input
-    val config = configuration
+    sc.stop
 
-    // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val ctx = new SparkContext(sc.getConf)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfig)
+    try {
+      ctx.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Read the graph from Titan
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
+      // Titan Settings for input
+      val config = configuration
 
-    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+      // Get the graph
+      import scala.concurrent.duration._
+      val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
-      arguments.priorProperty,
-      arguments.maxIterations,
-      stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
-      arguments.convergenceThreshold,
-      arguments.edgeWeightProperty)
+      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+      val titanConnector = new TitanGraphConnector(titanConfig)
 
-    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
+      // Read the graph from Titan
+      val titanReader = new TitanReader(ctx, titanConnector)
+      val titanReaderRDD = titanReader.read()
 
-    // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
+      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-    val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
+      val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
+        arguments.priorProperty,
+        arguments.maxIterations,
+        stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
+        arguments.convergenceThreshold,
+        arguments.edgeWeightProperty)
 
-    // write out the graph
+      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
-    // Create the GraphBuilder object
-    // Setting true to append for updating existing graph
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-    // Build the graph using spark
-    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
+      // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-    // Get the execution time and print it
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    BeliefPropagationResult(log, time)
+      val dummyOutEdges: RDD[GBEdge] = ctx.parallelize(List.empty[GBEdge])
+
+      // write out the graph
+
+      // Create the GraphBuilder object
+      // Setting true to append for updating existing graph
+      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+      // Build the graph using spark
+      gb.buildGraphWithSpark(outVertices, dummyOutEdges)
+
+      // Get the execution time and print it
+      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+      BeliefPropagationResult(log, time)
+    }
+    finally {
+      ctx.stop
+    }
 
   }
 
