@@ -68,6 +68,7 @@ object JsonSchema {
 
   val graph = StringSchema(format = Some("uri/ia-graph"))
 
+  val model = StringSchema(format = Some("uri/ia-model"))
 }
 
 sealed trait Primitive extends JsonSchema {
