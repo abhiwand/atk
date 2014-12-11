@@ -18,7 +18,7 @@ sed -i "s/VERSION/${VERSION}/g" $pkgFolder/descriptor/service.sdl
 sed -i "s/BUILD/${BUILD_NUMBER}/g" $pkgFolder/descriptor/service.sdl
 
 if [ ! -z  "$INTERNAL_REPO_SERVER" ]; then
-    sed -i "s/PARCELURL/HTTP:\/\/${INTERNAL_REPO_SERVER}\/packages\/cloudera\/${BRANCH}/g" $pkgFolder/descriptor/service.sdl
+    sed -i "s/PARCELURL/http:\/\/${INTERNAL_REPO_SERVER}\/packages\/cloudera\/${BRANCH}/g" $pkgFolder/descriptor/service.sdl
 fi
 
 
