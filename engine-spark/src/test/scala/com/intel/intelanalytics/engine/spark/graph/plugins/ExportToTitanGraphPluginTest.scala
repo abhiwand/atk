@@ -132,11 +132,11 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       }
     }
     "no exception thrown if titan naming elements are valid" in {
-      val frame1 = new DataFrame(1, "name", edgeSchema, 0L, new DateTime, Some(new DateTime))
+      val frame1 = new DataFrame(1, "name", edgeSchema, 0L, new DateTime, Some(new DateTime), graphId = Some(1L))
 
       val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
       val edgeSchema2 = new EdgeSchema(edgeColumns2, "label1", "srclabel", "destlabel")
-      val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, Some(new DateTime))
+      val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, Some(new DateTime), graphId = Some(1L))
 
       val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
       plugin.validateLabelNames(List(frame1, frame2), List("notalabel1", "label2", "label3"))

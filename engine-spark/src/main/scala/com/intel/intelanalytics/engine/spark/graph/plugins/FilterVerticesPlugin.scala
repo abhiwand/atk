@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
@@ -50,7 +51,7 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVertexRows, DataFrame] {
+class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVertexRows, UnitReturn] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -81,27 +82,27 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FilterVertexRows)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: FilterVertexRows)(implicit invocation: Invocation): UnitReturn = {
+
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
     val vertexFrame: SparkFrameData = resolve(arguments.frameId)
+    require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
 
-    vertexFrame.meta.graphId match {
-      case Some(graphId) => {
-        val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(graphId)
+    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
+    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
 
-        val schema = vertexFrame.meta.schema
+    // always cache if you are calculating row count
+    filteredRdd.cache()
 
-        val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.predicate).toLegacyFrameRDD
+    val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
+    FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-        val vertexSchema: VertexSchema = schema.asInstanceOf[VertexSchema]
-        val updated = FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
+    frames.saveLegacyFrame(vertexFrame.meta, filteredRdd, Some(filteredRdd.count()))
 
-        updated.vertexMeta(vertexSchema.label)
+    filteredRdd.unpersist(blocking = false)
 
-      }
-      case _ => vertexFrame.meta
-    }
+    new UnitReturn
   }
 }
 
@@ -116,7 +117,7 @@ object FilterVerticesFunctions {
    * @param filteredRdd rdd with predicate applied
    */
   def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta,
-                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit invocation: Invocation): SeamlessGraphMeta = {
+                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit invocation: Invocation): Unit = {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
     val vertexFrameSchema = vertexFrame.schema
 
@@ -126,7 +127,8 @@ object FilterVerticesFunctions {
     val vidColumnIndex = vertexFrameSchema.columnIndex("_vid")
     val droppedVerticesPairRdd = droppedVerticesRdd.map(row => (row(vidColumnIndex), row))
 
-    val newFrameMetas = seamlessGraph.frameMetas.map(frame => {
+    // drop edges connected to the vertices
+    seamlessGraph.edgeFrames.map(frame => {
       val edgeSchema = frame.schema.asInstanceOf[EdgeSchema]
       if (edgeSchema.srcVertexLabel.equals(vertexLabel)) {
         FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
@@ -134,21 +136,7 @@ object FilterVerticesFunctions {
       else if (edgeSchema.destVertexLabel.equals(vertexLabel)) {
         FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
       }
-      else {
-        frame
-      }
     })
-    //    seamlessGraph.edgeFrames.foreach(frame => {
-    //      val schema = frame.schema.asInstanceOf[EdgeSchema]
-    //      if (schema.srcVertexLabel.equals(vertexLabel)) {
-    //        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
-    //      }
-    //      if (schema.destVertexLabel.equals(vertexLabel)) {
-    //        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
-    //      }
-    //    })
-
-    seamlessGraph.copy(frameMetas = newFrameMetas)
   }
 
   /**

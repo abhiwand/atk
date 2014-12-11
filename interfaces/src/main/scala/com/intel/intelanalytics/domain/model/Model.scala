@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ Naming, HasId }
 import org.joda.time.DateTime
 import spray.json.JsObject
+import com.intel.intelanalytics.spray.json.JsonPropertyNameConverter
 
 /**
  *
@@ -62,13 +63,9 @@ case class Model(id: Long,
   require(createdByUserId != null, "createdByUserId must not be null")
   require(modifiedByUserId != null, "modifiedByUserId must not be null")
 
-  def entity = "model"
-
-  /* Validation to check if the model is of type LogisticRegression */
-  def isLogisticRegressionModel: Boolean = {
-    modelType.equals("LogisticRegression")
+  def entityType: String = {
+    "model:" + JsonPropertyNameConverter.camelCaseToUnderscores(modelType)
   }
 
   def uri: String = ModelReference(id, None).uri
-
 }

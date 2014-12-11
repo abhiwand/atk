@@ -37,13 +37,13 @@ class TestNamedObj(unittest.TestCase):
     @mock.patch('intelanalytics.rest.command.execute_command', mock.MagicMock())
     @mock.patch('intelanalytics.rest.connection.http', mock.MagicMock())
     @mock.patch("intelanalytics.meta.api.check_api_is_loaded", mock.Mock())
-    @mock.patch("intelanalytics.meta.namedobj.get_loadable_class_from_command_prefix", mock.Mock())
+    @mock.patch("intelanalytics.meta.namedobj.get_loadable_class_from_entity_type", mock.Mock())
     def test_add_named_object_support(self):
         """
         Validate this module gets the new global methods installed, and they're callable, and the name property shows up
         """
         class Pizza(object):
-            _command_prefix = 'pizza'
+            _entity_type = 'pizza'
             def __init__(self, info):
                 self._id = 85
                 self.info = info
