@@ -370,7 +370,7 @@ except Exception as e:
 @api
 @name_support('graph')
 class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
-    _command_prefix = 'graph'
+    _entity_type = 'graph'
     def __init__(self):
         CommandLoadable.__init__(self)
 
@@ -477,7 +477,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.edges['worksunder'].inspect(20)
 
     """
-    _command_prefix = 'graph:'
+    _entity_type = 'graph:'
 
     def __init__(self, source=None, name=''):
         if not hasattr(self, '_backend'):
@@ -637,7 +637,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     """
 
-    _command_prefix = 'graph:titan'
+    _entity_type = 'graph:titan'
 
     def __init__(self, rules=None, name=""):
         try:

@@ -63,21 +63,23 @@ case class DataFrame(id: Long,
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
+  require(graphId != null, "graphId must not be null because it is an Option")
 
   def uri: String = FrameReference(id, None).uri
 
   def withSchema(newSchema: Schema) = this.copy(schema = newSchema)
 
-  if (isVertexFrame || isEdgeFrame) {
-    require(graphId != null, "graphId is required for vertex and edge frames")
-  }
+  // TODO: we should be able to enable this check but it isn't working currently because 'lazy' removes graphId from old revisions --Todd 12/9/2014
+  //if (isVertexFrame || isEdgeFrame) {
+  //  require(graphId != None, "graphId is required for vertex and edge frames")
+  //}
 
   def isVertexFrame: Boolean = schema.isInstanceOf[VertexSchema]
 
   def isEdgeFrame: Boolean = schema.isInstanceOf[EdgeSchema]
 
   /** Prefix used by plugin system */
-  def commandPrefix: String = {
+  def entityType: String = {
     if (isVertexFrame) "frame:vertex"
     else if (isEdgeFrame) "frame:edge"
     else "frame:"

@@ -230,7 +230,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject])
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
-  implicit val loadSourceFormat = jsonFormat4(LoadSource)
+  implicit val loadSourceFormat = jsonFormat6(LoadSource)
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate)
   implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
@@ -272,6 +272,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
+  implicit val calculateCovarianceMatrix = jsonFormat3(CovarianceMatrixArguments)
+  implicit val calculateCovariance = jsonFormat2(CovarianceArguments)
+  implicit val covarianceReturnFormat = jsonFormat1(DoubleValue)
 
   implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
@@ -432,7 +435,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(frame: DataFrame): JsValue = {
       JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields +
         ("ia_uri" -> JsString(frame.uri)) +
-        ("command_prefix" -> JsString(frame.commandPrefix)))
+        ("entity_type" -> JsString(frame.entityType)))
     }
   }
 
@@ -446,7 +449,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(graph: Graph): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
-        ("command_prefix" -> JsString(graph.commandPrefix)))
+        ("entity_type" -> JsString(graph.entityType)))
     }
   }
 

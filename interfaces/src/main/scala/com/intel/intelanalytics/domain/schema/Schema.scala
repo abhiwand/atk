@@ -507,5 +507,23 @@ trait Schema {
     }
   }
 
+  /**
+   * create a column name that is unique, suitable for adding to the schema
+   * (subject to race conditions, only provides unique name for schema as
+   * currently defined)
+   * @param candidate a candidate string to start with, an _N number will be
+   *                  append to make it unique
+   * @return unique column name for this schema, as currently defined
+   */
+  def getNewColumnName(candidate: String): String = {
+    var newName = candidate
+    var i: Int = 0
+    while (columnNames.contains(newName)) {
+      newName = newName + s"_$i"
+      i += 1
+    }
+    newName
+  }
+
 }
 

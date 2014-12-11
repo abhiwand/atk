@@ -66,7 +66,7 @@ object DropVertexColumnPlugin {
   def rejectInvalidColumns(columns: List[String], invalidColumns: Set[String]) {
     val invalid = columns.filter(s => invalidColumns.contains(s))
 
-    if (!invalid.isEmpty) {
+    if (invalid.nonEmpty) {
       val canNotDrop = invalid.mkString(",")
       throw new IllegalArgumentException(s"The following columns are not allowed to be dropped: $canNotDrop")
     }

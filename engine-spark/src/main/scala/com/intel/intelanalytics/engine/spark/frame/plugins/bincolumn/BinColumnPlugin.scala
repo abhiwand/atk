@@ -65,7 +65,112 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Bin a particular columnNone", Some("""
+    Summarize rows of data based on the value in a single column.
+    Two types of binning are provided: `equalwidth` and `equaldepth`.
+
+    *   Equal width binning places column values into bins such that the values in each bin fall within
+        the same interval and the interval width for each bin is equal.
+    *   Equal depth binning attempts to place column values into bins such that each bin contains the
+        same number of elements.
+        For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
+
+        .. math::
+
+            ceiling \\left( n * \\frac {f(C)}{m} \\right)
+
+        where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
+        If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the
+        average of their ordered rank values.
+
+    Parameters
+    ----------
+    column_name : str
+        The column whose values are to be binned.
+
+    num_bins : int
+        The maximum number of bins.
+
+    bin_type : str (optional)
+        The binning algorithm to use ['equalwidth' | 'equaldepth'].
+
+    bin_column_name : str (optional)
+        The name for the new binned column.
+
+    Notes
+    -----
+    1)  Unicode in column names is not supported and will likely cause the drop_frames() function
+        (and others) to fail!
+    #)  The num_bins parameter is considered to be the maximum permissible number of bins because the
+        data may dictate fewer bins.
+        With equal depth binning, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and the *num_bins* parameter is greater than 2, then the number of
+        actual number of bins will only be 2.
+        This is due to a restriction that elements with an identical value must belong to the same bin.
+
+
+    Examples
+    --------
+    For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*::
+
+        my_frame.inspect( n=11 )
+
+          a:int32
+        /---------/
+            1
+            1
+            2
+            3
+            5
+            8
+           13
+           21
+           34
+           55
+           89
+
+    Modify the frame with a column showing what bin the data is in.
+    The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
+
+        my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+        my_frame.inspect( n=11 )
+
+          a:int32     aEWBinned:int32
+        /-----------------------------/
+           1                   1
+           1                   1
+           2                   1
+           3                   1
+           5                   1
+           8                   1
+          13                   1
+          21                   2
+          34                   2
+          55                   4
+          89                   5
+
+    Modify the frame with a column showing what bin the data is in.
+    The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
+
+
+        my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+        my_frame.inspect( n=11 )
+
+          a:int32     aEDBinned:int32
+        /-----------------------------/
+           1                   1
+           1                   1
+           2                   1
+           3                   2
+           5                   2
+           8                   3
+          13                   3
+          21                   4
+          34                   4
+          55                   5
+          89                   5
+
+    .. versionadded:: 0.8""")))
 
   /**
    * Number of Spark jobs that get created by running this command
@@ -93,13 +198,18 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
   override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
     val frame: SparkFrameData = resolve(arguments.frame)
     val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
-    if (frame.meta.schema.hasColumn(arguments.binColumnName))
+    val columnType = frame.meta.schema.columnDataType(arguments.columnName)
+    require(columnType.isNumerical, s"Invalid column ${arguments.columnName} for bin column.  Expected a numerical data type, but got $columnType.")
+    val binColumnName = arguments.binColumnName.getOrElse(frame.meta.schema.getNewColumnName(arguments.columnName + "_binned"))
+    if (frame.meta.schema.hasColumn(binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+    val binType = arguments.binType.getOrElse("equalwidth")
+    require(binType == "equalwidth" || binType == "equaldepth", "bin type must be 'equalwidth' or 'equaldepth', not " + binType)
 
     // run the operation and save results
-    val updatedSchema = frame.meta.schema.addColumn(arguments.binColumnName, DataTypes.int32)
+    val updatedSchema = frame.meta.schema.addColumn(binColumnName, DataTypes.int32)
     val rdd = frame.data
-    val binnedRdd = DiscretizationFunctions.bin(columnIndex, arguments.binType, arguments.numBins, rdd.toLegacyFrameRDD)
+    val binnedRdd = DiscretizationFunctions.bin(columnIndex, binType, arguments.numBins, rdd.toLegacyFrameRDD)
     save(new SparkFrameData(frame.meta.withSchema(updatedSchema), FrameRDD.toFrameRDD(updatedSchema, binnedRdd))).meta
   }
 }

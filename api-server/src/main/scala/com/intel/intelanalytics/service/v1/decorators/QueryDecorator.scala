@@ -92,7 +92,7 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    */
   def decoratePages(uri: String, entity: Query): List[GetQueryPages] = {
     require(entity.complete)
-    val pages = new ListBuffer[GetQueryPages]();
+    val pages = new ListBuffer[GetQueryPages]()
     for (i <- 1 to entity.totalPages.get.toInt) {
       pages += new GetQueryPages(id = i, url = uri + "/" + i)
     }

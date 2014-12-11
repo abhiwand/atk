@@ -42,7 +42,7 @@ object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Model): GetModel = {
 
-    GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList)
+    GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList, entity.entityType)
   }
 
   /**
@@ -55,6 +55,7 @@ object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
   override def decorateForIndex(uri: String, entities: Seq[Model]): List[GetModels] = {
     entities.map(model => new GetModels(id = model.id,
       name = model.name,
-      url = uri + "/" + model.id)).toList
+      url = uri + "/" + model.id,
+      entityType = model.entityType)).toList
   }
 }

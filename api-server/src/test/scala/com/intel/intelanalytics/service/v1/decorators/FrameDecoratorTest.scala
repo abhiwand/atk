@@ -41,6 +41,7 @@ class FrameDecoratorTest extends FlatSpec with Matchers {
     decoratedFrame.id should be(1)
     decoratedFrame.name should be("name")
     decoratedFrame.ia_uri should be("ia://frame/1")
+    decoratedFrame.entityType should be("frame:")
     decoratedFrame.links.head.uri should be("http://www.example.com/frames/1")
   }
 

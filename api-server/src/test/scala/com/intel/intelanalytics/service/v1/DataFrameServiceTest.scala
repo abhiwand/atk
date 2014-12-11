@@ -62,7 +62,8 @@ class DataFrameServiceTest extends ServiceTest {
       assert(responseAs[String] == """[{
                                      |  "id": 1,
                                      |  "name": "name",
-                                     |  "url": "http://example.com/frames/1"
+                                     |  "url": "http://example.com/frames/1",
+                                     |  "entity_type": "frame:"
                                      |}]""".stripMargin)
     }
   }
