@@ -162,6 +162,9 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     val start = System.currentTimeMillis()
     val sparkContext = sc
 
+    // TODO: stopping the old spark context and restarting it here avoids a class not found error...
+    // there has got to be a better way
+
     sc.stop
 
     val ctx = new SparkContext(sc.getConf)
