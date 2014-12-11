@@ -79,11 +79,8 @@ class SparkGraphStorage(metaStore: MetaStore,
     override type Data = SparkGraphData
 
     override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
-
-      //TODO: implement!
-      ???
-      //      val meta = getMetaData(reference)
-      //      new SparkGraphData(meta.meta, storage.loadFrameData(sc, meta.meta))
+      val meta = getMetaData(reference)
+      new SparkGraphData(meta.meta, None)
     }
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference.id))
@@ -118,7 +115,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   //EntityRegistry.register(GraphEntity, SparkGraphManagement)
   //in the meantime,
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(GraphEntity, GraphReferenceManagement)
+  EntityRegistry.register(GraphEntity, SparkGraphManagement)
 
   /** Lookup a Graph, throw an Exception if not found */
   override def expectGraph(graphId: Long)(implicit invocation: Invocation): Graph = {
