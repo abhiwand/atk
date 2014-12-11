@@ -99,7 +99,7 @@
                 {
                     "name": "atk_classpath_add",
                     "label": "ATK Class Path",
-                    "description": "Additional classpath to use with ATK",
+                    "description": "Additional java classpath to use with ATK",
                     "required": "true",
                     "type": "string",
                     "default": ""
@@ -107,8 +107,8 @@
                 {
                     "name": "atk_api_port",
                     "configName": "intel.analytics.api.port",
-                    "label": "Webserver port",
-                    "description": "This port number is used by the python client for communication with the rest server",
+                    "label": "Rest Server Port",
+                    "description": "The port used to serve the Intel Analytics service. Make sure the python clients configuration is updated to use the same port.",
                     "required": "true",
                     "type": "port",
                     "default": 9099
@@ -116,8 +116,8 @@
                 {
                     "name": "atk_api_host",
                     "configName": "intel.analytics.api.host",
-                    "label": "Webserver host",
-                    "description": "The Web servers bind address. Set to 0.0.0.0 to bind to all address",
+                    "label": "Rest Server Host",
+                    "description": "Intel Analytics service bind address. Set to 0.0.0.0 to bind to all address.",
                     "required": "true",
                     "type": "string",
                     "default": "127.0.0.1"
@@ -126,7 +126,7 @@
                      "name": "atk_postgres_host",
                      "configName": "intel.analytics.metastore.connection-postgresql.host",
                      "label": "Postgres host",
-                     "description": "Postgresql host name",
+                     "description": "Postgresql Host name",
                      "required": "true",
                      "type": "string",
                      "default": "localhost",
@@ -136,7 +136,7 @@
                      "name": "atk_postgres_port",
                      "configName": "intel.analytics.metastore.connection-postgresql.port",
                      "label": "Postgres port",
-                     "description": "Postgresql port",
+                     "description": "Postgresql port number",
                      "required": "true",
                      "type": "port",
                      "default": 5432,
@@ -145,8 +145,8 @@
                 {
                      "name": "atk_postgres_database",
                      "configName": "intel.analytics.metastore.connection-postgresql.database",
-                     "label": "Postgres database",
-                     "description": "Postgresql database",
+                     "label": "Postgres Database Name",
+                     "description": "Postgresql database name",
                      "required": "true",
                      "type": "string",
                      "default": "ia_metastore",
@@ -155,8 +155,8 @@
                 {
                      "name": "atk_postgres_username",
                      "configName": "intel.analytics.metastore.connection-postgresql.username",
-                     "label": "Postgres username",
-                     "description": "Postgresql username",
+                     "label": "Postgres User Name",
+                     "description": "Postgresql user name",
                      "required": "true",
                      "type": "string",
                      "default": "iauser",
@@ -165,7 +165,7 @@
                 {
                      "name": "atk_postgres_password",
                      "configName": "intel.analytics.metastore.connection-postgresql.password",
-                     "label": "Postgres password",
+                     "label": "Postgres Password",
                      "description": "Postgresql password",
                      "required": "true",
                      "type": "password",
@@ -175,7 +175,7 @@
                 {
                      "name": "atk_cdh_host",
                      "label": "Cloudera Manager Hostname/ip",
-                     "description": "The Cloudera manager host/ip is pulled from the agent by default. You only need to set this if you suspect networking issues.",
+                     "description": "The Cloudera manager host/ip is pulled from the agent by if set to localhost. You only need to set this if you suspect networking issues. The CM connection details are used to query CM through the rest api for service details like the list of ZOOKEEPER host names.",
                      "required": "true",
                      "type": "string",
                      "default": "localhost",
@@ -184,7 +184,7 @@
                 {
                      "name": "atk_cdh_port",
                      "label": "Cloudera Manager port",
-                     "description": "The Cloudera manager port, usually 7180",
+                     "description": "The Cloudera manager port, usually 7180. The CM connection details are used to query CM through the rest api for service details like the list of ZOOKEEPER host names.",
                      "required": "true",
                      "type": "port",
                      "default": "7180",

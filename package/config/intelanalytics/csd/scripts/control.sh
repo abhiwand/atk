@@ -9,18 +9,24 @@ timestamp=$(date)
 echo "==$timestamp: $1" #stdout
 }
 
+sed -i "s|\!/usr/bin/python|\!${ATK_PYTHON}|g" $ATK_PARCEL_HOME/etc/intelanalytics/rest-server/config
+
+python --version
+${ATK_PYTHON} --version
+
 function getConfig(){
     local service=$1
     local config_group=$2
     local config=$3
-    python ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "$service" --config-group "$config_group" --config "$config"
+    ${ATK_PYTHON} ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "$service" --config-group "$config_group" --config "$config"
 }
 
 function getHostnames(){
     local service=$1
     local role=$2
-    python ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "$service" --role "$role" --hostnames yes
+    ${ATK_PYTHON} ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "$service" --role "$role" --hostnames yes
 }
+
 
 fs_root_host=$(getHostnames "HDFS" "NAMENODE" )
 log "fs root host-${fs_root_host}"
@@ -57,7 +63,7 @@ log "spark exec mem-${spark_executor_mem}"
 echo "intel.analytics.engine.spark.conf.properties.spark.executor.memory=\"${spark_executor_mem}\"" >> $ATK_TEMP/application.conf
 
 log "set classpath"
-python ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "SPARK" --config-group "spark-SPARK_WORKER-BASE" --config "SPARK_WORKER_role_env_safety_valve" --classpath yes --classpath-lib "${ATK_SPARK_DEPS_DIR}/${ATK_SPARK_DEPS_JAR}"  --role "SPARK_MASTER"
+${ATK_PYTHON} ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "SPARK" --config-group "spark-SPARK_WORKER-BASE" --config "SPARK_WORKER_role_env_safety_valve" --classpath yes --classpath-lib "${ATK_SPARK_DEPS_DIR}/${ATK_SPARK_DEPS_JAR}"  --role "SPARK_MASTER"
 
 echo "intel.analytics.engine.spark.python-worker-exec=\"${ATK_PYTHON}\"" >> $ATK_TEMP/application.conf
 echo "intel.analytics.metastore.connection-postgresql.password=\"${ATK_POSTGRES_PASSWORD}\"" >> $ATK_TEMP/application.conf
