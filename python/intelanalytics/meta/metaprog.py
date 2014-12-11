@@ -292,14 +292,14 @@ def load_loadable(loadable_class, command_def, execute_command_function):
 
 
 def get_loaded_intermediate_classes(loadable_class):
-    attr_name = loadable_class.__name__ + LOADED_INTERMEDIATE_CLASSES
+    attr_name = "_" + loadable_class.__name__ + LOADED_INTERMEDIATE_CLASSES
     if not hasattr(loadable_class, attr_name):
         setattr(loadable_class, attr_name, set())
     return getattr(loadable_class, attr_name)
 
 
 def get_loaded_commands(loadable_class):
-    attr_name = loadable_class.__name__ + LOADED_COMMANDS
+    attr_name = "_" + loadable_class.__name__ + LOADED_COMMANDS
     if not hasattr(loadable_class, attr_name):
         setattr(loadable_class, attr_name, [])
     return getattr(loadable_class, attr_name)
