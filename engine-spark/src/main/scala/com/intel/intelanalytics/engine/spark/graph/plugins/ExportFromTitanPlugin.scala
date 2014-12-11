@@ -67,8 +67,8 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
   override def kryoRegistrator: Option[String] = None
 
   override def numberOfJobs(arguments: GraphNoArgs)(implicit invocation: Invocation): Int = {
-    val graphId: Long = arguments.graph.id
-    val titanIAGraph = graphs.expectGraph(graphId)
+    val graphMeta: GraphMeta = resolve(arguments.graph)
+    val titanIAGraph = graphMeta.meta
     val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph)
     val edgeDefinitions = getEdgeDefinitions(titanIAGraph)
     val numberOfVertexTypes = labelToIdNameMapping.size
