@@ -8,7 +8,7 @@
         "group": "iauser"
     },
     "parcel" : {
-        "repoUrl" : "http://10.23.129.86/parcels",
+        "repoUrl" : "PARCELURL",
         "requiredTags" : [ "cdh", "spark", "ATK" ]
     },
     "compatibility": {
