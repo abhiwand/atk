@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -47,6 +47,7 @@ object SparkEngineConfig extends SparkEngineConfig
  * This is our wrapper for Typesafe config.
  */
 trait SparkEngineConfig extends EventLogging {
+  implicit val eventContext: EventContext = null
 
   val config = ConfigFactory.load()
 
@@ -212,6 +213,15 @@ trait SparkEngineConfig extends EventLogging {
     unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
   }
 
+  /**
+   * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
+   *
+   * True if engine-spark.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
+   * False is useful mainly for development on a cluster.  False results in many copies of the application jars
+   * being made and copied to all of the cluster nodes.
+   */
+  val sparkAppJarsLocal: Boolean = config.getBoolean("intel.analytics.engine.spark.app-jars-local")
+
   /** Fully qualified Hostname for current system */
   private def hostname: String = InetAddress.getLocalHost.getCanonicalHostName
 
@@ -223,6 +233,12 @@ trait SparkEngineConfig extends EventLogging {
     info("disableKryo: " + disableKryo)
     for ((key: String, value: String) <- sparkConfProperties) {
       info(s"sparkConfProperties: $key = $value")
+    }
+    if (sparkAppJarsLocal) {
+      info("sparkAppJarsLocal: " + sparkAppJarsLocal + " (expecting application jars to be installed on all worker nodes)")
+    }
+    else {
+      info("sparkAppJarsLocal: " + sparkAppJarsLocal + " (application jars will be copied to worker nodes with every command)")
     }
   }
 

@@ -23,29 +23,31 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
  * Class Factory for creating spark contexts
  */
-class SparkContextFactory() extends EventLogging {
+trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
 
   /**
    * Creates a new sparkContext with the specified kryo classes
    */
-  def getContext(user: String, description: String, kryoRegistrator: Option[String] = None): SparkContext = withContext("engine.SparkContextFactory") {
+  def getContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = withContext("engine.SparkContextFactory") {
 
-    val jarPath = Boot.getJar("engine-spark")
-
+    val userName = user.user.apiKey.getOrElse(
+      throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated"))
     val sparkConf = new SparkConf()
       .setMaster(SparkEngineConfig.sparkMaster)
       .setSparkHome(SparkEngineConfig.sparkHome)
-      .setAppName(s"intel-analytics:$user:$description")
-      .setJars(Seq(jarPath.getPath))
+      .setAppName(s"intel-analytics:$userName:$description")
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
@@ -56,11 +58,34 @@ class SparkContextFactory() extends EventLogging {
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
-    new SparkContext(sparkConf)
+    val sparkContext = new SparkContext(sparkConf)
+    sparkContext.addJar(jarPath("engine-spark"))
+    sparkContext
   }
+
   /**
    * Creates a new sparkContext
    */
-  def context(implicit user: UserPrincipal, description: String, kryoRegistrator: Option[String] = None): SparkContext = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description, kryoRegistrator)
+  def context(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext =
+    getContext(description, kryoRegistrator)
+
+  /**
+   * Path for jars adding local: prefix or not depending on configuration for use in SparkContext
+   *
+   * "local:/some/path" means the jar is installed on every worker node.
+   *
+   * @param archive e.g. "graphon"
+   * @return "local:/usr/lib/intelanalytics/lib/graphon.jar" or similar
+   */
+  def jarPath(archive: String): String = {
+    if (SparkEngineConfig.sparkAppJarsLocal) {
+      "local:" + StringUtils.removeStart(Boot.getJar(archive).getPath, "file:")
+    }
+    else {
+      Boot.getJar(archive).toString
+    }
+  }
+
 }
+
+object SparkContextFactory extends SparkContextFactory

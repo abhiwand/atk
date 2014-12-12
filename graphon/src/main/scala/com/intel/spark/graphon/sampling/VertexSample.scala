@@ -25,7 +25,10 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -126,20 +129,19 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
                            |    .. versionadded:: 0.8
                             """)))
 
-  override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
+  override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
     // Titan Settings
     val config = configuration
 
     // get the input graph object
     import scala.concurrent.duration._
-    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // create titanConfig
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
 
     // get SparkContext and add the graphon jar
-    val sc = invocation.sparkContext
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // convert graph name and get the graph vertex and edge RDDs
     val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
@@ -157,7 +159,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)

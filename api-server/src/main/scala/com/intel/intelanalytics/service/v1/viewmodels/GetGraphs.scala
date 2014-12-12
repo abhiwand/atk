@@ -30,8 +30,9 @@ package com.intel.intelanalytics.service.v1.viewmodels
  * @param name name assigned by user, auto-assigned by system if user doesn't supply
  * @param url the URI to 'this' graph in terms of the REST API
  */
-case class GetGraphs(id: Long, name: String, url: String) {
+case class GetGraphs(id: Long, name: String, url: String, entityType: String) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name must not be null")
   require(url != null, "url must not be null")
+  require(entityType != null, "entityType must not be null")
 }

@@ -23,12 +23,7 @@
 package com.intel.giraph.io.titan.formats;
 
 import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.titan.TitanGraphWriter;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -38,14 +33,7 @@ import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 /**
  * The Vertex Output Format which writes back Giraph LBP algorithm
@@ -60,26 +48,14 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  */
 
 public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
-    V extends VertexData4LBPWritable, E extends Writable>
-    extends TextVertexOutputFormat<I, V, E> {
+        V extends VertexData4LBPWritable, E extends Writable>
+        extends TitanVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanVertexOutputFormatPropertyGraph4LBP.class);
-
-
-    /**
-     * set up Titan based on users' configuration
-     *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        GiraphTitanUtils.setupTitanOutput(conf);
-        super.setConf(conf);
-    }
+            .getLogger(TitanVertexOutputFormatPropertyGraph4LBP.class);
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
@@ -91,12 +67,8 @@ public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanVertexPropertyGraph4LBPWriter extends TextVertexWriterToEachLine {
+    protected class TitanVertexPropertyGraph4LBPWriter extends TitanVertexWriterToEachLine {
 
-        /**
-         * TitanFactory to write back results
-         */
-        private TitanGraph graph = null;
         /**
          * Vertex value properties to filter
          */
@@ -105,17 +77,11 @@ public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
          * Enable vector value
          */
         private String enableVectorValue = "true";
-        /**
-         * regular expression of the deliminators for a property list
-         */
-        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
-            InterruptedException {
+                InterruptedException {
             super.initialize(context);
-            this.graph = TitanGraphWriter.open(context);
-            LOG.info(OPENED_GRAPH);
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
             vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
@@ -148,41 +114,28 @@ public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
                 if (vector.size() == vertexValuePropertyKeyList.length) {
                     for (int i = 0; i < vector.size(); i++) {
                         bluePrintVertex.setProperty(vertexValuePropertyKeyList[i],
-                            Double.toString(vector.getQuick(i)));
+                                Double.toString(vector.getQuick(i)));
                     }
                 } else {
                     generateErrorMsg(vector.size(), vertex.getId().get());
                 }
             }
-
+            commitVerticesInBatches();
             return null;
         }
 
 
         /**
+         * Generate error message when vertex is not in expected format.
          *
-         * @param size  The number of vertex value properties
-         * @param vertexId  The vertex Id
+         * @param size     The number of vertex value properties
+         * @param vertexId The vertex Id
          */
         public void generateErrorMsg(int size, long vertexId) {
             LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + size +
-                REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
+                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
             throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
-                CURRENT_VERTEX + vertexId);
-        }
-
-        /**
-         * close
-         *
-         * @param context Task attempt context
-         * @throws IOException
-         */
-        @Override
-        public void close(TaskAttemptContext context) throws IOException, InterruptedException {
-            this.graph.commit();
-            this.graph.shutdown();
-            LOG.info(CLOSED_GRAPH);
-            super.close(context);
+                    CURRENT_VERTEX + vertexId);
         }
     }
 }

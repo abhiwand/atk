@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.{ IAUri, HasId }
+import com.intel.intelanalytics.domain.HasId
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 
@@ -36,45 +36,50 @@ import org.joda.time.DateTime
  * @param status lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible),
  *               DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
  * @param createdOn date/time this record was created
- * @param modifiedOn date/time this record was last modified
  * @param createdBy user who created this row
- * @param modifiedBy user who last modified this row
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
- * @param revision the current revision number of the frame - incremented with each change to the data frame
  * @param graphId a value means the frame is owned by a graph and shouldn't be exposed to the user in the same way
  */
 case class DataFrame(id: Long,
                      name: String,
-                     description: Option[String] = None,
                      schema: Schema = FrameSchema(),
-                     rowCount: Long = 0,
                      status: Long,
                      createdOn: DateTime,
-                     modifiedOn: DateTime,
+                     modifiedOn: Option[DateTime] = None,
+                     storageFormat: Option[String] = None,
+                     storageLocation: Option[String] = None,
+                     description: Option[String] = None,
+                     rowCount: Option[Long] = None,
+                     command: Option[Long] = None,
                      createdBy: Option[Long] = None,
                      modifiedBy: Option[Long] = None,
+                     materializedOn: Option[DateTime] = None,
+                     materializationComplete: Option[DateTime] = None,
                      errorFrameId: Option[Long] = None,
-                     revision: Int = 0,
-                     graphId: Option[Long] = None) extends HasId with IAUri {
-
+                     parent: Option[Long] = None,
+                     graphId: Option[Long] = None) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
-  require(revision >= 0, "revision must be a positive integer")
+  require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
+  require(graphId != null, "graphId must not be null because it is an Option")
 
-  if (isVertexFrame || isEdgeFrame) {
-    require(graphId != null, "graphId is required for vertex and edge frames")
-  }
+  def uri: String = FrameReference(id, None).uri
 
-  def entity = "frame"
+  def withSchema(newSchema: Schema) = this.copy(schema = newSchema)
+
+  // TODO: we should be able to enable this check but it isn't working currently because 'lazy' removes graphId from old revisions --Todd 12/9/2014
+  //if (isVertexFrame || isEdgeFrame) {
+  //  require(graphId != None, "graphId is required for vertex and edge frames")
+  //}
 
   def isVertexFrame: Boolean = schema.isInstanceOf[VertexSchema]
 
   def isEdgeFrame: Boolean = schema.isInstanceOf[EdgeSchema]
 
   /** Prefix used by plugin system */
-  def commandPrefix: String = {
+  def entityType: String = {
     if (isVertexFrame) "frame:vertex"
     else if (isEdgeFrame) "frame:edge"
     else "frame:"
@@ -90,5 +95,12 @@ case class DataFrame(id: Long,
     case v: VertexSchema => Some(v.label)
     case e: EdgeSchema => Some(e.label)
     case _ => None
+  }
+
+  /**
+   * A minimal toString-like method for debugging messages
+   */
+  def toDebugString: String = {
+    s"frameId: $id, name: $name, rowCount: $rowCount"
   }
 }

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -91,7 +92,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: DropDuplicates) = 2
+  override def numberOfJobs(arguments: DropDuplicates)(implicit invocation: Invocation) = 2
 
   /**
    * Remove duplicate rows, keeping only one row per uniqueness criteria match
@@ -100,13 +101,12 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: DropDuplicates)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: DropDuplicates)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frame: DataFrame = frames.expectFrame(arguments.frame.id)

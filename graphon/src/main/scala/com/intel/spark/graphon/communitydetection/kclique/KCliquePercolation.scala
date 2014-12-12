@@ -24,12 +24,15 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
+import java.util.Date
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -82,17 +85,16 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graph:titan/ml/kclique_percolation"
 
-  override def numberOfJobs(arguments: KClique): Int = {
-    // TODO: not sure of correct value here
-    // Based on limited experiments:
-    //    2 cliques created 12 jobs
-    //    3,4,5,6 cliques created 7 jobs
-    if (arguments.cliqueSize == 2) {
-      12
-    }
-    else {
-      7
-    }
+  /**
+   * The number of jobs varies with the number of supersteps required to find the connected components
+   * of the derived clique-shadow graph.... we cannot properly anticipate this without doing a full analysis of
+   * the graph.
+   *
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
+   */
+  override def numberOfJobs(arguments: KClique)(implicit invocation: Invocation): Int = {
+    8 + 2 * arguments.cliqueSize
   }
 
   /**
@@ -115,6 +117,17 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
                              |        This property will contain for each vertex the set of communities that contain
                              |        that vertex.
                              |
+                             |    Note on Progress Bars
+                             |    ---------------------
+                             |        K clique percolation spawns a number of Spark jobs that cannot be calculated
+                             |        before execution (it is bounded by the diameter of the clique graph derived from
+                             |        the input graph).
+                             |        For this reason, the initial loading, clique enumeration and clique-graph construction
+                             |        steps are tracked with a single progress bar (this is most of the time),
+                             |        and then successive iterations of analysis of the clique graph are tracked with
+                             |        many short-lived progress bars, and then finally the result is written out.
+                             |
+                             |
                              |    Examples
                              |    --------
                              |    ::
@@ -126,20 +139,19 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
+  override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
 
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-    val sc = sparkInvocation.sparkContext
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Set the graph in Titan
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)

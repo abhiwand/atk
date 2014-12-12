@@ -81,7 +81,7 @@ class GraphStatisticsTest extends TestingSparkContextWordSpec with Matchers {
     val bob_gbId = new Property("gbId", 10002)
     val bob = new GBVertex(bob_gbId, Set(new Property("Name", "Bob")))
 
-    val edge1 = new GBEdge(alice_gbId, bob_gbId, validEdgeLabel, Set(new Property("time", 20)))
+    val edge1 = new GBEdge(None, alice_gbId, bob_gbId, validEdgeLabel, Set(new Property("time", 20)))
     (Seq(alice, bob), Seq(edge1))
   }
 }

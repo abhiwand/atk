@@ -27,7 +27,8 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -61,7 +62,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: FilterPredicate) = 2
+  override def numberOfJobs(arguments: FilterPredicate)(implicit invocation: Invocation) = 2
 
   /**
    * Select all rows which satisfy a predicate
@@ -70,23 +71,13 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FilterPredicate)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val pythonRDDStorage = new PythonRDDStorage(frames)
+  override def execute(arguments: FilterPredicate)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = resolve(arguments.frame)
 
-    // validate arguments
-    val frameMeta = frames.lookup(arguments.frame.id).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+    val updated = PythonRDDStorage.mapWith(frame.data, arguments.predicate)
 
-    // run the operation and save results
-    val pyRdd = pythonRDDStorage.createPythonRDD(arguments.frame.id, arguments.predicate, invocation.sparkContext)
-    val schema = frameMeta.schema
-    val converter = DataTypes.parseMany(schema.columnTuples.map(_._2).toArray)(_)
-    val rowCount = pythonRDDStorage.persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)
-    frames.updateRowCount(frameMeta, rowCount)
+    save(new SparkFrameData(frame.meta.withSchema(updated.frameSchema), updated)).meta
   }
 }

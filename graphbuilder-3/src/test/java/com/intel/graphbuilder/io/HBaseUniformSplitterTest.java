@@ -1,5 +1,6 @@
 package com.intel.graphbuilder.io;
 
+import com.intel.graphbuilder.titan.io.HBaseUniformSplitter;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
@@ -8,6 +9,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -77,7 +79,7 @@ public class HBaseUniformSplitterTest {
     public void testCreateInputSplitsEmptyEndRow() throws Exception {
         // If endRow is empty (i.e., last region in table), use max key to split region
 
-        // Test split when start row is less than MAX_INT
+        // Test split when start row is empty
         byte[] startRow1 = HConstants.EMPTY_BYTE_ARRAY;
         byte[] middle1 = Bytes.toBytes(1L << 31);
         byte[] endRow = HConstants.EMPTY_BYTE_ARRAY;
@@ -94,10 +96,12 @@ public class HBaseUniformSplitterTest {
         assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(1)).getStartRow(), middle1));
         assertTrue(Bytes.equals(((TableSplit) uniformSplits1.get(1)).getEndRow(), endRow));
 
-        // Test split when start row is greater than MAX_INT
-        byte[] startRow2 = Bytes.toBytes(1L << 61); //2305843009213693952
-        byte[] middle2 = Bytes.toBytes(5L << 60);   //5764607523034234880
+        // Test split when start row is not empty
+        byte[] startRow2 = new byte[2];
+        byte[] middle2 = new byte[2];
 
+        Arrays.fill(startRow2, (byte)0xBB);
+        Arrays.fill(middle2, (byte)0xDD);
         TableSplit tableSplit2 = new TableSplit(TableName.valueOf("table"), startRow2, HConstants.EMPTY_BYTE_ARRAY, "location");
         List<InputSplit> inputSplits2 = new ArrayList<>();
         inputSplits2.add(tableSplit2);
