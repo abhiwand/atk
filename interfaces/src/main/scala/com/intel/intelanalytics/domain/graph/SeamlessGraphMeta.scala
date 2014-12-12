@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.schema.VertexSchema
+import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
 
 /**
  * Wrapper for Seamless Graph Meta data stored in the database
@@ -135,20 +135,28 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
     edgeLabels.mkString(", ")
   }
 
-  def vertexCount: Long = {
-    vertexFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def vertexCount: Option[Long] = {
+    countList(vertexFrames.map(frame => frame.rowCount))
   }
 
-  def edgeCount: Long = {
-    edgeFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def edgeCount: Option[Long] = {
+    countList(edgeFrames.map(frame => frame.rowCount))
+  }
+
+  private def countList(list: List[Option[Long]]): Option[Long] = list match {
+    case Nil => Some(0)
+    case x :: xs => for {
+      left <- x
+      right <- countList(xs)
+    } yield left + right
   }
 
   /**
    * Create a list of ElementIDName objects corresponding to the IDColumn of all Vertices in this graph.
    */
-  def vertexIdColumnNames: List[ElementIDName] = {
-    this.vertexFrameMetasMap.map {
-      case (name, frame) => new ElementIDName(name, frame.schema.asInstanceOf[VertexSchema].idColumnName.getOrElse("_vid"))
+  def getFrameSchemaList: List[Schema] = {
+    this.frameMetas.map {
+      frame => frame.schema
     }.toList
   }
 

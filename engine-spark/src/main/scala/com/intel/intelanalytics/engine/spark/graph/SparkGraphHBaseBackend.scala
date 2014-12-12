@@ -1,19 +1,24 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.GraphBackendStorage
+import com.intel.intelanalytics.engine.plugin.Invocation
 
 /**
  * Implements graph backend storage in HBase for Spark.
  */
-class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory) extends GraphBackendStorage with EventLogging {
+class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
+    extends GraphBackendStorage
+    with EventLogging
+    with EventLoggingImplicits {
 
   /**
    * Deletes a graph's underlying table from HBase.
    * @param graphName The user's name for the graph.
    * @param quiet Whether we attempt to delete quietly(if true) or raise raise an error if table doesn't exist(if false).
    */
-  override def deleteUnderlyingTable(graphName: String, quiet: Boolean): Unit = withContext("deleteUnderlyingTable") {
+  override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
 
     val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
 
@@ -35,7 +40,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory) extends Graph
     }
   }
 
-  override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
+  override def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
     val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
     val newTableName: String = GraphBackendName.convertGraphUserNameToBackendName(newName)
     val snapShotName: String = graphName.concat("_SnapShot")

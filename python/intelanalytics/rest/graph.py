@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import Column
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.frame import FrameInfo
 from intelanalytics.core.frame import VertexFrame, EdgeFrame
+from intelanalytics.rest.command import executor
 
 
 def initialize_graph(graph, graph_info):
@@ -119,6 +119,14 @@ class GraphBackendRest(object):
         r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
         return EdgeFrame(r.json())
 
+    def get_vertex_count(self, graph):
+        arguments = {'graph': self.get_ia_uri(graph)}
+        return executor.get_command_output("graph", "vertex_count", arguments)
+
+    def get_edge_count(self, graph):
+        arguments = {'graph': self.get_ia_uri(graph)}
+        return executor.get_command_output("graph", "edge_count", arguments)
+
 
 # GB JSON Payload objects:
 
@@ -189,7 +197,7 @@ class JsonRules(object):
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
         #validate the input frames
-        from intelanalytics.core.config import get_frame_backend
+        from intelanalytics.meta.config import get_frame_backend
         frame_backend = get_frame_backend()
 
         try:
@@ -227,8 +235,8 @@ class GraphInfo(object):
         return self._payload['name']
 
     @property
-    def command_prefix(self):
-        return self._payload['command_prefix']
+    def entity_type(self):
+        return self._payload['entity_type']
 
     @property
     def ia_uri(self):

@@ -23,5 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
+// TODO: this looks unused?  probably should be deleted --Todd 11/17/2014
+
 case class BigColumn[T](override val name: String) extends Column[T]
 

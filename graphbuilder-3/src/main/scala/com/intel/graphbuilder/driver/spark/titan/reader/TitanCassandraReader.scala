@@ -4,9 +4,9 @@ import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.io.titan.formats.cassandra.TitanCassandraInputFormat
 import com.thinkaurelius.titan.diskstorage.Backend
 import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat
 import org.apache.cassandra.hadoop.ConfigHelper
 import org.apache.cassandra.thrift.{ SlicePredicate, SliceRange }
 import org.apache.hadoop.io.NullWritable

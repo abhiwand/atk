@@ -73,14 +73,16 @@ private[testutils] object TestingSparkContext {
     }
   }
 
-  private def createLocalSparkContext(): SparkContext = {
+  private def createLocalSparkContext(
+    serializer: String = "org.apache.spark.serializer.KryoSerializer",
+    registrator: String = "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator"): SparkContext = {
     // LogUtils.silenceSpark()
 
     val conf = new SparkConf()
       .setMaster("local")
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+    conf.set("spark.serializer", serializer)
+    conf.set("spark.kryo.registrator", registrator)
 
     new SparkContext(conf)
   }

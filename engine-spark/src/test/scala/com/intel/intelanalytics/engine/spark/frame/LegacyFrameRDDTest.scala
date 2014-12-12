@@ -49,7 +49,7 @@ class LegacyFrameRDDTest extends TestingSparkContextWordSpec with Matchers {
       val frameRDD = rdd.toFrameRDD()
 
       frameRDD.getClass should be(classOf[FrameRDD])
-      frameRDD.schema should be(schema)
+      frameRDD.frameSchema should be(schema)
       frameRDD.first should equal(rdd.first)
     }
 
