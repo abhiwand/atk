@@ -40,14 +40,17 @@ function deleteOldBuildDirs()
 function tarFiles()
 {
 	mkdir TESTTAR
+	: > FILES.LOG
 	tar -xvf $1 -C TESTTAR > TAR.LOG
 	if [ -f FILES.LOG ] && [ -f CONFIGFILES.LOG ]; then
 	    rm FILES.LOG CONFIGFILES.LOG
 	fi
 	for path in `cat TAR.LOG`;
 	do
+
 		fullPath=$path
 		fileName=${path##*/}
+		log "filename $fileName"
 		if [ "$fileName" != "" ]; then
 
 			if [[ ! $fullPath == \/* ]]; then

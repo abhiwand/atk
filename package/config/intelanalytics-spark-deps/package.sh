@@ -32,7 +32,7 @@ do
 done
 
 
-mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
 jars="engine-spark.jar graphon.jar"
 for jar in $jars
 do
