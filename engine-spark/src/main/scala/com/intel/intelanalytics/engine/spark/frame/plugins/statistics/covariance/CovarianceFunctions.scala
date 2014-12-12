@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import breeze.linalg.DenseVector
-import com.intel.intelanalytics.domain.frame.CovarianceReturn
+import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
@@ -47,7 +47,7 @@ object Covariance extends Serializable {
    * @return covariance wrapped in CovarianceReturn
    */
   def covariance(frameRDD: FrameRDD,
-                 dataColumnNames: List[String]): CovarianceReturn = {
+                 dataColumnNames: List[String]): DoubleValue = {
     // compute multivariate statistics and return covariance
 
     val rowsAsVectorRDD = frameRDD.mapRows(row => {
@@ -71,7 +71,7 @@ object Covariance extends Serializable {
     }, combOp = (s1: Double, s2: Double) => (s1 + s2))
 
     val covariance = (product / (rowCount - 1)) - (mean(0) * mean(1) * rowCount / (rowCount - 1))
-    CovarianceReturn(covariance)
+    DoubleValue(covariance)
   }
 
   /**

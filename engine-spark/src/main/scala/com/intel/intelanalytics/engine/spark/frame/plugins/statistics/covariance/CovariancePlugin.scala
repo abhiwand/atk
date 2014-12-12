@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.multivariatestatistics
 
+import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CovarianceArguments, CovarianceReturn }
+import com.intel.intelanalytics.domain.frame.CovarianceArguments
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -41,7 +42,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate covariance for the specified columns
  */
-class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, CovarianceReturn] {
+class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, DoubleValue] {
 
   /**
    * The name of the command
@@ -93,7 +94,7 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, Covarianc
    * @param arguments input specification for covariance
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CovarianceArguments)(implicit invocation: Invocation): CovarianceReturn = {
+  override def execute(arguments: CovarianceArguments)(implicit invocation: Invocation): DoubleValue = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
