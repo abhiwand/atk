@@ -86,7 +86,8 @@
                     "unit" : "bytes",
                     "min" : 268435456,
                     "default" : 536870912,
-                    "scaleFactor" : 1.3
+                    "scaleFactor" : 1.3,
+                    "autoConfigShare" : 100
                 },
                 {
                     "name": "atk_add_jvm_opt",
@@ -193,7 +194,7 @@
                 {
                      "name": "atk_cdh_username",
                      "label": "Cloudera Manager username",
-                     "description": "The Cloudera manager username",
+                     "description": "The Cloudera manager username. The CM connection details are used to query CM through the rest api for service details like the list of ZOOKEEPER host names.",
                      "required": "true",
                      "type": "string",
                      "default": "admin",
@@ -202,7 +203,7 @@
                 {
                      "name": "atk_cdh_password",
                      "label": "Cloudera Manager password",
-                     "description": "The Cloudera manager password",
+                     "description": "The Cloudera manager password. The CM connection details are used to query CM through the rest api for service details like the list of ZOOKEEPER host names.",
                      "required": "true",
                      "type": "password",
                      "default": "admin",
@@ -212,7 +213,7 @@
                      "name": "atk_default_count",
                      "configName": "intel.analytics.api.default-count",
                      "label": "Page size",
-                     "description": "The default page size for result pagination",
+                     "description": "The default page size for result pagination.",
                      "required": "false",
                      "type": "long",
                      "default": "20"
@@ -261,6 +262,109 @@
                       "required": "false",
                       "type": "long",
                       "default": "300000"
+                },
+                {
+                      "name": "atk_giraph_max_workers",
+                      "configName": "intel.analytics.engine.giraph.giraph.maxWorkers",
+                      "label": "Girpah max workers",
+                      "description": "Minimum number of simultaneous workers before this job can run",
+                      "required": "false",
+                      "type": "long",
+                      "default": "1"
+                },
+                {
+                      "name": "atk_giraph_min_workers",
+                      "configName": "intel.analytics.engine.giraph.giraph.minWorkers",
+                      "label": "Girpah min workers",
+                      "description": "Maximum number of simultaneous worker tasks started by this job",
+                      "required": "false",
+                      "type": "long",
+                      "default": "1"
+                },
+                {
+                      "name": "atk_giraph_split_master_worker",
+                      "configName": "intel.analytics.engine.giraph.giraph.SplitMasterWorker",
+                      "label": "Girpah split master worker",
+                      "description": "Separate the workers and the master tasks.",
+                      "required": "false",
+                      "type": "boolean",
+                      "default": "true"
+                },
+                {
+                      "name": "atk_giraph_mapreduce_map_memory_mb",
+                      "configName": "intel.analytics.engine.giraph.mapreduce.map.memory.mb",
+                      "label": "Resource Limit For Maps",
+                      "description": "resource limit for maps. make sure it's not higher that was is configured in yarn.",
+                      "required": "false",
+                      "type" : "memory",
+                      "unit" : "bytes",
+                      "min" : 536870912,
+                      "default" : 8589934592
+                },
+                {
+                      "name": "atk_giraph_mapreduce_map_java_opts",
+                      "configName": "intel.analytics.engine.giraph.mapreduce.map.java.opts",
+                      "label": "Resource Limit For Child jvm ",
+                      "description": "heap-size for child jvms of maps. should be less than intel.analytics.engine.giraph.mapreduce.map.memory.mb.",
+                      "required": "false",
+                      "type" : "memory",
+                      "unit" : "bytes",
+                      "min" : 536870912,
+                      "default" : 6872367104
+                },
+                {
+                      "name": "atk_titan_storage_batch_loading",
+                      "configName": "intel.analytics.engine.titan.load.storage.batch-loading",
+                      "label": "Titan Storage Batch Loading",
+                      "description": "Whether to enable batch loading into the storage backend. Set to true for bulk loads. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                      "required": "false",
+                      "type" : "boolean",
+                      "default" : "true"
+                },
+                {
+                      "name": "atk_titan_storage_buffer_size",
+                      "configName": "intel.analytics.engine.titan.load.storage.buffer-size",
+                      "label": "Titan Storage Batch size",
+                      "description": "Size of the batch in which mutations are persisted. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                      "required": "false",
+                      "type" : "long",
+                      "default" : "2048"
+                },
+                {
+                    "name": "atk_titan_storage_lock_wait_time",
+                    "configName": "intel.analytics.engine.titan.load.storage.lock.wait-time",
+                    "label": "Titan Storage Lock Wait Time",
+                    "description": "Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                    "required": "false",
+                    "type" : "long",
+                    "default" : "400"
+                },
+                {
+                    "name": "atk_titan_storage_lock_retries",
+                    "configName": "intel.analytics.engine.titan.load.storage.lock.retries",
+                    "label": "Titan Storage Lock Retries",
+                    "description": "Number of times the system attempts to acquire a lock before giving up and throwing an exception. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                    "required": "false",
+                    "type" : "long",
+                    "default" : "15"
+                },
+                {
+                    "name": "atk_titan_storage_hbase_region_count",
+                    "configName": "intel.analytics.engine.titan.load.storage.hbase.region-count",
+                    "label": "Titan Storage Hbase Region Count",
+                    "description": "The number of initial regions set when creating Titan’s HBase table. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                    "required": "false",
+                    "type" : "long",
+                    "default" : "12"
+                },
+                {
+                    "name": "atk_titan_storage_hbase_compression_algorithm",
+                    "configName": "intel.analytics.engine.titan.load.storage.hbase.compression-algorithm",
+                    "label": "Titan Storage Hbase Compression Algorithm",
+                    "description": "An HBase Compression.Algorithm enum string which will be applied to newly created column families. The compression algorithm must be installed and available on the HBase cluster. Titan cannot install and configure new compression algorithms on the HBase cluster by itself. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                    "required": "false",
+                    "type" : "long",
+                    "default" : "12"
                 }
 
             ],
@@ -356,7 +460,14 @@
                              "atk_spark_akka_framesize",
                              "atk_spark_rdd_compression",
                              "atk_spark_io_compression_codec",
-                             "atk_spark_storage_block_manager_heartbeat"
+                             "atk_spark_storage_block_manager_heartbeat",
+                             "atk_giraph_max_workers",
+                             "atk_giraph_min_workers",
+                             "atk_giraph_split_master_worker",
+                             "atk_giraph_mapreduce_map_memory_mb",
+                             "atk_giraph_mapreduce_map_java_opts",
+                             "atk_titan_storage_batch_loading",
+                             "atk_titan_storage_buffer_size"
                            ]
                          }
                        ]
