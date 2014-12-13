@@ -31,13 +31,6 @@ do
     tar -xvf python/${pythonPackage} -C $parcelDir/
 done
 
-
-for file in `ls $parcelDir/usr/bin/`
-do
-    echo $file
-    sed -i "s|\!/usr/bin/python2.7|\!python2.7|g" $file
-done
-
 mv $parcelDir/usr/lib/intelanalytics/rest-client/python $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root

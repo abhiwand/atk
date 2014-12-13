@@ -11,6 +11,14 @@ echo "==$timestamp: $1" #stdout
 
 sed -i "s|\!/usr/bin/python|\!${ATK_PYTHON}|g" $ATK_PARCEL_HOME/etc/intelanalytics/rest-server/config
 
+pushd $ATK_PARCEL_HOME/usr/bin/
+for file in `ls`
+do
+    log "update bang== $file"
+    sed -i "s|\!/usr/bin/python2.7|\!${ATK_PYTHON}|g" $file
+done
+popd
+
 python --version
 ${ATK_PYTHON} --version
 
