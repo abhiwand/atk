@@ -7,13 +7,12 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import spray.json._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
@@ -161,6 +160,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val start = System.currentTimeMillis()
     val sparkContext = sc
+    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // TODO: stopping the old spark context and restarting it here avoids a class not found error...
     // there has got to be a better way
@@ -179,15 +179,9 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       import scala.concurrent.duration._
       val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-      val titanConnector = new TitanGraphConnector(titanConfig)
-
-      // Read the graph from Titan
-      val titanReader = new TitanReader(ctx, titanConnector)
-      val titanReaderRDD = titanReader.read()
-
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+      val (gbVertices, gbEdges) = engine.graphs.loadGbElements(ctx, graph)
+      gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
       val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
         arguments.priorProperty,
@@ -206,9 +200,13 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
       // Create the GraphBuilder object
       // Setting true to append for updating existing graph
+      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
       // Build the graph using spark
       gb.buildGraphWithSpark(outVertices, dummyOutEdges)
+
+      gbVertices.unpersist()
+      gbEdges.unpersist()
 
       // Get the execution time and print it
       val time = (System.currentTimeMillis() - start).toDouble / 1000.0
