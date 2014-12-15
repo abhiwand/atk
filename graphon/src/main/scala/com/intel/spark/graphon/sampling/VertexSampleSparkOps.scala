@@ -25,9 +25,7 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.spark.graphon.GraphStatistics
@@ -133,27 +131,6 @@ object VertexSampleSparkOps extends Serializable {
     // TODO: Find more efficient way of doing this that does not involve collecting sampled vertices
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
-  }
-
-  /**
-   * Read in the graph vertices and edges for the specified graphName
-   *
-   * @param sc access to SparkContext
-   * @param titanConfig the config for Titan
-   * @return tuple containing RDDs of vertices and edges
-   */
-  def getGraphRdds(sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[GBVertex], RDD[GBEdge]) = {
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    // read graph
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-
-    // filter the vertices and edges
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-
-    (vertexRDD, edgeRDD)
   }
 
   /**

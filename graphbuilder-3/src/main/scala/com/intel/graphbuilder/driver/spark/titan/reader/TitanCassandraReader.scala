@@ -3,10 +3,10 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.graph.titan.{ TitanHadoopCassandraCacheListener, TitanGraphConnector }
 import com.thinkaurelius.titan.diskstorage.Backend
 import com.thinkaurelius.titan.hadoop.FaunusVertex
-import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat
+import com.thinkaurelius.titan.hadoop.formats.titan_050.cassandra.CachedTitanCassandraInputFormat
 import org.apache.cassandra.hadoop.ConfigHelper
 import org.apache.cassandra.thrift.{ SlicePredicate, SliceRange }
 import org.apache.hadoop.io.NullWritable
@@ -36,10 +36,11 @@ class TitanCassandraReader(sparkContext: SparkContext, titanConnector: TitanGrap
   override def read(): RDD[GraphElement] = {
     val cassandraConfig = createCassandraConfiguration()
 
-    val cassandraRDD = sparkContext.newAPIHadoopRDD(cassandraConfig, classOf[TitanCassandraInputFormat],
+    val cassandraRDD = sparkContext.newAPIHadoopRDD(cassandraConfig, classOf[CachedTitanCassandraInputFormat],
       classOf[NullWritable],
       classOf[FaunusVertex])
 
+    sparkContext.addSparkListener(new TitanHadoopCassandraCacheListener())
     new TitanReaderRDD(cassandraRDD, titanConnector)
   }
 

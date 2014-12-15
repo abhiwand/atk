@@ -93,10 +93,8 @@ object TitanGraphConnector {
   /**
    * Invalidate all entries in the cache when it is shut down
    */
-  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-    def run() {
-      titanGraphCache.invalidateAllCacheEntries
-      System.out.println("Invalidating Titan graph cache:" + titanGraphCache)
-    }
-  }))
+  def invalidateGraphCache(): Unit = {
+    titanGraphCache.invalidateAllCacheEntries
+    System.out.println("Invalidating Titan graph cache:" + titanGraphCache)
+  }
 }
