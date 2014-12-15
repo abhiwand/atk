@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.titan.io;
 
-import com.thinkaurelius.titan.hadoop.formats.hbase.CachedTitanHBaseInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;

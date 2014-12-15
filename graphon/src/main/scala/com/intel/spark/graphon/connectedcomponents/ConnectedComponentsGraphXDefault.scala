@@ -6,6 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{ Edge => GraphXEdge }
 import org.apache.spark.graphx.lib.{ ConnectedComponents => GraphXConnectedComponents }
 import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
 
 /**
  * Determine connected components of a graph. The input is a vertex list (an RDD of Longs) and an edge list
@@ -23,12 +24,15 @@ object ConnectedComponentsGraphXDefault {
     val graphXEdges: RDD[GraphXEdge[Null]] = edgeList.map(edge => (new GraphXEdge[Null](edge._1, edge._2, null)))
 
     val graph: Graph[Null, Null] = Graph(graphXVertices, graphXEdges)
+      .partitionBy(PartitionStrategy.RandomVertexCut)
 
     val outGraph = GraphXConnectedComponents.run(graph)
 
     val out: RDD[(Long, Long)] = outGraph.vertices.map({
       case (vertexId, connectedComponentId) => (vertexId, connectedComponentId.toLong)
     })
+
+    graph.unpersistVertices()
     out
   }
 
