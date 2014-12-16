@@ -280,7 +280,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopK)
-
+  implicit val exportHDFSPlugin = jsonFormat2(ExportCsvArguments)
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)

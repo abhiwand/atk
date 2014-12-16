@@ -20,37 +20,47 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain
 
-import spray.json.JsonFormat
+package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
-/**
- * Generic String value that can be used by plugins that return a single String
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class StringValue(value: String)
+import com.intel.intelanalytics.domain.{BoolValue, LongValue}
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.spark.frame.{MiscFrameFunctions, FrameRDD}
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
-/**
- * Generic Long value that can be used by plugins that return a single Long
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class LongValue(value: Long)
+import scala.tools.nsc.transform.patmat.Logic.PropositionalLogic.True
 
 /**
- * Generic Double value that can be used by plugins that return a single Double
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ * Object for exporting frames to files
  */
-case class DoubleValue(value: Double)
 
-/**
- * Generic boolean value that can be used by plugins that return a Boolean
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class BoolValue(value: Boolean)
+object ExportHDFSFunctions extends Serializable {
 
-/**
- * Generic singleton or list value which is a List, but has a Json serializer such that a singleton
- * is accepted
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class SingletonOrListValue[T](value: List[T])
+  /**
+   * Export to a file in CSV format
+   *
+   * @param frameRDD input rdd containing all columns
+   * @param filename file path where to store the file
+   * @return Long true or false
+   */
+  def exportToCsvHdfs(
+  frameRDD: FrameRDD,
+    filename: String,
+    count: Int,
+    offset: Int,
+    separator: String): BoolValue = {
+
+    val filterRdd = if (count != -1 ) MiscFrameFunctions.getPagedRdd(frameRDD, offset, count, -1) else frameRDD
+    val csvRdd = filterRdd.map(x => {
+      val b = x.map(a => a.toString).mkString(separator)
+      b
+    })
+    csvRdd.saveAsTextFile(filename)
+    BoolValue(true)
+  }
+}
+
