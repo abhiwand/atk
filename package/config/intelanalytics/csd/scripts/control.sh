@@ -36,61 +36,64 @@ function getHostnames(){
 }
 
 
-fs_root_host=$(getHostnames "HDFS" "NAMENODE" )
-log "fs root host-${fs_root_host}"
-
-fs_root_port=$(getConfig "HDFS" "hdfs-NAMENODE-BASE" "namenode_port" )
-log "fs root port-${fs_root_port}"
-
-echo "intel.analytics.engine.fs.root=\"hdfs://${fs_root_host}:${fs_root_port}/user/${ATK_USER}\"" >> $ATK_TEMP/application.conf
-
-zookeeper_hosts=$(getHostnames "ZOOKEEPER" "SERVER" )
-zHosts=""
-for z in $zookeeper_hosts
-do
-    zHosts=$zHosts",$z"
-done
-zHosts=${zHosts#,}
-log "zookeeper hosts-${zHosts}"
-
-zookeeper_port=$(getConfig "ZOOKEEPER" "zookeeper-SERVER-BASE" "clientPort" )
-log "zookeeper port-${zookeeper_port}"
-
-echo "intel.analytics.engine.titan.load.storage.hostname=\"${zHosts}\"" >> $ATK_TEMP/application.conf
-echo "intel.analytics.engine.titan.load.storage.port=${zookeeper_port}" >> $ATK_TEMP/application.conf
-
-spark_master_host=$(getHostnames "SPARK" "SPARK_MASTER" )
-log "spark master host-${spark_master_host}"
-
-spark_master_port=$(getConfig "SPARK" "spark-SPARK_MASTER-BASE" "master_port" )
-log "spark master port-${spark_master_port}"
-echo "intel.analytics.engine.spark.master=\"spark://${spark_master_host}:${spark_master_port}\"" >> $ATK_TEMP/application.conf
-
-spark_executor_mem=$(getConfig "SPARK" "spark-SPARK_WORKER-BASE" "executor_total_max_heapsize" )
-log "spark exec mem-${spark_executor_mem}"
-echo "intel.analytics.engine.spark.conf.properties.spark.executor.memory=\"${spark_executor_mem}\"" >> $ATK_TEMP/application.conf
-
-log "set classpath"
-${ATK_PYTHON} ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "SPARK" --config-group "spark-SPARK_WORKER-BASE" --config "SPARK_WORKER_role_env_safety_valve" --classpath yes --classpath-lib "${ATK_SPARK_DEPS_DIR}/${ATK_SPARK_DEPS_JAR}"  --role "SPARK_MASTER"
-
-echo "intel.analytics.engine.spark.python-worker-exec=\"${ATK_PYTHON}\"" >> $ATK_TEMP/application.conf
-echo "intel.analytics.metastore.connection-postgresql.password=\"${ATK_POSTGRES_PASSWORD}\"" >> $ATK_TEMP/application.conf
-
-if [ ! -z "$ATK_DEFAULT_TIMEOUT" ];then
-    echo "intel.analytics.api.default-timeout=${ATK_DEFAULT_TIMEOUT}s" >> $ATK_TEMP/application.conf
-    echo "intel.analytics.engine.default-timeout=${ATK_DEFAULT_TIMEOUT}" >> $ATK_TEMP/application.conf
-    #minus one
-    requestTimeout=$((ATK_DEFAULT_TIMEOUT - 1))
-    echo "intel.analytics.api.request-timeout=${requestTimeout}s" >> $ATK_TEMP/application.conf
-fi
 
 
-sed -i "s|/var/log/intelanalytics/rest-server/application.log|${ATK_LOG}/application.log|g" ${ATK_CONFIG_DIR}/logback.xml
-sed -i "s|/var/log/intelanalytics/rest-server/|${ATK_LOG}|g" ${ATK_PARCEL_HOME}/etc/logrotate.d/intelanalytics-rest-server
 
-exec >> ${ATK_LOG}/output.log 2>&1
 case "$1" in
   start)
+    fs_root_host=$(getHostnames "HDFS" "NAMENODE" )
+    log "fs root host-${fs_root_host}"
+
+    fs_root_port=$(getConfig "HDFS" "hdfs-NAMENODE-BASE" "namenode_port" )
+    log "fs root port-${fs_root_port}"
+
+    echo "intel.analytics.engine.fs.root=\"hdfs://${fs_root_host}:${fs_root_port}/user/${ATK_USER}\"" >> $ATK_TEMP/application.conf
+
+    zookeeper_hosts=$(getHostnames "ZOOKEEPER" "SERVER" )
+    zHosts=""
+    for z in $zookeeper_hosts
+    do
+        zHosts=$zHosts",$z"
+    done
+    zHosts=${zHosts#,}
+    log "zookeeper hosts-${zHosts}"
+
+    zookeeper_port=$(getConfig "ZOOKEEPER" "zookeeper-SERVER-BASE" "clientPort" )
+    log "zookeeper port-${zookeeper_port}"
+
+    echo "intel.analytics.engine.titan.load.storage.hostname=\"${zHosts}\"" >> $ATK_TEMP/application.conf
+    echo "intel.analytics.engine.titan.load.storage.port=${zookeeper_port}" >> $ATK_TEMP/application.conf
+
+    spark_master_host=$(getHostnames "SPARK" "SPARK_MASTER" )
+    log "spark master host-${spark_master_host}"
+
+    spark_master_port=$(getConfig "SPARK" "spark-SPARK_MASTER-BASE" "master_port" )
+    log "spark master port-${spark_master_port}"
+    echo "intel.analytics.engine.spark.master=\"spark://${spark_master_host}:${spark_master_port}\"" >> $ATK_TEMP/application.conf
+
+    spark_executor_mem=$(getConfig "SPARK" "spark-SPARK_WORKER-BASE" "executor_total_max_heapsize" )
+    log "spark exec mem-${spark_executor_mem}"
+    echo "intel.analytics.engine.spark.conf.properties.spark.executor.memory=\"${spark_executor_mem}\"" >> $ATK_TEMP/application.conf
+
+    log "set classpath"
+    ${ATK_PYTHON} ${CONF_DIR}/scripts/config.py --host $ATK_CDH_HOST --port $ATK_CDH_PORT --username $ATK_CDH_USERNAME --password $ATK_CDH_PASSWORD --service "SPARK" --config-group "spark-SPARK_WORKER-BASE" --config "SPARK_WORKER_role_env_safety_valve" --classpath yes --classpath-lib "${ATK_SPARK_DEPS_DIR}/${ATK_SPARK_DEPS_JAR}"  --role "SPARK_MASTER"
+
+    echo "intel.analytics.engine.spark.python-worker-exec=\"${ATK_PYTHON}\"" >> $ATK_TEMP/application.conf
+    echo "intel.analytics.metastore.connection-postgresql.password=\"${ATK_POSTGRES_PASSWORD}\"" >> $ATK_TEMP/application.conf
+
+    if [ ! -z "$ATK_DEFAULT_TIMEOUT" ];then
+        echo "intel.analytics.api.default-timeout=${ATK_DEFAULT_TIMEOUT}s" >> $ATK_TEMP/application.conf
+        echo "intel.analytics.engine.default-timeout=${ATK_DEFAULT_TIMEOUT}" >> $ATK_TEMP/application.conf
+        #minus one
+        requestTimeout=$((ATK_DEFAULT_TIMEOUT - 1))
+        echo "intel.analytics.api.request-timeout=${requestTimeout}s" >> $ATK_TEMP/application.conf
+    fi
+
+
+    sed -i "s|/var/log/intelanalytics/rest-server/application.log|${ATK_LOG}/application.log|g" ${ATK_CONFIG_DIR}/logback.xml
+    sed -i "s|/var/log/intelanalytics/rest-server/|${ATK_LOG}|g" ${ATK_PARCEL_HOME}/etc/logrotate.d/intelanalytics-rest-server
+
+    exec >> ${ATK_LOG}/output.log 2>&1
     log "start intelanalytics start"
     pushd $ATK_LAUNCHER_DIR
     log `pwd`
@@ -99,10 +102,11 @@ case "$1" in
     popd
     log "startted intelanalytics start"
 	;;
-#  stop)
-#    echo "restart intelanalytics stop"
-#	service intelanalytics stop
-# ;;
+  doc)
+    exec >> ${ATK_LOG}/doc.log 2>&1
+    log "server documentation"
+	exec ${ATK_PYTHON} ${CONF_DIR}/scripts/doc.py --host $ATK_DOC_HOST --port $ATK_DOC_PORT --path $ATK_DOC_PATH
+    ;;
 #  restart)
 #    echo "restart intelanalytics server"
 #	service intelanalytics restart

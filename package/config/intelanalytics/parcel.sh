@@ -31,12 +31,13 @@ do
     tar -xvf python/${pythonPackage} -C $parcelDir/
 done
 
-mv $parcelDir/usr/lib/intelanalytics/rest-client/python $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
+mkdir -p $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
+cp -Rv $parcelDir/usr/lib/intelanalytics/rest-client/python/* $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root
 
-#cp $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
-#python /home/rodorad/Documents/parcels/cm_ext/make_manifest/make_manifest.py /home/rodorad/Documents/parcels/parcels/
+cp $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
+python /home/rodorad/Documents/parcels/cm_ext/make_manifest/make_manifest.py /home/rodorad/Documents/parcels/parcels/
 popd
 
 rm -rf $parcelDir
