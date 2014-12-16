@@ -33,7 +33,7 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.TaskContext
-import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
+import com.intel.intelanalytics.engine.spark.SparkCommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar
@@ -46,7 +46,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     override def runTask(context: TaskContext): Int = ???
   }
 
-  class TestProgressUpdater extends CommandProgressUpdater {
+  class TestProgressUpdater extends SparkCommandProgressUpdater {
 
     val commandProgress = scala.collection.mutable.Map[Long, List[Float]]()
 

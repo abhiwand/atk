@@ -21,13 +21,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.spark.SparkCommandProgressUpdater
+import org.joda.time.DateTime
 
 /**
- * Execute when receiving progress update for command
+ * Update progress for spark command.
+ * @param commandStorage command storage
  */
-trait CommandProgressUpdater {
-  def updateProgress(commandId: Long, progressInfo: List[ProgressInfo])
+class SparkCommandStorageUpdater(commandStorage: CommandStorage) extends SparkCommandProgressUpdater with CycleMonitor {
+  /**
+   * save the progress update
+   * @param commandId id of the command
+   * @param progressInfo list of progress for jobs initiated by the command
+   */
+  override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
+    if (isReadyForNextCycle()) {
+      moveToNextCycle()
+      commandStorage.updateProgress(commandId, progressInfo)
+    }
+  }
 }
