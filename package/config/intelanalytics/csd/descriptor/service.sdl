@@ -18,6 +18,7 @@
             "max": 5
         }
     },
+    "maxInstances" : 1,
     "serviceDependencies": [
         {
             "name": "ZOOKEEPER",
@@ -73,9 +74,55 @@
     "rolesWithExternalLinks":["INTEL_ANALYTICS_REST_SERVER"],
     "roles": [
         {
+            "name": "INTEL_ANALYTICS_DOCUMENTATION",
+            "label": "Intel Analytics Documentation",
+            "pluralLabel": "Intel Analytics Documentation",
+            "startRunner": {
+                            "program": "scripts/control.sh",
+                            "args": ["doc"],
+                            "environmentVariables": {
+                                "ATK_DOC_HOST": "${atk_docs_host}",
+                                "ATK_DOC_PORT": "${atk_docs_port}"
+                            }
+            },
+            "externalLink" : {
+                            "name" : "ATK_DOCUMENTATION",
+                            "label" : "Intel Analytics Documentation",
+                            "url" : "http://${host}:${atk_docs_port}/static/index.html"
+            },
+            "topology" : {
+                "minInstances" : "0",
+                "maxInstances" : "1"
+            },
+            "logging" : {
+                "dir" : "/var/log/atk",
+                "filename" : "doc.log",
+                "loggingType" : "other",
+                "isModifiable" : true
+            },
+            "parameters": [
+                            {
+                                 "name": "atk_docs_host",
+                                 "label": "Documentation Server Host address",
+                                 "description": "Bind address for documentation server",
+                                 "required": "true",
+                                 "type": "string",
+                                 "default": "0.0.0.0"
+                            },
+                            {
+                                 "name": "atk_docs_port",
+                                 "label": "Documentation Sever port",
+                                 "description": "The port number for the documentation server.",
+                                 "required": "true",
+                                 "type": "port",
+                                 "default": 1099
+                            }
+             ]
+        },
+        {
             "name": "INTEL_ANALYTICS_REST_SERVER",
             "label": "Intel Analytics Rest Server",
-            "pluralLabel": "Intel Analytics Rest Server",
+            "pluralLabel": "Intel Analytics Rest Servers",
             "parameters": [
                 {
                     "name" : "atk_max_heapsize",
@@ -554,6 +601,26 @@
                 },
                 {
                   "name" : "ATK-Insert-meta-user",
+                  "label" : "Insert meta user",
+                  "description" : "Will insert the fist user in the ATK metastore. needs to be done after the service is running.",
+                  "expectedExitCodes" : [0],
+                  "requiredRoleState" : "running",
+                  "commandRunner" : {
+                    "program" : "scripts/config.db.sh",
+                    "args" : ["insertUser"],
+                    "environmentVariables": {
+                        "ATK_POSTGRES_HOST": "${atk_postgres_host}",
+                        "ATK_POSTGRES_PORT": "${atk_postgres_port}",
+                        "ATK_POSTGRES_USERNAME": "${atk_postgres_username}",
+                        "ATK_POSTGRES_PASSWORD": "${atk_postgres_password}",
+                        "ATK_POSTGRES_DATABASE": "${atk_postgres_database}",
+                        "PGPASSWORD": "${atk_postgres_password}"
+
+                    }
+                  }
+                },
+                {
+                  "name" : "ATK-meta-store",
                   "label" : "Insert meta user",
                   "description" : "Will insert the fist user in the ATK metastore. needs to be done after the service is running.",
                   "expectedExitCodes" : [0],

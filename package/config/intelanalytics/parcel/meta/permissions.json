@@ -37,7 +37,7 @@
     "usr/lib/python2.7": {
         "user": "iauser",
         "group": "iauser",
-        "permissions": "0776"
+        "permissions": "0777"
     },
     "usr/lib/python2.7/site-packages": {
         "user": "iauser",
