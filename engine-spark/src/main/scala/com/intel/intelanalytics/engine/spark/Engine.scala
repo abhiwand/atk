@@ -208,7 +208,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
 
   /* This progress listener saves progress update to command table */
-  SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
+  SparkProgressListener.progressUpdater = new SparkCommandStorageUpdater(commandStorage)
 
   override def getCommands(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Command]] = {
     withContext("se.getCommands") {
