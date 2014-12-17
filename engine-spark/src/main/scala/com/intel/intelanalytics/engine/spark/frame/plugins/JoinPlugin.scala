@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameJoin, Dat
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, LegacyFrameRDD, RDDJoinParam, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -68,12 +69,11 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments parameter contains information for the join operation (user supplied arguments to running this plugin)
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameJoin)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: FrameJoin)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val ctx = invocation.sparkContext
+    val ctx = sc
 
     val originalColumns = arguments.frames.map {
       frame =>
@@ -109,7 +109,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
-  def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+  def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext)(implicit invocation: Invocation): List[RDD[(Any, Array[Any])]] = {
     val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = arguments.frames.map {
       frame =>
         {
@@ -124,10 +124,10 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     }
 
     val pairRdds = tupleRddColumnIndex.map {
-      t =>
-        val rdd = t._1
-        val columnIndex = t._2
-        rdd.map(p => MiscFrameFunctions.createKeyValuePairFromRow(p, Seq(columnIndex))).map { case (keyColumns, data) => (keyColumns(0), data) }
+      case (rdd, columnIndex) =>
+        rdd.map(p => MiscFrameFunctions.createKeyValuePairFromRow(p, Seq(columnIndex))).map {
+          case (keyColumns, data) => (keyColumns(0), data)
+        }
     }
 
     pairRdds

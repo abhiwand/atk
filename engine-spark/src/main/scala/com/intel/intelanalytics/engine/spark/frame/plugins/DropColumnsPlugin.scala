@@ -24,10 +24,12 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameDropColumns, DataFrame }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameDropColumns, DataFrame }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.SparkContext
 
 import scala.concurrent.ExecutionContext
 
@@ -91,27 +93,20 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameDropColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
-
-    // validate arguments
-    val frameId = arguments.frame.id
-    val columns = arguments.columns
-    val frameMeta = frames.expectFrame(arguments.frame)
-    val schema = frameMeta.schema
+  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): DataFrame = {
+    val frame: SparkFrameData = resolve(arguments.frame)
+    val schema = frame.meta.schema
     schema.validateColumnsExist(arguments.columns)
-    require(schema.columns.length > arguments.columns.length, "Cannot delete all columns, please leave at least one column remaining")
+    require(schema.columns.length > arguments.columns.length,
+      "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation
-    val frame = frames.loadFrameRDD(ctx, frameMeta)
-    val result = frame.selectColumns(schema.columnNamesExcept(arguments.columns))
+    val result = frame.data.selectColumns(schema.columnNamesExcept(arguments.columns))
+    assert(result.frameSchema.columnNames.intersect(arguments.columns).isEmpty, "Column was not removed from schema!")
 
     // save results
-    frames.saveFrame(frameMeta, result)
+    save(new SparkFrameData(frame.meta, result)).meta
   }
 }

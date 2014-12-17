@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
 import org.apache.spark.mllib.linalg.{ Vectors, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -120,6 +120,16 @@ class FrameRDD(val frameSchema: Schema,
       throw new IllegalArgumentException("list of column names can't be empty")
     }
     new FrameRDD(frameSchema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+  }
+
+  /**
+   * Select a subset of columns while renaming them
+   * @param columnNames map of old names to new names
+   * @return the new FrameRDD
+   */
+  def selectColumnsWithRename(columnNames: Map[String, String]): FrameRDD = {
+    val columnSubset = selectColumns(columnNames.keys.toList)
+    new FrameRDD(columnSubset.frameSchema.copySubsetWithRename(columnNames), columnSubset.toSchemaRDD)
   }
 
   /**
@@ -240,6 +250,13 @@ class FrameRDD(val frameSchema: Schema,
       frameSchema
 
     new FrameRDD(newSchema, this.sqlContext, FrameRDD.createLogicalPlanFromSql(newSchema, newRows))
+  }
+
+  /**
+   * Convert Vertex or Edge Frames to plain data frames
+   */
+  def toPlainFrame(): FrameRDD = {
+    new FrameRDD(frameSchema.toFrameSchema, this.toSchemaRDD)
   }
 
 }

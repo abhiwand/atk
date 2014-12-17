@@ -212,7 +212,7 @@ class AlternatingLeastSquares
                            |
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
+  override def execute(arguments: Als)(implicit context: Invocation): AlsResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
@@ -228,7 +228,7 @@ class AlternatingLeastSquares
         "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
@@ -264,7 +264,7 @@ class AlternatingLeastSquares
 
     AlsResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation, "als-learning-report_0"))
+      config, giraphConf, context, "als-learning-report_0"))
   }
 
 }

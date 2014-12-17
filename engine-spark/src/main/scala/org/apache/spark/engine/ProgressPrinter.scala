@@ -24,13 +24,17 @@
 package org.apache.spark.engine
 
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.engine.plugin.Invocation
 import org.apache.spark.Success
 import org.apache.spark.scheduler._
 
 /**
  * Logs progress from SparkProgressListener
  */
-class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener with EventLogging {
+class ProgressPrinter(progressListener: SparkProgressListener)(implicit invocation: Invocation) extends SparkListener
+    with EventLogging
+    with EventLoggingImplicits {
 
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = withContext("stageCompleted") {
     stageCompleted.stageInfo.failureReason match {

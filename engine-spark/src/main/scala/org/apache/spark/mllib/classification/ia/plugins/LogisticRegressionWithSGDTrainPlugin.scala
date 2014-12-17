@@ -25,6 +25,10 @@ package org.apache.spark.mllib.classification.ia.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.model.{ ModelMeta, ModelLoad, Model }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.model.ModelLoad
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -75,7 +79,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ModelLoad) = 109
+  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -83,14 +87,12 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ModelLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn =
+  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): UnitReturn =
     {
-      val models = invocation.engine.models
-      val frames = invocation.engine.frames
-      val ctx = invocation.sparkContext
+      val models = engine.models
+      val frames = engine.frames
 
       //validate arguments
       val frameId = arguments.frame.id
@@ -100,7 +102,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val trainFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
       val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
@@ -108,8 +110,8 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
       val logRegModel = logReg.run(labeledTrainRDD)
       val modelObject = logRegModel.toJson.asJsObject
 
+      //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta, modelObject)
       new UnitReturn
     }
-
 }

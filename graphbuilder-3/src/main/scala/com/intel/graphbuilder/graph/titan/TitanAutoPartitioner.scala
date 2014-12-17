@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.graph.titan
 
 import com.google.common.annotations.VisibleForTesting
-import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
+import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
 import org.apache.hadoop.fs.FileSystem

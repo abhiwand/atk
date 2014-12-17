@@ -23,13 +23,15 @@
 package org.apache.spark.mllib.classification.ia.plugins
 
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, ClassificationMetricValue, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrameTemplate, ClassificationMetricValue, DataFrame }
 import com.intel.intelanalytics.domain.model.{ ModelPredict, ModelLoad }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.mllib.classification.LogisticRegressionModel
@@ -83,7 +85,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ModelPredict) = 9
+  override def numberOfJobs(arguments: ModelPredict)(implicit invocation: Invocation) = 9
 
   /**
    * Get the predictions for observations in a test frame
@@ -92,15 +94,12 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ModelPredict)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame =
+  override def execute(arguments: ModelPredict)(implicit invocation: Invocation): DataFrame =
     {
-      val models = invocation.engine.models
-      val frames = invocation.engine.frames
-      val fsRoot = invocation.engine.fsRoot
-      val ctx = invocation.sparkContext
+      val models = engine.models
+      val frames = engine.frames
 
       //validate arguments
       val frameId = arguments.frame.id
@@ -110,7 +109,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val predictFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val predictFrameRDD = frames.loadFrameData(sc, inputFrame)
       val predictRowRDD: RDD[Row] = predictFrameRDD.toLegacyFrameRDD.rows
 
       val observationsVector = predictFrameRDD.toVectorRDD(List(arguments.observationColumn))
@@ -125,9 +124,6 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
         Array[Any](prediction)
       }
 
-      //creating a new frame
-      val newPredictedFrame = frames.create(DataFrameTemplate(generatePredictedFrameName(arguments.frame.id.toString), None))
-
       // Creating a new RDD with existing frame's entries and an additional column for predicted label
       val indexedPredictedRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
       val indexedLabeledRowRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
@@ -137,17 +133,10 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
       val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
 
       val outputFrameRDD = new FrameRDD(newSchema, result)
-      val copiedFrame = frames.updateSchema(newPredictedFrame, newSchema)
 
-      frames.saveFrame(copiedFrame, outputFrameRDD, Some(inputFrame.rowCount))
+      tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
+        save(new SparkFrameData(newPredictedFrame.meta, outputFrameRDD))
+      }.meta
     }
 
-  /**
-   * Generates the predicted frame name having the original frame's id as part of the frame name
-   * @param originalFrameId The predicted frame id as a string
-   * @return Name for the predicted frame
-   */
-  def generatePredictedFrameName(originalFrameId: String): String = {
-    "predicted_frame_" + originalFrameId
-  }
 }
