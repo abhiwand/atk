@@ -33,7 +33,7 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-import com.intel.intelanalytics.engine.spark.SparkCommandProgressUpdater
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 /**
@@ -42,10 +42,10 @@ import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
  * Requires access to classes private to org.apache.spark.engine
  */
 object SparkProgressListener {
-  var progressUpdater: SparkCommandProgressUpdater = null
+  var progressUpdater: CommandProgressUpdater = null
 }
 
-class SparkProgressListener(val progressUpdater: SparkCommandProgressUpdater, val command: Command, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
+class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val command: Command, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
 
   val jobIdToStagesIds = new HashMap[Int, Array[Int]]
 

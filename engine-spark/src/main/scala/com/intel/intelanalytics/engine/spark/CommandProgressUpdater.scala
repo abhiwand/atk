@@ -19,30 +19,15 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-/////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.intelanalytics.engine.ProgressInfo
 
-class CycleMonitorTest extends FlatSpec with Matchers {
-  "isReadyForNextCycle" should "return true in the first run" in {
-    val monitor = new CycleMonitor {}
-    monitor.isReadyForNextCycle shouldBe true
-  }
-
-  "isReadyForNextCycle" should "return false if previous event happen within time limit" in {
-    val monitor = new CycleMonitor {}
-    monitor.moveToNextCycle()
-    monitor.isReadyForNextCycle shouldBe false
-  }
-
-  "isReadyForNextCycle" should "return true if previous event happen before time limit" in {
-    val monitor = new CycleMonitor {
-      override val cycle = 100
-    }
-    monitor.moveToNextCycle()
-    Thread.sleep(100)
-    monitor.isReadyForNextCycle shouldBe true
-  }
+/**
+ * Execute when receiving progress update for command
+ */
+trait CommandProgressUpdater {
+  def updateProgress(commandId: Long, progressInfo: List[ProgressInfo])
 }

@@ -21,13 +21,34 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 
 /**
- * Execute when receiving progress update for command
+ * Update progress for spark command.
+ * @param commandStorage command storage
  */
-trait SparkCommandProgressUpdater {
-  def updateProgress(commandId: Long, progressInfo: List[ProgressInfo])
+class CommandStorageProgressUpdater(commandStorage: CommandStorage) extends CommandProgressUpdater {
+  var lastUpdateTime = System.currentTimeMillis() - 1500
+  /**
+   * save the progress update
+   * @param commandId id of the command
+   * @param progressInfo list of progress for jobs initiated by the command
+   */
+  override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
+    val currentTime = System.currentTimeMillis()
+    if (currentTime - lastUpdateTime > 1000) {
+      lastUpdateTime = currentTime
+      commandStorage.updateProgress(commandId, progressInfo)
+    }
+  }
+
+  /**
+   * save the progress update
+   * @param commandId id of the command
+   */
+  def updateProgress(commandId: Long, progress: Float): Unit = {
+    updateProgress(commandId, List(ProgressInfo(progress, None)))
+  }
 }
