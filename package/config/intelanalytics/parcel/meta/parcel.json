@@ -1,0 +1,39 @@
+{
+  "schema_version":     1,
+  "name":               "INTELANALYTICS",
+  "version":            "VERSION-BUILD.cdh5.2.0",
+  "extraVersionInfo": {
+    "fullVersion":      "VERSION-BUILD.cdh5.2.0",
+    "baseVersion":      "VERSION",
+    "patchCount":       "BUILD"
+  },
+  "depends": "CDH (>= 5.1), CDH (<< 6.0)",
+  "setActiveSymlink":   true,
+
+  "provides": [
+      "ATK"
+  ],
+
+  "scripts": {
+    "defines": "ATK_ENV.sh"
+  },
+  "packages": [],
+  "components": [
+    { "name":     "intel-analytics-rest-server",
+      "version":  "VERSION"
+    }
+    ,{ "name":     "intel-analytics-python-rest-client",
+      "version":  "VERSION"
+    }
+  ],
+  "users": {
+     "iauser": {
+       "longname"    : "iauser",
+       "home"        : "/var/lib/intelanalytics",
+       "shell"       : "/bin/bash",
+       "extra_groups": ["hadoop"]
+     }
+  },
+
+  "groups": []
+}

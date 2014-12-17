@@ -239,6 +239,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    *
    * This is our preferred path for saving RDDs as data frames.
    *
+   * If the current frame is already materialized, a new entry will be created in the meta data repository, otherwise the existing entry will be updated.
+   *
    * @param frameEntity DataFrame representation stored in DB
    * @param frameRDD the RDD containing the actual data
    * @param rowCount the number of rows in the RDD - plugins need to supply this value if they are changing it.
