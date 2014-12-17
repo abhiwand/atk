@@ -234,9 +234,8 @@ intel.analytics {
             # Number of regions per regionserver to set when creating Titan/HBase table
             regions-per-server = 2
 
-            # Number of input splits for Titan reader is based on number of available cores
-            # and size of the graph in HBase as follows:
-            #    Number of splits = input-splits-per-spark-core * log(available spark-cores) * log(graph size in HBase in MB),
+            # Number of input splits for Titan reader is based on number of available cores as follows:
+            #    Number of splits = Max(input-splits-per-spark-core *available spark-cores, HBase table region count),
             input-splits-per-spark-core = 2
           }
 
