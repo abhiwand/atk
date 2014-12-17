@@ -57,29 +57,5 @@ object ExportHDFSFunctions extends Serializable {
     BoolValue(true)
   }
 
-  /**
-   * Export to a file in JSON format
-   *
-   * @param frameRDD input rdd containing all columns
-   * @param filename file path where to store the file
-   * @return Long true or false
-   */
-  def exportToJsonHdfs(
-    frameRDD: FrameRDD,
-    filename: String,
-    count: Int,
-    offset: Int,
-    separator: String): BoolValue = {
-
-    val filterRdd = if (count != -1) MiscFrameFunctions.getPagedRdd(frameRDD, offset, count, -1) else frameRDD
-    val headers = frameRDD.frameSchema.columnNamesAsString
-    val csvRdd = filterRdd.map(x => {
-      val b = x.map(a => a.toString).mkString(separator)
-      b
-    })
-    val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
-    addHeaders.saveAsTextFile(filename)
-    BoolValue(true)
-  }
 }
 
