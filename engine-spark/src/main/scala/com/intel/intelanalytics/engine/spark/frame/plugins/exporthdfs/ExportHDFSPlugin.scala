@@ -46,39 +46,44 @@ class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue]
   /**
    * The name of the command
    */
-  override def name: String = "frame/export_hdfs"
+  override def name: String = "frame/export_csv"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate covariance for exactly two columns",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Write frame to disk in csv format",
     extendedSummary = Some("""
 
-        Compute the covariance for two columns.
+        Export the frame to a file in csv format as a hadoop file
 
         Parameters
         ----------
-        columns: [ str | list of str ]
-            The names 2 columns from which to compute the covariance
+
+        folderName: String
+            The folder path where the files will be created
+
+        count: Option[Int] = None
+            The number of records you want. If no count is passed then the whole frame is exported
+
+        offset: Option[Int] = None
+            The number of rows to skip before exporting to the file
+
+        separator: Option[String] = None
+            The separator for separating the values. Default is ","
 
         Returns
         -------
-        Covariance of the two columns
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
+        True if it succeeds
 
         Examples
         --------
-        Consider Frame *my_frame*, which accesses a frame that contains a single column named *obs*::
+        Consider Frame *my_frame*
 
-            cov = my_frame.covariance(['col_0', 'col_1'])
+            my_frame.export('covarianceresults')
 
-            print(cov)
-                           """)))
+        """)))
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
