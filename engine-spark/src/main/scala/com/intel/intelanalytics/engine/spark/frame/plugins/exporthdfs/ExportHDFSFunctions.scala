@@ -23,16 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
-import com.intel.intelanalytics.domain.{BoolValue, LongValue}
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.{MiscFrameFunctions, FrameRDD}
-import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-
-import scala.tools.nsc.transform.patmat.Logic.PropositionalLogic.True
+import com.intel.intelanalytics.domain.{ BoolValue, LongValue }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
 
 /**
  * Object for exporting frames to files
@@ -48,18 +40,20 @@ object ExportHDFSFunctions extends Serializable {
    * @return Long true or false
    */
   def exportToCsvHdfs(
-  frameRDD: FrameRDD,
+    frameRDD: FrameRDD,
     filename: String,
     count: Int,
     offset: Int,
     separator: String): BoolValue = {
 
-    val filterRdd = if (count != -1 ) MiscFrameFunctions.getPagedRdd(frameRDD, offset, count, -1) else frameRDD
+    val filterRdd = if (count != -1) MiscFrameFunctions.getPagedRdd(frameRDD, offset, count, -1) else frameRDD
+    val headers = frameRDD.frameSchema.columnNamesAsString
     val csvRdd = filterRdd.map(x => {
       val b = x.map(a => a.toString).mkString(separator)
       b
     })
-    csvRdd.saveAsTextFile(filename)
+    val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
+    addHeaders.saveAsTextFile(filename)
     BoolValue(true)
   }
 }

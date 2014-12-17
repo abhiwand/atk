@@ -27,10 +27,10 @@ package com.intel.intelanalytics.domain.frame
  * Input arguments class for export to CSV
  */
 case class ExportCsvArguments(frame: FrameReference,
-                               folderName: String,
-                               count: Int = -1,
-                                offset: Int = 0,
-                                separator: Option[String] = ","){
+                              folderName: String,
+                              count: Option[Int] = None,
+                              offset: Option[Int] = None,
+                              separator: Option[String] = None) {
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }

@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
 import java.nio.file.FileSystem
 
-import com.intel.intelanalytics.domain.{BoolValue, DoubleValue, LongValue}
+import com.intel.intelanalytics.domain.{ BoolValue, DoubleValue, LongValue }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportCsvArguments
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -98,7 +98,7 @@ class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue]
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
     val rdd = frame.data
-    return ExportHDFSFunctions.exportToCsvHdfs(rdd, arguments.folderName, arguments.count, arguments.offset, arguments.separator.get)
+    return ExportHDFSFunctions.exportToCsvHdfs(rdd, arguments.folderName, arguments.count.getOrElse(-1), arguments.offset.getOrElse(0), arguments.separator.getOrElse(","))
   }
 
 }
