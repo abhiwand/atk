@@ -22,5 +22,11 @@
       "source": "log",
       "priority": 10,
       "isDirectory": true
-    }
+    },
+    "examples": {
+          "destination": "/var/lib/intelanalytics/examples",
+          "source": "usr/lib/intelanalytics/rest-server/examples",
+          "priority": 10,
+          "isDirectory": true
+        }
 }
