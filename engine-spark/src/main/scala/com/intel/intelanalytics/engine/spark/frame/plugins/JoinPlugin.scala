@@ -62,8 +62,6 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    */
   override def doc: Option[CommandDoc] = None
 
-  override def numberOfJobs(arguments: FrameJoin): Int = 2
-
   /**
    * Join two data frames (similar to SQL JOIN)
    *
