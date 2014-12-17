@@ -3,21 +3,20 @@ package com.intel.intelanalytics.engine.spark.graph.query
 import javax.script.Bindings
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ Await, ExecutionContext, Lock }
+import scala.concurrent.Await
 import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.CommandProgressUpdater
 
 /**
  * Arguments for Gremlin query.
@@ -146,6 +145,11 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
+    val commandInvocation = invocation.asInstanceOf[CommandInvocation]
+    val progressUpdater = new CommandProgressUpdater(commandInvocation.commandStorage)
+    val commandId = commandInvocation.commandId
+
+    progressUpdater.updateProgress(commandId, 0f)
     val resultIterator = Try({
       val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
@@ -156,6 +160,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
       results
     })
+    progressUpdater.updateProgress(commandId, 100f)
 
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
@@ -163,6 +168,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
       case Success(iterator) => QueryResult(iterator, runtimeInSeconds)
       case Failure(exception) => throw exception
     }
+
     queryResult
   }
 

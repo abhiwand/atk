@@ -33,10 +33,10 @@ class CommandProgressUpdater(commandStorage: CommandStorage) extends CycleMonito
    * save the progress update
    * @param commandId id of the command
    */
-  def updateProgress(commandId: Long): Unit = {
+  def updateProgress(commandId: Long, progress: Float): Unit = {
     if (isReadyForNextCycle()) {
       moveToNextCycle()
-      commandStorage.updateProgress(commandId, List())
+      commandStorage.updateProgress(commandId, List(ProgressInfo(progress, None)))
     }
   }
 }

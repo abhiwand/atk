@@ -19,26 +19,30 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.engine.spark.SparkCommandProgressUpdater
+import org.scalatest.{ Matchers, FlatSpec }
 
-/**
- * Update progress for spark command.
- * @param commandStorage command storage
- */
-class SparkCommandStorageUpdater(commandStorage: CommandStorage) extends SparkCommandProgressUpdater with CycleMonitor {
-  /**
-   * save the progress update
-   * @param commandId id of the command
-   * @param progressInfo list of progress for jobs initiated by the command
-   */
-  override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
-    if (isReadyForNextCycle()) {
-      moveToNextCycle()
-      commandStorage.updateProgress(commandId, progressInfo)
+class CycleMonitorTest extends FlatSpec with Matchers {
+  "isReadyForNextCycle" should "return true in the first run" in {
+    val monitor = new CycleMonitor {}
+    monitor.isReadyForNextCycle shouldBe true
+  }
+
+  "isReadyForNextCycle" should "return false if previous event happen within time limit" in {
+    val monitor = new CycleMonitor {}
+    monitor.moveToNextCycle()
+    monitor.isReadyForNextCycle shouldBe false
+  }
+
+  "isReadyForNextCycle" should "return true if previous event happen before time limit" in {
+    val monitor = new CycleMonitor {
+      override val cycle = 100
     }
+    monitor.moveToNextCycle()
+    Thread.sleep(100)
+    monitor.isReadyForNextCycle shouldBe true
   }
 }
