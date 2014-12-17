@@ -7,12 +7,12 @@
     "log": {
         "user": "iauser",
         "group": "iauser",
-        "permissions": "0744"
+        "permissions": "0755"
     },
     "etc/intelanalytics/rest-server": {
         "user": "iauser",
         "group": "iauser",
-        "permissions": "0745"
+        "permissions": "0755"
     },
     "etc/logrotate.d": {
         "user": "iauser",
