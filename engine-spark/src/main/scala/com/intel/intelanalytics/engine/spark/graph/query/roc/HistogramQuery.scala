@@ -1,12 +1,9 @@
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
@@ -189,15 +186,10 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     }
 
     // Create graph connection
-    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
     val graphElementRDD = if (propertyClass.isInstanceOf[GBEdge]) {
-      titanReaderRDD.filterEdges()
+      engine.graphs.loadGbEdges(sc, graph)
     }
-    else titanReaderRDD.filterVertices()
+    else engine.graphs.loadGbVertices(sc, graph)
 
     // Parse features
     val featureVectorRDD = graphElementRDD.map(element => {
