@@ -29,7 +29,6 @@ import com.typesafe.config.{ ConfigParseOptions, Config, ConfigFactory }
 
 import scala.reflect.io.{ Directory, File, Path }
 import scala.util.Try
-import scala.util.Random
 import scala.util.control.NonFatal
 
 /**
