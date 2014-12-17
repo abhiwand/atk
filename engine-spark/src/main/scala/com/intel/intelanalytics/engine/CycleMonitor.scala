@@ -23,12 +23,14 @@
 
 package com.intel.intelanalytics.engine
 
+import org.joda.time.DateTime
+
 /**
  * Cycle controller. It is for making sure that an action will only take place after
  * at least the time specified by the cycle since last time it took place.
  */
 trait CycleMonitor {
-  var lastUpdateTime = System.currentTimeMillis()
+  var lastUpdateTime: Option[Long] = None
   val cycle = 1000 //in milliseconds
 
   /**
@@ -36,18 +38,20 @@ trait CycleMonitor {
    * @return flag indicating whether it is eligible to move on.
    */
   def isReadyForNextCycle(): Boolean = {
-    if (System.currentTimeMillis() - lastUpdateTime > cycle) true else false
+    if (lastUpdateTime == None || DateTime.now.getMillis - lastUpdateTime.get > cycle) true else false
   }
 
   /**
    * Move on to next cycle
    */
   def moveToNextCycle(): Unit = {
+    val currentTime = DateTime.now.getMillis
+
     if (!isReadyForNextCycle) {
-      val diff = System.currentTimeMillis() - lastUpdateTime
+      val diff = currentTime - lastUpdateTime.get
       throw new Exception(s"Not eligible to move on to the next cycle. Eligible in $diff milliseconds.")
     }
 
-    lastUpdateTime = System.currentTimeMillis()
+    lastUpdateTime = Some(currentTime)
   }
 }
