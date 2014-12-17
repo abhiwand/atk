@@ -145,17 +145,16 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
     val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val titanGraph = getTitanGraph(graph.name, config)
 
     val resultIterator = Try({
-      val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
       bindings.put("g", titanGraph)
-
       val results = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
-      titanGraph.shutdown()
-
       results
     })
+
+    titanGraph.shutdown()
 
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
