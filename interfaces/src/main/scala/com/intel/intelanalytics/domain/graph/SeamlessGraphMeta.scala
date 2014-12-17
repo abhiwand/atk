@@ -135,12 +135,20 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
     edgeLabels.mkString(", ")
   }
 
-  def vertexCount: Long = {
-    vertexFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def vertexCount: Option[Long] = {
+    countList(vertexFrames.map(frame => frame.rowCount))
   }
 
-  def edgeCount: Long = {
-    edgeFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def edgeCount: Option[Long] = {
+    countList(edgeFrames.map(frame => frame.rowCount))
+  }
+
+  private def countList(list: List[Option[Long]]): Option[Long] = list match {
+    case Nil => Some(0)
+    case x :: xs => for {
+      left <- x
+      right <- countList(xs)
+    } yield left + right
   }
 
   /**

@@ -26,12 +26,10 @@ package com.intel.graphbuilder.graph.titan
 import java.io.File
 
 import com.intel.graphbuilder.graph.GraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
-import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
 import com.tinkerpop.blueprints.Graph
+import com.intel.graphbuilder.titan.cache.TitanGraphCache;
+
 import org.apache.commons.configuration.{ Configuration, PropertiesConfiguration }
 
 import scala.collection.JavaConversions._
@@ -66,6 +64,8 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
 
 object TitanGraphConnector {
 
+  val titanGraphCache = new TitanGraphCache()
+
   /**
    * Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+
    *
@@ -78,4 +78,25 @@ object TitanGraphConnector {
     val vertices: Iterable[com.tinkerpop.blueprints.Vertex] = titanGraph.getVertices
     vertices
   }
+
+  /**
+   * Get Titan graph from cache
+   *
+   * @param titanConnector Titan connector
+   * @return Titan graph
+   */
+  def getGraphFromCache(titanConnector: TitanGraphConnector): TitanGraph = {
+    val titanGraph = titanGraphCache.getGraph(titanConnector.config)
+    titanGraph
+  }
+
+  /**
+   * Invalidate all entries in the cache when it is shut down
+   */
+  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+    def run() {
+      titanGraphCache.invalidateAllCacheEntries
+      System.out.println("Invalidating Titan graph cache:" + titanGraphCache)
+    }
+  }))
 }

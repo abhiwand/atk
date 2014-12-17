@@ -1,8 +1,8 @@
 package com.intel.giraph.io.titan.formats;
 
-import com.intel.graphbuilder.io.GBTitanHBaseInputFormat;
-import com.intel.graphbuilder.io.titan.formats.cassandra.TitanCassandraInputFormat;
-import com.intel.graphbuilder.io.titan.formats.util.TitanInputFormat;
+import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.hadoop.conf.Configuration;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;

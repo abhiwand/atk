@@ -4,7 +4,7 @@ import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
-import com.intel.graphbuilder.io.GBTitanHBaseInputFormat
+import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
