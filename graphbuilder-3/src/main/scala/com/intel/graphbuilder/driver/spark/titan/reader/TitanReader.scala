@@ -2,7 +2,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import org.apache.spark.SparkContext
+import org.apache.spark.{ HashPartitioner, SparkContext }
 import org.apache.spark.rdd.RDD
 
 /**
@@ -62,6 +62,9 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
-    titanReaderRDD
+    // Omit any duplicate vertices or edges
+    // TODO: Figure out why Titan input formats return duplicates
+    val numPartitions = titanReaderRDD.partitions.length
+    titanReaderRDD.distinct(numPartitions)
   }
 }
