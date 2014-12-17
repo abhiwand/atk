@@ -72,9 +72,9 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
         case None => sourceFrame.data.toPlainFrame() // full copy
         case Some(cols) => sourceFrame.data.toPlainFrame().selectColumnsWithRename(cols) // partial copy
       }
-      tryNew(arguments.name) { newFrame: FrameMeta =>
-        save(new SparkFrameData(newFrame.meta, rdd))
-      }.meta
+      engine.frames.tryNewFrame(DataFrameTemplate(FrameName.validateOrGenerate(arguments.name))) { newFrame: DataFrame =>
+        engine.frames.saveFrameData(newFrame, rdd, sourceFrame.meta.rowCount)
+      }
     }
     else {
       // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename
@@ -86,9 +86,10 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // TODO - update if UDF wrapping logic ever moves out of the client and into the server
       val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, newSchema)
-      tryNew(arguments.name) { newFrame: FrameMeta =>
-        save(new SparkFrameData(newFrame.meta, pyRdd))
-      }.meta
+      val rowCount = pyRdd.count()
+      engine.frames.tryNewFrame(DataFrameTemplate(FrameName.validateOrGenerate(arguments.name))) { newFrame: DataFrame =>
+        engine.frames.saveFrameData(newFrame, pyRdd, Some(rowCount))
+      }
     }
   }
 }
