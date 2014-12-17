@@ -71,7 +71,7 @@
             "runMode" : "all"
         }
     ],
-    "rolesWithExternalLinks":["INTEL_ANALYTICS_REST_SERVER"],
+    "rolesWithExternalLinks":["INTEL_ANALYTICS_REST_SERVER", "INTEL_ANALYTICS_DOCUMENTATION"],
     "roles": [
         {
             "name": "INTEL_ANALYTICS_DOCUMENTATION",
@@ -115,7 +115,7 @@
                                  "description": "The port number for the documentation server.",
                                  "required": "true",
                                  "type": "port",
-                                 "default": 1099
+                                 "default": 10099
                             }
              ]
         },
