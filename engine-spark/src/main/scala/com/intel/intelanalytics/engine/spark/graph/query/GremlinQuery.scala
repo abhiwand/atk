@@ -16,7 +16,7 @@ import scala.concurrent.Await
 import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.CommandProgressUpdater
+import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
 
 /**
  * Arguments for Gremlin query.
@@ -146,10 +146,10 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]
-    val progressUpdater = new CommandProgressUpdater(commandInvocation.commandStorage)
+    val progressUpdater = new CommandStorageProgressUpdater(commandInvocation.commandStorage)
     val commandId = commandInvocation.commandId
 
-    progressUpdater.updateProgress(commandId, 0f)
+    progressUpdater.updateProgress(commandId, 5f)
     val resultIterator = Try({
       val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
