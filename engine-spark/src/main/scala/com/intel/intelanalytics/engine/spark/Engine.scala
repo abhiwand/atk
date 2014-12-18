@@ -201,7 +201,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropVertexColumnPlugin)
   commandPluginRegistry.registerCommand(new DropEdgeColumnPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new ExportFromTitanPlugin(frames, graphs))
+  commandPluginRegistry.registerCommand(new ExportToGraphPlugin(frames, graphs))
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
