@@ -34,3 +34,14 @@ case class ExportCsvArguments(frame: FrameReference,
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }
+
+/**
+ * Input arguments class for export to JSON
+ */
+case class ExportJsonArguments(frame: FrameReference,
+                               folderName: String,
+                               count: Option[Int] = None,
+                               offset: Option[Int] = None) {
+  require(frame != null, "frame is required")
+  require(folderName != null, "folder name is required")
+}

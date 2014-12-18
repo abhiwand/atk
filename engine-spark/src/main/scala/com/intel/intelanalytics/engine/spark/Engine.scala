@@ -39,7 +39,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
-import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.ExportHDFSPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
@@ -174,7 +174,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new QuantilesPlugin)
   commandPluginRegistry.registerCommand(new CovarianceMatrixPlugin)
   commandPluginRegistry.registerCommand(new CovariancePlugin)
-  commandPluginRegistry.registerCommand(new ExportHDFSPlugin)
+  commandPluginRegistry.registerCommand(new ExportHdfsCsvPlugin)
+  commandPluginRegistry.registerCommand(new ExportHdfsJsonPlugin)
   commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
   commandPluginRegistry.registerCommand(new EcdfPlugin)
   commandPluginRegistry.registerCommand(new TallyPercentPlugin)

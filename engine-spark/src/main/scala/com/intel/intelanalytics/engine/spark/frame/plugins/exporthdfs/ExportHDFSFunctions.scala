@@ -23,14 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
-import com.intel.intelanalytics.domain.{ BoolValue, LongValue }
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
 
 /**
  * Object for exporting frames to files
  */
 
-object ExportHDFSFunctions extends Serializable {
+object FrameExportHdfs extends Serializable {
 
   /**
    * Export to a file in CSV format
@@ -39,23 +38,49 @@ object ExportHDFSFunctions extends Serializable {
    * @param filename file path where to store the file
    * @return Long true or false
    */
-  def exportToCsvHdfs(
+  def exportToHdfsCsv(
     frameRDD: FrameRDD,
     filename: String,
-    count: Int,
-    offset: Int,
-    separator: String): BoolValue = {
+    separator: String,
+    count: Option[Int] = None,
+    offset: Option[Int] = None) {
 
-    val filterRdd = if (count != -1) MiscFrameFunctions.getPagedRdd(frameRDD, offset, count, -1) else frameRDD
-    val headers = frameRDD.frameSchema.columnNamesAsString
-    val csvRdd = filterRdd.map(x => {
-      val b = x.map(a => a.toString).mkString(separator)
-      b
-    })
+    val recCount = count.getOrElse(-1)
+    val recOffset = offset.getOrElse(0)
+
+    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
+    val headers = frameRDD.frameSchema.columnNames.mkString(separator)
+    val csvRdd = filterRdd.map(row => { row.map(col => col.toString).mkString(separator) })
     val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
     addHeaders.saveAsTextFile(filename)
-    BoolValue(true)
   }
 
+  /**
+   * Export to a file in JSON format
+   *
+   * @param frameRDD input rdd containing all columns
+   * @param filename file path where to store the file
+   * @return Long true or false
+   */
+  def exportToHdfsJson(
+    frameRDD: FrameRDD,
+    filename: String,
+    count: Option[Int],
+    offset: Option[Int]) {
+
+    val recCount = count.getOrElse(-1)
+    val recOffset = offset.getOrElse(0)
+
+    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
+    val headers = frameRDD.frameSchema.columnNames
+    val jsonRDD = filterRdd.map {
+      row =>
+        {
+          val value = row.zip(headers).map { case (k, v) => new String("\"" + v.toString + "\":" + k.toString) }
+          value.mkString("{", ",", "}")
+        }
+    }
+    jsonRDD.saveAsTextFile(filename)
+  }
 }
 

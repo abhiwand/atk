@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
 import java.nio.file.FileSystem
 
-import com.intel.intelanalytics.domain.{ BoolValue, DoubleValue, LongValue }
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportCsvArguments
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -39,9 +39,9 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Calculate covariance for the specified columns
+ * Export a frame to csv file
  */
-class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue] {
+class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportCsvArguments, UnitReturn] {
 
   /**
    * The name of the command
@@ -53,7 +53,7 @@ class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue]
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Write frame to disk in csv format",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Write frame to HDFS in csv format",
     extendedSummary = Some("""
 
         Export the frame to a file in csv format as a hadoop file
@@ -62,28 +62,29 @@ class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue]
         ----------
 
         folderName: String
-            The folder path where the files will be created
-
-        count: Option[Int] = None
-            The number of records you want. If no count is passed then the whole frame is exported
-
-        offset: Option[Int] = None
-            The number of rows to skip before exporting to the file
+            The HDFS folder path where the files will be created
 
         separator: Option[String] = None
             The separator for separating the values. Default is ","
 
+        count: Option[Int] = None
+            The number of records you want. No value or a negative or zero value for count exports the whole frame
+
+        offset: Option[Int] = None
+            The number of rows to skip before exporting to the file
+
+
         Returns
         -------
-        True if it succeeds
+        None
 
         Examples
         --------
         Consider Frame *my_frame*
 
-            my_frame.export('covarianceresults')
+            my_frame.export_csv('covarianceresults')
 
-        """)))
+                           """)))
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
@@ -98,12 +99,12 @@ class ExportHDFSPlugin extends SparkCommandPlugin[ExportCsvArguments, BoolValue]
    * @param arguments input specification for covariance
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: ExportCsvArguments)(implicit invocation: Invocation): BoolValue = {
+  override def execute(arguments: ExportCsvArguments)(implicit invocation: Invocation): UnitReturn = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
     val rdd = frame.data
-    return ExportHDFSFunctions.exportToCsvHdfs(rdd, arguments.folderName, arguments.count.getOrElse(-1), arguments.offset.getOrElse(0), arguments.separator.getOrElse(","))
+    FrameExportHdfs.exportToHdfsCsv(rdd, arguments.folderName, arguments.separator.getOrElse(","), arguments.count, arguments.offset)
+    new UnitReturn
   }
-
 }
