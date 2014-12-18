@@ -36,9 +36,14 @@ class TitanGraphCacheTest extends FlatSpec with Matchers {
     titanGraphCache.cache.size() shouldEqual (1)
 
     titanGraphCache.invalidateAllCacheEntries()
-    titanGraph.isClosed should equal(true)
+    titanGraph.isOpen should equal(false)
     titanGraphCache.cache.size() shouldEqual (0)
 
   }
-
+  "TitanGraphCache" should "throw an IllegalArgumentException if hadoop configuration is null" in {
+    val titanGraphCache = new TitanGraphCache()
+    intercept[IllegalArgumentException] {
+      titanGraphCache.getGraph(null)
+    }
+  }
 }

@@ -126,7 +126,7 @@ def _wrap_row_function(frame, row_function):
             row_wrapper.load_row(row)
             return row_function(row_wrapper)
         except Exception as e:
-            msg = base64.urlsafe_b64encode('Exception:%s while processing row:%s' % (repr(e),row))
+            msg = base64.urlsafe_b64encode((u'Exception:%s while processing row:%s' % (repr(e),row)).encode('utf-8'))
             raise IaPyWorkerError(msg)
     return row_func
 

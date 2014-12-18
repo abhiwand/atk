@@ -121,11 +121,11 @@ class GraphBackendRest(object):
 
     def get_vertex_count(self, graph):
         arguments = {'graph': self.get_ia_uri(graph)}
-        return executor.get_command_output("graph", "vertex_count", arguments)
+        return executor.get_command_output("graph:", "vertex_count", arguments)
 
     def get_edge_count(self, graph):
         arguments = {'graph': self.get_ia_uri(graph)}
-        return executor.get_command_output("graph", "edge_count", arguments)
+        return executor.get_command_output("graph:", "edge_count", arguments)
 
 
 # GB JSON Payload objects:

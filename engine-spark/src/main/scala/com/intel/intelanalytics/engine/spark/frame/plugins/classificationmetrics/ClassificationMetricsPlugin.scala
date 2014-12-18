@@ -203,6 +203,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
                            |
                             """.stripMargin)))
 
+  override def numberOfJobs(arguments: ClassificationMetric)(implicit invocation: Invocation) = 8
   /**
    * Computes Model accuracy, precision, recall, confusion matrix and f_measure
    *

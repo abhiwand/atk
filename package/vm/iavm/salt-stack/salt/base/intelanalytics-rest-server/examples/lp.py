@@ -46,5 +46,5 @@ print graph.ml.label_propagation(vertex_value_property_list = ["input_value"],
                                  convergence_threshold = 0.0,
                                  anchor_threshold = 0.9,
                                  lp_lambda = 0.5,
-                                 bidirectional_check = False)
+                                )
 
