@@ -26,23 +26,40 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
-from intelanalytics.core.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.meta.namedobj import name_support
 import uuid
 
-from intelanalytics.core.serialize import to_json
+from intelanalytics.meta.serialize import to_json
 from intelanalytics.core.column import Column
 
 from intelanalytics.core.deprecate import raise_deprecation_warning
 
+titan_rule_deprecation = """
+EdgeRule and VertexRule graph construction objects are deprecated.
+Instead, construct a Graph object, then define and add vertices and
+edges directly.  export_to_titan is available to obtain a TitanGraph.
+
+Example:
+
+>>> import intelanalytics as ia
+>>> g = ia.Graph()
+>>> g.define_vertex_type('users')
+>>> g.define_vertex_type('machines')
+>>> g.vertices['users'].add_vertices(source_frame1, 'user')
+>>> g.vertices['machines'].add_vertices(source_frame2, 'machine')
+>>> g.define_edge_type('links', 'users', 'machines', directed=False)
+
+>>> t = g.export_to_titan()
+"""
 
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
-    from intelanalytics.core.config import get_graph_backend
+    from intelanalytics.meta.config import get_graph_backend
     return get_graph_backend()
 
 
@@ -178,6 +195,7 @@ class VertexRule(Rule):
 
     """
     def __init__(self, id_key, id_value, properties=None):
+        raise_deprecation_warning("VertexRule", titan_rule_deprecation)
         self.id_key = id_key
         self.id_value = id_value
         self.properties = properties or {}
@@ -252,6 +270,7 @@ class EdgeRule(Rule):
 
     """
     def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
+        raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
         self.bidirectional = bool(bidirectional)
         if is_directed is not None:
             raise_deprecation_warning("EdgeRule", "Parameter 'is_directed' is now called bidirectional' and has opposite polarity.")
@@ -351,7 +370,7 @@ except Exception as e:
 @api
 @name_support('graph')
 class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
-    _command_prefix = 'graph'
+    _entity_type = 'graph'
     def __init__(self):
         CommandLoadable.__init__(self)
 
@@ -365,9 +384,9 @@ class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
 @api
 class Graph(DocStubsGraph, _BaseGraph):
     """
-    Creates a graph.
+    Creates a property Graph.
 
-    This graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
+    This Graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
     operations against graph data.  Many frame methods are available against vertices and edges.
     Vertex and Edge properties are stored as columns.
 
@@ -458,7 +477,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.edges['worksunder'].inspect(20)
 
     """
-    _command_prefix = 'graph:'
+    _entity_type = 'graph:'
 
     def __init__(self, source=None, name=''):
         if not hasattr(self, '_backend'):
@@ -473,36 +492,78 @@ class Graph(DocStubsGraph, _BaseGraph):
         else:
             raise ValueError("Invalid source value of type %s" % type(source))
 
-        self.vertices = GraphFrameCollection(self.get_vertex_frame, self.get_vertex_frames)
-        self.edges = GraphFrameCollection(self.get_edge_frame, self.get_edge_frames)
+        self.vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
+        self.edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
 
         _BaseGraph.__init__(self)
 
-    def get_vertex_frame(self, label):
+    @api
+    def _get_vertex_frame(self, label):
         """
         return a VertexFrame for the associated label
         :param label: the label of the frame to return
         """
         return self._backend.get_vertex_frame(self._id, label)
 
-    def get_vertex_frames(self):
+    @api
+    def _get_vertex_frames(self):
         """
         return all VertexFrames for this graph
         """
         return self._backend.get_vertex_frames(self._id)
 
-    def get_edge_frame(self, label):
+    @api
+    def _get_edge_frame(self, label):
         """
         return an EdgeFrame for the associated label
         :param label: the label of the frame to return
         """
         return self._backend.get_edge_frame(self._id, label)
 
-    def get_edge_frames(self):
+    @api
+    def _get_edge_frames(self):
         """
         return all EdgeFrames for this graph
         """
         return self._backend.get_edge_frames(self._id)
+
+    @property
+    @api
+    def vertex_count(self):
+        """
+        Get the total number of vertices in the graph.
+
+        Examples
+        --------
+        graph.vertex_count
+
+        The result given is::
+
+            1194
+
+        .. versionadded:: 0.9
+
+        """
+        return self._backend.get_vertex_count(self)
+
+    @property
+    @api
+    def edge_count(self):
+        """
+        Get the total number of edges in the graph.
+
+        Examples
+        --------
+        graph.edge_count
+
+        The result given is::
+
+            1194
+
+        .. versionadded:: 0.9
+
+        """
+        return self._backend.get_edge_count(self)
 
 
 class GraphFrameCollection(object):
@@ -576,7 +637,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     """
 
-    _command_prefix = 'graph:titan'
+    _entity_type = 'graph:titan'
 
     def __init__(self, rules=None, name=""):
         try:

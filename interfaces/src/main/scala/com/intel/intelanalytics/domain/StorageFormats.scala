@@ -30,7 +30,7 @@ object StorageFormats {
 
   val HBaseTitan = "hbase/titan"
 
-  private val SeamlessGraph = "ia/frame"
+  val SeamlessGraph = "ia/frame"
 
   private val graphFormats = Set(SeamlessGraph, "cassandra/titan", HBaseTitan)
 

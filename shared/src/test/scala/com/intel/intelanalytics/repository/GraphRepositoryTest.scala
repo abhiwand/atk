@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import org.scalatest.Matchers
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 

@@ -24,14 +24,15 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, FlattenColumn }
 import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 import scala.concurrent.ExecutionContext
-
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -62,12 +63,11 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments input specification for column flattening
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FlattenColumn)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: FlattenColumn)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val frames = engine.frames
 
     // validate arguments
     val frameId: Long = arguments.frameId.id
@@ -75,14 +75,12 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     val columnIndex = frameMeta.schema.columnIndex(arguments.column)
 
     // run the operation
-    val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(sc, frameMeta)
     val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
-    val rowCount = flattenedRDD.count()
 
     // save results
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
-    frames.updateRowCount(newFrame, rowCount)
+    frames.saveLegacyFrame(frameMeta.toReference, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
+
   }
 
 }

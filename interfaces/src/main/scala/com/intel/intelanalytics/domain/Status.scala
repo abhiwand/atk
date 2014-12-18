@@ -25,6 +25,8 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
+// TODO: we added status when first creating the frame and graph tables but then little has been done in terms of actually implementing --Todd 12/3/2014
+
 /**
  * Lifecycle Status for Graphs and Frames
  * @param id unique id in the database
@@ -37,26 +39,37 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
 
   require(name != null, "name must not be null")
 
-  /** Initial Status, currently building or initializing */
-  def isInit: Boolean = id.equals(StatusId.init.id)
+  /** Initial Status, currently building or initializing or empty */
+  def isInit: Boolean = id.equals(Status.Init)
 
   /** Active and can be interacted with */
-  def isActive: Boolean = id.equals(StatusId.active.id)
+  def isActive: Boolean = id.equals(Status.Active)
 
   /** Partially created, failure occurred during construction */
-  def isIncomplete: Boolean = id.equals(StatusId.complete.id)
+  def isIncomplete: Boolean = id.equals(Status.Incomplete)
 
   /** Deleted but can still be un-deleted, no action has yet been taken on disk */
-  def isDeleted: Boolean = id.equals(StatusId.deleted.id)
+  def isDeleted: Boolean = id.equals(Status.Deleted)
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  def isDeleteFinal: Boolean = id.equals(StatusId.deletedFinal.id)
+  def isDeleteFinal: Boolean = id.equals(Status.Delete_Final)
 }
 
-object StatusId extends Enumeration {
-  val init = Value(1)
-  val active = Value(2)
-  val complete = Value(3)
-  val deleted = Value(4)
-  val deletedFinal = Value(5)
+object Status {
+
+  /** Initial Status, currently building or initializing or empty */
+  val Init: Long = 1
+
+  /** Active and can be interacted with */
+  val Active: Long = 2
+
+  /** Partially created, failure occurred during construction */
+  val Incomplete: Long = 3
+
+  /** Deleted but can still be un-deleted, no action has yet been taken on disk */
+  val Deleted: Long = 4
+
+  /** Underlying storage has been reclaimed, no un-delete is possible */
+  val Delete_Final: Long = 5
 }
+

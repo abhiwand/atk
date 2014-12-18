@@ -44,12 +44,12 @@ class LegacyFrameRDDTest extends TestingSparkContextWordSpec with Matchers {
 
     "be convertible into a FrameRDD" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
       val rdd = new LegacyFrameRDD(schema, rows)
       val frameRDD = rdd.toFrameRDD()
 
       frameRDD.getClass should be(classOf[FrameRDD])
-      frameRDD.schema should be(schema)
+      frameRDD.frameSchema should be(schema)
       frameRDD.first should equal(rdd.first)
     }
 
@@ -58,7 +58,7 @@ class LegacyFrameRDDTest extends TestingSparkContextWordSpec with Matchers {
       val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
       val sqlContext = new SQLContext(sparkContext)
       val schemaRDD = sqlContext.createSchemaRDD(rows)
-      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
 
       val legacyFrameRDD = new LegacyFrameRDD(schema, schemaRDD)
 

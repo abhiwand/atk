@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
 
 /**
  * Wrapper for Seamless Graph Meta data stored in the database
@@ -42,13 +43,13 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
   frameMetas.foreach(frame => require(frame.graphId.get == graphMeta.id, "frame should be owned by the graph, graphId did not match"))
 
   /** Labels to frames */
-  @transient private lazy val edgeFrameMetasMap = frameMetas.filter(frame => frame.schema.edgeSchema.isDefined)
-    .map(frame => (frame.schema.label.get, frame))
+  @transient private lazy val edgeFrameMetasMap = frameMetas.filter(frame => frame.isEdgeFrame)
+    .map(frame => (frame.label.get, frame))
     .toMap[String, DataFrame]
 
   /** Labels to frames */
-  @transient private lazy val vertexFrameMetasMap = frameMetas.filter(frame => frame.schema.vertexSchema.isDefined)
-    .map(frame => (frame.schema.label.get, frame))
+  @transient private lazy val vertexFrameMetasMap = frameMetas.filter(frame => frame.isVertexFrame)
+    .map(frame => (frame.label.get, frame))
     .toMap[String, DataFrame]
 
   /** convenience method for getting the id of the graph */
@@ -88,7 +89,7 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
    * True if the supplied label is already in use in this graph
    */
   def isVertexOrEdgeLabel(label: String): Boolean = {
-    frameMetas.exists(frame => frame.schema.label.get == label)
+    frameMetas.exists(frame => frame.label.get == label)
   }
 
   /**
@@ -119,7 +120,7 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
   }
 
   def vertexLabels: List[String] = {
-    vertexFrames.map(frame => frame.schema.label.get)
+    vertexFrames.map(frame => frame.label.get)
   }
 
   def vertexLabelsAsString: String = {
@@ -127,27 +128,35 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
   }
 
   def edgeLabels: List[String] = {
-    edgeFrames.map(frame => frame.schema.label.get)
+    edgeFrames.map(frame => frame.label.get)
   }
 
   def edgeLabelsAsString: String = {
     edgeLabels.mkString(", ")
   }
 
-  def vertexCount: Long = {
-    vertexFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def vertexCount: Option[Long] = {
+    countList(vertexFrames.map(frame => frame.rowCount))
   }
 
-  def edgeCount: Long = {
-    edgeFrames.map(frame => frame.rowCount).reduce(_ + _)
+  def edgeCount: Option[Long] = {
+    countList(edgeFrames.map(frame => frame.rowCount))
+  }
+
+  private def countList(list: List[Option[Long]]): Option[Long] = list match {
+    case Nil => Some(0)
+    case x :: xs => for {
+      left <- x
+      right <- countList(xs)
+    } yield left + right
   }
 
   /**
    * Create a list of ElementIDName objects corresponding to the IDColumn of all Vertices in this graph.
    */
-  def vertexIdColumnNames: List[ElementIDName] = {
-    this.vertexFrameMetasMap.map {
-      case (name, frame) => new ElementIDName(name, frame.schema.vertexSchema.get.idColumnName.getOrElse("_vid"))
+  def getFrameSchemaList: List[Schema] = {
+    this.frameMetas.map {
+      frame => frame.schema
     }.toList
   }
 

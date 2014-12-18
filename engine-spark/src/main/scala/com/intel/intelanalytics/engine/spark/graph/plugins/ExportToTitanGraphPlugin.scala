@@ -32,6 +32,8 @@ import com.intel.intelanalytics.domain.frame.{ DataFrame }
 import com.intel.intelanalytics.domain.{ Naming }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
@@ -93,7 +95,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: ExportGraph): Int = 4
+  override def numberOfJobs(arguments: ExportGraph)(implicit invocation: Invocation): Int = 4
 
   /**
    * Plugins must implement this method to do the work requested by the user.
@@ -103,7 +105,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ExportGraph)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
+  override def execute(arguments: ExportGraph)(implicit invocation: Invocation): Graph = {
     val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: Graph = graphs.createGraph(
@@ -113,11 +115,11 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
           case None => Naming.generateName(prefix = Some("titan_graph"))
         },
         StorageFormats.HBaseTitan))
-    val ctx = invocation.sparkContext
+    val graph = graphs.expectGraph(seamlessGraph.id)
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
-      graphs.loadGbVertices(ctx, seamlessGraph.id),
-      graphs.loadGbEdges(ctx, seamlessGraph.id))
-    graphs.updateElementIDNames(titanGraph, seamlessGraph.vertexIdColumnNames)
+      graphs.loadGbVertices(sc, graph),
+      graphs.loadGbEdges(sc, graph))
+    graphs.updateFrameSchemaList(titanGraph, seamlessGraph.getFrameSchemaList)
   }
 
   /**
@@ -146,7 +148,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
   def validateLabelNames(edgeFrames: List[DataFrame], edgeLabels: List[String]) = {
     val invalidColumnNames = edgeFrames.flatMap(frame => frame.schema.columnNames.map(columnName => {
       if (edgeLabels.contains(columnName))
-        s"Edge: ${frame.schema.edgeSchema.get.label} Column: $columnName"
+        s"Edge: ${frame.schema.asInstanceOf[EdgeSchema].label} Column: $columnName"
       else
         ""
     })).toList.filter(s => !s.isEmpty)

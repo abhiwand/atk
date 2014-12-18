@@ -64,6 +64,26 @@ intel.analytics {
 # specifics of your cluster and workload.
 
 intel.analytics {
+  engine-spark {
+    auto-partitioner {
+        # auto-partitioning spark based on the file size
+        file-size-to-partition-size = [{ upper-bound="1MB", partitions = 15 }
+                                       { upper-bound="1GB", partitions = 45 },
+                                       { upper-bound="5GB", partitions = 100 },
+                                       { upper-bound="10GB", partitions = 200 },
+                                       { upper-bound="15GB", partitions = 375 },
+                                       { upper-bound="25GB", partitions = 500 },
+                                       { upper-bound="50GB", partitions = 750 },
+                                       { upper-bound="100GB", partitions = 1000 },
+                                       { upper-bound="200GB", partitions = 1500 },
+                                       { upper-bound="300GB", partitions = 2000 },
+                                       { upper-bound="400GB", partitions = 2500 },
+                                       { upper-bound="600GB", partitions = 3750 }]
+
+        # max-partitions is used if value is above the max upper-bound
+        max-partitions = 10000
+    }
+  }
 
   # Configuration for the Intel Analytics REST API server
   api {
@@ -83,7 +103,7 @@ intel.analytics {
 
 	#Configuration for the IAT processing engine
 	engine {
-	    //default-timeout = 30s
+	    //default-timeout = 30
         //page-size = 1000
 
     spark {
@@ -110,9 +130,9 @@ intel.analytics {
           # (e.g., using collect() on large datasets)
           //spark.akka.frameSize=100
 
-          #spark.akka.retry.wait=30000
-          #spark.akka.timeout=200
-          #spark.akka.timeout=30000
+          //spark.akka.retry.wait=30000
+          //spark.akka.timeout=200
+          //spark.akka.timeout=30000
 
           //spark.shuffle.consolidateFiles=true
 
@@ -121,11 +141,11 @@ intel.analytics {
           //spark.rdd.compress=true
           //spark.io.compression.codec=org.apache.spark.io.SnappyCompressionCodec
 
-          #spark.storage.blockManagerHeartBeatMs=300000
-          #spark.storage.blockManagerSlaveTimeoutMs=300000
+          //spark.storage.blockManagerHeartBeatMs=300000
+          //spark.storage.blockManagerSlaveTimeoutMs=300000
 
-          #spark.worker.timeout=600
-          #spark.worker.timeout=30000
+          //spark.worker.timeout=600
+          //spark.worker.timeout=30000
         }
 
       }
@@ -214,11 +234,9 @@ intel.analytics {
             # Number of regions per regionserver to set when creating Titan/HBase table
             regions-per-server = 2
 
-            # Number of input splits for Titan reader is based on number of available cores
-            # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
-            #     graph size in HBase/minimum-input-splits-size-mb)
+            # Number of input splits for Titan reader is based on number of available cores as follows:
+            #    Number of splits = Max(input-splits-per-spark-core *available spark-cores, HBase table region count),
             input-splits-per-spark-core = 2
-            minimum-input-splits-size-mb = 64
           }
 
           enable = false

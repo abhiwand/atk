@@ -2,8 +2,7 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
-import org.apache.spark.SparkContext
+import org.apache.spark.{ HashPartitioner, SparkContext }
 import org.apache.spark.rdd.RDD
 
 /**
@@ -12,11 +11,14 @@ import org.apache.spark.rdd.RDD
 object TitanReader {
   val TITAN_HADOOP_PREFIX = "titan.hadoop.input.conf."
 
-  val TITAN_STORAGE_BACKEND = "storage.backend" //GraphDatabaseConfiguration.STORAGE_BACKEND
-  val TITAN_STORAGE_HOSTNAME = "storage.hostname" //GraphDatabaseConfiguration.STORAGE_HOSTS
+  val TITAN_STORAGE_BACKEND = "storage.backend"
+  //GraphDatabaseConfiguration.STORAGE_BACKEND
+  val TITAN_STORAGE_HOSTNAME = "storage.hostname"
+  //GraphDatabaseConfiguration.STORAGE_HOSTS
   val TITAN_STORAGE_PORT = "storage.port"
 
-  val TITAN_STORAGE_HBASE_TABLE = "storage.hbase.table" // HBaseStoreManager.HBASE_TABLE
+  val TITAN_STORAGE_HBASE_TABLE = "storage.hbase.table"
+  // HBaseStoreManager.HBASE_TABLE
   val TITAN_STORAGE_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace"
   val TITAN_CASSANDRA_INPUT_WIDEROWS = "cassandra.input.widerows";
   val TITAN_CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.batch.size";
@@ -60,6 +62,9 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
-    titanReaderRDD
+    // Omit any duplicate vertices or edges
+    // TODO: Figure out why Titan input formats return duplicates
+    val numPartitions = titanReaderRDD.partitions.length
+    titanReaderRDD.distinct(numPartitions)
   }
 }

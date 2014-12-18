@@ -24,7 +24,7 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
 
@@ -32,7 +32,7 @@ import org.apache.spark.sql.Row
  * Edge: self contained edge with complete schema information included.
  * Edge is used when you want RDD's of mixed edge types.
  */
-case class Edge(override val schema: Schema, override var row: Row) extends AbstractEdge with Serializable
+case class Edge(override val schema: EdgeSchema, override var row: Row) extends AbstractEdge with Serializable
 
 /**
  * EdgeWrapper: container that can be re-used to minimize memory usage but still provide a rich API
@@ -40,7 +40,7 @@ case class Edge(override val schema: Schema, override var row: Row) extends Abst
  * With a wrapper, the user sets the row data before each operation.
  * You never want to create RDD[EdgeWrapper] because it wouldn't have data you wanted.
  */
-class EdgeWrapper(override val schema: Schema) extends AbstractEdge with Serializable {
+class EdgeWrapper(override val schema: EdgeSchema) extends AbstractEdge with Serializable {
 
   @transient override var row: Row = null
 
@@ -74,9 +74,7 @@ class EdgeWrapper(override val schema: Schema) extends AbstractEdge with Seriali
  * This is the "common interface" for edges within our system.
  */
 trait AbstractEdge extends AbstractRow with Serializable {
-
-  require(schema.edgeSchema.isDefined, "schema should be for edges")
-  require(schema.vertexSchema.isEmpty, "schema should not be for vertices")
+  require(schema.isInstanceOf[EdgeSchema], "schema should be for edges")
   require(schema.hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + schema.columnTuples)
   require(schema.hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + schema.columnTuples)
   require(schema.hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + schema.columnTuples)
@@ -122,12 +120,29 @@ trait AbstractEdge extends AbstractRow with Serializable {
   }
 
   /**
-   * Convert this row to a GbEdge
+   * Convert this row to a GBEdge
    */
-  def toGbEdge: GBEdge = {
+  def toGbEdge(): GBEdge = createGBEdge(reversed = false)
+
+  /**
+   * Convert this row to a GBEdge that has the source and destination vertices reversed
+   */
+  def toReversedGbEdge(): GBEdge = createGBEdge(reversed = true)
+
+  /**
+   * create a GBEdge object from this row
+   * @param reversed: if true this will reverse the source and destination vids. This is used with a bidirect graph.
+   *
+   */
+  private def createGBEdge(reversed: Boolean): GBEdge = {
     val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
     val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
-    GBEdge(null, null, GBProperty("_vid", srcVertexId()), GBProperty("_vid", destVertexId()), schema.label.get, properties.toSet)
+    val srcProperty: GBProperty = GBProperty("_vid", srcVertexId())
+    val destProperty: GBProperty = GBProperty("_vid", destVertexId())
+    if (reversed)
+      GBEdge(None, null, null, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+    else
+      GBEdge(None, null, null, srcProperty, destProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
   }
 }
