@@ -35,7 +35,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.StatusId
+import com.intel.intelanalytics.domain.Status
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -98,7 +98,7 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
     val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sc, theOnlySourceFrameID)
     val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
     graphBuilder.build(inputRdd)
-    graphs.updateStatus(graphMeta, StatusId.active)
+    graphs.updateStatus(graphMeta, Status.Active)
 
     graphMeta
   }

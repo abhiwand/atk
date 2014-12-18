@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.EntityManager
+import com.intel.intelanalytics.domain.{ Status, EntityManager, Naming }
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
@@ -55,7 +55,6 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.thinkaurelius.titan.core.TitanGraph
-import com.intel.intelanalytics.domain.Naming
 
 import scala.util.Try
 
@@ -166,11 +165,11 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph graph instance
    * @param newStatusId status id
    */
-  override def updateStatus(graph: Graph, newStatusId: StatusId.Value): Unit = {
+  override def updateStatus(graph: Graph, newStatusId: Long): Unit = {
     metaStore.withSession("spark.graphstorage.rename") {
       implicit session =>
         {
-          val newGraph = graph.copy(statusId = newStatusId.id)
+          val newGraph = graph.copy(statusId = newStatusId)
           metaStore.graphRepo.update(newGraph).get
         }
     }
@@ -188,7 +187,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           val check = metaStore.graphRepo.lookupByName(graph.name)
           check match {
             case Some(g) => {
-              if (g.statusId == StatusId.active.id) {
+              if (g.statusId == Status.Active) {
                 throw new RuntimeException("Graph with same name exists. Create aborted.")
               }
               else {
@@ -198,8 +197,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
           backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
-          val g = Graph(1, graph.name, None, "", if (graph.storageFormat == "hbase/titan") StatusId.init.id else StatusId.active.id, graph.storageFormat, new DateTime(), new DateTime(), None, None)
-          metaStore.graphRepo.insert(g).get
+          metaStore.graphRepo.insert(graph).get
         }
     }
   }
