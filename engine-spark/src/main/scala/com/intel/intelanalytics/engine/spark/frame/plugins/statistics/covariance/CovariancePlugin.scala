@@ -21,17 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.multivariatestatistics
+package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.CovarianceArguments
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.Covariance
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 
@@ -47,7 +44,7 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, DoubleVal
   /**
    * The name of the command
    */
-  override def name: String = "frame:/covariance"
+  override def name: String = "frame/covariance"
 
   /**
    * User documentation exposed in Python.

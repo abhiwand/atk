@@ -20,37 +20,28 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain
 
-import spray.json.JsonFormat
-
-/**
- * Generic String value that can be used by plugins that return a single String
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class StringValue(value: String)
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Generic Long value that can be used by plugins that return a single Long
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ * Input arguments class for export to CSV
  */
-case class LongValue(value: Long)
+case class ExportCsvArguments(frame: FrameReference,
+                              folderName: String,
+                              separator: Option[String] = None,
+                              count: Option[Int] = None,
+                              offset: Option[Int] = None) {
+  require(frame != null, "frame is required")
+  require(folderName != null, "folder name is required")
+}
 
 /**
- * Generic Double value that can be used by plugins that return a single Double
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ * Input arguments class for export to JSON
  */
-case class DoubleValue(value: Double)
-
-/**
- * Generic boolean value that can be used by plugins that return a Boolean
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class BoolValue(value: Boolean)
-
-/**
- * Generic singleton or list value which is a List, but has a Json serializer such that a singleton
- * is accepted
- * @param value "value" is a special string meaning don't treat this return type like a dictionary
- */
-case class SingletonOrListValue[T](value: List[T])
+case class ExportJsonArguments(frame: FrameReference,
+                               folderName: String,
+                               count: Option[Int] = None,
+                               offset: Option[Int] = None) {
+  require(frame != null, "frame is required")
+  require(folderName != null, "folder name is required")
+}

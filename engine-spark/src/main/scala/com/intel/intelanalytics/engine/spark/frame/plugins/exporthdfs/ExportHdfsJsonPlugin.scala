@@ -21,94 +21,91 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
+package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
+import java.nio.file.FileSystem
+
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, CovarianceMatrixArguments, DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.Naming
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.domain.frame.ExportJsonArguments
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.Rows._
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Calculate covariance matrix for the specified columns
+ * Export a frame to json file
  */
-class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArguments, DataFrame] {
+class ExportHdfsJsonPlugin extends SparkCommandPlugin[ExportJsonArguments, UnitReturn] {
 
   /**
    * The name of the command
    */
-  override def name: String = "frame/covariance_matrix"
+  override def name: String = "frame/export_json"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate covariance matrix for two or more columns",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Write frame to HDFS in json format",
     extendedSummary = Some("""
 
-        Compute the covariance matrix for two or more columns.
+        Export the frame to a file in json format as a hadoop file
 
         Parameters
         ----------
-        columns: [ str | list of str ]
-            The names of the column from which to compute the matrix
+
+        folderName: String
+            The HDFS folder path where the files will be created
+
+        separator: Option[String] = None
+            The separator for separating the values. Default is ","
+
+        count: Option[Int] = None
+            The number of records you want. No value or a negative or zero value for count exports the whole frame
+
+        offset: Option[Int] = None
+            The number of rows to skip before exporting to the file
+
 
         Returns
         -------
-        A matrix with the covariance values for the columns
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
+        None
 
         Examples
         --------
-        Consider Frame *my_frame*, which accesses a frame that contains a single column named *obs*::
+        Consider Frame *my_frame*
 
-            cov_matirx = my_frame.covariance_matrix(['col_0', 'col_1', 'col_2'])
+            my_frame.export_json('covarianceresults')
 
-            cov_matrix.inspect()
-
-          """)))
+                           """)))
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation) = 7
+  override def numberOfJobs(arguments: ExportJsonArguments)(implicit invocation: Invocation) = 5
 
   /**
-   * Calculate covariance matrix for the specified columns
+   * Calculate covariance for the specified columns
    *
    * @param invocation information about the user and the circumstances at the time of the call, as well as a function
    *                   that can be called to produce a SparkContext that can be used during this invocation
-   * @param arguments input specification for covariance matrix
+   * @param arguments input specification for covariance
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: ExportJsonArguments)(implicit invocation: Invocation): UnitReturn = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
     val rdd = frame.data
-
-    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
-    val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames)
-
-    val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    tryNew(arguments.matrixName) { newFrame: FrameMeta =>
-      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, covarianceRDD)))
-    }.meta
+    FrameExportHdfs.exportToHdfsJson(rdd, arguments.folderName, arguments.count, arguments.offset)
+    new UnitReturn
   }
+
 }
