@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.model.ModelTemplate
 import org.scalatest.Matchers
 
@@ -32,7 +33,7 @@ class ModelRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
     val modelRepo = slickMetaStoreComponent.metaStore.modelRepo
     slickMetaStoreComponent.metaStore.withSession("model-test") {
       implicit session =>
-        val name = "my-model"
+        val name = "my_model"
         val modelType = "LogisticRegression"
 
         // create a model

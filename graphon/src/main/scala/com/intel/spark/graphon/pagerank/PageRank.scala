@@ -25,16 +25,17 @@ package com.intel.spark.graphon.pagerank
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import spray.json._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
@@ -121,7 +122,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |        If None, all edges are considered
                              |    max_iterations : integer (optional)
                              |        The maximum number of iterations that the algorithm will execute.
-                             |        The valid value range is all positive integer.
+                             |        The valid value range is all positive integer else the algorithm will terminate
+                             |        with vertex page rank set to reset_probability.
                              |        The default value is 20.
                              |    convergence_tolerance : float (optional)
                              |        The amount of change in cost function that will be tolerated at
@@ -165,29 +167,20 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
                              |
                            """.stripMargin)))
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: PageRankArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): PageRankResult = {
+  override def execute(arguments: PageRankArgs)(implicit invocation: Invocation): PageRankResult = {
 
-    val sparkContext = sparkInvocation.sparkContext
-
-    sparkContext.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    // Read the graph from Titan
-    val titanReader = new TitanReader(sparkContext, titanConnector)
-    val titanReaderRDD = titanReader.read()
-
-    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
+    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
       arguments.input_edge_labels,
@@ -199,12 +192,15 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
     writeToTitan(newTitanConfig, outVertices, outEdges)
+
+    gbVertices.unpersist()
+    gbEdges.unpersist()
 
     PageRankResult(newGraphName)
   }

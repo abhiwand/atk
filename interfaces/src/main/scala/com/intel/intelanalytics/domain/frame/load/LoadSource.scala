@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain.frame.load
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ SchemaUtil, FrameSchema, Schema }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call
@@ -39,53 +39,60 @@ import com.intel.intelanalytics.domain.schema.Schema
  */
 case class Load(destination: FrameReference, source: LoadSource)
 
-//source_type instead of sourceType so that the parser can properly parse the REST Apis naming convention
 /**
  * Describes a resource that should be loaded into a DataFrame
  *
- * @param source_type Source object that can be parsed into an RDD. Such as "file" or "frame"
+ * @param sourceType Source object that can be parsed into an RDD. Such as "file" or "frame"
  * @param uri Location of data to load. Should be appropriate for the source_type.
  * @param parser Object describing how to parse the resource. If data already an RDD can be set to None
  */
-case class LoadSource(source_type: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None) {
+case class LoadSource(sourceType: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None, startTag: Option[List[String]] = None, endTag: Option[List[String]] = None) {
 
-  require(source_type != null)
-  require(source_type == "frame" || source_type == "file" || source_type == "strings" || source_type == "linefile")
-  require(uri != null)
-  require(parser != null)
-  if (source_type == "frame" || source_type == "file" || source_type == "linefile") {
-    require(data == None)
+  require(sourceType != null, "sourceType cannot be null")
+  require(sourceType == "frame" || sourceType == "file" || sourceType == "strings" || sourceType == "linefile" || sourceType == "multilinefile" || sourceType == "xmlfile",
+    "sourceType must be a valid type")
+  require(uri != null, "uri cannot be null")
+  require(parser != null, "parser cannot be null")
+  if (sourceType == "frame" || sourceType == "file" || sourceType == "linefile" || sourceType == "multilinefile") {
+    require(data == None, "if this is not a strings file the data must be None")
   }
-  if (source_type == "strings") {
-    require(data != None)
+  if (sourceType == "strings") {
+    require(data != None, "if the sourceType is strings data must not be None")
+  }
+  if (sourceType == "multilinefile" || sourceType == "xmlfile") {
+    require(startTag != None && endTag != None, "if this is a multiline file the start and end tags must be set")
   }
 
   /**
    * True if source is an existing Frame
    */
   def isFrame: Boolean = {
-    source_type == "frame"
+    sourceType == "frame"
   }
 
   /**
    * True if source is a pandas Data Frame
    */
   def isClientData: Boolean = {
-    source_type == "strings"
+    sourceType == "strings"
   }
 
   /**
    * True if source is a file
    */
   def isFieldDelimited: Boolean = {
-    source_type == "file"
+    sourceType == "file"
   }
 
   /**
    * True if source is a Line File
    */
   def isFile: Boolean = {
-    source_type == "linefile"
+    sourceType == "linefile"
+  }
+
+  def isMultilineFile: Boolean = {
+    sourceType == "multilinefile" || sourceType == "xmlfile"
   }
 }
 
@@ -121,6 +128,6 @@ case class SchemaArgs(columns: List[(String, DataType)]) {
    * Convert args to our internal format
    */
   def schema: Schema = {
-    new Schema(columns)
+    Schema.fromTuples(columns)
   }
 }

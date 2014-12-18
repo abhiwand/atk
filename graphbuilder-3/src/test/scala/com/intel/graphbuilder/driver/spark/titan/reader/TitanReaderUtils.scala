@@ -41,7 +41,7 @@ object TitanReaderUtils {
           new GBVertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
         }
         case e: GBEdge => {
-          new GBEdge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
+          new GBEdge(None, e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
         }
       }
     })

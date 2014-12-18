@@ -41,7 +41,7 @@ class ClassificationMetricsResult(object):
             self.confusion_matrix = pd.DataFrame(data, index=row_index, columns=header)
         else:
             #empty pandas frame
-            return
+            pd.DataFrame()
 
     def __repr__(self):
         return "Precision: {0}\nRecall: {1}\nAccuracy: {2}\nFMeasure: {3}\nConfusion Matrix: \n{4}".format(self.precision, self.recall, self.accuracy, self.f_measure, self.confusion_matrix)

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetric
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ClassificationMetric, ClassificationMetricValue, DataFrame }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -202,6 +203,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
                            |
                             """.stripMargin)))
 
+  override def numberOfJobs(arguments: ClassificationMetric)(implicit invocation: Invocation) = 8
   /**
    * Computes Model accuracy, precision, recall, confusion matrix and f_measure
    *
@@ -209,20 +211,18 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ClassificationMetric)(implicit user: UserPrincipal, executionContext: ExecutionContext): ClassificationMetricValue = {
+  override def execute(arguments: ClassificationMetric)(implicit invocation: Invocation): ClassificationMetricValue = {
     // dependencies (later to be replaced with dependency injection)
 
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.frame.id
     val frameMeta = frames.expectFrame(arguments.frame)
-    implicit val u = user
     val frameSchema = frameMeta.schema
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val betaValue = arguments.beta.getOrElse(1.0)

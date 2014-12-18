@@ -66,7 +66,7 @@ private[graphbuilder] case class SingleEdgeRuleParser(rule: EdgeRule) extends Se
   private val propertyParser = new PropertyRuleParser(rule.propertyRules)
 
   def parse(row: InputRow): GBEdge = {
-    new GBEdge(tailGbIdParser.parse(row), headGbIdParser.parse(row), rule.label.value(row), propertyParser.parse(row))
+    new GBEdge(None, tailGbIdParser.parse(row), headGbIdParser.parse(row), rule.label.value(row), propertyParser.parse(row))
   }
 }
 

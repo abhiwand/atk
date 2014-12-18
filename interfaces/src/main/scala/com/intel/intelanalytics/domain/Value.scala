@@ -22,6 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
+import spray.json.JsonFormat
+
 /**
  * Generic String value that can be used by plugins that return a single String
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
@@ -33,6 +35,12 @@ case class StringValue(value: String)
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
  */
 case class LongValue(value: Long)
+
+/**
+ * Generic Double value that can be used by plugins that return a single Double
+ * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ */
+case class DoubleValue(value: Double)
 
 /**
  * Generic singleton or list value which is a List, but has a Json serializer such that a singleton

@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import org.apache.spark.rdd.RDD
 
 //implicit conversion for PairRDD
@@ -38,6 +39,33 @@ import org.apache.spark.SparkContext._
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
 object DiscretizationFunctions extends Serializable {
+
+  /**
+   * Column values into bins.
+   *
+   * Two types of binning are provided: equalwidth and equaldepth.
+   *
+   * Equal width binning places column values into bins such that the values in each bin fall within the same
+   * interval and the interval width for each bin is equal.
+   *
+   * Equal depth binning attempts to place column values into bins such that each bin contains the same number
+   * of elements
+   *
+   * @param columnIndex column index
+   * @param binType equalwidth or equaldepth
+   * @param numberOfBins requested number of bins
+   * @param rdd the input with the column for binning
+   * @return the new RDD with a column added
+   */
+  def bin(columnIndex: Int, binType: String, numberOfBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    binType match {
+      case "equalwidth" =>
+        DiscretizationFunctions.binEqualWidth(columnIndex, numberOfBins, rdd)
+      case "equaldepth" =>
+        DiscretizationFunctions.binEqualDepth(columnIndex, numberOfBins, rdd)
+      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${binType}, please choose from: equalwidth, equaldepth.")
+    }
+  }
 
   /**
    * Bin column at index using equal width binning.
@@ -66,7 +94,7 @@ object DiscretizationFunctions extends Serializable {
 
     // find the minimum and maximum values in the column RDD
     val min: Double = pairedRdd.sortByKey().first()._1
-    val max: Double = pairedRdd.sortByKey(false).first()._1
+    val max: Double = pairedRdd.sortByKey(ascending = false).first()._1
 
     // determine bin width and cutoffs
     val binWidth = (max - min) / numBins.toDouble

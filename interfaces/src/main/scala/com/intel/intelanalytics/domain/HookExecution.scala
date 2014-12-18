@@ -41,6 +41,7 @@ import org.joda.time.DateTime
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  */
+@deprecated("hooks were planned but then we still haven't implemented after several months", "12-03-2014")
 case class HookExecution(id: Long, hookId: Long, success: Boolean = false, responseCode: Int = -1, errorBody: Option[String] = None, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
 
 }

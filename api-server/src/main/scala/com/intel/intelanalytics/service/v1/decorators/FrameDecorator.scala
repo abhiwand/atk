@@ -60,7 +60,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       rowCount = entity.rowCount,
       links,
       entity.errorFrameId,
-      entity.commandPrefix)
+      entity.entityType)
   }
 
   def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[DataFrame]): List[GetDataFrame] = {
@@ -77,7 +77,8 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
   override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[GetDataFrames] = {
     entities.map(frame => new GetDataFrames(id = frame.id,
       name = frame.name,
-      url = uri + "/" + frame.id)).toList
+      url = uri + "/" + frame.id,
+      entityType = frame.entityType)).toList
   }
 
 }

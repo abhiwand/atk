@@ -26,16 +26,17 @@ package com.intel.spark.graphon.connectedcomponents
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, Property }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import spray.json._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
@@ -129,31 +130,28 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
                              |
                            """.stripMargin)))
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: ConnectedComponentsArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
+  override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsResult = {
 
-    val sparkContext = sparkInvocation.sparkContext
+    val sparkContext = sc
 
-    sparkContext.addJar(Boot.getJar("graphon").getPath)
+    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
-
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-
-    val titanConnector = new TitanGraphConnector(titanConfig)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // Read the graph from Titan
-    val titanReader = new TitanReader(sparkContext, titanConnector)
-    val titanReaderRDD = titanReader.read()
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    val gbVertices = titanReaderRDD.filterVertices()
-    val gbEdges = titanReaderRDD.filterEdges()
+    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
+    val inputVertices: RDD[Long] = gbVertices
+      .map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
+
     val inputEdges = gbEdges
       .map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
 
@@ -166,14 +164,18 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
     val newGraphName = arguments.output_graph_name
-    val newGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
     writeToTitan(newTitanConfig, outVertices, gbEdges)
 
+    gbVertices.unpersist()
+    gbEdges.unpersist()
+
     ConnectedComponentsResult(newGraphName)
+
   }
 
   // Helper function to write rdds back to Titan

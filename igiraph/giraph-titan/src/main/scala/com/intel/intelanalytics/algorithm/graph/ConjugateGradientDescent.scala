@@ -40,22 +40,22 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Cgd(graph: GraphReference,
-               edge_value_property_list: List[String],
-               input_edge_label_list: List[String],
-               output_vertex_property_list: List[String],
-               vertex_type_property_key: String,
-               edge_type_property_key: String,
-               vector_value: Option[Boolean] = None,
-               max_supersteps: Option[Int] = None,
-               convergence_threshold: Option[Double] = None,
-               cgd_lambda: Option[Float] = None,
-               feature_dimension: Option[Int] = None,
-               learning_curve_output_interval: Option[Int] = None,
-               bidirectional_check: Option[Boolean] = None,
-               bias_on: Option[Boolean] = None,
-               max_value: Option[Float] = None,
-               min_value: Option[Float] = None,
-               num_iters: Option[Int] = None)
+               edgeValuePropertyList: List[String],
+               inputEdgeLabelList: List[String],
+               outputVertexPropertyList: List[String],
+               vertexTypePropertyKey: String,
+               edgeTypePropertyKey: String,
+               vectorValue: Option[Boolean] = None,
+               maxSupersteps: Option[Int] = None,
+               convergenceThreshold: Option[Double] = None,
+               cgdLambda: Option[Float] = None,
+               featureDimension: Option[Int] = None,
+               learningCurveOutputInterval: Option[Int] = None,
+               validateGraphStructure: Option[Boolean] = None,
+               biasOn: Option[Boolean] = None,
+               maxValue: Option[Float] = None,
+               minValue: Option[Float] = None,
+               numIters: Option[Int] = None)
 
 case class CgdResult(value: String)
 
@@ -149,13 +149,14 @@ class ConjugateGradientDescent
                            |        The learning curve output interval.
                            |        Since each CGD iteration is composed by 2 super steps,
                            |        the default one (1) iteration means two super steps.
-                           | 
-                           |    bidirectional_check : boolean (optional)
-                           |        If it is True, Giraph will check whether each edge is bidirectional
-                           |        before executing the algorithm.
-                           |        CGD expects a bi-partite input graph and each edge therefore should be
-                           |        bi-directional.
-                           |        This option is mainly for graph integrity check.
+                           |
+                           |    validate_graph_structure : boolean (optional)
+                           |        Checks if the graph meets certain structural requirements before starting
+                           |        the algorithm.
+                           |
+                           |        At present, this checks that at every vertex, the in-degree equals the
+                           |        out-degree. Because this algorithm is for undirected graphs, this is a necessary
+                           |        but not sufficient, check for valid input.
                            | 
                            |    bias_on : boolean (optional)
                            |        True means turn on the update for bias term and False means turn off
@@ -200,14 +201,14 @@ class ConjugateGradientDescent
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Cgd)(implicit user: UserPrincipal, executionContext: ExecutionContext): CgdResult = {
+  override def execute(arguments: Cgd)(implicit context: Invocation): CgdResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
+    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(false)
-    val biasOn = arguments.bias_on.getOrElse(false)
+    val vectorValue = arguments.vectorValue.getOrElse(false)
+    val biasOn = arguments.biasOn.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
     require(!vectorValue || !biasOn ||
@@ -216,30 +217,30 @@ class ConjugateGradientDescent
         "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "cgd.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "cgd.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "cgd.featureDimension", arguments.feature_dimension)
-    GiraphConfigurationUtil.set(hConf, "cgd.bidirectionalCheck", arguments.bidirectional_check)
-    GiraphConfigurationUtil.set(hConf, "cgd.biasOn", arguments.bias_on)
-    GiraphConfigurationUtil.set(hConf, "cgd.lambda", arguments.cgd_lambda)
-    GiraphConfigurationUtil.set(hConf, "cgd.learningCurveOutputInterval", arguments.learning_curve_output_interval)
-    GiraphConfigurationUtil.set(hConf, "cgd.maxVal", arguments.max_value)
-    GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.min_value)
-    GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.num_iters)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "cgd.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "cgd.featureDimension", arguments.featureDimension)
+    GiraphConfigurationUtil.set(hConf, "cgd.bidirectionalCheck", arguments.validateGraphStructure)
+    GiraphConfigurationUtil.set(hConf, "cgd.biasOn", arguments.biasOn)
+    GiraphConfigurationUtil.set(hConf, "cgd.lambda", arguments.cgdLambda)
+    GiraphConfigurationUtil.set(hConf, "cgd.learningCurveOutputInterval", arguments.learningCurveOutputInterval)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxVal", arguments.maxValue)
+    GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.minValue)
+    GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.numIters)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
-    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexTypePropertyKey))
+    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edgeTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
     GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
@@ -253,7 +254,7 @@ class ConjugateGradientDescent
 
     CgdResult(GiraphJobManager.run("ia_giraph_cgd",
       classOf[ConjugateGradientDescentComputation].getCanonicalName,
-      config, giraphConf, invocation, "cgd-learning-report_0"))
+      config, giraphConf, context, "cgd-learning-report_0"))
   }
 
 }

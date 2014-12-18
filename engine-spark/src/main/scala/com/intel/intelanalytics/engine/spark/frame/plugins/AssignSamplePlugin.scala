@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ AssignSample, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -109,14 +110,12 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
-   * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: AssignSample)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: AssignSample)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameID = arguments.frame.id
@@ -143,9 +142,9 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
     val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
-    val allColumns = frame.schema.columnTuples :+ (outputColumn, DataTypes.string)
+    val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
 
     // save results
-    frames.saveLegacyFrame(frame, new LegacyFrameRDD(new Schema(allColumns), splitRDD))
+    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(updatedSchema, splitRDD))
   }
 }

@@ -24,8 +24,10 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
+import org.apache.spark.mllib.linalg.{ Vectors, DenseVector }
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
@@ -42,11 +44,11 @@ import scala.reflect.ClassTag
  *
  * This is our preferred format for loading frames as RDDs.
  *
- * @param schema  the schema describing the columns of this frame
+ * @param frameSchema  the schema describing the columns of this frame
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class FrameRDD(val schema: Schema,
+class FrameRDD(val frameSchema: Schema,
                sqlContext: SQLContext,
                logicalPlan: LogicalPlan)
     extends SchemaRDD(sqlContext, logicalPlan) {
@@ -62,13 +64,24 @@ class FrameRDD(val schema: Schema,
   def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.sqlContext, schemaRDD.queryExecution.logical)
 
   /** This wrapper provides richer API for working with Rows */
-  val rowWrapper = new RowWrapper(schema)
+  val rowWrapper = new RowWrapper(frameSchema)
 
   /**
    * Convert this FrameRDD into a LegacyFrameRDD of type RDD[Array[Any]]
    */
   def toLegacyFrameRDD: LegacyFrameRDD = {
-    new LegacyFrameRDD(this.schema, this.baseSchemaRDD)
+    new LegacyFrameRDD(this.frameSchema, this.baseSchemaRDD)
+  }
+
+  /**
+   * Convert FrameRDD into RDD[LabeledPoint] format required by MLLib
+   */
+  def toLabeledPointRDD(labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
+    this.mapRows(row =>
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
+      })
   }
 
   /**
@@ -98,14 +111,24 @@ class FrameRDD(val schema: Schema,
     if (columnNames.isEmpty) {
       throw new IllegalArgumentException("list of column names can't be empty")
     }
-    new FrameRDD(schema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+    new FrameRDD(frameSchema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+  }
+
+  /**
+   * Select a subset of columns while renaming them
+   * @param columnNames map of old names to new names
+   * @return the new FrameRDD
+   */
+  def selectColumnsWithRename(columnNames: Map[String, String]): FrameRDD = {
+    val columnSubset = selectColumns(columnNames.keys.toList)
+    new FrameRDD(columnSubset.frameSchema.copySubsetWithRename(columnNames), columnSubset.toSchemaRDD)
   }
 
   /**
    * Drop columns - create a new FrameRDD with the columns specified removed
    */
   def dropColumns(columnNames: List[String]): FrameRDD = {
-    convertToNewSchema(schema.dropColumns(columnNames))
+    convertToNewSchema(frameSchema.dropColumns(columnNames))
   }
 
   /**
@@ -114,14 +137,14 @@ class FrameRDD(val schema: Schema,
    * The ignore data type is a slight hack for ignoring some columns on import.
    */
   def dropIgnoreColumns(): FrameRDD = {
-    convertToNewSchema(schema.dropIgnoreColumns())
+    convertToNewSchema(frameSchema.dropIgnoreColumns())
   }
 
   /**
    * Union two Frame's, merging schemas if needed
    */
   def union(other: FrameRDD): FrameRDD = {
-    val unionedSchema = schema.union(other.schema)
+    val unionedSchema = frameSchema.union(other.frameSchema)
     val part1 = convertToNewSchema(unionedSchema)
     val part2 = other.convertToNewSchema(unionedSchema)
     val unionedRdd = part1.toSchemaRDD.union(part2)
@@ -129,7 +152,7 @@ class FrameRDD(val schema: Schema,
   }
 
   def renameColumn(oldName: String, newName: String): FrameRDD = {
-    new FrameRDD(schema.renameColumn(oldName, newName), this)
+    new FrameRDD(frameSchema.renameColumn(oldName, newName), this)
   }
 
   /**
@@ -139,7 +162,7 @@ class FrameRDD(val schema: Schema,
    * @return the new RDD
    */
   def convertToNewSchema(updatedSchema: Schema): FrameRDD = {
-    if (schema == updatedSchema) {
+    if (frameSchema == updatedSchema) {
       // no changes needed
       this
     }
@@ -184,7 +207,7 @@ class FrameRDD(val schema: Schema,
 
     // ascending is always true here because we control in the ordering
     val sortedRows = pairRdd.sortByKey(ascending = true).values
-    new FrameRDD(schema, sortedRows)
+    new FrameRDD(frameSchema, sortedRows)
   }
 
   /**
@@ -212,13 +235,33 @@ class FrameRDD(val schema: Schema,
       }
     })
 
-    val newSchema: Schema = if (!schema.hasColumn(columnName)) {
-      schema.addColumn(columnName, DataTypes.int64)
+    val newSchema: Schema = if (!frameSchema.hasColumn(columnName)) {
+      frameSchema.addColumn(columnName, DataTypes.int64)
     }
     else
-      schema
+      frameSchema
 
     new FrameRDD(newSchema, this.sqlContext, FrameRDD.createLogicalPlanFromSql(newSchema, newRows))
+  }
+
+  /**
+   * Convert Vertex or Edge Frames to plain data frames
+   */
+  def toPlainFrame(): FrameRDD = {
+    new FrameRDD(frameSchema.toFrameSchema, this.toSchemaRDD)
+  }
+
+  /**
+   * Save this RDD to disk or other store
+   * @param absolutePath location to store
+   * @param storageFormat "file/parquet", "file/sequence", etc.
+   */
+  def save(absolutePath: String, storageFormat: String = "file/parquet"): Unit = {
+    storageFormat match {
+      case "file/sequence" => toSchemaRDD.saveAsObjectFile(absolutePath)
+      case "file/parquet" => toSchemaRDD.saveAsParquetFile(absolutePath)
+      case format => throw new IllegalArgumentException(s"Unrecognized storage format: $format")
+    }
   }
 
 }
@@ -253,7 +296,7 @@ object FrameRDD {
     val structType = this.schemaToStructType(schema.columnTuples)
     val attributes = structType.fields.map(f => AttributeReference(f.name, f.dataType, f.nullable)())
 
-    SparkLogicalPlan(ExistingRdd(attributes, rows))
+    SparkLogicalPlan(ExistingRdd(attributes, rows))(new SQLContext(rows.context))
   }
 
   /**

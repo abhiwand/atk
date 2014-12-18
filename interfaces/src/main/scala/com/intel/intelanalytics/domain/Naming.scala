@@ -22,10 +22,44 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
+abstract class Naming(val term: String) {
+
+  /**
+   * Validates the given name according to standard naming rules.  If no name is given,
+   */
+  def validate(name: String): String = Naming.validateAlphaNumericUnderscore(name)
+
+  /**
+   * Validates the given name according to standard naming rules.  If no name is given,
+   * then a unique name is generated, with an optional prefix replacement
+   * @param name name Option
+   * @param prefix Optional annotation prefix to replace the default prefix
+   * @return original name if provided else a generated unique name
+   */
+  def validateOrGenerate(name: Option[String], prefix: Option[String] = None): String = Naming.validateAlphaNumericUnderscoreOrGenerate(name, { generate(prefix) })
+
+  /**
+   * Automatically generate a unique name for a named object
+   *
+   * The frame name comprises of an optional prefix (else default for the object is used) and a random uuid
+   *
+   * @param prefix Optional annotation prefix to replace the default prefix
+   * @return Frame name
+   */
+  def generate(prefix: Option[String] = None): String = Naming.generateName(Some(prefix.getOrElse(term + "_")))
+}
+
 /**
  * General user object naming
  */
 object Naming {
+
+  implicit class Name(val name: String) {
+    Naming.validateAlphaNumericUnderscore(name)
+  }
+
+  implicit def nameToString(name: Name): String = name.name
+
   private lazy val alphaNumericUnderscorePattern = "^[a-zA-Z0-9_]+$".r
 
   /**
@@ -64,7 +98,7 @@ object Naming {
    * @param text subject
    * @return subject or empty string
    */
-  def validateAlphaNumericUnderscoreOrGenerate(text: Option[String], generate: => String): String = {
+  def validateAlphaNumericUnderscoreOrGenerate(text: Option[String], generate: => String): Name = {
     text match {
       case Some(name) => validateAlphaNumericUnderscore(name)
       case None => generate
@@ -78,9 +112,9 @@ object Naming {
    * @param suffix Optional annotation suffix  (must be alphanumeric or underscore)
    * @return generated name
    */
-  def generateName(prefix: Option[String] = None, suffix: Option[String] = None): String = {
+  def generateName(prefix: Option[String] = None, suffix: Option[String] = None): Name = {
     val p = validateAlphaNumericUnderscoreOrNone(prefix)
     val s = validateAlphaNumericUnderscoreOrNone(suffix)
-    p + java.util.UUID.randomUUID().toString.filterNot(c => c == '-') + s
+    p + java.util.UUID.randomUUID().toString.filterNot(_ == '-') + s
   }
 }

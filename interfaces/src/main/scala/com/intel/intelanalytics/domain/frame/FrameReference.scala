@@ -23,6 +23,83 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.engine.plugin.Invocation
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 
-case class FrameReference(id: Long) extends HasId
+case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
+
+  /** The entity type */
+  override def entity: EntityType = FrameEntity
+
+  /** The entity id */
+  override def id: Long = frameId
+
+  /**
+   * Is this reference known to be valid at the time it was created?
+   *
+   * None indicates this is unknown.
+   */
+  override def exists: Option[Boolean] = frameExists
+}
+
+/**
+ * Place to store type tag for frame reference.
+ *
+ * The same code in FrameEntity had typeTag returning null, presumably
+ * due to initialization order issues of some kind. Keeping it in a separate
+ * object avoids that problem.
+ */
+private object FrameTag {
+  val referenceTag = typeTag[FrameReference]
+}
+
+object FrameEntity extends EntityType {
+
+  override type Reference = FrameReference
+
+  override implicit val referenceTag: TypeTag[FrameReference] = {
+    val tag = FrameTag.referenceTag
+    require(tag != null)
+    tag
+  }
+
+  def name = EntityName("frame", "frames")
+
+  override def alternatives = Seq(EntityName("dataframe", "dataframes"))
+
+  def apply(frameId: Long, frameExists: Option[Boolean]) = new FrameReference(frameId, frameExists)
+
+}
+
+object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =>
+
+  override implicit val referenceTag = FrameEntity.referenceTag
+
+  //Default resolver that simply creates a reference, with no guarantee that it is valid.
+  EntityRegistry.register(FrameEntity, this)
+
+  override type MetaData = FrameReference with NoMetaData
+
+  override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
+
+  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
+
+  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+
+  /**
+   * Creates an (empty) instance of the given type, reserving a URI
+   */
+  override def delete(reference: FrameReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
+
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id, None)
+
+  override type Data = FrameReference with NoData
+
+  /**
+   * Save data of the given type, possibly creating a new object.
+   */
+  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
+}

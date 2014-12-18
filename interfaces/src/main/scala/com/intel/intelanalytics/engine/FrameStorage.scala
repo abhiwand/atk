@@ -23,40 +23,44 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.NotFoundException
+import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, _ }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 
 trait FrameStorage {
 
-  def expectFrame(frameId: Long): DataFrame
-  def expectFrame(frameRef: FrameReference): DataFrame
+  type Context
+  type Data
 
-  def lookup(id: Long): Option[DataFrame]
-  def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
-  def getFrames()(implicit user: UserPrincipal): Seq[DataFrame]
-  def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame
-  def renameFrame(frame: DataFrame, newName: String): DataFrame
-  def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
-  def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
-  def drop(frame: DataFrame)
-  //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
-  def updateSchema(frame: DataFrame, schema: Schema): DataFrame
+  def expectFrame(frameId: Long)(implicit invocation: Invocation): DataFrame
+  def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): DataFrame
+
+  def lookup(id: Long)(implicit invocation: Invocation): Option[DataFrame]
+  def lookupByName(name: String)(implicit invocation: Invocation): Option[DataFrame]
+  def getFrames()(implicit invocation: Invocation): Seq[DataFrame]
+  def create(frameTemplate: DataFrameTemplate)(implicit invocation: Invocation): DataFrame
+  def renameFrame(frame: DataFrame, newName: String)(implicit invocation: Invocation): DataFrame
+  def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): DataFrame
+  def getRows(frame: DataFrame, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row]
+  def drop(frame: DataFrame)(implicit invocation: Invocation)
+  def loadFrameData(context: Context, frame: DataFrame)(implicit invocation: Invocation): Data
+  def saveFrameData(frame: FrameReference, data: Data)(implicit invocation: Invocation): DataFrame
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist
    * @param frame the 'good' frame
    * @return the parse errors for the 'good' frame
    */
-  def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame
+  def lookupOrCreateErrorFrame(frame: DataFrame)(implicit invocation: Invocation): (DataFrame, DataFrame)
 
   /**
    * Get the error frame of the supplied frame
    * @param frame the 'good' frame
    * @return the parse errors for the 'good' frame
    */
-  def lookupErrorFrame(frame: DataFrame): Option[DataFrame]
+  def lookupErrorFrame(frame: DataFrame)(implicit invocation: Invocation): Option[DataFrame]
 }
