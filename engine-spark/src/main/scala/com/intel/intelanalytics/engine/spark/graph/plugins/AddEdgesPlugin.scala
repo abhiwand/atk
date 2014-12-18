@@ -143,8 +143,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
@@ -196,9 +196,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // append to existing data
     val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameMeta.id)
     val combinedRdd = existingEdgeData.append(edgesToAdd)
-    combinedRdd.cache()
-    graphs.saveEdgeRdd(edgeFrameMeta.id, combinedRdd, Some(combinedRdd.count()))
-    combinedRdd.unpersist(blocking = false)
+    graphs.saveEdgeRdd(edgeFrameMeta.id, combinedRdd)
 
     // results
     new UnitReturn

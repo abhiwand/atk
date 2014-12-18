@@ -24,10 +24,11 @@
 package com.intel.spark.graphon.pagerank
 
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import org.apache.spark.graphx.{ Graph, Edge => GraphXEdge }
+import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ PageRank => GraphXPageRank }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the PageRankRunnerArgs
@@ -71,18 +72,19 @@ object PageRankRunner extends Serializable {
 
     // Only select edges as specified in inputEdgeLabels
     val filteredEdges: RDD[GBEdge] = inputEdgeLabels match {
-      case None => inEdges.cache()
-      case _ => inEdges.cache().filter(edge => inputEdgeLabels.get.contains(edge.label))
+      case None => inEdges
+      case _ => inEdges.filter(edge => inputEdgeLabels.get.contains(edge.label))
     }
 
     // convert to graphX vertices
     val graphXVertices: RDD[(Long, Null)] =
-      inVertices.cache().map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
+      inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
     val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => createGraphXEdgeFromGBEdge(edge))
 
     // create graphx Graph instance from graphx vertices and edges
     val graph = Graph[Null, Long](graphXVertices, graphXEdges)
+      .partitionBy(PartitionStrategy.RandomVertexCut)
 
     // run graphx pagerank implementation
     val newGraph: Graph[Double, Double] = args.convergenceTolerance match {
@@ -93,10 +95,10 @@ object PageRankRunner extends Serializable {
     // extract vertices and edges from graphx graph instance
     val intermediateVertices: RDD[(Long, Property)] = newGraph.vertices.map({
       case (physicalId, pageRank) => (physicalId, Property(outputPropertyLabel, pageRank))
-    }).cache()
+    })
 
     val intermediateEdges: RDD[(EdgeSrcDestPair, Property)] =
-      newGraph.edges.map(edge => ((edge.srcId, edge.dstId), Property(outputPropertyLabel, edge.attr))).cache()
+      newGraph.edges.map(edge => ((edge.srcId, edge.dstId), Property(outputPropertyLabel, edge.attr)))
 
     // Join the intermediate vertex/edge rdds with input vertex/edge rdd's to append the pagerank attribute
     val outVertices: RDD[GBVertex] = inVertices
@@ -108,6 +110,8 @@ object PageRankRunner extends Serializable {
       .map(gbEdge => ((gbEdge.tailPhysicalId.asInstanceOf[Long], gbEdge.headPhysicalId.asInstanceOf[Long]), gbEdge))
       .join(intermediateEdges)
       .map(edge => generateGBEdge(edge))
+
+    graph.unpersistVertices()
 
     (outVertices, outEdges)
   }

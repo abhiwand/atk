@@ -66,6 +66,8 @@ Command Line Arguments
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
     jobs
 
+--db-only configure only the database yes/no
+
 --db-host the hostname of your postgres database. will default to localhost
 
 --db-port the port number for your postgres installation. will default to 5432
@@ -79,7 +81,7 @@ Command Line Arguments
     you will only see asterisk for the display. If you need the password for future reference you can open the
     application.conf file and look for metastore.connection-postgresql.username.
 
---db-skip-reconfig weather or not you want to skip database config if we find an existing config
+--db-reconfig weather or not you want to re configure the database. yes/no
 
     TODO: Configure database when the configuration script is done.
 """
@@ -100,12 +102,13 @@ parser.add_argument("--password", type=str, help="Cloudera Manager Password")
 parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by "
                                                 "Cloudera Manager.")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
+parser.add_argument("--db-only", type=str, help="configure only the database yes/no")
 parser.add_argument("--db-host", type=str, help="Database host name")
 parser.add_argument("--db-port", type=str, help="Database port number")
 parser.add_argument("--db", type=str, help="Database name")
 parser.add_argument("--db-username", type=str, help="Database username")
 parser.add_argument("--db-password", type=str, help="Database password")
-parser.add_argument("--db-skip-reconfig", type=str, help="Should i skip database re-configuration? 'yes' to skip.")
+parser.add_argument("--db-reconfig", type=str, help="Should i re-configure the Database? 'no' to skip.")
 args = parser.parse_args()
 
 LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
@@ -569,7 +572,7 @@ def get_old_db_details():
     database = "ia_metastore"
     username = "iauser"
     password = "myPassword"
-    skip = "no"
+    reconfig = "no"
     
     #look for an old application.conf and see if we have any old db configs
     try:
@@ -584,19 +587,18 @@ def get_old_db_details():
         prev_password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
 
         if prev_host and prev_port and prev_database and prev_username and prev_password:
-            skip = get_arg(color_text("\n We detected an existing database configuration. "
-                           "\n To skip the database configuration hit enter. "
-                           "To continue with the database configuration enter \"no\" \n", WARNING),
-                           "yes", args.db_skip_reconfig)
+            reconfig = get_arg(color_text("\nWould you like to re-configure the database?"
+                           " To re-configure enter  \"yes\" \n", WARNING),
+                           "no", args.db_reconfig)
             host = prev_host
             port = prev_port
             database = prev_database
             username = prev_username
             password = prev_password
 
-        return host, port, database, username, password, skip
+        return host, port, database, username, password, reconfig
     except IOError:
-        return host, port, database, username, password, skip
+        return host, port, database, username, password, reconfig
 
 
 def set_db_user_access(db_username):
@@ -614,7 +616,7 @@ def set_db_user_access(db_username):
     except IOError:
         system("service postgresql initdb")
         pg_hba = codecs.open(r"/var/lib/pgsql/data/pg_hba.conf", encoding="utf-8", mode="r+")
-        restart_db()
+
 
     pg_hba_text = pg_hba.read()
     pg_hba.seek(0)
@@ -720,6 +722,29 @@ def restart_IA():
 
     print "\n"
 
+def get_db_host(host):
+    return get_arg("What is the hostname of the database server?", host, args.db_host)
+
+def get_db_port(port):
+    return get_arg("What is the port of the database server?", port, args.db_port)
+
+def get_db(database):
+    return get_arg("What is the name of the database?", database, args.db,
+                   r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
+                                                   "allowed and the first character can't be a number.")
+
+def get_db_username(username):
+    return get_arg("What is the database user name?", username, args.db_username,
+                   r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
+                                                   "allowed and the first character can't be a number.")
+def get_db_password(password):
+    if password == "myPassword" or password == "":
+        #create randomly generated hashed password
+        password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
+    db_password = get_arg("What is the database password? The default password was randomly generated.",
+                          password, args.db_password, r'^[^$]*$',
+                          "The dollar sign is not allowed in the password.",True)
+    return db_password
 
 def get_db_details():
     """
@@ -727,9 +752,9 @@ def get_db_details():
     settings found in the existing application.conf
     :return:
     """
-    host, port, database, username, password, skip = get_old_db_details()
+    host, port, database, username, password, reconfig = get_old_db_details()
     
-    if skip == "yes":
+    if reconfig == "no":
         print color_text("Skipping database configuration", WARNING)
         db_host = host
         db_port = port
@@ -737,37 +762,27 @@ def get_db_details():
         db_username = username
         db_password = password
     else: 
-        db_host = get_arg("What is the hostname of the database server?", host, args.db_host)
-        db_port = get_arg("What is the port of the database server?", port, args.db_port)
-        db = get_arg("What is the name of the database?", database, args.db,
-                     r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
-                                                     "allowed and the first character can't be a number.")
-        db_username = get_arg("What is the database user name?", username, args.db_username,
-                              r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
-                                                              "allowed and the first character can't be a number.")
-        #create a random password to use as our default
-        if password == "myPassword":
-            #create randomly generated hashed password
-            password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
-        db_password = get_arg("What is the database password? The default password was randomly generated.",
-                              password, args.db_password, r'^[^$]*$',
-                              "The dollar sign is not allowed in the password.",True)
+        db_host = get_db_host(host)
+        db_port = get_db_port(port)
+        db = get_db(database)
+        db_username = get_db_username(username)
+        db_password = get_db_password(password)
 
 
 
-    return db_host, db_port, db, db_username, db_password, skip
+    return db_host, db_port, db, db_username, db_password, reconfig
 
 
-def set_db_details(db, db_username, db_password, skip):
+def set_db_details(db, db_username, db_password, reconfig):
     """
     Update the local hos postgres install. Create the user, database and set network access
     :param db: database name
     :param db_username: db user name
     :param db_password: db password
-    :param skip: weather the user wants to skip db configuration
+    :param reconfig: weather the user wants to reconfigure db configuration
 
     """
-    if skip != "yes":
+    if reconfig != "no":
         set_db_user_access(db_username)
 
         create_db_user(db_username, db_password)
@@ -846,6 +861,32 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     config.close()
     print color_text("Configuration created for Intel Analytics", GOOD)
 
+skip = get_arg(color_text("\n Configure only the Database? Enter \"yes\" to configure only the database. \n", WARNING),"no", args.db_only)
+
+if skip == "yes":
+    db = get_db("ia_metastore")
+    db_username = get_db_username("iauser")
+    db_password = get_db_password("")
+
+    set_db_user_access(db_username)
+
+    create_db_user(db_username, db_password)
+
+    create_db(db, db_username)
+
+
+    db_properties="database=" + db + "\n"
+    db_properties+="username=" + db_username + "\n"
+    db_properties+="password=" + db_password + "\n"
+
+    config_tpl = codecs.open("db.properties", encoding="utf-8", mode="w")
+    config_tpl.write(db_properties)
+    config_tpl.close()
+
+    restart_db()
+
+    exit(0)
+
 #get the Cloudera manager host
 cloudera_manager_host = args.host if args.host else None
 
@@ -899,7 +940,7 @@ if cluster:
         get_spark_details(services)
 
 
-    db_host, db_port, db, db_username, db_password, db_skip = get_db_details()
+    db_host, db_port, db, db_username, db_password, db_reconfig = get_db_details()
 
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
@@ -907,7 +948,7 @@ if cluster:
                                   spark_config_executor_total_max_heapsize, db_host, db_port, db,
                                   db_username, db_password)
 
-    set_db_details(db, db_username, db_password, db_skip)
+    set_db_details(db, db_username, db_password, db_reconfig)
 
     print color_text("Intel Analytics is ready for use.", GOOD)
 

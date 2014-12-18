@@ -49,7 +49,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/drop_duplicates"
+  override def name: String = "frame/drop_duplicates"
 
   /**
    * User documentation exposed in Python.
@@ -116,10 +116,9 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
       case None => frame.schema.columnNames
     }
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
-    val rowCount = duplicatesRemoved.count()
 
     // save results
-    frames.saveLegacyFrame(frame, new LegacyFrameRDD(frame.schema, duplicatesRemoved), Some(rowCount))
+    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(frame.schema, duplicatesRemoved))
   }
 }
 

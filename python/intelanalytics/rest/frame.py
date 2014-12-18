@@ -341,21 +341,6 @@ class FrameBackendRest(object):
         arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('frame:/flatten_column', arguments)
 
-    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
-        import numpy as np
-        if num_bins < 1:
-            raise ValueError("num_bins must be at least 1")
-        if not bin_type in ['equalwidth', 'equaldepth']:
-            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
-        if bin_column_name.strip() == "":
-            raise ValueError("bin_column_name can not be empty string")
-        colTypes = dict(frame.schema)
-        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to bin non-numeric values")
-        arguments = {'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
-        return execute_update_frame_command('bin_column', arguments, frame)
-
-
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np
         colTypes = dict(frame.schema)
