@@ -24,9 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.{ Status, Naming, EntityManager }
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.EntityManager
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrameTemplate, DataFrame }
@@ -44,6 +43,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import com.intel.event.{ EventContext, EventLogging }
+import org.joda.time.DateTime
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 
@@ -225,13 +225,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * - This format requires extra maps to read/write Parquet files.
    * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
    *
-   * @param frameEntity DataFrame representation
+   * @param frame reference to a frame
    * @param legacyFrameRdd the RDD
-   * @param rowCount optionally provide the row count if you need to update it
    */
   @deprecated("use FrameRDD and related methods instead")
-  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None)(implicit invocation: Invocation): DataFrame = {
-    saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
+  def saveLegacyFrame(frame: FrameReference, legacyFrameRdd: LegacyFrameRDD)(implicit invocation: Invocation): DataFrame = {
+    saveFrameData(frame, legacyFrameRdd.toFrameRDD())
   }
 
   /**
@@ -239,72 +238,109 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    *
    * This is our preferred path for saving RDDs as data frames.
    *
-   * @param frameEntity DataFrame representation
-   * @param frameRDD the RDD
-   * @param rowCount the number of rows in the RDD
+   * If the current frame is already materialized, a new entry will be created in the meta data repository, otherwise the existing entry will be updated.
+   *
+   * @param frame reference to a data frame
+   * @param frameRDD the RDD containing the actual data
    */
-  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit invocation: Invocation): DataFrame =
+  override def saveFrameData(frame: FrameReference, frameRDD: FrameRDD)(implicit invocation: Invocation): DataFrame =
     withContext("SFS.saveFrame") {
 
-      val entity = expectFrame(frameEntity.id)
+      val frameEntity = expectFrame(frame.id)
 
-      if (entity.storageLocation.isDefined || frameFileStorage.frameBaseDirectoryExists(entity)) {
-        info(s"Path for frame ${entity.id} / ${entity.name} already exists, creating new frame instead")
-        //We're saving over something that already exists - which we must not do.
-        //So instead we create a new frame.
-        val newFrame = create()
-        return saveFrameData(newFrame, frameRDD, rowCount, Some(entity))
-      }
-      info(s"Path for frame ${entity.id} / ${entity.name} does not exist, will save there")
-
-      parent.foreach { p =>
-        //We copy the name from the old frame, since this was intended to replace it.
+      // determine if this one has been materialized to disk or not
+      val targetEntity = if (frameEntity.storageLocation.isDefined) {
         metaStore.withTransaction("sfs.switch-names-and-graphs") { implicit txn =>
-          val (f1, f2) = exchangeNames(entity, p)
-          val (f1G, _) = exchangeGraphs(f1, f2)
-          f1G
+          //We're saving over something that already exists - which we must not do.
+          //So instead we create a new frame.
+          info(s"Path for frame ${frameEntity.id} / ${frameEntity.name} already exists, creating new frame instead")
+          // TODO: initialize command id in frame
+          val child = frameEntity.createChild(Some(invocation.user.user.id), command = None, frameRDD.frameSchema)
+          metaStore.frameRepo.insert(child)
         }
-        //TODO: Name maintenance really ought to be moved to CommandExecutor and made more general
       }
-      val path = frameFileStorage.frameBaseDirectory(entity.id).toString
-      val count = rowCount.getOrElse {
-        frameRDD.cache()
-        frameRDD.count()
+      else {
+        info(s"Path for frame ${frameEntity.id} / ${frameEntity.name} does not exist, will save there")
+        frameEntity
       }
       try {
-
-        val storage = entity.storageFormat.getOrElse("file/parquet")
-        storage match {
-          case "file/sequence" =>
-            val schemaRDD = frameRDD.toSchemaRDD
-            schemaRDD.saveAsObjectFile(path)
-          case "file/parquet" =>
-            val schemaRDD = frameRDD.toSchemaRDD
-            schemaRDD.saveAsParquetFile(path)
-          case format => illegalArg(s"Unrecognized storage format: $format")
-        }
 
         metaStore.withSession("frame.saveFrame") {
           implicit session =>
             {
-              val existing = metaStore.frameRepo.lookup(entity.id).get
-              val newFrame = metaStore.frameRepo.update(existing.copy(
-                rowCount = Some(count),
-                schema = frameRDD.frameSchema,
-                storageFormat = Some(storage),
-                storageLocation = Some(path),
-                parent = parent.map(p => p.id)))
-              newFrame.get
+              // set the timestamp for when we're starting materialization
+              metaStore.frameRepo.update(targetEntity.copy(materializedOn = Some(new DateTime)))
             }
         }
+
+        // delete incomplete data on disk if it exists
+        frameFileStorage.delete(targetEntity)
+
+        // save the actual data
+        val storageFormat = targetEntity.storageFormat.getOrElse("file/parquet")
+        val path = frameFileStorage.frameBaseDirectory(targetEntity.id).toString
+        frameRDD.save(path, storageFormat)
+
+        // update the metastore
+        metaStore.withSession("frame.saveFrame") {
+          implicit session =>
+            {
+              val frame = expectFrame(targetEntity.id)
+
+              require(frameRDD.frameSchema != null, "frame schema was null, we need developer to add logic to handle this - we used to have this, not sure if we still do --Todd 12/16/2014")
+
+              val updatedFrame = frame.copy(status = Status.Active,
+                storageFormat = Some(storageFormat),
+                storageLocation = Some(path),
+                schema = frameRDD.frameSchema,
+                materializationComplete = Some(new DateTime))
+
+              val withCount = updatedFrame.copy(rowCount = Some(getRowCount(updatedFrame)))
+
+              metaStore.frameRepo.update(withCount)
+            }
+        }
+
+        // if a child was created, it will need to take the name and graph from the parent
+        if (frameEntity.id != targetEntity.id) {
+          metaStore.withTransaction("sfs.switch-names-and-graphs") { implicit txn =>
+            {
+              // remove name from existing frame since it is on the child
+              val (f1, f2) = exchangeNames(expectFrame(frameEntity.id), expectFrame(targetEntity.id))
+              // TODO: shouldn't exchange graphs, should insert a new revision of a graph but this is complicated because there might be multiple frame modifications in one step for graphs
+              exchangeGraphs(f1, f2)
+            }
+          }
+        }
+
+        // look up the latest version from the DB
+        expectFrame(targetEntity.id)
       }
       catch {
         case NonFatal(e) =>
-          error("Error occurred, rolling back creation of file for frame data")
-          frameFileStorage.delete(entity)
+          error("Error occurred, rolling back saving of frame data", exception = e)
+          drop(targetEntity)
+          // TODO: later, when we're really lazy, we'll use incomplete status
+          //error("Error occurred, rolling back creation of file for frame data, marking frame as Incomplete", exception = e)
+          //updateFrameStatus(targetEntity.toReference, Status.Incomplete)
           throw e
       }
     }
+
+  def updateFrameStatus(frame: FrameReference, statusId: Long)(implicit invocation: Invocation): Unit = {
+    try {
+      metaStore.withSession("frame.updateFrameStatus") {
+        implicit session =>
+          {
+            val entity = expectFrame(frame.id)
+            metaStore.frameRepo.update(entity.copy(status = statusId))
+          }
+      }
+    }
+    catch {
+      case e: Exception => error("Error rolling back frame, exception while trying to mark frame as Incomplete", exception = e)
+    }
+  }
 
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
     withContext("frame.getPagedRowsRDD") {
@@ -314,7 +350,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       withMyClassLoader {
         val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.id)
         val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
-
         rows
       }
     }
@@ -332,12 +367,36 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val absPath: Path = new Path(frame.storageLocation.get)
-        val reader = new ParquetReader(absPath, frameFileStorage.hdfs)
+        val reader = getReader(frame)
         val rows = reader.take(count, offset, Some(maxRows))
         rows
       }
     }
+
+  /**
+   * Row count for the supplied frame (assumes Parquet storage)
+   * @return row count
+   */
+  def getRowCount(frame: DataFrame)(implicit invocation: Invocation): Long = {
+    if (frame.storageLocation.isDefined) {
+      val reader = getReader(frame)
+      reader.rowCount()
+    }
+    else {
+      // TODO: not sure what to do if nothing is persisted?
+      throw new NotImplementedError("trying to get a row count on a frame that hasn't been persisted, not sure what to do")
+    }
+  }
+
+  def getReader(frame: DataFrame)(implicit invocation: Invocation): ParquetReader = {
+    withContext("frame.getReader") {
+      require(frame != null, "frame is required")
+      withMyClassLoader {
+        val absPath: Path = new Path(frame.storageLocation.get)
+        new ParquetReader(absPath, frameFileStorage.hdfs)
+      }
+    }
+  }
 
   override def drop(frame: DataFrame)(implicit invocation: Invocation): Unit = {
     frameFileStorage.delete(frame)

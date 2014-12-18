@@ -67,8 +67,8 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
   override def kryoRegistrator: Option[String] = None
 
   override def numberOfJobs(arguments: GraphNoArgs)(implicit invocation: Invocation): Int = {
-    val graphId: Long = arguments.graph.id
-    val titanIAGraph = graphs.expectGraph(graphId)
+    val graphMeta: GraphMeta = resolve(arguments.graph)
+    val titanIAGraph = graphMeta.meta
     val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph)
     val edgeDefinitions = getEdgeDefinitions(titanIAGraph)
     val numberOfVertexTypes = labelToIdNameMapping.size
@@ -171,10 +171,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
 
       val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.id)
       val combinedRdd = existingEdgeData.append(edgesToAdd)
-
-      combinedRdd.cache()
-      graphs.saveEdgeRdd(edgeFrame.id, combinedRdd, Some(combinedRdd.count()))
-      combinedRdd.unpersist()
+      graphs.saveEdgeRdd(edgeFrame.id, combinedRdd)
     })
   }
 
@@ -219,7 +216,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
       val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.id)
       val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(source)
-      graphs.saveVertexRDD(vertexFrame.id, combinedRdd, Some(combinedRdd.count()))
+      graphs.saveVertexRDD(vertexFrame.id, combinedRdd)
     })
   }
 }

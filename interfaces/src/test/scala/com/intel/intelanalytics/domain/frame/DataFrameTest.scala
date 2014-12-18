@@ -9,7 +9,8 @@ class DataFrameTest extends WordSpec {
   val frame = new DataFrame(id = 1,
     name = "name",
     status = 1,
-    createdOn = new DateTime)
+    createdOn = new DateTime,
+    modifiedOn = new DateTime)
 
   "DataFrame" should {
 

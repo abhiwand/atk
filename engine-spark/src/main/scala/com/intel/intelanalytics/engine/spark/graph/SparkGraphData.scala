@@ -30,11 +30,11 @@ import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 /**
  * A GraphReference with metadata and a Spark RDD representing the data in the frame
  */
-class SparkGraphData(graph: Graph, rdd: FrameRDD)
+class SparkGraphData(graph: Graph, rdd: Option[FrameRDD])
     extends GraphMeta(graph)
     with HasData {
 
-  type Data = FrameRDD
+  type Data = Option[FrameRDD]
 
   val data = rdd
 
