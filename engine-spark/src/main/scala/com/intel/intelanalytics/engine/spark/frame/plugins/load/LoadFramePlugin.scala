@@ -138,8 +138,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
 
     val existingRdd = frames.loadFrameData(ctx, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
-    val rowCount = unionedRdd.count()
-    frames.saveFrameData(existingFrame, unionedRdd, Some(rowCount))
+    frames.saveFrameData(existingFrame.toReference, unionedRdd)
   }
 
 }

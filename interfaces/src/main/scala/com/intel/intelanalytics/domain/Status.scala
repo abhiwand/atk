@@ -39,19 +39,37 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
 
   require(name != null, "name must not be null")
 
-  /** Initial Status, currently building or initializing */
-  def isInit: Boolean = id.equals(1)
+  /** Initial Status, currently building or initializing or empty */
+  def isInit: Boolean = id.equals(Status.Init)
 
   /** Active and can be interacted with */
-  def isActive: Boolean = id.equals(2)
+  def isActive: Boolean = id.equals(Status.Active)
 
   /** Partially created, failure occurred during construction */
-  def isIncomplete: Boolean = id.equals(3)
+  def isIncomplete: Boolean = id.equals(Status.Incomplete)
 
   /** Deleted but can still be un-deleted, no action has yet been taken on disk */
-  def isDeleted: Boolean = id.equals(4)
+  def isDeleted: Boolean = id.equals(Status.Deleted)
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  def isDeleteFinal: Boolean = id.equals(5)
+  def isDeleteFinal: Boolean = id.equals(Status.Delete_Final)
+}
+
+object Status {
+
+  /** Initial Status, currently building or initializing or empty */
+  val Init: Long = 1
+
+  /** Active and can be interacted with */
+  val Active: Long = 2
+
+  /** Partially created, failure occurred during construction */
+  val Incomplete: Long = 3
+
+  /** Deleted but can still be un-deleted, no action has yet been taken on disk */
+  val Deleted: Long = 4
+
+  /** Underlying storage has been reclaimed, no un-delete is possible */
+  val Delete_Final: Long = 5
 }
 
