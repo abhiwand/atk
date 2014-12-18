@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
+import com.intel.intelanalytics.engine.plugin.CommandInvocation
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.engine.{ CommandStorage, ReferenceResolver }
+import com.intel.intelanalytics.engine.{ CommandStorageProgressUpdater, CommandStorage, ReferenceResolver }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import spray.json.JsObject
@@ -51,7 +51,10 @@ case class SparkInvocation(engine: SparkEngine,
                            sparkContext: SparkContext,
                            commandStorage: CommandStorage,
                            resolver: ReferenceResolver,
-                           eventContext: EventContext) extends CommandInvocation
+                           eventContext: EventContext) extends CommandInvocation {
+  val updater = new CommandStorageProgressUpdater(commandStorage)
+  override private[intelanalytics] def updateProgress(progress: Float): Unit = updater.updateProgress(commandId, progress)
+}
 
 object SparkInvocation {
   implicit def invocationToUser(inv: SparkInvocation): UserPrincipal = inv.user

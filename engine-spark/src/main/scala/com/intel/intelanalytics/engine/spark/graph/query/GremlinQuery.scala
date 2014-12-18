@@ -145,11 +145,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
-    val commandInvocation = invocation.asInstanceOf[CommandInvocation]
-    val progressUpdater = new CommandStorageProgressUpdater(commandInvocation.commandStorage)
-    val commandId = commandInvocation.commandId
-
-    progressUpdater.updateProgress(commandId, 5f)
+    invocation.updateProgress(5f)
     val resultIterator = Try({
       val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
@@ -160,7 +156,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
       results
     })
-    progressUpdater.updateProgress(commandId, 100f)
+    invocation.updateProgress(100f)
 
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 

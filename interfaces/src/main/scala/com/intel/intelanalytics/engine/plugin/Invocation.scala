@@ -57,6 +57,7 @@ trait Invocation {
    */
   private[intelanalytics] def eventContext: EventContext
 
+  private[intelanalytics] def updateProgress(progress: Float): Unit = ???
 }
 
 case class Call(user: UserPrincipal,
@@ -84,7 +85,6 @@ trait CommandInvocation extends Invocation {
    * Command Storage to read/update command progress
    */
   private[intelanalytics] def commandStorage: CommandStorage
-
 }
 
 object Invocation {
