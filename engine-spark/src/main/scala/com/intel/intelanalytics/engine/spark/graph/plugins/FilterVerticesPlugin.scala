@@ -98,7 +98,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
     val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
     FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-    frames.saveLegacyFrame(vertexFrame.meta, filteredRdd, Some(filteredRdd.count()))
+    frames.saveLegacyFrame(vertexFrame.meta.toReference, filteredRdd)
 
     filteredRdd.unpersist(blocking = false)
 
@@ -157,7 +157,7 @@ object FilterVerticesFunctions {
     val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd,
       edgeFrame.schema.columnIndex(vertexIdColumn), droppedVerticesPairRdd)
     val toFrameRDD: FrameRDD = new LegacyFrameRDD(edgeFrame.schema, remainingEdges).toFrameRDD()
-    frameStorage.saveFrameData(edgeFrame, toFrameRDD, Some(toFrameRDD.count()))
+    frameStorage.saveFrameData(edgeFrame.toReference, toFrameRDD)
   }
 
   /**

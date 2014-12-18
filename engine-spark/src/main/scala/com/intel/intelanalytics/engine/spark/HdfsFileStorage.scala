@@ -51,8 +51,9 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
     if (fsRoot.startsWith("hdfs")) {
       info("fsRoot starts with HDFS")
-      hadoopConfig.set("fs.defaultFS", fsRoot)
     }
+
+    hadoopConfig.set("fs.defaultFS", fsRoot)
 
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
       "Could not load local filesystem for Hadoop")

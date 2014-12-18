@@ -62,7 +62,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
       (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
     } yield (schema.columnIndex(column_to_apply), aggregation_function)
 
-    val (resultRdd, rowCount) = if (arguments.groupByColumns.length > 0) {
+    val resultRdd = if (arguments.groupByColumns.length > 0) {
       val groupByColumns = arguments.groupByColumns
 
       val columnIndices: Seq[(Int, DataType)] = for {
@@ -74,17 +74,13 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
         for { index <- columnIndices.map(_._1) } yield data(index)
       }.seq)
-      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, columnIndices.map(_._2).toArray, arguments)
-      val rowCount = resultRdd.count()
-      (resultRdd, rowCount)
+      GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, columnIndices.map(_._2).toArray, arguments)
     }
     else {
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => Seq[Any]())
-      val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
-      val rowCount = resultRdd.count()
-      (resultRdd, rowCount)
+      GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
     }
     val template = DataFrameTemplate(newFrameName, None)
-    frames.tryNewFrame(template) { newFrame => frames.saveLegacyFrame(newFrame, resultRdd, Some(rowCount)) }
+    frames.tryNewFrame(template) { newFrame => frames.saveLegacyFrame(newFrame.toReference, resultRdd) }
   }
 }

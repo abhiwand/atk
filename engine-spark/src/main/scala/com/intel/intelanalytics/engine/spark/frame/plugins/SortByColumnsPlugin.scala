@@ -75,6 +75,6 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, DataFrame] {
     val frame: SparkFrameData = resolve(arguments.frame)
 
     // run the operation
-    engine.frames.saveFrameData(frame.meta, frame.data.sortByColumns(arguments.columnNamesAndAscending), frame.meta.rowCount)
+    engine.frames.saveFrameData(frame.meta.toReference, frame.data.sortByColumns(arguments.columnNamesAndAscending))
   }
 }

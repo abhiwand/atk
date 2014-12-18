@@ -171,10 +171,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
 
       val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.id)
       val combinedRdd = existingEdgeData.append(edgesToAdd)
-
-      combinedRdd.cache()
-      graphs.saveEdgeRdd(edgeFrame.id, combinedRdd, Some(combinedRdd.count()))
-      combinedRdd.unpersist()
+      graphs.saveEdgeRdd(edgeFrame.id, combinedRdd)
     })
   }
 
@@ -219,7 +216,7 @@ class ExportFromTitanPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
       val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.id)
       val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(source)
-      graphs.saveVertexRDD(vertexFrame.id, combinedRdd, Some(combinedRdd.count()))
+      graphs.saveVertexRDD(vertexFrame.id, combinedRdd)
     })
   }
 }

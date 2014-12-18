@@ -251,6 +251,19 @@ class FrameRDD(val frameSchema: Schema,
     new FrameRDD(frameSchema.toFrameSchema, this.toSchemaRDD)
   }
 
+  /**
+   * Save this RDD to disk or other store
+   * @param absolutePath location to store
+   * @param storageFormat "file/parquet", "file/sequence", etc.
+   */
+  def save(absolutePath: String, storageFormat: String = "file/parquet"): Unit = {
+    storageFormat match {
+      case "file/sequence" => toSchemaRDD.saveAsObjectFile(absolutePath)
+      case "file/parquet" => toSchemaRDD.saveAsParquetFile(absolutePath)
+      case format => throw new IllegalArgumentException(s"Unrecognized storage format: $format")
+    }
+  }
+
 }
 
 /**

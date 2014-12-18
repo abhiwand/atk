@@ -77,7 +77,6 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
     val frame: SparkFrameData = resolve(arguments.frame)
 
     val updatedRdd = PythonRDDStorage.mapWith(frame.data, arguments.predicate)
-    val rowCount = updatedRdd.count()
-    engine.frames.saveFrameData(frame.meta, updatedRdd, Some(rowCount))
+    engine.frames.saveFrameData(frame.meta.toReference, updatedRdd)
   }
 }

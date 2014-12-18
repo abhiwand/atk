@@ -256,7 +256,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), vertexSchema, 1, new DateTime, Some(new DateTime), graphId = Some(graphId))
+          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), vertexSchema, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -285,7 +285,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       implicit session =>
         {
           val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), edgeSchema, 1, new DateTime,
-            Some(new DateTime), graphId = Some(graphId))
+            new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -416,10 +416,10 @@ class SparkGraphStorage(metaStore: MetaStore,
     loadEdgeRDD(ctx, frameId).toGbEdgeRDD
   }
 
-  def saveVertexRDD(frameId: Long, vertexFrameRDD: VertexFrameRDD, rowCount: Option[Long] = None)(implicit invocation: Invocation) = {
+  def saveVertexRDD(frameId: Long, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
     val frameMeta = frameStorage.expectFrame(frameId)
     require(frameMeta.isVertexFrame, "frame was not a vertex frame")
-    frameStorage.saveFrameData(frameMeta, vertexFrameRDD, rowCount)
+    frameStorage.saveFrameData(frameMeta.toReference, vertexFrameRDD)
   }
 
   //  def saveVertexRDD(graphId: Long, vertexLabel: String, vertexFrameRdd: VertexFrameRDD, rowCount: Option[Long] = None) = {
@@ -432,10 +432,10 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    frames.saveFrame(frame, edgeFrameRdd, rowCount)
   //  }
 
-  def saveEdgeRdd(frameId: Long, edgeFrameRDD: EdgeFrameRDD, rowCount: Option[Long] = None)(implicit invocation: Invocation) = {
+  def saveEdgeRdd(frameId: Long, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
     val frameMeta = frameStorage.expectFrame(frameId)
     require(frameMeta.isEdgeFrame, "frame was not an edge frame")
-    frameStorage.saveFrameData(frameMeta, edgeFrameRDD, rowCount)
+    frameStorage.saveFrameData(frameMeta.toReference, edgeFrameRDD)
   }
 
   def updateFrameSchemaList(graphMeta: Graph, schemas: List[Schema])(implicit invocation: Invocation): Graph = {
