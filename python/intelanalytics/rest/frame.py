@@ -98,8 +98,6 @@ class FrameBackendRest(object):
             return frame_info.name
         return frame.name
 
-        return new_frame_name
-
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
