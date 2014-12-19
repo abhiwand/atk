@@ -161,11 +161,9 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
       ("count", DataTypes.float64)
     ))
 
-    val rowCount = topRdd.count()
-
     // save results
     frames.tryNewFrame(DataFrameTemplate(newFrameName, None)) { newFrame =>
-      frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(newSchema, topRdd), Some(rowCount))
+      frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRDD(newSchema, topRdd))
     }
   }
 
