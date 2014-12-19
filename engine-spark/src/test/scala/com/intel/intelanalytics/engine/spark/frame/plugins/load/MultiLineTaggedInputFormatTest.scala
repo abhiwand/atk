@@ -40,11 +40,11 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
     jsonFile = createTestFile("json",
       """{
         |   "num": 1,
-        |   "status": "}{}{"
+        |   "status": "}{}{\\"
         |},
         |{
         |   "num":2,
-        |   "status": "\"}{}"
+        |   "status": "\"}{\}"
         |}
       """)
     recursiveNestingFile = createTestFile("recursive",

@@ -350,11 +350,11 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
                     return;
                 // This section checks for quoted attributes. If a tag appears in an attribute than it should not count as a match
                 if (parseState == ParseState.ESCAPE_CHAR) {
-                    //if we are in an escape char we want to check for a quote. If we find a quote we want to stay in the quote mode.
+                    //if we are in an escape char we want to check for a quote. If we wait the length of the quote we will know that we are back in the string.
+                    currentQuoteIndex++;
                     if (currentQuoteIndex >= quoteChars[currentQuote].length) {
                         parseState = ParseState.IN_QUOTE;
                     }
-                    currentQuoteIndex++;
                 } else {
                     if (parseState == ParseState.IN_QUOTE) {
                         // if we are inside of a quote we need to verify that the next quote we find is not escaped
