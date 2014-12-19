@@ -111,8 +111,6 @@ object PageRankRunner extends Serializable {
       .join(intermediateEdges)
       .map(edge => generateGBEdge(edge))
 
-    graph.unpersistVertices()
-
     (outVertices, outEdges)
   }
 
