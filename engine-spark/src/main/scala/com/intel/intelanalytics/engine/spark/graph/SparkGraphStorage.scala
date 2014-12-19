@@ -174,7 +174,9 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Create aborted.")
           }
-          backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
+          if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
+          }
           metaStore.graphRepo.insert(graph).get
         }
     }

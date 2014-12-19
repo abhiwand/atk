@@ -247,6 +247,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </profile>
 
         <profile>
+            <id>integration-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>integration-tests</module>
+            </modules>
+        </profile>
+
+        <profile>
             <id>compile</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
