@@ -217,9 +217,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
+  implicit val boolValueFormat = jsonFormat1(BoolValue)
 
   implicit val userFormat = jsonFormat5(User)
-  implicit val statusFormat = jsonFormat5(Status)
+  implicit val statusFormat = jsonFormat5(Status.apply)
   implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate.apply)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
@@ -244,7 +245,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val justALongFormat = jsonFormat1(JustALong)
 
   implicit val errorFormat = jsonFormat5(Error)
-  implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
+  implicit val flattenColumnLongFormat = jsonFormat3(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
@@ -280,7 +281,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopK)
-
+  implicit val exportHdfsCsvPlugin = jsonFormat5(ExportCsvArguments)
+  implicit val exportHdfsJsonPlugin = jsonFormat4(ExportJsonArguments)
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)

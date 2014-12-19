@@ -34,7 +34,7 @@ class FrameDecoratorTest extends FlatSpec with Matchers {
 
   val baseUri = "http://www.example.com/frames"
   val uri = baseUri + "/1"
-  val frame = new DataFrame(1, "name", FrameSchema(), 1L, new DateTime)
+  val frame = new DataFrame(1, "name", FrameSchema(), 1L, new DateTime, new DateTime)
 
   "FrameDecorator" should "be able to decorate a frame" in {
     val decoratedFrame = FrameDecorator.decorateEntity(uri, Nil, frame)

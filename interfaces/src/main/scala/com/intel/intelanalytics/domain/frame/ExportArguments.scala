@@ -24,13 +24,24 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for flatten the specified column of the data frame and store the result to a
- * new data frame.
- * @param frame FrameReference of the data frame to perform column flattening
- * @param column name of the target column to be flattened
- * @param delimiter separator for the data in the target column
+ * Input arguments class for export to CSV
  */
-case class FlattenColumn(frame: FrameReference, column: String, delimiter: Option[String] = None) {
+case class ExportCsvArguments(frame: FrameReference,
+                              folderName: String,
+                              separator: Option[String] = None,
+                              count: Option[Int] = None,
+                              offset: Option[Int] = None) {
   require(frame != null, "frame is required")
-  require(column != null, "column is required")
+  require(folderName != null, "folder name is required")
+}
+
+/**
+ * Input arguments class for export to JSON
+ */
+case class ExportJsonArguments(frame: FrameReference,
+                               folderName: String,
+                               count: Option[Int] = None,
+                               offset: Option[Int] = None) {
+  require(frame != null, "frame is required")
+  require(folderName != null, "folder name is required")
 }

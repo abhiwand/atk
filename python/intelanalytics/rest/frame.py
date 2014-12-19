@@ -98,8 +98,6 @@ class FrameBackendRest(object):
             return frame_info.name
         return frame.name
 
-        return new_frame_name
-
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
@@ -337,11 +335,6 @@ class FrameBackendRest(object):
 
         arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
-
-    def flatten_column(self, frame, column_name):
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('frame:/flatten_column', arguments)
 
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np

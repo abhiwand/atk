@@ -292,8 +292,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def modifiedOn = column[DateTime]("modified_on")
 
+    // (Status.apply _).tupled is how you do it when you have a companion object
+
     /** projection to/from the database */
-    def * = (id, name, description, createdOn, modifiedOn) <> (Status.tupled, Status.unapply)
+    def * = (id, name, description, createdOn, modifiedOn) <> ((Status.apply _).tupled, Status.unapply)
   }
 
   val statuses = TableQuery[StatusTable]
@@ -379,7 +381,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def createdOn = column[DateTime]("created_on")
 
     def createdById = column[Option[Long]]("created_by")
-    def modifiedOn = column[Option[DateTime]]("modified_on")
+    def modifiedOn = column[DateTime]("modified_on")
 
     def modifiedById = column[Option[Long]]("modified_by")
 
@@ -443,7 +445,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
       val now: DateTime = new DateTime()
       val f = DataFrame(id = 0, name = frame.name, description = frame.description,
-        schema = FrameSchema(), status = 1L, createdOn = now, modifiedOn = Some(now), rowCount = Some(0))
+        schema = FrameSchema(), status = 1L, createdOn = now, modifiedOn = now, rowCount = Some(0))
       framesAutoInc.insert(f)
     }
 
@@ -457,7 +459,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def update(frame: DataFrame)(implicit session: Session): Try[DataFrame] = Try {
-      val updatedFrame = frame.copy(modifiedOn = Some(new DateTime))
+      val updatedFrame = frame.copy(modifiedOn = new DateTime)
       frames.where(_.id === frame.id).update(updatedFrame)
       updatedFrame
     }
