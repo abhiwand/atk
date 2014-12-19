@@ -34,5 +34,3 @@ then
 else
     echo "$NAME no pid file found $PID_FILE"
 fi
-
-echo
