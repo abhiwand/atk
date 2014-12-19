@@ -36,4 +36,12 @@ case class GraphTemplate(name: String, storageFormat: String = StorageFormats.Se
   require(storageFormat != null, "storageFormat must not be null")
   require(storageFormat.trim.length > 0, "storageFormat must not be empty or whitespace")
   StorageFormats.validateGraphFormat(storageFormat)
+
+  def isSeamless: Boolean = {
+    StorageFormats.isSeamlessGraph(storageFormat)
+  }
+
+  def isTitan: Boolean = {
+    !StorageFormats.isSeamlessGraph(storageFormat)
+  }
 }
