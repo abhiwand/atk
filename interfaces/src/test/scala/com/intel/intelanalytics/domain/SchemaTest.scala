@@ -218,6 +218,27 @@ class SchemaTest extends WordSpec with Matchers {
 
   }
 
+  val ajColumns = List(Column("a", int64), Column("b", float32), Column("c", string),
+    Column("d", string),
+    Column("e", string),
+    Column("f", string),
+    Column("g", string),
+    Column("h", string),
+    Column("i", string),
+    Column("j", string))
+  val ajSchema = new FrameSchema(ajColumns)
+
+  "FrameSchema" should {
+    "preserve column order in columnNames" in {
+      ajSchema.columnNames shouldBe List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
+    }
+
+    "preserve column order during union" in {
+      abcSchema.union(ajSchema) shouldBe FrameSchema(ajColumns)
+    }
+  }
+
+
   val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
   val vertexSchema = VertexSchema(vertexColumns, "movies", Some("movie_id"))
 
