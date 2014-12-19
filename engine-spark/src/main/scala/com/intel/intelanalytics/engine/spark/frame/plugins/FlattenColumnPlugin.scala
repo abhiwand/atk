@@ -56,15 +56,16 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc("Flattens cell to multiple rows", Some("""
-    Search through the currently active Frame for multiple items in a single specified column.
-    When it finds multiple values in the column, it replicates the row and separates the multiple items
-    across the existing and new rows.
-    Multiple items is defined in this case as being things separated by commas.
+    Splits cells in the specified column into multiple rows according to a string delimiter.  New
+    rows are a full copy of the original row, but the specified column only contains one value.  The
+    original row is deleted.
 
     Parameters
     ----------
-    column_name : str
+    column: str
         The column to be flattened.
+    delimiter: str, optional
+        The delimiter string, if not specified, a comma is used
 
     Returns
     -------
@@ -111,9 +112,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
             2       double
 
 
-    .. versionadded:: 0.8
-
-    """)))
+    .. versionadded:: 0.8""")))
 
   override def numberOfJobs(arguments: FlattenColumn)(implicit invocation: Invocation): Int = 2
 
