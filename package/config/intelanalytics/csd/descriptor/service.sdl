@@ -75,8 +75,8 @@
     "roles": [
         {
             "name": "INTEL_ANALYTICS_DOCUMENTATION",
-            "label": "Intel Analytics Documentation",
-            "pluralLabel": "Intel Analytics Documentation",
+            "label": "Documentation",
+            "pluralLabel": "Documentation",
             "startRunner": {
                             "program": "scripts/control.sh",
                             "args": ["doc"],
@@ -121,8 +121,8 @@
         },
         {
             "name": "INTEL_ANALYTICS_REST_SERVER",
-            "label": "Intel Analytics Rest Server",
-            "pluralLabel": "Intel Analytics Rest Servers",
+            "label": "Rest Server",
+            "pluralLabel": "Rest Servers",
             "parameters": [
                 {
                     "name" : "atk_max_heapsize",
@@ -217,7 +217,6 @@
                      "description": "Postgresql password",
                      "required": "true",
                      "type": "password",
-                     "default": "SOMETHING",
                      "configurableInWizard": true
                 },
                 {
@@ -253,7 +252,6 @@
                      "description": "The Cloudera manager password. The CM connection details are used to query CM through the rest api for service details like the list of ZOOKEEPER host names.",
                      "required": "true",
                      "type": "password",
-                     "default": "admin",
                      "configurableInWizard": true
                 },
                 {
