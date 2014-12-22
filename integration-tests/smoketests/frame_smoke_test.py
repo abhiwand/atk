@@ -27,23 +27,25 @@ import intelanalytics as ia
 # show full stack traces
 ia.errors.show_details = True
 ia.loggers.set_api()
+# TODO: port setup should move to a super class
 if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
 class FrameSmokeTest(unittest.TestCase):
     """
-        Smoke test basic frame operations (create, add column, delete column, etc).
+    Smoke test basic frame operations to verify functionality that will be needed by all other tests.
 
-        This is a build-time test so it needs to be written to be as fast as possible:
-            - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
-            - Prefer speed over perfect test isolation
-            - Add lots of assertions and logging to make up for lack of isolation
-            - Tests are ran in Parallel
+    If these tests don't pass, there is no point in running other tests.
+
+    This is a build-time test so it needs to be written to be as fast as possible:
+    - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
+    - Tests are ran in parallel
+    - Tests should be short and isolated.
     """
 
-    def test_create_frame_and_copy(self):
-        print "test_frame_1.1 define csv file"
+    def test_frame(self):
+        print "define csv file"
         csv = ia.CsvFile("/datasets/oregon-cities.csv", schema= [('rank', ia.int32),
                                             ('city', str),
                                             ('population_2013', str),
@@ -51,7 +53,7 @@ class FrameSmokeTest(unittest.TestCase):
                                             ('change', str),
                                             ('county', str)], delimiter='|')
 
-        print "test_frame_1.2 creating frame"
+        print "create frame"
         frame = ia.Frame(csv)
         print
         print frame.inspect(20)
@@ -60,7 +62,7 @@ class FrameSmokeTest(unittest.TestCase):
         self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
         self.assertEquals(len(frame.column_names), 6)
 
-        print "test_frame_1.3 get_error_frame()"
+        print "get_error_frame()"
         error_frame = frame.get_error_frame()
         print
         print error_frame.inspect(20)
@@ -68,7 +70,7 @@ class FrameSmokeTest(unittest.TestCase):
         self.assertEquals(error_frame.row_count, 2, "error frame should have 2 bad rows after loading")
         self.assertEquals(len(error_frame.column_names), 2, "error frames should have 2 columns (original value and error message)")
 
-        print "test_frame_1.4 copy()"
+        print "copy()"
         top10_frame = frame.copy()
         self.assertEquals(top10_frame.row_count, 20, "copy should have same number of rows as original")
         self.assertNotEquals(frame._id, top10_frame._id, "copy should have a different id from the original")
