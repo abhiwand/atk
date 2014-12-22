@@ -25,7 +25,7 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.udf import has_python_user_function_arg
@@ -1046,19 +1046,16 @@ class Frame(DocStubsFrame, _BaseFrame):
     _entity_type = 'frame:'
 
     def __init__(self, source=None, name=None):
-        try:
+        self._error_frame_id = None
+        self._id = 0
+        self._ia_uri = None
+        with api_context(logger, 3, self.__init__, self, source, name):
             check_api_is_loaded()
-            self._error_frame_id = None
-            self._id = 0
-            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
             new_frame_name = self._backend.create(self, source, name)
             logger.info('Created new frame "%s"', new_frame_name)
-        except:
-            error = IaError(logger)
-            raise error
 
     @api
     def append(self, data):
