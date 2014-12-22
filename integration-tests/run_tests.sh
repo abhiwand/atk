@@ -47,7 +47,7 @@ done
 
 echo "$NAME Calling nosetests"
 # parallel execution isn't very parallel because we're hitting 104 Http Errors (probably because we have Spray/Akka configured wrong)
-nosetests $DIR/testcases --nologcapture --with-xunit --xunit-file=$OUTPUT #--processes=2 --process-timeout=90 --with-isolation
+nosetests $DIR/testcases --nologcapture --with-xunit --xunit-file=$OUTPUT --processes=10 --process-timeout=90 --with-isolation
 SUCCESS=$?
 
 $DIR/api-server-stop.sh

@@ -37,11 +37,12 @@ class FrameSmokeTest(unittest.TestCase):
 
         This is a build-time test so it needs to be written to be as fast as possible:
             - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
-            - Prefer speed over test isolation
+            - Prefer speed over perfect test isolation
             - Add lots of assertions and logging to make up for lack of isolation
+            - Tests are ran in Parallel
     """
 
-    def test_frame_1(self):
+    def test_create_frame_and_copy(self):
         print "test_frame_1.1 define csv file"
         csv = ia.CsvFile("/datasets/oregon-cities.csv", schema= [('rank', ia.int32),
                                             ('city', str),
@@ -78,7 +79,6 @@ class FrameSmokeTest(unittest.TestCase):
         #self.assertEquals(top10_frame.row_count, 10, "after filtering there should only be ten cities")
         ##self.assertEqual(top10_frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
         #self.assertEquals(frame.row_count, 20, "original frame should not have changed when we modified a copy")
-
 
 if __name__ == "__main__":
     unittest.main()
