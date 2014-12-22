@@ -13,6 +13,7 @@ This folder is for integration tests that are run at build time.
 - TODO: Allow tests to go against Titan
 - TODO: Modify logging to go under target/logs (/var/logs gets some still)
 - TODO: We should start on random port since it doesn't seem to get released right away (or we need a better test to see if it is still open)
+- TODO: Python UDF's aren't working (error message about can't find pyspark)
 
 -------------------
   Files
