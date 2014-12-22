@@ -99,8 +99,6 @@ object BeliefPropagationRunner extends Serializable {
             vertexFromBPVertexState(vertexState, outputPropertyLabel, beliefsAsStrings)
         })
 
-        graph.unpersistVertices()
-
         (outVertices, inEdges, log)
       }
     }

@@ -91,6 +91,13 @@ trait SparkEngineConfig extends EventLogging {
     }
   }
 
+  val isLocalMaster: Boolean = {
+    (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
+  }
+
+  /** true to re-use a local SparkContext, this can be helpful for automated integration tests, not for customers. */
+  val reuseLocalSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-local-context")
+
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
