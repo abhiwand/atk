@@ -21,7 +21,6 @@ This folder is for integration tests that are run at build time.
 /integration-tests
     /datasets - folder for data sets, these will be copied to fs root
     /target - folder for all generated files, fs root gets created under here
-    /target
         /fs-root - folder that functions like the HDFS root used by our application
             /datasets - copy of top-level /datasets folder
             /intelanalytics - frames and graphs get written here
