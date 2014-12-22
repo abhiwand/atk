@@ -259,8 +259,8 @@ trait Schema {
   def union(schema: Schema): Schema = {
     // check for conflicts
     val newColumns: List[Column] = schema.columns.filterNot(c => {
-      hasColumn(c.name) && {require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true}
-     })
+      hasColumn(c.name) && { require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true }
+    })
     val combinedColumns = this.columns ++ newColumns
     copy(combinedColumns)
   }

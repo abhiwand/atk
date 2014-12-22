@@ -27,10 +27,16 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val netIPWeights = inverseProbabilityWeights.reduce(_ + _)
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
-    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairs)
+    val dataFrequencyPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataFrequencyPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairsAsOptionValues)
 
     val dataIPWPairs: List[(Double, Double)] = data.zip(inverseProbabilityWeights)
-    val dataIPWRDD = sparkContext.parallelize(dataIPWPairs)
+    val dataIPWPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataIPWPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataIPWRDD = sparkContext.parallelize(dataIPWPairsAsOptionValues)
 
     val numericalStatisticsFrequencies = new NumericalStatistics(dataFrequencyRDD, false)
 
