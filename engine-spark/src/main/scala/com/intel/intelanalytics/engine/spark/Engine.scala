@@ -39,11 +39,12 @@ import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
+import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.multivariatestatistics.CovariancePlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovariancePlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovarianceMatrixPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
@@ -173,6 +174,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new QuantilesPlugin)
   commandPluginRegistry.registerCommand(new CovarianceMatrixPlugin)
   commandPluginRegistry.registerCommand(new CovariancePlugin)
+  commandPluginRegistry.registerCommand(new ExportHdfsCsvPlugin)
+  commandPluginRegistry.registerCommand(new ExportHdfsJsonPlugin)
   commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
   commandPluginRegistry.registerCommand(new EcdfPlugin)
   commandPluginRegistry.registerCommand(new TallyPercentPlugin)
@@ -201,7 +204,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropVertexColumnPlugin)
   commandPluginRegistry.registerCommand(new DropEdgeColumnPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new ExportFromTitanPlugin(frames, graphs))
+  commandPluginRegistry.registerCommand(new ExportToGraphPlugin(frames, graphs))
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)

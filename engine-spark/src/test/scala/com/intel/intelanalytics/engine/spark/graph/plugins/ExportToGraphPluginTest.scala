@@ -40,7 +40,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.intel.intelanalytics.domain.schema.Column
 
-class ExportFromTitanPluginTest extends FlatSpec with Matchers with MockitoSugar {
+class ExportToGraphPluginTest extends FlatSpec with Matchers with MockitoSugar {
   "getPropertiesValueByColumns" should "get property values by column sequence" in {
     val properties = Set(Property("col4", 2f), Property("col1", 1), Property("col2", "2"), Property("col3", true))
     val vertex = GBVertex(1, Property("gbId", "1"), properties)
@@ -69,9 +69,9 @@ class ExportFromTitanPluginTest extends FlatSpec with Matchers with MockitoSugar
   //  }
 
   "javaTypeToIATType" should "get type from java type object" in {
-    ExportFromTitanPlugin.javaTypeToIATType(new java.lang.Integer(3).getClass) shouldBe int32
-    ExportFromTitanPlugin.javaTypeToIATType(new java.lang.Long(3).getClass) shouldBe int64
-    ExportFromTitanPlugin.javaTypeToIATType(new java.lang.Float(3.0).getClass) shouldBe float32
-    ExportFromTitanPlugin.javaTypeToIATType(new java.lang.Double(3).getClass) shouldBe float64
+    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Integer(3).getClass) shouldBe int32
+    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Long(3).getClass) shouldBe int64
+    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Float(3.0).getClass) shouldBe float32
+    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Double(3).getClass) shouldBe float64
   }
 }

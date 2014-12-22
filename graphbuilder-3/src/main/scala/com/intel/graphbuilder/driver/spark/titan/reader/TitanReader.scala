@@ -62,9 +62,8 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
-    // Omit any duplicate vertices or edges
     // TODO: Figure out why Titan input formats return duplicates
-    val numPartitions = titanReaderRDD.partitions.length
-    titanReaderRDD.distinct(numPartitions)
+    // Omit any duplicate vertices or edges
+    titanReaderRDD.distinct()
   }
 }
