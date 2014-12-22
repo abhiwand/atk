@@ -37,8 +37,9 @@ class GraphSmokeTest(unittest.TestCase):
 
     This is a build-time test so it needs to be written to be as fast as possible:
         - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
-        - Prefer speed over test isolation
+        - Prefer speed over perfect test isolation
         - Add lots of assertions and logging to make up for lack of isolation
+        - Tests are ran in Parallel
     """
 
     def test_graph_1(self):
