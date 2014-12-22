@@ -45,7 +45,9 @@ do
     sleep 1
 done
 
-echo "$NAME Running smoke tests to verify basic frame and graph functionality, calling nosetests"
+echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
+
+echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
 nosetests $DIR/smoketests --nologcapture --with-xunit --xunit-file=$OUTPUT --processes=10 --process-timeout=90 --with-isolation
 SMOKE_TEST_SUCCESS=$?
 
