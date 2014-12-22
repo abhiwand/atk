@@ -25,12 +25,13 @@ Logging - simple helpers for now
 """
 import logging
 import sys
+import inspect
 
 # Constants
 API_LOGGER_NAME = 'IA Python API'
 HTTP_LOGGER_NAME = 'intelanalytics.rest.connection'
 LINE_FORMAT = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
-API_LINE_FORMAT = '|api|  %(message)s'
+API_LINE_FORMAT = '|api| %(message)s'
 
 # add a null handler to root logger to avoid handler warning messages
 class NullHandler(logging.Handler):
@@ -114,10 +115,10 @@ class Loggers(object):
             or "DEBUG", "INFO", etc.  (only first letter is requirecd)
             Setting to None disables the logging to stderr
             See `https://docs.python.org/2/library/logging.html`
-            If not specified, DEBUG is used
+            If not specified, INFO is used
             To turn OFF the logger, set level to 0 or None
         output: file or str, or list of such, optional
-            The file object or name of the file to log to.  If empty, then stderr is used
+            The file object or name of the file to log to.  If empty, then stdout is used
         line_format: str, optional
             By default, the api logger has a simple format suitable for interactive use
             To get the standard logger formatting with timestamps, etc., set line_format=None
@@ -220,16 +221,26 @@ loggers = Loggers()
 _api_logger = logging.getLogger(API_LOGGER_NAME)
 
 
-def log_api_call(function, *args, **kwargs):
-    """Logs the call of the given function with the API logger"""
-    _api_logger.info(ApiLogFormat.format_call(function, *args, **kwargs))
+def log_api_call(call_depth, function, *args, **kwargs):
+    """calls api logger if enabled; needs a call_depth, i.e. the number of call frames from the actual calling line"""
+    if 0 < _api_logger.level <= logging.INFO:
+        try:
+            frame, filename, line_number, function_name, lines, index = inspect.stack()[call_depth]
+            #try:   # at one point we were printing the line itself, this is how
+            #    line = lines[index].rstrip()
+            #except:
+            #    line = "(unable to determine line contents)"
+            location = "%s[%s]" % (filename, line_number)
+        except:
+            location = "(unknown location)"
+        _api_logger.info(ApiLogFormat.format_call(location, function, *args, **kwargs))
 
 
 class ApiLogFormat(object):
     """Formats api calls for logging"""
 
     @staticmethod
-    def format_call(function, *args, **kwargs):
+    def format_call(location, function, *args, **kwargs):
         try:
             param_names = function.func_code.co_varnames[0:function.func_code.co_argcount]
             named_args = zip(param_names, args)
@@ -243,7 +254,7 @@ class ApiLogFormat(object):
             named_args.extend(kwargs.items())
             formatted_args = '' if not named_args else "(%s)" % (", ".join([ApiLogFormat.format_named_arg(k,v) for k, v in named_args]))
 
-            return "%s%s%s" % (ApiLogFormat.format_self(self), ApiLogFormat.format_function(function), formatted_args)
+            return "%s %s%s%s" % (location, ApiLogFormat.format_self(self), ApiLogFormat.format_function(function), formatted_args)
         except Exception as e:
             return str(e)
 
