@@ -8,7 +8,7 @@ NAME="[`basename $0`]"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_DIR='/usr/lib/python2.7/site-packages'
 TARGET_DIR=$DIR/target
-OUTPUT=$TARGET_DIR/nosetests.xml
+OUTPUT=$TARGET_DIR/surefire-reports/TEST-nosetests.xml
 export PYTHONPATH=$DIR/../python:$PYTHONPATH:$PYTHON_DIR
 
 echo "$NAME DIR=$DIR"
@@ -20,10 +20,10 @@ echo "$NAME Shutting down old API Server if it is still running"
 $DIR/api-server-stop.sh
 
 
-if [ ! -d $TARGET_DIR ]
+if [ ! -d $TARGET_DIR/surefire-reports/ ]
 then
     echo "$NAME Creating target dir"
-    mkdir $TARGET_DIR
+    mkdir -p $TARGET_DIR/surefire-reports/
 fi
 
 echo "$NAME remove old intelanalytics"
