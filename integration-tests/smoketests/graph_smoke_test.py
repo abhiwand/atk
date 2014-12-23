@@ -27,31 +27,35 @@ import intelanalytics as ia
 # show full stack traces
 ia.errors.show_details = True
 ia.loggers.set_api()
+# TODO: port setup should move to a super class
 if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
 class GraphSmokeTest(unittest.TestCase):
     """
-    Smoke test basic frame operations (create, add column, delete column, etc).
+    Smoke test basic graph operations to verify functionality that will be needed by all other tests.
+
+    If these tests don't pass, there is no point in running other tests.
 
     This is a build-time test so it needs to be written to be as fast as possible:
         - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
-        - Prefer speed over perfect test isolation
-        - Add lots of assertions and logging to make up for lack of isolation
-        - Tests are ran in Parallel
+        - Tests are ran in parallel
+        - Tests should be short and isolated.
     """
 
-    def test_graph_1(self):
-        print "test_graph_1.1 define csv file"
+    def test_graph(self):
+        print "define csv file"
         csv = ia.CsvFile("/datasets/movie.csv", schema= [('user', ia.int32),
                                             ('vertex_type', str),
                                             ('movie', ia.int32),
                                             ('rating', ia.int32),
                                             ('splits', str)])
 
-        print "test_graph_1.2 test creating frame"
+        print "creating frame"
         frame = ia.Frame(csv)
+
+        # TODO: add asserts verifying inspect is working
         print
         print frame.inspect(20)
         print
@@ -59,14 +63,14 @@ class GraphSmokeTest(unittest.TestCase):
         #self.assertEqual(frame.column_names, ['', '', '', '', ''])
         self.assertEquals(len(frame.column_names), 5, "frame should have 5 columns")
 
-        print "test_graph_1.3 create graph"
+        print "create graph"
         graph = ia.Graph()
-        print "test_graph_1.3 created graph " + graph.name
+        print "created graph " + graph.name
 
         self.assertIsNotNone(graph._id)
         self.assertTrue(graph.name.startswith('graph'), "name didn't start with 'graph' " + graph.name)
 
-        print "test_graph_1.4 define vertices and edges"
+        print "define vertices and edges"
         graph.define_vertex_type('movies')
         graph.define_vertex_type('users')
         graph.define_edge_type('ratings', 'users', 'movies', directed=True)
@@ -76,8 +80,10 @@ class GraphSmokeTest(unittest.TestCase):
         #self.assertEquals(graph.vertex_count, 0, "no vertices expected yet")
         #self.assertEquals(graph.edge_count, 0, "no edges expected yet")
 
-        print "test_graph_1.5 add_vertices() users"
+        print "add_vertices() users"
         graph.vertices['users'].add_vertices( frame, 'user', [])
+
+        # TODO: add asserts verifying inspect is working
         print
         print graph.vertices['users'].inspect(20)
         print
@@ -85,7 +91,7 @@ class GraphSmokeTest(unittest.TestCase):
         self.assertEquals(len(graph.vertices['users'].column_names), 3)
         #self.assertEquals(graph.vertices['users'].row_count, graph.vertex_count, "row count of user vertices should be same as vertex count on graph")
 
-        print "test_graph_1.6 add_vertices() movies"
+        print "add_vertices() movies"
         graph.vertices['movies'].add_vertices( frame, 'movie', [])
         self.assertEquals(graph.vertices['users'].row_count, 13)
         self.assertEquals(graph.vertices['movies'].row_count, 11)
@@ -93,15 +99,10 @@ class GraphSmokeTest(unittest.TestCase):
         self.assertEquals(len(graph.vertices['movies'].column_names), 3)
         #self.assertEquals(graph.vertex_count, 24, "vertex_count should be the total number of users and movies")
 
-        print "test_graph_1.7 add_edges() "
+        print "add_edges()"
         graph.edges['ratings'].add_edges(frame, 'user', 'movie', ['rating'], create_missing_vertices=False)
         self.assertEquals(len(graph.edges['ratings'].column_names), 5)
         self.assertEquals(graph.edges['ratings'].row_count, 20, "expected 20 rating edges")
-
-        print "test_graph_1.8 bin_column()"
-        graph.edges['ratings'].bin_column('rating', 3, 'equalwidth', 'rating_binned')
-        self.assertEquals(len(graph.edges['ratings'].column_names), 6, "expected 1 column to be added")
-        self.assertEquals(graph.edges['ratings'].row_count, 20, "number of edges should not have changed")
 
 if __name__ == "__main__":
     unittest.main()
