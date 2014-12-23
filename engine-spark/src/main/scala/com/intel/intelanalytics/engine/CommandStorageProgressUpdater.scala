@@ -30,7 +30,8 @@ import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
  * @param commandStorage command storage
  */
 class CommandStorageProgressUpdater(commandStorage: CommandStorage) extends CommandProgressUpdater {
-  var lastUpdateTime = System.currentTimeMillis() - 1500
+  val INTERVAL = 1000
+  var lastUpdateTime = System.currentTimeMillis() - INTERVAL
   /**
    * save the progress update
    * @param commandId id of the command
@@ -38,7 +39,7 @@ class CommandStorageProgressUpdater(commandStorage: CommandStorage) extends Comm
    */
   override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
     val currentTime = System.currentTimeMillis()
-    if (currentTime - lastUpdateTime > 1000) {
+    if (currentTime - lastUpdateTime >= INTERVAL) {
       lastUpdateTime = currentTime
       commandStorage.updateProgress(commandId, progressInfo)
     }
