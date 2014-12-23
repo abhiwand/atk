@@ -1,16 +1,18 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
+import java.util
+
 import com.intel.testutils.MatcherUtils._
 import com.intel.testutils.TestingTitan
 import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
 import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
+import scala.collection.JavaConverters._
 import spray.json._
 
 import scala.collection.JavaConversions._
 
 class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
-
   import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
 
   before {
@@ -72,6 +74,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "BlueprintsRowFormat" should "serialize a Blueprint's row into a JSON map" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val rowMap = Map("col1" -> "val1", "col2" -> "val2")
     val row = new Row(rowMap.values.toList, rowMap.keys.toList)
 
@@ -84,6 +87,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "BlueprintsRowFormat" should "deserialize a JSON map to a Blueprint's row" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val json = Map("col1" -> 1, "col2" -> 2).toJson
     val jsonFields = json.asJsObject.fields
 
@@ -95,6 +99,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
 
   "BlueprintsRowFormat" should "throw a deserialization exception when JSON is not a valid JSON map" in {
     intercept[spray.json.DeserializationException] {
+      import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
       val json = """["test1", "test2"]"""
       JsonParser(json).convertTo[Row[String]]
     }

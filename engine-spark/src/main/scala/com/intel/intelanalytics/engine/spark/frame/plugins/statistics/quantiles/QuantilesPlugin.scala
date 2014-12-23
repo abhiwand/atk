@@ -152,7 +152,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
     frames.tryNewFrame(template) { quantilesFrame =>
       val rdd = frames.loadLegacyFrameRdd(ctx, frame)
       val quantileValuesRdd = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType)
-      frames.saveLegacyFrame(quantilesFrame, new LegacyFrameRDD(schema, quantileValuesRdd), Some(quantileValuesRdd.count()))
+      frames.saveLegacyFrame(quantilesFrame.toReference, new LegacyFrameRDD(schema, quantileValuesRdd))
     }
   }
 }

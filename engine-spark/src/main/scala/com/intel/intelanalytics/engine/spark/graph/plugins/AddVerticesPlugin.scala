@@ -95,11 +95,11 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    */
   override def execute(arguments: AddVertices)(implicit invocation: Invocation): UnitReturn = {
     // validate arguments
-    val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
-    sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
+    val sourceFrameEntity = frames.expectFrame(arguments.sourceFrame)
+    sourceFrameEntity.schema.validateColumnsExist(arguments.allColumnNames)
 
     // run the operation
-    val sourceRdd = frames.loadFrameData(sc, sourceFrameMeta)
+    val sourceRdd = frames.loadFrameData(sc, sourceFrameEntity)
     addVertices(sc, arguments, sourceRdd)
 
     new UnitReturn
@@ -133,7 +133,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     // load existing data, if any, and append the new data
     val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
-    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd, Some(combinedRdd.count()))
+    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)

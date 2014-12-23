@@ -145,6 +145,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
     val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
 
     // save results
-    frames.saveLegacyFrame(frame, new LegacyFrameRDD(updatedSchema, splitRDD))
+    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(updatedSchema, splitRDD))
   }
 }

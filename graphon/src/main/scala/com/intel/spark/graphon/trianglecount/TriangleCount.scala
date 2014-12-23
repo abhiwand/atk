@@ -34,13 +34,12 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import spray.json._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
@@ -155,15 +154,10 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfig)
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    // Read the graph from Titan
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-
-    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
       arguments.input_edge_labels)
@@ -178,6 +172,9 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
     writeToTitan(newTitanConfig, outVertices, outEdges)
+
+    gbVertices.unpersist()
+    gbEdges.unpersist()
 
     TriangleCountResult(newGraphName)
   }

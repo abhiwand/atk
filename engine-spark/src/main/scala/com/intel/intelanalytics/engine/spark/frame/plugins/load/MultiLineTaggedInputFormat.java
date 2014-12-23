@@ -45,30 +45,30 @@ import java.io.IOException;
 /**
  * Reads records that are delimited by a specific begin/end tag.
  */
-public class MultiLineHeaderFooterInputFormat extends TextInputFormat {
+public class MultiLineTaggedInputFormat extends TextInputFormat {
 
-    private static final Logger log = LoggerFactory.getLogger(MultiLineHeaderFooterInputFormat.class);
+    private static final Logger log = LoggerFactory.getLogger(MultiLineTaggedInputFormat.class);
 
-    public static final String START_TAG_KEY = "xmlinput.start";
-    public static final String END_TAG_KEY = "xmlinput.end";
-    public static final String IS_XML_KEY = "xmlinput.isxml";
+    public static final String START_TAG_KEY = "taggedinput.start";
+    public static final String END_TAG_KEY = "taggedinput.end";
+    public static final String IS_XML_KEY = "taggedinput.isxml";
 
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) {
         try {
-            return new HeaderFooterRecordReader((FileSplit) split, context.getConfiguration());
+            return new TaggedRecordReader((FileSplit) split, context.getConfiguration());
         } catch (IOException ioe) {
-            log.warn("Error while creating XmlRecordReader", ioe);
+            log.warn("Error while creating TaggedRecordReader", ioe);
             return null;
         }
     }
 
     /**
-     * XMLRecordReader class to read through a given xml document to output xml blocks as records as specified
+     * TaggedRecordReader class to read through a given xml document to output xml blocks as records as specified
      * by the start tag and end tag
      *
      */
-    public static class HeaderFooterRecordReader extends RecordReader<LongWritable, Text> {
+    public static class TaggedRecordReader extends RecordReader<LongWritable, Text> {
 
         private final byte[][] startTags;
         private final byte[][] endTags;
@@ -86,7 +86,7 @@ public class MultiLineHeaderFooterInputFormat extends TextInputFormat {
         byte[][] xmlNodeEnd = getTagArray(new String[]{">"});
         byte[][] xmlAltEnd = getTagArray(new String[]{"/>"});
 
-        public HeaderFooterRecordReader(FileSplit split, Configuration conf) throws IOException {
+        public TaggedRecordReader(FileSplit split, Configuration conf) throws IOException {
             startTagStrings = conf.getStrings(START_TAG_KEY);
             String[] endTagStrings = conf.getStrings(END_TAG_KEY);
             startTags = getTagArray(startTagStrings);
@@ -240,7 +240,6 @@ public class MultiLineHeaderFooterInputFormat extends TextInputFormat {
                 int[] escapeCharIndices = new int[escapeChars.length];
                 int[] quoteIndices = new int[quoteChars.length];
                 int[] xmlNodeEndIndices = new int[xmlNodeEnd.length];
-                byte[][] xmlAltEnd = getTagArray(new String[]{"/>"});
                 int[] xmlAltEndIndices = new int[xmlAltEnd.length];
 
                 while (true) {
@@ -347,13 +346,15 @@ public class MultiLineHeaderFooterInputFormat extends TextInputFormat {
              * If you are within a quoted attribute or json value any tag that you find is to be ignored.
              */
             private void checkQuotes(int[] escapeCharIndices, int[] quoteIndices, int b) {
+                if(isXML && !inStartTag)
+                    return;
                 // This section checks for quoted attributes. If a tag appears in an attribute than it should not count as a match
                 if (parseState == ParseState.ESCAPE_CHAR) {
-                    //if we are in an escape char we want to check for a quote. If we find a quote we want to stay in the quote mode.
+                    //if we are in an escape char we want to check for a quote. If we wait the length of the quote we will know that we are back in the string.
+                    currentQuoteIndex++;
                     if (currentQuoteIndex >= quoteChars[currentQuote].length) {
                         parseState = ParseState.IN_QUOTE;
                     }
-                    currentQuoteIndex++;
                 } else {
                     if (parseState == ParseState.IN_QUOTE) {
                         // if we are inside of a quote we need to verify that the next quote we find is not escaped

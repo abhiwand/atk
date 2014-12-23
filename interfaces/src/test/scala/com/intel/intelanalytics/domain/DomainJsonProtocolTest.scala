@@ -3,10 +3,12 @@ package com.intel.intelanalytics.domain
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.schema._
 import org.joda.time.{ DateTime, DateTimeZone }
-import org.scalatest.WordSpec
+import org.scalatest.{ Matchers, WordSpec }
 import spray.json._
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-class DomainJsonProtocolTest extends WordSpec {
+class DomainJsonProtocolTest extends WordSpec with Matchers {
 
   "DateTimeFormat" should {
     "be able to serialize" in {
@@ -90,6 +92,33 @@ class DomainJsonProtocolTest extends WordSpec {
       assert(schema.isInstanceOf[EdgeSchema])
       val expectedSchema = new EdgeSchema(List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string)), "mylabel", "src", "dest", directed = true)
       assert(schema == expectedSchema)
+    }
+  }
+
+  "javaCollectionFormat" should {
+    "parse Java collections to JSON" in {
+      val javaSet = Array(1, 2, 3).toSet.asJava
+      val javaList = Array("Alice", "Bob", "Charles").toList.asJava
+
+      val jsonSet = javaSet.toJson
+      val jsonList = javaList.toJson
+
+      jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs (javaSet)
+      jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs (javaList)
+    }
+  }
+  "javaMapFormat" should {
+    "parse Java maps to JSON" in {
+      val javaHashMap = new java.util.HashMap[String, Int]()
+      javaHashMap.put("Alice", 29)
+      javaHashMap.put("Bob", 45)
+      javaHashMap.put("Jason", 56)
+
+      val jsonMap = javaHashMap.toJson
+      val javaJsonToHashMap = jsonMap.convertTo[java.util.HashMap[String, Int]]
+
+      javaJsonToHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
+      javaJsonToHashMap.values() should contain theSameElementsAs (javaHashMap.values())
     }
   }
 }

@@ -3,14 +3,16 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.{ TitanAutoPartitioner, TitanGraphConnector }
+import com.intel.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
 import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.scheduler.{ SparkListenerApplicationEnd, SparkListener }
 
 import scala.collection.JavaConversions._
 
@@ -42,7 +44,9 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       classOf[NullWritable],
       classOf[FaunusVertex])
 
+    sparkContext.addSparkListener(new TitanHadoopHBaseCacheListener())
     new TitanReaderRDD(hBaseRDD, titanConnector)
+
   }
 
   /**
@@ -81,3 +85,4 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     admin.close()
   }
 }
+
