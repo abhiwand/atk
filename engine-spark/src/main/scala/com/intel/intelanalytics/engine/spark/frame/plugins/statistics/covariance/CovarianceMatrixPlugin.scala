@@ -49,7 +49,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
   /**
    * The name of the command
    */
-  override def name: String = "frame:/covariance_matrix"
+  override def name: String = "frame/covariance_matrix"
 
   /**
    * User documentation exposed in Python.

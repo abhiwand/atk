@@ -123,9 +123,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
                            |        results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
                            |        print results["results"]
                            |
+                           |     The expected output is:: [4]
+                           |
+                           |     Get the count of name and age properties from vertices::
+                           |
+                           |        results = mygraph.query.gremlin("g.V.transform{[it.name, it.age]}[0..10])")
+                           |        print results["results"]
+                           |
                            |     The expected output is::
                            |
-                           |        [4]
+                           |        [u'["alice", 29]', u'[ "bob", 45 ]', u'["cathy", 34 ]']
+                           |
+                           |
                             """.stripMargin)))
 
   /**
@@ -144,19 +153,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
     val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val titanGraph = getTitanGraph(graph.name, config)
 
     invocation.updateProgress(5f)
     val resultIterator = Try({
-      val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
       bindings.put("g", titanGraph)
-
       val results = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
-      titanGraph.shutdown()
-
       results
     })
     invocation.updateProgress(100f)
+
+    titanGraph.shutdown()
 
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 

@@ -134,16 +134,16 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
 
     // validate arguments
     val frameId = arguments.frame.id
-    val frameMeta = frames.expectFrame(frameId)
-    val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
+    val frameEntity = frames.expectFrame(frameId)
+    val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
-    val frameSchema = frameMeta.schema
+    val frameSchema = frameEntity.schema
     val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }

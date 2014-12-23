@@ -137,24 +137,21 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    // create titanConfig
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-
     // get SparkContext and add the graphon jar
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // convert graph name and get the graph vertex and edge RDDs
-    val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
     val vertexSample = arguments.sampleType match {
-      case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
-      case "degree" => sampleVerticesDegree(vertexRDD, edgeRDD, arguments.size, arguments.seed)
-      case "degreedist" => sampleVerticesDegreeDist(vertexRDD, edgeRDD, arguments.size, arguments.seed)
+      case "uniform" => sampleVerticesUniform(gbVertices, arguments.size, arguments.seed)
+      case "degree" => sampleVerticesDegree(gbVertices, gbEdges, arguments.size, arguments.seed)
+      case "degreedist" => sampleVerticesDegreeDist(gbVertices, gbEdges, arguments.size, arguments.seed)
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
     // get the vertex induced subgraph edges
-    val edgeSample = vertexInducedEdgeSet(vertexSample, edgeRDD)
+    val edgeSample = vertexInducedEdgeSet(vertexSample, gbEdges)
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')

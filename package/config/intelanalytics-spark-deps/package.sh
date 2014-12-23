@@ -1,5 +1,4 @@
 #!/bin/bash
-package="intelanalytics-spark-deps"
 workDir=$(pwd)
 baseDir=${workDir##*/}
 gitRoot="."
@@ -11,34 +10,36 @@ if [ "$baseDir" == "package" ]; then
 	gitRoot="."
 fi
 
+packageName=$1
+VERSION=$VERSION
+BUILD_DIR=$BUILD_DIR
+
+echo $packageName
+echo $VERSION
+echo $BUILD_DIR
+
+echo "$SCRIPTPATH"
+
 pwd
 
-rm -rf tarballs/$package
-rm $package-source.tar.gz
-
-mkdir -p  tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib
-
+mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib
 jars="ispark-deps.jar"
 for jar in $jars
 do
-	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
+	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
 	echo $jarPath
-    cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib/
+    cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib/
 done
 
-mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+
+mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
 jars="engine-spark.jar graphon.jar"
 for jar in $jars
 do
-	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)
+	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
 	echo $jarPath
-    cp -v $jarPath tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+    cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
 done
 
-pushd tarballs/$package
 
-tar -pczf ../../$package-source.tar.gz .
-
-popd
-
-rm -rf tarballs
+createArchive $packageName

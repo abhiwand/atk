@@ -35,6 +35,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.Status
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -86,19 +87,20 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
     // TODO graphbuilder only supports one input frame at present
     require(frameRules.size == 1, "only one frame rule per call is supported in this version")
     val theOnlySourceFrameID = frameRules.head.frame.id
-    val frameMeta = frames.expectFrame(theOnlySourceFrameID)
-    val graphMeta = graphs.expectGraph(arguments.graph.id)
+    val frameEntity = frames.expectFrame(theOnlySourceFrameID)
+    val graphEntity = graphs.expectGraph(arguments.graph.id)
 
     // setup graph builder
-    val gbConfigFactory = new GraphBuilderConfigFactory(frameMeta.schema, arguments, graphMeta)
+    val gbConfigFactory = new GraphBuilderConfigFactory(frameEntity.schema, arguments, graphEntity)
     val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
     // setup data in Spark
     val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sc, theOnlySourceFrameID)
     val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
     graphBuilder.build(inputRdd)
+    graphs.updateStatus(graphEntity, Status.Active)
 
-    graphMeta
+    graphEntity
   }
 
 }

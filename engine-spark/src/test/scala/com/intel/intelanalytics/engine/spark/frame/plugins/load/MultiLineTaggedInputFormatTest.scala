@@ -10,12 +10,13 @@ import org.apache.hadoop.io.{ Text, LongWritable }
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
 
-class XmlInputFormatTest extends TestingSparkContextWordSpec with Matchers with BeforeAndAfter {
+class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Matchers with BeforeAndAfter {
   var tmpDir: File = null
   var singleRootFile: File = null
   var jsonFile: File = null
   var recursiveNestingFile: File = null
   var altXMLEndFile: File = null
+  var xmlQuoteFile: File = null
 
   override def beforeAll() {
     super[TestingSparkContextWordSpec].beforeAll()
@@ -39,11 +40,11 @@ class XmlInputFormatTest extends TestingSparkContextWordSpec with Matchers with 
     jsonFile = createTestFile("json",
       """{
         |   "num": 1,
-        |   "status": "}{}{"
+        |   "status": "}{}{\\"
         |},
         |{
         |   "num":2,
-        |   "status": "\"}{}"
+        |   "status": "\"}{\}"
         |}
       """)
     recursiveNestingFile = createTestFile("recursive",
@@ -76,7 +77,17 @@ class XmlInputFormatTest extends TestingSparkContextWordSpec with Matchers with 
                                                     |            </triangle>
                                                     |            <square color="blue" />
                                                     |        </shapes>""")
-
+    xmlQuoteFile = createTestFile("xmlQuote", """<?xml version="1.0" encoding="UTF-8"?>
+                                                |        <shapes>
+                                                |            <square>
+                                                |                <name>left'</name>
+                                                |                <size>3"</size>
+                                                |            </square>
+                                                |            <triangle>
+                                                |                <size>3</size>
+                                                |            </triangle>
+                                                |            <square color="blue</square>" />
+                                                |        </shapes>""")
   }
 
   def createTestFile(fileName: String, fileText: String): File = {
@@ -120,15 +131,24 @@ class XmlInputFormatTest extends TestingSparkContextWordSpec with Matchers with 
       taken(0) should include("left")
       taken(1) should include("blue")
     }
+
+    "xml values should only check for escaped quotes inside of empty element tags" in {
+      val rows: RDD[String] = executeXmlInputFormat(xmlQuoteFile, List("<square>", "<square "), List("</square>"))
+      val taken = rows.take(100)
+      taken.length should be(2)
+      taken(0) should include("left")
+      taken(1) should include("blue")
+    }
+
   }
 
   def executeXmlInputFormat(file: File, startTags: List[String], endTags: List[String], isXml: Boolean = true): RDD[String] = {
     val conf = new org.apache.hadoop.conf.Configuration()
-    conf.setStrings(XmlInputFormat.START_TAG_KEY, startTags: _*)
-    conf.setStrings(XmlInputFormat.END_TAG_KEY, endTags: _*)
-    conf.setBoolean(XmlInputFormat.IS_XML_KEY, isXml)
-    val rows = sparkContext.newAPIHadoopFile[LongWritable, Text, XmlInputFormat](file.getAbsolutePath,
-      classOf[XmlInputFormat], classOf[LongWritable], classOf[Text], conf)
+    conf.setStrings(MultiLineTaggedInputFormat.START_TAG_KEY, startTags: _*)
+    conf.setStrings(MultiLineTaggedInputFormat.END_TAG_KEY, endTags: _*)
+    conf.setBoolean(MultiLineTaggedInputFormat.IS_XML_KEY, isXml)
+    val rows = sparkContext.newAPIHadoopFile[LongWritable, Text, MultiLineTaggedInputFormat](file.getAbsolutePath,
+      classOf[MultiLineTaggedInputFormat], classOf[LongWritable], classOf[Text], conf)
       .map(row => row._2.toString).filter(_.trim() != "")
     rows
   }

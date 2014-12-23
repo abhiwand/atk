@@ -26,10 +26,16 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     val netWeight = normalizedWeights.reduce(_ + _)
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
-    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairs)
+    val dataFrequencyPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataFrequencyPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairsAsOptionValues)
 
     val dataWeightPairs: List[(Double, Double)] = data.zip(normalizedWeights)
-    val dataWeightRDD = sparkContext.parallelize(dataWeightPairs)
+    val dataWeightPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataWeightPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataWeightRDD = sparkContext.parallelize(dataWeightPairsAsOptionValues)
 
     val numericalStatisticsFrequencies = new NumericalStatistics(dataFrequencyRDD, true)
 

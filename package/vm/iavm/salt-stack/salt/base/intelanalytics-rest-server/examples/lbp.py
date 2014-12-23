@@ -47,7 +47,6 @@ print graph.ml.loopy_belief_propagation(vertex_value_property_list=["value"],
                                         convergence_threshold=0.0,
                                         anchor_threshold=0.9,
                                         smoothing=2.0,
-                                        bidirectional_check=False,
                                         ignore_vertex_type=False,
                                         max_product=False,
                                         power=0)
