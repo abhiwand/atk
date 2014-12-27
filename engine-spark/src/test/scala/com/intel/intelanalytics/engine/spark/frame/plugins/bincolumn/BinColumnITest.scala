@@ -41,9 +41,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 2, rdd)
-    val result = binnedRdd.take(5)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 5
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 2, 0)
     result.apply(2) shouldBe Array[Any]("C", 3, 1)
@@ -81,9 +82,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 4, rdd)
-    val result = binnedRdd.take(6)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 6
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 1.5, 0)
     result.apply(2) shouldBe Array[Any]("C", 2, 1)
@@ -139,9 +141,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 20, rdd) // note this creates bins of width 0.55 for this dataset
-    val result = binnedRdd.take(10)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 10
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 2, 2)
     result.apply(2) shouldBe Array[Any]("C", 3, 4)
@@ -166,9 +169,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
-    val result = binnedRdd.take(5)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 5
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 2, 0)
     result.apply(2) shouldBe Array[Any]("C", 3, 1)
@@ -205,9 +209,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
-    val result = binnedRdd.take(5)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 5
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 1, 0)
     result.apply(2) shouldBe Array[Any]("C", 1, 0)
@@ -228,9 +233,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
-    val result = binnedRdd.take(6)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 6
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 1.2, 0)
     result.apply(2) shouldBe Array[Any]("C", 1.5, 1)
@@ -256,9 +262,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
-    val result = binnedRdd.take(10)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 10
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 2, 0)
     result.apply(2) shouldBe Array[Any]("C", 3, 0)
@@ -288,9 +295,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 20, rdd)
-    val result = binnedRdd.take(10)
+    val result = binnedRdd.collect()
 
     // Validate
+    result.length shouldBe 10
     result.apply(0) shouldBe Array[Any]("A", 1, 0)
     result.apply(1) shouldBe Array[Any]("B", 2, 1)
     result.apply(2) shouldBe Array[Any]("C", 3, 2)
