@@ -148,13 +148,12 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
                                                                            firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
     withMyClassLoader {
       withContext(commandContext.command.name) {
+        val plugin = expectFunction[A, R](commandContext.plugins, commandContext.command)
+        val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+        implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
         val cmdFuture = future {
-          val plugin = expectFunction[A, R](commandContext.plugins, commandContext.command)
-          val arguments = plugin.parseArguments(commandContext.command.arguments.get)
-          implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
           withContext("cmdFuture") {
             withCommand(commandContext.command) {
-
               val returnValue = if (commandContext.action) {
                 val res = if (firstExecution) {
                   this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)

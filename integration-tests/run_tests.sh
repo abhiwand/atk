@@ -48,13 +48,13 @@ done
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
 
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
-nosetests $DIR/smoketests --nologcapture --with-xunit --xunit-file=$OUTPUT --processes=10 --process-timeout=90 --with-isolation
+nosetests $DIR/smoketests --nologcapture --with-xunit --xunit-file=$OUTPUT #--processes=10 --process-timeout=90 --with-isolation
 SMOKE_TEST_SUCCESS=$?
 
 if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     echo "$NAME Python smoke tests PASSED -- basic frame and graph functionality verified"
     echo "$NAME Running the rest of the tests, calling nosetests again"
-    nosetests $DIR/tests --nologcapture --with-xunit --xunit-file=$OUTPUT --processes=10 --process-timeout=90 --with-isolation
+    nosetests $DIR/tests --nologcapture --with-xunit --xunit-file=$OUTPUT #--processes=10 --process-timeout=90 --with-isolation
     TEST_SUCCESS=$?
 fi
 
