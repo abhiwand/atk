@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.SparkEngine
+import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import spray.json._
@@ -154,7 +154,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
         val cmdFuture = future {
           withContext("cmdFuture") {
             withCommand(commandContext.command) {
-
               val returnValue = if (commandContext.action) {
                 val res = if (firstExecution) {
                   this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
@@ -249,7 +248,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
         val context: SparkContext = commandContext("sparkContext") match {
           case None =>
             val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.command)
-            commandContext.put("sparkContext", sc, () => sc.stop())
+            commandContext.put("sparkContext", sc, () => stopContextIfNeeded(sc))
             sc
           case Some(sc) => sc
         }
@@ -364,7 +363,16 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
+    commandIdContextMapping.get(commandId).foreach { case (context) => stopContextIfNeeded(context) }
     commandIdContextMapping -= commandId
+  }
+
+  private def stopContextIfNeeded(sc: SparkContext): Unit = {
+    if (SparkEngineConfig.reuseLocalSparkContext && sc.isLocal) {
+      info("not stopping local SparkContext so that it can be re-used")
+    }
+    else {
+      sc.stop()
+    }
   }
 }

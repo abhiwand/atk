@@ -57,7 +57,7 @@ class TitanVertexWriterRDD(prev: RDD[GBVertex],
 
     EnvironmentValidator.validateISparkDepsAvailable
 
-    val graph = titanConnector.connect()//TitanGraphConnector.getGraphFromCache(titanConnector)
+    val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L

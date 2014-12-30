@@ -92,7 +92,6 @@ object TriangleCountRunner extends Serializable {
       .join(intermediateVertices)
       .map(vertex => generateGBVertex(vertex))
 
-
     (outVertices, inEdges)
   }
 

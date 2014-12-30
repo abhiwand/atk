@@ -118,7 +118,7 @@ class CsvFile(DataFile):
         self.skip_header_lines = skip_header_lines
 
     def __repr__(self):
-        return repr(self.schema)
+        return repr(self.__dict__)
 
     def _schema_to_json(self):
         return [(field[0], valid_data_types.to_string(field[1]))
