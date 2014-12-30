@@ -140,7 +140,12 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, sparkCon
                 QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
               }
               finally {
-                sparkInvocation.sparkContext.stop()
+                if (SparkEngineConfig.reuseLocalSparkContext && sparkInvocation.sparkContext.isLocal) {
+                  info("not stopping local SparkContext so that it can be re-used")
+                }
+                else {
+                  sparkInvocation.sparkContext.stop()
+                }
               }
 
             }

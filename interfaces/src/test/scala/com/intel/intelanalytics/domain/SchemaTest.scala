@@ -238,7 +238,6 @@ class SchemaTest extends WordSpec with Matchers {
     }
   }
 
-
   val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
   val vertexSchema = VertexSchema(vertexColumns, "movies", Some("movie_id"))
 

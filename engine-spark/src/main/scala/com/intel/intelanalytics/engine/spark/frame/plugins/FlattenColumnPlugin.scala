@@ -130,16 +130,16 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     val frames = engine.frames
 
     // validate arguments
-    val frameMeta = frames.expectFrame(arguments.frame.id)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.column)
+    val frameEntity = frames.expectFrame(arguments.frame.id)
+    val columnIndex = frameEntity.schema.columnIndex(arguments.column)
     val delimiter: String = arguments.delimiter.getOrElse(",")
 
     // run the operation
-    val rdd = frames.loadLegacyFrameRdd(sc, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(sc, frameEntity)
     val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, delimiter, rdd)
 
     // save results
-    frames.saveLegacyFrame(frameMeta.toReference, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(frameEntity.schema, flattenedRDD))
   }
 
 }
