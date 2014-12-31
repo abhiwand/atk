@@ -99,7 +99,6 @@ class SchemaUtilTest extends FlatSpec with Matchers {
     result(2)._1 shouldBe "data_R_R"
   }
 
-
   "convertSchema" should "return the same data if schema does not change" in {
     val columns = List(Column("name", DataTypes.string), Column("age", DataTypes.int32))
     val data = Array("Frank", 48)
