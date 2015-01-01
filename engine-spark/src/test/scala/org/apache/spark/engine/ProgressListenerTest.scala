@@ -53,6 +53,8 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     override def updateProgress(commandId: Long, progress: List[ProgressInfo]): Unit = {
       commandProgress(commandId) = progress.map(info => info.progress)
     }
+
+    override def updateProgress(commandId: Long, progress: Float): Unit = ???
   }
 
   def createListener_one_job(commandId: Long): SparkProgressListener = {

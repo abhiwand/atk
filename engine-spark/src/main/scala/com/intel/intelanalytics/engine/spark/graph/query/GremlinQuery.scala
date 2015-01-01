@@ -147,6 +147,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {
     import scala.concurrent.duration._
 
+    invocation.updateProgress(5f)
     val start = System.currentTimeMillis()
     val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
@@ -155,7 +156,6 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val titanGraph = getTitanGraph(graph.name, config)
 
-    invocation.updateProgress(5f)
     val resultIterator = Try({
       val bindings = gremlinExecutor.createBindings()
       bindings.put("g", titanGraph)

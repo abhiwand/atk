@@ -30,6 +30,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 
 /**
  * Basic invocation for commands that don't need Spark
@@ -42,6 +43,5 @@ case class SimpleInvocation(engine: Engine,
                             user: UserPrincipal,
                             resolver: ReferenceResolver,
                             eventContext: EventContext) extends CommandInvocation {
-  val updater = new CommandStorageProgressUpdater(commandStorage)
-  override private[intelanalytics] def updateProgress(progress: Float): Unit = updater.updateProgress(commandId, progress)
+  override val progressUpdater: CommandProgressUpdater = new CommandStorageProgressUpdater(commandStorage)
 }
