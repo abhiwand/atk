@@ -54,7 +54,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
     val originalFrame = frames.expectFrame(originalFrameID)
     val schema = originalFrame.schema
     val aggregation_arguments = arguments.aggregations
-    val newFrameName = FrameName.validate(arguments.name)
+    val newFrameName = FrameName.generate(Some("group_by_"))
 
     // run the operation and save results
 
