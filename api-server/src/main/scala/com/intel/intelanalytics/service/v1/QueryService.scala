@@ -35,9 +35,8 @@ import com.intel.intelanalytics.service.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import scala.concurrent._
-import spray.http.Uri
 import spray.json._
 import spray.routing.{ Directives, Route }
 
@@ -94,7 +93,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                   get {
                     onComplete(engine.getQuery(id)) {
                       case Success(Some(query)) => complete(decorate(uri, query, None))
-                      case _ => reject()
+                      case Success(None) => complete(StatusCodes.NotFound)
+                      case Failure(ex) => throw ex
                     }
                   }
                 } ~
@@ -104,7 +104,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         import ViewModelJsonImplicits._
                         onComplete(engine.getQuery(id)) {
                           case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString, query))
-                          case _ => reject()
+                          case Success(None) => complete(StatusCodes.NotFound)
+                          case Failure(ex) => throw ex
                         }
                       }
                     }
@@ -123,7 +124,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                               else {
                                 QueryDecorator.decorateEntity(uri.toString(), links, query)
                               })
-                            case _ => reject()
+                            case Success(None) => complete(StatusCodes.NotFound)
+                            case Failure(ex) => throw ex
                           }
                         }
                       }
