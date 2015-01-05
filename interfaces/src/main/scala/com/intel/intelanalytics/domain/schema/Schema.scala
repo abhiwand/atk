@@ -23,9 +23,8 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.StringUtils
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-
-import scala.collection.parallel.mutable
 
 /**
  * Column - this is a nicer wrapper for columns than just tuples
@@ -37,12 +36,22 @@ import scala.collection.parallel.mutable
  *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
  *              everywhere so it seemed better to encapsulate it)
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1)
+case class Column(name: String, dataType: DataType, var index: Int = -1) {
+  require(name != null, "column name is required")
+  require(dataType != null, "column data type is required")
+  require(name != "", "column name can't be empty")
+  require(StringUtils.isAlphanumericUnderscore(name), "column name must be alpha-numeric with underscores")
+}
 
 /**
  * Extra schema if this is a vertex frame
  */
-case class VertexSchema(label: String, idColumnName: Option[String] = None) {
+case class VertexSchema(columns: List[Column] = List[Column](), label: String, idColumnName: Option[String] = None) extends GraphElementSchema {
+  require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
+  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  if (idColumnName != null) {
+    //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
+  }
 
   /**
    * If the id column name had already been defined, use that name, otherwise use the supplied name
@@ -51,6 +60,23 @@ case class VertexSchema(label: String, idColumnName: Option[String] = None) {
    */
   def determineIdColumnName(nameIfNotAlreadyDefined: String): String = {
     idColumnName.getOrElse(nameIfNotAlreadyDefined)
+  }
+
+  override def copy(columns: List[Column]): VertexSchema = {
+    new VertexSchema(columns, label, idColumnName)
+  }
+
+  def copy(idColumnName: Option[String]): VertexSchema = {
+    new VertexSchema(columns, label, idColumnName)
+  }
+
+  override def dropColumn(columnName: String): Schema = {
+    if (idColumnName.isDefined) {
+      require(idColumnName.get != columnName, s"The id column is not allowed to be dropped: $columnName")
+    }
+    // TODO: check for system column names
+
+    super.dropColumn(columnName)
   }
 
 }
@@ -62,48 +88,65 @@ case class VertexSchema(label: String, idColumnName: Option[String] = None) {
  * @param destVertexLabel the destination "type" of vertices this edge connects
  * @param directed true if edges are directed, false if they are undirected
  */
-case class EdgeSchema(label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false)
+case class EdgeSchema(columns: List[Column] = List[Column](), label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) extends GraphElementSchema {
+  require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
+  require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
+  require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
+  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+
+  override def copy(columns: List[Column]): EdgeSchema = {
+    new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
+  }
+
+}
 
 /**
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
-case class Schema(columns: List[Column] = List[Column](),
-                  vertexSchema: Option[VertexSchema] = None,
-                  edgeSchema: Option[EdgeSchema] = None) {
+case class FrameSchema(columns: List[Column] = List[Column]()) extends Schema {
+
+  override def copy(columns: List[Column]): FrameSchema = {
+    new FrameSchema(columns)
+  }
+
+}
+
+/**
+ * Common interface for Vertices and Edges
+ */
+trait GraphElementSchema extends Schema {
+
+  /** Vertex or Edge label */
+  def label: String
+
+}
+
+object Schema {
 
   /**
-   * Legacy signature
-   *
-   * Schema was defined previously as a list of tuples.  This constructor was introduced to so
-   * all of the dependent code wouldn't need to be changed.
-   *
-   * @param columnTuples columns as tuples
+   * A lot of code was using Tuples before we introduced column objects
    */
-  def this(columnTuples: List[(String, DataType)]) = {
-    this(columnTuples.map { case (name, dataType) => Column(name, dataType) }, None, None)
+  @deprecated("use column objects and the other constructors")
+  def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
+    val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
+    new FrameSchema(columns)
   }
+
+}
+
+/**
+ * Schema for a data frame. Contains the columns with names and data types.
+ */
+trait Schema {
+
+  val columns: List[Column]
 
   require(columns != null, "columns must not be null")
   require({
-    val names = columns.map(x => x.name).toList
-    names.size == names.distinct.size
-  }, "column names must be unique")
-  require(vertexSchema != null, "vertexSchema must not be null")
-  require(edgeSchema != null, "edgeSchema must not be null")
-  if (vertexSchema.isDefined) {
-    require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
-    require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
-    if (vertexSchema.get.idColumnName != null) {
-      //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
-    }
-  }
-  else if (edgeSchema.isDefined) {
-    require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
-    require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
-    require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
-    require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
-  }
+    val distinct = columns.map(_.name).distinct
+    distinct.length == columns.length
+  }, "invalid schema, duplicate column names")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -113,23 +156,10 @@ case class Schema(columns: List[Column] = List[Column](),
    */
   private lazy val namesToColumns = columns.map(col => (col.name, col)).toMap
 
-  /**
-   * Label column if this is an edge or vertex frame, None otherwise
-   */
-  def label: Option[String] = {
-    if (vertexSchema.isDefined) {
-      Some(vertexSchema.get.label)
-    }
-    else if (edgeSchema.isDefined) {
-      Some(edgeSchema.get.label)
-    }
-    else {
-      None
-    }
-  }
+  def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
-    namesToColumns.keys.toList
+    columns.map(col => col.name).toList
   }
 
   /**
@@ -207,7 +237,16 @@ case class Schema(columns: List[Column] = List[Column](),
   def copySubset(columnNames: Seq[String]): Schema = {
     val indices = columnIndices(columnNames)
     val columnSubset = indices.map(i => columns(i)).toList
-    Schema(columnSubset, vertexSchema, edgeSchema)
+    copy(columnSubset)
+  }
+
+  /**
+   * Produces a renamed subset schema from this schema
+   * @param columnNames rename mapping
+   * @return new schema
+   */
+  def copySubsetWithRename(columnNames: Map[String, String]): Schema = {
+    copySubset(columnNames.keys.toSeq).renameColumns(columnNames)
   }
 
   /**
@@ -219,13 +258,11 @@ case class Schema(columns: List[Column] = List[Column](),
    */
   def union(schema: Schema): Schema = {
     // check for conflicts
-    for (columnName <- schema.columnNames) {
-      if (hasColumn(columnName)) {
-        require(hasColumnWithType(columnName, schema.columnDataType(columnName)), s"columns with same name $columnName didn't have matching types")
-      }
-    }
-    val combinedColumns = (this.namesToColumns ++ schema.namesToColumns).values.toList
-    Schema(combinedColumns, vertexSchema, edgeSchema)
+    val newColumns: List[Column] = schema.columns.filterNot(c => {
+      hasColumn(c.name) && { require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true }
+    })
+    val combinedColumns = this.columns ++ newColumns
+    copy(combinedColumns)
   }
 
   /**
@@ -266,37 +303,23 @@ case class Schema(columns: List[Column] = List[Column](),
    *
    * @param names victimName -> newName
    */
-  def validateRenameMapping(names: Map[String, String]): Unit = {
+  def validateRenameMapping(names: Map[String, String], forCopy: Boolean = false): Unit = {
     if (names.isEmpty)
       throw new IllegalArgumentException(s"Empty column name map provided.  At least one name is required")
     val victimNames = names.keys.toList
     validateColumnsExist(victimNames)
-    val safeNames = columnNamesExcept(victimNames)
     val newNames = names.values.toList
     if (newNames.size != newNames.distinct.size) {
       throw new IllegalArgumentException(s"Invalid new column names are not unique: $newNames")
     }
-    for (n <- newNames) {
-      if (safeNames.contains(n)) {
-        throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
+    if (!forCopy) {
+      val safeNames = columnNamesExcept(victimNames)
+      for (n <- newNames) {
+        if (safeNames.contains(n)) {
+          throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
+        }
       }
     }
-  }
-
-  /**
-   * Produces a renamed subset schema and the indices from this schema of the subset
-   * @param columnNames rename mapping
-   * @return new schema and the indices which map it back into this schema
-   */
-  def getRenamedSchemaAndIndices(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
-    validateRenameMapping(columnNames)
-    val colsAndIndices: Seq[(Column, Int)] =
-      for {
-        (c, i) <- columns.zipWithIndex
-        if columnNames.contains(c.name)
-      } yield (Column(columnNames(c.name), c.dataType), i)
-    val (cols, indices) = colsAndIndices.unzip
-    (Schema(cols.toList), indices)
   }
 
   /**
@@ -318,6 +341,13 @@ case class Schema(columns: List[Column] = List[Column](),
       throw new IllegalArgumentException(s"Cannot add a duplicate column name: $columnName")
     }
     copy(columns = columns :+ Column(columnName, dataType))
+  }
+
+  /**
+   * Returns a new schema with the given columns appended.
+   */
+  def addColumns(newColumns: Seq[Column]): Schema = {
+    copy(columns = columns ++ newColumns)
   }
 
   /**
@@ -442,9 +472,8 @@ case class Schema(columns: List[Column] = List[Column](),
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated legacy use only - use nicer API instead
    */
+  @deprecated("legacy use only - use nicer API instead")
   def columnTuples: List[(String, DataType)] = {
     columns.map(column => (column.name, column.dataType))
   }
@@ -454,12 +483,45 @@ case class Schema(columns: List[Column] = List[Column](),
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated don't use - legacy support only
    */
+  @deprecated("don't use - legacy support only")
   def legacyCopy(columnTuples: List[(String, DataType)]): Schema = {
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
   }
+
+  /**
+   * Convert the current schema to a FrameSchema.
+   *
+   * This is useful when copying a Schema whose internals might be a VertexSchema
+   * or EdgeSchema but you need to make sure it is a FrameSchema.
+   */
+  def toFrameSchema: FrameSchema = {
+    if (isInstanceOf[FrameSchema]) {
+      this.asInstanceOf[FrameSchema]
+    }
+    else {
+      new FrameSchema(columns)
+    }
+  }
+
+  /**
+   * create a column name that is unique, suitable for adding to the schema
+   * (subject to race conditions, only provides unique name for schema as
+   * currently defined)
+   * @param candidate a candidate string to start with, an _N number will be
+   *                  append to make it unique
+   * @return unique column name for this schema, as currently defined
+   */
+  def getNewColumnName(candidate: String): String = {
+    var newName = candidate
+    var i: Int = 0
+    while (columnNames.contains(newName)) {
+      newName = newName + s"_$i"
+      i += 1
+    }
+    newName
+  }
+
 }
 

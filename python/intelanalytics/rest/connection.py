@@ -26,12 +26,14 @@ Connection to the Intel Analytics REST Server
 import os
 import sys
 import json
-import requests
 import logging
+
+import requests
+
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
-from intelanalytics.core.api import error_if_api_already_loaded, _Api
+from intelanalytics.meta.api import error_if_api_already_loaded, _Api
 
 
 class Server(object):
@@ -205,6 +207,11 @@ class HttpMethods(object):
 
         try:
             response.raise_for_status()
+            #Semantic errors (such as server validation errors) come back as 202,
+            #which the requests module doesn't consider an error. Indeed it is not
+            #an HTTP protocol error, but it is an error as far as the user is concerned.
+            if response.status_code == 202:
+                raise Exception(response.text)
         except Exception as e:
             if not ignore or response.status_code not in ignore:
                 raise requests.exceptions.HTTPError(str(e) + " "+ response.text)

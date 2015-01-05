@@ -30,7 +30,7 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, TestingTitan, SparkGraphStorage }
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
@@ -46,19 +46,19 @@ import scala.collection.JavaConversions._
 
 class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Matchers with MockitoSugar {
   val edgeColumns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
-  val edgeSchema = new Schema(edgeColumns, edgeSchema = Some(EdgeSchema("worksUnder", "srclabel", "destlabel")))
+  val edgeSchema = new EdgeSchema(edgeColumns, "worksUnder", "srclabel", "destlabel", true)
 
   val employeeColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("employee", DataTypes.int64))
-  val employeeSchema = new Schema(employeeColumns, Some(VertexSchema("employee", null)))
+  val employeeSchema = new VertexSchema(employeeColumns, "employee", null)
 
   val divisionColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("divisionID", DataTypes.int64))
-  val divisionSchema = new Schema(divisionColumns, Some(VertexSchema("division", null)))
+  val divisionSchema = new VertexSchema(divisionColumns, "division", null)
 
   "ExportToTitanGraph" should {
     "create an expected graphbuilder config " in {
       val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
       val config = plugin.createGraphBuilderConfig("graphName")
-      config.titanConfig.getProperty("storage.tablename").toString should include("graphName")
+      config.titanConfig.getProperty("storage.hbase.table").toString should include("graphName")
       config.append should be(false)
       config.edgeRules.size should be(0)
       config.vertexRules.size should be(0)
@@ -94,8 +94,11 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         this.titanConfig)
       plugin.loadTitanGraph(config, vertexFrame, edgeFrame)
 
+      // Need to explicitly specify type when getting vertices to resolve the error
+      // "Helper method to resolve ambiguous reference error in TitanGraph.getVertices() in Titan 0.5.1+"
+      val titanVertices: Iterable[com.tinkerpop.blueprints.Vertex] = this.titanGraph.getVertices
       this.titanGraph.getEdges().size should be(2)
-      this.titanGraph.getVertices.size should be(3)
+      titanVertices.size should be(3)
 
       val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")
@@ -113,27 +116,27 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
     "unallowed titan naming elements will throw proper exceptions" in {
       intercept[IllegalArgumentException] {
         val edgeColumns1 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label1", DataTypes.string), Column("label3", DataTypes.string))
-        val edgeSchema1 = new Schema(edgeColumns1, edgeSchema = Some(EdgeSchema("label1", "srclabel", "destlabel")))
-        val frame1 = new DataFrame(1, "name", None, edgeSchema1, 0L, 1L, new DateTime, new DateTime)
+        val edgeSchema1 = new EdgeSchema(edgeColumns1, "label1", "srclabel", "destlabel")
+        val frame1 = new DataFrame(1, "name", edgeSchema1, 0L, new DateTime, new DateTime)
 
         val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label2", DataTypes.string))
-        val edgeSchema2 = new Schema(edgeColumns2, edgeSchema = Some(EdgeSchema("label2", "srclabel", "destlabel")))
-        val frame2 = new DataFrame(1, "name", None, edgeSchema2, 0L, 1L, new DateTime, new DateTime)
+        val edgeSchema2 = new EdgeSchema(edgeColumns2, "label2", "srclabel", "destlabel")
+        val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, new DateTime)
 
         val edgeColumns3 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
-        val edgeSchema3 = new Schema(edgeColumns3, edgeSchema = Some(EdgeSchema("label3", "srclabel", "destlabel")))
-        val frame3 = new DataFrame(1, "name", None, edgeSchema3, 0L, 1L, new DateTime, new DateTime)
+        val edgeSchema3 = new EdgeSchema(edgeColumns3, "label3", "srclabel", "destlabel")
+        val frame3 = new DataFrame(1, "name", edgeSchema3, 0L, new DateTime, new DateTime)
 
         val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
         plugin.validateLabelNames(List(frame1, frame2, frame3), List("label1", "label2", "label3"))
       }
     }
     "no exception thrown if titan naming elements are valid" in {
-      val frame1 = new DataFrame(1, "name", None, edgeSchema, 0L, 1L, new DateTime, new DateTime)
+      val frame1 = new DataFrame(1, "name", edgeSchema, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
       val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
-      val edgeSchema2 = new Schema(edgeColumns2, edgeSchema = Some(EdgeSchema("label1", "srclabel", "destlabel")))
-      val frame2 = new DataFrame(1, "name", None, edgeSchema2, 0L, 1L, new DateTime, new DateTime)
+      val edgeSchema2 = new EdgeSchema(edgeColumns2, "label1", "srclabel", "destlabel")
+      val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
       val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
       plugin.validateLabelNames(List(frame1, frame2), List("notalabel1", "label2", "label3"))

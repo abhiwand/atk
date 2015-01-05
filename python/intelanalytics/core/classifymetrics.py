@@ -23,6 +23,7 @@
 """
 Post Processing of classification metrics results
 """
+import pandas as pd
 
 class ClassificationMetricsResult(object):
     """ Defines the results for binary and multi class classification metrics  """
@@ -32,30 +33,18 @@ class ClassificationMetricsResult(object):
         self.f_measure = json_result['f_measure']
         self.accuracy = json_result['accuracy']
         self.recall = json_result['recall']
-        self.confusion_matrix = ConfusionMatrix(json_result['confusion_matrix'])
+        cm_result = json_result['confusion_matrix']
+        if cm_result:
+            header = ['Predicted_Pos', 'Predicted_Neg']
+            row_index = ['Actual_Pos', 'Actual_Neg']
+            data = [(cm_result['tp'], cm_result['fn']), (cm_result['fp'],cm_result['tn'])]
+            self.confusion_matrix = pd.DataFrame(data, index=row_index, columns=header)
+        else:
+            #empty pandas frame
+            pd.DataFrame()
 
     def __repr__(self):
         return "Precision: {0}\nRecall: {1}\nAccuracy: {2}\nFMeasure: {3}\nConfusion Matrix: \n{4}".format(self.precision, self.recall, self.accuracy, self.f_measure, self.confusion_matrix)
 
-
-class ConfusionMatrix():
-    """ Defines the Confusion Matrix and pretty prints the values calculated for confusion matrix for binary
-    classifiers """
-
-    def __init__(self, confusion_matrix_result):
-        if len(confusion_matrix_result) > 0:
-            self.true_positive = confusion_matrix_result['tp']
-            self.false_negative = confusion_matrix_result['fn']
-            self.false_positive = confusion_matrix_result['fp']
-            self.true_negative = confusion_matrix_result['tn']
-            self.defined = True
-        else:
-            self.defined = False
-
-    def __repr__(self):
-        if self.defined:
-            return "\t\tPredicted \n\t\t_pos_ _neg_ \nActual    pos\t| {0}    {1}\n\t  neg\t| {2}    {3}".format(self.true_positive,self.false_negative,self.false_positive,self.true_negative)
-        else:
-            return "Confusion Matrix is not supported for multi class classifiers"
 
 

@@ -37,7 +37,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile, LineFile
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -68,8 +68,7 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame()
-            initialize_frame(frame, FrameInfo(payload))
+            frame = Frame(source=payload)
             return frame
 
     def create(self, frame, source, name):
@@ -99,6 +98,15 @@ class FrameBackendRest(object):
             return frame_info.name
         return frame.name
 
+    def _create_new_frame(self, frame, name):
+        """create helper method to call http and initialize frame with results"""
+        payload = {'name': name }
+        r = self.rest_http.post('frames', payload)
+        logger.info("REST Backend: create frame response: " + r.text)
+        frame_info = FrameInfo(r.json())
+        initialize_frame(frame, frame_info)
+        return frame_info.name
+
     def get_name(self, frame):
         return self._get_frame_info(frame).name
 
@@ -114,7 +122,7 @@ class FrameBackendRest(object):
            return ("[1]" for item in iterable if predicate(item))
         http_ready_function = prepare_row_function(frame, where, icountwhere)
         arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
-        return get_command_output("count_where", arguments)
+        return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
         return self._get_frame_info(frame).ia_uri
@@ -177,6 +185,29 @@ class FrameBackendRest(object):
                                 "data": None
                                 },
                     }
+
+        if isinstance( source, XmlFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "xmlfile",
+                               "uri": source.file_name,
+                               "start_tag":source.start_tag,
+                               "end_tag":source.end_tag,
+                               "data": None
+                    },
+                    }
+
+
+
+        if isinstance( source, MultiLineFile):
+            return {'destination': frame._id,
+                'source': {"source_type": "multilinefile",
+                           "uri": source.file_name,
+                           "start_tag":source.start_tag,
+                           "end_tag":source.end_tag,
+                           "data": None
+                        },
+                    }
+
         if isinstance(source, Pandas):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
@@ -305,27 +336,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
-    def flatten_column(self, frame, column_name):
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('frame:/flatten_column', arguments)
-
-    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
-        import numpy as np
-        if num_bins < 1:
-            raise ValueError("num_bins must be at least 1")
-        if not bin_type in ['equalwidth', 'equaldepth']:
-            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
-        if bin_column_name.strip() == "":
-            raise ValueError("bin_column_name can not be empty string")
-        colTypes = dict(frame.schema)
-        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to bin non-numeric values")
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
-        return execute_new_frame_command('bin_column', arguments)
-
-
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np
         colTypes = dict(frame.schema)
@@ -431,9 +441,8 @@ class FrameBackendRest(object):
             else:
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
-        name = self._get_new_frame_name()
         arguments = {'frame': self.get_ia_uri(frame),
-                     'name': name,
+                     'name': "group_by_" + self._get_new_frame_name(),
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
@@ -474,6 +483,8 @@ class FrameBackendRest(object):
                     break
                 data.extend(result.data)
             return TakeResult(data, schema)
+        if n < 0:
+            raise ValueError("Count value needs to be positive. Provided %s" % n)
 
         if n == 0:
             return TakeResult([], frame.schema)
@@ -577,7 +588,10 @@ class FrameInfo(object):
 
     @property
     def row_count(self):
-        return int(self._payload['row_count'])
+        try:
+            return int(self._payload['row_count'])
+        except KeyError:
+            return 0
 
     @property
     def error_frame_id(self):
@@ -727,15 +741,6 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return Frame(frame_info)
-
-
-def get_command_output(command_name, arguments):
-    """Executes command and returns the output"""
-    command_request = CommandRequest('frame:/' + command_name, arguments)
-    command_info = executor.issue(command_request)
-    if (command_info.result.has_key('value') and len(command_info.result) == 1):
-        return command_info.result.get('value')
-    return command_info.result
 
 
 

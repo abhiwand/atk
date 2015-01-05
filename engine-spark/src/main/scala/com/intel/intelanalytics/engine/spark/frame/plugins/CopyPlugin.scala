@@ -24,13 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameCopy, DataFrame }
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -45,7 +46,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
 
   override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
 
-  override def numberOfJobs(arguments: FrameCopy) = {
+  override def numberOfJobs(arguments: FrameCopy)(implicit invocation: Invocation) = {
     arguments.where match {
       case Some(function) => 2 // predicated copy requires a row count operation
       case None => 1
@@ -59,41 +60,35 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameCopy)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+  override def execute(arguments: FrameCopy)(implicit invocation: Invocation): DataFrame = {
 
-    val sourceFrame = frames.expectFrame(arguments.frame)
-    val (newSchema, indices) = arguments.columns match {
-      case None => (sourceFrame.schema, null) // full copy
-      case Some(cols) => sourceFrame.schema.getRenamedSchemaAndIndices(cols) // partial copy
-    }
+    val sourceFrame: SparkFrameData = resolve(arguments.frame)
 
     // run the operation
-    val template = DataFrameTemplate(FrameName.validateOrGenerate(arguments.name), Some("copy"))
-    val newFrame = frames.updateSchema(frames.create(template), newSchema)
     if (arguments.where.isEmpty) {
-      val rdd: FrameRDD = arguments.columns match {
-        case None => frames.loadFrameRDD(ctx, sourceFrame) // full copy
-        case Some(x) => FrameRDD.toFrameRDD(newSchema, // partial copy
-          frames.loadFrameRDD(ctx, sourceFrame)
-            .map(row => {
-              for { i <- indices } yield row(i)
-            }.toArray))
+      val rdd = arguments.columns match {
+        case None => sourceFrame.data.toPlainFrame() // full copy
+        case Some(cols) => sourceFrame.data.toPlainFrame().selectColumnsWithRename(cols) // partial copy
       }
-      frames.saveFrame(newFrame, rdd, Some(sourceFrame.rowCount))
+      engine.frames.tryNewFrame(DataFrameTemplate(FrameName.validateOrGenerate(arguments.name))) { newFrame: DataFrame =>
+        engine.frames.saveFrameData(newFrame.toReference, rdd)
+      }
     }
     else {
+      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename
+      val newSchema = arguments.columns match {
+        case None => sourceFrame.meta.schema.toFrameSchema // full copy
+        case Some(cols) => sourceFrame.meta.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
+      }
+
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-      val pythonRDDStorage = new PythonRDDStorage(frames)
-      val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where.get, ctx)
-      val converter = DataTypes.parseMany(newSchema.columns.map(_.dataType).toArray)(_)
-      val rowCount = pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = false)
-      frames.updateRowCount(newFrame, rowCount)
+      val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, newSchema)
+      engine.frames.tryNewFrame(DataFrameTemplate(FrameName.validateOrGenerate(arguments.name))) { newFrame: DataFrame =>
+        engine.frames.saveFrameData(newFrame.toReference, pyRdd)
+      }
     }
   }
 }

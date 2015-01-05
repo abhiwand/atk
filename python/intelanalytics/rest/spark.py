@@ -55,8 +55,6 @@ def get_add_one_column_function(row_function, data_type):
     def add_one_column(row):
         result = row_function(row)
         cast_value = valid_data_types.cast(result, data_type)
-        if cast_value is not None:
-            cast_value = unicode(cast_value)
         data = row._get_data()
         data.append(cast_value)
         return row.json_dumps()
@@ -70,8 +68,6 @@ def get_add_many_columns_function(row_function, data_types):
         data = row._get_data()
         for i, data_type in enumerate(data_types):
             cast_value = valid_data_types.cast(result[i], data_type)
-            if cast_value is not None:
-                cast_value = unicode(cast_value)
             data.append(cast_value)
         return row.json_dumps()
     return add_many_columns
@@ -130,7 +126,7 @@ def _wrap_row_function(frame, row_function):
             row_wrapper.load_row(row)
             return row_function(row_wrapper)
         except Exception as e:
-            msg = base64.urlsafe_b64encode('Exception:%s while processing row:%s' % (repr(e),row))
+            msg = base64.urlsafe_b64encode((u'Exception:%s while processing row:%s' % (repr(e),row)).encode('utf-8'))
             raise IaPyWorkerError(msg)
     return row_func
 

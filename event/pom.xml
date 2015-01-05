@@ -40,6 +40,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>event-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>1.0.4</version>

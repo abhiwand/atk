@@ -24,49 +24,14 @@ package com.intel.giraph.io.titan.common;
 
 import com.intel.giraph.io.titan.TitanGraphWriter;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanTransaction;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import com.thinkaurelius.titan.graphdb.util.FakeLock;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.util.Base64;
-import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
-import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.concurrent.locks.Lock;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIGURED_DEFAULT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_PREFIX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CREATE_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_INPUT_FORMAT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_LABEL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_TYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_READ;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_TYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_GRAPH_NOT_OPEN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
 /**
@@ -89,22 +54,16 @@ public class GiraphTitanUtils {
      *
      * @param conf : Giraph configuration
      */
-    public static void sanityCheckInputParameters(ImmutableClassesGiraphConfiguration conf) {
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
+    public static void sanityCheckInputParameters(Configuration conf) {
 
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "host name" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
-        }
-
-        if (tableName.equals("")) {
-            throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
+                    GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
         }
 
         if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
             LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + CONFIGURED_DEFAULT +
-                ENSURE_PORT + GIRAPH_TITAN_STORAGE_PORT.get(conf));
+                    ENSURE_PORT + GIRAPH_TITAN_STORAGE_PORT.get(conf));
 
         }
 
@@ -139,32 +98,27 @@ public class GiraphTitanUtils {
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
         if (vertexValuePropertyKeyList.length == 0) {
             throw new IllegalArgumentException(CONFIG_VERTEX_PROPERTY + CONFIG_PREFIX +
-                OUTPUT_VERTEX_PROPERTY_KEY_LIST.getKey() + NO_VERTEX_READ);
+                    OUTPUT_VERTEX_PROPERTY_KEY_LIST.getKey() + NO_VERTEX_READ);
         }
 
         if (GIRAPH_TITAN_STORAGE_BACKEND.get(conf).equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "backend" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_BACKEND.getKey() + NO_VERTEX_READ);
-        }
-
-        if (GIRAPH_TITAN_STORAGE_TABLENAME.get(conf).equals("")) {
-            throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
+                    GIRAPH_TITAN_STORAGE_BACKEND.getKey() + NO_VERTEX_READ);
         }
 
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "host name" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
+                    GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + NO_VERTEX_READ);
         }
 
         if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
             LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + CONFIGURED_DEFAULT +
-                ENSURE_PORT + GIRAPH_TITAN_STORAGE_PORT.get(conf));
+                    ENSURE_PORT + GIRAPH_TITAN_STORAGE_PORT.get(conf));
         }
 
         if (GIRAPH_TITAN_STORAGE_READ_ONLY.get(conf).equals("true")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "read only" + CONFIG_PREFIX +
-                GIRAPH_TITAN_STORAGE_READ_ONLY.getKey() + NO_VERTEX_READ);
+                    GIRAPH_TITAN_STORAGE_READ_ONLY.getKey() + NO_VERTEX_READ);
         }
 
         if (VERTEX_TYPE_PROPERTY_KEY.get(conf).equals("")) {
@@ -176,53 +130,11 @@ public class GiraphTitanUtils {
         }
     }
 
-    /**
-     * Writes the given scan into a Base64 encoded string.
-     *
-     * @param scan The scan to write out.
-     * @return The scan saved in a Base64 encoded string.
-     * @throws IOException When writing the scan fails.
-     */
-    public static String convertScanToString(Scan scan) throws IOException {
-        ClientProtos.Scan proto = ProtobufUtil.toScan(scan);
-        return Base64.encodeBytes(proto.toByteArray());
-    }
-
 
     /**
-     * Configure HBase for Titan input.
-     *
-     * @param conf Giraph configuration
-     * @throws IOException When writing the scan fails.
-     */
-    public static void configHBase(ImmutableClassesGiraphConfiguration conf) throws IOException {
-        conf.set(TableInputFormat.INPUT_TABLE, GIRAPH_TITAN_STORAGE_TABLENAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_QUORUM, GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_CLIENT_PORT, GIRAPH_TITAN_STORAGE_PORT.get(conf));
-
-        Scan scan = new Scan();
-        scan.addFamily(Backend.EDGESTORE_NAME.getBytes(Charset.forName("UTF-8")));
-        conf.set(TableInputFormat.SCAN, convertScanToString(scan));
-    }
-
-    /**
-     * set up configuration for Titan/HBase.
-     *
      * @param conf : Giraph configuration
-     */
-    public static void setupHBase(ImmutableClassesGiraphConfiguration conf) {
-        try {
-            sanityCheckInputParameters(conf);
-            configHBase(conf);
-        } catch (IOException e) {
-            LOG.error("IO exception when configure HBase!");
-        }
-    }
-
-    /**
+     * @TODO: Change this to match new schema
      * disable Hadoop speculative execution.
-     *
-     * @param conf : Giraph configuration
      */
     public static void createTitanKeys(ImmutableClassesGiraphConfiguration conf) {
         TitanGraph graph;
@@ -235,30 +147,18 @@ public class GiraphTitanUtils {
             throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
         }
 
-        TitanTransaction tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error(TITAN_TX_NOT_OPEN);
-            throw new RuntimeException(TITAN_TX_NOT_OPEN);
-        }
-        LOG.info(OPENED_GRAPH);
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
-        Lock dbLock = FakeLock.INSTANCE;
-        dbLock.lock();
+
+        TitanManagement graphManager = graph.getManagementSystem();
+
         for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {
-            if (!tx.containsType(vertexValuePropertyKeyList[i])) {
+            if (!graphManager.containsRelationType(vertexValuePropertyKeyList[i])) {
                 LOG.info(CREATE_VERTEX_PROPERTY + vertexValuePropertyKeyList[i]);
-                // for titan 0.3.2
-                //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
-                //             .makePropertyKey();
-                //for titan 0.4.0
-                graph.makeKey(vertexValuePropertyKeyList[i]).dataType(String.class).make();
+                //for titan 0.5.0+
+                graphManager.makePropertyKey(vertexValuePropertyKeyList[i]).dataType(String.class).make();
             }
         }
-        dbLock.unlock();
-        if (tx.isOpen()) {
-            tx.commit();
-        }
-        graph.commit();
+        graphManager.commit();
         graph.shutdown();
     }
 
@@ -269,8 +169,8 @@ public class GiraphTitanUtils {
      * @param conf : Giraph configuration
      */
     public static void disableSpeculativeExe(ImmutableClassesGiraphConfiguration conf) {
-        conf.setBoolean("mapred.map.tasks.speculative.execution", false);
-        conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+        conf.setBoolean("mapreduce.map.tasks.speculative.execution", false);
+        conf.setBoolean("mapreduce.reduce.tasks.speculative.execution", false);
     }
 
     /**
@@ -283,4 +183,6 @@ public class GiraphTitanUtils {
         createTitanKeys(conf);
         disableSpeculativeExe(conf);
     }
+
+
 }

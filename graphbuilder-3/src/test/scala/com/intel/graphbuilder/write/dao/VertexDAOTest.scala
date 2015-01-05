@@ -23,9 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.write.titan.TitanIdUtils
+import com.intel.testutils.TestingTitan
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 
 class VertexDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAndAfter {
@@ -34,7 +34,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
   before {
     setupTitan()
-    vertexDAO = new VertexDAO(graph)
+    vertexDAO = new VertexDAO(titanGraph)
   }
 
   after {
@@ -81,7 +81,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
       val gbVertexOriginal = new GBVertex(new Property("gbId", 10004), Set(new Property("name", "Original Name")))
       val gbVertexUpdated = new GBVertex(new Property("gbId", 10004), Set(new Property("name", "Updated Name")))
       vertexDAO.create(gbVertexOriginal)
-      graph.commit()
+      titanGraph.commit()
 
       // invoke method under test
       val bpVertexUpdated = vertexDAO.updateOrCreate(gbVertexUpdated)
@@ -108,7 +108,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
       val gbVertex = new GBVertex(new Property("gbId", 10006), Set.empty[Property])
       val createdBpVertex = vertexDAO.create(gbVertex)
       val id = TitanIdUtils.titanId(createdBpVertex)
-      graph.commit()
+      titanGraph.commit()
 
       // invoke method under test
       val foundBpVertex = vertexDAO.findByPhysicalId(id.asInstanceOf[AnyRef]).get

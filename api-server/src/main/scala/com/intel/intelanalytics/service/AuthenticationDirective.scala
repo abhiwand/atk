@@ -25,6 +25,8 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
+import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import spray.http.HttpHeader
 
 import scala.PartialFunction._
@@ -40,33 +42,35 @@ import com.intel.event.EventLogging
 /**
  * Uses authorization HTTP header and engine to authenticate a user
  */
-class AuthenticationDirective(val engine: Engine) extends Directives with EventLogging {
+class AuthenticationDirective(val engine: Engine) extends Directives with EventLogging with EventLoggingImplicits {
 
   /**
    * Gets authorization header and authenticates a user
    * @return the authenticated user
    */
-  def authenticateKey: Directive1[UserPrincipal] =
+  def authenticateKey: Directive1[Invocation] =
     //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
-      case Some(p) => provide(p)
+      case Some(p) => provide(Call(p))
       case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
     }
 
   protected def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
     condOpt(header) {
-      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), ApiServiceConfig.defaultTimeout)
+      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value)(Call(null)), ApiServiceConfig.defaultTimeout)
     }
 
-  protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = withContext("AuthenticationDirective") {
-    if (StringUtils.isBlank(apiKey)) {
-      warn("Api key was not provided")
-      throw new SecurityException("Api key was not provided")
-    }
-    future {
-      val userPrincipal = engine.getUserPrincipal(apiKey)
-      info("authenticated " + userPrincipal)
-      userPrincipal
+  protected def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): Future[UserPrincipal] = {
+    withContext("AuthenticationDirective") {
+      if (StringUtils.isBlank(apiKey)) {
+        warn("Api key was not provided")
+        throw new SecurityException("Api key was not provided")
+      }
+      future {
+        val userPrincipal = engine.getUserPrincipal(apiKey)
+        info("authenticated " + userPrincipal)
+        userPrincipal
+      }
     }
   }
 }

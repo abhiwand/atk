@@ -1,21 +1,31 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
-import com.intel.intelanalytics.engine.spark.graph.TestingTitan
+import java.util
+
 import com.intel.testutils.MatcherUtils._
-import com.tinkerpop.blueprints.{ Vertex, Edge, Element }
+import com.intel.testutils.TestingTitan
+import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
+import scala.collection.JavaConverters._
 import spray.json._
 
 import scala.collection.JavaConversions._
 
-class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
-
+class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
   import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
 
+  before {
+    setupTitan()
+  }
+
+  after {
+    cleanupTitan()
+  }
+
   "GraphSONFormat" should "serialize a Blueprint's vertex into GraphSON" in {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
-    val vertex = graph.addVertex(1)
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
+    val vertex = titanIdGraph.addVertex(1)
     vertex.setProperty("name", "marko")
     vertex.setProperty("age", 29)
 
@@ -24,10 +34,10 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
   }
 
   "GraphSONFormat" should "serialize a Blueprint's edge into GraphSON" in {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
-    val vertex1 = graph.addVertex(1)
-    val vertex2 = graph.addVertex(2)
-    val edge = graph.addEdge(3, vertex1, vertex2, "test")
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
+    val vertex1 = titanIdGraph.addVertex(1)
+    val vertex2 = titanIdGraph.addVertex(2)
+    val edge = titanIdGraph.addEdge(3, vertex1, vertex2, "test")
     edge.setProperty("weight", 0.5f)
 
     val json = edge.asInstanceOf[Element].toJson
@@ -36,7 +46,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
   }
 
   "GraphSONFormat" should "deserialize GraphSON into a Blueprint's vertex" in {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
 
     val json = JsonParser("""{"name":"marko", "age":29, "_id":10, "_type":"vertex" }""")
     val vertex = json.convertTo[Element]
@@ -57,13 +67,14 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
 
   "GraphSONFormat" should "throw an exception when deserializing invalid GraphSON" in {
     intercept[spray.json.DeserializationException] {
-      implicit val graphSONFormat = new GraphSONFormat(graph)
+      implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
       val json = "[1, 2, 3]"
       JsonParser(json).convertTo[Element]
     }
   }
 
   "BlueprintsRowFormat" should "serialize a Blueprint's row into a JSON map" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val rowMap = Map("col1" -> "val1", "col2" -> "val2")
     val row = new Row(rowMap.values.toList, rowMap.keys.toList)
 
@@ -76,6 +87,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
   }
 
   "BlueprintsRowFormat" should "deserialize a JSON map to a Blueprint's row" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val json = Map("col1" -> 1, "col2" -> 2).toJson
     val jsonFields = json.asJsObject.fields
 
@@ -87,6 +99,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
 
   "BlueprintsRowFormat" should "throw a deserialization exception when JSON is not a valid JSON map" in {
     intercept[spray.json.DeserializationException] {
+      import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
       val json = """["test1", "test2"]"""
       JsonParser(json).convertTo[Row[String]]
     }

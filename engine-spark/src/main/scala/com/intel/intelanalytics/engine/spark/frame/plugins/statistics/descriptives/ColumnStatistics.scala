@@ -123,7 +123,7 @@ private[spark] object ColumnStatistics extends Serializable {
                               rowRDD: RDD[Row],
                               usePopulationVariance: Boolean): ColumnSummaryStatisticsReturn = {
 
-    val dataWeightPairs: RDD[(Double, Double)] =
+    val dataWeightPairs: RDD[(Option[Double], Option[Double])] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
     val stats = new NumericalStatistics(dataWeightPairs, usePopulationVariance)
@@ -159,7 +159,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
@@ -177,22 +177,34 @@ private[spark] object ColumnStatistics extends Serializable {
                                    dataType: DataType,
                                    weightsColumnIndexOption: Option[Int],
                                    weightsTypeOption: Option[DataType],
-                                   rowRDD: RDD[Row]): RDD[(Double, Double)] = {
+                                   rowRDD: RDD[Row]): RDD[(Option[Double], Option[Double])] = {
 
-    val dataRDD: RDD[Double] = rowRDD.map(row => dataType.asDouble(row(dataColumnIndex)))
+    val dataRDD: RDD[Option[Double]] = rowRDD.map {
+      case row => extractColumnValueAsDoubleFromRow(row, dataColumnIndex, dataType)
+    }
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
     }
 
     val weightsRDD = if (weighted)
-      rowRDD.map(row => weightsTypeOption.get.asDouble(row(weightsColumnIndexOption.get)))
+      rowRDD.map {
+        case row => extractColumnValueAsDoubleFromRow(row, weightsColumnIndexOption.get, weightsTypeOption.get)
+      }
     else
       null
 
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
+    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, Some(1.toDouble)))
+  }
+
+  private def extractColumnValueAsDoubleFromRow(row: Row, columnIndex: Int, dataType: DataType): Option[Double] = {
+    val columnValue = row(columnIndex)
+    columnValue match {
+      case null => None
+      case value => Some(dataType.asDouble(value))
+    }
   }
 
 }

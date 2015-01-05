@@ -1,0 +1,34 @@
+<configuration scan="true">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%logger{15} - %mdc{corId:-?} - %message %n %ex{short}%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="play" level="INFO" />
+    <logger name="application" level="INFO" />
+    <logger name="scala.slick" level="INFO" />
+    <logger name="org.apache.spark" level="INFO" />
+    <logger name="org.eclipse.jetty" level="INFO" />
+    <logger name="org.apache.hadoop" level="INFO" />
+    <logger name="org.apache.zookeeper" level="INFO" />
+    <logger name="org.apache.hbase" level="INFO" />
+    <logger name="com.thinkaurelius" level="INFO" />
+    <logger name="com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx" level="WARN" />
+    <logger name="com.thinkaurelius.titan.diskstorage.configuration" level="WARN" />
+
+    <!--
+        log levels
+        TRACE
+        DEBUG
+        INFO
+        WARN
+        ERROR
+    -->
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

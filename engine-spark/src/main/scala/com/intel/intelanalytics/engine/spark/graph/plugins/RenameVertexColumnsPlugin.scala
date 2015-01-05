@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.RenameColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameRenameColumns }
@@ -43,15 +44,15 @@ class RenameVertexColumnsPlugin extends RenameColumnsPlugin {
 
   val systemFields = Set("_vid", "_label")
 
-  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: FrameRenameColumns)(implicit invocation: Invocation): DataFrame = {
     rejectInvalidColumns(arguments.names.keys, systemFields)
-    super.execute(invocation, arguments)
+    super.execute(arguments)
   }
 
   def rejectInvalidColumns(columns: Iterable[String], invalidColumns: Set[String]) {
     val invalid = columns.filter(s => invalidColumns.contains(s))
 
-    if (!invalid.isEmpty) {
+    if (invalid.nonEmpty) {
       val cannotRename = invalid.mkString(",")
       throw new IllegalArgumentException(s"The following columns are not allowed to be renamed: $cannotRename")
     }

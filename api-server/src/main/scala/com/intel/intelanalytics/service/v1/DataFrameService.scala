@@ -23,9 +23,12 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.DuplicateNameException
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, Query, RowQuery }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import org.joda.time.DateTime
+import spray.httpx.marshalling.ToResponseMarshallable
 import spray.json._
 import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
@@ -38,7 +41,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.{ DataFrameCreate, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
-import spray.routing.Directives
+import spray.routing.{ RequestContext, StandardRoute, Directives }
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
@@ -58,7 +61,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
   def frameRoutes() = {
     val prefix = "frames"
 
-    commonDirectives(prefix) { implicit p: UserPrincipal =>
+    commonDirectives(prefix) { implicit invocation: Invocation =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
@@ -94,8 +97,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
               entity(as[DataFrameCreate]) {
                 frame =>
-                  onComplete(engine.create(frame.toDataFrameTemplate)) {
+                  onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
+                    case Failure(ex: DuplicateNameException) => ctx => {
+                      ctx.complete(202, ex.getMessage)
+                    }
                     case Failure(ex) => ctx => {
                       ctx.complete(500, ex.getMessage)
                     }

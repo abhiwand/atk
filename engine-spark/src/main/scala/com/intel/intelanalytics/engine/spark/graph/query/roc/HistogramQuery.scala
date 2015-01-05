@@ -1,18 +1,13 @@
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
-import spray.json._
 
-import scala.collection.JavaConverters._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
@@ -169,12 +164,12 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
                            |
                             """.stripMargin)))
 
-  override def execute(invocation: SparkInvocation, arguments: HistogramParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramResult = {
+  override def execute(arguments: HistogramParams)(implicit invocation: Invocation): HistogramResult = {
     import scala.concurrent.duration._
 
     System.out.println("*********In Execute method of Histogram query********")
     val config = configuration
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //val defaultRocParams = config.getDoubleList("roc-threshold").asScala.toList.map(_.doubleValue())
@@ -191,21 +186,10 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     }
 
     // Create graph connection
-    val titanConfiguration = new SerializableBaseConfiguration()
-    val titanLoadConfig = config.getConfig("titan.load")
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
-    }
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name) // "iat_graph_mygraph") graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val sc = invocation.sparkContext
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
     val graphElementRDD = if (propertyClass.isInstanceOf[GBEdge]) {
-      titanReaderRDD.filterEdges()
+      engine.graphs.loadGbEdges(sc, graph)
     }
-    else titanReaderRDD.filterVertices()
+    else engine.graphs.loadGbVertices(sc, graph)
 
     // Parse features
     val featureVectorRDD = graphElementRDD.map(element => {
@@ -220,9 +204,9 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     filteredFeatureRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     // Compute histograms
-    val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, false, numBuckets)
+    val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = false, numBuckets)
     val posteriorHistograms = if (arguments.posterior_property_list != None) {
-      Some(FeatureVector.getHistograms(filteredFeatureRDD, true, numBuckets))
+      Some(FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = true, numBuckets))
     }
     else None
 

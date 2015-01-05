@@ -26,7 +26,9 @@ Creates the docstubs.py API documentation file
 usage:  python2.7 cmdgen.py  [-x] [-debug]
 
 -x      : skips calling the engine to dump the commands and just uses the current json dump file
+-s      : calls engine with IJ remote scala arguments
 -debug  : turns on IJ debugging just before the metaprogramming generates the docstubs
+
 """
 
 import json
@@ -64,7 +66,7 @@ with warnings.catch_warnings(record=True) as expected_warnings:
     #     assert "NOT inheriting commands" in str(w.message)
 
 
-from intelanalytics.core.metaprog import CommandLoadable, get_doc_stubs_module_text
+from intelanalytics.meta.metaprog import CommandLoadable, get_doc_stubs_module_text
 from intelanalytics.rest.jsonschema import get_command_def
 
 ignore_loadables = []
@@ -78,12 +80,15 @@ loadables = dict([(item.__name__, item)
 args = [a.strip() for a in sys.argv[1:]]
 
 skip_engine_launch = '-x' in args
+scala_debug = '-s' in args
 if skip_engine_launch:
     print "SKIPPING the call to engine-spark!"
 else:
     cmd = os.path.join(here, r'../bin/engine-spark.sh')
+    if scala_debug:
+        cmd += ' -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9115'
     print "Calling engine-spark to dump the command json file: %s" % cmd
-    subprocess.call(cmd)
+    subprocess.call(cmd, shell=True)
 
 # Get the command definitions, which should have been dumped by the engine-spark's CommandDumper
 print "Opening dump file and pulling in the command defintions"

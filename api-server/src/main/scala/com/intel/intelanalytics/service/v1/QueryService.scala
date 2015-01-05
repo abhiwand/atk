@@ -29,8 +29,9 @@ import com.intel.intelanalytics.domain.query.{ Query, Execution, QueryTemplate }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ Load, LoadSource }
 import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator }
+import com.intel.intelanalytics.service.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }
@@ -57,7 +58,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param query The query being decorated
    * @return View model of the command.
    */
-  def decorate(uri: Uri, query: Query, partition: Option[Long])(implicit user: UserPrincipal): GetQuery = {
+  def decorate(uri: Uri, query: Query, partition: Option[Long])(implicit invocation: Invocation): GetQuery = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     QueryDecorator.decorateEntity(uri.toString(), links, query)
@@ -82,7 +83,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * The spray routes defining the query service.
    */
   def queryRoutes() = {
-    commonDirectives(prefix) { implicit principal: UserPrincipal =>
+    commonDirectives(prefix) { implicit invocation: Invocation =>
       pathPrefix(prefix / LongNumber) {
         id =>
           {

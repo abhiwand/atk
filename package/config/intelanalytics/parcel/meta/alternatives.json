@@ -1,0 +1,32 @@
+{
+    "intel-analytics-config": {
+      "destination": "/etc/atk",
+      "source": "etc/intelanalytics/rest-server",
+      "priority": 10,
+      "isDirectory": true
+    },
+    "intel-analytics-logrotate.d": {
+      "destination": "/etc/logrotate.d/atk",
+      "source": "etc/logrotate.d/intelanalytics-rest-server",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-graphbuilder-lib": {
+      "destination": "/usr/lib/atk/ispark-deps.jar",
+      "source": "usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar",
+      "priority": 10,
+      "isDirectory": false
+    },
+    "intel-analytics-logs": {
+      "destination": "/var/log/atk",
+      "source": "log",
+      "priority": 10,
+      "isDirectory": true
+    },
+    "examples": {
+          "destination": "/var/lib/intelanalytics/examples",
+          "source": "usr/lib/intelanalytics/rest-server/examples",
+          "priority": 10,
+          "isDirectory": true
+        }
+}

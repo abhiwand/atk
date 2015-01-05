@@ -24,8 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDLongValue
-import com.intel.giraph.io.titan.hbase.{ TitanHBaseVertexInputFormatLongLongNull, TitanHBaseVertexInputFormatLongDoubleNull }
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -41,9 +40,9 @@ import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class ConnectedComponentsCommand(graph: GraphReference,
-                                      input_edge_label: String,
-                                      output_vertex_property: String,
-                                      convergence_progress_output_interval: Option[Int] = None)
+                                      inputEdgeLabel: String,
+                                      outputVertexProperty: String,
+                                      convergenceProgressOutputInterval: Option[Int] = None)
 
 case class ConnectedComponentsResult(value: String) //TODO
 
@@ -107,28 +106,27 @@ class ConnectedComponents
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: ConnectedComponentsCommand)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
+  override def execute(arguments: ConnectedComponentsCommand)(implicit context: Invocation): ConnectedComponentsResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
     GiraphConfigurationUtil.set(hConf, "cc.convergenceProgressOutputInterval",
-      arguments.convergence_progress_output_interval)
+      arguments.convergenceProgressOutputInterval)
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabel))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexProperty))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongLongNull])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatLongLongNull])
     giraphConf.
       setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDLongValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[ConnectedComponentsComputation.ConnectedComponentsMasterCompute])
@@ -137,6 +135,6 @@ class ConnectedComponents
 
     ConnectedComponentsResult(GiraphJobManager.run("ia_giraph_conncectedcomponents",
       classOf[ConnectedComponentsComputation].getCanonicalName,
-      config, giraphConf, invocation, "cc-convergence-report_0"))
+      config, giraphConf, context, "cc-convergence-report_0"))
   }
 }

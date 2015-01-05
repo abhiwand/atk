@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentSum, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -56,73 +57,67 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Computes a cumulative percent sum.",
     extendedSummary = Some("""
-                           |    Extended Summary
-                           |    ----------------
-                           |    Compute a cumulative percent sum.
-                           |    A cumulative percent sum is computed by sequentially stepping through the
-                           |    column values and keeping track of the current percentage of the total sum
-                           |    accounted for at the current value.
-                           |
-                           |    Parameters
-                           |    ----------
-                           |    sample_col: str
-                           |        The name of the column from which to compute the cumulative percent sum.
-                           |
-                           |    Returns
-                           |    -------
-                           |    BigFrame
-                           |        A new object accessing a new frame containing the original columns
-                           |        appended with a column containing the cumulative percent sums.
-                           |        The new column will have the name of the sample column, appended with
-                           |        ``_cumulative_percent``.
-                           |
-                           |    Notes
-                           |    -----
-                           |    This function applies only to columns containing numerical data.
-                           |    Although this function will execute for columns containing negative
-                           |    values, the interpretation of the result will change (for example,
-                           |    negative percentages).
-                           |
-                           |    Examples
-                           |    --------
-                           |    Consider BigFrame *my_frame* accessing a frame that contains a single
-                           |    column named *obs*::
-                           |
-                           |        my_frame.inspect()
-                           |
-                           |          obs:int32
-                           |        /-----------/
-                           |             0
-                           |             1
-                           |             2
-                           |             0
-                           |             1
-                           |             2
-                           |
-                           |    The cumulative percent sum for column *obs* is obtained by::
-                           |
-                           |        cps_frame = my_frame.cumulative_percent('obs')
-                           |
-                           |    The new frame accessed by BigFrame *cps_frame* contains two columns *obs*
-                           |    and *obsCumulativePercentSum*.
-                           |    They contain the original data and the cumulative percent sum,
-                           |    respectively::
-                           |
-                           |        cps_frame.inspect()
-                           |
-                           |          obs:int32   obs_cumulative_percent:float64
-                           |        /--------------------------------------------/
-                           |             0                             0.0
-                           |             1                             0.16666666
-                           |             2                             0.5
-                           |             0                             0.5
-                           |             1                             0.66666666
-                           |             2                             1.0
-                           |
-                           |    .. versionadded:: 0.8
-                           |
-                            """.stripMargin)))
-
+                             |    Extended Summary
+                             |    ----------------
+                             |    Compute a cumulative percent sum.
+                             |    A cumulative percent sum is computed by sequentially stepping through the
+                             |    column values and keeping track of the current percentage of the total sum
+                             |    accounted for at the current value.
+                             |
+                             |    Parameters
+                             |    ----------
+                             |    sample_col: str
+                             |        The name of the column from which to compute the cumulative percent sum.
+                             |
+                             |    Returns
+                             |    -------
+                             |    None
+                             |
+                             |    Notes
+                             |    -----
+                             |    This function applies only to columns containing numerical data.
+                             |    Although this function will execute for columns containing negative
+                             |    values, the interpretation of the result will change (for example,
+                             |    negative percentages).
+                             |
+                             |    Examples
+                             |    --------
+                             |    Consider Frame *my_frame* accessing a frame that contains a single
+                             |    column named *obs*::
+                             |
+                             |        my_frame.inspect()
+                             |
+                             |          obs:int32
+                             |        /-----------/
+                             |             0
+                             |             1
+                             |             2
+                             |             0
+                             |             1
+                             |             2
+                             |
+                             |    The cumulative percent sum for column *obs* is obtained by::
+                             |
+                             |        my_frame.cumulative_percent('obs')
+                             |
+                             |    The Frame *my_frame* now contains two columns *obs* and *obsCumulativePercentSum*.
+                             |    They contain the original data and the cumulative percent sum,
+                             |    respectively::
+                             |
+                             |        my_frame.inspect()
+                             |
+                             |          obs:int32   obs_cumulative_percent:float64
+                             |        /--------------------------------------------/
+                             |             0                             0.0
+                             |             1                             0.16666666
+                             |             2                             0.5
+                             |             0                             0.5
+                             |             1                             0.66666666
+                             |             2                             1.0
+                             |
+                             |    .. versionadded:: 0.8
+                             |
+                           """.stripMargin)))
   /**
    * Compute a cumulative percent sum.
    *
@@ -130,26 +125,25 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: CumulativePercentSum)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: CumulativePercentSum)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.frame.id
-    val frameMeta = frames.expectFrame(frameId)
-    val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
+    val frameEntity = frames.expectFrame(frameId)
+    val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
-    val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columnTuples :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val frameSchema = frameEntity.schema
+    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }

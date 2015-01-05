@@ -49,7 +49,10 @@ class CsvFile(DataFile):
     delimiter : string (optional)
         string indicator of the delimiter for the fields
     skip_header_lines : int (optional)
-        indicates numbers of lines to skip before parsing records
+        indicates numbers of lines to skip before parsing records.
+
+        *NOTE* If the number of lines to be skipped is greater than two, there is a chance that only two
+        lines will get skipped if the dataset is small.
 
     Returns
     -------
@@ -115,7 +118,7 @@ class CsvFile(DataFile):
         self.skip_header_lines = skip_header_lines
 
     def __repr__(self):
-        return repr(self.schema)
+        return repr(self.__dict__)
 
     def _schema_to_json(self):
         return [(field[0], valid_data_types.to_string(field[1]))
@@ -222,6 +225,7 @@ class LineFile(DataFile):
     First bring in the stuff::
 
         import intelanalytics as ia
+        ia.connect()
 
     Now build a LineFile object::
 
@@ -241,3 +245,235 @@ class LineFile(DataFile):
 
     def __repr__(self):
         return repr(self.file_name)
+
+class MultiLineFile(DataFile):
+
+    annotation = "multline_file"
+
+    def __init__(self, file_name, start_tag=None, end_tag=None):
+        if not file_name or not isinstance(file_name, basestring):
+            raise ValueError("file_name must be a non-empty string")
+        self.file_name = file_name
+        self.start_tag = start_tag
+        self.end_tag = end_tag
+
+    def __repr__(self):
+        return repr(self.file_name)
+
+
+class JsonFile(MultiLineFile):
+    """
+    Define a Json file. When Json files are loaded into the system all top level Json objects are recorded into the
+    frame as seperate elements.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of data input file.
+        File must be in the hadoop file system.
+        Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
+        Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
+
+    Returns
+    -------
+    class
+        An object which holds both the name and tag of a :term:`Json` file.
+
+    Examples
+    --------
+    For this example, we are going to use a raw data file named "raw_data.json".
+    The file has been moved to hdfs://localhost.localdomain/user/iauser/data/.
+    It consists of a 3 top level json objects with a single value each called obj. obj is itself an object containing
+    the attributes color, size, shape
+
+    The example Json file::
+        { "obj": {
+            "color": "blue",
+            "size": 3,
+            "shape": "square" }
+        }
+        { "obj": {
+            "color": "green",
+            "size": 7,
+            "shape": "triangle" }
+        }
+        { "obj": {
+            "color": "orange",
+            "size": 10,
+            "shape": "square" }
+        }
+
+    First bring in the stuff::
+
+        import intelanalytics as ia
+        ia.connect()
+
+    Next we create a JsonFile object that defines the file we are interested in::
+
+        json_file = ia.JsonFile("data/raw_data.json")
+
+    Now we create a frame using this JsonFile
+        f = ia.Frame(json_file)
+
+    At this point we have a frame that looks like::
+         data_lines
+         ------------------------
+        '{ "obj": {
+            "color": "blue",
+            "size": 3,
+            "shape": "square" }
+        }'
+        '{ "obj": {
+            "color": "green",
+            "size": 7,
+            "shape": "triangle" }
+        }'
+        '{ "obj": {
+            "color": "orange",
+            "size": 10,
+            "shape": "square" }
+        }'
+
+    Now we will want to parse our values out of the xml file. To do this we will use the add_columns method::
+
+        def parse_my_json(row):
+            import json
+            my_json = json.loads(row[0])
+            obj = my_json['obj']
+            return (obj['color'], obj['size'], obj['shape'])
+
+
+        f.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
+
+    Now that we have parsed our desired values it is safe to drop the source XML fragment::
+        f.drop_columns(['data_lines'])
+
+    This produces a frame that looks like::
+        color       size        shape
+        ---------   ----------  ----------
+        blue        3           square
+        green       7           triangle
+        orange      10          square
+
+
+    .. versionadded:: 0.9
+
+    """
+
+    annotation = "json_file"
+
+    def __init__(self, file_name):
+        if not file_name or not isinstance(file_name, basestring):
+            raise ValueError("file_name must be a non-empty string")
+        MultiLineFile.__init__(self, file_name, ['{'], ['}'])
+
+    def __repr__(self):
+        return repr(self.file_name)
+
+
+class XmlFile(MultiLineFile):
+    """
+    Define an XML file. When XML files are loaded into the system individual records are separated into the highest
+    level elements found with the specified tag name and places them into a column called data_lines.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of data input file.
+        File must be in the hadoop file system.
+        Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
+        Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
+    tag_name : string
+        Tag name used to determine the split of elements into separate records.
+
+    Returns
+    -------
+    class
+        An object which holds both the name and tag of a :term:`XML` file.
+
+    Examples
+    --------
+    For this example, we are going to use a raw data file named "raw_data.xml".
+    The file has been moved to hdfs://localhost.localdomain/user/iauser/data/.
+    It consists of a root element called shapes with 2 sub elements with the tag name square.
+    Each of these subelements has two subelements called name and size.
+    One of the elements has an attribute called color.
+    Additionally there is one triangle element that we are not interested in.
+
+    The example XML file::
+        <?xml version="1.0" encoding="UTF-8"?>
+        <shapes>
+            <square>
+                <name>left</name>
+                <size>3</size>
+            </square>
+            <triangle>
+                <size>3</size>
+            </triangle>
+            <square color="blue">
+                <name>right</name>
+                <size>5</size>
+            </square>
+        </shapes>
+
+    First bring in the stuff::
+
+        import intelanalytics as ia
+        ia.connect()
+
+    Next we create an XmlFile object that defines the file and element tag we are interested in::
+
+        xml_file = ia.XmlFile("data/raw_data.xml", "square")
+
+    Now we create a frame using this XmlFile
+        f = ia.Frame(xml_file)
+
+    At this point we have a frame that looks like::
+         data_lines
+         ------------------------
+         '<square>
+                <name>left</name>
+                <size>3</size>
+            </square>'
+         '<square color="blue">
+                <name>right</name>
+                <size>5</size>
+            </square>'
+
+    Now we will want to parse our values out of the xml file. To do this we will use the add_columns method::
+
+        def parse_my_xml(row):
+            import xml.etree.ElementTree as ET
+            ele = ET.fromstring(row[0])
+            return (ele.get("color"), ele.find("name").text, ele.find("size").text)
+
+        f.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
+
+    Now that we have parsed our desired values it is safe to drop the source XML fragment::
+        f.drop_columns(['data_lines'])
+
+    This produces a frame that looks like::
+        color       name        size
+        ---------   ----------  ----------
+        None        left        3
+        blue        right       5
+
+
+    .. versionadded:: 0.9
+
+    """
+
+    annotation = "xml_file"
+
+    def __init__(self, file_name, tag_name):
+        if not file_name or not isinstance(file_name, basestring):
+            raise ValueError("file_name must be a non-empty string")
+        if not tag_name or not isinstance(tag_name, basestring):
+            raise ValueError("tag_name is required")
+        MultiLineFile.__init__(self, file_name, ['<%s>' % tag_name, '<%s ' % tag_name], ['</%s>' % tag_name])
+
+    def __repr__(self):
+        return repr(self.file_name)
+
