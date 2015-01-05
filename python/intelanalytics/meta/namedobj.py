@@ -27,7 +27,7 @@ import sys
 import logging
 
 from intelanalytics.meta.api import get_api_decorator, api_globals
-from intelanalytics.meta.metaprog import COMMAND_PREFIX, set_function_doc_stub_text, get_loadable_class_from_command_prefix
+from intelanalytics.meta.metaprog import ENTITY_TYPE, set_function_doc_stub_text, get_loadable_class_from_entity_type
 
 
 def name_support(term):
@@ -98,7 +98,7 @@ class _NamedObjectsFunctionFactory(object):
 
         def set_name(self, value):
             arguments = {obj_term: self._id, "new_name": value}
-            execute_command(getattr(obj_class, COMMAND_PREFIX) + "/rename", self, **arguments)
+            execute_command(getattr(obj_class, ENTITY_TYPE) + "/rename", self, **arguments)
         set_name.__name__ = 'name'
         api_set_name = get_api_decorator(module_logger)(set_name)
 
@@ -150,19 +150,19 @@ class _NamedObjectsFunctionFactory(object):
         http = self._http
         term = self._term
         obj_class = self._class
-        get_class = get_loadable_class_from_command_prefix
+        get_class = get_loadable_class_from_entity_type
 
         def get_object(name):
             module_logger.info("%s(%s)", get_object_name, name)
             r = http.get(rest_target+name)
             try:
-                command_prefix = r.json()['command_prefix']
+                entity_type = r.json()['entity_type']
             except KeyError:
                 return obj_class(r.json())
             else:
-                if not command_prefix.startswith(term):
+                if not entity_type.startswith(term):
                     raise ValueError("Object named '%s' is not a %s type" % (name, term))
-                cls = get_class(command_prefix)
+                cls = get_class(entity_type)
                 return cls(r.json())
         get_object.__name__ = get_object_name
         get_object.__doc__ = """Get {obj_term} object.
@@ -204,7 +204,7 @@ class _NamedObjectsFunctionFactory(object):
                     raise TypeError("Excepted argument of type {term} or else the {term}'s name".format(term=obj_term))
             for name, instance in victims.items():
                 module_logger.info("Drop %s %s", obj_term, name)
-                http.delete(rest_target  + str(instance._id))  # TODO: update w/ URI jazz
+                http.delete(rest_target + str(instance._id))  # TODO: update w/ URI jazz
         drop_objects.__name__ = drop_objects_name
         drop_objects.__doc__ = """Erases data.
 

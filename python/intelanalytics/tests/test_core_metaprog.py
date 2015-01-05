@@ -26,12 +26,12 @@ iatest.init()
 import unittest
 import mock
 import intelanalytics.core.iatypes as iatypes
-from intelanalytics.meta.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_command_prefix
+from intelanalytics.meta.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_entity_type
 from intelanalytics.meta.command import CommandDefinition, Parameter, Return
 
 
 class Numbers(CommandLoadable):
-    _command_prefix = 'numbers'
+    _entity_type = 'numbers'
     def __init__(self, name):
         self._id = name
         CommandLoadable.__init__(self)
@@ -109,24 +109,24 @@ class TestNaming(unittest.TestCase):
         from intelanalytics.meta.metaprog import pascal_to_underscores
         self.assertEqual("logistic_regression_model", pascal_to_underscores("LogisticRegressionModel"))
 
-    def test_get_command_prefix_from_class_name(self):
-        from intelanalytics.meta.metaprog import get_command_prefix_from_class_name
-        self.assertEqual("model:logistic_regression", get_command_prefix_from_class_name("LogisticRegressionModel"))
-        self.assertEqual("model", get_command_prefix_from_class_name("_BaseModel"))
+    def test_get_entity_type_from_class_name(self):
+        from intelanalytics.meta.metaprog import get_entity_type_from_class_name
+        self.assertEqual("model:logistic_regression", get_entity_type_from_class_name("LogisticRegressionModel"))
+        self.assertEqual("model", get_entity_type_from_class_name("_BaseModel"))
         with self.assertRaises(ValueError) as cm:
-            get_command_prefix_from_class_name("")
+            get_entity_type_from_class_name("")
         self.assertEqual(str(cm.exception), "Invalid empty class_name, expected non-empty string")
 
-    def test_get_loadable_class_name_from_command_prefix(self):
-        from intelanalytics.meta.metaprog import get_loadable_class_name_from_command_prefix
-        self.assertEqual("LogisticRegressionModel", get_loadable_class_name_from_command_prefix("model:logistic_regression"))
-        self.assertEqual("_BaseModel", get_loadable_class_name_from_command_prefix("model"))
+    def test_get_loadable_class_name_from_entity_type(self):
+        from intelanalytics.meta.metaprog import get_loadable_class_name_from_entity_type
+        self.assertEqual("LogisticRegressionModel", get_loadable_class_name_from_entity_type("model:logistic_regression"))
+        self.assertEqual("_BaseModel", get_loadable_class_name_from_entity_type("model"))
         with self.assertRaises(ValueError) as cm:
-            get_loadable_class_name_from_command_prefix("")
-        self.assertEqual(str(cm.exception), "Invalid empty command_prefix, expected non-empty string")
+            get_loadable_class_name_from_entity_type("")
+        self.assertEqual(str(cm.exception), "Invalid empty entity_type, expected non-empty string")
 
 class TestDocStubs(unittest.TestCase):
-    def test_get_loadable_class_name_from_command_prefix(self):
+    def test_get_loadable_class_name_from_entity_type(self):
         cases = [
             ('frame', "_BaseFrame"),
             ('frame:', "Frame"),
@@ -137,8 +137,8 @@ class TestDocStubs(unittest.TestCase):
             ('graph:titan', "TitanGraph"),
             ('model', "_BaseModel"),
             ]
-        for prefix, expected in cases:
-            self.assertEqual(expected, get_loadable_class_name_from_command_prefix(prefix))
+        for entity_type, expected in cases:
+            self.assertEqual(expected, get_loadable_class_name_from_entity_type(entity_type))
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import spray.json.{ JsValue }
+import spray.json.JsValue
 import com.intel.intelanalytics.domain.schema.Schema
 
 /**

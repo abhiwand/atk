@@ -62,6 +62,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    */
   override def doc: Option[CommandDoc] = None
 
+  override def numberOfJobs(arguments: FrameJoin)(implicit invocation: Invocation): Int = 2
+
   /**
    * Join two data frames (similar to SQL JOIN)
    *
@@ -78,8 +80,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     val originalColumns = arguments.frames.map {
       frame =>
         {
-          val frameMeta = frames.expectFrame(frame._1)
-          frameMeta.schema.columnTuples
+          val frameEntity = frames.expectFrame(frame._1)
+          frameEntity.schema.columnTuples
         }
     }
 
@@ -105,18 +107,17 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
       RDDJoinParam(pairRdds(1), rightColumns.length),
       arguments.how)
 
-    val joinRowCount = joinResultRDD.count()
-    frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD), Some(joinRowCount))
+    frames.saveLegacyFrame(newJoinFrame.toReference, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD))
   }
 
   def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext)(implicit invocation: Invocation): List[RDD[(Any, Array[Any])]] = {
     val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = arguments.frames.map {
       frame =>
         {
-          val frameMeta = frames.lookup(frame._1).getOrElse(
+          val frameEntity = frames.lookup(frame._1).getOrElse(
             throw new IllegalArgumentException(s"No such data frame"))
 
-          val frameSchema = frameMeta.schema
+          val frameSchema = frameEntity.schema
           val rdd = frames.loadLegacyFrameRdd(ctx, frame._1)
           val columnIndex = frameSchema.columnIndex(frame._2)
           (rdd, columnIndex)

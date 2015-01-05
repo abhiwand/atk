@@ -37,6 +37,7 @@ import parquet.schema.MessageType
 import scala.collection.JavaConverters._
 
 import scala.collection.mutable.{ ArrayBuffer, ListBuffer }
+import scala.collection.JavaConverters._
 
 /**
  * A class that will read data from parquet files located at a specified path.
@@ -48,6 +49,21 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
   private[parquet] val utf8 = Charset.forName("UTF-8")
   private val decoder = utf8.newDecoder()
   private val ParquetFileOrderPattern = ".*part-r-(\\d*)\\.parquet".r
+
+  /**
+   * Row count for the frame stored at this path
+   */
+  def rowCount(): Long = {
+    val files: List[Footer] = getFiles()
+    var result = 0L
+    for {
+      file <- files
+      block <- file.getParquetMetadata.getBlocks.asScala
+    } {
+      result += block.getRowCount
+    }
+    result
+  }
 
   /**
    * take from this objects path data from parquet files as a list of arrays.
@@ -69,7 +85,7 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
       file <- files if currentCount < capped
     ) {
       val metaData = file.getParquetMetadata
-      val schema = metaData.getFileMetaData.getSchema;
+      val schema = metaData.getFileMetaData.getSchema
 
       val reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
       var store: PageReadStore = reader.readNextRowGroup()

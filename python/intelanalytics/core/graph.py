@@ -195,7 +195,7 @@ class VertexRule(Rule):
 
     """
     def __init__(self, id_key, id_value, properties=None):
-        raise_deprecation_warning("VertexRule", titan_rule_deprecation)
+        #raise_deprecation_warning("VertexRule", titan_rule_deprecation)
         self.id_key = id_key
         self.id_value = id_value
         self.properties = properties or {}
@@ -270,7 +270,7 @@ class EdgeRule(Rule):
 
     """
     def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
-        raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
+        #raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
         self.bidirectional = bool(bidirectional)
         if is_directed is not None:
             raise_deprecation_warning("EdgeRule", "Parameter 'is_directed' is now called bidirectional' and has opposite polarity.")
@@ -370,7 +370,7 @@ except Exception as e:
 @api
 @name_support('graph')
 class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
-    _command_prefix = 'graph'
+    _entity_type = 'graph'
     def __init__(self):
         CommandLoadable.__init__(self)
 
@@ -477,7 +477,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.edges['worksunder'].inspect(20)
 
     """
-    _command_prefix = 'graph:'
+    _entity_type = 'graph:'
 
     def __init__(self, source=None, name=''):
         if not hasattr(self, '_backend'):
@@ -637,7 +637,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     """
 
-    _command_prefix = 'graph:titan'
+    _entity_type = 'graph:titan'
 
     def __init__(self, rules=None, name=""):
         try:

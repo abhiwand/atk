@@ -9,9 +9,9 @@ import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json._
 
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
-
   import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
 
   before {
@@ -43,6 +43,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
   }
 
   "serializeGremlinToJson" should "serialize a Blueprint's row into a JSON map" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val rowMap = Map("col1" -> "val1", "col2" -> "val2")
     val row = new Row(rowMap.values.toList, rowMap.keys.toList)
 
@@ -50,6 +51,30 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val jsonFields = json.fields
     jsonFields.keySet should contain theSameElementsAs (rowMap.keySet)
     jsonFields.values.toList should contain theSameElementsAs (List(JsString("val1"), JsString("val2")))
+  }
+  "serializeGremlinToJson" should "serialize Java collections to JSON" in {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    val javaSet = Array(1, 2, 3).toSet.asJava
+    val javaList = Array("Alice", "Bob", "Charles").toList.asJava
+
+    val jsonSet = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaSet)
+    val jsonList = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaList)
+
+    jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs (javaSet)
+    jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs (javaList)
+  }
+  "serializeGremlinToJson" should "serialize Java maps to JSON" in {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    val javaHashMap = new java.util.HashMap[String, Int]()
+    javaHashMap.put("Alice", 29)
+    javaHashMap.put("Bob", 45)
+    javaHashMap.put("Jason", 56)
+
+    val jsonMap = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaHashMap)
+    val javaJsonToHashMap = jsonMap.convertTo[java.util.HashMap[String, Int]]
+
+    javaJsonToHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
+    javaJsonToHashMap.values() should contain theSameElementsAs (javaHashMap.values())
   }
 
   "deserializeJsonToGremlin" should "deserialize GraphSON into a Blueprint's vertex" in {
@@ -70,6 +95,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
   }
 
   "deserializeJsonToGremlin" should "deserialize a JSON map to a Blueprint's row" in {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     val json = Map("col1" -> 1, "col2" -> 2).toJson
     val jsonFields = json.asJsObject.fields
 
@@ -77,6 +103,29 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
     row.getColumnNames should contain theSameElementsAs (jsonFields.keySet)
     row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs (List(1, 2))
+  }
+
+  "deserializeJsonToGremlin" should "deserialize a JSON map to a Java Map" in {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    val json = Map("weight1" -> 1.5, "weight2" -> 4.5).toJson
+    val jsonFields = json.asJsObject.fields
+
+    val javaHashMap = GremlinUtils.deserializeJsonToGremlin[java.util.Map[String, Double]](titanIdGraph, json)
+
+    javaHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
+    javaHashMap.values() should contain theSameElementsAs (javaHashMap.values())
+  }
+
+  "deserializeJsonToGremlin" should "deserialize a JSON array to a Java collection" in {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    val jsonSet = Array(1, 2, 3).toSet.toJson
+    val jsonList = Array("Alice", "Bob", "Charles").toList.toJson
+
+    val javaSet = GremlinUtils.deserializeJsonToGremlin[java.util.Set[Int]](titanIdGraph, jsonSet)
+    val javaList = GremlinUtils.deserializeJsonToGremlin[java.util.List[String]](titanIdGraph, jsonList)
+
+    javaSet should contain theSameElementsAs (Array(1, 2, 3))
+    javaList should contain theSameElementsAs (Array("Alice", "Bob", "Charles"))
   }
 
   "getGraphSONMode" should "return the Blueprint's GraphSON mode for supported modes" in {

@@ -266,7 +266,7 @@ trait AbstractRow {
    * @param names the names of the properties to put into an array
    * @return values for the supplied properties
    */
-  private def valuesAsArray(names: Seq[String]): Array[Any] = {
+  def valuesAsArray(names: Seq[String]): Array[Any] = {
     val indices = schema.columnIndices(names)
     indices.map(i => row(i)).toArray
   }
