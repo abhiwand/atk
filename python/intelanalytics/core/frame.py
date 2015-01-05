@@ -801,7 +801,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         return self._backend.inspect(self, n, offset, columns)
 
     @api
-    def join(self, right, left_on, right_on=None, how='inner'):
+    def join(self, right, left_on, right_on=None, how='inner', name=None):
         """
         Combine frames.
 
@@ -833,6 +833,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         how : str (optional)
             ['left' | 'right' | 'inner'].
+
+        name : str (optional)
+            Name for the resulting new joined frame
 
         Returns
         -------
@@ -880,7 +883,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         # For further examples, see :ref:`example_frame.join`.
-        return self._backend.join(self, right, left_on, right_on, how)
+        return self._backend.join(self, right, left_on, right_on, how, name)
 
     @api
     def sort(self, columns, ascending=True):
