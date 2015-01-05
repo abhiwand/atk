@@ -21,10 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.domain.model
 
-case class FrameGroupByColumn(frame: FrameReference, groupByColumns: List[String], aggregations: List[(String, String, String)]) {
-  require(frame != null, "frame is required")
-  require(groupByColumns != null, "group_by columns is required")
-  require(aggregations != null, "aggregation list is required")
+import com.intel.intelanalytics.domain.frame.FrameReference
+
+/**
+ * Command for loading model data into existing model in the model database.
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumn Handle to the observation column of the data frame
+ */
+case class ModelPredict(model: ModelReference, frame: FrameReference, observationColumn: String) {
+  require(model != null, "model must not be null")
+  require(frame != null, "frame must not be null")
+  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
 }

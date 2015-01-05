@@ -29,7 +29,7 @@ package com.intel.intelanalytics.domain.frame
  * @param frames input frames for the join operation
  * @param how methods of join. inner, left or right
  */
-case class FrameJoin(name: String, frames: List[(Long, String)], how: String) {
+case class FrameJoin(frames: List[(Long, String)], how: String, name: Option[String] = None) {
   require(frames != null, "frame is required")
   require(frames.length == 2, "Two frames are required for the join operation")
 }

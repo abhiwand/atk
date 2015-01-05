@@ -272,6 +272,13 @@ trait AbstractRow {
   }
 
   /**
+   * Select several property values from their names
+   * @return values for the supplied properties
+   */
+  private def valuesAsArray(): Array[Any] = {
+    row.toArray[Any]
+  }
+  /**
    * Create a new row matching the supplied schema adding/dropping columns as needed.
    *
    * @param updatedSchema the new schema to match

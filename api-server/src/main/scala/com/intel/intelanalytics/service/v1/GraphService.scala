@@ -26,7 +26,7 @@ package com.intel.intelanalytics.service.v1
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json._
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import scala.Some
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
@@ -98,7 +98,8 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           val links = List(Rel.self(uri.toString))
                           complete(GraphDecorator.decorateEntity(uri.toString(), links, graph))
                         }
-                        case _ => reject()
+                        case Success(None) => complete(StatusCodes.NotFound)
+                        case Failure(ex) => throw ex
                       }
                     }
                     case _ =>
@@ -146,7 +147,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                               decorated
                             }
                           }
-                          case _ => reject()
+                          case Failure(ex) => throw ex
                         }
                       } ~
                         delete {

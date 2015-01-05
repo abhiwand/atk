@@ -29,7 +29,7 @@ import scala.util.Try
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine
 import scala.concurrent._
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import spray.routing.{ ValidationRejection, Directives, Route }
 import scala.util.Failure
 import scala.util.Success
@@ -77,6 +77,9 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
               uri =>
                 get {
                   onComplete(engine.getCommand(id)) {
+                    case Success(Some(command)) => complete(decorate(uri, command))
+                    case Success(None) => complete(StatusCodes.NotFound)
+                    case Failure(ex) => throw ex
                     case Success(Some(command)) =>
                       complete(decorate(uri, command))
                     case _ =>
@@ -91,7 +94,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
                               case Success(command) => complete("Command cancelled by client")
-                              case _ => reject()
+                              case Failure(ex) => throw ex
                             }
                           }
                         }
@@ -135,10 +138,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                             }
                           }
                           catch {
-                            case e: DeserializationException =>
-                              reject(ValidationRejection(
-                                s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
-                                  s" ${e.getMessage}", Some(e)))
+                            case e: DeserializationException => {
+                              val message = s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                s" ${e.getMessage}"
+                              failWith(new DeserializationException(message, e))
+                            }
                           }
                       }
                     }
