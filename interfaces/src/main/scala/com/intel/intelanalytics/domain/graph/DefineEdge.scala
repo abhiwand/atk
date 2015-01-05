@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.schema.EdgeSchema
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema }
 
 /**
  * Arguments for defining an edge
@@ -35,11 +35,7 @@ import com.intel.intelanalytics.domain.schema.EdgeSchema
  */
 case class DefineEdge(graphRef: GraphReference, label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) {
 
-  /**
-   * Create an edge schema from these args
-   */
   def edgeSchema: EdgeSchema = {
-    EdgeSchema(label, srcVertexLabel, destVertexLabel, directed)
+    new EdgeSchema(GraphSchema.edgeSystemColumns, label, srcVertexLabel, destVertexLabel, directed)
   }
-
 }

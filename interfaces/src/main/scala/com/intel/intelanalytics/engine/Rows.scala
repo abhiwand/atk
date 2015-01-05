@@ -26,6 +26,10 @@ package com.intel.intelanalytics.engine
 import com.intel.intelanalytics.domain.schema.Schema
 
 object Rows {
+
+  /**
+   * NOTE: we have both Row and Spark sql.Row in our codebase, it can be confusing.
+   */
   type Row = Array[Any]
 
   //TODO: Can we constrain this better?

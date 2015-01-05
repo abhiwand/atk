@@ -55,6 +55,8 @@ object Boot extends App with ClassLoaderAware {
 
   private val config: Config = ConfigFactory.load(interfaces)
 
+  val TMP = "/tmp/iat-" + java.util.UUID.randomUUID.toString + "/"
+
   def attempt[T](expr: => T, failureMessage: => String) = {
     try {
       expr
@@ -192,7 +194,7 @@ object Boot extends App with ClassLoaderAware {
       val augmentedConfig = config.withFallback(
         ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
 
-      writeFile("/tmp/iat/" + archiveName + ".effective-conf", augmentedConfig.root().render())
+      writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
 
       val archiveLoader = ArchiveClassLoader(archiveName, loader)
 

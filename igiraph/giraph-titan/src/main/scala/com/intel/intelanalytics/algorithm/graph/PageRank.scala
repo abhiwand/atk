@@ -24,8 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDDoubleValue
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDDoubleValue, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -40,12 +39,12 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Pr(graph: GraphReference,
-              input_edge_label_list: List[String],
-              output_vertex_property_list: List[String],
-              max_supersteps: Option[Int] = None,
-              convergence_threshold: Option[Double] = None,
-              reset_probability: Option[Double] = None,
-              convergence_progress_output_interval: Option[Int] = None)
+              inputEdgeLabelList: List[String],
+              outputVertexPropertyList: List[String],
+              maxSupersteps: Option[Int] = None,
+              convergenceThreshold: Option[Double] = None,
+              resetProbability: Option[Double] = None,
+              convergenceProgressOutputInterval: Option[Int] = None)
 
 case class PrResult(value: String) //TODO
 
@@ -119,29 +118,28 @@ class PageRank
                            | 
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Pr)(implicit user: UserPrincipal, executionContext: ExecutionContext): PrResult = {
+  override def execute(arguments: Pr)(implicit invocation: Invocation): PrResult = {
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "pr.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.reset_probability)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
+    GiraphConfigurationUtil.set(hConf, "pr.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.resetProbability)
+    GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergenceProgressOutputInterval)
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongDoubleNull])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatLongDoubleNull])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.DoubleWritable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[PageRankComputation.PageRankMasterCompute])
     giraphConf.setComputationClass(classOf[PageRankComputation])

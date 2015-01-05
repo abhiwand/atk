@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json._
 import spray.http.{ StatusCodes, Uri }
 import scala.Some
@@ -82,7 +83,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
     // from the metastore
 
     commonDirectives(prefix) {
-      implicit userProfile: UserPrincipal =>
+      implicit invocation: Invocation =>
         (path(prefix) & pathEnd) {
           requestUri {
             uri =>

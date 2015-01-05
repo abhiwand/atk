@@ -25,10 +25,11 @@
 package com.intel.spark.graphon.trianglecount
 
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import org.apache.spark.graphx.{ Graph, Edge => GraphXEdge }
+import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the TriangleCountRunnerArgs
@@ -75,6 +76,7 @@ object TriangleCountRunner extends Serializable {
 
     // create graphx Graph instance from graphx vertices and edges
     val graph = Graph[Null, Long](graphXVertices, graphXEdges)
+      .partitionBy(PartitionStrategy.RandomVertexCut)
 
     // run graphx trianglecount implementation
     val newGraph: Graph[Int, Long] = GraphXTriangleCount.run(graph)

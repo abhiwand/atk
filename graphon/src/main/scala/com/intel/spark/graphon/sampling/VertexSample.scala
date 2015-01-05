@@ -25,7 +25,11 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
@@ -125,50 +129,37 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
                            |    .. versionadded:: 0.8
                             """)))
 
-  override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
+  override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
     // Titan Settings
     val config = configuration
-    val titanConfigInput = config.getConfig("titan.load")
-
-    // create titanConfig
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
-    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
     // get the input graph object
     import scala.concurrent.duration._
-    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     // get SparkContext and add the graphon jar
-    val sc = invocation.sparkContext
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // convert graph name and get the graph vertex and edge RDDs
-    val iatGraphName = GraphBackendName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
-    val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
     val vertexSample = arguments.sampleType match {
-      case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
-      case "degree" => sampleVerticesDegree(vertexRDD, edgeRDD, arguments.size, arguments.seed)
-      case "degreedist" => sampleVerticesDegreeDist(vertexRDD, edgeRDD, arguments.size, arguments.seed)
+      case "uniform" => sampleVerticesUniform(gbVertices, arguments.size, arguments.seed)
+      case "degree" => sampleVerticesDegree(gbVertices, gbEdges, arguments.size, arguments.seed)
+      case "degreedist" => sampleVerticesDegreeDist(gbVertices, gbEdges, arguments.size, arguments.seed)
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
     // get the vertex induced subgraph edges
-    val edgeSample = vertexInducedEdgeSet(vertexSample, edgeRDD)
+    val edgeSample = vertexInducedEdgeSet(vertexSample, gbEdges)
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
-    val iatSubgraphName = GraphBackendName.convertGraphUserNameToBackendName(subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = new SerializableBaseConfiguration()
-    subgraphTitanConfig.copy(titanConfig)
-    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 

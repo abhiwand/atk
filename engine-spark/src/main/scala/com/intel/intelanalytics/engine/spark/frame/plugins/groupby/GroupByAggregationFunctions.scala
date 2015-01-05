@@ -67,7 +67,7 @@ object GroupByAggregationFunctions {
     }
     val new_schema = new_column_names.zip(new_data_types)
 
-    new LegacyFrameRDD(new Schema(new_schema), resultRdd)
+    new LegacyFrameRDD(Schema.fromTuples(new_schema), resultRdd)
   }
 
   private def aggregationFunctions(elem: Seq[Array[Any]],

@@ -23,10 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 
+import scala.math._
+
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 /**
@@ -38,6 +42,33 @@ import org.apache.spark.SparkContext._
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
 object DiscretizationFunctions extends Serializable {
+
+  /**
+   * Column values into bins.
+   *
+   * Two types of binning are provided: equalwidth and equaldepth.
+   *
+   * Equal width binning places column values into bins such that the values in each bin fall within the same
+   * interval and the interval width for each bin is equal.
+   *
+   * Equal depth binning attempts to place column values into bins such that each bin contains the same number
+   * of elements
+   *
+   * @param columnIndex column index
+   * @param binType equalwidth or equaldepth
+   * @param numberOfBins requested number of bins
+   * @param rdd the input with the column for binning
+   * @return the new RDD with a column added
+   */
+  def bin(columnIndex: Int, binType: String, numberOfBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    binType match {
+      case "equalwidth" =>
+        DiscretizationFunctions.binEqualWidth(columnIndex, numberOfBins, rdd)
+      case "equaldepth" =>
+        DiscretizationFunctions.binEqualDepth(columnIndex, numberOfBins, rdd)
+      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${binType}, please choose from: equalwidth, equaldepth.")
+    }
+  }
 
   /**
    * Bin column at index using equal width binning.
@@ -66,7 +97,7 @@ object DiscretizationFunctions extends Serializable {
 
     // find the minimum and maximum values in the column RDD
     val min: Double = pairedRdd.sortByKey().first()._1
-    val max: Double = pairedRdd.sortByKey(false).first()._1
+    val max: Double = pairedRdd.sortByKey(ascending = false).first()._1
 
     // determine bin width and cutoffs
     val binWidth = (max - min) / numBins.toDouble
@@ -115,63 +146,98 @@ object DiscretizationFunctions extends Serializable {
    * @return new RDD with binned column appended
    */
   def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    import scala.math.ceil
 
     // try creating RDD[Double] from column
-    val columnRdd = try {
-      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
-    }
-    catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
-    }
-
-    val numElements = columnRdd.count()
+    val columnRdd = rdd.map(row => (DataTypes.toDouble(row(index))))
+    columnRdd.cache()
 
     // assign a rank to each distinct element
-    val pairedRdd = columnRdd.groupBy(element => element).map(pairs => (pairs._1, pairs._2.size)).sortByKey()
+    val numElements = columnRdd.count().toDouble
+    val rankedElementRdd = assignElementRanks(columnRdd)
 
-    // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
-    // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
-    // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
-    // Option 3: convert RDD to Array for sequential operations and back to RDD otherwise (works fine but inefficient)
-    // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
-    val pairedArray = pairedRdd.collect()
-
-    // the following will fail for columns that contain more than Int.MaxValue of a specific value
-    var rank = 1
-    val rankedArray = try {
-      pairedArray.map { value =>
-        val avgRank = BigDecimal((BigInt(rank) to BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
-        rank += value._2
-        (value._1, avgRank.toDouble)
-      }
-    }
-    catch {
-      case iae: IllegalArgumentException => throw new IllegalArgumentException("More than Int.MaxValue of specific column value" + iae.toString)
-    }
-
-    val rankedRdd = rdd.sparkContext.parallelize(rankedArray)
-
-    // compute the bin number
-    val binnedRdd = rankedRdd.map { valueRank =>
-      val bin = ceil((numBins * valueRank._2) / numElements.asInstanceOf[Double]).asInstanceOf[Long]
-      (valueRank._1, bin)
-    }
-
-    // shift the bin numbers so that they are contiguous values
-    val sortedBinnedRdd = binnedRdd.groupBy(valueBin => valueBin._2).sortByKey()
-
-    val sortedBinnedArray = sortedBinnedRdd.collect()
-
-    rank = 1
-    val shiftedArray = sortedBinnedArray.flatMap { binMappings =>
-      val valuePairs = binMappings._2.map(valueBin => (valueBin._1, rank))
-      rank += 1
-      valuePairs
-    }
-
-    val binMap = shiftedArray.toMap
-    rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
+    // compute the bin number    
+    val binNumberMap = assignBinNumbers(rankedElementRdd, numElements, numBins).collect().toMap
+    val broadcastBinMap = rdd.sparkContext.broadcast(binNumberMap)
+    rdd.map(row => row :+ (broadcastBinMap.value.get(DataTypes.toDouble(row(index))).get - 1).asInstanceOf[Any])
   }
 
+  /**
+   * Sort elements in column by ascending order and assign rank
+   *
+   * @param columnRdd RDD of column values
+   * @return RDD of column and rank
+   */
+  private def assignElementRanks(columnRdd: RDD[Double]): RDD[(Double, Double)] = {
+    val elementFrequencyRdd = columnRdd.map { element => (element, 1L) }.reduceByKey((a, b) => a + b).sortByKey()
+    elementFrequencyRdd.cache()
+
+    // Use broadcast variable to determine starting rank for each partition
+    val initialPartitionRank = getInitialPartitionRanks(elementFrequencyRdd)
+    val broadcastPartitionRanks = columnRdd.sparkContext.broadcast(initialPartitionRank)
+
+    val rankedRdd = elementFrequencyRdd.mapPartitionsWithIndex((i, iter) => {
+      var rank = broadcastPartitionRanks.value(i)
+      iter.map {
+        case (element, frequency) =>
+          // Using while loop instead of range because Scala ranges cannot cope with values that exceed Max.Int
+          var rankCounter = rank;
+          var rankSum = 0L;
+          while (rankCounter < (rank + frequency)) {
+            rankSum = rankSum + rankCounter
+            rankCounter = rankCounter + 1
+          }
+          val avgRank = BigDecimal(rankSum) / BigDecimal(frequency)
+          rank += frequency
+          (element, avgRank.toDouble)
+      }
+    })
+    elementFrequencyRdd.unpersist()
+    rankedRdd
+  }
+
+  /**
+   * Assign ranked numbers to bins
+   *
+   * @param rankedElementRdd RDD of sorted elements ranked in ascending order
+   * @param numElements Total number of elements
+   * @param numBins Requested number of bins
+   * @return  RDD of elements and corresponding bin number
+   */
+  private def assignBinNumbers(rankedElementRdd: RDD[(Double, Double)], numElements: Double, numBins: Int): RDD[(Double, Int)] = {
+    val binnedElementRdd = rankedElementRdd.map {
+      case (element, rank) =>
+        val bin = ceil((numBins * rank) / numElements).toInt
+        (element, bin)
+    }
+    binnedElementRdd.cache()
+
+    // shift the bin numbers so that they are contiguous values
+    val sortedBinRanks = binnedElementRdd.map { case (element, bin) => bin }.distinct().sortBy(bin => bin).zipWithIndex().collect()
+    val broadcastSortedBins = rankedElementRdd.sparkContext.broadcast(sortedBinRanks.toMap)
+
+    val rankedBinRdd = binnedElementRdd.map {
+      case (element, bin) =>
+        val binNumber = broadcastSortedBins.value
+          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin${bin}"))
+        (element, (binNumber + 1).toInt)
+    }
+    binnedElementRdd.unpersist()
+    rankedBinRdd
+  }
+
+  /**
+   * Get initial ranks for each partition.
+   *
+   * The initial rank in each partition is the sum of elements in the preceding partitions
+   *
+   * @param elementFrequencyRdd RDD of elements and frequency
+   * @return Array of initial ranks for each partition in RDD
+   */
+  def getInitialPartitionRanks(elementFrequencyRdd: RDD[(Double, Long)]): Array[Long] = {
+    elementFrequencyRdd.mapPartitions(iter => {
+      var sum = 0L
+      iter.foreach { case (element, frequency) => sum += frequency }
+      Seq(sum).toIterator
+    }).collect().scanLeft(1L)(_ + _)
+  }
 }

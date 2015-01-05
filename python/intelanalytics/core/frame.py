@@ -25,21 +25,21 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context
 api = get_api_decorator(logger)
 
-from intelanalytics.core.userfunction import has_python_user_function_arg
+from intelanalytics.meta.udf import has_python_user_function_arg
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.core.namedobj import name_support
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
+from intelanalytics.meta.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
 
 #from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
 
 
 def _get_backend():
-    from intelanalytics.core.config import get_frame_backend
+    from intelanalytics.meta.config import get_frame_backend
     return get_frame_backend()
 
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
@@ -85,8 +85,9 @@ except Exception as e:
 
 
 @api
+@name_support('frame')
 class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
-    _command_prefix = 'frame'
+    _entity_type = 'frame'
 
     def __init__(self):
         CommandLoadable.__init__(self)
@@ -406,125 +407,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         self._backend.add_columns(self, func, schema)
 
     @api
-    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
-        """
-        Group by value.
-
-        Summarize rows of data based on the value in a single column.
-        Two types of binning are provided: `equalwidth` and `equaldepth`.
-
-        *   Equal width binning places column values into bins such that the values in each bin fall within
-            the same interval and the interval width for each bin is equal.
-        *   Equal depth binning attempts to place column values into bins such that each bin contains the
-            same number of elements.
-            For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
-
-            .. math::
-
-                ceiling \\left( n * \\frac {f(C)}{m} \\right)
-
-            where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
-            If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the
-            average of their ordered rank values.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose values are to be binned.
-
-        num_bins : int
-            The maximum number of bins.
-
-        bin_type : str (optional)
-            The binning algorithm to use ['equalwidth' | 'equaldepth'].
-
-        bin_column_name : str (optional)
-            The name for the new binned column.
-
-        Returns
-        -------
-        Frame
-            A Frame accessing a new frame, with a bin column appended to the original frame structure
-            The type of the new column will be int32 and the bin numbers start at 1.
-
-        Notes
-        -----
-        1)  Unicode in column names is not supported and will likely cause the drop_frames() function
-            (and others) to fail!
-        #)  The num_bins parameter is considered to be the maximum permissible number of bins because the
-            data may dictate fewer bins.
-            With equal depth binning, for example, if the column to be binned has 10 elements with
-            only 2 distinct values and the *num_bins* parameter is greater than 2, then the number of
-            actual number of bins will only be 2.
-            This is due to a restriction that elements with an identical value must belong to the same bin.
-
-
-        Examples
-        --------
-        For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*::
-
-            my_frame.inspect( n=11 )
-
-              a:int32
-            /---------/
-                1
-                1
-                2
-                3
-                5
-                8
-               13
-               21
-               34
-               55
-               89
-
-        Create a new frame with a column showing what bin the data is in.
-        The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
-
-            binnedEW = my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
-            binnedEW.inspect( n=11 )
-
-              a:int32     aEWBinned:int32
-            /-----------------------------/
-               1                   1
-               1                   1
-               2                   1
-               3                   1
-               5                   1
-               8                   1
-              13                   1
-              21                   2
-              34                   2
-              55                   4
-              89                   5
-
-        Create a new frame with a column showing what bin the data is in.
-        The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
-
-
-            binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
-            binnedED.inspect( n=11 )
-
-              a:int32     aEDBinned:int32
-            /-----------------------------/
-               1                   1
-               1                   1
-               2                   1
-               3                   2
-               5                   2
-               8                   3
-              13                   3
-              21                   4
-              34                   4
-              55                   5
-              89                   5
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
-
     def copy(self, columns=None, where=None, name=None):
         """
         Copy frame.
@@ -1099,7 +981,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
 
 @api
-@name_support('frame')
 class Frame(DocStubsFrame, _BaseFrame):
     """
     Data handle.
@@ -1162,22 +1043,19 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:'
+    _entity_type = 'frame:'
 
     def __init__(self, source=None, name=None):
-        try:
+        self._error_frame_id = None
+        self._id = 0
+        self._ia_uri = None
+        with api_context(logger, 3, self.__init__, self, source, name):
             check_api_is_loaded()
-            self._error_frame_id = None
-            self._id = 0
-            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
             new_frame_name = self._backend.create(self, source, name)
             logger.info('Created new frame "%s"', new_frame_name)
-        except:
-            error = IaError(logger)
-            raise error
 
     @api
     def append(self, data):
@@ -1214,121 +1092,57 @@ class Frame(DocStubsFrame, _BaseFrame):
         """
         self._backend.append(self, data)
 
-    @api
-    def flatten_column(self, column_name):
-        """
-        Spread out data.
-
-        Search through the currently active Frame for multiple items in a single specified column.
-        When it finds multiple values in the column, it replicates the row and separates the multiple items
-        across the existing and new rows.
-        Multiple items is defined in this case as being things separated by commas.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to be flattened.
-
-        Returns
-        -------
-        Frame
-            A Frame object proxy for the new flattened frame.
-
-        Examples
-        --------
-        Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
-        The "original_data"::
-
-            1-"solo,mono,single"
-            2-"duo,double"
-
-        I run my commands to bring the data in where I can work on it::
-
-            my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
-                delimiter='-')
-            # The above command has been split for enhanced readability in some medias.
-            my_frame = Frame(source=my_csv)
-
-        I look at it and see::
-
-            my_frame.inspect()
-
-              a:int32   b:string
-            /------------------------------/
-                1       solo, mono, single
-                2       duo, double
-
-        Now, I want to spread out those sub-strings in column *b*::
-
-            your_frame = my_frame.flatten_column('b')
-
-        Now I check again and my result is::
-
-            your_frame.inspect()
-
-              a:int32   b:str
-            /------------------/
-                1       solo
-                1       mono
-                1       single
-                2       duo
-                2       double
-
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.flatten_column(self, column_name)
-
 
 @api
 class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     """
-    Data handle.
+    A list of Vertices owned by a Graph..
 
-    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
-    Has information needed to modify data and table structure.
+    A VertexFrame is similar to a Frame but with a few important differences:
 
-    Parameters
-    ----------
-    graph: Associated Graph Object
-    label: Vertex Label
-
-    Returns
-    -------
-    VertexFrame
-        An object with access to the frame for an appropriate label
-
-    Notes
-    -----
-
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    - VertexFrames are not instantiated directly by the user, instead they are created by defining a Vertex type in a Graph
+    - Each row of a VertexFrame represents a Vertex in a Graph
+    - VertexFrames have many of the same methods as found on Frames but not all (e.g. flatten_column())
+    - VertexFrames have extra methods not found on Frames (e.g. add_vertices())
+    - Removing a Vertex (or row) from a VertexFrame also removes Edges connected to that Vertex from the Graph
+    - VertexFrames have special system columns (_vid, _label) that are maintained automatically by the system and cannot be modified by the user
+    - VertexFrames have a special user defined id column whose value uniquely identifies a Vertex
+    - "Columns" on a VertexFrame can also be thought of as "properties" on Vertices
 
     Examples
     --------
-    Retrieve a defined Vertex Frame from Graph object.
-        g = ia.get_graph("your_graph")
+    Define a new VertexFrame and add data to it::
 
-    Create a new VertexFrame type with the associated label.
-    This creates a new empty vertex frame
-        g.define_vertex_type("your_label")
+        # create a frame as the source for a graph
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('rating', str)])
+        my_frame = ia.Frame(csv)
 
-    Retrieve the new VertexFrame from the graph
-        f = g.vertices["your_label"]
+        # create a Graph
+        my_graph = ia.Graph()
+        my_graph.define_vertex_type('users')
+        my_vertex_frame = my_graph.vertices['users']
+        my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
 
-    A Vertex Frame has been created and f is its proxy.
-    It has no data yet, but it does have the label *your_label*
+    Retrieve a previously defined VertexFrame::
+
+        # Retrieve a Graph object.
+        my_graph = ia.get_graph("your_graph")
+
+        # Retrieve a VertexFrame from the graph
+        my_vertex_frame = my_graph.vertices["your_label"]
+
+    Calling methods on a VertexFrame::
+
+        g.vertices["your_label"].inspect(20)
+
+    Convert a VertexFrame to a Frame::
+
+        # The copy method creates a new Frame
+        f = g.vertices["label"].copy()
 
     .. versionadded:: 0.8
 
@@ -1337,7 +1151,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:vertex'
+    _entity_type = 'frame:vertex'
 
     def __init__(self, source=None, graph=None, label=None):
         try:
@@ -1384,47 +1198,6 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
-    @api
-    def drop_duplicates(self, columns=None):
-        """
-        Remove duplicates.
-
-        Remove duplicate rows, keeping only one row per uniqueness criteria match
-
-        Parameters
-        ----------
-        columns : [ str | list of str ]
-            Column name(s) to identify duplicates.
-            If empty, the function will remove duplicates that have the whole row of data identical.
-
-        Examples
-        --------
-        Remove any rows that have the same data in column *b* as a previously checked row::
-
-            my_frame.drop_duplicates("b")
-
-        The result is a frame with unique values in column *b*.
-
-        Remove any rows that have the same data in columns *a* and *b* as a previously checked row::
-
-            my_frame.drop_duplicates(["a", "b"])
-
-        The result is a frame with unique values for the combination of columns *a* and *b*.
-
-        Remove any rows that have the whole row identical::
-
-            my_frame.drop_duplicates()
-
-        The result is a frame where something is different in every row from every other row.
-        Each row is unique.
-
-
-        .. versionadded:: 0.8
-
-        """
-        # For further examples, see :ref:`example_frame.drop_duplicates`
-        self._backend.drop_duplicate_vertices(self, columns)
-
     def filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 
@@ -1432,58 +1205,62 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 @api
 class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     """
-    Data handle.
+    A list of Edges owned by a Graph..
 
-    Class with information about a large 2D table of data associated with a Vertex Label for a Graph.
-    Has information needed to modify data and table structure.
+    An EdgeFrame is similar to a Frame but with a few important differences:
 
-    Parameters
-    ----------
-    graph: Associated Graph Object
-    label: Edge Label
-    source_vertex_label: label of the source vertex type
-    destination_vertex_label: label of the destination vertex type
-    directed: is the edge directed
-
-    Returns
-    -------
-    EdgeFrame
-        An object with access to the frame for an appropriate label
-
-    Notes
-    -----
-
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
-
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    - EdgeFrames are not instantiated directly by the user, instead they are created by defining an Edge type in a Graph
+    - Each row of an EdgeFrame represents an Edge in a Graph
+    - EdgeFrames have many of the same methods as found on Frames but not all
+    - EdgeFrames have extra methods not found on Frames (e.g. add_edges())
+    - EdgeFrames have a dependency on one or two VertexFrames.  Adding an Edge to an EdgeFrame requires either Vertices to be present or for the user to specify create_missing_vertices=True.
+    - EdgeFrames have special system columns (_eid, _label, _src_vid, _dest_vid) that are maintained automatically by the system and cannot be modified by the user
+    - "Columns" on an EdgeFrame can also be thought of as "properties" on Edges
 
     Examples
     --------
-    Retrieve a defined Vertex Frame from Graph object.
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices
+    connected by 'rating' edges::
+
+        # create a frame as the source for a graph
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+                                            ('user_name', str),
+                                            ('movie_id', int32),
+                                            ('movie_title', str),
+                                            ('rating', str)])
+        my_frame = ia.Frame(csv)
+
+        # create a graph
+        my_graph = ia.Graph()
+
+        # define the types of vertices and edges this graph will be made of
+        my_graph.define_vertex_type('users')
+        my_graph.define_vertex_type('movies')
+        # 'ratings' are directed edges from 'user' vertices to 'movie' vertices
+        my_graph.define_edge_type('ratings','users','movies',directed=True)
+
+        # add data to the graph
+        graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+        graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+        my_edge_frame = graph.edges['ratings']
+        my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
+
+    Retrieve a previously defined EdgeFrame::
+
+        # Retrieve a Graph object.
         g = ia.get_graph("your_graph")
 
-    Create a two VertexFrame types.
-        g.define_vertex_type("first_vertex")
-        g.define_vertex_type("second_vertex")
+        # Retrieve an EdgeFrame from the graph
+        f = g.edges["your_label"]
 
-    Create a new EdgeFrame type
-    This creates a new Empty frame consisting of a directed edge list between the two vertices
-        g.define_edge_type("edge_label", "first_vertex", "second_vertex", True)
+    Calling methods on an EdgeFrame::
 
-    Retrieve the new EdgeFrame from the graph
-        f = g.edges["edge_label"]
+        g.edges["your_label"].inspect(20)
 
-    A EdgeFrame has been created and f is its proxy.
-    It has no data yet, but it does have the label *edge_label*
+    Convert an EdgeFrame to a Frame::
+
+        # The copy method creates a new Frame
+        f = g.edges["label"].copy()
 
     .. versionadded:: 0.8
 
@@ -1492,7 +1269,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
 
     # TODO - Review Parameters, Examples
 
-    _command_prefix = 'frame:edge'
+    _entity_type = 'frame:edge'
 
     def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None):
         try:

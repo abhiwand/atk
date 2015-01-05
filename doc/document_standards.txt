@@ -14,7 +14,7 @@ Each function is entered beginning with >>>.
 If code functions extend more than one line, following lines begin with ...
 If a comment starts the code section, the >>> will be alone on the preceding line.
 Comments within code blocks are not separated from the code blocks they apply to so they appear inside the code shading but do not have >>> or ... at the beginning.
-
+                                                                                                                                    t
 Tables with exact strings to be entered into the command line can be entered as:
 +---------------------------------------+---------------------------------------+
 | RedHat/CentOS                         | Ubuntu                                |

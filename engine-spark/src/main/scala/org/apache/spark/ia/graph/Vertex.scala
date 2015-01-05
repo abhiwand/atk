@@ -33,13 +33,13 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
  * Vertex: self contained vertex with complete schema information included.
  * Vertex is used when you want RDD's of mixed vertex types.
  */
-case class Vertex(override val schema: Schema, override var row: Row) extends AbstractVertex
+case class Vertex(override val schema: VertexSchema, override var row: Row) extends AbstractVertex
 
 /**
  * VertexWrapper: container that can be re-used to minimize memory usage but still provide a rich API
  * VertexWrapper is used when you have RDD's of all one vertex type (e.g. frame-like operations)
  */
-class VertexWrapper(override val schema: Schema) extends AbstractVertex with Serializable {
+class VertexWrapper(override val schema: VertexSchema) extends AbstractVertex with Serializable {
 
   @transient override var row: Row = null
 
@@ -74,8 +74,7 @@ class VertexWrapper(override val schema: Schema) extends AbstractVertex with Ser
  * This is the "common interface" for vertices within our system.
  */
 trait AbstractVertex extends AbstractRow {
-  require(schema.vertexSchema.isDefined, "schema should be for vertices, vertexSchema was not define")
-  require(schema.edgeSchema.isEmpty, "schema should not be for edges, edgeSchema was defined")
+  require(schema.isInstanceOf[VertexSchema], "schema should be for vertices, vertexSchema was not define")
   require(schema.hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + schema.columnTuples)
   require(schema.hasColumnWithType("_label", DataTypes.str), "schema did not have int64 _label column: " + schema.columnTuples)
 
@@ -94,7 +93,7 @@ trait AbstractVertex extends AbstractRow {
   /**
    * The value for the user defined ID column
    */
-  def idValue(): Any = value(schema.vertexSchema.get.idColumnName.getOrElse(throw new RuntimeException("id column has not yet been defined in schema: " + schema)))
+  def idValue(): Any = value(schema.asInstanceOf[VertexSchema].idColumnName.getOrElse(throw new RuntimeException("id column has not yet been defined in schema: " + schema)))
 
   def setVid(vid: Long): Row = {
     setValue("_vid", vid)
@@ -140,53 +139,54 @@ trait AbstractVertex extends AbstractRow {
 
 object Vertex {
 
-  /**
-   * Create a Vertex from a GBVertex
-   *
-   * It is better not to use GBVertices because this conversion requires inferring the schema from the data.
-   */
-  def toVertex(gbVertex: GBVertex): Vertex = {
-
-    // TODO: not sure the correct behavior: should we force certain fields defined idColumn, _label, _vid or make them optional?
-
-    val schema = toSchema(gbVertex)
-    val content = new Array[Any](schema.columns.length)
-    //TODO: what is the right way to introduce GenericMutableRow?
-    val row = new GenericRow(content)
-
-    val vertex = new Vertex(schema, row)
-    if (gbVertex.physicalId != null) {
-      vertex.setVid(gbVertex.physicalId.asInstanceOf[Long])
-    }
-    vertex.setLabel(gbVertex.getPropertyValueAsString("_label"))
-    val excluded = Set("_vid", "_label")
-    val props = gbVertex.fullProperties.filterNot(prop => excluded.contains(prop.key))
-    props.foreach(property => vertex.setValue(property.key, property.value))
-    vertex
-  }
-
-  /**
-   * Create a schema from a GBVertex
-   * @param gbVertex
-   * @return the schema for the supplied schema
-   */
-  def toSchema(gbVertex: GBVertex): Schema = {
-
-    // TODO: not sure the correct behavior: should we force certain fields defined idColumn, _label, _vid or make them optional?
-
-    if (gbVertex.getProperty("_label").isEmpty) {
-      throw new IllegalArgumentException("GBVertex did not have the required _label property " + gbVertex)
-    }
-    val label = gbVertex.getPropertyValueAsString("_label")
-    val idColumnName: Option[String] = if (gbVertex.gbId != null) {
-      Some(gbVertex.gbId.key)
-    }
-    else {
-      None
-    }
-    val vertexSchema = VertexSchema(label, idColumnName)
-    val schema = new Schema(gbVertex.fullProperties.map(prop => (prop.key, DataTypes.dataTypeOfValue(prop.value))).toList)
-      .copy(vertexSchema = Some(vertexSchema))
-    schema
-  }
+  // TODO: this was written but then didn't get used, if we don't need soon then we should delete it. --Todd 11/13/2014
+  //  /**
+  //   * Create a Vertex from a GBVertex
+  //   *
+  //   * It is better not to use GBVertices because this conversion requires inferring the schema from the data.
+  //   */
+  //  def toVertex(gbVertex: GBVertex): Vertex = {
+  //
+  //    // TODO: not sure the correct behavior: should we force certain fields defined idColumn, _label, _vid or make them optional?
+  //
+  //    val schema = toSchema(gbVertex)
+  //    val content = new Array[Any](schema.columns.length)
+  //    //TODO: what is the right way to introduce GenericMutableRow?
+  //    val row = new GenericRow(content)
+  //
+  //    val vertex = new Vertex(schema, row)
+  //    if (gbVertex.physicalId != null) {
+  //      vertex.setVid(gbVertex.physicalId.asInstanceOf[Long])
+  //    }
+  //    vertex.setLabel(gbVertex.getPropertyValueAsString("_label"))
+  //    val excluded = Set("_vid", "_label")
+  //    val props = gbVertex.fullProperties.filterNot(prop => excluded.contains(prop.key))
+  //    props.foreach(property => vertex.setValue(property.key, property.value))
+  //    vertex
+  //  }
+  //
+  //  /**
+  //   * Create a schema from a GBVertex
+  //   * @param gbVertex
+  //   * @return the schema for the supplied schema
+  //   */
+  //  def toSchema(gbVertex: GBVertex): Schema = {
+  //
+  //    // TODO: not sure the correct behavior: should we force certain fields defined idColumn, _label, _vid or make them optional?
+  //
+  //    if (gbVertex.getProperty("_label").isEmpty) {
+  //      throw new IllegalArgumentException("GBVertex did not have the required _label property " + gbVertex)
+  //    }
+  //    val label = gbVertex.getPropertyValueAsString("_label")
+  //    val idColumnName: Option[String] = if (gbVertex.gbId != null) {
+  //      Some(gbVertex.gbId.key)
+  //    }
+  //    else {
+  //      None
+  //    }
+  //    val vertexSchema = VertexSchema(label, idColumnName)
+  //    val schema = new Schema(gbVertex.fullProperties.map(prop => (prop.key, DataTypes.dataTypeOfValue(prop.value))).toList)
+  //      .copy(vertexSchema = Some(vertexSchema))
+  //    schema
+  //  }
 }
