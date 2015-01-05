@@ -95,7 +95,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
         The binning algorithm to use ['equalwidth' | 'equaldepth'].
 
     bin_column_name : str (optional)
-        The name for the new binned column.
+        The name for the new binned column. If unassigned, bin_column_name defaults to '<column_name>_binned'
 
     Notes
     -----
