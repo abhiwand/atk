@@ -676,11 +676,13 @@ class FrameSchema:
     @staticmethod
     def get_indices_for_selected_columns(schema, selected_columns):
         indices = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    indices.append(schema.index(column))
-                    break
+        schema_columns = [col[0] for col in schema]
+        for column in selected_columns:
+            try:
+                indices.append(schema_columns.index(column))
+            except:
+                raise ValueError("Invalid column name %s provided"
+                                 ", please choose from: (%s)" % (column, ",".join(schema_columns)))
 
         return indices
 
