@@ -125,14 +125,22 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
   override def execute(arguments: ModelLoad)(implicit invocation: Invocation): ClassificationMetricValue =
     {
 
-      val inputFrame: SparkFrameData = resolve(arguments.frame)
-      val modelMeta: ModelMeta = resolve(arguments.model)
+      val models = engine.models
+      val frames = engine.frames
+
+      //validate arguments
+      val frameId = arguments.frame.id
+      val modelId = arguments.model.id
+
+      val inputFrame = frames.expectFrame(frameId)
+      val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val labeledTestRDD: RDD[LabeledPoint] = inputFrame.data.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
+      val testFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib
-      val logRegJsObject = modelMeta.meta.data.get
+      val logRegJsObject = modelMeta.data.get
       val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
 
       //predicting and testing
