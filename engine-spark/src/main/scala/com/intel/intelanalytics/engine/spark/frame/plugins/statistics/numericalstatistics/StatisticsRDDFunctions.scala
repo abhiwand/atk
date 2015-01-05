@@ -21,7 +21,7 @@ object StatisticsRDDFunctions extends Serializable {
    * @param dataWeightPairs The (data, weight) pairs of the distribution.
    * @return The first-pass statistics of the distribution.
    */
-  def generateFirstPassStatistics(dataWeightPairs: RDD[(Double, Double)]): FirstPassStatistics = {
+  def generateFirstPassStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])]): FirstPassStatistics = {
 
     val accumulatorParam = new FirstPassStatisticsAccumulatorParam()
 
@@ -44,36 +44,40 @@ object StatisticsRDDFunctions extends Serializable {
     accumulator.value
   }
 
-  private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
-    val dataAsDouble: Double = p._1
-    val weightAsDouble: Double = p._2
+  private def convertDataWeightPairToFirstPassStats(p: (Option[Double], Option[Double])): FirstPassStatistics = {
+    (p._1, p._2) match {
+      case (None, None) | (None, _) | (_, None) => firstPassStatsOfBadEntry
+      case (data, weight) =>
+        val dataAsDouble: Double = data.get
+        val weightAsDouble: Double = weight.get
 
-    if (!NumericValidationUtils.isFiniteNumber(dataAsDouble)
-      || !NumericValidationUtils.isFiniteNumber(weightAsDouble)) {
-      firstPassStatsOfBadEntry
-    }
-    else {
-      if (weightAsDouble <= 0) {
-        firstPassStatsOfGoodEntryNonPositiveWeight
-      }
-      else {
-        val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
-        val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
+        if (!NumericValidationUtils.isFiniteNumber(dataAsDouble)
+          || !NumericValidationUtils.isFiniteNumber(weightAsDouble)) {
+          firstPassStatsOfBadEntry
+        }
+        else {
+          if (weightAsDouble <= 0) {
+            firstPassStatsOfGoodEntryNonPositiveWeight
+          }
+          else {
+            val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
+            val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
 
-        val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
+            val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
 
-        FirstPassStatistics(mean = dataAsBigDecimal,
-          weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
-          weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
-          weightedSumOfLogs = weightedLog,
-          minimum = dataAsDouble,
-          maximum = dataAsDouble,
-          totalWeight = weightAsBigDecimal,
-          positiveWeightCount = 1,
-          nonPositiveWeightCount = 0,
-          badRowCount = 0,
-          goodRowCount = 1)
-      }
+            FirstPassStatistics(mean = dataAsBigDecimal,
+              weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
+              weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+              weightedSumOfLogs = weightedLog,
+              minimum = dataAsDouble,
+              maximum = dataAsDouble,
+              totalWeight = weightAsBigDecimal,
+              positiveWeightCount = 1,
+              nonPositiveWeightCount = 0,
+              badRowCount = 0,
+              goodRowCount = 1)
+          }
+        }
     }
   }
 

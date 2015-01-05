@@ -47,7 +47,7 @@ _created_classes = {}
 IA_URI = '_id'
 
 COMMAND_DEF = '_command_def'
-COMMAND_PREFIX = '_command_prefix'
+ENTITY_TYPE = '_entity_type'
 INTERMEDIATE_NAME = '_intermediate_name'
 LOADED_COMMANDS = '_loaded_commands'
 LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
@@ -76,8 +76,8 @@ class CommandLoadable(object):
         instance attribute '_id' : str or int  (See IA_URI constant)
             identifies the instance to the server
 
-        class attribute '_command_prefix' : list of str (See COMMAND_PREFIX constant)
-            This is the prefix which identifies the class for commands loaded from the server
+        class attribute '_entity_type' : list of str (See ENTITY_TYPE constant)
+            This is the string which identifies the class for commands loaded from the server
             e.g. 'frame:' to accept commands like 'frame:/assign_sample'
 
     2.  Call CommandLoadable.__init__(self) in its own __init__, AFTER the class
@@ -93,9 +93,9 @@ class CommandLoadable(object):
         if not hasattr(self._get_root_object(), IA_URI):
             raise TypeError("CommandLoadable inheritor %s instance lacks implementation for '%s'"
                             % (self.__class__, IA_URI))
-        if not hasattr(self, COMMAND_PREFIX):
+        if not hasattr(self, ENTITY_TYPE):
             raise TypeError("CommandLoadable inheritor %s instance lacks implementation for '%s'"
-                            % (self.__class__, COMMAND_PREFIX))
+                            % (self.__class__, ENTITY_TYPE))
 
         # instantiate the loaded intermediate classes
         for intermediate in get_loaded_intermediate_classes(self.__class__):
@@ -136,7 +136,7 @@ def pascal_to_underscores(s):
     return ''.join(["_%s" % c.lower() if c.isupper() else c for c in s])[1:]
 
 
-def get_command_prefix_from_class_name(class_name):
+def get_entity_type_from_class_name(class_name):
     if not class_name:
         raise ValueError("Invalid empty class_name, expected non-empty string")
     if class_name.startswith("_Base"):
@@ -145,10 +145,10 @@ def get_command_prefix_from_class_name(class_name):
     return "%s:%s" % (pieces[-1], '_'.join(pieces[:-1]))
 
 
-def get_loadable_class_name_from_command_prefix(command_prefix):
-    if not command_prefix:
-        raise ValueError("Invalid empty command_prefix, expected non-empty string")
-    parts = command_prefix.split(':')
+def get_loadable_class_name_from_entity_type(entity_type):
+    if not entity_type:
+        raise ValueError("Invalid empty entity_type, expected non-empty string")
+    parts = entity_type.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
         return "_Base" + term
@@ -156,36 +156,36 @@ def get_loadable_class_name_from_command_prefix(command_prefix):
         return underscores_to_pascal(parts[1]) + term
 
 
-def get_base_class_name_from_prefix(command_prefix):
-    parts = command_prefix.split(':')
+def get_base_class_name_from_entity(entity_type):
+    parts = entity_type.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
         return CommandLoadable.__name__
     return "_Base" + term
 
 
-def get_loadable_class_from_name(class_name, command_prefix):
+def get_loadable_class_from_name(class_name, entity_type):
     from intelanalytics.meta.api import api_globals
     import inspect
     for item in api_globals:
         if inspect.isclass(item) and item.__name__ == class_name:
             return item
-    base_class_name = get_base_class_name_from_prefix(command_prefix)
+    base_class_name = get_base_class_name_from_entity(entity_type)
     base_class = CommandLoadable if base_class_name == CommandLoadable.__name__ or base_class_name == class_name\
-        else get_loadable_class_from_name(base_class_name, command_prefix)
-    loadable_class = create_loadable_class(class_name, base_class, api_globals, "", command_prefix)
+        else get_loadable_class_from_name(base_class_name, entity_type)
+    loadable_class = create_loadable_class(class_name, base_class, api_globals, "", entity_type)
     api_globals.add(loadable_class)
     return loadable_class
 
 
-def get_loadable_class_from_command_prefix(command_prefix):
-    class_name = get_loadable_class_name_from_command_prefix(command_prefix)
-    loadable_class = get_loadable_class_from_name(class_name, command_prefix)
+def get_loadable_class_from_entity_type(entity_type):
+    class_name = get_loadable_class_name_from_entity_type(entity_type)
+    loadable_class = get_loadable_class_from_name(class_name, entity_type)
     return loadable_class
 
 
 def get_loadable_class_from_command_def(command_def):
-    return get_loadable_class_from_command_prefix(command_def.prefix)
+    return get_loadable_class_from_entity_type(command_def.entity_type)
 
 
 def install_command_defs(command_defs):
@@ -233,7 +233,7 @@ def create_intermediate_class(parent_class, intermediate_name):
     return intermediate_class
 
 
-def create_loadable_class(new_class_name, base_class, namespace_obj, doc, command_prefix):
+def create_loadable_class(new_class_name, base_class, namespace_obj, doc, entity_type):
     """Dynamically create a class type with the given name and namespace_obj"""
     new_class = type(str(new_class_name),
                      (base_class,),
@@ -243,8 +243,8 @@ def create_loadable_class(new_class_name, base_class, namespace_obj, doc, comman
     setattr(sys.modules[new_class.__module__], new_class.__name__, new_class)
     globals()[new_class.__name__] = new_class
     _created_classes[new_class.__name__] = new_class
-    setattr(new_class, COMMAND_PREFIX, command_prefix)
-    setattr(new_class, COMMAND_PREFIX, command_prefix)
+    setattr(new_class, ENTITY_TYPE, entity_type)
+    setattr(new_class, ENTITY_TYPE, entity_type)
     #print ("Created new loadable class %s" % new_class)
     return new_class
 
@@ -269,11 +269,11 @@ def add_intermediate_class(parent_class, intermediate_name):
 
 def check_loadable_class(cls, command_def):
     error = None
-    if not hasattr(cls, COMMAND_PREFIX):
-        error = "CommandLoadable inheritor %s lacks implementation for '%s'" % (cls, COMMAND_PREFIX)
-    elif command_def.prefix != getattr(cls, COMMAND_PREFIX):
-        error = "%s is not the class's accepted command prefix: %s"\
-                % (command_def.prefix, getattr(cls, COMMAND_PREFIX))
+    if not hasattr(cls, ENTITY_TYPE):
+        error = "CommandLoadable inheritor %s lacks implementation for '%s'" % (cls, ENTITY_TYPE)
+    elif command_def.entity_type != getattr(cls, ENTITY_TYPE):
+        error = "%s is not the class's accepted command entity_type: %s"\
+                % (command_def.entity_type, getattr(cls, ENTITY_TYPE))
     if error:
         raise ValueError("API load error: Class %s cannot load command_def '%s'.\n%s"
                          % (cls.__name__, command_def.full_name, error))
@@ -292,14 +292,14 @@ def load_loadable(loadable_class, command_def, execute_command_function):
 
 
 def get_loaded_intermediate_classes(loadable_class):
-    attr_name = loadable_class.__name__ + LOADED_INTERMEDIATE_CLASSES
+    attr_name = "_" + loadable_class.__name__ + LOADED_INTERMEDIATE_CLASSES
     if not hasattr(loadable_class, attr_name):
         setattr(loadable_class, attr_name, set())
     return getattr(loadable_class, attr_name)
 
 
 def get_loaded_commands(loadable_class):
-    attr_name = loadable_class.__name__ + LOADED_COMMANDS
+    attr_name = "_" + loadable_class.__name__ + LOADED_COMMANDS
     if not hasattr(loadable_class, attr_name):
         setattr(loadable_class, attr_name, [])
     return getattr(loadable_class, attr_name)
@@ -565,7 +565,7 @@ def get_doc_stub_globals_text(module):
 
 def get_doc_stubs_module_text(command_defs, existing_loadables_dict, global_module):
     for command_def in command_defs:
-        class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
+        class_name = get_loadable_class_name_from_entity_type(command_def.entity_type)
         if class_name not in existing_loadables_dict:
             cls = get_loadable_class_from_command_def(command_def)
             existing_loadables_dict[class_name] = cls

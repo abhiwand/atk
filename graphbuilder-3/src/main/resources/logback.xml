@@ -1,12 +1,5 @@
 <configuration scan="true">
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>/var/log/intelanalytics/rest-server/application.log</file>
-        <encoder>
-            <pattern>%date - [%level] - %mdc{corId:-?} %thread - %logger :  %message %n%ex{full}%n</pattern>
-        </encoder>
-    </appender>
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%logger{15} - %mdc{corId:-?} - %message %n %ex{short}%n</pattern>

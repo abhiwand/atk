@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.frame.load.{ Load, LoadSource }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator }
+import com.intel.intelanalytics.service.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }

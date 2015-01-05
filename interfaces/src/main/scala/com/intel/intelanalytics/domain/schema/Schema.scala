@@ -159,7 +159,7 @@ trait Schema {
   def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
-    namesToColumns.keys.toList
+    columns.map(col => col.name).toList
   }
 
   /**
@@ -258,12 +258,10 @@ trait Schema {
    */
   def union(schema: Schema): Schema = {
     // check for conflicts
-    for (columnName <- schema.columnNames) {
-      if (hasColumn(columnName)) {
-        require(hasColumnWithType(columnName, schema.columnDataType(columnName)), s"columns with same name $columnName didn't have matching types")
-      }
-    }
-    val combinedColumns = (this.namesToColumns ++ schema.namesToColumns).values.toList
+    val newColumns: List[Column] = schema.columns.filterNot(c => {
+      hasColumn(c.name) && { require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true }
+    })
+    val combinedColumns = this.columns ++ newColumns
     copy(combinedColumns)
   }
 
@@ -505,6 +503,24 @@ trait Schema {
     else {
       new FrameSchema(columns)
     }
+  }
+
+  /**
+   * create a column name that is unique, suitable for adding to the schema
+   * (subject to race conditions, only provides unique name for schema as
+   * currently defined)
+   * @param candidate a candidate string to start with, an _N number will be
+   *                  append to make it unique
+   * @return unique column name for this schema, as currently defined
+   */
+  def getNewColumnName(candidate: String): String = {
+    var newName = candidate
+    var i: Int = 0
+    while (columnNames.contains(newName)) {
+      newName = newName + s"_$i"
+      i += 1
+    }
+    newName
   }
 
 }

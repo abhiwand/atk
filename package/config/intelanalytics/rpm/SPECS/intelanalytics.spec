@@ -1,16 +1,15 @@
 Name: intelanalytics
-Provides: intelanalytics
-Summary: intelanalytics-0.8.0 Build number: 1111. TimeStamp 20140410202311Z
+Summary: intelanalytics- Build number: 900. TimeStamp Mon Nov 17 14:26:08 PST 2014
 License: Apache
-Version: 0.8.0
+Version: 0.9.0
 Group: Intel Analytics
-Release: 1111
-Source: intelanalytics-0.8.0.tar.gz
-URL: graphtrial.intel.com
+Release: 900
+Source: intelanalytics-0.9.0.tar.gz
+URL: intel.com
 %description
-intelanalytics-0.8.0 Build number: 1111. TimeStamp 20140410202311Z
-%define TIMESTAMP %(echo 20140410202311Z)
-%define TAR_FILE %(echo /home/rodorad/IdeaProjects/source_code/package/source.tar.gz)
+intelanalytics- Build number: 900. TimeStamp Mon Nov 17 14:26:08 PST 2014
+%define TIMESTAMP %(echo Mon Nov 17 14:26:08 PST 2014)
+%define TAR_FILE %(echo 0.9.0)
 %build
  cp %{TAR_FILE} %{_builddir}/files.tar.gz
 %install
@@ -20,7 +19,8 @@ intelanalytics-0.8.0 Build number: 1111. TimeStamp 20140410202311Z
  tar -xvf %{buildroot}/files.tar.gz -C %{buildroot}
  rm %{buildroot}/files.tar.gz
 %clean
+%pre
 %post
+%preun
 %postun
 %files
-/usr/lib/intelanalytics/intel-analytics_2.10-0.8.jar

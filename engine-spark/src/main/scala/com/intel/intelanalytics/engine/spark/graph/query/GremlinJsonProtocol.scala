@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.graph.query
 
+import com.intel.event.EventLogging
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.tinkerpop.blueprints.util.io.graphson._
 import com.tinkerpop.blueprints.{ Element, Graph }
 import com.tinkerpop.pipes.util.structures.Row
@@ -35,7 +38,7 @@ import scala.util.Try
 /**
  * Implicit conversions for Gremlin query objects to JSON
  */
-object GremlinJsonProtocol extends DefaultJsonProtocol {
+object GremlinJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   /**
    * Convert Blueprints graph elements to GraphSON.
@@ -142,18 +145,15 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    *
    * @param json Json object
    * @param key key
-   * @tparam T
-   * @return
+   * @return Optional value
    */
   private def getJsonFieldValue[T: JsonFormat: ClassTag](json: JsValue, key: String): Option[T] = json match {
     case obj: JsObject => {
-      val value = obj.fields.get(key).orNull
+      val value = obj.fields.get(key)
       value match {
-        case x: JsValue => Try {
-          Some(x.convertTo[T])
-        }.getOrElse(
-          throw new RuntimeException(s"Could not convert ${key} to type T from JSON string: ${json}"))
-        case _ => None
+        case Some(x) => Try { Some(x.convertTo[T]) }
+          .getOrElse(throw new RuntimeException(s"Could not convert ${key} to type T from JSON string: ${json}"))
+        case None => None
       }
     }
     case _ => None

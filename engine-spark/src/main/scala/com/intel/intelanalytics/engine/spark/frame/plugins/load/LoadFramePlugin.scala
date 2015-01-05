@@ -88,10 +88,12 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
       val additionalData = frames.loadFrameData(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(destinationFrame, additionalData)
     }
-    else if (arguments.source.isFile) {
+    else if (arguments.source.isFile || arguments.source.isMultilineFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
+        null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
+
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
@@ -119,7 +121,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     }
 
     else {
-      throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)
+      throw new IllegalArgumentException("Unsupported load source: " + arguments.source.sourceType)
     }
   }
 
@@ -136,8 +138,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
 
     val existingRdd = frames.loadFrameData(ctx, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
-    val rowCount = unionedRdd.count()
-    frames.saveFrameData(existingFrame, unionedRdd, Some(rowCount))
+    frames.saveFrameData(existingFrame.toReference, unionedRdd)
   }
 
 }

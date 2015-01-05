@@ -49,11 +49,12 @@ object SchemaUtil {
     val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
 
       var leftColumnNames = left.map(r => r._1)
+      var rightColumnNames = right.map(r => r._1)
 
       left.map(r =>
         if (right.map(i => i._1).contains(r._1)) {
           var name = r._1 + "_" + appendLetter
-          while (leftColumnNames.contains(name)) {
+          while (leftColumnNames.contains(name) || rightColumnNames.contains(name)) {
             name = name + "_" + appendLetter
           }
           leftColumnNames = leftColumnNames ++ List(name)
