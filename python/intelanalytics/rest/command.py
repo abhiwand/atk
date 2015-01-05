@@ -508,12 +508,12 @@ class Executor(object):
                 setattr(clazz, name, staticmethod(v))
                 logger.debug("Loaded class %s with static method %s", clazz, name)
 
-    def get_command_functions(self, prefixes, update_function, new_function):
+    def get_command_functions(self, entity_types, update_function, new_function):
         functions = dict()
         for cmd in executor.commands:
             full_name = cmd['name']
             parts = full_name.split('/')
-            if parts[0] not in prefixes:
+            if parts[0] not in entity_types:
                 continue
             args = cmd['argument_schema']
             intermediates = parts[1:-1]
@@ -567,7 +567,7 @@ class Executor(object):
 
     def get_command_output(self, command_type, command_name, arguments):
         """Executes command and returns the output"""
-        command_request = CommandRequest( "%s:/%s" % (command_type, command_name), arguments)
+        command_request = CommandRequest( "%s/%s" % (command_type, command_name), arguments)
         command_info = executor.issue(command_request)
         if command_info.result.has_key('value') and len(command_info.result) == 1:
             return command_info.result.get('value')

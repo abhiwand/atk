@@ -48,7 +48,7 @@ trait FrameStorage {
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row]
   def drop(frame: DataFrame)(implicit invocation: Invocation)
   def loadFrameData(context: Context, frame: DataFrame)(implicit invocation: Invocation): Data
-  def saveFrameData(frame: DataFrame, data: Data, rowCount: Option[Long] = None, parent: Option[DataFrame] = None)(implicit invocation: Invocation): DataFrame
+  def saveFrameData(frame: FrameReference, data: Data)(implicit invocation: Invocation): DataFrame
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist

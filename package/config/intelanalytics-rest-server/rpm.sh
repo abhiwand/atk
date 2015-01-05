@@ -13,7 +13,9 @@ version=$3
 log "package name: $packageName, tar file: $tarFile, version: $version, script path: $SCRIPTPATH"
 
 log "copy and rename: $tarFile"
+log "mkdir -p $SCRIPTPATH/rpm/SOURCES"
 mkdir -p $SCRIPTPATH/rpm/SOURCES
+log "cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 GROUP="Intel Analytics Server"
@@ -91,9 +93,13 @@ FILES="
 "
 
 
+log "mkdir -p $SCRIPTPATH/rpm/SPECS"
 mkdir -p $SCRIPTPATH/rpm/SPECS
+log "rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec"
+env
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
+log "topdir "
 topDir="$SCRIPTPATH/rpm"
 #exit 1
 pushd $SCRIPTPATH/rpm

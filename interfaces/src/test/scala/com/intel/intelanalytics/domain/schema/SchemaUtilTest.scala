@@ -66,6 +66,39 @@ class SchemaUtilTest extends FlatSpec with Matchers {
     result(1)._1 shouldBe "bar"
   }
 
+  it should "repeatedly appending L if L already exists in the left hand side" in {
+    val leftColumns: List[(String, DataType)] = List(("data", DataTypes.int32), ("data_L", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List(("data", DataTypes.int32))
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+    result.length shouldBe 3
+    result(0)._1 shouldBe "data_L_L"
+    result(1)._1 shouldBe "data_L"
+    result(2)._1 shouldBe "data_R"
+  }
+
+  it should "repeatedly appending L if L already exists in the right hand side" in {
+    val leftColumns: List[(String, DataType)] = List(("data", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List(("data", DataTypes.int32), ("data_L", DataTypes.int32))
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+    result.length shouldBe 3
+    result(0)._1 shouldBe "data_L_L"
+    result(1)._1 shouldBe "data_R"
+    result(2)._1 shouldBe "data_L"
+  }
+
+  it should "repeatedly appending R if R already exists in the left hand side" in {
+    val leftColumns: List[(String, DataType)] = List(("data", DataTypes.int32), ("data_R", DataTypes.int32))
+    val rightColumns: List[(String, DataType)] = List(("data", DataTypes.int32))
+
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+    result.length shouldBe 3
+    result(0)._1 shouldBe "data_L"
+    result(1)._1 shouldBe "data_R"
+    result(2)._1 shouldBe "data_R_R"
+  }
+
   "convertSchema" should "return the same data if schema does not change" in {
     val columns = List(Column("name", DataTypes.string), Column("age", DataTypes.int32))
     val data = Array("Frank", 48)

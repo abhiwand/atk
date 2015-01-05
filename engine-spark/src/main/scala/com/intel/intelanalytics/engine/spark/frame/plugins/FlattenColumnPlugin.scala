@@ -35,6 +35,7 @@ import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import java.util.regex.Pattern
 
 /**
  * Take a row with multiple values in a column and 'flatten' it into multiple rows.
@@ -47,14 +48,73 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/flatten_column"
+  override def name: String = "frame/flatten_column"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Flattens cell to multiple rows", Some("""
+    Splits cells in the specified column into multiple rows according to a string delimiter.  New
+    rows are a full copy of the original row, but the specified column only contains one value.  The
+    original row is deleted.
+
+    Parameters
+    ----------
+    column: str
+        The column to be flattened.
+    delimiter: str, optional
+        The delimiter string, if not specified, a comma is used
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
+    The "original_data"::
+
+        1-"solo,mono,single"
+        2-"duo,double"
+
+    I run my commands to bring the data in where I can work on it::
+
+        my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
+            delimiter='-')
+        # The above command has been split for enhanced readability in some medias.
+        my_frame = Frame(source=my_csv)
+
+    I look at it and see::
+
+        my_frame.inspect()
+
+          a:int32   b:string
+        /------------------------------/
+            1       solo, mono, single
+            2       duo, double
+
+    Now, I want to spread out those sub-strings in column *b*::
+
+        my_frame.flatten_column('b')
+
+    Now I check again and my result is::
+
+        my_frame.inspect()
+
+          a:int32   b:str
+        /------------------/
+            1       solo
+            1       mono
+            1       single
+            2       duo
+            2       double
+
+
+    .. versionadded:: 0.8""")))
+
+  override def numberOfJobs(arguments: FlattenColumn)(implicit invocation: Invocation): Int = 2
 
   /**
    * Take a row with multiple values in a column and 'flatten' it into multiple rows.
@@ -70,18 +130,16 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     val frames = engine.frames
 
     // validate arguments
-    val frameId: Long = arguments.frameId.id
-    val frameMeta = frames.expectFrame(frameId)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.column)
+    val frameEntity = frames.expectFrame(arguments.frame.id)
+    val columnIndex = frameEntity.schema.columnIndex(arguments.column)
+    val delimiter: String = arguments.delimiter.getOrElse(",")
 
     // run the operation
-    val rdd = frames.loadLegacyFrameRdd(sc, frameMeta)
-    val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
-    val rowCount = flattenedRDD.count()
+    val rdd = frames.loadLegacyFrameRdd(sc, frameEntity)
+    val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, delimiter, rdd)
 
     // save results
-    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(frameMeta.schema, flattenedRDD), Some(rowCount))
-
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(frameEntity.schema, flattenedRDD))
   }
 
 }
@@ -111,11 +169,11 @@ object FlattenColumnFunctions extends Serializable {
    * Eg. for row (1, "dog,cat"), flatten by second column will yield (1,"dog") and (1,"cat")
    * @param index column index
    * @param row row data
-   * @param separator separator for splitting
+   * @param delimiter separator for splitting
    * @return flattened out row/rows
    */
-  private[frame] def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
-    val splitted = row(index).asInstanceOf[String].split(separator)
+  private[frame] def flattenColumnByIndex(index: Int, row: Array[Any], delimiter: String): Array[Array[Any]] = {
+    val splitted = row(index).asInstanceOf[String].split(Pattern.quote(delimiter))
     splitted.map(s => {
       val r = row.clone()
       r(index) = s

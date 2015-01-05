@@ -69,7 +69,7 @@ case class Graph(id: Long,
     !StorageFormats.isSeamlessGraph(storageFormat)
   }
 
-  def commandPrefix: String = {
+  def entityType: String = {
     if (isTitan) "graph:titan"
     else if (isSeamless) "graph:"
     else throw new RuntimeException("New graph type is not yet implemented!")

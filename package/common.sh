@@ -40,12 +40,17 @@ function deleteOldBuildDirs()
 function tarFiles()
 {
 	mkdir TESTTAR
+	: > FILES.LOG
 	tar -xvf $1 -C TESTTAR > TAR.LOG
-	rm FILES.LOG CONFIGFILES.LOG
+	if [ -f FILES.LOG ] && [ -f CONFIGFILES.LOG ]; then
+	    rm FILES.LOG CONFIGFILES.LOG
+	fi
 	for path in `cat TAR.LOG`;
 	do
+
 		fullPath=$path
 		fileName=${path##*/}
+		log "filename $fileName"
 		if [ "$fileName" != "" ]; then
 
 			if [[ ! $fullPath == \/* ]]; then
@@ -163,6 +168,45 @@ function debRules()
 	echo -e "\tdh \$@ $RULEOPT"
 }
 
+function package(){
+    packageName=$1
+
+        log "package ${packageName}"
+        config/$packageName/package.sh ${packageName}
+
+}
+
+function createArchive(){
+    packageName=$1
+    log "archive for $packageName dir: $BUILD_DIR"
+    pushd ${BUILD_DIR}
+    if [ $packageName == $PACKAGE_NAME ]; then
+        log "tar zcvf ../$packageName-source.tar.gz . --owner=root --group=root"
+        log "`pwd`"
+        tar zcvf ../$packageName-source.tar.gz . --owner=root --group=root
+        #tar -pczf ../$package-source.tar.gz .
+    fi
+    popd
+}
+
+function cleanBuild(){
+    packageName=$1
+    echo cleanBuildDir
+    echo $packageName
+    if [ -d ${BUILD_DIR}/${packageName} ]; then
+        log "remove old build folder"
+        rm -rf ${BUILD_DIR}/${packageName}
+        else
+        log "no old build folders"
+    fi
+    if [ -f ${BUILD_DIR}/${packageName}-source.tar.gz ]; then
+        log "delete old source file "
+        rm ${BUILD_DIR}/${packageName}-source.tar.gz
+        else
+        log "no old source file"
+    fi
+}
+
 function cleanDeb()
 {
     log "clean deb build dirs"
@@ -245,6 +289,7 @@ echo "%files"
 if [ ! -z "$FILES" ]; then
     echo "$FILES"
 fi
+
 cat $TAR_FILES
 
 if [ ! -z "$CONFIG" ]; then

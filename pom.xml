@@ -109,10 +109,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.2-SNAPSHOT</dep.ititan.version>
-        <dep.aurelius.version>0.5.2</dep.aurelius.version>
+        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
-        <dep.reflections>0.9.9</dep.reflections>
+        <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
 
         <dep.hbase.version>0.98.6-cdh5.2.0</dep.hbase.version>
@@ -243,6 +243,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <module>python</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>integration-tests</module>
             </modules>
         </profile>
 
@@ -837,12 +849,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
                 <version>${dep.tinkerpop.version}</version>
-            </dependency>
-            <!--guava-cache-->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>18.0</version>
             </dependency>
             <!--org.scala-->
             <dependency>

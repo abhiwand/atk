@@ -62,12 +62,6 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
 
   /**
    * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  /**
-   * 20141104 Mark Aldrich: Changed to match other plugin functions
-   * override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate vertex rows.", Some("""
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove duplicate vertex rows.",
     extendedSummary = Some("""
@@ -116,6 +110,12 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
                             """.stripMargin)))
 
   /**
+   * Number of Spark jobs that get created by running this command
+   * (this configuration is used to prevent multiple progress bars in Python client)
+   */
+  override def numberOfJobs(arguments: DropDuplicates)(implicit invocation: Invocation) = 4
+
+  /**
    * Plugins must implement this method to do the work requested by the user.
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -127,29 +127,25 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     val vertexFrame = frames.expectFrame(arguments.frame.id)
 
-    vertexFrame.graphId match {
-      case Some(graphId) => {
-        val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(graphId)
+    require(vertexFrame.isVertexFrame, "vertex frame is required")
 
-        val schema = vertexFrame.schema
-        val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
-        val columnNames = arguments.unique_columns match {
-          case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
-          case None =>
-            // _vid is always unique so don't include it
-            vertexFrame.schema.columnNames.dropWhile(s => s == "_vid")
-        }
-        schema.validateColumnsExist(columnNames)
-        val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
-
-        val label = schema.asInstanceOf[VertexSchema].label
-        FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, new LegacyFrameRDD(schema, duplicatesRemoved))
-
-        val rowCount = duplicatesRemoved.count()
-        // save results
-        frames.saveLegacyFrame(vertexFrame, new LegacyFrameRDD(schema, duplicatesRemoved), Some(rowCount))
-      }
-      case _ => null //abort
+    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.graphId.get)
+    val schema = vertexFrame.schema
+    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
+    val columnNames = arguments.unique_columns match {
+      case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
+      case None =>
+        // _vid is always unique so don't include it
+        vertexFrame.schema.columnNames.dropWhile(s => s == "_vid")
     }
+    schema.validateColumnsExist(columnNames)
+    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
+
+    val label = schema.asInstanceOf[VertexSchema].label
+    FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, new LegacyFrameRDD(schema, duplicatesRemoved))
+
+    // save results
+    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRDD(schema, duplicatesRemoved))
+
   }
 }

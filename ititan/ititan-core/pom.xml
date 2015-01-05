@@ -5,7 +5,7 @@
 
     <groupId>com.intel.ia</groupId>
     <artifactId>ititan-core</artifactId>
-    <version>0.5.2-SNAPSHOT</version>
+    <version>0.5.0-SNAPSHOT</version>
 
     <description>
         Both Titan and Spark depend on Kryo. This causes a ClassLoader conflict when Titan tries
@@ -19,7 +19,7 @@
     </description>
 
     <properties>
-        <dep.aurelius.version>0.5.2</dep.aurelius.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
     </properties>
 
     <dependencies>
