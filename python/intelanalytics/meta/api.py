@@ -39,7 +39,6 @@ class _ApiGlobals(set):
 api_globals = _ApiGlobals()  # holds generated items that should be added to the API
 
 
-
 class _ApiCallStack(object):
 
     def __init__(self):
@@ -61,20 +60,27 @@ class _ApiCallStack(object):
 _api_call_stack = _ApiCallStack()
 
 
-def get_api_decorator(logger):
-    """Provides an API decorator which will wrap functions designated as an API"""
+class ApiCallLoggingContext(object):
 
-    # Note: extra whitespace lines in the code below is intentional for pretty-printing when error occurs
-    call_stack = _api_call_stack  # close over local
-    def _api(function, *args, **kwargs):
-        if call_stack.is_empty:
-            log_api_call(function, *args, **kwargs)
-        call_stack.inc()
-        try:
-            check_api_is_loaded()
-            return function(*args, **kwargs)
-        except:
-            error = IaError(logger)
+    def __init__(self, call_stack, call_logger, call_depth, function, *args, **kwargs):
+        self.logger = None
+        self.call_stack = call_stack
+        if self.call_stack.is_empty:
+            self.logger = call_logger
+            self.depth = call_depth
+            self.function = function
+            self.args = args
+            self.kwargs = kwargs
+
+    def __enter__(self):
+        if self.call_stack.is_empty:
+            log_api_call(self.depth, self.function, *self.args, **self.kwargs)
+        self.call_stack.inc()
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.call_stack.dec()
+        if exception_value:
+            error = IaError(self.logger)
 
 
 
@@ -82,8 +88,28 @@ def get_api_decorator(logger):
 
 
 
-        finally:
-            call_stack.dec()
+def api_context(logger, depth, function, *args, **kwargs):
+    global _api_call_stack
+    return ApiCallLoggingContext(_api_call_stack, logger, depth, function, *args, **kwargs)
+
+
+def get_api_decorator(logger):
+    """Provides an API decorator which will wrap functions designated as an API"""
+
+    # Note: extra whitespace lines in the code below is intentional for pretty-printing when error occurs
+    def _api(function, *args, **kwargs):
+        with api_context(logger, 4, function, *args, **kwargs):
+            try:
+                check_api_is_loaded()
+                return function(*args, **kwargs)
+            except:
+                error = IaError(logger)
+
+
+
+                raise error  # see intelanalytics.errors.last for details
+
+
 
     def api(item):
         if inspect.isclass(item):

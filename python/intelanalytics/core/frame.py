@@ -25,7 +25,7 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.udf import has_python_user_function_arg
@@ -801,7 +801,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         return self._backend.inspect(self, n, offset, columns)
 
     @api
-    def join(self, right, left_on, right_on=None, how='inner'):
+    def join(self, right, left_on, right_on=None, how='inner', name=None):
         """
         Combine frames.
 
@@ -833,6 +833,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         how : str (optional)
             ['left' | 'right' | 'inner'].
+
+        name : str (optional)
+            Name for the resulting new joined frame
 
         Returns
         -------
@@ -880,7 +883,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         # For further examples, see :ref:`example_frame.join`.
-        return self._backend.join(self, right, left_on, right_on, how)
+        return self._backend.join(self, right, left_on, right_on, how, name)
 
     @api
     def sort(self, columns, ascending=True):
@@ -1046,19 +1049,16 @@ class Frame(DocStubsFrame, _BaseFrame):
     _entity_type = 'frame:'
 
     def __init__(self, source=None, name=None):
-        try:
+        self._error_frame_id = None
+        self._id = 0
+        self._ia_uri = None
+        with api_context(logger, 3, self.__init__, self, source, name):
             check_api_is_loaded()
-            self._error_frame_id = None
-            self._id = 0
-            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
             new_frame_name = self._backend.create(self, source, name)
             logger.info('Created new frame "%s"', new_frame_name)
-        except:
-            error = IaError(logger)
-            raise error
 
     @api
     def append(self, data):
@@ -1094,71 +1094,6 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         """
         self._backend.append(self, data)
-
-    @api
-    def flatten_column(self, column_name):
-        """
-        Spread out data.
-
-        Search through the currently active Frame for multiple items in a single specified column.
-        When it finds multiple values in the column, it replicates the row and separates the multiple items
-        across the existing and new rows.
-        Multiple items is defined in this case as being things separated by commas.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to be flattened.
-
-        Returns
-        -------
-        None
-
-        Examples
-        --------
-        Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
-        The "original_data"::
-
-            1-"solo,mono,single"
-            2-"duo,double"
-
-        I run my commands to bring the data in where I can work on it::
-
-            my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
-                delimiter='-')
-            # The above command has been split for enhanced readability in some medias.
-            my_frame = Frame(source=my_csv)
-
-        I look at it and see::
-
-            my_frame.inspect()
-
-              a:int32   b:string
-            /------------------------------/
-                1       solo, mono, single
-                2       duo, double
-
-        Now, I want to spread out those sub-strings in column *b*::
-
-            my_frame.flatten_column('b')
-
-        Now I check again and my result is::
-
-            my_frame.inspect()
-
-              a:int32   b:str
-            /------------------/
-                1       solo
-                1       mono
-                1       single
-                2       duo
-                2       double
-
-
-        .. versionadded:: 0.8
-
-        """
-        self._backend.flatten_column(self, column_name)
 
 
 @api

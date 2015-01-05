@@ -85,6 +85,8 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
         byte[][] escapeChars = getTagArray(new String[]{"\\"});
         byte[][] xmlNodeEnd = getTagArray(new String[]{">"});
         byte[][] xmlAltEnd = getTagArray(new String[]{"/>"});
+        byte[][] commentStartChars = getTagArray(new String[]{"<!--"});
+        byte[][] commentEndChars = getTagArray(new String[]{"-->"});
 
         public TaggedRecordReader(FileSplit split, Configuration conf) throws IOException {
             startTagStrings = conf.getStrings(START_TAG_KEY);
@@ -132,7 +134,7 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
         private boolean next(LongWritable key, Text value) throws IOException {
             if (fsin.getPos() < end && readUntilMatch(startTags, false)) {
                 try {
-                    if (readUntilMatchNested(endTags, true, startTags, isXML)) {
+                    if (readUntilMatchNested(endTags, true, startTags)) {
                         key.set(fsin.getPos());
                         value.set(buffer.getData(), 0, buffer.getLength());
                         return true;
@@ -163,13 +165,14 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
          * @throws IOException
          */
         private boolean readUntilMatch(byte[][] match, boolean withinBlock) throws IOException {
-            return readUntilMatchNested(match, withinBlock, null, false);
+            return readUntilMatchNested(match, withinBlock, null);
         }
 
         private enum ParseState {
-            NORMAL,
+            ESCAPE_CHAR,
+            IN_COMMENT,
             IN_QUOTE,
-            ESCAPE_CHAR
+            NORMAL
         }
 
 
@@ -178,12 +181,11 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
          * @param match a list of possible matches
          * @param withinBlock true if we are inside of a tag and are looking for an end tag
          * @param startTag list of possible startTags. only needed if we are within a Block
-         * @param checkXML if this is an xml file (rather than a json) check for an alternate end
          * @return true if we find a match
          * @throws IOException
          */
-        private boolean readUntilMatchNested(byte[][] match, boolean withinBlock, byte[][] startTag, boolean checkXML) throws IOException {
-            return new NestedMatchFinder(match, withinBlock, startTag, checkXML).invoke();
+        private boolean readUntilMatchNested(byte[][] match, boolean withinBlock, byte[][] startTag) throws IOException {
+            return new NestedMatchFinder(match, withinBlock, startTag, this.isXML).invoke();
         }
 
         @Override
@@ -241,6 +243,9 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
                 int[] quoteIndices = new int[quoteChars.length];
                 int[] xmlNodeEndIndices = new int[xmlNodeEnd.length];
                 int[] xmlAltEndIndices = new int[xmlAltEnd.length];
+                int[] xmlCommentStartIndices = new int[commentStartChars.length];
+                int[] xmlCommentEndIndices = new int[commentEndChars.length];
+
 
                 while (true) {
                     int b = fsin.read();
@@ -253,7 +258,9 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
                         buffer.write(b);
                     }
 
+
                     checkQuotes(escapeCharIndices, quoteIndices, b);
+                    checkComments(xmlCommentStartIndices, xmlCommentEndIndices, b);
 
                     if(parseState == ParseState.NORMAL) {
                         if (checkEmptyElementNode(xmlNodeEnd, xmlNodeEndIndices, xmlAltEnd, xmlAltEndIndices, b))
@@ -321,6 +328,27 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
             }
 
             /**
+             * Check for XML comments
+             */
+            private void checkComments(int[] xmlCommentStartIndices, int[] xmlCommentEndIndices, int b) {
+                if(checkXML){
+                    if(this.parseState == ParseState.NORMAL){
+                        //if this is in a normal state check for start of a comment
+                        if(checkMatches(b, xmlCommentStartIndices, commentStartChars) != -1){
+                            this.parseState = ParseState.IN_COMMENT;
+                            initIntArray(xmlCommentStartIndices);
+                        }
+                    }else if(this.parseState == ParseState.IN_COMMENT){
+                        //if this is inside of acomment check for the end
+                        if(checkMatches(b, xmlCommentEndIndices, commentEndChars) != -1){
+                            this.parseState = ParseState.NORMAL;
+                            initIntArray(xmlCommentEndIndices);
+                        }
+                    }
+                }
+            }
+
+            /**
              * Check for the alternate ending of an xml node. The empty element node is a single tag ending in a />
              * @return
              */
@@ -350,11 +378,11 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
                     return;
                 // This section checks for quoted attributes. If a tag appears in an attribute than it should not count as a match
                 if (parseState == ParseState.ESCAPE_CHAR) {
-                    //if we are in an escape char we want to check for a quote. If we find a quote we want to stay in the quote mode.
+                    //if we are in an escape char we want to check for a quote. If we wait the length of the quote we will know that we are back in the string.
+                    currentQuoteIndex++;
                     if (currentQuoteIndex >= quoteChars[currentQuote].length) {
                         parseState = ParseState.IN_QUOTE;
                     }
-                    currentQuoteIndex++;
                 } else {
                     if (parseState == ParseState.IN_QUOTE) {
                         // if we are inside of a quote we need to verify that the next quote we find is not escaped

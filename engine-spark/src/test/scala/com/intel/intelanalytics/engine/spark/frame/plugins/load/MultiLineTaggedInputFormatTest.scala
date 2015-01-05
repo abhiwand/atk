@@ -17,6 +17,7 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
   var recursiveNestingFile: File = null
   var altXMLEndFile: File = null
   var xmlQuoteFile: File = null
+  var xmlCommentFile: File = null
 
   override def beforeAll() {
     super[TestingSparkContextWordSpec].beforeAll()
@@ -40,11 +41,11 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
     jsonFile = createTestFile("json",
       """{
         |   "num": 1,
-        |   "status": "}{}{"
+        |   "status": "}{}{\\"
         |},
         |{
         |   "num":2,
-        |   "status": "\"}{}"
+        |   "status": "\"}{\}"
         |}
       """)
     recursiveNestingFile = createTestFile("recursive",
@@ -87,6 +88,33 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
                                                 |                <size>3</size>
                                                 |            </triangle>
                                                 |            <square color="blue</square>" />
+                                                |        </shapes>""")
+    xmlCommentFile = createTestFile("xmlComment", """<?xml version="1.0" encoding="UTF-8"?>
+                                                |        <shapes>
+                                                |            <square>
+                                                |                <name>left</name>
+                                                |                <size>3</size>
+                                                |            </square>
+                                                |       <!--
+                                                |            <square>
+                                                |                <name>missing</name>
+                                                |                <size>3"</size>
+                                                |            </square>
+                                                |       -->
+                                                |            <square>
+                                                |                <name>mid</name>
+                                                |                <size>3</size>
+                                                |       <!--
+                                                |            </square>
+                                                |            <square>
+                                                |                <name>nonexistent</name>
+                                                |                <size>3</size>
+                                                |       -->
+                                                |            </square>
+                                                |            <square>
+                                                |                <name>right</name>
+                                                |                <size>3</size>
+                                                |            </square>
                                                 |        </shapes>""")
   }
 
@@ -138,6 +166,15 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
       taken.length should be(2)
       taken(0) should include("left")
       taken(1) should include("blue")
+    }
+
+    "xml values should ignore values found in comments" in {
+      val rows: RDD[String] = executeXmlInputFormat(xmlCommentFile, List("<square>", "<square "), List("</square>"))
+      val taken = rows.take(100)
+      taken.length should be(3)
+      taken(0) should include("left")
+      taken(1) should include("mid")
+      taken(2) should include("right")
     }
 
   }

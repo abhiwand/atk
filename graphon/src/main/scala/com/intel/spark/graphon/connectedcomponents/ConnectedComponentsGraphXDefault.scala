@@ -32,7 +32,6 @@ object ConnectedComponentsGraphXDefault {
       case (vertexId, connectedComponentId) => (vertexId, connectedComponentId.toLong)
     })
 
-    graph.unpersistVertices()
     out
   }
 

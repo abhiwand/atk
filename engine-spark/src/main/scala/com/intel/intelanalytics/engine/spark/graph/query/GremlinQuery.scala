@@ -3,18 +3,16 @@ package com.intel.intelanalytics.engine.spark.graph.query
 import javax.script.Bindings
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ Await, ExecutionContext, Lock }
+import scala.concurrent.Await
 import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
@@ -124,9 +122,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
                            |        results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
                            |        print results["results"]
                            |
+                           |     The expected output is:: [4]
+                           |
+                           |     Get the count of name and age properties from vertices::
+                           |
+                           |        results = mygraph.query.gremlin("g.V.transform{[it.name, it.age]}[0..10])")
+                           |        print results["results"]
+                           |
                            |     The expected output is::
                            |
-                           |        [4]
+                           |        [u'["alice", 29]', u'[ "bob", 45 ]', u'["cathy", 34 ]']
+                           |
+                           |
                             """.stripMargin)))
 
   /**
