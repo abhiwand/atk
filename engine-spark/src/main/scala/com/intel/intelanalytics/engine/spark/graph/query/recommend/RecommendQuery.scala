@@ -1,11 +1,8 @@
 package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
@@ -227,17 +224,11 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
         ("l", rightVertexName, leftVertexName, rightVertexIdPropertyKey, leftVertexIdPropertyKey)
       }
 
-    // Create graph connection
-    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-    val vertexRDD = titanReaderRDD.filterVertices().distinct()
-    val edgeRDD = titanReaderRDD.filterEdges().distinct()
+    // Load vertices and edges
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
     //get the source vertex based on its id
-    val sourceVertexRDD = vertexRDD.filter(
+    val sourceVertexRDD = gbVertices.filter(
       vertex => vertex.getPropertyValueAsString(sourceIdPropertyKey) == vertexId &&
         vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == vertexType
     )
@@ -260,7 +251,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // when there is "TR" data between source vertex and target vertex,
     // it means source vertex knew target vertex already.
     // The target vertex cannot shown up in recommendation results
-    val avoidTargetEdgeRDD = edgeRDD.filter(
+    val avoidTargetEdgeRDD = gbEdges.filter(
       edge => edge.headVertexGbId == sourceGbId &&
         edge.getPropertyValueAsString(edgeTypePropertyKey).toLowerCase == trainStr
     )
@@ -272,7 +263,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().collect()
 
     //filter target vertex RDD
-    val targetVertexRDD = vertexRDD.filter {
+    val targetVertexRDD = gbVertices.filter {
       case vertex =>
         var keep = false
         if (vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == targetVertexType) {

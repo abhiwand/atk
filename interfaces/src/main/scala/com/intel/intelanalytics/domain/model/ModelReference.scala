@@ -34,20 +34,20 @@ import ru._
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
  */
-case class ModelReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
+case class ModelReference(modelId: Long, modelExists: Option[Boolean] = None) extends UriReference {
 
   /** The entity type */
   override def entity: EntityType = ModelEntity
 
   /** The entity id */
-  override def id: Long = frameId
+  override def id: Long = modelId
 
   /**
    * Is this reference known to be valid at the time it was created?
    *
    * None indicates this is unknown.
    */
-  override def exists: Option[Boolean] = frameExists
+  override def exists: Option[Boolean] = modelExists
 }
 
 /**

@@ -117,26 +117,26 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       intercept[IllegalArgumentException] {
         val edgeColumns1 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label1", DataTypes.string), Column("label3", DataTypes.string))
         val edgeSchema1 = new EdgeSchema(edgeColumns1, "label1", "srclabel", "destlabel")
-        val frame1 = new DataFrame(1, "name", edgeSchema1, 0L, new DateTime, Some(new DateTime))
+        val frame1 = new DataFrame(1, "name", edgeSchema1, 0L, new DateTime, new DateTime)
 
         val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label2", DataTypes.string))
         val edgeSchema2 = new EdgeSchema(edgeColumns2, "label2", "srclabel", "destlabel")
-        val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, Some(new DateTime))
+        val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, new DateTime)
 
         val edgeColumns3 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
         val edgeSchema3 = new EdgeSchema(edgeColumns3, "label3", "srclabel", "destlabel")
-        val frame3 = new DataFrame(1, "name", edgeSchema3, 0L, new DateTime, Some(new DateTime))
+        val frame3 = new DataFrame(1, "name", edgeSchema3, 0L, new DateTime, new DateTime)
 
         val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
         plugin.validateLabelNames(List(frame1, frame2, frame3), List("label1", "label2", "label3"))
       }
     }
     "no exception thrown if titan naming elements are valid" in {
-      val frame1 = new DataFrame(1, "name", edgeSchema, 0L, new DateTime, Some(new DateTime))
+      val frame1 = new DataFrame(1, "name", edgeSchema, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
       val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
       val edgeSchema2 = new EdgeSchema(edgeColumns2, "label1", "srclabel", "destlabel")
-      val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, Some(new DateTime))
+      val frame2 = new DataFrame(1, "name", edgeSchema2, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
       val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
       plugin.validateLabelNames(List(frame1, frame2), List("notalabel1", "label2", "label3"))

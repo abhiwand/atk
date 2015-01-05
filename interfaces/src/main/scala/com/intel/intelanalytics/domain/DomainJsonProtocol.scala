@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain
 
 import java.net.URI
+import java.util
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
@@ -46,17 +47,19 @@ import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
-import spray.json._
 import com.intel.intelanalytics.engine.{ ReferenceResolver, ProgressInfo, TaskProgressInfo }
 import org.joda.time.DateTime
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
+import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import scala.util.Success
 import com.intel.intelanalytics.UnitReturn
 
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 /**
@@ -190,6 +193,67 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       case singleton => SingletonOrListValue[T](List(singleton.convertTo[T]))
     }
   }
+
+  /**
+   * Convert Java collections to Json.
+   */
+
+  //These JSONFormats needs to be before the DataTypeJsonFormat which extends JsonFormat[Any]
+  implicit def javaSetFormat[T: JsonFormat: TypeTag] = javaCollectionFormat[java.util.Set[T], T]
+  implicit def javaListFormat[T: JsonFormat: TypeTag] = javaCollectionFormat[java.util.List[T], T]
+
+  def javaCollectionFormat[E <: java.util.Collection[T]: TypeTag, T: JsonFormat: TypeTag]: JsonFormat[E] = new JsonFormat[E] {
+    override def read(json: JsValue): E = json match {
+      case JsArray(elements) =>
+        val collection = typeOf[E] match {
+          case t if t =:= typeOf[java.util.Set[T]] => new java.util.HashSet[T]()
+          case t if t =:= typeOf[java.util.List[T]] => new util.ArrayList[T]()
+          case x => deserializationError(s"Unable to deserialize Java collections of type $x")
+        }
+        val javaCollection = elements.map(_.convertTo[T]).asJavaCollection
+        collection.addAll(javaCollection)
+        collection.asInstanceOf[E]
+      case x => deserializationError(s"Expected a Java collection, but received $x")
+    }
+
+    override def write(obj: E): JsValue = obj match {
+      case javaCollection: E => javaCollection.asScala.toJson
+      case x => serializationError(s"Expected a Java collection, but received: $x")
+    }
+  }
+
+  /**
+   * Convert Java maps to Json.
+   */
+  //These JSONFormats needs to be before the DataTypeJsonFormat which extends JsonFormat[Any]
+  implicit def javaHashMapFormat[K: JsonFormat, V: JsonFormat] = javaMapFormat[java.util.HashMap[K, V], K, V]
+  implicit def javaUtilMapFormat[K: JsonFormat, V: JsonFormat] = javaMapFormat[java.util.Map[K, V], K, V]
+
+  def javaMapFormat[M <: java.util.Map[K, V]: ClassTag, K: JsonFormat, V: JsonFormat]: JsonFormat[M] = new JsonFormat[M] {
+    override def read(json: JsValue): M = json match {
+      case x: JsObject =>
+        val javaMap = new java.util.HashMap[K, V]()
+        x.fields.map {
+          case (key, value) =>
+            javaMap.put(JsString(key).convertTo[K], value.convertTo[V])
+        }
+        javaMap.asInstanceOf[M]
+
+      case x => deserializationError(s"Expected a Java map, but received $x")
+    }
+
+    override def write(obj: M): JsValue = obj match {
+      case javaMap: java.util.Map[K, V] => {
+        val map = javaMap.map {
+          case (key, value) =>
+            (key.toString, value.toJson)
+        }.toMap
+        JsObject(map)
+      }
+      case x => serializationError(s"Expected a Java map, but received: $x")
+    }
+  }
+
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
       obj match {
@@ -217,9 +281,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
   implicit val longValueFormat = jsonFormat1(LongValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
+  implicit val boolValueFormat = jsonFormat1(BoolValue)
 
   implicit val userFormat = jsonFormat5(User)
-  implicit val statusFormat = jsonFormat5(Status)
+  implicit val statusFormat = jsonFormat5(Status.apply)
   implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate.apply)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
@@ -230,7 +295,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject])
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
-  implicit val loadSourceFormat = jsonFormat4(LoadSource)
+  implicit val loadSourceFormat = jsonFormat6(LoadSource)
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate)
   implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
@@ -244,7 +309,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val justALongFormat = jsonFormat1(JustALong)
 
   implicit val errorFormat = jsonFormat5(Error)
-  implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
+  implicit val flattenColumnLongFormat = jsonFormat3(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
@@ -272,12 +337,16 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
+  implicit val calculateCovarianceMatrix = jsonFormat3(CovarianceMatrixArguments)
+  implicit val calculateCovariance = jsonFormat2(CovarianceArguments)
+  implicit val covarianceReturnFormat = jsonFormat1(DoubleValue)
 
   implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopK)
-
+  implicit val exportHdfsCsvPlugin = jsonFormat5(ExportCsvArguments)
+  implicit val exportHdfsJsonPlugin = jsonFormat4(ExportJsonArguments)
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
@@ -433,7 +502,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(frame: DataFrame): JsValue = {
       JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields +
         ("ia_uri" -> JsString(frame.uri)) +
-        ("command_prefix" -> JsString(frame.commandPrefix)))
+        ("entity_type" -> JsString(frame.entityType)))
     }
   }
 
@@ -447,7 +516,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(graph: Graph): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
-        ("command_prefix" -> JsString(graph.commandPrefix)))
+        ("entity_type" -> JsString(graph.entityType)))
     }
   }
 

@@ -41,7 +41,7 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Graph): GetGraph = {
 
-    GetGraph(id = entity.id, iaUri = entity.uri, name = entity.name, links = links.toList, entity.commandPrefix)
+    GetGraph(id = entity.id, iaUri = entity.uri, name = entity.name, links = links.toList, entity.entityType)
   }
 
   /**
@@ -54,7 +54,8 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
   override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GetGraphs] = {
     entities.map(graph => new GetGraphs(id = graph.id,
       name = graph.name,
-      url = uri + "/" + graph.id)).toList
+      url = uri + "/" + graph.id,
+      entityType = graph.entityType)).toList
   }
 
 }

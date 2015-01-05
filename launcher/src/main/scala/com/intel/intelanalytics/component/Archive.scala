@@ -69,7 +69,7 @@ trait Archive extends Component {
     Archive.logger(s"Component config for $path follows:")
     Archive.logger(restricted.root().render())
     Archive.logger(s"End component config for $path")
-    Boot.writeFile("/tmp/iat/" + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+    Boot.writeFile(Boot.TMP + path.replace("/", "_") + ".effective-conf", restricted.root().render())
     component.init(path, restricted)
     component.start()
     component

@@ -81,7 +81,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
             // The exact timing of the events arrival can not be determined.
             val progress = command.progress.map(info => info.copy(progress = 100f))
             command.copy(complete = true,
-              progress = if (!progress.isEmpty) progress else List(ProgressInfo(100f, None)),
+              progress = if (progress.nonEmpty) progress else List(ProgressInfo(100f, None)),
               result = Some(r),
               correlationId = corId)
           }

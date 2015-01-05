@@ -48,6 +48,8 @@ trait GraphStorage {
 
   def drop(graph: Graph)(implicit invocation: Invocation)
 
+  def updateStatus(graph: Graph, newStatusId: Long)
+
   def getGraphs()(implicit invocation: Invocation): Seq[Graph]
 
   def getGraphByName(name: String)(implicit invocation: Invocation): Option[Graph]
