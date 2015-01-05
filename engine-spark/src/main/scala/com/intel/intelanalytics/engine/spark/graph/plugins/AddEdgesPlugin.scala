@@ -115,9 +115,9 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     // validate arguments
-    val edgeFrameMeta = frames.expectFrame(arguments.edgeFrame)
-    require(edgeFrameMeta.isEdgeFrame, "add edges requires an edge frame")
-    val graph = graphs.expectSeamless(edgeFrameMeta.graphId.get)
+    val edgeFrameEntity = frames.expectFrame(arguments.edgeFrame)
+    require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
+    val graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
     val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
     sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
 
@@ -136,15 +136,15 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     edgesWithoutVids.cache()
     edgeDataToAdd.unpersist(blocking = false)
 
-    val srcLabel = edgeFrameMeta.schema.asInstanceOf[EdgeSchema].srcVertexLabel
-    val destLabel = edgeFrameMeta.schema.asInstanceOf[EdgeSchema].destVertexLabel
+    val srcLabel = edgeFrameEntity.schema.asInstanceOf[EdgeSchema].srcVertexLabel
+    val destLabel = edgeFrameEntity.schema.asInstanceOf[EdgeSchema].destVertexLabel
 
     // create vertices from edge data and append to vertex frames
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).frameReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).frameReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
@@ -194,11 +194,9 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
-    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameMeta.id)
+    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.id)
     val combinedRdd = existingEdgeData.append(edgesToAdd)
-    combinedRdd.cache()
-    graphs.saveEdgeRdd(edgeFrameMeta.id, combinedRdd, Some(combinedRdd.count()))
-    combinedRdd.unpersist(blocking = false)
+    graphs.saveEdgeRdd(edgeFrameEntity.id, combinedRdd)
 
     // results
     new UnitReturn

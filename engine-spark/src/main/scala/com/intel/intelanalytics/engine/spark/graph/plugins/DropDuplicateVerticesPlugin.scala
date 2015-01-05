@@ -144,9 +144,8 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
     val label = schema.asInstanceOf[VertexSchema].label
     FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, new LegacyFrameRDD(schema, duplicatesRemoved))
 
-    val rowCount = duplicatesRemoved.count()
     // save results
-    frames.saveLegacyFrame(vertexFrame, new LegacyFrameRDD(schema, duplicatesRemoved), Some(rowCount))
+    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRDD(schema, duplicatesRemoved))
 
   }
 }

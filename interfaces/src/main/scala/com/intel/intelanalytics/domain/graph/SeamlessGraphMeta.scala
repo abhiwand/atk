@@ -32,32 +32,32 @@ import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
  * "Seamless Graph" is a graph that provides a "seamless user experience" between graphs and frames.
  * The same data can be treated as frames one moment and as a graph the next without any import/export.
  *
- * @param graphMeta the graph meta data
- * @param frameMetas the vertex and edge frames owned by this graph (might be empty but never null)
+ * @param graphEntity the graph meta data
+ * @param frameEntities the vertex and edge frames owned by this graph (might be empty but never null)
  */
-case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
-  require(graphMeta != null, "graph is required")
-  require(frameMetas != null, "frame is required, it can be empty but not null")
-  require(graphMeta.storageFormat == "ia/frame", "Storage format should be ia/frame")
-  frameMetas.foreach(frame => require(frame.graphId.isDefined, "frame should be owned by the graph, graphId is required"))
-  frameMetas.foreach(frame => require(frame.graphId.get == graphMeta.id, "frame should be owned by the graph, graphId did not match"))
+case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame]) {
+  require(graphEntity != null, "graph is required")
+  require(frameEntities != null, "frame is required, it can be empty but not null")
+  require(graphEntity.storageFormat == "ia/frame", "Storage format should be ia/frame")
+  frameEntities.foreach(frame => require(frame.graphId.isDefined, "frame should be owned by the graph, graphId is required"))
+  frameEntities.foreach(frame => require(frame.graphId.get == graphEntity.id, "frame should be owned by the graph, graphId did not match"))
 
   /** Labels to frames */
-  @transient private lazy val edgeFrameMetasMap = frameMetas.filter(frame => frame.isEdgeFrame)
+  @transient private lazy val edgeFrameMetasMap = frameEntities.filter(frame => frame.isEdgeFrame)
     .map(frame => (frame.label.get, frame))
     .toMap[String, DataFrame]
 
   /** Labels to frames */
-  @transient private lazy val vertexFrameMetasMap = frameMetas.filter(frame => frame.isVertexFrame)
+  @transient private lazy val vertexFrameMetasMap = frameEntities.filter(frame => frame.isVertexFrame)
     .map(frame => (frame.label.get, frame))
     .toMap[String, DataFrame]
 
   /** convenience method for getting the id of the graph */
-  def id: Long = graphMeta.id
+  def id: Long = graphEntity.id
 
   /** Next unique id for edges and vertices */
   def nextId(): Long = {
-    graphMeta.nextId()
+    graphEntity.nextId()
   }
 
   /**
@@ -89,7 +89,7 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
    * True if the supplied label is already in use in this graph
    */
   def isVertexOrEdgeLabel(label: String): Boolean = {
-    frameMetas.exists(frame => frame.label.get == label)
+    frameEntities.exists(frame => frame.label.get == label)
   }
 
   /**
@@ -155,7 +155,7 @@ case class SeamlessGraphMeta(graphMeta: Graph, frameMetas: List[DataFrame]) {
    * Create a list of ElementIDName objects corresponding to the IDColumn of all Vertices in this graph.
    */
   def getFrameSchemaList: List[Schema] = {
-    this.frameMetas.map {
+    this.frameEntities.map {
       frame => frame.schema
     }.toList
   }

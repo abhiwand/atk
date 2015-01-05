@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ Status, HasId }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 
@@ -57,7 +57,7 @@ case class DataFrame(id: Long,
                      schema: Schema = FrameSchema(),
                      status: Long,
                      createdOn: DateTime,
-                     modifiedOn: Option[DateTime] = None,
+                     modifiedOn: DateTime,
                      storageFormat: Option[String] = None,
                      storageLocation: Option[String] = None,
                      description: Option[String] = None,
@@ -97,7 +97,7 @@ case class DataFrame(id: Long,
   }
 
   /** create a FrameReference for this frame */
-  def frameReference: FrameReference = {
+  def toReference: FrameReference = {
     FrameReference(id)
   }
 
@@ -113,5 +113,30 @@ case class DataFrame(id: Long,
    */
   def toDebugString: String = {
     s"frameId: $id, name: $name, rowCount: $rowCount"
+  }
+
+  /**
+   * Create a child frame from the current frame (a new revision)
+   *
+   * A child is basically a copy but not all fields are inherited from the parent
+   *
+   * @return the child
+   */
+  def createChild(createdBy: Option[Long], command: Option[Long], schema: Schema): DataFrame = {
+    // id will be auto-assigned on insert, initialize to zero
+    copy(id = 0,
+      name = FrameName.generate(),
+      status = Status.Init,
+      schema = schema,
+      rowCount = None,
+      createdOn = new DateTime,
+      createdBy = createdBy,
+      modifiedOn = new DateTime,
+      modifiedBy = None,
+      materializedOn = None,
+      materializationComplete = None,
+      storageLocation = None,
+      command = command,
+      parent = Some(id))
   }
 }

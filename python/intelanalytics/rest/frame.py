@@ -98,8 +98,6 @@ class FrameBackendRest(object):
             return frame_info.name
         return frame.name
 
-        return new_frame_name
-
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
@@ -231,14 +229,6 @@ class FrameBackendRest(object):
         raise TypeError("Unsupported data source %s" % type(source))
 
     @staticmethod
-    def _get_new_frame_name(source=None):
-        try:
-            annotation = "_" + source.annotation
-        except:
-            annotation = ''
-        return "frame_" + uuid.uuid4().hex + annotation
-
-    @staticmethod
     def _format_schema(schema):
         formatted_schema = []
         for name, data_type in schema:
@@ -338,11 +328,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
-    def flatten_column(self, frame, column_name):
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('frame:/flatten_column', arguments)
-
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np
         colTypes = dict(frame.schema)
@@ -396,10 +381,9 @@ class FrameBackendRest(object):
 
         return FrameBackendRest.InspectionTable(schema, data)
 
-    def join(self, left, right, left_on, right_on, how):
+    def join(self, left, right, left_on, right_on, how, name=None):
         if right_on is None:
             right_on = left_on
-        name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         return execute_new_frame_command('frame:/join', arguments)
 
@@ -449,7 +433,6 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         arguments = {'frame': self.get_ia_uri(frame),
-                     'name': "group_by_" + self._get_new_frame_name(),
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
@@ -693,11 +676,13 @@ class FrameSchema:
     @staticmethod
     def get_indices_for_selected_columns(schema, selected_columns):
         indices = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    indices.append(schema.index(column))
-                    break
+        schema_columns = [col[0] for col in schema]
+        for column in selected_columns:
+            try:
+                indices.append(schema_columns.index(column))
+            except:
+                raise ValueError("Invalid column name %s provided"
+                                 ", please choose from: (%s)" % (column, ",".join(schema_columns)))
 
         return indices
 
