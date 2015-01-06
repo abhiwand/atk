@@ -48,12 +48,19 @@ object Boot extends App with ClassLoaderAware {
 
   private var archives: Map[String, Archive] = Map.empty
 
-  /**
-   * This one is crucial to build first
-   */
-  private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
+  private val defaultParentArchiveName = System.getenv("IAT_DEFAULT_ARCHIVE_PARENT") match {
+    case null => "interfaces"
+    case s if s.trim == "" => "interfaces"
+    case parent => parent
+  }
 
-  private val config: Config = ConfigFactory.load(interfaces)
+  private val defaultParentArchive = buildClassLoader(defaultParentArchiveName, getClass.getClassLoader)
+
+  private val config: Config = ConfigFactory.load(defaultParentArchive)
+
+  private[component] val debugConfigKey: String = "intel.analytics.launcher.debug-config"
+
+  private[component] val debugConfig = config.getBoolean(debugConfigKey)
 
   val TMP = "/tmp/iat-" + java.util.UUID.randomUUID.toString + "/"
 
@@ -72,19 +79,19 @@ object Boot extends App with ClassLoaderAware {
       config.getConfig(configKey)
     }.getOrElse(
       {
-        Archive.logger("No config found, using empty")
+        Archive.logger(s"No config found for '${configKey}', using empty")
         ConfigFactory.empty()
       })
     val parent = Try {
       restricted.getString("parent")
     }.getOrElse({
-      Archive.logger("Using default value for archive parent")
-      "interfaces"
+      Archive.logger(s"Using default value (${defaultParentArchiveName}) for archive parent")
+      defaultParentArchiveName
     })
     val className = Try {
       restricted.getString("class")
     }.getOrElse({
-      Archive.logger("No class entry found, using default archive class")
+      Archive.logger("No class entry found, using standard DefaultArchive class")
       "com.intel.intelanalytics.component.DefaultArchive"
     })
 
@@ -167,8 +174,8 @@ object Boot extends App with ClassLoaderAware {
     try {
       //We first create a standard plugin class loader, which we will use to query the config
       //to see if this archive needs special treatment (i.e. a parent class loader other than the
-      //interfaces class loader)
-      val probe = buildClassLoader(archiveName, interfaces)
+      //defaultParentArchive class loader)
+      val probe = buildClassLoader(archiveName, defaultParentArchive)
 
       val parseOptions = ConfigParseOptions.defaults()
       parseOptions.setAllowMissing(true)
@@ -194,7 +201,8 @@ object Boot extends App with ClassLoaderAware {
       val augmentedConfig = config.withFallback(
         ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
 
-      writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
+      if (debugConfig)
+        writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
 
       val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
@@ -337,7 +345,7 @@ object Boot extends App with ClassLoaderAware {
       Archive.logger(s"Started $archiveName with ${instance.definition}")
     }
     catch {
-      case NonFatal(e) =>
+      case e: Throwable =>
         Archive.logger(e.toString)
         println(e)
         e.printStackTrace()
