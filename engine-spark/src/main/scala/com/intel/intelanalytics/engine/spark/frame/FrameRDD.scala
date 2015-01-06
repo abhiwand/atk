@@ -84,6 +84,14 @@ class FrameRDD(val frameSchema: Schema,
       })
   }
 
+  def toVectorRDD(featureColumnNames: List[String]) = {
+    this mapRows (row =>
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        Vectors.dense(features.toArray)
+      })
+  }
+
   /**
    * Spark map with a rowWrapper
    */

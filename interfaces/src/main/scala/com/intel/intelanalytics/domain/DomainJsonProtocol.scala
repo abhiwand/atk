@@ -361,6 +361,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelRenameFormat = jsonFormat2(RenameModel)
   implicit val modelFormat = jsonFormat10(Model)
   implicit val modelLoadFormat = jsonFormat4(ModelLoad)
+  implicit val modelPredictFormat = jsonFormat3(ModelPredict)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntity)
