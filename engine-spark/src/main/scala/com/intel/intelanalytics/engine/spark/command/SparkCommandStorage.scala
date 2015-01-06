@@ -58,6 +58,9 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
     //TODO: set start date
   }
 
+  /**
+   * On complete - mark progress as 100% or failed
+   */
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
     require(result != null, "result must not be null")
@@ -83,6 +86,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
             command.copy(complete = true,
               progress = if (progress.nonEmpty) progress else List(ProgressInfo(100f, None)),
               result = Some(r),
+              error = None,
               correlationId = corId)
           }
         }

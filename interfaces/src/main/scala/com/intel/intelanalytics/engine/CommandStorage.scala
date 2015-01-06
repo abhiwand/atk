@@ -32,6 +32,10 @@ trait CommandStorage {
   def create(frame: CommandTemplate): Command
   def scan(offset: Int, count: Int): Seq[Command]
   def start(id: Long): Unit
+
+  /**
+   * On complete - mark progress as 100% or failed
+   */
   def complete(id: Long, result: Try[JsObject]): Unit
 
   /**
