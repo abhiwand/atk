@@ -62,14 +62,16 @@ trait Archive extends Component {
    * @return an initialized and started instance of the component
    */
   protected def loadComponent(path: String): Component = {
-    Archive.logger(s"Loading component $path")
+    Archive.logger(s"Loading component $path (set ${Boot.debugConfigKey} to true to enable component config logging")
     val className = configuration.getString(path.replace("/", ".") + ".class")
     val component = load(className).asInstanceOf[Component]
     val restricted = configuration.getConfig(path + ".config").withFallback(configuration).resolve()
-    Archive.logger(s"Component config for $path follows:")
-    Archive.logger(restricted.root().render())
-    Archive.logger(s"End component config for $path")
-    Boot.writeFile(Boot.TMP + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+    if (Boot.debugConfig) {
+      Archive.logger(s"Component config for $path follows:")
+      Archive.logger(restricted.root().render())
+      Archive.logger(s"End component config for $path")
+      Boot.writeFile(Boot.TMP + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+    }
     component.init(path, restricted)
     component.start()
     component
@@ -116,5 +118,9 @@ trait Archive extends Component {
  * Companion object for Archives.
  */
 object Archive {
+
+  /**
+   * Can be set at runtime to use whatever logging framework is desired.
+   */
   var logger: String => Unit = println
 }
