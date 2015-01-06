@@ -28,8 +28,11 @@ import com.tinkerpop.blueprints.{ Element, Graph }
 import spray.json._
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 object GremlinUtils {
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._ // Needed for serializing Java collections to JSON
+  import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
 
   /**
    * Serializes results of Gremlin query to JSON.
@@ -43,14 +46,15 @@ object GremlinUtils {
   def serializeGremlinToJson[T: JsonFormat: ClassTag](graph: Graph,
                                                       obj: T,
                                                       mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
-    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
+
     implicit val graphSONFormat = new GraphSONFormat(graph)
+
     val json = obj match {
       case null => JsNull
-      case e: Element => e.toJson // Needed to identify correct implicit for Blueprint's vertices and edges
-      case s: java.util.Set[Integer] => s.toString.toJson // WORK AROUND .. long term fix needs to support all Java collections
-      case x => x.toJson
+      case blueprintElement: Element => blueprintElement.toJson
+      case s => Try(s.toJson).getOrElse(JsString(s.toString))
     }
+
     json
   }
 
@@ -66,7 +70,6 @@ object GremlinUtils {
   def deserializeJsonToGremlin[T: JsonFormat: ClassTag](graph: Graph,
                                                         json: JsValue,
                                                         mode: GraphSONMode = GraphSONMode.NORMAL): T = {
-    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     implicit val graphSONFormat = new GraphSONFormat(graph)
     val obj = json match {
       case x if isGraphElement(x) => graphSONFormat.read(json).asInstanceOf[T]

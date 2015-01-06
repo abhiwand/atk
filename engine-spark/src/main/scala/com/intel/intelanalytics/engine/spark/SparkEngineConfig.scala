@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -47,6 +47,7 @@ object SparkEngineConfig extends SparkEngineConfig
  * This is our wrapper for Typesafe config.
  */
 trait SparkEngineConfig extends EventLogging {
+  implicit val eventContext: EventContext = null
 
   val config = ConfigFactory.load()
 
@@ -89,6 +90,13 @@ trait SparkEngineConfig extends EventLogging {
       sparkMaster
     }
   }
+
+  val isLocalMaster: Boolean = {
+    (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
+  }
+
+  /** true to re-use a local SparkContext, this can be helpful for automated integration tests, not for customers. */
+  val reuseLocalSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-local-context")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 

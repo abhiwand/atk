@@ -27,6 +27,6 @@ package com.intel.intelanalytics
  * Thrown when a requested resource does not exist.
  */
 class NotFoundException(resourceType: String, name: String, message: String = "")
-    extends RuntimeException(s"Requested resource of type $resourceType named $name could not be found.\n $message\n") {
+    extends RuntimeException(s"Requested resource of type '$resourceType' named '$name' could not be found.\n $message\n") {
 
 }

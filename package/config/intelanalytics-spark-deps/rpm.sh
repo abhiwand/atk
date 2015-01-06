@@ -10,6 +10,8 @@ version=$3
 
 log "package name: $packageName, tar file: $tarFile, version: $version, script path: $SCRIPTPATH"
 
+log "mkdir -p $SCRIPTPATH/rpm/SOURCES"
+mkdir -p $SCRIPTPATH/rpm/SOURCES
 log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 

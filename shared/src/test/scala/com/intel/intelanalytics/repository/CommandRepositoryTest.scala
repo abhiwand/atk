@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }

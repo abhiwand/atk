@@ -23,10 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameDropColumns }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrame, FrameDropColumns }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 
@@ -45,8 +46,8 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
 
   val systemFields = Set("_vid", "_label")
 
-  override def execute(invocation: SparkInvocation, arguments: FrameDropColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
-    val frames = invocation.engine.frames
+  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): DataFrame = {
+    val frames = engine.frames
 
     // validate arguments
     val frame = frames.expectFrame(arguments.frame)
@@ -55,7 +56,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
     DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns.toList, systemFields)
 
     // let the frame plugin do the actual work
-    super.execute(invocation, arguments)
+    super.execute(arguments)
   }
 
 }
@@ -65,7 +66,7 @@ object DropVertexColumnPlugin {
   def rejectInvalidColumns(columns: List[String], invalidColumns: Set[String]) {
     val invalid = columns.filter(s => invalidColumns.contains(s))
 
-    if (!invalid.isEmpty) {
+    if (invalid.nonEmpty) {
       val canNotDrop = invalid.mkString(",")
       throw new IllegalArgumentException(s"The following columns are not allowed to be dropped: $canNotDrop")
     }

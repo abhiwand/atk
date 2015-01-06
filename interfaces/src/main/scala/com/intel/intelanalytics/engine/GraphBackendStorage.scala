@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+
 /**
  * This manages the backend storage for graphs, underneath the graph database.
  *
@@ -31,6 +33,6 @@ package com.intel.intelanalytics.engine
  * Titan can not or will not.
  */
 trait GraphBackendStorage {
-  def deleteUnderlyingTable(graphName: String, quiet: Boolean)
-  def renameUnderlyingTable(graphName: String, newName: String)
+  def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation)
+  def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation)
 }

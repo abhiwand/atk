@@ -25,18 +25,14 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, Graph }
 import com.intel.intelanalytics.domain.graph.construction.AddVertices
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.VertexFrameRDD
-import org.apache.spark.sql.SQLContext
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -86,7 +82,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: AddVertices) = 6
+  override def numberOfJobs(arguments: AddVertices)(implicit invocation: Invocation) = 6
 
   /**
    * Add Vertices to a Seamless Graph
@@ -95,19 +91,16 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: AddVertices)(implicit user: UserPrincipal, executionContext: ExecutionContext): UnitReturn = {
-    val ctx = invocation.sparkContext
-
+  override def execute(arguments: AddVertices)(implicit invocation: Invocation): UnitReturn = {
     // validate arguments
-    val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
-    sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
+    val sourceFrameEntity = frames.expectFrame(arguments.sourceFrame)
+    sourceFrameEntity.schema.validateColumnsExist(arguments.allColumnNames)
 
     // run the operation
-    val sourceRdd = frames.loadFrameRDD(ctx, sourceFrameMeta)
-    addVertices(ctx, arguments, sourceRdd)
+    val sourceRdd = frames.loadFrameData(sc, sourceFrameEntity)
+    addVertices(sc, arguments, sourceRdd)
 
     new UnitReturn
   }
@@ -120,7 +113,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(ctx: SparkContext, arguments: AddVertices, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true): Unit = {
+  def addVertices(ctx: SparkContext, arguments: AddVertices, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
@@ -140,7 +133,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     // load existing data, if any, and append the new data
     val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
-    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd, Some(combinedRdd.count()))
+    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)

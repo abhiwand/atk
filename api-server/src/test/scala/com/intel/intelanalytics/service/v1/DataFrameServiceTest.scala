@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.mockito.Mockito._
 
@@ -36,9 +37,9 @@ import org.joda.time.DateTime
 class DataFrameServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
+  implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("frames")).thenReturn(provide(userPrincipal))
-
+  when(commonDirectives.apply("frames")).thenReturn(provide(call))
   "DataFrameService" should "give an empty set when there are no frames" in {
 
     val engine = mock[Engine]
@@ -55,13 +56,14 @@ class DataFrameServiceTest extends ServiceTest {
     val engine = mock[Engine]
     val dataFrameService = new DataFrameService(commonDirectives, engine)
 
-    when(engine.getFrames()).thenReturn(Future.successful(Seq(DataFrame(1, "name", None, FrameSchema(), 0, 1, new DateTime(), new DateTime()))))
+    when(engine.getFrames()).thenReturn(Future.successful(Seq(DataFrame(1, "name", FrameSchema(), 1, new DateTime, new DateTime))))
 
     Get("/frames") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{
                                      |  "id": 1,
                                      |  "name": "name",
-                                     |  "url": "http://example.com/frames/1"
+                                     |  "url": "http://example.com/frames/1",
+                                     |  "entity_type": "frame:"
                                      |}]""".stripMargin)
     }
   }

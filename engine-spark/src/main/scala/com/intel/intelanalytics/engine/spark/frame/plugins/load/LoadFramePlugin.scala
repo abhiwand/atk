@@ -26,14 +26,15 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-import scala.concurrent.ExecutionContext
 
 /**
  * Parsing data to load and append to data frames
@@ -59,7 +60,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(load: Load) = 8
+  override def numberOfJobs(load: Load)(implicit invocation: Invocation) = 8
 
   /**
    * Parsing data to load and append to data frames
@@ -70,12 +71,12 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: Load)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: Load)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val sparkAutoPartitioner = invocation.engine.sparkAutoPartitioner
-    val fsRoot = invocation.engine.fsRoot
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val sparkAutoPartitioner = engine.sparkAutoPartitioner
+    val fsRoot = engine.fsRoot
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.destination.id
@@ -84,13 +85,15 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameRDD(ctx, frames.expectFrame(arguments.source.uri.toInt))
-      unionAndSave(invocation, destinationFrame, additionalData)
+      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(arguments.source.uri.toInt))
+      unionAndSave(destinationFrame, additionalData)
     }
-    else if (arguments.source.isFile) {
+    else if (arguments.source.isFile || arguments.source.isMultilineFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, null, partitions)
-      unionAndSave(invocation, destinationFrame, parseResult.parsedLines)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
+        null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
+      unionAndSave(destinationFrame, parseResult.parsedLines)
+
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
@@ -104,16 +107,21 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
         LoadRDDFunctions.loadAndParseData(ctx, data, parser)
       }
       // parse failures go to their own data frame
-      if (parseResult.errorLines.count() > 0) {
-        val errorFrame = frames.lookupOrCreateErrorFrame(destinationFrame)
-        unionAndSave(invocation, errorFrame, parseResult.errorLines)
+      val updatedFrame = if (parseResult.errorLines.count() > 0) {
+        val (updated, errorFrame) = frames.lookupOrCreateErrorFrame(destinationFrame)
+        unionAndSave(errorFrame, parseResult.errorLines)
+        updated
       }
+      else {
+        destinationFrame
+      }
+
       // successfully parsed lines get added to the destination frame
-      unionAndSave(invocation, destinationFrame, parseResult.parsedLines.dropIgnoreColumns())
+      unionAndSave(destinationFrame, parseResult.parsedLines.dropIgnoreColumns())
     }
 
     else {
-      throw new IllegalArgumentException("Unsupported load source: " + arguments.source.source_type)
+      throw new IllegalArgumentException("Unsupported load source: " + arguments.source.sourceType)
     }
   }
 
@@ -123,15 +131,14 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(invocation: SparkInvocation, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
+  private def unionAndSave(existingFrame: DataFrame, additionalData: FrameRDD)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
-    val existingRdd = frames.loadFrameRDD(ctx, existingFrame)
+    val existingRdd = frames.loadFrameData(ctx, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
-    val rowCount = unionedRdd.count()
-    frames.saveFrame(existingFrame, unionedRdd, Some(rowCount))
+    frames.saveFrameData(existingFrame.toReference, unionedRdd)
   }
 
 }

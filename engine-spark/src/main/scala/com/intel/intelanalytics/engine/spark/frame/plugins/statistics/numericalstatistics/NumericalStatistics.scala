@@ -10,7 +10,7 @@ import com.intel.intelanalytics.domain.frame.ColumnFullStatisticsReturn
  *
  * @param dataWeightPairs RDD of pairs of  the form (data, weight)
  */
-class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationVariance: Boolean) extends Serializable {
+class NumericalStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])], usePopulationVariance: Boolean) extends Serializable {
 
   /*
    * Incoming weights and data are Doubles, but internal running sums are represented as BigDecimal to improve

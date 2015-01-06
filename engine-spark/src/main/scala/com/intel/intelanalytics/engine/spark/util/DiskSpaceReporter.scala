@@ -1,10 +1,12 @@
 package com.intel.intelanalytics.engine.spark.util
 
+import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.engine.plugin.Invocation
 import org.apache.commons.lang3.StringUtils
 import sys.process.Process
 import com.intel.event.EventLogging
 
-object DiskSpaceReporter extends EventLogging {
+object DiskSpaceReporter extends EventLogging with EventLoggingImplicits {
 
   private val diskSpaceErrorThreshold = 99
   private val diskSpaceWarningThreshold = 90
@@ -13,7 +15,7 @@ object DiskSpaceReporter extends EventLogging {
   /**
    * Log disk space available
    */
-  def checkDiskSpace(): Unit = withContext("DiskSpaceReporter") {
+  def checkDiskSpace()(implicit invocation: Invocation): Unit = withContext("DiskSpaceReporter") {
     try {
       Process("df -h").lines.drop(1).foreach(line => {
         val parts = line.split("[ ]+")

@@ -24,23 +24,61 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
+import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.concurrent._
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
+import scala.concurrent.duration._
+
+case class CommandContext(
+    command: Command,
+    action: Boolean,
+    executionContext: ExecutionContext,
+    user: UserPrincipal,
+    plugins: CommandPluginRegistry,
+    resolver: ReferenceResolver,
+    eventContext: EventContext,
+    dynamic: mutable.Map[String, Any] = mutable.Map.empty,
+    cleaners: mutable.Map[String, () => Unit] = mutable.Map.empty) {
+
+  def apply[T](name: String): Option[T] = {
+    dynamic.get(name).map(o => o.asInstanceOf[T])
+  }
+
+  def put[T](name: String, value: T, cleaner: () => Unit = null) = {
+    dynamic.put(name, value)
+    if (cleaner != null) {
+      cleaners.put(name, cleaner)
+    }
+  }
+
+  def clean(): Unit = {
+    cleaners.keys.foreach { key =>
+      val func = cleaners(key)
+      func()
+    }
+    cleaners.clear()
+    dynamic.clear()
+  }
+
+}
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -54,82 +92,267 @@ import com.intel.event.EventLogging
  * Plugins can be executed in three ways:
  *
  * 1. A CommandPlugin can be passed directly to the execute method. The command need not be in
- *    the registry
+ * the registry
  * 2. A command can be called by name. This requires that the command be in the registry.
  * 3. A command can be called with a CommandTemplate. This requires that the command named by
- *    the command template be in the registry, and that the arguments provided in the CommandTemplate
- *    can be parsed by the command.
+ * the command template be in the registry, and that the arguments provided in the CommandTemplate
+ * can be parsed by the command.
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
  * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextFactory: SparkContextFactory)
+class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
     extends EventLogging
+    with EventLoggingImplicits
     with ClassLoaderAware {
 
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
+
+  /**
+   * Create all the necessary empty metadata objects needed to generate a valid Return object without actually
+   * running a Command.
+   *
+   * Note that this will fail if called on a return type that has members other than UriReference subtypes, since
+   * those cannot be lazily suspended.
+   *
+   * @param command the command we're simulating
+   * @param plugin the actual command plugin implementation
+   * @param arguments an instance of Arguments that was passed with the actual argument values
+   * @tparam Arguments the type of arguments to the command
+   * @tparam Return the type of the return value of the command
+   * @return an instance of the Return type with all the generated references.
+   */
+  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command,
+                                                                                                   plugin: CommandPlugin[Arguments, Return],
+                                                                                                   arguments: Arguments)(implicit invocation: Invocation): Return = {
+
+    val types = Reflection.getUriReferenceTypes[Return]()
+    val references = types.map {
+      case (name, signature) =>
+        val management: EntityManager[_] = EntityRegistry.entityManagerForType(signature.typeSymbol.asType.toType).get
+        (name, management.create())
+    }.toMap
+    val ctorMap = Reflection.getConstructorMap[Return]()
+    ctorMap(references)
+  }
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
    * Stores the results of the command execution back in the persistent command object.
    *
-   * @param command the command to run, including name and arguments
-   * @param user the user running the command
+   * This overload requires that the command already is registered in the plugin registry using registerCommand.
+   *
+   * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product, R <: Product](command: CommandPlugin[A, R],
-                                          arguments: A,
-                                          user: UserPrincipal,
-                                          executionContext: ExecutionContext): Execution = {
-    implicit val ec = executionContext
-    val cmd = commands.create(CommandTemplate(command.name, Some(command.serializeArguments(arguments))))
+  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
+                                          commandPluginRegistry: CommandPluginRegistry,
+                                          referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
+    withContext("ce.execute(ct)") {
+      val cmd = commands.create(commandTemplate)
+      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
+      val context = CommandContext(cmd,
+        action = isAction(plugin),
+        executionContext,
+        user,
+        commandPluginRegistry,
+        referenceResolver,
+        eventContext,
+        mutable.Map.empty,
+        mutable.Map.empty)
+
+      createExecution(context)(plugin.argumentTag, plugin.returnTag, invocation)
+    }
+
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * @return an Execution object that can be used to track the command's execution
+   */
+  private def createExecution[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext,
+                                                                            firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
+    Execution(commandContext.command, executeCommandContextInFuture(commandContext, firstExecution))
+  }
+
+  /**
+   * Execute the command in the future with correct classloader, context, etc.,
+   * On complete - mark progress as 100% or failed
+   */
+  private def executeCommandContextInFuture[T](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): Future[Command] = {
     withMyClassLoader {
-      withContext("ce.execute") {
-        withContext(command.name) {
-
-          def sparkContextFunc(): SparkContext = createContextForCommand(command, arguments, user, cmd)
-
-          val cmdFuture = future {
-            withCommand(cmd) {
-              try {
-                val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                  user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContextFunc = sparkContextFunc, commandStorage = commands)
-
-                executeCommand(command, arguments, invocation)
-              }
-              finally {
-                stopCommand(cmd.id)
-              }
-            }
-            commands.lookup(cmd.id).get
-          }
-          Execution(cmd, cmdFuture)
+      withContext(commandContext.command.name) {
+        // run the command in a future so that we don't make the client wait for initial response
+        val cmdFuture = future {
+          // mark progress as 100% or failed
+          commands.complete(commandContext.command.id, Try {
+            // execute the actual command
+            executeCommandContext(commandContext, firstExecution)
+          })
+          // get the latest command progress from DB when command is done executing
+          commands.lookup(commandContext.command.id).get
         }
+        cmdFuture
       }
     }
   }
 
   /**
-   * Execute command and return serialized result
-   * @param command command
-   * @param arguments input argument
-   * @param invocation invocation data
-   * @tparam R return type
-   * @tparam A argument type
-   * @return command result
+   * Execute commandContext in current thread (assumes correct classloader, context, etc. is already setup)
+   * @tparam R plugin return type
+   * @tparam A plugin arguments
+   * @return plugin return value as JSON
    */
-  def executeCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, invocation: SparkInvocation): JsObject = {
-    val funcResult = command(invocation, arguments)
-    command.serializeReturn(funcResult)
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = {
+    val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
+    val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+    implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
+
+    val returnValue = if (commandContext.action) {
+      val res = if (firstExecution) {
+        this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
+      }
+      else commandContext.resolver
+      val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
+      result
+    }
+    else {
+      createSuspendedReferences(commandContext.command, plugin, arguments)
+    }
+    if (firstExecution) {
+      commandContext.clean()
+    }
+    plugin.serializeReturn(returnValue)
   }
 
-  def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
+  /**
+   * For the arguments and command given, find all the dependencies (UriReferences) in the arguments,
+   * and if they aren't already materialized, run the commands that generate data for them. If they
+   * in turn have dependencies, process those first, recursively.
+   *
+   * @param arguments the arguments to the command
+   * @param commandContext the command that's being run
+   * @param invocation the invocation in which we're running
+   * @tparam A the arguments type
+   * @return a new ReferenceResolver that will resolve references by returning the in-memory data
+   *         when available, rather than going back to the EntityManager.
+   */
+  private def runDependencies[A <: Product: TypeTag](arguments: A,
+                                                     commandContext: CommandContext)(implicit invocation: Invocation): ReferenceResolver = {
+    implicit val eventContext = invocation.eventContext
+    implicit val user = invocation.user
+    val dependencies = Dependencies.getComputables(arguments)
+    val newResolver = dependencies match {
+      case x if x.isEmpty => ReferenceResolver
+      case _ =>
+        var dependencySets = Dependencies.build(dependencies)
+        var resolver = new AugmentedResolver(commandContext.resolver, Seq.empty)
+        while (dependencySets.nonEmpty) {
+          info(s"Resolving dependencies for ${commandContext.command.name}, ${dependencySets.length} rounds remain")
+          val commands = dependencySets.head
+          val results = commands.map(c => {
+            createExecution(commandContext.copy(command = c, action = true, resolver = resolver), firstExecution = false)
+          })
+          //Next, examine the results and add uri references to the resolver,
+          //if they are HasData instances. This is what allows RDDs or other data
+          //structures to chain from one operation to the next without serializing
+          //at each step
+          //TODO: Realistic, non-hard-coded timeout
+          val refs = results.map(exc => Await.result(exc.end, 100 hours))
+            .flatMap(obj => Dependencies.getUriReferencesFromJsObject(obj.result.get))
+          val data = refs.flatMap {
+            case r: UriReference with HasData => Seq(r)
+            case _ => Seq.empty
+          }.toSeq
+          resolver = resolver ++ data
+          dependencySets = dependencySets.tail
+        }
+        resolver
+    }
+    newResolver
+  }
+
+  private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
+                                                                                  arguments: A,
+                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): R = {
+    val cmd = commandContext.command
+    try {
+      info(s"Invoking command ${cmd.name}")
+      val funcResult = command(invocation, arguments)
+      funcResult
+    }
+    finally {
+      stopCommand(cmd.id)
+    }
+  }
+
+  private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
+                                                                          arguments: A,
+                                                                          commandContext: CommandContext)(implicit invocation: Invocation): Invocation with Product with Serializable = {
+    val cmd = commandContext.command
+    command match {
+      case c: SparkCommandPlugin[A, R] =>
+        val context: SparkContext = commandContext("sparkContext") match {
+          case None =>
+            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.command)
+            commandContext.put("sparkContext", sc, () => stopContextIfNeeded(sc))
+            sc
+          case Some(sc) => sc
+        }
+
+        SparkInvocation(engine,
+          commandId = cmd.id,
+          arguments = cmd.arguments,
+          user = commandContext.user,
+          executionContext = commandContext.executionContext,
+          sparkContext = context,
+          commandStorage = commands,
+          resolver = commandContext.resolver,
+          eventContext = commandContext.eventContext)
+
+      case c: CommandPlugin[A, R] =>
+        SimpleInvocation(engine,
+          commandStorage = commands,
+          commandId = cmd.id,
+          arguments = cmd.arguments,
+          user = commandContext.user,
+          executionContext = commandContext.executionContext,
+          resolver = commandContext.resolver,
+          eventContext = commandContext.eventContext
+        )
+    }
+  }
+
+  /**
+   * Is this an action? A command is an action if it declares so by implementing the Action
+   * trait, or else by having a return type that has members that are not references.
+   *
+   * The second case makes this an action because there is no way to return a pending value
+   * of an arbitrary type. UriReferences are a special case, we can create one ahead of time
+   * and intercept calls to it, but we can't return a lazy Int (especially across process and
+   * protocol boundaries) where a regular Int is requested.
+   *
+   * @tparam R the return type of the plugin
+   * @return true if the plugin is an action, false otherwise.
+   */
+  def isAction[R <: Product](plugin: CommandPlugin[_, R]) = {
+    !plugin.isInstanceOf[Transformation[_, _]] || {
+      implicit val returnTag = plugin.returnTag
+      val dataMembers: Seq[(String, Type)] = Reflection.getVals[R]()
+      val referenceTypes: Seq[(String, Type)] = Reflection.getUriReferenceTypes[R]()
+      dataMembers.length != referenceTypes.length
+    }
+  }
+
+  def createSparkContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R],
+                                                               arguments: A,
+                                                               cmd: Command)(implicit invocation: Invocation): SparkContext = withMyClassLoader {
     val commandId = cmd.id
     val commandName = cmd.name
-    val context: SparkContext = contextFactory.context(user, s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
+    val context: SparkContext = contextFactory.context(s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
     try {
       val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
       val progressPrinter = new ProgressPrinter(listener)
@@ -145,54 +368,17 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   /**
-   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
-   *
-   * Stores the results of the command execution back in the persistent command object.
-   *
-   * This overload requires that the command already is registered in the plugin registry using registerCommand.
-   *
-   * @param name the name of the command to run
-   * @param arguments the arguments to pass to the command
-   * @param user the user running the command
-   * @return an Execution object that can be used to track the command's execution
+   * Lookup the plugin from the registry
+   * @param plugins the registry of plugins
+   * @param command the command to lookup a plugin for
+   * @tparam A plugin arguments
+   * @tparam R plugin return type
+   * @return the plugin
    */
-  def execute[A <: Product, R <: Product](name: String,
-                                          arguments: A,
-                                          user: UserPrincipal,
-                                          executionContext: ExecutionContext,
-                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
-    val function = commandPluginRegistry.getCommandDefinition(name)
-      .getOrElse(throw new NotFoundException("command definition", name))
-      .asInstanceOf[CommandPlugin[A, R]]
-    execute(function, arguments, user, executionContext)
-  }
-
-  /**
-   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
-   *
-   * Stores the results of the command execution back in the persistent command object.
-   *
-   * This overload requires that the command already is registered in the plugin registry using registerCommand.
-   *
-   * @param command the CommandTemplate from which to extract the command name and the arguments
-   * @param user the user running the command
-   * @return an Execution object that can be used to track the command's execution
-   */
-  def execute[A <: Product, R <: Product](command: CommandTemplate,
-                                          user: UserPrincipal,
-                                          executionContext: ExecutionContext,
-                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
-    val function = commandPluginRegistry.getCommandDefinition(command.name)
+  private def expectCommandPlugin[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {
+    plugins.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
-    val convertedArgs = function.parseArguments(command.arguments.get)
-    execute(function, convertedArgs, user, executionContext)
-  }
-
-  private def withCommand[T](command: Command)(block: => JsObject): Unit = {
-    commands.complete(command.id, Try {
-      block
-    })
   }
 
   /**
@@ -200,7 +386,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
+    commandIdContextMapping.get(commandId).foreach { case (context) => stopContextIfNeeded(context) }
     commandIdContextMapping -= commandId
+  }
+
+  private def stopContextIfNeeded(sc: SparkContext): Unit = {
+    if (SparkEngineConfig.reuseLocalSparkContext && sc.isLocal) {
+      info("not stopping local SparkContext so that it can be re-used")
+    }
+    else {
+      sc.stop()
+    }
   }
 }

@@ -1,5 +1,6 @@
 package com.intel.graphbuilder.graph.titan
 
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.commons.configuration.BaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.hbase.{ ClusterStatus, HBaseConfiguration, HRegionInfo, TableName }

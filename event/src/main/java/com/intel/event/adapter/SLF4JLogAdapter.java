@@ -38,7 +38,7 @@ public class SLF4JLogAdapter implements EventLog {
 
     private String join(String separator, String[] parts) {
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < parts.length; i++) {
+        for (int i = 0; i < parts.length; i++) {
             builder.append(parts[i]);
             if (i + 1 != parts.length) {
                 builder.append(separator);
