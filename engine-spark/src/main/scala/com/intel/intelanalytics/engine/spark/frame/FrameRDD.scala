@@ -116,12 +116,15 @@ class FrameRDD(val frameSchema: Schema,
 
   /**
    * Select a subset of columns while renaming them
-   * @param columnNames map of old names to new names
+   * @param columnNamesWithRename map of old names to new names
    * @return the new FrameRDD
    */
-  def selectColumnsWithRename(columnNames: Map[String, String]): FrameRDD = {
-    val columnSubset = selectColumns(columnNames.keys.toList)
-    new FrameRDD(columnSubset.frameSchema.copySubsetWithRename(columnNames), columnSubset.toSchemaRDD)
+  def selectColumnsWithRename(columnNamesWithRename: Map[String, String]): FrameRDD = {
+    if (columnNamesWithRename.isEmpty) {
+      throw new IllegalArgumentException("map of column names can't be empty")
+    }
+    val preservedOrderColumnNames = frameSchema.columnNames.filter(name => columnNamesWithRename.contains(name))
+    new FrameRDD(frameSchema.copySubsetWithRename(columnNamesWithRename), mapRows(row => row.valuesAsRow(preservedOrderColumnNames)))
   }
 
   /**
