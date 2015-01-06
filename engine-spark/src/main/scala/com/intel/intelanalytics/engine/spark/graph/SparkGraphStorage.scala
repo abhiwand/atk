@@ -155,7 +155,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (graph.isTitan) {
             backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
           }
-          metaStore.graphRepo.delete(graph.id)
+          metaStore.graphRepo.delete(graph.id).get
         }
     }
   }
