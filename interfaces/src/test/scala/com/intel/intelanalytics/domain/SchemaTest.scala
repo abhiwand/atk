@@ -9,6 +9,16 @@ class SchemaTest extends WordSpec with Matchers {
   val columns = List(Column("a", int64), Column("b", float32), Column("c", string))
   val abcSchema = new FrameSchema(columns)
 
+  val ajColumns = List(Column("a", int64), Column("b", float32), Column("c", string),
+    Column("d", string),
+    Column("e", string),
+    Column("f", string),
+    Column("g", string),
+    Column("h", string),
+    Column("i", string),
+    Column("j", string))
+  val ajSchema = new FrameSchema(ajColumns)
+
   "FrameSchema" should {
     "find correct column index for single column" in {
       abcSchema.columnIndex("a") shouldBe 0
@@ -170,6 +180,15 @@ class SchemaTest extends WordSpec with Matchers {
       assert(schema.column(1).name == "c_renamed")
     }
 
+    "be able to select a subset and rename to same names and preserve order" in {
+      val schema = ajSchema.copySubsetWithRename(Map(("a", "a"), ("d", "d"), ("c", "c"), ("b", "b"), ("e", "e"), ("f", "f"), ("g", "g"), ("j", "j")))
+      assert(schema.columns.length == 8)
+      assert(schema.column("a").index == 0)
+      assert(schema.column(2).name == "c")
+      assert(schema.column(6).name == "g")
+      assert(schema.column(7).name == "j")
+    }
+
     "be able to select a subset and rename to same names" in {
       val schema = abcSchema.copySubsetWithRename(Map(("a", "a"), ("c", "c")))
       assert(schema.columns.length == 2)
@@ -217,16 +236,6 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
   }
-
-  val ajColumns = List(Column("a", int64), Column("b", float32), Column("c", string),
-    Column("d", string),
-    Column("e", string),
-    Column("f", string),
-    Column("g", string),
-    Column("h", string),
-    Column("i", string),
-    Column("j", string))
-  val ajSchema = new FrameSchema(ajColumns)
 
   "FrameSchema" should {
     "preserve column order in columnNames" in {
