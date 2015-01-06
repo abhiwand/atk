@@ -126,8 +126,8 @@ object Schema {
 
   /**
    * A lot of code was using Tuples before we introduced column objects
-   * @deprecated use column objects and the other constructors
    */
+  @deprecated("use column objects and the other constructors")
   def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
     val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     new FrameSchema(columns)
@@ -143,7 +143,10 @@ trait Schema {
   val columns: List[Column]
 
   require(columns != null, "columns must not be null")
-  require(columns.size == columnNames.size, "column names must be unique")
+  require({
+    val distinct = columns.map(_.name).distinct
+    distinct.length == columns.length
+  }, "invalid schema, duplicate column names")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -156,7 +159,7 @@ trait Schema {
   def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
-    namesToColumns.keys.toList
+    columns.map(col => col.name).toList
   }
 
   /**
@@ -238,6 +241,16 @@ trait Schema {
   }
 
   /**
+   * Produces a renamed subset schema from this schema
+   * @param columnNamesWithRename rename mapping
+   * @return new schema
+   */
+  def copySubsetWithRename(columnNamesWithRename: Map[String, String]): Schema = {
+    val preservedOrderColumnNames = columnNames.filter(name => columnNamesWithRename.contains(name))
+    copySubset(preservedOrderColumnNames).renameColumns(columnNamesWithRename)
+  }
+
+  /**
    * Union schemas together, keeping as much info as possible.
    *
    * Vertex and/or Edge schema information will be maintained for this schema only
@@ -246,12 +259,10 @@ trait Schema {
    */
   def union(schema: Schema): Schema = {
     // check for conflicts
-    for (columnName <- schema.columnNames) {
-      if (hasColumn(columnName)) {
-        require(hasColumnWithType(columnName, schema.columnDataType(columnName)), s"columns with same name $columnName didn't have matching types")
-      }
-    }
-    val combinedColumns = (this.namesToColumns ++ schema.namesToColumns).values.toList
+    val newColumns: List[Column] = schema.columns.filterNot(c => {
+      hasColumn(c.name) && { require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true }
+    })
+    val combinedColumns = this.columns ++ newColumns
     copy(combinedColumns)
   }
 
@@ -313,22 +324,6 @@ trait Schema {
   }
 
   /**
-   * Produces a renamed subset schema and the indices from this schema of the subset
-   * @param columnNames rename mapping
-   * @return new schema and the indices which map it back into this schema
-   */
-  def getRenamedSchemaAndIndicesForCopy(columnNames: Map[String, String]): (Schema, Seq[Int]) = {
-    validateRenameMapping(columnNames, forCopy = true)
-    val colsAndIndices: Seq[(Column, Int)] =
-      for {
-        (c, i) <- columns.zipWithIndex
-        if columnNames.contains(c.name)
-      } yield (Column(columnNames(c.name), c.dataType), i)
-    val (cols, indices) = colsAndIndices.unzip
-    (copy(cols.toList), indices)
-  }
-
-  /**
    * Get all of the info about a column - this is a nicer wrapper than tuples
    *
    * @param columnIndex the index for the column
@@ -347,6 +342,13 @@ trait Schema {
       throw new IllegalArgumentException(s"Cannot add a duplicate column name: $columnName")
     }
     copy(columns = columns :+ Column(columnName, dataType))
+  }
+
+  /**
+   * Returns a new schema with the given columns appended.
+   */
+  def addColumns(newColumns: Seq[Column]): Schema = {
+    copy(columns = columns ++ newColumns)
   }
 
   /**
@@ -471,9 +473,8 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated legacy use only - use nicer API instead
    */
+  @deprecated("legacy use only - use nicer API instead")
   def columnTuples: List[(String, DataType)] = {
     columns.map(column => (column.name, column.dataType))
   }
@@ -483,9 +484,8 @@ trait Schema {
    *
    * Schema was defined previously as a list of tuples.  This method was introduced to so
    * all of the dependent code wouldn't need to be changed.
-   *
-   * @deprecated don't use - legacy support only
    */
+  @deprecated("don't use - legacy support only")
   def legacyCopy(columnTuples: List[(String, DataType)]): Schema = {
     val updated = columnTuples.map { case (name, dataType) => Column(name, dataType) }
     copy(columns = updated)
@@ -504,6 +504,24 @@ trait Schema {
     else {
       new FrameSchema(columns)
     }
+  }
+
+  /**
+   * create a column name that is unique, suitable for adding to the schema
+   * (subject to race conditions, only provides unique name for schema as
+   * currently defined)
+   * @param candidate a candidate string to start with, an _N number will be
+   *                  append to make it unique
+   * @return unique column name for this schema, as currently defined
+   */
+  def getNewColumnName(candidate: String): String = {
+    var newName = candidate
+    var i: Int = 0
+    while (columnNames.contains(newName)) {
+      newName = newName + s"_$i"
+      i += 1
+    }
+    newName
   }
 
 }

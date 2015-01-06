@@ -29,14 +29,14 @@ import com.intel.intelanalytics.domain.query.{ Query, Execution, QueryTemplate }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ Load, LoadSource }
 import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator }
+import com.intel.intelanalytics.service.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import scala.concurrent._
-import spray.http.Uri
 import spray.json._
 import spray.routing.{ Directives, Route }
 
@@ -58,7 +58,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param query The query being decorated
    * @return View model of the command.
    */
-  def decorate(uri: Uri, query: Query, partition: Option[Long])(implicit user: UserPrincipal): GetQuery = {
+  def decorate(uri: Uri, query: Query, partition: Option[Long])(implicit invocation: Invocation): GetQuery = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     QueryDecorator.decorateEntity(uri.toString(), links, query)
@@ -83,7 +83,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * The spray routes defining the query service.
    */
   def queryRoutes() = {
-    commonDirectives(prefix) { implicit principal: UserPrincipal =>
+    commonDirectives(prefix) { implicit invocation: Invocation =>
       pathPrefix(prefix / LongNumber) {
         id =>
           {
@@ -93,7 +93,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                   get {
                     onComplete(engine.getQuery(id)) {
                       case Success(Some(query)) => complete(decorate(uri, query, None))
-                      case _ => reject()
+                      case Success(None) => complete(StatusCodes.NotFound)
+                      case Failure(ex) => throw ex
                     }
                   }
                 } ~
@@ -103,7 +104,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         import ViewModelJsonImplicits._
                         onComplete(engine.getQuery(id)) {
                           case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString, query))
-                          case _ => reject()
+                          case Success(None) => complete(StatusCodes.NotFound)
+                          case Failure(ex) => throw ex
                         }
                       }
                     }
@@ -122,7 +124,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                               else {
                                 QueryDecorator.decorateEntity(uri.toString(), links, query)
                               })
-                            case _ => reject()
+                            case Success(None) => complete(StatusCodes.NotFound)
+                            case Failure(ex) => throw ex
                           }
                         }
                       }

@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.model.ModelTemplate
 import org.scalatest.Matchers
 

@@ -24,6 +24,9 @@
 package org.apache.spark.mllib.classification.ia.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.model.{ ModelMeta, ModelLoad, Model }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.model.ModelLoad
 import com.intel.intelanalytics.engine.Rows.Row
@@ -109,7 +112,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ModelLoad) = 9
+  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 9
   /**
    * Get the predictions for observations in a test frame
    *
@@ -117,15 +120,13 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: ModelLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): ClassificationMetricValue =
+  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): ClassificationMetricValue =
     {
-      val models = invocation.engine.models
-      val frames = invocation.engine.frames
-      val fsRoot = invocation.engine.fsRoot
-      val ctx = invocation.sparkContext
+
+      val models = engine.models
+      val frames = engine.frames
 
       //validate arguments
       val frameId = arguments.frame.id
@@ -135,7 +136,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
       val modelMeta = models.expectModel(modelId)
 
       //create RDD from the frame
-      val testFrameRDD = frames.loadFrameRDD(ctx, inputFrame)
+      val testFrameRDD = frames.loadFrameData(sc, inputFrame)
       val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
       //Running MLLib

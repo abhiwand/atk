@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, TopK, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -125,7 +126,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: TopK) = 3
+  override def numberOfJobs(arguments: TopK)(implicit invocation: Invocation) = 3
 
   /**
    * Calculate the top (or bottom) K distinct values by count for specified data column.
@@ -134,13 +135,12 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: TopK)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: TopK)(implicit invocation: Invocation): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.frame
@@ -161,11 +161,9 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
       ("count", DataTypes.float64)
     ))
 
-    val rowCount = topRdd.count()
-
     // save results
     frames.tryNewFrame(DataFrameTemplate(newFrameName, None)) { newFrame =>
-      frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(newSchema, topRdd), Some(rowCount))
+      frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRDD(newSchema, topRdd))
     }
   }
 
@@ -177,8 +175,8 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * @param frame Data frame
    * @param columnName Column name
    * @return Option with the column index and data type
-   * @deprecated use methods on Schema instead
    */
+  @deprecated("use methods on Schema instead")
   private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
 
     val (columnIndexOption, dataTypeOption) = columnName match {

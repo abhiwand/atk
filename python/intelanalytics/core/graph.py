@@ -26,14 +26,14 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
-from intelanalytics.core.namedobj import name_support
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.meta.namedobj import name_support
 import uuid
 
-from intelanalytics.core.serialize import to_json
+from intelanalytics.meta.serialize import to_json
 from intelanalytics.core.column import Column
 
 from intelanalytics.core.deprecate import raise_deprecation_warning
@@ -59,7 +59,7 @@ Example:
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
-    from intelanalytics.core.config import get_graph_backend
+    from intelanalytics.meta.config import get_graph_backend
     return get_graph_backend()
 
 
@@ -195,7 +195,7 @@ class VertexRule(Rule):
 
     """
     def __init__(self, id_key, id_value, properties=None):
-        raise_deprecation_warning("VertexRule", titan_rule_deprecation)
+        #raise_deprecation_warning("VertexRule", titan_rule_deprecation)
         self.id_key = id_key
         self.id_value = id_value
         self.properties = properties or {}
@@ -270,7 +270,7 @@ class EdgeRule(Rule):
 
     """
     def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
-        raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
+        #raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
         self.bidirectional = bool(bidirectional)
         if is_directed is not None:
             raise_deprecation_warning("EdgeRule", "Parameter 'is_directed' is now called bidirectional' and has opposite polarity.")
@@ -370,7 +370,7 @@ except Exception as e:
 @api
 @name_support('graph')
 class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
-    _command_prefix = 'graph'
+    _entity_type = 'graph'
     def __init__(self):
         CommandLoadable.__init__(self)
 
@@ -384,9 +384,9 @@ class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
 @api
 class Graph(DocStubsGraph, _BaseGraph):
     """
-    Creates a graph.
+    Creates a property Graph.
 
-    This graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
+    This Graph is a collection of Vertex and Edge lists stored as frames.  This allows frame-like
     operations against graph data.  Many frame methods are available against vertices and edges.
     Vertex and Edge properties are stored as columns.
 
@@ -477,7 +477,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.edges['worksunder'].inspect(20)
 
     """
-    _command_prefix = 'graph:'
+    _entity_type = 'graph:'
 
     def __init__(self, source=None, name=''):
         if not hasattr(self, '_backend'):
@@ -492,8 +492,8 @@ class Graph(DocStubsGraph, _BaseGraph):
         else:
             raise ValueError("Invalid source value of type %s" % type(source))
 
-        self.vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
-        self.edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
+        self._vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
+        self._edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
 
         _BaseGraph.__init__(self)
 
@@ -526,6 +526,36 @@ class Graph(DocStubsGraph, _BaseGraph):
         return all EdgeFrames for this graph
         """
         return self._backend.get_edge_frames(self._id)
+
+    @property
+    @api
+    def vertices(self):
+        """
+        Vertex frame collection
+
+        Examples
+        --------
+        Inspect vertices with the supplied label::
+
+            graph.vertices['label'].inspect()
+
+        """
+        return self._vertices
+
+    @property
+    @api
+    def edges(self):
+        """
+        Edge frame collection
+
+        Examples
+        --------
+        Inspect edges with the supplied label::
+
+            graph.edges['label'].inspect()
+
+        """
+        return self._edges
 
     @property
     @api
@@ -637,7 +667,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     """
 
-    _command_prefix = 'graph:titan'
+    _entity_type = 'graph:titan'
 
     def __init__(self, rules=None, name=""):
         try:

@@ -3,21 +3,20 @@ package com.intel.intelanalytics.engine.spark.graph.query
 import javax.script.Bindings
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ Await, ExecutionContext, Lock }
+import scala.concurrent.Await
 import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
 
 /**
  * Arguments for Gremlin query.
@@ -124,9 +123,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
                            |        results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
                            |        print results["results"]
                            |
+                           |     The expected output is:: [4]
+                           |
+                           |     Get the count of name and age properties from vertices::
+                           |
+                           |        results = mygraph.query.gremlin("g.V.transform{[it.name, it.age]}[0..10])")
+                           |        print results["results"]
+                           |
                            |     The expected output is::
                            |
-                           |        [4]
+                           |        [u'["alice", 29]', u'[ "bob", 45 ]', u'["cathy", 34 ]']
+                           |
+                           |
                             """.stripMargin)))
 
   /**
@@ -134,30 +142,29 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    *
    * @param invocation information about the user and the circumstances at the time of the call
    * @param arguments Gremlin script to execute
-   * @param user Principal representing an authenticated API user
-   * @param executionContext Execution context
    * @return Results of executing Gremlin query
    */
-  override def execute(invocation: Invocation, arguments: QueryArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): QueryResult = {
+  override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {
     import scala.concurrent.duration._
 
+    invocation.updateProgress(5f)
     val start = System.currentTimeMillis()
     val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val titanGraph = getTitanGraph(graph.name, config)
 
     val resultIterator = Try({
-      val titanGraph = getTitanGraph(graph.name, config)
       val bindings = gremlinExecutor.createBindings()
       bindings.put("g", titanGraph)
-
       val results = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
-      titanGraph.shutdown()
-
       results
     })
+    invocation.updateProgress(100f)
+
+    titanGraph.shutdown()
 
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
@@ -165,6 +172,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
       case Success(iterator) => QueryResult(iterator, runtimeInSeconds)
       case Failure(exception) => throw exception
     }
+
     queryResult
   }
 

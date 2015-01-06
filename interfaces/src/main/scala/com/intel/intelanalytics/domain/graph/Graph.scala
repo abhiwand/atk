@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.{ StorageFormats, IAUri, HasId }
+import com.intel.intelanalytics.domain.{ StorageFormats, HasId }
 import org.joda.time.DateTime
 
 /**
@@ -52,11 +52,13 @@ case class Graph(id: Long,
                  createdByUserId: Option[Long] = None,
                  modifiedByUserId: Option[Long] = None,
                  idCounter: Option[Long] = None,
-                 frameSchemaList: Option[SchemaList] = None) extends HasId with IAUri {
+                 frameSchemaList: Option[SchemaList] = None) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
-  def entity = "graph"
+
+  def uri: String = GraphReference(id, None).uri
+
   StorageFormats.validateGraphFormat(storageFormat)
 
   def isSeamless: Boolean = {
@@ -67,7 +69,7 @@ case class Graph(id: Long,
     !StorageFormats.isSeamlessGraph(storageFormat)
   }
 
-  def commandPrefix: String = {
+  def entityType: String = {
     if (isTitan) "graph:titan"
     else if (isSeamless) "graph:"
     else throw new RuntimeException("New graph type is not yet implemented!")
@@ -80,3 +82,4 @@ case class Graph(id: Long,
     idCounter.getOrElse(0L) + 1L
   }
 }
+

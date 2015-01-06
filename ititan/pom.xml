@@ -26,7 +26,7 @@
 
     <properties>
         <dep.aurelius.version>0.5.0</dep.aurelius.version>
-        <hadoop2.version>2.3.0-cdh5.1.2</hadoop2.version>
+        <hadoop2.version>2.5.0-cdh5.2.0</hadoop2.version>
     </properties>
 
 

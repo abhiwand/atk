@@ -57,7 +57,7 @@ class TitanVertexWriterRDD(prev: RDD[GBVertex],
 
     EnvironmentValidator.validateISparkDepsAvailable
 
-    val graph = titanConnector.connect()
+    val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L
@@ -72,8 +72,10 @@ class TitanVertexWriterRDD(prev: RDD[GBVertex],
 
     graph.commit()
 
-    context.addOnCompleteCallback(() => {
+    context.addTaskCompletionListener(context => {
       println("vertices written: " + count + " for split: " + split.index)
+      //Do not shut down graph when using cache since graph instances are automatically shutdown when
+      //no more references are held
       graph.shutdown()
     })
 

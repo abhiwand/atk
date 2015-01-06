@@ -25,9 +25,10 @@ package com.intel.intelanalytics.engine.spark.queries
 
 import java.nio.file.Paths
 
+import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.plugin.QueryPluginResults
+import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults }
 import com.intel.intelanalytics.engine.spark.{ HdfsFileStorage, SparkEngineConfig }
 import com.intel.intelanalytics.engine.{ ProgressInfo, QueryStorage }
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
@@ -45,7 +46,10 @@ import com.intel.event.EventLogging
  * @param metaStore metastore to save DB related info
  * @param files  Object for saving FileSystem related Data
  */
-class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, files: HdfsFileStorage) extends QueryStorage with EventLogging {
+class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, files: HdfsFileStorage)
+    extends QueryStorage
+    with EventLogging
+    with EventLoggingImplicits {
   val repo = metaStore.queryRepo
 
   /**
@@ -65,7 +69,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param pageId partition number to return
    * @return data from partition as a local object
    */
-  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long): Iterable[Array[Any]] = {
+  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long)(implicit invocation: Invocation): Iterable[Array[Any]] = {
     val rdd = getQueryRdd(ctx, queryId)
     val query = lookup(queryId)
     val (pageSize: Int, totalPages: Int) = query match {
@@ -85,7 +89,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param id  query_id
    * @return The specified Query
    */
-  override def lookup(id: Long): Option[Query] =
+  override def lookup(id: Long)(implicit invocation: Invocation): Option[Query] =
     metaStore.withSession("se.query.lookup") {
       implicit session =>
         {}
@@ -97,7 +101,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param createQuery Template describing the new query
    * @return the new Query
    */
-  override def create(createQuery: QueryTemplate): Query =
+  override def create(createQuery: QueryTemplate)(implicit invocation: Invocation): Query =
     metaStore.withSession("se.query.create") {
       implicit session =>
 
@@ -113,12 +117,12 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param count number of queries to return
    * @return the requested number of query
    */
-  override def scan(offset: Int, count: Int): Seq[Query] = metaStore.withSession("se.query.getQueries") {
+  override def scan(offset: Int, count: Int)(implicit invocation: Invocation): Seq[Query] = metaStore.withSession("se.query.getQueries") {
     implicit session =>
       repo.scan(offset, count)
   }
 
-  override def start(id: Long): Unit = {
+  override def start(id: Long)(implicit invocation: Invocation): Unit = {
     //TODO: set start date
   }
 
@@ -127,7 +131,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param id Query ID
    * @param result Object Describing Query Result
    */
-  override def complete(id: Long, result: Try[JsObject]): Unit = {
+  override def complete(id: Long, result: Try[JsObject])(implicit invocation: Invocation): Unit = {
     require(id > 0, "invalid ID")
     metaStore.withSession("se.query.complete") {
       implicit session =>
@@ -176,7 +180,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * remove existing queries files
    * @param queryId
    */
-  def dropFiles(queryId: Long): Unit = withContext("frame.drop") {
+  def dropFiles(queryId: Long)(implicit invocation: Invocation): Unit = withContext("frame.drop") {
     files.delete(new Path(getAbsoluteQueryDirectory(queryId)))
   }
 

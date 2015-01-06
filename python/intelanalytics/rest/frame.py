@@ -37,7 +37,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile, LineFile
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -97,6 +97,15 @@ class FrameBackendRest(object):
                     raise
             return frame_info.name
         return frame.name
+
+    def _create_new_frame(self, frame, name):
+        """create helper method to call http and initialize frame with results"""
+        payload = {'name': name }
+        r = self.rest_http.post('frames', payload)
+        logger.info("REST Backend: create frame response: " + r.text)
+        frame_info = FrameInfo(r.json())
+        initialize_frame(frame, frame_info)
+        return frame_info.name
 
     def get_name(self, frame):
         return self._get_frame_info(frame).name
@@ -176,6 +185,29 @@ class FrameBackendRest(object):
                                 "data": None
                                 },
                     }
+
+        if isinstance( source, XmlFile):
+            return {'destination': frame._id,
+                    'source': {"source_type": "xmlfile",
+                               "uri": source.file_name,
+                               "start_tag":source.start_tag,
+                               "end_tag":source.end_tag,
+                               "data": None
+                    },
+                    }
+
+
+
+        if isinstance( source, MultiLineFile):
+            return {'destination': frame._id,
+                'source': {"source_type": "multilinefile",
+                           "uri": source.file_name,
+                           "start_tag":source.start_tag,
+                           "end_tag":source.end_tag,
+                           "data": None
+                        },
+                    }
+
         if isinstance(source, Pandas):
             return{'destination': frame._id,
                    'source': {"source_type": "strings",
@@ -195,14 +227,6 @@ class FrameBackendRest(object):
                                 'uri': str(source._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(source))
-
-    @staticmethod
-    def _get_new_frame_name(source=None):
-        try:
-            annotation = "_" + source.annotation
-        except:
-            annotation = ''
-        return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
     def _format_schema(schema):
@@ -304,26 +328,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
-    def flatten_column(self, frame, column_name):
-        name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('frame:/flatten_column', arguments)
-
-    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
-        import numpy as np
-        if num_bins < 1:
-            raise ValueError("num_bins must be at least 1")
-        if not bin_type in ['equalwidth', 'equaldepth']:
-            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
-        if bin_column_name.strip() == "":
-            raise ValueError("bin_column_name can not be empty string")
-        colTypes = dict(frame.schema)
-        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to bin non-numeric values")
-        arguments = {'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
-        return execute_update_frame_command('bin_column', arguments, frame)
-
-
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np
         colTypes = dict(frame.schema)
@@ -377,10 +381,9 @@ class FrameBackendRest(object):
 
         return FrameBackendRest.InspectionTable(schema, data)
 
-    def join(self, left, right, left_on, right_on, how):
+    def join(self, left, right, left_on, right_on, how, name=None):
         if right_on is None:
             right_on = left_on
-        name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         return execute_new_frame_command('frame:/join', arguments)
 
@@ -430,7 +433,6 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         arguments = {'frame': self.get_ia_uri(frame),
-                     'name': "group_by_" + self._get_new_frame_name(),
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
@@ -471,6 +473,8 @@ class FrameBackendRest(object):
                     break
                 data.extend(result.data)
             return TakeResult(data, schema)
+        if n < 0:
+            raise ValueError("Count value needs to be positive. Provided %s" % n)
 
         if n == 0:
             return TakeResult([], frame.schema)
@@ -574,7 +578,10 @@ class FrameInfo(object):
 
     @property
     def row_count(self):
-        return int(self._payload['row_count'])
+        try:
+            return int(self._payload['row_count'])
+        except KeyError:
+            return 0
 
     @property
     def error_frame_id(self):
@@ -669,11 +676,13 @@ class FrameSchema:
     @staticmethod
     def get_indices_for_selected_columns(schema, selected_columns):
         indices = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    indices.append(schema.index(column))
-                    break
+        schema_columns = [col[0] for col in schema]
+        for column in selected_columns:
+            try:
+                indices.append(schema_columns.index(column))
+            except:
+                raise ValueError("Invalid column name %s provided"
+                                 ", please choose from: (%s)" % (column, ",".join(schema_columns)))
 
         return indices
 

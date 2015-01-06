@@ -24,9 +24,10 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import java.util.Date
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -34,6 +35,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
 
 import scala.concurrent._
 
@@ -91,7 +93,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: KClique): Int = {
+  override def numberOfJobs(arguments: KClique)(implicit invocation: Invocation): Int = {
     8 + 2 * arguments.cliqueSize
   }
 
@@ -137,12 +139,11 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
+  override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
 
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-    val sc = sparkInvocation.sparkContext
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
@@ -150,29 +151,14 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
-
-    // Set the graph in Titan
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
-
-    // Create the Titan connection
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    // Read the graph from Titan
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-
-    // Get the GraphBuilder vertex list
-    val gbVertices = titanReaderRDD.filterVertices()
-
-    // Get the GraphBuilder edge list
-    val gbEdges = titanReaderRDD.filterEdges()
-
+    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
     val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, arguments.cliqueSize, arguments.communityPropertyLabel)
 
     // Update back each vertex in the input Titan graph and the write the community property
     // as the set of communities to which it belongs
     val communityWriterInTitan = new CommunityWriterInTitan()
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
     communityWriterInTitan.run(outVertices, outEdges, titanConfig)
 
     // Get the execution time and print it

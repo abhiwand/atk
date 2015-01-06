@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.linalg.{ Vectors, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
@@ -84,6 +84,14 @@ class FrameRDD(val frameSchema: Schema,
       })
   }
 
+  def toVectorRDD(featureColumnNames: List[String]) = {
+    this mapRows (row =>
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        Vectors.dense(features.toArray)
+      })
+  }
+
   /**
    * Spark map with a rowWrapper
    */
@@ -112,6 +120,19 @@ class FrameRDD(val frameSchema: Schema,
       throw new IllegalArgumentException("list of column names can't be empty")
     }
     new FrameRDD(frameSchema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+  }
+
+  /**
+   * Select a subset of columns while renaming them
+   * @param columnNamesWithRename map of old names to new names
+   * @return the new FrameRDD
+   */
+  def selectColumnsWithRename(columnNamesWithRename: Map[String, String]): FrameRDD = {
+    if (columnNamesWithRename.isEmpty) {
+      throw new IllegalArgumentException("map of column names can't be empty")
+    }
+    val preservedOrderColumnNames = frameSchema.columnNames.filter(name => columnNamesWithRename.contains(name))
+    new FrameRDD(frameSchema.copySubsetWithRename(columnNamesWithRename), mapRows(row => row.valuesAsRow(preservedOrderColumnNames)))
   }
 
   /**
@@ -232,6 +253,26 @@ class FrameRDD(val frameSchema: Schema,
       frameSchema
 
     new FrameRDD(newSchema, this.sqlContext, FrameRDD.createLogicalPlanFromSql(newSchema, newRows))
+  }
+
+  /**
+   * Convert Vertex or Edge Frames to plain data frames
+   */
+  def toPlainFrame(): FrameRDD = {
+    new FrameRDD(frameSchema.toFrameSchema, this.toSchemaRDD)
+  }
+
+  /**
+   * Save this RDD to disk or other store
+   * @param absolutePath location to store
+   * @param storageFormat "file/parquet", "file/sequence", etc.
+   */
+  def save(absolutePath: String, storageFormat: String = "file/parquet"): Unit = {
+    storageFormat match {
+      case "file/sequence" => toSchemaRDD.saveAsObjectFile(absolutePath)
+      case "file/parquet" => toSchemaRDD.saveAsParquetFile(absolutePath)
+      case format => throw new IllegalArgumentException(s"Unrecognized storage format: $format")
+    }
   }
 
 }
