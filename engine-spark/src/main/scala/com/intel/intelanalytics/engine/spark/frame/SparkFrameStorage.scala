@@ -403,8 +403,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.drop") {
       implicit session =>
         {
-          metaStore.frameRepo.delete(frame.id)
-          Unit
+          metaStore.frameRepo.delete(frame.id).get
         }
     }
   }
