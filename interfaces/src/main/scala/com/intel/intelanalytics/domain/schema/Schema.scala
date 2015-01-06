@@ -242,11 +242,12 @@ trait Schema {
 
   /**
    * Produces a renamed subset schema from this schema
-   * @param columnNames rename mapping
+   * @param columnNamesWithRename rename mapping
    * @return new schema
    */
-  def copySubsetWithRename(columnNames: Map[String, String]): Schema = {
-    copySubset(columnNames.keys.toSeq).renameColumns(columnNames)
+  def copySubsetWithRename(columnNamesWithRename: Map[String, String]): Schema = {
+    val preservedOrderColumnNames = columnNames.filter(name => columnNamesWithRename.contains(name))
+    copySubset(preservedOrderColumnNames).renameColumns(columnNamesWithRename)
   }
 
   /**
