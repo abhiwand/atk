@@ -7,7 +7,6 @@
         "user": "iauser",
         "group": "iauser"
     },
-    "icon": "images/favicon.png",
     "parcel" : {
         "repoUrl" : "PARCELURL",
         "requiredTags" : [ "cdh", "spark", "ATK" ]
