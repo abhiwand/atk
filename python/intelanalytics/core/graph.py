@@ -492,8 +492,8 @@ class Graph(DocStubsGraph, _BaseGraph):
         else:
             raise ValueError("Invalid source value of type %s" % type(source))
 
-        self.vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
-        self.edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
+        self._vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
+        self._edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)
 
         _BaseGraph.__init__(self)
 
@@ -526,6 +526,36 @@ class Graph(DocStubsGraph, _BaseGraph):
         return all EdgeFrames for this graph
         """
         return self._backend.get_edge_frames(self._id)
+
+    @property
+    @api
+    def vertices(self):
+        """
+        Vertex frame collection
+
+        Examples
+        --------
+        Inspect vertices with the supplied label::
+
+            graph.vertices['label'].inspect()
+
+        """
+        return self._vertices
+
+    @property
+    @api
+    def edges(self):
+        """
+        Edge frame collection
+
+        Examples
+        --------
+        Inspect edges with the supplied label::
+
+            graph.edges['label'].inspect()
+
+        """
+        return self._edges
 
     @property
     @api

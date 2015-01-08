@@ -31,6 +31,7 @@ import spray.json.JsObject
 import scala.concurrent.ExecutionContext
 
 import Invocation._
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 
 /**
  * Provides context for an invocation of a command or query.
@@ -57,6 +58,11 @@ trait Invocation {
    */
   private[intelanalytics] def eventContext: EventContext
 
+  /**
+   * Update the progress
+   * @param progress current progress
+   */
+  private[intelanalytics] def updateProgress(progress: Float): Unit = ???
 }
 
 case class Call(user: UserPrincipal,
@@ -85,6 +91,9 @@ trait CommandInvocation extends Invocation {
    */
   private[intelanalytics] def commandStorage: CommandStorage
 
+  val progressUpdater: CommandProgressUpdater
+
+  override private[intelanalytics] def updateProgress(progress: Float): Unit = progressUpdater.updateProgress(commandId, progress)
 }
 
 object Invocation {

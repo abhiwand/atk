@@ -8,19 +8,19 @@ class FrameJoinTest extends WordSpec with MockitoSugar {
   "FrameJoin" should {
 
     "require more non-null frames" in {
-      intercept[IllegalArgumentException] { FrameJoin("name", null, "how") }
+      intercept[IllegalArgumentException] { FrameJoin(null, "how") }
     }
 
     "require more than 0 frames" in {
-      intercept[IllegalArgumentException] { FrameJoin("name", Nil, "how") }
+      intercept[IllegalArgumentException] { FrameJoin(Nil, "how") }
     }
 
     "require more than 1 frame" in {
-      intercept[IllegalArgumentException] { FrameJoin("name", List((1L, "frame")), "how") }
+      intercept[IllegalArgumentException] { FrameJoin(List((1L, "frame")), "how") }
     }
 
     "work with 2 frames" in {
-      FrameJoin("name", List((1L, "frame"), (2L, "another")), "how")
+      FrameJoin(List((1L, "frame"), (2L, "another")), "how")
     }
   }
 }

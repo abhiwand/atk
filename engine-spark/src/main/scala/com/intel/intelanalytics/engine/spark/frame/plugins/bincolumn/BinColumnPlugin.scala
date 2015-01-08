@@ -95,7 +95,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
         The binning algorithm to use ['equalwidth' | 'equaldepth'].
 
     bin_column_name : str (optional)
-        The name for the new binned column.
+        The name for the new binned column. If unassigned, bin_column_name defaults to '<column_name>_binned'
 
     Notes
     -----
@@ -176,7 +176,10 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: BinColumn)(implicit invocation: Invocation) = 7
+  override def numberOfJobs(arguments: BinColumn)(implicit invocation: Invocation) = arguments.binType match {
+    case Some("equaldepth") => 8
+    case _ => 7
+  }
 
   /**
    * Column values into bins.

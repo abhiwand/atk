@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameJoin, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameJoin, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows
@@ -88,8 +88,9 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     val leftColumns: List[(String, DataType)] = originalColumns(0)
     val rightColumns: List[(String, DataType)] = originalColumns(1)
     val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+    val resultFrameName = FrameName.validateOrGenerate(arguments.name, Some("join_"))
 
-    val newJoinFrame = frames.create(DataFrameTemplate(arguments.name, None))
+    val newJoinFrame = frames.create(DataFrameTemplate(resultFrameName, None))
 
     //first validate join columns are valid
     val leftOn: String = arguments.frames(0)._2

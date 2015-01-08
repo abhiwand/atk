@@ -16,6 +16,9 @@
     <logger name="play" level="INFO" />
     <logger name="application" level="INFO" />
     <logger name="scala.slick" level="INFO" />
+    <!-- SQL statement logging -->
+    <!--logger name="scala.slick.jdbc.JdbcBackend.statement" level="DEBUG" /-->
+
     <logger name="org.apache.spark" level="INFO" />
     <logger name="org.eclipse.jetty" level="INFO" />
     <logger name="org.apache.hadoop" level="INFO" />

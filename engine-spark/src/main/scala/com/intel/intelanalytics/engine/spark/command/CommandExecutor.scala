@@ -142,41 +142,90 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    *
    * Stores the results of the command execution back in the persistent command object.
    *
+   * This overload requires that the command already is registered in the plugin registry using registerCommand.
+   *
+   * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
    * @return an Execution object that can be used to track the command's execution
    */
-  private def executeContext[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext,
-                                                                           firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
+  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
+                                          commandPluginRegistry: CommandPluginRegistry,
+                                          referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
+    withContext("ce.execute(ct)") {
+      val cmd = commands.create(commandTemplate)
+      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
+      val context = CommandContext(cmd,
+        action = isAction(plugin),
+        executionContext,
+        user,
+        commandPluginRegistry,
+        referenceResolver,
+        eventContext,
+        mutable.Map.empty,
+        mutable.Map.empty)
+
+      createExecution(context)(plugin.argumentTag, plugin.returnTag, invocation)
+    }
+
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * @return an Execution object that can be used to track the command's execution
+   */
+  private def createExecution[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext,
+                                                                            firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
+    Execution(commandContext.command, executeCommandContextInFuture(commandContext, firstExecution))
+  }
+
+  /**
+   * Execute the command in the future with correct classloader, context, etc.,
+   * On complete - mark progress as 100% or failed
+   */
+  private def executeCommandContextInFuture[T](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): Future[Command] = {
     withMyClassLoader {
       withContext(commandContext.command.name) {
+        // run the command in a future so that we don't make the client wait for initial response
         val cmdFuture = future {
-          val plugin = expectFunction[A, R](commandContext.plugins, commandContext.command)
-          val arguments = plugin.parseArguments(commandContext.command.arguments.get)
-          implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
-          withContext("cmdFuture") {
-            withCommand(commandContext.command) {
-
-              val returnValue = if (commandContext.action) {
-                val res = if (firstExecution) {
-                  this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
-                }
-                else commandContext.resolver
-                val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
-                result
-              }
-              else {
-                createSuspendedReferences(commandContext.command, plugin, arguments)
-              }
-              if (firstExecution) {
-                commandContext.clean()
-              }
-              plugin.serializeReturn(returnValue)
-            }
-          }
+          // mark progress as 100% or failed
+          commands.complete(commandContext.command.id, Try {
+            // execute the actual command
+            executeCommandContext(commandContext, firstExecution)
+          })
+          // get the latest command progress from DB when command is done executing
           commands.lookup(commandContext.command.id).get
         }
-        Execution(commandContext.command, cmdFuture)
+        cmdFuture
       }
     }
+  }
+
+  /**
+   * Execute commandContext in current thread (assumes correct classloader, context, etc. is already setup)
+   * @tparam R plugin return type
+   * @tparam A plugin arguments
+   * @return plugin return value as JSON
+   */
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = {
+    val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
+    val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+    implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
+
+    val returnValue = if (commandContext.action) {
+      val res = if (firstExecution) {
+        this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
+      }
+      else commandContext.resolver
+      val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
+      result
+    }
+    else {
+      createSuspendedReferences(commandContext.command, plugin, arguments)
+    }
+    if (firstExecution) {
+      commandContext.clean()
+    }
+    plugin.serializeReturn(returnValue)
   }
 
   /**
@@ -205,7 +254,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
           info(s"Resolving dependencies for ${commandContext.command.name}, ${dependencySets.length} rounds remain")
           val commands = dependencySets.head
           val results = commands.map(c => {
-            executeContext(commandContext.copy(command = c, action = true, resolver = resolver), firstExecution = false)
+            createExecution(commandContext.copy(command = c, action = true, resolver = resolver), firstExecution = false)
           })
           //Next, examine the results and add uri references to the resolver,
           //if they are HasData instances. This is what allows RDDs or other data
@@ -319,44 +368,17 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
   }
 
   /**
-   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
-   *
-   * Stores the results of the command execution back in the persistent command object.
-   *
-   * This overload requires that the command already is registered in the plugin registry using registerCommand.
-   *
-   * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
-   * @return an Execution object that can be used to track the command's execution
+   * Lookup the plugin from the registry
+   * @param plugins the registry of plugins
+   * @param command the command to lookup a plugin for
+   * @tparam A plugin arguments
+   * @tparam R plugin return type
+   * @return the plugin
    */
-  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
-                                          commandPluginRegistry: CommandPluginRegistry,
-                                          referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
-    withContext("ce.execute(ct)") {
-      val cmd = commands.create(commandTemplate)
-      val plugin = expectFunction[A, R](commandPluginRegistry, cmd)
-      val context = CommandContext(cmd,
-        action = isAction(plugin),
-        executionContext,
-        user,
-        commandPluginRegistry,
-        referenceResolver,
-        eventContext,
-        mutable.Map.empty,
-        mutable.Map.empty)
-
-      executeContext(context)(plugin.argumentTag, plugin.returnTag, invocation)
-    }
-
-  private def expectFunction[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {
+  private def expectCommandPlugin[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {
     plugins.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
-  }
-
-  private def withCommand[T](command: Command)(block: => JsObject): Unit = {
-    commands.complete(command.id, Try {
-      block
-    })
   }
 
   /**

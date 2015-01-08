@@ -63,6 +63,7 @@ _api_call_stack = _ApiCallStack()
 class ApiCallLoggingContext(object):
 
     def __init__(self, call_stack, call_logger, call_depth, function, *args, **kwargs):
+        self.logger = None
         self.call_stack = call_stack
         if self.call_stack.is_empty:
             self.logger = call_logger
