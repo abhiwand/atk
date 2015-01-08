@@ -105,7 +105,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, 
                              |Actual  pos |  1     1
                              |        neg |  0     2
                              |
-                           """)))
+                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
