@@ -57,22 +57,34 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a LogisticRegression Model using the observation column and label column of the tarin Frame",
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a LogisticRegression Model using the observation column and label column of the train frame",
     extendedSummary = Some("""
-
-    Parameters
-    ----------
-    frame: Frame
-        Frame to train the model on
-    observation_column: str
-        column containing the observations
-    label_column: str
-        column containing the label for each observation
-
-    Examples
-    --------
-                             |model = ia.LogisticRegressionModel(name='LogReg')
-                             |model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
+                             |
+                             |    Parameters
+                             |    ----------
+                             |    frame: Frame
+                             |        Frame to train the model on
+                             |
+                             |    observation_column: str
+                             |        column containing the observations
+                             |
+                             |    label_column: str
+                             |        column containing the label for each observation
+                             |
+                             |
+                             |    Returns
+                             |    -------
+                             |    Trained LogisticRegression model object
+                             |
+                             |
+                             |    Examples
+                             |    --------
+                             |    ::
+                             |
+                             |        model = ia.LogisticRegressionModel(name='LogReg')
+                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
+                             |
+                             |
                            """.stripMargin)))
 
   /**
