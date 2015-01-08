@@ -77,7 +77,7 @@ class CopyPlugin extends SparkCommandPlugin[FrameCopy, DataFrame] {
       }
     }
     else {
-      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename
+      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename TRIB-4155
       val newSchema = arguments.columns match {
         case None => sourceFrame.meta.schema.toFrameSchema // full copy
         case Some(cols) => sourceFrame.meta.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
