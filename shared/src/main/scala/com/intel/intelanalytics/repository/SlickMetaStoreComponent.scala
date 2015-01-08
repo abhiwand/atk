@@ -174,9 +174,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override lazy val statusRepo: Repository[Session, Status, Status] = new SlickStatusRepository
 
-    override lazy val graphRepo: GraphRepository[Session] = new SlickGraphRepository
-
     override lazy val frameRepo: FrameRepository[Session] = new SlickFrameRepository
+
+    override lazy val graphRepo: GraphRepository[Session] = new SlickGraphRepository(frameRepo)
 
     override lazy val modelRepo: ModelRepository[Session] = new SlickModelRepository
 
@@ -453,6 +453,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       // if you are deleting an error frame, you need to make sure no other frames reference it first
       val errorFrameIdColumn = for (f <- frames if f.errorFrameId === id) yield f.errorFrameId
       errorFrameIdColumn.update(None)
+
+      // if you are deleting any frame, you need to make sure no other frames reference it as a parent first
+      val parentIdColumn = for (f <- frames if f.parentId === id) yield f.parentId
+      parentIdColumn.update(None)
 
       // perform the actual delete
       frames.where(_.id === id).mutate(f => f.delete())
@@ -798,7 +802,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * think that would be helpful but beware: That sort of thing mutates as the graph evolves so keeping it current
    * will require tracking.
    */
-  class SlickGraphRepository extends GraphRepository[Session]
+  class SlickGraphRepository(frameRepo: FrameRepository[Session]) extends GraphRepository[Session]
       with EventLogging {
     this: Repository[Session, GraphTemplate, Graph] =>
 
@@ -814,7 +818,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
-      frames.where(_.graphId === id).mutate(f => f.delete())
+      // for a seamless graph you also need to delete all of the frames
+      frames.where(_.graphId === id).foreach(frame => frameRepo.delete(frame.id))
+
       graphs.where(_.id === id).mutate(f => f.delete())
     }
 
