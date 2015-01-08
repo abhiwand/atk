@@ -454,7 +454,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         # add data to the graph
         graph.vertices['users'].add_vertices(userFrame, 'user_id', ['user_name', 'age'])
         graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
-        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+        graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
 
     This example shows edges between vertices of the same type.  In this example, "employees work under other employees" ::
 
