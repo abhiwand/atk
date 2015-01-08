@@ -422,8 +422,8 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.vertices['users'].add_vertices(frame2, 'user_id', ['user_name'])
 
         # get basic information about the graph
-        graph.vertex_count()
-        graph.edge_count()
+        graph.vertex_count
+        graph.edge_count
         graph.vertices['users'].inspect(20)
 
 
@@ -471,8 +471,8 @@ class Graph(DocStubsGraph, _BaseGraph):
         graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
 
         # inspect the graph
-        graph.vertex_count()
-        graph.edge_count()
+        graph.vertex_count
+        graph.edge_count
         graph.vertices['Employee'].inspect(20)
         graph.edges['worksunder'].inspect(20)
 
