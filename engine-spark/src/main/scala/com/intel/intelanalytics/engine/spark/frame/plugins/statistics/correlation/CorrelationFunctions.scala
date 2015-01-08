@@ -55,28 +55,15 @@ object Correlation extends Serializable {
                   dataColumnNames: List[String]): DoubleValue = {
     // compute correlation
 
-    val rowsAsVectorRDD = frameRDD.mapRows(row => {
-      val array = row.valuesAsArray(dataColumnNames)
-      val b = array.map(i => DataTypes.toDouble(i))
-      Vectors.dense(b)
+    val col1RDD = frameRDD.mapRows(row => {
+      DataTypes.toDouble(row.value(dataColumnNames(0)))
     })
 
-    def rowMatrix: RowMatrix = new RowMatrix(rowsAsVectorRDD)
+    val col2RDD = frameRDD.mapRows(row => {
+      DataTypes.toDouble(row.value(dataColumnNames(1)))
+    })
 
-    val (rowCount, mean) = rowMatrix.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](rowsAsVectorRDD.first().size)))(
-      seqOp = (s: (Long, DenseVector[Double]), v: Vector) => (s._1 + 1L, s._2 += DenseVector(v.toArray)),
-      combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
-        (s1._1 + s2._1, s1._2 += s2._2)
-    )
-    mean :/= rowCount.toDouble
-
-    val product = rowMatrix.rows.aggregate[Double](0)((s: Double, v: Vector) => {
-      val d = v.toArray
-      d(0) * d(1)
-    }, combOp = (s1: Double, s2: Double) => (s1 + s2))
-
-    val covariance = (product / (rowCount - 1)) - (mean(0) * mean(1) * rowCount / (rowCount - 1))
-    DoubleValue(covariance)
+    DoubleValue(Statistics.corr(col1RDD, col2RDD))
   }
 
   /**
