@@ -23,8 +23,8 @@ graph.vertices['Employee'].add_vertices(employees_frame, 'Manager', [])
 graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
 graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'])
 
-graph.vertex_count()
-graph.edge_count()
+graph.vertex_count
+graph.edge_count
 graph.vertices['Employee'].inspect(9)
 graph.edges['worksunder'].inspect(20)
 
@@ -37,7 +37,7 @@ graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=False)
 graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
 graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
 
-graph.vertex_count()
-graph.edge_count()
+graph.vertex_count
+graph.edge_count
 graph.vertices['Employee'].inspect(9)
 graph.edges['worksunder'].inspect(20)
