@@ -56,7 +56,7 @@ class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
 
     Examples
     --------
-                             |graph.edge_count()
+                             |graph.edge_count
                            """)))
 
   /**
