@@ -56,7 +56,7 @@ class VertexCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
 
     Examples
     --------
-                             |graph.vertex_count()
+                             |graph.vertex_count
                            """)))
 
   /**
