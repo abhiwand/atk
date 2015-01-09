@@ -52,6 +52,8 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
     .map(frame => (frame.label.get, frame))
     .toMap[String, DataFrame]
 
+  require(frameEntities.size == (edgeFrameMetasMap.size + vertexFrameMetasMap.size), "labels should not be duplicated within a graph, this is a bug")
+
   /** convenience method for getting the id of the graph */
   def id: Long = graphEntity.id
 
