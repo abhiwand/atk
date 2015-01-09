@@ -111,6 +111,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgume
   override def execute(arguments: CorrelationMatrixArguments)(implicit invocation: Invocation): DataFrame = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
+    frame.meta.schema.validateColumnsExist(arguments.dataColumnNames)
     // load frame as RDD
     val rdd = frame.data
 

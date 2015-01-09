@@ -55,15 +55,15 @@ object Correlation extends Serializable {
                   dataColumnNames: List[String]): DoubleValue = {
     // compute correlation
 
-    val col1RDD = frameRDD.mapRows(row => {
-      DataTypes.toDouble(row.value(dataColumnNames(0)))
+    val vectorRDD = frameRDD.mapRows(row => {
+      val array = row.valuesAsArray(dataColumnNames)
+      val b = array.map(i => DataTypes.toDouble(i))
+      Vectors.dense(b)
     })
 
-    val col2RDD = frameRDD.mapRows(row => {
-      DataTypes.toDouble(row.value(dataColumnNames(1)))
-    })
+    val correlation: Matrix = Statistics.corr(vectorRDD)
 
-    DoubleValue(Statistics.corr(col1RDD, col2RDD))
+    DoubleValue(correlation.toArray(1))
   }
 
   /**
