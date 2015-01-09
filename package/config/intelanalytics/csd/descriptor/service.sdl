@@ -343,9 +343,9 @@
                       "description": "resource limit for maps. make sure it's not higher that was is configured in yarn.",
                       "required": "false",
                       "type" : "memory",
-                      "unit" : "bytes",
-                      "min" : 536870912,
-                      "default" : 8589934592
+                      "unit" : "megabytes",
+                      "min" : 512,
+                      "default" : 8192
                 },
                 {
                       "name": "atk_giraph_mapreduce_map_java_opts",
@@ -354,9 +354,9 @@
                       "description": "heap-size for child jvms of maps. should be less than intel.analytics.engine.giraph.mapreduce.map.memory.mb.",
                       "required": "false",
                       "type" : "memory",
-                      "unit" : "bytes",
-                      "min" : 536870912,
-                      "default" : 6872367104
+                      "unit" : "megabytes",
+                      "min" : 512,
+                      "default" : 6554
                 },
                 {
                       "name": "atk_titan_storage_batch_loading",
