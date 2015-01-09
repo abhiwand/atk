@@ -98,6 +98,7 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArguments, DoubleV
   override def execute(arguments: CorrelationArguments)(implicit invocation: Invocation): DoubleValue = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
+    frame.meta.schema.validateColumnsExist(arguments.dataColumnNames)
     // load frame as RDD
     val rdd = frame.data
     Correlation.correlation(rdd, arguments.dataColumnNames)
