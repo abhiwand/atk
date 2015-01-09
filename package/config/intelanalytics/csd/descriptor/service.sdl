@@ -353,10 +353,8 @@
                       "label": "Resource Limit For Child jvm ",
                       "description": "heap-size for child jvms of maps. should be less than intel.analytics.engine.giraph.mapreduce.map.memory.mb.",
                       "required": "false",
-                      "type" : "memory",
-                      "unit" : "megabytes",
-                      "min" : 512,
-                      "default" : 6554
+                      "type" : "string",
+                      "default" : "-Xmx6554m"
                 },
                 {
                       "name": "atk_titan_storage_batch_loading",
