@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import org.apache.spark.mllib.linalg.{ Vectors, DenseVector }
+import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
@@ -82,6 +82,17 @@ class FrameRDD(val frameSchema: Schema,
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
         new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
       })
+  }
+
+  /**
+   * Convert FrameRDD into RDD[Vector] format required by MLLib
+   */
+  def toVectorDenseRDD(featureColumnNames: List[String]): RDD[Vector] = {
+    this.mapRows(row => {
+      val array = row.valuesAsArray(featureColumnNames)
+      val b = array.map(i => DataTypes.toDouble(i))
+      Vectors.dense(b)
+    })
   }
 
   def toVectorRDD(featureColumnNames: List[String]) = {
