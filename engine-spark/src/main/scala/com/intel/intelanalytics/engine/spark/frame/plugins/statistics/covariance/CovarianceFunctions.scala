@@ -50,11 +50,7 @@ object Covariance extends Serializable {
                  dataColumnNames: List[String]): DoubleValue = {
     // compute multivariate statistics and return covariance
 
-    val rowsAsVectorRDD = frameRDD.mapRows(row => {
-      val array = row.valuesAsArray(dataColumnNames)
-      val b = array.map(i => DataTypes.toDouble(i))
-      Vectors.dense(b)
-    })
+    val rowsAsVectorRDD = frameRDD.toVectorDenseRDD(dataColumnNames)
 
     def rowMatrix: RowMatrix = new RowMatrix(rowsAsVectorRDD)
 
@@ -84,13 +80,7 @@ object Covariance extends Serializable {
   def covarianceMatrix(frameRDD: FrameRDD,
                        dataColumnNames: List[String]): RDD[sql.Row] = {
 
-    val vectorRDD = frameRDD.mapRows(row => {
-      val array = row.valuesAsArray(dataColumnNames)
-      val b = array.map(i => DataTypes.toDouble(i))
-      Vectors.dense(b)
-    })
-
-    def rowMatrix: RowMatrix = new RowMatrix(vectorRDD)
+    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
