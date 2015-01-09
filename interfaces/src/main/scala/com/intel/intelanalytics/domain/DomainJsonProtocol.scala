@@ -341,6 +341,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val calculateCovariance = jsonFormat2(CovarianceArguments)
   implicit val covarianceReturnFormat = jsonFormat1(DoubleValue)
 
+  implicit val calculateCorrelationMatrix = jsonFormat3(CorrelationMatrixArguments)
+  implicit val calculateCorrelation = jsonFormat2(CorrelationArguments)
+
   implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 

@@ -137,6 +137,9 @@ case class DataFrame(id: Long,
       materializationComplete = None,
       storageLocation = None,
       command = command,
-      parent = Some(id))
+      parent = Some(id),
+      // TODO: for lazy graphId wouldn't be set to None here
+      graphId = None)
   }
+
 }
