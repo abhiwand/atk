@@ -57,7 +57,9 @@ object Correlation extends Serializable {
 
     val correlation: Matrix = Statistics.corr(frameRDD.toVectorDenseRDD(dataColumnNames))
 
-    DoubleValue(correlation.toArray(1))
+    val dblVal: Double = correlation.toArray(1)
+
+    DoubleValue(if (dblVal.isNaN) 0 else dblVal)
   }
 
   /**
@@ -73,7 +75,7 @@ object Correlation extends Serializable {
     val correlation: Matrix = Statistics.corr(frameRDD.toVectorDenseRDD(dataColumnNames))
     val vecArray = correlation.toArray.grouped(correlation.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
-      val temp: Array[Any] = row.map(x => x)
+      val temp: Array[Any] = row.map(x => if (x.isNaN) 0 else x)
       new GenericRow(temp)
     })
 
