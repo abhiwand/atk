@@ -4,7 +4,7 @@ import java.util
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig

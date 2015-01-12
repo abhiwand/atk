@@ -5,7 +5,7 @@ import org.mockito.Mockito._
 import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandLoader }
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import scala.collection.immutable.HashMap
-import com.intel.intelanalytics.domain.frame.{ DataFrame, CumulativeSum }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, CumulativeSumArgs }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 
@@ -29,8 +29,8 @@ class CommandPluginRegistryTest extends FlatSpec with Matchers with MockitoSugar
     when(loader.loadFromConfig()).thenReturn(new HashMap[String, CommandPlugin[_, _]] + ("mock-plugin" -> mockPlugin))
     val registry = new CommandPluginRegistry(loader)
 
-    val dummyFunc = (dist: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) => {
-      mock[DataFrame]
+    val dummyFunc = (dist: CumulativeSumArgs, user: UserPrincipal, invocation: SparkInvocation) => {
+      mock[FrameEntity]
     }
 
     val plugin = registry.registerCommand("dummy", dummyFunc)

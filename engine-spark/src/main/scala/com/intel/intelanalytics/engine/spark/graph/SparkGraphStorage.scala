@@ -28,13 +28,13 @@ import com.intel.intelanalytics.domain.{ Status, EntityManager, Naming }
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.{ EntityRegistry, Rows, GraphBackendStorage, GraphStorage }
+import com.intel.intelanalytics.engine.{ EntityTypeRegistry, Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
@@ -68,9 +68,9 @@ class SparkGraphStorage(metaStore: MetaStore,
                         frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging { storage =>
 
-  object SparkGraphManagement extends EntityManager[GraphEntity.type] {
+  object SparkGraphManagement extends EntityManager[GraphEntityType.type] {
 
-    override implicit val referenceTag = GraphEntity.referenceTag
+    override implicit val referenceTag = GraphEntityType.referenceTag
 
     override type Reference = GraphReference
 
@@ -90,7 +90,7 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectGraph(id)
 
-    implicit def graphToRef(graph: Graph): Reference = GraphReference(graph.id, Some(true))
+    implicit def graphToRef(graph: Graph): Reference = GraphReference(graph.id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -115,7 +115,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   //EntityRegistry.register(GraphEntity, SparkGraphManagement)
   //in the meantime,
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(GraphEntity, SparkGraphManagement)
+  EntityTypeRegistry.register(GraphEntityType, SparkGraphManagement)
 
   /** Lookup a Graph, throw an Exception if not found */
   override def expectGraph(graphId: Long)(implicit invocation: Invocation): Graph = {
@@ -280,7 +280,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("vertex_frame_")), vertexSchema, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = FrameEntity(0, Naming.generateName(prefix = Some("vertex_frame_")), vertexSchema, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -308,7 +308,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val frame = DataFrame(0, Naming.generateName(prefix = Some("edge_frame_")), edgeSchema, 1, new DateTime,
+          val frame = FrameEntity(0, Naming.generateName(prefix = Some("edge_frame_")), edgeSchema, 1, new DateTime,
             new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }

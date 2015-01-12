@@ -101,8 +101,6 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     idMap.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
-    val mergedEdges = edges.mergeDuplicates()
-
     if (config.broadcastVertexIds) {
 
       val ids = idMap.collect()
@@ -113,19 +111,19 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       val gbIdToPhysicalIdMap = vertexRdd.sparkContext.broadcast(vertexMap)
 
       println("starting write of edges")
-      mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
+      edges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
 
     }
     else {
       println("join edges with physical ids")
-      val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
+      val edgesWithPhysicalIds = edges.joinWithPhysicalIds(idMap)
 
       println("starting write of edges")
       edgesWithPhysicalIds.write(titanConnector, config.append)
     }
 
     // Manually Unpersist RDDs to help with Memory usage
-    idMap.unpersist();
+    idMap.unpersist(blocking = false)
 
     println("done writing edges")
   }
