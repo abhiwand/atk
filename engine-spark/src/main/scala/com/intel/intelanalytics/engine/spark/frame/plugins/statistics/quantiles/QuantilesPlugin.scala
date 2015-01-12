@@ -49,7 +49,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate quantiles on the given column
  */
-class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
+class QuantilesPlugin extends SparkCommandPlugin[QuantilesArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -123,7 +123,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: Quantiles)(implicit invocation: Invocation) = 7
+  override def numberOfJobs(arguments: QuantilesArgs)(implicit invocation: Invocation) = 7
 
   /**
    * Calculate quantiles on the given column
@@ -134,7 +134,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: Quantiles)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: QuantilesArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

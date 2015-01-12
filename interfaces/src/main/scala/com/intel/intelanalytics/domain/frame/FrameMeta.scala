@@ -34,9 +34,9 @@ import com.intel.intelanalytics.domain.HasMetaData
 /**
  * A FrameReference with metadata
  */
-class FrameMeta(frame: DataFrame) extends FrameReference(frame.id, Some(true)) with HasMetaData {
+class FrameMeta(frame: FrameEntity) extends FrameReference(frame.id) with HasMetaData {
 
-  type Meta = DataFrame
+  type Meta = FrameEntity
 
   val meta = frame
 

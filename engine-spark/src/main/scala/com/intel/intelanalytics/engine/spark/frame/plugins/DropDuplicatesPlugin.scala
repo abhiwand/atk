@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Remove duplicate rows, keeping only one row per uniqueness criteria match
  */
-class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame] {
+class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -92,7 +92,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: DropDuplicates)(implicit invocation: Invocation) = 2
+  override def numberOfJobs(arguments: DropDuplicatesArgs)(implicit invocation: Invocation) = 2
 
   /**
    * Remove duplicate rows, keeping only one row per uniqueness criteria match
@@ -103,13 +103,13 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: DropDuplicates)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc
 
     // validate arguments
-    val frame: DataFrame = frames.expectFrame(arguments.frame.id)
+    val frame: FrameEntity = frames.expectFrame(arguments.frame.id)
     val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
     val columnNames = arguments.unique_columns match {
       case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList

@@ -67,5 +67,5 @@ case class Model(id: Long,
     "model:" + JsonPropertyNameConverter.camelCaseToUnderscores(modelType)
   }
 
-  def uri: String = ModelReference(id, None).uri
+  def uri: String = ModelReference(id).uri
 }

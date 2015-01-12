@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatistics, ColumnSummaryStatisticsReturn }
+import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate summary statistics of the specified column.
  */
-class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] {
+class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -205,7 +205,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
    * @param arguments Input specification for column summary statistics.
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ColumnSummaryStatistics)(implicit invocation: Invocation): ColumnSummaryStatisticsReturn = {
+  override def execute(arguments: ColumnSummaryStatisticsArgs)(implicit invocation: Invocation): ColumnSummaryStatisticsReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

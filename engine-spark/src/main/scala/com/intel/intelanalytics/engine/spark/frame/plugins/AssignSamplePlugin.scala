@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ AssignSample, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Assign classes to rows.
  */
-class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
+class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -112,7 +112,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
    *                   can be used during this invocation.
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: AssignSample)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

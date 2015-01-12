@@ -38,7 +38,7 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.{ DataFrameCreate, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ DataFrameCreate, DataFrameTemplate, FrameEntity }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.{ RequestContext, StandardRoute, Directives }

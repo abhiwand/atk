@@ -26,11 +26,11 @@ package com.intel.intelanalytics.domain.frame
 /**
  * Input arguments class for export to CSV
  */
-case class ExportCsvArguments(frame: FrameReference,
-                              folderName: String,
-                              separator: Option[String] = None,
-                              count: Option[Int] = None,
-                              offset: Option[Int] = None) {
+case class ExportHdfsCsvArgs(frame: FrameReference,
+                             folderName: String,
+                             separator: Option[String] = None,
+                             count: Option[Int] = None,
+                             offset: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }
@@ -38,10 +38,10 @@ case class ExportCsvArguments(frame: FrameReference,
 /**
  * Input arguments class for export to JSON
  */
-case class ExportJsonArguments(frame: FrameReference,
-                               folderName: String,
-                               count: Option[Int] = None,
-                               offset: Option[Int] = None) {
+case class ExportHdfsJsonArgs(frame: FrameReference,
+                              folderName: String,
+                              count: Option[Int] = None,
+                              offset: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }

@@ -13,7 +13,7 @@ import org.apache.spark.SparkContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.frame.{ CumulativeSum, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
 import com.intel.intelanalytics.domain.frame.QuantileValues
 import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
@@ -79,7 +79,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       invocation.sparkContext.getConf
       contextCountDuringExecution = executor.commandIdContextMapping.size
       containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
-      mock[DataFrame]
+      mock[FrameEntity]
     }
 
     commandPluginRegistry.registerCommand("dummy", dummyFunc)
@@ -103,7 +103,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: SparkInvocation) => {
       executor.stopCommand(1)
       contextCountAfterCancel = executor.commandIdContextMapping.size
-      mock[DataFrame]
+      mock[FrameEntity]
     }
 
     commandPluginRegistry.registerCommand("dummy", dummyFunc)
