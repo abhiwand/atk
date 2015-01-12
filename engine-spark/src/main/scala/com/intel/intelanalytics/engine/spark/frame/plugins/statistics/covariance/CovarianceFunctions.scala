@@ -48,26 +48,15 @@ object Covariance extends Serializable {
    */
   def covariance(frameRDD: FrameRDD,
                  dataColumnNames: List[String]): DoubleValue = {
-    // compute multivariate statistics and return covariance
 
-    val rowsAsVectorRDD = frameRDD.toVectorDenseRDD(dataColumnNames)
+    // compute and return covariance
+    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
 
-    def rowMatrix: RowMatrix = new RowMatrix(rowsAsVectorRDD)
+    val covariance: Matrix = rowMatrix.computeCovariance()
 
-    val (rowCount, mean) = rowMatrix.rows.aggregate[(Long, DenseVector[Double])]((0L, DenseVector.zeros[Double](rowsAsVectorRDD.first().size)))(
-      seqOp = (s: (Long, DenseVector[Double]), v: Vector) => (s._1 + 1L, s._2 += DenseVector(v.toArray)),
-      combOp = (s1: (Long, DenseVector[Double]), s2: (Long, DenseVector[Double])) =>
-        (s1._1 + s2._1, s1._2 += s2._2)
-    )
-    mean :/= rowCount.toDouble
+    val dblVal: Double = covariance.toArray(1)
 
-    val product = rowMatrix.rows.aggregate[Double](0)((s: Double, v: Vector) => {
-      val d = v.toArray
-      d(0) * d(1)
-    }, combOp = (s1: Double, s2: Double) => (s1 + s2))
-
-    val covariance = (product / (rowCount - 1)) - (mean(0) * mean(1) * rowCount / (rowCount - 1))
-    DoubleValue(covariance)
+    DoubleValue(if (dblVal.isNaN) 0 else dblVal)
   }
 
   /**
@@ -85,7 +74,7 @@ object Covariance extends Serializable {
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
-      val temp: Array[Any] = row.map(x => x)
+      val temp: Array[Any] = row.map(x => if (x.isNaN) 0 else x)
       new GenericRow(temp)
     })
 
