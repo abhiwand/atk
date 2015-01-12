@@ -116,7 +116,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
       val graphManager = graph.getManagementSystem()
       if (!graphManager.containsRelationType(labelSchema.label)) {
         //default multiplicity is SIMPLE (at most one edge with this label between a pair of vertices
-        graphManager.makeEdgeLabel(labelSchema.label).multiplicity(Multiplicity.SIMPLE).make()
+        graphManager.makeEdgeLabel(labelSchema.label).multiplicity(Multiplicity.MULTI).make()
       }
       graphManager.commit()
     })
