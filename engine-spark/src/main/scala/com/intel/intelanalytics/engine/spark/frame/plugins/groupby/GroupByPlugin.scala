@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameGroupByColumn, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, GroupByArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -18,7 +18,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
  */
-class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
+class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -44,7 +44,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameGroupByColumn)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: GroupByArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

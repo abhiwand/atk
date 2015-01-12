@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
@@ -77,54 +77,54 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.frame.Entropy
+import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.frame.EntropyReturn
-import com.intel.intelanalytics.domain.frame.TopK
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.RenameFrame
-import com.intel.intelanalytics.domain.graph.RenameGraph
-import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.frame.TopKArgs
+import com.intel.intelanalytics.domain.frame.AddColumnsArgs
+import com.intel.intelanalytics.domain.frame.RenameFrameArgs
+import com.intel.intelanalytics.domain.graph.RenameGraphArgs
+import com.intel.intelanalytics.domain.graph.LoadGraphArgs
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.frame.DropDuplicates
+import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CumulativeSum
-import com.intel.intelanalytics.domain.frame.CumulativeCount
-import com.intel.intelanalytics.domain.frame.CumulativePercentCount
-import com.intel.intelanalytics.domain.frame.CumulativePercentSum
-import com.intel.intelanalytics.domain.frame.Quantiles
-import com.intel.intelanalytics.domain.frame.CovarianceMatrixArguments
-import com.intel.intelanalytics.domain.frame.AssignSample
-import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
-import com.intel.intelanalytics.domain.frame.FrameRenameColumns
+import com.intel.intelanalytics.domain.FilterArgs
+import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
+import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
+import com.intel.intelanalytics.domain.frame.TallyArgs
+import com.intel.intelanalytics.domain.frame.TallyPercentArgs
+import com.intel.intelanalytics.domain.frame.CumulativePercentArgs
+import com.intel.intelanalytics.domain.frame.QuantilesArgs
+import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
+import com.intel.intelanalytics.domain.frame.AssignSampleArgs
+import com.intel.intelanalytics.domain.frame.GroupByArgs
+import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameDropColumns
+import com.intel.intelanalytics.domain.frame.DropColumnsArgs
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
-import com.intel.intelanalytics.domain.frame.ColumnMedian
-import com.intel.intelanalytics.domain.frame.ColumnMode
-import com.intel.intelanalytics.domain.frame.ECDF
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
+import com.intel.intelanalytics.domain.frame.ColumnMedianArgs
+import com.intel.intelanalytics.domain.frame.ColumnModeArgs
+import com.intel.intelanalytics.domain.frame.EcdfArgs
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.domain.frame.ClassificationMetric
-import com.intel.intelanalytics.domain.frame.BinColumn
+import com.intel.intelanalytics.domain.frame.ClassificationMetricArgs
+import com.intel.intelanalytics.domain.frame.BinColumnArgs
 import com.intel.intelanalytics.domain.frame.QuantileValues
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.FlattenColumnArgs
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
-import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.frame.JoinArgs
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
@@ -165,7 +165,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new ColumnModePlugin)
   commandPluginRegistry.registerCommand(new ColumnMedianPlugin)
   commandPluginRegistry.registerCommand(new ColumnSummaryStatisticsPlugin)
-  commandPluginRegistry.registerCommand(new CopyPlugin)
+  commandPluginRegistry.registerCommand(new CopyFramePlugin)
   commandPluginRegistry.registerCommand(new CountWherePlugin)
   commandPluginRegistry.registerCommand(new FilterPlugin)
   commandPluginRegistry.registerCommand(new JoinPlugin(frames))
@@ -183,7 +183,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new TallyPlugin)
   commandPluginRegistry.registerCommand(new CumulativePercentPlugin)
   commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
-  commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
+  commandPluginRegistry.registerCommand(new EntropyPlugin)
   commandPluginRegistry.registerCommand(new TopKPlugin)
   commandPluginRegistry.registerCommand(new SortByColumnsPlugin)
   commandPluginRegistry.registerCommand(new CorrelationMatrixPlugin)
@@ -300,24 +300,24 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
       commandPluginRegistry.getCommandDefinitions()
     }
 
-  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[DataFrame] =
+  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[FrameEntity] =
     future {
       frames.create(frame)
     }
 
-  def delete(frame: DataFrame)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
+  def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
     future {
       frames.drop(frame)
     }
   }
 
-  def getFrames()(implicit invocation: Invocation): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+  def getFrames()(implicit invocation: Invocation): Future[Seq[FrameEntity]] = withContext("se.getFrames") {
     future {
       frames.getFrames()
     }
   }
 
-  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
+  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = withContext("se.getFrameByName") {
     future {
       frames.lookupByName(name)
     }
@@ -378,7 +378,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[DataFrame]] =
+  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]] =
     withContext("se.getFrame") {
       future {
         frames.lookup(id)
@@ -501,28 +501,28 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     //do nothing
   }
 
-  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = {
+  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       Some(seamless.vertexMeta(label))
     }
   }
 
-  override def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]] = {
+  override def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       seamless.vertexFrames
     }
   }
 
-  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]] = {
+  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       Some(seamless.edgeMeta(label))
     }
   }
 
-  override def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]] = {
+  override def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
       seamless.edgeFrames

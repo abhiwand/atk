@@ -74,19 +74,19 @@ trait Engine {
 
   def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
 
-  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[DataFrame]]
+  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
-  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[DataFrame]
+  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[FrameEntity]
 
-  def delete(frame: DataFrame)(implicit invocation: Invocation): Future[Unit]
+  def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit]
 
-  def getFrames()(implicit invocation: Invocation): Future[Seq[DataFrame]]
+  def getFrames()(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
-  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
+  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def shutdown(): Unit
 
@@ -98,13 +98,13 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[Graph]
 
-  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
+  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
-  def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]]
+  def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
-  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[DataFrame]]
+  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
-  def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[DataFrame]]
+  def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
   def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit]
 

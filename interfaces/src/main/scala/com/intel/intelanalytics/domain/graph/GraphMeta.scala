@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.HasMetaData
 /**
  * A GraphReference with metadata
  */
-class GraphMeta(graph: Graph) extends GraphReference(graph.id, Some(true)) with HasMetaData {
+class GraphMeta(graph: Graph) extends GraphReference(graph.id) with HasMetaData {
 
   type Meta = Graph
 

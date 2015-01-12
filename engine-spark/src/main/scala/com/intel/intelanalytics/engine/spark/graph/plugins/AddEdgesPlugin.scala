@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.construction.{ AddEdges, AddVertices }
+import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
@@ -44,7 +44,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Add Vertices to a Vertex Frame
  */
-class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandPlugin[AddEdges, UnitReturn] {
+class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -91,7 +91,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: AddEdges)(implicit invocation: Invocation): Int = {
+  override def numberOfJobs(arguments: AddEdgesArgs)(implicit invocation: Invocation): Int = {
     if (arguments.isCreateMissingVertices) {
       // TODO: this this right?
       10
@@ -110,7 +110,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: AddEdges)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: AddEdgesArgs)(implicit invocation: Invocation): UnitReturn = {
     // dependencies (later to be replaced with dependency injection)
     val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
@@ -143,8 +143,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
-      addVerticesPlugin.addVertices(sc, AddVertices(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids

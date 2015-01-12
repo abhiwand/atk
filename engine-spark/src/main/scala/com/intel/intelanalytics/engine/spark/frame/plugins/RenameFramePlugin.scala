@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ RenameFrame, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ RenameFrameArgs, FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename a frame
  */
-class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
+class RenameFramePlugin extends SparkCommandPlugin[RenameFrameArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -66,7 +66,7 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: RenameFrame)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: RenameFrameArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
 

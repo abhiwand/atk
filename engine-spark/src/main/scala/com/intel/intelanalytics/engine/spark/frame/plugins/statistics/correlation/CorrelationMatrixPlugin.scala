@@ -26,9 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlati
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.frame.FrameMeta
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, CorrelationMatrixArguments, DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -47,6 +45,11 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.frame.CorrelationMatrixArgs
+import com.intel.intelanalytics.domain.schema.FrameSchema
+import com.intel.intelanalytics.domain.command.CommandDoc
+import scala.Some
+import com.intel.intelanalytics.domain.schema.Column
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -55,7 +58,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate correlation matrix for the specified columns
  */
-class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArguments, DataFrame] {
+class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, FrameEntity] {
 
   /**
    * The name of the command
@@ -98,7 +101,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgume
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CorrelationMatrixArguments)(implicit invocation: Invocation) = 7
+  override def numberOfJobs(arguments: CorrelationMatrixArgs)(implicit invocation: Invocation) = 7
 
   /**
    * Calculate correlation matrix for the specified columns
@@ -108,7 +111,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgume
    * @param arguments input specification for correlation matrix
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CorrelationMatrixArguments)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: CorrelationMatrixArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     frame.meta.schema.validateColumnsExist(arguments.dataColumnNames)

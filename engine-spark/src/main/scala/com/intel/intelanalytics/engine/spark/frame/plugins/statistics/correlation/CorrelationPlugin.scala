@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CorrelationArguments, CovarianceArguments }
+import com.intel.intelanalytics.domain.frame.{ CorrelationArgs, CovarianceArgs }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate correlation for the specified columns
  */
-class CorrelationPlugin extends SparkCommandPlugin[CorrelationArguments, DoubleValue] {
+class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue] {
 
   /**
    * The name of the command
@@ -85,7 +85,7 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArguments, DoubleV
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CorrelationArguments)(implicit invocation: Invocation) = 5
+  override def numberOfJobs(arguments: CorrelationArgs)(implicit invocation: Invocation) = 5
 
   /**
    * Calculate correlation for the specified columns
@@ -95,7 +95,7 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArguments, DoubleV
    * @param arguments input specification for correlation
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CorrelationArguments)(implicit invocation: Invocation): DoubleValue = {
+  override def execute(arguments: CorrelationArgs)(implicit invocation: Invocation): DoubleValue = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     frame.meta.schema.validateColumnsExist(arguments.dataColumnNames)

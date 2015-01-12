@@ -40,13 +40,13 @@ import ru._
  *
  * Note that this class is generally used through the companion object.
  */
-class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResolver {
+class RegistryReferenceResolver(registry: EntityTypeRegistry) extends ReferenceResolver {
 
   var resolvers: Map[String, (Long, Invocation) => UriReference] = registry.entities.flatMap {
     case (entity, manager) =>
       val resolver: (Long, Invocation) => UriReference = (id: Long, invocation: Invocation) => manager.getReference(id)(invocation)
       (Seq(entity.name) ++ entity.alternatives).flatMap { name =>
-        Seq(name.name -> resolver,
+        Seq(name.singular -> resolver,
           name.plural -> resolver)
       }
   }.toMap[String, (Long, Invocation) => UriReference]
@@ -97,7 +97,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
 
     val uriReference = resolver(id, invocation)
 
-    val manager = registry.entityManager(uriReference.entity).getOrElse(
+    val manager = registry.entityManager(uriReference.entityType).getOrElse(
       throw new IllegalArgumentException(s"No entity manager found for entity type '$entity' (or '$typeTag[T]')"))
 
     val reference = ReferenceResolver.coerceReference[manager.Reference](uriReference)(manager.referenceTag)

@@ -27,7 +27,7 @@ import java.nio.file.FileSystem
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.ExportCsvArguments
+import com.intel.intelanalytics.domain.frame.ExportHdfsCsvArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -41,12 +41,12 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Export a frame to csv file
  */
-class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportCsvArguments, UnitReturn] {
+class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportHdfsCsvArgs, UnitReturn] {
 
   /**
    * The name of the command
    */
-  override def name: String = "frame/export_csv"
+  override def name: String = "frame/export_to_csv"
 
   /**
    * User documentation exposed in Python.
@@ -82,14 +82,14 @@ class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportCsvArguments, UnitRet
         --------
         Consider Frame *my_frame*
 
-            my_frame.export_csv('covarianceresults')
+            my_frame.export_to_csv('covarianceresults')
 
                            """)))
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ExportCsvArguments)(implicit invocation: Invocation) = 5
+  override def numberOfJobs(arguments: ExportHdfsCsvArgs)(implicit invocation: Invocation) = 5
 
   /**
    * Calculate covariance for the specified columns
@@ -99,7 +99,7 @@ class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportCsvArguments, UnitRet
    * @param arguments input specification for covariance
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: ExportCsvArguments)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: ExportHdfsCsvArgs)(implicit invocation: Invocation): UnitReturn = {
 
     val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
     require(!fileStorage.exists(new Path(arguments.folderName)), "File or Directory already exists")

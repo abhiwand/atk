@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, CovarianceMatrixArguments, DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, CovarianceMatrixArgs, FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
@@ -44,7 +44,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate covariance matrix for the specified columns
  */
-class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArguments, DataFrame] {
+class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, FrameEntity] {
 
   /**
    * The name of the command
@@ -87,7 +87,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation) = 7
+  override def numberOfJobs(arguments: CovarianceMatrixArgs)(implicit invocation: Invocation) = 7
 
   /**
    * Calculate covariance matrix for the specified columns
@@ -97,7 +97,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgument
    * @param arguments input specification for covariance matrix
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CovarianceMatrixArguments)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: CovarianceMatrixArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
