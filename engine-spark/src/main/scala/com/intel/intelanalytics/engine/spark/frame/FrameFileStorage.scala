@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import org.apache.hadoop.fs.Path
@@ -47,12 +47,12 @@ class FrameFileStorage(fsRoot: String,
     info("data frames base directory: " + framesBaseDirectory)
   }
 
-  def frameBaseDirectoryExists(dataFrame: DataFrame) = {
+  def frameBaseDirectoryExists(dataFrame: FrameEntity) = {
     val path = frameBaseDirectory(dataFrame.id)
     hdfs.exists(path)
   }
 
-  def createFrame(dataFrame: DataFrame): Path = withContext("createFrame") {
+  def createFrame(dataFrame: FrameEntity): Path = withContext("createFrame") {
 
     if (frameBaseDirectoryExists(dataFrame)) {
       throw new IllegalArgumentException(s"Frame already exists at ${frameBaseDirectory(dataFrame.id)}")
@@ -65,7 +65,7 @@ class FrameFileStorage(fsRoot: String,
    * Remove the directory and underlying data for a particular revision of a data frame
    * @param dataFrame the data frame to act on
    */
-  def delete(dataFrame: DataFrame): Unit = {
+  def delete(dataFrame: FrameEntity): Unit = {
     hdfs.delete(frameBaseDirectory(dataFrame.id), recursive = true)
   }
 
@@ -79,7 +79,7 @@ class FrameFileStorage(fsRoot: String,
    * @param dataFrame the data frame to verify
    * @return true if the data frame is saved in the parquet format
    */
-  private[frame] def isParquet(dataFrame: DataFrame): Boolean = {
+  private[frame] def isParquet(dataFrame: FrameEntity): Boolean = {
     val path = frameBaseDirectory(dataFrame.id)
     hdfs.globList(path, "*.parquet").length > 0
   }

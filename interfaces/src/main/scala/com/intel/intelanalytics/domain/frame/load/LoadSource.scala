@@ -37,7 +37,7 @@ import com.intel.intelanalytics.domain.schema.{ SchemaUtil, FrameSchema, Schema 
  * @param destination DataFrame to load data into. Should be either a uri or id
  * @param source Object describing the data to load into the destination. Includes the Where and How of loading.
  */
-case class Load(destination: FrameReference, source: LoadSource)
+case class LoadFrameArgs(destination: FrameReference, source: LoadSource)
 
 /**
  * Describes a resource that should be loaded into a DataFrame

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ColumnMode, ColumnModeReturn }
+import com.intel.intelanalytics.domain.frame.{ ColumnModeArgs, ColumnModeReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate modes of a column.
  */
-class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] {
+class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeReturn] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -133,7 +133,7 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ColumnMode)(implicit invocation: Invocation): ColumnModeReturn = {
+  override def execute(arguments: ColumnModeArgs)(implicit invocation: Invocation): ColumnModeReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
-import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import com.intel.intelanalytics.domain.frame.GroupByArgs
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import org.apache.spark.rdd.RDD
@@ -45,7 +45,7 @@ object GroupByAggregationFunctions {
                   args_pair: Seq[(Int, String)],
                   schema: List[(String, DataTypes.DataType)],
                   groupedColumnSchema: Array[DataTypes.DataType],
-                  arguments: FrameGroupByColumn): LegacyFrameRDD = {
+                  arguments: GroupByArgs): LegacyFrameRDD = {
 
     val resultRdd = groupedRDD.map(elem =>
       (elem._1 ++ aggregationFunctions(elem._2.toSeq, args_pair, schema)).toArray)

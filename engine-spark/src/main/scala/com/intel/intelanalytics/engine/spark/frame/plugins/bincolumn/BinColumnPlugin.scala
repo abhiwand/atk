@@ -50,7 +50,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
  */
-class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
+class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -176,7 +176,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: BinColumn)(implicit invocation: Invocation) = arguments.binType match {
+  override def numberOfJobs(arguments: BinColumnArgs)(implicit invocation: Invocation) = arguments.binType match {
     case Some("equaldepth") => 8
     case _ => 7
   }
@@ -198,7 +198,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: BinColumn)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: BinColumnArgs)(implicit invocation: Invocation): FrameEntity = {
     val frame: SparkFrameData = resolve(arguments.frame)
     val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
     val columnType = frame.meta.schema.columnDataType(arguments.columnName)

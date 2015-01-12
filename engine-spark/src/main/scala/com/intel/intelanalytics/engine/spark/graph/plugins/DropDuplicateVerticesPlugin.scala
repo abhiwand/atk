@@ -27,8 +27,8 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropDuplicatesPlugin
-import com.intel.intelanalytics.domain.FilterVertexRows
-import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
+import com.intel.intelanalytics.domain.FilterVerticesArgs
+import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import org.apache.spark.rdd.RDD
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicates, DataFrame] {
+class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -113,7 +113,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: DropDuplicates)(implicit invocation: Invocation) = 4
+  override def numberOfJobs(arguments: DropDuplicatesArgs)(implicit invocation: Invocation) = 4
 
   /**
    * Plugins must implement this method to do the work requested by the user.
@@ -123,7 +123,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: DropDuplicates)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     val vertexFrame = frames.expectFrame(arguments.frame.id)
 

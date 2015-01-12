@@ -24,11 +24,12 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
-import com.intel.intelanalytics.domain.frame.{ JustALong, FrameCountWhere }
+import com.intel.intelanalytics.domain.frame.CountWhereArgs
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.LongValue
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -37,7 +38,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Counts rows which meet criteria specified by a UDF predicate
  */
-class CountWherePlugin extends SparkCommandPlugin[FrameCountWhere, JustALong] {
+class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
 
   override def name: String = "frame/count_where"
 
@@ -52,10 +53,10 @@ class CountWherePlugin extends SparkCommandPlugin[FrameCountWhere, JustALong] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameCountWhere)(implicit invocation: Invocation): JustALong = {
+  override def execute(arguments: CountWhereArgs)(implicit invocation: Invocation): LongValue = {
     val sourceFrame = engine.frames.expectFrame(arguments.frame)
     val pythonRDDStorage = new PythonRDDStorage(engine.frames)
     val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where, sc)
-    JustALong(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
+    LongValue(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
   }
 }

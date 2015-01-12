@@ -23,30 +23,30 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import com.intel.intelanalytics.security.UserPrincipal
 
-trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] with NameableRepository[Session, DataFrame] {
+trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, FrameEntity] with NameableRepository[Session, FrameEntity] {
 
-  def insert(frame: DataFrame)(implicit session: Session): DataFrame
+  def insert(frame: FrameEntity)(implicit session: Session): FrameEntity
 
-  def updateRowCount(frame: DataFrame, rowCount: Option[Long])(implicit session: Session): DataFrame
-  def lookupByName(name: String)(implicit session: Session): Option[DataFrame]
+  def updateRowCount(frame: FrameEntity, rowCount: Option[Long])(implicit session: Session): FrameEntity
+  def lookupByName(name: String)(implicit session: Session): Option[FrameEntity]
 
-  def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame
+  def updateSchema(frame: FrameEntity, schema: Schema)(implicit session: Session): FrameEntity
 
   /** Update the errorFrameId column */
-  def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
+  def updateErrorFrameId(frame: FrameEntity, errorFrameId: Option[Long])(implicit session: Session): FrameEntity
 
   /**
    * Return all the frames
    * @param session current session
    * @return all the dataframes
    */
-  def scanAll()(implicit session: Session): Seq[DataFrame]
+  def scanAll()(implicit session: Session): Seq[FrameEntity]
 
-  def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[DataFrame]
+  def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[FrameEntity]
 }

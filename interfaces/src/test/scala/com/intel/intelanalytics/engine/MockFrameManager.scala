@@ -24,15 +24,15 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.{ HasData, HasMetaData, EntityManager }
-import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntityType }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 
-class MockFrameManager extends EntityManager[FrameEntity.type] {
+class MockFrameManager extends EntityManager[FrameEntityType.type] {
 
   var id = 0
 
-  override implicit val referenceTag = FrameEntity.referenceTag
+  override implicit val referenceTag = FrameEntityType.referenceTag
   require(referenceTag != null)
 
   class M(id: Long) extends FrameReference(id) with HasMetaData {
@@ -52,9 +52,9 @@ class MockFrameManager extends EntityManager[FrameEntity.type] {
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = new FrameReference({ id += 1; id }, Some(true))
+  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = new FrameReference({ id += 1; id })
 
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id, Some(true))
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id)
 
   override type Data = D
 

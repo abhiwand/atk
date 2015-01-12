@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CumulativeCount, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ TallyArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Computes a cumulative count
  */
-class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
+class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -125,7 +125,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: CumulativeCount)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: TallyArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

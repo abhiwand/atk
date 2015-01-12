@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.domain.graph.{ DefineVertex, SeamlessGraphMeta }
+import com.intel.intelanalytics.domain.graph.{ DefineVertexArgs, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Define a vertex type for a seamless graph
  */
-class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineVertex, UnitReturn] {
+class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineVertexArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -82,7 +82,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @param arguments specification of the vertex type
    * @return data frame which represent the vertex of this type
    */
-  override def execute(arguments: DefineVertex)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: DefineVertexArgs)(implicit invocation: Invocation): UnitReturn = {
     graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }

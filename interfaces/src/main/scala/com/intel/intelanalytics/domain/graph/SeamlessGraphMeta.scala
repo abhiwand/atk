@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
 
 /**
@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
  * @param graphEntity the graph meta data
  * @param frameEntities the vertex and edge frames owned by this graph (might be empty but never null)
  */
-case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame]) {
+case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[FrameEntity]) {
   require(graphEntity != null, "graph is required")
   require(frameEntities != null, "frame is required, it can be empty but not null")
   require(graphEntity.storageFormat == "ia/frame", "Storage format should be ia/frame")
@@ -45,12 +45,12 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
   /** Labels to frames */
   @transient private lazy val edgeFrameMetasMap = frameEntities.filter(frame => frame.isEdgeFrame)
     .map(frame => (frame.label.get, frame))
-    .toMap[String, DataFrame]
+    .toMap[String, FrameEntity]
 
   /** Labels to frames */
   @transient private lazy val vertexFrameMetasMap = frameEntities.filter(frame => frame.isVertexFrame)
     .map(frame => (frame.label.get, frame))
-    .toMap[String, DataFrame]
+    .toMap[String, FrameEntity]
 
   // TODO: this might be good but worried it might be introducing issues, commenting out for now -- Todd 1/9/2015
   //require(frameEntities.size == (edgeFrameMetasMap.size + vertexFrameMetasMap.size), "labels should not be duplicated within a graph, this is a bug")
@@ -75,7 +75,7 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
    * @param label the type of edges
    * @return frame meta data
    */
-  def edgeMeta(label: String): DataFrame = {
+  def edgeMeta(label: String): FrameEntity = {
     edgeFrameMetasMap.getOrElse(label, throw new IllegalArgumentException(s"No edge frame with label $label in this graph.  Defined edge labels: $edgeLabelsAsString"))
   }
 
@@ -84,7 +84,7 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
    * @param label the type of vertices
    * @return frame meta data
    */
-  def vertexMeta(label: String): DataFrame = {
+  def vertexMeta(label: String): FrameEntity = {
     vertexFrameMetasMap.getOrElse(label, throw new IllegalArgumentException(s"No vertex frame with label $label in this graph.  Defined vertex labels: $vertexLabelsAsString"))
   }
 
@@ -106,9 +106,9 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
    * Get a list of  all vertex frames for this graph
    * @return list of frame meta data
    */
-  def vertexFrames: List[DataFrame] = {
+  def vertexFrames: List[FrameEntity] = {
     vertexFrameMetasMap.map {
-      case (label: String, frame: DataFrame) => frame
+      case (label: String, frame: FrameEntity) => frame
     }.toList
   }
 
@@ -116,9 +116,9 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[DataFrame])
    * Get a list of  all vertex frames for this graph
    * @return list of frame meta data
    */
-  def edgeFrames: List[DataFrame] = {
+  def edgeFrames: List[FrameEntity] = {
     edgeFrameMetasMap.map {
-      case (label: String, frame: DataFrame) => frame
+      case (label: String, frame: FrameEntity) => frame
     }.toList
   }
 
