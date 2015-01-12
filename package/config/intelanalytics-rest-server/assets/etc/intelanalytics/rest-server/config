@@ -572,7 +572,7 @@ def get_old_db_details():
     database = "ia_metastore"
     username = "iauser"
     password = "myPassword"
-    reconfig = "no"
+    reconfig = "yes"
     
     #look for an old application.conf and see if we have any old db configs
     try:
