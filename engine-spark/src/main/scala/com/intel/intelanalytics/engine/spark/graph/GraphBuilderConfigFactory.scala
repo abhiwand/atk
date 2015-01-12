@@ -28,7 +28,7 @@ import com.intel.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
-import com.intel.intelanalytics.domain.graph.{ GraphName, Graph, GraphLoad }
+import com.intel.intelanalytics.domain.graph.{ GraphName, Graph, LoadGraphArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -43,7 +43,7 @@ import com.typesafe.config.Config
  * @param graphLoad The graph loading command.
  * @param graph Metadata for the graph being written to.
  */
-class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, graph: Graph) {
+class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs, graph: Graph) {
 
   // TODO graphbuilder does not yet support taking multiple frames as input
   require(graphLoad.frameRules.size == 1, "only one frame rule per call is supported in this version")

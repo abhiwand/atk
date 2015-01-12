@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Parsing data to load and append to data frames
  */
-class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
+class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graph/ml/loopy_belief_propagation
@@ -60,7 +60,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(load: Load)(implicit invocation: Invocation) = 8
+  override def numberOfJobs(load: LoadFrameArgs)(implicit invocation: Invocation) = 8
 
   /**
    * Parsing data to load and append to data frames
@@ -71,7 +71,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: Load)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: LoadFrameArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
@@ -131,7 +131,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(existingFrame: DataFrame, additionalData: FrameRDD)(implicit invocation: Invocation): DataFrame = {
+  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRDD)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

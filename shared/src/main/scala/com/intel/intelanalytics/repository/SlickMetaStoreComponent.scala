@@ -26,7 +26,7 @@ package com.intel.intelanalytics.repository
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
 import com.intel.intelanalytics.domain.graph._
@@ -45,7 +45,7 @@ import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
@@ -366,7 +366,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * A slick implementation of the 'Frame' table that defines
    * the columns and conversion to/from Scala beans.
    */
-  class FrameTable(tag: Tag) extends Table[DataFrame](tag, "frame") {
+  class FrameTable(tag: Tag) extends Table[FrameEntity](tag, "frame") {
     def id = column[Long]("frame_id", O.PrimaryKey, O.AutoInc)
 
     def name = column[String]("name")
@@ -406,7 +406,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def * = (id, name, schema, statusId, createdOn, modifiedOn,
       storageFormat, storageLocation, description, rowCount, commandId, createdById, modifiedById,
       materializedOn, materializationComplete,
-      errorFrameId, parentId, graphId) <> (DataFrame.tupled, DataFrame.unapply)
+      errorFrameId, parentId, graphId) <> (FrameEntity.tupled, FrameEntity.unapply)
 
     // foreign key relationships
 
@@ -435,7 +435,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class SlickFrameRepository extends FrameRepository[Session]
       with EventLogging {
-    this: Repository[Session, DataFrameTemplate, DataFrame] =>
+    this: Repository[Session, DataFrameTemplate, FrameEntity] =>
     type Session = msc.Session
 
     protected val framesAutoInc = frames returning frames.map(_.id) into {
@@ -444,7 +444,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
       val now: DateTime = new DateTime()
-      val f = DataFrame(id = 0, name = frame.name, description = frame.description,
+      val f = FrameEntity(id = 0, name = frame.name, description = frame.description,
         schema = FrameSchema(), status = 1L, createdOn = now, modifiedOn = now, rowCount = Some(0))
       framesAutoInc.insert(f)
     }
@@ -462,14 +462,14 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       frames.where(_.id === id).mutate(f => f.delete())
     }
 
-    override def update(frame: DataFrame)(implicit session: Session): Try[DataFrame] = Try {
+    override def update(frame: FrameEntity)(implicit session: Session): Try[FrameEntity] = Try {
       val updatedFrame = frame.copy(modifiedOn = new DateTime)
       frames.where(_.id === frame.id).update(updatedFrame)
       updatedFrame
     }
 
     //TODO: All these updates should update the modifiedOn and modifiedBy fields
-    override def updateSchema(frame: DataFrame, schema: Schema)(implicit session: Session): DataFrame = {
+    override def updateSchema(frame: FrameEntity, schema: Schema)(implicit session: Session): FrameEntity = {
       if (frame.isVertexFrame) {
         require(schema.isInstanceOf[VertexSchema], s"vertex frame requires schema to be of type vertex schema but found ${schema.getClass.getName}")
       }
@@ -486,7 +486,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       frames.where(_.id === frame.id).firstOption.get
     }
 
-    override def updateRowCount(frame: DataFrame, rowCount: Option[Long])(implicit session: Session): DataFrame = {
+    override def updateRowCount(frame: FrameEntity, rowCount: Option[Long])(implicit session: Session): FrameEntity = {
       // this looks crazy but it is how you update only one column
       val rowCountColumn = for (f <- frames if f.id === frame.id) yield f.rowCount
       rowCountColumn.update(rowCount)
@@ -494,7 +494,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     /** Update the errorFrameId column */
-    override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
+    override def updateErrorFrameId(frame: FrameEntity, errorFrameId: Option[Long])(implicit session: Session): FrameEntity = {
       // this looks crazy but it is how you update only one column
       val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
       errorFrameIdColumn.update(errorFrameId)
@@ -508,30 +508,30 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     //      frames.where(_.id === frame.id).firstOption.get
     //    }
 
-    override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
+    override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[FrameEntity] = Try {
       _insertFrame(frame)(session)
     }
 
-    override def insert(frame: DataFrame)(implicit session: Session): DataFrame = {
+    override def insert(frame: FrameEntity)(implicit session: Session): FrameEntity = {
       framesAutoInc.insert(frame)
     }
 
-    override def scanAll()(implicit session: Session): Seq[DataFrame] = {
+    override def scanAll()(implicit session: Session): Seq[FrameEntity] = {
       frames.list
     }
 
-    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[DataFrame] = {
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[FrameEntity] = {
       frames.drop(offset).take(count).list
     }
 
-    override def lookup(id: Long)(implicit session: Session): Option[DataFrame] = {
+    override def lookup(id: Long)(implicit session: Session): Option[FrameEntity] = {
       frames.where(_.id === id).firstOption
     }
-    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] = {
+    override def lookupByName(name: String)(implicit session: Session): Option[FrameEntity] = {
       frames.where(_.name === name).firstOption
     }
 
-    override def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[DataFrame] = {
+    override def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[FrameEntity] = {
       frames.where(_.graphId === graphId).list
     }
 

@@ -36,7 +36,7 @@ class DependenciesTest extends FlatSpec with Matchers {
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
     implicit val fmt = jsonFormat2(Foo)
 
-    val reference = List(FrameReference(3, None))
+    val reference = List(FrameReference(3))
     implicit val invocation: Invocation = Call(null)
     FrameReferenceManagement //reference to ensure it's loaded and registered
     Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
