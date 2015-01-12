@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.topk
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, TopK, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, TopKArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -42,7 +42,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate the top (or bottom) K distinct values by count for specified data column.
  */
-class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
+class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -126,7 +126,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: TopK)(implicit invocation: Invocation) = 3
+  override def numberOfJobs(arguments: TopKArgs)(implicit invocation: Invocation) = 3
 
   /**
    * Calculate the top (or bottom) K distinct values by count for specified data column.
@@ -137,7 +137,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: TopK)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: TopKArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc
@@ -177,7 +177,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * @return Option with the column index and data type
    */
   @deprecated("use methods on Schema instead")
-  private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
+  private def getColumnIndexAndType(frame: FrameEntity, columnName: Option[String]): (Option[Int], Option[DataType]) = {
 
     val (columnIndexOption, dataTypeOption) = columnName match {
       case Some(columnIndex) => {

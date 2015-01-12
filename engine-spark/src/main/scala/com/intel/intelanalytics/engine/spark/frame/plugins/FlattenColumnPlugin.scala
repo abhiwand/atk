@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
@@ -40,7 +40,7 @@ import java.util.regex.Pattern
 /**
  * Take a row with multiple values in a column and 'flatten' it into multiple rows.
  */
-class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
+class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -114,7 +114,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
 
     .. versionadded:: 0.8""")))
 
-  override def numberOfJobs(arguments: FlattenColumn)(implicit invocation: Invocation): Int = 2
+  override def numberOfJobs(arguments: FlattenColumnArgs)(implicit invocation: Invocation): Int = 2
 
   /**
    * Take a row with multiple values in a column and 'flatten' it into multiple rows.
@@ -125,7 +125,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    * @param arguments input specification for column flattening
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FlattenColumn)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: FlattenColumnArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
 

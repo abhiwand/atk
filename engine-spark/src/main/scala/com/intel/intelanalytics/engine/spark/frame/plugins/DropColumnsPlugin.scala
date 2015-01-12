@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameDropColumns, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, DropColumnsArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Remove columns from a frame
  */
-class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] {
+class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -95,7 +95,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameDropColumns)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: DropColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     val frame: SparkFrameData = resolve(arguments.frame)
     val schema = frame.meta.schema
     schema.validateColumnsExist(arguments.columns)

@@ -30,7 +30,7 @@ import org.mockito.Mockito._
 
 import com.intel.intelanalytics.engine.Engine
 import scala.concurrent.Future
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.DateTime

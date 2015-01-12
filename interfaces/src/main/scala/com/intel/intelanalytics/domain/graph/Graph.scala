@@ -57,7 +57,7 @@ case class Graph(id: Long,
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
 
-  def uri: String = GraphReference(id, None).uri
+  def uri: String = GraphReference(id).uri
 
   StorageFormats.validateGraphFormat(storageFormat)
 

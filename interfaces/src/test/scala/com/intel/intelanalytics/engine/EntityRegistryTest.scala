@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameReference, FrameReferenceManagement, FrameEntity }
-import com.intel.intelanalytics.domain.graph.GraphEntity
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameReference, FrameReferenceManagement, FrameEntityType }
+import com.intel.intelanalytics.domain.graph.GraphEntityType
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -33,9 +33,9 @@ class EntityRegistryTest extends FlatSpec with Matchers {
   implicit val invocation: Invocation = Call(null)
 
   "Adding a second manager for the same entity" should "replace the original" in {
-    val registry = new EntityRegistry
-    registry.register(FrameEntity, FrameReferenceManagement)
-    registry.register(FrameEntity, new MockFrameManager)
+    val registry = new EntityTypeRegistry
+    registry.register(FrameEntityType, FrameReferenceManagement)
+    registry.register(FrameEntityType, new MockFrameManager)
 
     val data: MockFrameManager#D = registry.resolver.resolve[MockFrameManager#D]("ia://frames/34").get
 
@@ -43,29 +43,29 @@ class EntityRegistryTest extends FlatSpec with Matchers {
   }
 
   "Create" should "create an instance of the right type" in {
-    val registry = new EntityRegistry
-    registry.register(FrameEntity, FrameReferenceManagement)
-    registry.register(FrameEntity, new MockFrameManager)
-    registry.register(GraphEntity, new MockGraphManager)
+    val registry = new EntityTypeRegistry
+    registry.register(FrameEntityType, FrameReferenceManagement)
+    registry.register(FrameEntityType, new MockFrameManager)
+    registry.register(GraphEntityType, new MockGraphManager)
 
     val data: FrameReference = registry.create[FrameReference]()
 
     data should not be (null)
   }
   it should "still create an instance of the right type when entities are registered in a different order" in {
-    val registry = new EntityRegistry
-    registry.register(FrameEntity, FrameReferenceManagement)
-    registry.register(GraphEntity, new MockGraphManager)
-    registry.register(FrameEntity, new MockFrameManager)
+    val registry = new EntityTypeRegistry
+    registry.register(FrameEntityType, FrameReferenceManagement)
+    registry.register(GraphEntityType, new MockGraphManager)
+    registry.register(FrameEntityType, new MockFrameManager)
 
     val data: FrameReference = registry.create[FrameReference]()
 
     data should not be (null)
   }
   it should "still create an instance of the right type when the requested type is the metadata" in {
-    val registry = new EntityRegistry
-    registry.register(FrameEntity, new MockFrameManager)
-    registry.register(GraphEntity, new MockGraphManager)
+    val registry = new EntityTypeRegistry
+    registry.register(FrameEntityType, new MockFrameManager)
+    registry.register(GraphEntityType, new MockGraphManager)
 
     val data: MockFrameManager#M = registry.create[MockFrameManager#M]()
 

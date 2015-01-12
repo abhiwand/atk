@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ColumnMedian, ColumnMedianReturn }
+import com.intel.intelanalytics.domain.frame.{ ColumnMedianArgs, ColumnMedianReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate the median of the specified column.
  */
-class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianReturn] {
+class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedianReturn] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -105,7 +105,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    * @param arguments Input specification for column median.
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ColumnMedian)(implicit invocation: Invocation): ColumnMedianReturn = {
+  override def execute(arguments: ColumnMedianArgs)(implicit invocation: Invocation): ColumnMedianReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

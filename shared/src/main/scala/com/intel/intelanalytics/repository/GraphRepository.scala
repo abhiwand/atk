@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
 /**

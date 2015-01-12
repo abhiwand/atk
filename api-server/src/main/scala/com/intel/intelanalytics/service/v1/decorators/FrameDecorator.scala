@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.service.v1.viewmodels.{ Rel, RelLink, GetDataFrame, GetDataFrames }
 import spray.http.Uri
 import org.apache.commons.lang.StringUtils
@@ -32,7 +32,7 @@ import spray.json.JsString
  * A decorator that takes an entity from the database and converts it to a View/Model
  * for delivering via REST services
  */
-object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataFrame] {
+object FrameDecorator extends EntityDecorator[FrameEntity, GetDataFrames, GetDataFrame] {
 
   /**
    * Decorate a single entity (like you would want in "GET /entities/id")
@@ -44,7 +44,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
    * @param entity the entity to decorate
    * @return the View/Model
    */
-  override def decorateEntity(uri: String, additionalLinks: Iterable[RelLink] = Nil, entity: DataFrame): GetDataFrame = {
+  override def decorateEntity(uri: String, additionalLinks: Iterable[RelLink] = Nil, entity: FrameEntity): GetDataFrame = {
 
     var links = List(Rel.self(uri.toString)) ++ additionalLinks
 
@@ -63,7 +63,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       entity.entityType)
   }
 
-  def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[DataFrame]): List[GetDataFrame] = {
+  def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[FrameEntity]): List[GetDataFrame] = {
     entities.map(frame => decorateEntity(uri, additionalLinks, frame)).toList
   }
 
@@ -74,7 +74,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
    * @param entities the list of entities to decorate
    * @return the View/Model
    */
-  override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[GetDataFrames] = {
+  override def decorateForIndex(uri: String, entities: Seq[FrameEntity]): List[GetDataFrames] = {
     entities.map(frame => new GetDataFrames(id = frame.id,
       name = frame.name,
       url = uri + "/" + frame.id,

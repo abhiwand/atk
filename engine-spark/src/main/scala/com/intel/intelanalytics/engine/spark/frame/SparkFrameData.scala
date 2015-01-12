@@ -24,14 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrame, FrameReference }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
 
 /**
  * A FrameReference with metadata and a Spark RDD representing the data in the frame.
  *
  * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
-class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
+class SparkFrameData(frame: FrameEntity, rdd: FrameRDD)
     extends FrameMeta(frame.withSchema(rdd.frameSchema))
     with HasData {
 

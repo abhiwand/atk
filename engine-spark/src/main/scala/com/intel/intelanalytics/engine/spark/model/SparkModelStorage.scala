@@ -27,7 +27,7 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import com.intel.intelanalytics.domain.model._
 import com.intel.intelanalytics.domain.EntityManager
-import com.intel.intelanalytics.engine.{ EntityRegistry, ModelStorage }
+import com.intel.intelanalytics.engine.{ EntityTypeRegistry, ModelStorage }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore }
@@ -47,9 +47,9 @@ class SparkModelStorage(metaStore: MetaStore)
     extends ModelStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
   storage =>
 
-  object SparkModelManagement extends EntityManager[ModelEntity.type] {
+  object SparkModelManagement extends EntityManager[ModelEntityType.type] {
 
-    override implicit val referenceTag = ModelEntity.referenceTag
+    override implicit val referenceTag = ModelEntityType.referenceTag
 
     override type Reference = ModelReference
 
@@ -69,7 +69,7 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: Model)(implicit invocation: Invocation): Reference = ModelReference(model.id, Some(true))
+    implicit def modelToRef(model: Model)(implicit invocation: Invocation): Reference = ModelReference(model.id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -89,7 +89,7 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
-  EntityRegistry.register(ModelEntity, SparkModelManagement)
+  EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
   override def expectModel(modelId: Long): Model = {
