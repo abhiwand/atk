@@ -6,8 +6,8 @@ import java.util
 import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
-import com.intel.intelanalytics.domain.frame.{ Udf }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
@@ -32,8 +32,8 @@ object PythonRDDStorage {
     val newSchema = if (schema == null) { data.frameSchema } else { schema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val filesToUpload = udf.dependencies.map(_._1)
-    val fileData = udf.dependencies.map(_._2)
+    val filesToUpload = udf.dependencies.map(f => f.filename)
+    val fileData = udf.dependencies.map(f => f.fileContent)
     var includes = List[String]()
 
     if (filesToUpload != null) {
