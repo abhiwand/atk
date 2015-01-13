@@ -29,6 +29,7 @@ import java.util
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
+import com.intel.intelanalytics.domain.frame.UdfArgs.{ UdfDependency, Udf }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.model._
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -194,7 +195,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  implicit val udfDependenciesFormat = jsonFormat2(Udf)
+  implicit val udfDependenciesFormat = jsonFormat2(UdfDependency)
+  implicit val udfFormat = jsonFormat2(Udf)
 
   /**
    * Convert Java collections to Json.
@@ -473,7 +475,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case x => deserializationError(s"Expected FrameCopy JSON string, array, or object for argument 'columns' but got $x")
       }
       val where: Option[Udf] = jo.getFields("where") match {
-        case Seq(JsObject(fields)) => Some(Udf(fields("function").convertTo[String], fields("dependencies").convertTo[List[(String, String)]]))
+        case Seq(JsObject(fields)) => Some(Udf(fields("function").convertTo[String], fields("dependencies").convertTo[List[UdfDependency]]))
         case Seq(JsNull) => None
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON expression for argument 'where' but got $x")
