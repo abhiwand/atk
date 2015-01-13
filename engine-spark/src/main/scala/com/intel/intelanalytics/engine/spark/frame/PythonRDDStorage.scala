@@ -28,27 +28,31 @@ object PythonRDDStorage {
     decodeBase64(byteStr)
   }
 
+  private def UploadUdfDependencies(udf: Udf): List[String] = {
+    val filesToUpload = udf.dependencies.map(f => f.filename)
+    val fileData = udf.dependencies.map(f => f.fileContent)
+    var includes = List[String]()
+      if (filesToUpload != null) {
+        for {
+          i <- 0 until filesToUpload.size
+        } {
+          val fileToUpload = filesToUpload(i)
+          val data = fileData(i)
+          val fileName = fileToUpload.split("/").last
+          val writer = new PrintWriter(new File("/tmp/" + fileName))
+          includes ::= fileName
+          writer.write(data)
+          writer.close()
+        }
+      }
+      includes
+    }
+
   def mapWith(data: FrameRDD, udf: Udf, ctx: SparkContext, schema: Schema = null): FrameRDD = {
     val newSchema = if (schema == null) { data.frameSchema } else { schema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val filesToUpload = udf.dependencies.map(f => f.filename)
-    val fileData = udf.dependencies.map(f => f.fileContent)
-    var includes = List[String]()
-
-    if (filesToUpload != null) {
-      for {
-        i <- 0 until filesToUpload.size
-      } {
-        val fileToUpload = filesToUpload(i)
-        val data = fileData(i)
-        val fileName = fileToUpload.split("/").last
-        val writer = new PrintWriter(new File("/tmp/" + fileName))
-        includes ::= fileName
-        writer.write(data)
-        writer.close()
-      }
-    }
+    var includes = UploadUdfDependencies(udf)
 
     val pythonIncludes = new JArrayList[String]()
 
