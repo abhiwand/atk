@@ -88,9 +88,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
     val leftColumns: List[(String, DataType)] = originalColumns(0)
     val rightColumns: List[(String, DataType)] = originalColumns(1)
     val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
-    val resultFrameName = FrameName.validateOrGenerate(arguments.name, Some("join_"))
 
-    val newJoinFrame = frames.create(DataFrameTemplate(resultFrameName, None))
+    val newJoinFrame = frames.create(DataFrameTemplate(arguments.name, None))
 
     //first validate join columns are valid
     val leftOn: String = arguments.frames(0)._2

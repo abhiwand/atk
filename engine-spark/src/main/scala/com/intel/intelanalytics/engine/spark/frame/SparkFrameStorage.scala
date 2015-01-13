@@ -76,8 +76,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference.id))
 
-    override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference =
-      storage.create(DataFrameTemplate(FrameName.validateOrGenerate(annotation)))
+    override def create()(implicit invocation: Invocation): Reference =
+      storage.create(DataFrameTemplate(None))
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(id)
 
@@ -108,8 +108,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withTransaction("SFS.exchangeNames") { implicit txn =>
       val f1Name = frame1.name
       val f2Name = frame2.name
-      metaStore.frameRepo.update(frame1.copy(name = UUID.randomUUID().toString))
-      metaStore.frameRepo.update(frame2.copy(name = UUID.randomUUID().toString))
+      metaStore.frameRepo.update(frame1.copy(name = None))
+      metaStore.frameRepo.update(frame2.copy(name = None))
       val newF1 = metaStore.frameRepo.update(frame1.copy(name = f2Name))
       val newF2 = metaStore.frameRepo.update(frame2.copy(name = f1Name))
       (newF1.get, newF2.get)
@@ -412,13 +412,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
-          val check = metaStore.frameRepo.lookupByName(newName)
+          val check = metaStore.frameRepo.lookupByName(Some(newName))
           if (check.isDefined) {
 
             //metaStore.frameRepo.scan(0,20).foreach(println)
             throw new RuntimeException("Frame with same name exists. Rename aborted.")
           }
-          val newFrame = frame.copy(name = newName)
+          val newFrame = frame.copy(name = Some(newName))
           metaStore.frameRepo.update(newFrame).get
         }
     }
@@ -432,7 +432,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
     }
 
-  override def lookupByName(name: String)(implicit invocation: Invocation): Option[FrameEntity] = {
+  override def lookupByName(name: Option[String])(implicit invocation: Invocation): Option[FrameEntity] = {
     metaStore.withSession("frame.lookupByName") {
       implicit session =>
         {
@@ -466,18 +466,19 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
-          metaStore.frameRepo.scanAll()
+          metaStore.frameRepo.scanAll().filter(f => f.status != Status.Deleted && f.status != Status.Dead && f.name.isDefined)
         }
     }
   }
 
-  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(FrameName.generate()))(implicit invocation: Invocation): FrameEntity = {
+  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(None))(implicit invocation: Invocation): FrameEntity = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-
-          metaStore.frameRepo.lookupByName(frameTemplate.name).foreach { existingFrame =>
-            throw new DuplicateNameException("frame", frameTemplate.name, "Frame with same name exists. Create aborted.")
+          if (frameTemplate.name != None) {
+            metaStore.frameRepo.lookupByName(frameTemplate.name).foreach { existingFrame =>
+              throw new DuplicateNameException("frame", frameTemplate.name.get, "Frame with same name exists. Create aborted.")
+            }
           }
 
           val frame = metaStore.frameRepo.insert(frameTemplate).get
@@ -501,7 +502,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
         implicit session =>
           {
-            val errorTemplate = new DataFrameTemplate(Naming.generateName(prefix = Some("parse_errors_frame_")), Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val errorTemplate = new DataFrameTemplate(None, Some(s"This frame was automatically created to capture parse errors for ${frame.name} ID: ${frame.id}"))
             val newlyCreatedErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
             val updated = metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
 
@@ -557,6 +558,23 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       case Failure(e) =>
         drop(frame)
         throw e
+    }
+  }
+
+  /**
+   * Set the last read date for a frame to the current time
+   * @param frame the frame to update
+   */
+  def updateLastReadDate(frame: FrameEntity): Option[FrameEntity] = {
+    metaStore.withSession("frame.updateLastReadDate") {
+      implicit session =>
+        {
+          if (frame.graphId != None) {
+            val graph = metaStore.graphRepo.lookup(frame.graphId.get).get
+            metaStore.graphRepo.updateLastReadDate(graph)
+          }
+          metaStore.frameRepo.updateLastReadDate(frame).toOption
+        }
     }
   }
 }

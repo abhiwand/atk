@@ -58,6 +58,12 @@ trait MetaStore {
   /** Repository for CRUD on 'user' table */
   def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
 
+  /** Repository for CRUD on 'gc' table */
+  def gcRepo: GarbageCollectionRepository[Session]
+
+  /** Repository for CRUD on 'gc_entry' table */
+  def gcEntryRepo: GarbageCollectionEntryRepository[Session]
+
   /** Create the underlying tables */
   def initializeSchema(): Unit
 

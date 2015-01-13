@@ -52,7 +52,7 @@ class MockFrameManager extends EntityManager[FrameEntityType.type] {
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = new FrameReference({ id += 1; id })
+  override def create()(implicit invocation: Invocation): Reference = new FrameReference({ id += 1; id })
 
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id)
 

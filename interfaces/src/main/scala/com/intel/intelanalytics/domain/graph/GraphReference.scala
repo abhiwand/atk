@@ -70,7 +70,7 @@ object GraphReferenceManagement extends EntityManager[GraphEntityType.type] { se
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = ???
 
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
 
