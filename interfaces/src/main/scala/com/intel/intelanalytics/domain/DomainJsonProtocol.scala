@@ -194,6 +194,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
+  implicit val udfDependenciesFormat = jsonFormat2(Udf)
+
   /**
    * Convert Java collections to Json.
    */
@@ -470,8 +472,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON string, array, or object for argument 'columns' but got $x")
       }
-      val where: Option[String] = jo.getFields("where") match {
-        case Seq(JsString(expression)) => Some(expression)
+      val where: Option[Udf] = jo.getFields("where") match {
+        case Seq(JsObject(fields)) => Some(Udf(fields("function").convertTo[String], fields("dependencies").convertTo[List[(String, String)]]))
         case Seq(JsNull) => None
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON expression for argument 'where' but got $x")

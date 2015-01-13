@@ -23,6 +23,6 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class CopyFrameArgs(frame: FrameReference, columns: Option[Map[String, String]] = None, where: Option[String] = None, name: Option[String] = None) {
+case class CopyFrameArgs(frame: FrameReference, columns: Option[Map[String, String]] = None, where: Option[Udf] = None, name: Option[String] = None) {
   require(frame != null, "frame is required")
 }
