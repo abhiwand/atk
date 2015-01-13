@@ -1,11 +1,13 @@
 package com.intel.intelanalytics.engine.spark.frame
 
+import java.io.{ File, PrintWriter }
 import java.util
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.domain.frame.{ Udf }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
@@ -26,16 +28,43 @@ object PythonRDDStorage {
     decodeBase64(byteStr)
   }
 
-  def mapWith(data: FrameRDD, pyExpression: String, schema: Schema = null): FrameRDD = {
+  def mapWith(data: FrameRDD, udf: Udf, ctx: SparkContext, schema: Schema = null): FrameRDD = {
     val newSchema = if (schema == null) { data.frameSchema } else { schema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(pyExpression, data.toLegacyFrameRDD)
+    val filesToUpload = udf.dependencies.map(_._1)
+    val fileData = udf.dependencies.map(_._2)
+    var includes = List[String]()
+
+    if (filesToUpload != null) {
+      for {
+        i <- 0 until filesToUpload.size
+      } {
+        val fileToUpload = filesToUpload(i)
+        val data = fileData(i)
+        val fileName = fileToUpload.split("/").last
+        val writer = new PrintWriter(new File("/tmp/" + fileName))
+        includes ::= fileName
+        writer.write(data)
+        writer.close()
+      }
+    }
+
+    val pythonIncludes = new JArrayList[String]()
+
+    if (includes != null) {
+      for (k <- 0 until includes.size) {
+        ctx.addFile("file:///tmp/" + includes(k))
+        pythonIncludes.add(includes(k))
+      }
+    }
+
+    val pyRdd = RDDToPyRDD(udf.function, pythonIncludes, data.toLegacyFrameRDD)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
     new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
   }
 
-  def RDDToPyRDD(py_expression: String, rdd: LegacyFrameRDD): EnginePythonRDD[String] = {
+  def RDDToPyRDD(py_expression: String, pyIncludes: JList[String], rdd: LegacyFrameRDD): EnginePythonRDD[String] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
     val baseRdd: RDD[String] = rdd
@@ -53,7 +82,7 @@ object PythonRDDStorage {
 
     val pyRdd = new EnginePythonRDD[String](
       baseRdd, predicateInBytes, environment,
-      new JArrayList, preservePartitioning = false,
+      pyIncludes, preservePartitioning = false,
       pythonExec = pythonExec,
       broadcastVars, accumulator)
     pyRdd
@@ -88,7 +117,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
 
       val rdd: LegacyFrameRDD = frames.loadLegacyFrameRdd(ctx, frameId)
 
-      PythonRDDStorage.RDDToPyRDD(py_expression, rdd)
+      PythonRDDStorage.RDDToPyRDD(py_expression, new JArrayList, rdd)
     }
   }
 }
