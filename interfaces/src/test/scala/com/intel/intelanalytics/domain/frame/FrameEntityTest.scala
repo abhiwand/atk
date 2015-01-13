@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 class FrameEntityTest extends WordSpec {
 
   val frame = new FrameEntity(id = 1,
-    name = "name",
+    name = Some("name"),
     status = 1,
     createdOn = new DateTime,
     modifiedOn = new DateTime)
@@ -28,7 +28,7 @@ class FrameEntityTest extends WordSpec {
 
     "require a non-empty name" in {
       intercept[IllegalArgumentException] {
-        frame.copy(name = "")
+        frame.copy(name = Some(""))
       }
     }
 

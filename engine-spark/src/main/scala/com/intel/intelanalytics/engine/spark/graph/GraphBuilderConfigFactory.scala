@@ -27,6 +27,7 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.domain.frame.FrameName
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
 import com.intel.intelanalytics.domain.graph.{ GraphName, Graph, LoadGraphArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -54,7 +55,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
-      GraphBuilderConfigFactory.getTitanConfiguration(graph.name),
+      GraphBuilderConfigFactory.getTitanConfiguration(FrameName.validateOrGenerate(graph.name, prefix = Some("titan_graph_"))),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,

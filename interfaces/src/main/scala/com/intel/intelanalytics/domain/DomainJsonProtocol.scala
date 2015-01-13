@@ -30,6 +30,7 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
 import com.intel.intelanalytics.domain.model._
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.frame.load._
@@ -285,7 +286,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status.apply)
-  implicit val dataFrameCreateFormat = jsonFormat2(DataFrameCreate.apply)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -356,11 +356,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // model service formats
-  implicit val modelCreateFormat = jsonFormat2(ModelCreate.apply)
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntityType)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModel)
-  implicit val modelFormat = jsonFormat10(Model)
+  implicit val modelFormat = jsonFormat11(Model)
   implicit val modelLoadFormat = jsonFormat4(ModelLoad)
   implicit val modelPredictFormat = jsonFormat3(ModelPredict)
 
@@ -391,6 +390,11 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVerticesArgs)
 
   implicit val exportGraphFormat = jsonFormat2(ExportGraph)
+
+  // garbage collection formats
+
+  implicit val gcFormat = jsonFormat7(GarbageCollection)
+  implicit val gcEntryFormat = jsonFormat7(GarbageCollectionEntry)
 
   implicit object UnitReturnJsonFormat extends RootJsonFormat[UnitReturn] {
     override def write(obj: UnitReturn): JsValue = {
@@ -494,7 +498,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[FrameEntity] {
-    implicit val dataFrameFormatOriginal = jsonFormat18(FrameEntity)
+    implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity)
 
     override def read(value: JsValue): FrameEntity = {
       dataFrameFormatOriginal.read(value)
@@ -508,7 +512,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
 
   implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat12(Graph)
+    implicit val graphFormatOriginal = jsonFormat13(Graph)
 
     override def read(value: JsValue): Graph = {
       graphFormatOriginal.read(value)

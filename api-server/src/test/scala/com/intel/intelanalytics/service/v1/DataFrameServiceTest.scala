@@ -56,7 +56,7 @@ class DataFrameServiceTest extends ServiceTest {
     val engine = mock[Engine]
     val dataFrameService = new DataFrameService(commonDirectives, engine)
 
-    when(engine.getFrames()).thenReturn(Future.successful(Seq(FrameEntity(1, "name", FrameSchema(), 1, new DateTime, new DateTime))))
+    when(engine.getFrames()).thenReturn(Future.successful(Seq(FrameEntity(1, Some("name"), FrameSchema(), 1, new DateTime, new DateTime))))
 
     Get("/frames") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{

@@ -57,19 +57,36 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
 
 object Status {
 
+  /**
+   * Return the proper id for a read garbage collectible entity
+   * @param id the status id before the read
+   * @return proper status id for after the read
+   */
+  def getNewStatusForRead(id: Long): Long =
+    if (id == Deleted || id == Dead)
+      Weakly_Live
+    else
+      id
+
   /** Initial Status, currently building or initializing or empty */
-  val Init: Long = 1
+  final val Init: Long = 1
 
   /** Active and can be interacted with */
-  val Active: Long = 2
+  final val Active: Long = 2
 
   /** Partially created, failure occurred during construction */
-  val Incomplete: Long = 3
+  final val Incomplete: Long = 3
 
   /** Deleted but can still be un-deleted, no action has yet been taken on disk */
-  val Deleted: Long = 4
+  final val Deleted: Long = 4
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  val Delete_Final: Long = 5
+  final val Delete_Final: Long = 5
+
+  /** Object is active but is unnamed **/
+  final val Weakly_Live: Long = 7
+
+  /** Object has been marked deleted on metastore **/
+  final val Dead: Long = 8
 }
 

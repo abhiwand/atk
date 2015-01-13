@@ -111,8 +111,8 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
     val titanGraph: Graph = graphs.createGraph(
       new GraphTemplate(
         arguments.newGraphName match {
-          case Some(name) => name
-          case None => Naming.generateName(prefix = Some("titan_graph"))
+          case Some(name) => arguments.newGraphName
+          case None => Some(Naming.generateName(prefix = Some("titan_graph")))
         },
         StorageFormats.HBaseTitan))
     val graph = graphs.expectGraph(seamlessGraph.id)
@@ -138,11 +138,11 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param graphName: Name of titan graph to write to.
    * @return
    */
-  def createGraphBuilderConfig(graphName: String): GraphBuilderConfig = {
+  def createGraphBuilderConfig(graphName: Option[String]): GraphBuilderConfig = {
     new GraphBuilderConfig(new InputSchema(List()),
       List(),
       List(),
-      GraphBuilderConfigFactory.getTitanConfiguration(graphName))
+      GraphBuilderConfigFactory.getTitanConfiguration(graphName.get))
   }
 
   def validateLabelNames(edgeFrames: List[FrameEntity], edgeLabels: List[String]) = {
