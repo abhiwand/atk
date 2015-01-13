@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import breeze.linalg.DenseVector
+import breeze.numerics.abs
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
@@ -56,7 +57,7 @@ object Covariance extends Serializable {
 
     val dblVal: Double = covariance.toArray(1)
 
-    DoubleValue(if (dblVal.isNaN) 0 else dblVal)
+    DoubleValue(if (dblVal.isNaN || abs(dblVal) < .00000001) 0 else dblVal)
   }
 
   /**
@@ -74,7 +75,7 @@ object Covariance extends Serializable {
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
-      val temp: Array[Any] = row.map(x => if (x.isNaN) 0 else x)
+      val temp: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .00000001) 0 else x)
       new GenericRow(temp)
     })
 
