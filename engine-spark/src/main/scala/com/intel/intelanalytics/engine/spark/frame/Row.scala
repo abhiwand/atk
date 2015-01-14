@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema._
+import org.apache.hadoop.io._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
@@ -161,6 +162,10 @@ trait AbstractRow {
     setValuesIgnoreType(values)
   }
 
+  def setValues(values: List[Writable]): Row = {
+    setValues(values.map( value => WritableRowConversions.writableToValue(value)).toArray)
+  }
+
   /**
    * Validate the supplied value matches the schema for the supplied columnName.
    * @param name column name
@@ -256,7 +261,7 @@ trait AbstractRow {
   /**
    * Create a new row from the data of the columns supplied
    */
-  def valuesAsRow(columnNames: Seq[String]): Row = {
+  def valuesAsRow(columnNames: Seq[String] = schema.columnNames): Row = {
     val content = valuesAsArray(columnNames)
     new GenericRow(content)
   }
@@ -266,18 +271,16 @@ trait AbstractRow {
    * @param names the names of the properties to put into an array
    * @return values for the supplied properties
    */
-  def valuesAsArray(names: Seq[String]): Array[Any] = {
+  def valuesAsArray(names: Seq[String] = schema.columnNames): Array[Any] = {
     val indices = schema.columnIndices(names)
     indices.map(i => row(i)).toArray
   }
 
-  /**
-   * Select several property values from their names
-   * @return values for the supplied properties
-   */
-  private def valuesAsArray(): Array[Any] = {
-    row.toArray[Any]
+  def valuesAsWritable(names: Seq[String] = schema.columnNames): List[Writable] = {
+    val indices = schema.columnIndices(names).toList
+    indices.map(i => WritableRowConversions.valueToWritable(row(i)))
   }
+
   /**
    * Create a new row matching the supplied schema adding/dropping columns as needed.
    *
