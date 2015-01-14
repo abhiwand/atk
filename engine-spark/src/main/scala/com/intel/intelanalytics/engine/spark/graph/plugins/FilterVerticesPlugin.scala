@@ -90,7 +90,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
     require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
-    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.udf, sc).toLegacyFrameRDD
+    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.udf, ctx = sc).toLegacyFrameRDD
 
     // always cache if you are calculating row count
     filteredRdd.cache()
