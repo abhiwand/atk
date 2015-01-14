@@ -16,7 +16,7 @@ object WritableRowConversions {
   def valueToWritable(value: Any): Writable = {
     value match {
       // need to support all DataTypes here
-      case null => new NullWritable
+      case null => NullWritable.get()
       case i: Int => new IntWritable(i)
       case l: Long => new LongWritable(l)
       case f: Float => new FloatWritable(f)
