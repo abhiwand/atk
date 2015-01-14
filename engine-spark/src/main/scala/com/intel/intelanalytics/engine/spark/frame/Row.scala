@@ -163,7 +163,7 @@ trait AbstractRow {
   }
 
   def setValues(values: List[Writable]): Row = {
-    setValues(values.map( value => WritableRowConversions.writableToValue(value)).toArray)
+    setValues(values.map(value => WritableRowConversions.writableToValue(value)).toArray)
   }
 
   /**
