@@ -50,20 +50,20 @@ class GraphBackendRest(object):
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-    def create(self, graph, rules,name, storage_format):
+    def create(self, graph, rules, name, storage_format):
         logger.info("REST Backend: create graph with name %s: " % name)
         if isinstance(rules, dict):
             rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
             return initialize_graph(graph,rules)._id # Early exit here
-        new_graph_id = self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules), storage_format)
+        new_graph_id = self._create_new_graph(graph, rules, name or self._get_new_graph_name(rules), storage_format, True if name else False)
         return new_graph_id
 
-    def _create_new_graph(self, graph, rules, name, storage_format):
+    def _create_new_graph(self, graph, rules, name, storage_format, is_named):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         else:
-            payload = {'name': name, 'storage_format': storage_format}
+            payload = {'name': name, 'storage_format': storage_format, 'is_named': is_named}
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
@@ -232,7 +232,7 @@ class GraphInfo(object):
 
     @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
 
     @property
     def entity_type(self):

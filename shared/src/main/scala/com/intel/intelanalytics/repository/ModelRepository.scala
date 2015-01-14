@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
 /**
  * Repository for models
  */
-trait ModelRepository[Session] extends Repository[Session, ModelTemplate, Model] with NameableRepository[Session, Model] {
+trait ModelRepository[Session] extends Repository[Session, ModelTemplate, Model] with NameableRepository[Session, Model] with GarbageCollectableRepository[Session, Model] {
 
   /**
    * Return all the models

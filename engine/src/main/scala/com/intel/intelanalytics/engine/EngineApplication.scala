@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
+import java.util.concurrent.{ ScheduledFuture, TimeUnit, Executors, ScheduledExecutorService }
+
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
 import com.typesafe.config.ConfigFactory
 
@@ -55,13 +57,11 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
   }
 
   override def start() = {
-
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
       engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
         .load("com.intel.intelanalytics.engine.spark.SparkComponent")
         .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
-
     }
     catch {
       case NonFatal(e) =>

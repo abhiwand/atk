@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.util.concurrent.TimeUnit
+
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.{ ConfigFactory, Config }
@@ -267,4 +269,9 @@ trait SparkEngineConfig extends EventLogging {
       case s: String => s
     }
   }
+
+  //gc variables
+  val gcInterval = ConfigFactory.load().getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteMetaData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
 }

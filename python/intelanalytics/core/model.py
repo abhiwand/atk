@@ -193,7 +193,7 @@ class ModelInfo(object):
 
     @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
 
     @property
     def ia_uri(self):

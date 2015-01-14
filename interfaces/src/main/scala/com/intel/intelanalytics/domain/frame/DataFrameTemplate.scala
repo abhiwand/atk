@@ -23,10 +23,12 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class DataFrameTemplate(name: String, description: Option[String] = None) {
+case class DataFrameTemplate(name: Option[String], description: Option[String] = None) {
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
-  FrameName.validate(name)
+  if (name != None) {
+    require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
+    FrameName.validate(name.get)
+  }
   require(description != null, "description must not be null")
 }
 

@@ -88,7 +88,8 @@ class QueryServiceTest extends ServiceTest {
                        |    "rel": "self",
                        |    "uri": "http://example.com/queries/1",
                        |    "method": "GET"
-                       |  }]
+                       |  }],
+                       |  "correlation_id": ""
                        |}""".stripMargin
       assert(r == expected)
     }
@@ -150,7 +151,8 @@ class QueryServiceTest extends ServiceTest {
                     |    "rel": "self",
                     |    "uri": "http://example.com/queries/1/data/1",
                     |    "method": "GET"
-                    |  }]
+                    |  }],
+                    |  "correlation_id": ""
                     |}""".stripMargin)
     }
   }

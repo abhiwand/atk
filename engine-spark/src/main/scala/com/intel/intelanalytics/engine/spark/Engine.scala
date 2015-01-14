@@ -32,6 +32,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
+import com.intel.intelanalytics.engine.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
@@ -51,6 +52,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
+import com.intel.intelanalytics.engine.spark.model.plugins.RenameModelPlugin
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
@@ -213,6 +215,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new RenameModelPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -319,7 +322,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
 
   def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = withContext("se.getFrameByName") {
     future {
-      frames.lookupByName(name)
+      val frame = frames.lookupByName(Some(name))
+      if (frame.isDefined)
+        frames.updateLastReadDate(frame.get)
+      else
+        frame
     }
   }
 
@@ -331,6 +338,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult = {
     val queryExecution = queries.execute(getRowsQuery, arguments)
     val frame = frames.lookup(arguments.id).get
+    frames.updateLastReadDate(frame)
     val schema = frame.schema
     PagedQueryResult(queryExecution, Some(schema))
   }
@@ -423,7 +431,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[Graph]] =
     withContext("se.getGraphByName") {
       future {
-        graphs.getGraphByName(name)
+        val graph = graphs.getGraphByName(Some(name))
+        if (graph.isDefined)
+          graphs.updateLastReadDate(graph.get)
+        else
+          graph
       }
     }
 
@@ -468,7 +480,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[Model]] =
     withContext("se.getModelByName") {
       future {
-        models.getModelByName(name)
+        val model = models.getModelByName(Some(name))
+        if (model.isDefined)
+          models.updateLastReadDate(model.get).toOption
+        else
+          model
       }
     }
 
@@ -498,7 +514,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   }
 
   override def shutdown(): Unit = {
-    //do nothing
+    GarbageCollector.shutdown()
   }
 
   override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {

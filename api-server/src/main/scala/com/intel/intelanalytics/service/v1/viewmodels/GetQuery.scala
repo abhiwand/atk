@@ -38,7 +38,7 @@ import spray.json.JsObject
  * @param links relevant links
  */
 case class GetQuery(id: Option[Long], name: String, arguments: Option[JsObject], error: Option[Error],
-                    complete: Boolean, result: Option[GetQueryPage], links: List[RelLink]) {
+                    complete: Boolean, result: Option[GetQueryPage], links: List[RelLink], correlationId: String = "") {
   require(name != null, "name must not be null")
   require(arguments != null, "arguments may not be null")
   require(links != null, "links may not be null")
