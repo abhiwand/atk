@@ -32,6 +32,13 @@ object PythonRDDStorage {
     val filesToUpload = udf.dependencies.map(f => f.fileName)
     val fileData = udf.dependencies.map(f => f.fileContent)
     var includes = List[String]()
+
+    val path = new File("/tmp/intelanalytics/python_udf_deps/")
+
+    if (!path.exists()) {
+      if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+    }
+
     if (filesToUpload != null) {
       for {
         i <- 0 until filesToUpload.size
@@ -39,7 +46,7 @@ object PythonRDDStorage {
         val fileToUpload = filesToUpload(i)
         val data = fileData(i)
         val fileName = fileToUpload.split("/").last
-        val writer = new PrintWriter(new File("/tmp/" + fileName))
+        val writer = new PrintWriter(new File("/tmp/intelanalytics/python_udf_deps/" + fileName))
         includes ::= fileName
         writer.write(data)
         writer.close()
@@ -61,7 +68,7 @@ object PythonRDDStorage {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
       for (k <- 0 until uploads.size) {
-        ctx.addFile("file:///tmp/" + uploads(k))
+        ctx.addFile("file:///tmp/intelanalytics/python_udf_deps/" + uploads(k))
         pythonIncludes.add(uploads(k))
       }
     }
