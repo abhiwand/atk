@@ -27,6 +27,8 @@ Spark-specific implementation on the client-side
 
 import base64
 import os
+import itertools
+
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
     spark_home = '~/IntelAnalytics/spark'
@@ -46,14 +48,15 @@ import json
 
 UdfDependencies = []
 
-@staticmethod
+
 def get_file_content_as_str(filename):
     with open(filename, 'rb') as f:
         return f.read()
 
-@staticmethod
+
 def _get_dependencies(filenames):
-    return [(filename, get_file_content_as_str(filename)) for filename in filenames]
+    return [{'file_name': filename, 'file_content':get_file_content_as_str(filename)} for filename in filenames]
+
 
 def ifiltermap(predicate, function, iterable):
     """creates a generator than combines filter and map"""
@@ -171,7 +174,7 @@ def get_udf_arg_for_copy_columns(frame, predicate_function, column_names):
 def make_http_ready(function):
     pickled_function = pickle_function(function)
     http_ready_function = encode_bytes_for_http(pickled_function)
-    return { 'function': http_ready_function, 'dependencies': _get_dependencies(UdfDependencies) }
+    return { 'function': http_ready_function, 'dependencies':_get_dependencies(UdfDependencies)}
 
 
 class IaBatchedSerializer(BatchedSerializer):

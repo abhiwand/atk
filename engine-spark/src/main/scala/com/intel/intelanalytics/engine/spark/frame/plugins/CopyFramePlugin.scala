@@ -85,7 +85,7 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-      val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, sc, newSchema)
+      val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, newSchema, sc)
       engine.frames.tryNewFrame(DataFrameTemplate(FrameName.validateOrGenerate(arguments.name))) { newFrame: FrameEntity =>
         engine.frames.saveFrameData(newFrame.toReference, pyRdd)
       }

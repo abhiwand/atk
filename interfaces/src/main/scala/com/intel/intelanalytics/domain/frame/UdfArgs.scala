@@ -28,6 +28,6 @@ case class Udf(function: String, dependencies: List[UdfDependency]) {
 
 }
 
-case class UdfDependency(filename: String, fileContent: String) {
+case class UdfDependency(fileName: String, fileContent: String) {
 
 }
