@@ -48,7 +48,7 @@ def execute_command(command_name, selfish, **arguments):
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     from intelanalytics.meta.results import get_postprocessor
-    is_frame = command_info.result.has_key('name') and command_info.result.has_key('schema')
+    is_frame = command_info.result.has_key('schema')
     parent = None
     if is_frame:
         parent = command_info.result.get('parent')
@@ -67,7 +67,7 @@ def execute_command(command_name, selfish, **arguments):
             result = selfish
         else:
             #print "Returning new proxy"
-            result = get_frame(command_info.result['name'])
+            result = get_frame(command_info.result['id'])
     else:
         result = command_info.result
     return result
@@ -222,11 +222,11 @@ class CommandInfo(object):
 
     @property
     def correlation_id(self):
-        return self._payload['correlation_id']
+        return self._payload.get('correlation_id', None)
 
     @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
 
     @property
     def uri(self):

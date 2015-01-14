@@ -33,7 +33,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
  * @param links hyperlinks to related URIs
  */
 
-case class GetModel(id: Long, ia_uri: String, name: String, links: List[RelLink], entityType: String) {
+case class GetModel(id: Long, ia_uri: String, name: Option[String], links: List[RelLink], entityType: String) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name must not be null")
   require(links != null, "links must not be null")

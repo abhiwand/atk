@@ -52,6 +52,6 @@ trait GraphStorage {
 
   def getGraphs()(implicit invocation: Invocation): Seq[Graph]
 
-  def getGraphByName(name: String)(implicit invocation: Invocation): Option[Graph]
+  def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[Graph]
 
 }

@@ -568,7 +568,7 @@ class FrameInfo(object):
     
     @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
     
     @property
     def ia_uri(self):
@@ -587,10 +587,7 @@ class FrameInfo(object):
 
     @property
     def error_frame_id(self):
-        try:
-            return self._payload['error_frame_id']
-        except:
-            return None
+        return self._payload.get('error_frame_id', None)
 
     @property
     def label(self):
@@ -718,7 +715,7 @@ def execute_update_frame_command(command_name, arguments, frame):
         command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+    if command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
         return None
     if (command_info.result.has_key('value') and len(command_info.result) == 1):

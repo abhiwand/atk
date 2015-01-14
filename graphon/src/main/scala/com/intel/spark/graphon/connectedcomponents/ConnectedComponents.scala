@@ -163,18 +163,18 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
-    val newGraphName = arguments.output_graph_name
+    val newGraphName = Some(arguments.output_graph_name)
     val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
     writeToTitan(newTitanConfig, outVertices, gbEdges)
 
     gbVertices.unpersist()
     gbEdges.unpersist()
 
-    ConnectedComponentsResult(newGraphName)
+    ConnectedComponentsResult(newGraphName.get)
 
   }
 

@@ -40,7 +40,7 @@ trait FrameStorage {
   def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity
 
   def lookup(id: Long)(implicit invocation: Invocation): Option[FrameEntity]
-  def lookupByName(name: String)(implicit invocation: Invocation): Option[FrameEntity]
+  def lookupByName(name: Option[String])(implicit invocation: Invocation): Option[FrameEntity]
   def getFrames()(implicit invocation: Invocation): Seq[FrameEntity]
   def create(frameTemplate: DataFrameTemplate)(implicit invocation: Invocation): FrameEntity
   def renameFrame(frame: FrameEntity, newName: String)(implicit invocation: Invocation): FrameEntity

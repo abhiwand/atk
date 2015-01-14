@@ -34,11 +34,11 @@ class ModelTemplateTest extends WordSpec {
     }
 
     "require a non-empty name" in {
-      intercept[IllegalArgumentException] { ModelTemplate("", "OLS") }
+      intercept[IllegalArgumentException] { ModelTemplate(Some(""), "OLS") }
     }
 
     "require a modelType" in {
-      intercept[IllegalArgumentException] { ModelTemplate("name", null) }
+      intercept[IllegalArgumentException] { ModelTemplate(Some("name"), null) }
     }
 
   }

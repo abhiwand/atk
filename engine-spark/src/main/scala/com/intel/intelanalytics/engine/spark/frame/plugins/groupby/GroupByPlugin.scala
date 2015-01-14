@@ -54,7 +54,6 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
     val originalFrame = frames.expectFrame(originalFrameID)
     val schema = originalFrame.schema
     val aggregation_arguments = arguments.aggregations
-    val newFrameName = FrameName.generate(Some("group_by_"))
 
     // run the operation and save results
 
@@ -80,7 +79,7 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
       val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => Seq[Any]())
       GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
     }
-    val template = DataFrameTemplate(newFrameName, None)
+    val template = DataFrameTemplate(None, None)
     frames.tryNewFrame(template) { newFrame => frames.saveLegacyFrame(newFrame.toReference, resultRdd) }
   }
 }

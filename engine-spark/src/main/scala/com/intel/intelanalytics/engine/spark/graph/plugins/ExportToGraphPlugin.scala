@@ -99,7 +99,7 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
     val labelToIdNameMapping: Map[String, String] = getVertexLabelToIdColumnMapping(titanIAGraph.meta)
     val edgeDefinitions = getEdgeDefinitions(titanIAGraph.meta)
 
-    val graph = graphs.createGraph(GraphTemplate(java.util.UUID.randomUUID.toString, "ia/frame"))
+    val graph = graphs.createGraph(GraphTemplate(None, "ia/frame"))
 
     ExportToGraphPlugin.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
     val titanDBGraph = graphs.getTitanGraph(titanIAGraph.id)

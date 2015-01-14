@@ -31,6 +31,6 @@ import com.intel.intelanalytics.domain.graph.Graph
  */
 trait NameableRepository[Session, Entity <: HasId] extends ReadRepository[Session, Entity] {
 
-  def lookupByName(name: String)(implicit session: Session): Option[Entity]
+  def lookupByName(name: Option[String])(implicit session: Session): Option[Entity]
 
 }
