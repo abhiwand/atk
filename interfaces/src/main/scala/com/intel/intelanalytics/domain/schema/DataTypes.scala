@@ -357,7 +357,7 @@ object DataTypes {
       case `float64` => toDouble(value)
       // TODO: finish implementation (sorry, I only implemented the minimal I needed)
       // TODO: throw exceptions when needed
-      case _ => throw new RuntimeException("DataTypes.convertToType() Not yet implemented")
+      case _ => throw new RuntimeException(s"${dataType.getClass.getName} is not yet implemented")
     }
   }
 
@@ -402,7 +402,7 @@ object DataTypes {
       case d: Double => d.toLong
       case bd: BigDecimal => bd.toLong
       case s: String => s.trim().toLong
-      case _ => throw new RuntimeException("Not yet implemented")
+      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
     }
   }
 
@@ -415,7 +415,7 @@ object DataTypes {
       case d: Double => d.toInt
       case bd: BigDecimal => bd.toInt
       case s: String => s.trim().toInt
-      case _ => throw new RuntimeException("Not yet implemented")
+      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
     }
   }
 
@@ -428,7 +428,7 @@ object DataTypes {
       case d: Double => d.toFloat
       case bd: BigDecimal => bd.toFloat
       case s: String => s.trim().toFloat
-      case _ => throw new RuntimeException("Not yet implemented")
+      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
     }
   }
 
@@ -441,7 +441,7 @@ object DataTypes {
       case d: Double => d.toString
       case bd: BigDecimal => bd.toString()
       case s: String => s
-      case _ => throw new RuntimeException("Not yet implemented")
+      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
     }
   }
 
@@ -468,7 +468,7 @@ object DataTypes {
         case f: Float => f.compare(DataTypes.toFloat(valueB))
         case d: Double => d.compare(DataTypes.toDouble(valueB))
         case s: String => s.compareTo(valueB.toString)
-        case _ => throw new RuntimeException("Not yet implemented")
+        case _ => throw new RuntimeException(s"${valueA.getClass.getName} is not yet implemented")
       }
     }
 
