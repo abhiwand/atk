@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ClassificationMetric, ClassificationMetricValue, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Computes Model accuracy, precision, recall, confusion matrix and f_measure
  */
-class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetric, ClassificationMetricValue] {
+class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetricArgs, ClassificationMetricValue] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -203,7 +203,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
                            |
                             """.stripMargin)))
 
-  override def numberOfJobs(arguments: ClassificationMetric)(implicit invocation: Invocation) = 8
+  override def numberOfJobs(arguments: ClassificationMetricArgs)(implicit invocation: Invocation) = 8
   /**
    * Computes Model accuracy, precision, recall, confusion matrix and f_measure
    *
@@ -213,7 +213,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationMetric)(implicit invocation: Invocation): ClassificationMetricValue = {
+  override def execute(arguments: ClassificationMetricArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
     // dependencies (later to be replaced with dependency injection)
 
     // dependencies (later to be replaced with dependency injection)

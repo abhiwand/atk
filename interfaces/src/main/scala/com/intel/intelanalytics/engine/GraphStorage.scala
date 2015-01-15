@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, LoadGraphArgs, GraphTemplate }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphReference, GraphTemplate }
@@ -52,6 +52,6 @@ trait GraphStorage {
 
   def getGraphs()(implicit invocation: Invocation): Seq[Graph]
 
-  def getGraphByName(name: String)(implicit invocation: Invocation): Option[Graph]
+  def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[Graph]
 
 }

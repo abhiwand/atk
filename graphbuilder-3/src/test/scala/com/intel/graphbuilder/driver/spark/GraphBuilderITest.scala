@@ -164,7 +164,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
       // Validate
       TitanGraphConnector.getVertices(titanGraph).size shouldBe 6 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
-      titanGraph.getEdges.size shouldBe 10
+      titanGraph.getEdges.size shouldBe 12
 
       val obama = titanGraph.getVertices("userId", 1001L).iterator().next()
       obama.getProperty("name").asInstanceOf[String] shouldBe "President Obama"

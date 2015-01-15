@@ -2,7 +2,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
-import com.intel.intelanalytics.engine.{ ReferenceResolver, EntityRegistry }
+import com.intel.intelanalytics.engine.{ ReferenceResolver, EntityTypeRegistry }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -21,12 +21,15 @@ trait UriReference extends HasId {
   /** The entity id */
   def id: Long
 
+  /** The entity name */
+  def name: String = null
+
   /** The entity type */
-  def entity: EntityType
+  def entityType: EntityType
 
   /** The full URI */
   def uri: String = {
-    val ia_uri: String = s"$scheme://${entity.name.name}/$id"
+    val ia_uri: String = s"$scheme://${entityType.name.singular}/$id"
     ia_uri
   }
 
@@ -36,12 +39,5 @@ trait UriReference extends HasId {
     case x: UriReference => this.uri == x.uri
     case _ => false
   }
-
-  /**
-   * Is this reference known to be valid at the time it was created?
-   *
-   * None indicates this is unknown.
-   */
-  def exists: Option[Boolean]
 }
 

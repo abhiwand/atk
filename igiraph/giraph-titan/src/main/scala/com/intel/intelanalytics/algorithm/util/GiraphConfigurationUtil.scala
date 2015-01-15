@@ -49,7 +49,7 @@ object GiraphConfigurationUtil {
    */
   def initializeTitanConfig(hConf: Configuration, config: Config, graph: Graph): Unit = {
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
     val storageBackend = titanConfig.getString("storage.backend")
 
     titanConfig.getKeys.foreach {

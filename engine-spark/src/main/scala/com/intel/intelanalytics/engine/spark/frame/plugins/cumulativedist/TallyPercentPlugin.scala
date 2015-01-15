@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CumulativePercentCount, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ TallyPercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Computes a cumulative percent count
  */
-class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, DataFrame] {
+class TallyPercentPlugin extends SparkCommandPlugin[TallyPercentArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -124,7 +124,7 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: CumulativePercentCount)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: TallyPercentArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

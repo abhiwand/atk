@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ SortByColumns, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ SortByColumnsArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -40,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Sort by one or more columns
  */
-class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, DataFrame] {
+class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumnsArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -59,7 +59,7 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, DataFrame] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: SortByColumns)(implicit invocation: Invocation) = 3
+  override def numberOfJobs(arguments: SortByColumnsArgs)(implicit invocation: Invocation) = 3
 
   /**
    *
@@ -70,7 +70,7 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumns, DataFrame] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: SortByColumns)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: SortByColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     // validate arguments
     val frame: SparkFrameData = resolve(arguments.frame)
 

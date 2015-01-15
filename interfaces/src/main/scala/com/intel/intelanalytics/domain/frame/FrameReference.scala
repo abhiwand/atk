@@ -24,25 +24,24 @@
 package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.engine.EntityTypeRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 
-case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
+trait FrameRef extends UriReference {
+
+  override def entityType: EntityType = FrameEntityType
+
+}
+
+case class FrameReference(frameId: Long) extends UriReference {
 
   /** The entity type */
-  override def entity: EntityType = FrameEntity
+  override def entityType: EntityType = FrameEntityType
 
   /** The entity id */
   override def id: Long = frameId
-
-  /**
-   * Is this reference known to be valid at the time it was created?
-   *
-   * None indicates this is unknown.
-   */
-  override def exists: Option[Boolean] = frameExists
 }
 
 /**
@@ -56,7 +55,7 @@ private object FrameTag {
   val referenceTag = typeTag[FrameReference]
 }
 
-object FrameEntity extends EntityType {
+object FrameEntityType extends EntityType {
 
   override type Reference = FrameReference
 
@@ -69,17 +68,14 @@ object FrameEntity extends EntityType {
   def name = EntityName("frame", "frames")
 
   override def alternatives = Seq(EntityName("dataframe", "dataframes"))
-
-  def apply(frameId: Long, frameExists: Option[Boolean]) = new FrameReference(frameId, frameExists)
-
 }
 
-object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =>
+object FrameReferenceManagement extends EntityManager[FrameEntityType.type] { self =>
 
-  override implicit val referenceTag = FrameEntity.referenceTag
+  override implicit val referenceTag = FrameEntityType.referenceTag
 
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(FrameEntity, this)
+  EntityTypeRegistry.register(FrameEntityType, this)
 
   override type MetaData = FrameReference with NoMetaData
 
@@ -87,14 +83,14 @@ object FrameReferenceManagement extends EntityManager[FrameEntity.type] { self =
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = ???
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
   override def delete(reference: FrameReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
 
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id, None)
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new FrameReference(id)
 
   override type Data = FrameReference with NoData
 

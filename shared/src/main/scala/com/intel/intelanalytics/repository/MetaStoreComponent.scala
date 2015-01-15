@@ -26,7 +26,7 @@ package com.intel.intelanalytics.repository
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 

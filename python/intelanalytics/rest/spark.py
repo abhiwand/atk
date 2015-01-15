@@ -27,6 +27,8 @@ Spark-specific implementation on the client-side
 
 import base64
 import os
+import itertools
+
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
     spark_home = '~/IntelAnalytics/spark'
@@ -43,6 +45,17 @@ from intelanalytics.core.row import Row
 from intelanalytics.core.iatypes import valid_data_types
 
 import json
+
+UdfDependencies = []
+
+
+def get_file_content_as_str(filename):
+    with open(filename, 'rb') as f:
+        return f.read()
+
+
+def _get_dependencies(filenames):
+    return [{'file_name': filename, 'file_content':get_file_content_as_str(filename)} for filename in filenames]
 
 
 def ifiltermap(predicate, function, iterable):
@@ -131,7 +144,7 @@ def _wrap_row_function(frame, row_function):
     return row_func
 
 
-def prepare_row_function(frame, subject_function, iteration_function):
+def get_udf_arg(frame, subject_function, iteration_function):
     """
     Prepares a python row function for server execution and http transmission
 
@@ -151,7 +164,7 @@ def prepare_row_function(frame, subject_function, iteration_function):
     return make_http_ready(iteration_ready_function)
 
 
-def prepare_row_function_for_copy_columns(frame, predicate_function, column_names):
+def get_udf_arg_for_copy_columns(frame, predicate_function, column_names):
     row_ready_predicate = _wrap_row_function(frame, predicate_function)
     row_ready_map = _wrap_row_function(frame, get_copy_columns_function(column_names, frame.schema))
     def iteration_ready_function(s, iterator): return ifiltermap(row_ready_predicate, row_ready_map, iterator)
@@ -161,7 +174,7 @@ def prepare_row_function_for_copy_columns(frame, predicate_function, column_name
 def make_http_ready(function):
     pickled_function = pickle_function(function)
     http_ready_function = encode_bytes_for_http(pickled_function)
-    return http_ready_function
+    return { 'function': http_ready_function, 'dependencies':_get_dependencies(UdfDependencies)}
 
 
 class IaBatchedSerializer(BatchedSerializer):

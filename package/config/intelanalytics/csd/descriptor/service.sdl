@@ -7,6 +7,7 @@
         "user": "iauser",
         "group": "iauser"
     },
+    "icon": "images/favicon.png",
     "parcel" : {
         "repoUrl" : "PARCELURL",
         "requiredTags" : [ "cdh", "spark", "ATK" ]
@@ -131,7 +132,6 @@
                     "required" : "true",
                     "type" : "memory",
                     "unit" : "bytes",
-                    "min" : 268435456,
                     "default" : 536870912,
                     "scaleFactor" : 1.3,
                     "autoConfigShare" : 100
@@ -342,9 +342,8 @@
                       "description": "resource limit for maps. make sure it's not higher that was is configured in yarn.",
                       "required": "false",
                       "type" : "memory",
-                      "unit" : "bytes",
-                      "min" : 536870912,
-                      "default" : 8589934592
+                      "unit" : "megabytes",
+                      "default" : 8192
                 },
                 {
                       "name": "atk_giraph_mapreduce_map_java_opts",
@@ -352,10 +351,8 @@
                       "label": "Resource Limit For Child jvm ",
                       "description": "heap-size for child jvms of maps. should be less than intel.analytics.engine.giraph.mapreduce.map.memory.mb.",
                       "required": "false",
-                      "type" : "memory",
-                      "unit" : "bytes",
-                      "min" : 536870912,
-                      "default" : 6872367104
+                      "type" : "string",
+                      "default" : "-Xmx6554m"
                 },
                 {
                       "name": "atk_titan_storage_batch_loading",

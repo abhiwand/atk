@@ -43,7 +43,7 @@ import com.intel.intelanalytics.spray.json.JsonPropertyNameConverter
  */
 
 case class Model(id: Long,
-                 name: String,
+                 name: Option[String],
                  modelType: String,
                  description: Option[String],
                  statusId: Long,
@@ -51,11 +51,15 @@ case class Model(id: Long,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None) extends HasId {
+                 modifiedByUserId: Option[Long] = None,
+                 lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
-  require(!name.isEmpty, "name must not be empty")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
+  require(name match {
+    case Some(n) => n.trim.length > 0
+    case _ => true
+  },
+    "if name is set it must not be empty or whitespace")
   require(modelType != null, "modelType must not be null")
   require(!modelType.isEmpty, "modelType must not be empty")
   require(description != null, "description must not be null")
@@ -67,5 +71,5 @@ case class Model(id: Long,
     "model:" + JsonPropertyNameConverter.camelCaseToUnderscores(modelType)
   }
 
-  def uri: String = ModelReference(id, None).uri
+  def uri: String = ModelReference(id).uri
 }

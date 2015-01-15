@@ -25,7 +25,7 @@ package org.apache.spark.mllib.classification.ia.plugins
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrameTemplate, ClassificationMetricValue, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrameTemplate, ClassificationMetricValue, FrameEntity }
 import com.intel.intelanalytics.domain.model.{ ModelPredict, ModelLoad }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.intelanalytics.engine.Rows
@@ -46,7 +46,7 @@ import MLLibJsonProtocol._
 
 import scala.concurrent.ExecutionContext
 
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPredict, DataFrame] {
+class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPredict, FrameEntity] {
   /**
    * The name of the command.
    *
@@ -104,7 +104,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ModelPredict)(implicit invocation: Invocation): DataFrame =
+  override def execute(arguments: ModelPredict)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
       val frames = engine.frames

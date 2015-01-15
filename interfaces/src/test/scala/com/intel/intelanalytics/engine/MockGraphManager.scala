@@ -24,13 +24,13 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.{ HasData, HasMetaData, EntityManager }
-import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntity }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntityType }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 
-class MockGraphManager extends EntityManager[GraphEntity.type] {
+class MockGraphManager extends EntityManager[GraphEntityType.type] {
 
-  override implicit val referenceTag = GraphEntity.referenceTag
+  override implicit val referenceTag = GraphEntityType.referenceTag
   require(referenceTag != null)
 
   class M(id: Long) extends GraphReference(id) with HasMetaData {
@@ -50,9 +50,9 @@ class MockGraphManager extends EntityManager[GraphEntity.type] {
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id, Some(true))
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
 
   override type Data = D
 

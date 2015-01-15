@@ -28,9 +28,11 @@ package com.intel.intelanalytics.domain.model
  * @param name The user's name for the model.
  * @param modelType The model type
  */
-case class ModelTemplate(name: String, modelType: String) {
+case class ModelTemplate(name: Option[String], modelType: String) {
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
-  ModelName.validate(name)
+  if (name != None) {
+    require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
+    ModelName.validate(name.get)
+  }
   require(modelType != null, "modelType must not be null")
 }

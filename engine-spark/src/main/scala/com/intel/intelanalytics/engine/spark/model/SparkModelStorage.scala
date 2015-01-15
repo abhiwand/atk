@@ -26,8 +26,8 @@ package com.intel.intelanalytics.engine.spark.model
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import com.intel.intelanalytics.domain.model._
-import com.intel.intelanalytics.domain.EntityManager
-import com.intel.intelanalytics.engine.{ EntityRegistry, ModelStorage }
+import com.intel.intelanalytics.domain.{ Status, EntityManager }
+import com.intel.intelanalytics.engine.{ EntityTypeRegistry, ModelStorage }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore }
@@ -38,6 +38,8 @@ import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.SparkAutoPartitioner
 import com.intel.intelanalytics.component.ClassLoaderAware
 
+import scala.util.Try
+
 /**
  * Front end for Spark to create and manage models.
  * @param metaStore Repository for model meta data.
@@ -46,10 +48,16 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 class SparkModelStorage(metaStore: MetaStore)
     extends ModelStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
   storage =>
+  def updateLastReadDate(model: Model): Try[Model] = {
+    metaStore.withSession("model.updateLastReadDate") {
+      implicit session =>
+        metaStore.modelRepo.updateLastReadDate(model)
+    }
+  }
 
-  object SparkModelManagement extends EntityManager[ModelEntity.type] {
+  object SparkModelManagement extends EntityManager[ModelEntityType.type] {
 
-    override implicit val referenceTag = ModelEntity.referenceTag
+    override implicit val referenceTag = ModelEntityType.referenceTag
 
     override type Reference = ModelReference
 
@@ -64,12 +72,12 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference.id))
 
-    override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference =
-      storage.createModel(ModelTemplate(ModelName.validateOrGenerate(annotation), "unknown")) // TODO - "unknown" is bogus, the create API is not sufficient
+    override def create()(implicit invocation: Invocation): Reference =
+      storage.createModel(new ModelTemplate(None, "unknown")) // TODO - "unknown" is bogus, the create API is not sufficient
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: Model)(implicit invocation: Invocation): Reference = ModelReference(model.id, Some(true))
+    implicit def modelToRef(model: Model)(implicit invocation: Invocation): Reference = ModelReference(model.id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -89,7 +97,7 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
-  EntityRegistry.register(ModelEntity, SparkModelManagement)
+  EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
   override def expectModel(modelId: Long): Model = {
@@ -138,12 +146,12 @@ class SparkModelStorage(metaStore: MetaStore)
     metaStore.withSession("spark.modelstorage.rename") {
       implicit session =>
         {
-          val check = metaStore.modelRepo.lookupByName(newName)
+          val check = metaStore.modelRepo.lookupByName(Some(newName))
           if (check.isDefined) {
             throw new RuntimeException("Model with same name exists. Rename aborted.")
           }
 
-          val newModel = model.copy(name = newName)
+          val newModel = model.copy(name = Some(newName))
           metaStore.modelRepo.update(newModel).get
         }
     }
@@ -163,7 +171,7 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
-  override def getModelByName(name: String)(implicit invocation: Invocation): Option[Model] = {
+  override def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[Model] = {
     metaStore.withSession("spark.modelstorage.getModelByName") {
       implicit session =>
         {
@@ -180,7 +188,7 @@ class SparkModelStorage(metaStore: MetaStore)
     metaStore.withSession("spark.modelstorage.getModels") {
       implicit session =>
         {
-          metaStore.modelRepo.scanAll()
+          metaStore.modelRepo.scanAll().filter(m => m.statusId != Status.Deleted && m.statusId != Status.Dead && m.name.isDefined)
         }
     }
   }

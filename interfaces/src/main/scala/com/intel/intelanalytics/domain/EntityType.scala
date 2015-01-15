@@ -30,10 +30,10 @@ import ru._
 /**
  * Describes the structure of a name, including both singular and plural,
  * for use in constructing URIs and other identifiers for entities in the system.
- * @param name the singular name for the entity
+ * @param singular the singular name for the entity
  * @param plural the plural name for the entity
  */
-case class EntityName(name: String, plural: String)
+case class EntityName(singular: String, plural: String)
 
 /**
  * Indicates that this reference has attached metadata
@@ -71,7 +71,7 @@ class NoData extends NoMetaData with HasData {
  * Entities in the system, things which can be named in URIs and other identifiers.
  *
  * Examples include [[com.intel.intelanalytics.domain.graph.Graph]] and
- * [[com.intel.intelanalytics.domain.frame.DataFrame]].
+ * [[com.intel.intelanalytics.domain.frame.FrameEntity]].
  */
 trait EntityType {
 
@@ -110,7 +110,7 @@ trait EntityManager[E <: EntityType] { self =>
 
   type Data <: MetaData with HasData
 
-  def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference
+  def create()(implicit invocation: Invocation): Reference
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI
