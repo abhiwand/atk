@@ -111,24 +111,24 @@ class KmeansPredictPlugin extends SparkCommandPlugin[KmeansModelPredict, DataFra
     val kmeansModel = kMeansJsObject.convertTo[KMeansModel]
 
     //predicting a label for the observation columns
-      val labeledRDD: RDD[Row] = vectorRDD.map { point =>
-            val prediction = kmeansModel.predict(point)
-            Array[Any](prediction)
+    val labeledRDD: RDD[Row] = vectorRDD.map { point =>
+      val prediction = kmeansModel.predict(point)
+      Array[Any](prediction)
     }
     //val predictionsRDD = kmeansModel.predict(vectorRDD)
-      // Creating a new RDD with existing frame's entries and an additional column for predicted cluster
-    val indexedPredictionsRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x)}
-    val indexedLabeledRowRDD =predictRowRDD.zipWithIndex().map { case (x, y) => (y, x)}
-    val result: RDD[sql.Row] = indexedLabeledRowRDD.join(indexedPredictionsRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2)}
+    // Creating a new RDD with existing frame's entries and an additional column for predicted cluster
+    val indexedPredictionsRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
+    val indexedLabeledRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
+    val result: RDD[sql.Row] = indexedLabeledRowRDD.join(indexedPredictionsRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
     //new GenericRow(data._1 ++ data._2)
     // Creating schema for the new frame
     val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
     val outputFrameRDD = new FrameRDD(newSchema, result)
 
-      tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(
-          newPredictedFrame.meta, outputFrameRDD))
-      }.meta
+    tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
+      save(new SparkFrameData(
+        newPredictedFrame.meta, outputFrameRDD))
+    }.meta
   }
 
-  }
+}

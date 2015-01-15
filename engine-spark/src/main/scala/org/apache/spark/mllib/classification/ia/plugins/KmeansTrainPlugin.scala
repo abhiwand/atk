@@ -95,45 +95,45 @@ class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: KmeansModelLoad)(implicit invocation: Invocation): UnitReturn =
-  {
-    val models = engine.models
-    val frames = engine.frames
+    {
+      val models = engine.models
+      val frames = engine.frames
 
-    //validate arguments
-    val frameId = arguments.frame.id
-    val modelId = arguments.model.id
+      //validate arguments
+      val frameId = arguments.frame.id
+      val modelId = arguments.model.id
 
-    val inputFrame = frames.expectFrame(frameId)
-    val modelMeta = models.expectModel(modelId)
+      val inputFrame = frames.expectFrame(frameId)
+      val modelMeta = models.expectModel(modelId)
 
-    //create RDD from the frame
-    val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
+      //create RDD from the frame
+      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
 
-    /**
-      *Constructs a KMeans instance with parameters passed or default parameters if not specified
-    **/
-    val kmeansObject = initializeKmeans(arguments)
+      /**
+       * Constructs a KMeans instance with parameters passed or default parameters if not specified
+       */
+      val kmeansObject = initializeKmeans(arguments)
 
-    val vectorRDD = trainFrameRDD.mapRows(row => {
-      val array = row.valuesAsArray(arguments.observationColumns)
-      val b = array.map(i => DataTypes.toDouble(i))
-      Vectors.dense(b)
-    })
+      val vectorRDD = trainFrameRDD.mapRows(row => {
+        val array = row.valuesAsArray(arguments.observationColumns)
+        val b = array.map(i => DataTypes.toDouble(i))
+        Vectors.dense(b)
+      })
 
-    val kmeansModel = kmeansObject.run(vectorRDD)
-    val modelObject = kmeansModel.toJson.asJsObject
+      val kmeansModel = kmeansObject.run(vectorRDD)
+      val modelObject = kmeansModel.toJson.asJsObject
 
-    models.updateModel(modelMeta, modelObject)
-    new UnitReturn
+      models.updateModel(modelMeta, modelObject)
+      new UnitReturn
 
-  }
+    }
 
   def initializeKmeans(arguments: KmeansModelLoad): KMeans = {
     val kmeans = new KMeans()
-    if (arguments.k.isDefined){kmeans.setK(arguments.k.get)}
-    if (arguments.maxIterations.isDefined) {kmeans.setMaxIterations(arguments.maxIterations.get)}
-    if (arguments.epsilon.isDefined) {kmeans.setEpsilon(arguments.epsilon.get)}
-    if (arguments.initializationMode.isDefined) {kmeans.setInitializationMode(arguments.initializationMode.get)}
+    if (arguments.k.isDefined) { kmeans.setK(arguments.k.get) }
+    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.get) }
+    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.get) }
+    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.get) }
     kmeans
   }
-  }
+}

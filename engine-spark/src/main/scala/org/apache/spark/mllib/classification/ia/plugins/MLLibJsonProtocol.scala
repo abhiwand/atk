@@ -24,7 +24,7 @@
 package org.apache.spark.mllib.classification.ia.plugins
 
 import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.clustering.{KMeansModel, KMeans}
+import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import spray.json._
 import org.apache.spark.mllib.linalg.Vector
@@ -149,7 +149,7 @@ object MLLibJsonProtocol {
      * @return JsValue
      */
     override def write(obj: KMeansModel): JsValue = {
-      val centers = obj.clusterCenters.map(vector=>VectorFormat.write(vector))
+      val centers = obj.clusterCenters.map(vector => VectorFormat.write(vector))
       JsObject("clusterCenters" -> JsArray(centers.toList))
     }
 

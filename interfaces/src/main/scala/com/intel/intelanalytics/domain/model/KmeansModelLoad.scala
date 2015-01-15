@@ -30,15 +30,14 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column of the data frame
-  */
+ */
 case class KmeansModelLoad(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
-                           k:Option[Int],
+                           k: Option[Int],
                            maxIterations: Option[Int],
-                           epsilon:Option[Double],
-                           initializationMode:Option[String])
-{
+                           epsilon: Option[Double],
+                           initializationMode: Option[String]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
