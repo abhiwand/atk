@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covarianc
 
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.CovarianceArguments
+import com.intel.intelanalytics.domain.frame.CovarianceArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Calculate covariance for the specified columns
  */
-class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, DoubleValue] {
+class CovariancePlugin extends SparkCommandPlugin[CovarianceArgs, DoubleValue] {
 
   /**
    * The name of the command
@@ -81,7 +81,7 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, DoubleVal
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CovarianceArguments)(implicit invocation: Invocation) = 5
+  override def numberOfJobs(arguments: CovarianceArgs)(implicit invocation: Invocation) = 5
 
   /**
    * Calculate covariance for the specified columns
@@ -91,7 +91,7 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArguments, DoubleVal
    * @param arguments input specification for covariance
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: CovarianceArguments)(implicit invocation: Invocation): DoubleValue = {
+  override def execute(arguments: CovarianceArgs)(implicit invocation: Invocation): DoubleValue = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD

@@ -24,16 +24,16 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntityType, FrameReference }
+import com.intel.intelanalytics.domain.graph.{ GraphEntityType, GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import org.scalatest.{ FlatSpec, Matchers }
 
 class ReferenceResolverTest extends FlatSpec with Matchers {
 
-  val registry = new EntityRegistry
-  registry.register(FrameEntity, new MockFrameManager)
-  registry.register(GraphEntity, new MockGraphManager)
+  val registry = new EntityTypeRegistry
+  registry.register(FrameEntityType, new MockFrameManager)
+  registry.register(GraphEntityType, new MockGraphManager)
   val resolver = registry.resolver
   implicit val invocation: Invocation = Call(null)
 
@@ -61,8 +61,8 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
   }
 
   it should "throw IllegalArgumentException when no entity is registered" in {
-    val registry = new EntityRegistry
-    registry.register(FrameEntity, new MockFrameManager)
+    val registry = new EntityTypeRegistry
+    registry.register(FrameEntityType, new MockFrameManager)
     val resolver = registry.resolver
     intercept[IllegalArgumentException] {
       val gm: MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get

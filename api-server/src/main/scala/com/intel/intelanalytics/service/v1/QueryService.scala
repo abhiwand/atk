@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.{ FilterPredicate, _ }
+import com.intel.intelanalytics.domain.{ FilterArgs, _ }
 import com.intel.intelanalytics.domain.query.{ Query, Execution, QueryTemplate }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.{ Load, LoadSource }
+import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LoadSource }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal

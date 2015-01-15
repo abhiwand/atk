@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.construction.AddVertices
+import com.intel.intelanalytics.domain.graph.construction.AddVerticesArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.domain.schema.VertexSchema
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Add Vertices to a Vertex Frame
  */
-class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[AddVertices, UnitReturn] {
+class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -82,7 +82,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: AddVertices)(implicit invocation: Invocation) = 6
+  override def numberOfJobs(arguments: AddVerticesArgs)(implicit invocation: Invocation) = 6
 
   /**
    * Add Vertices to a Seamless Graph
@@ -93,7 +93,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: AddVertices)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: AddVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
     // validate arguments
     val sourceFrameEntity = frames.expectFrame(arguments.sourceFrame)
     sourceFrameEntity.schema.validateColumnsExist(arguments.allColumnNames)
@@ -113,7 +113,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(ctx: SparkContext, arguments: AddVertices, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
+  def addVertices(ctx: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")

@@ -92,7 +92,7 @@ class _NamedObjectsFunctionFactory(object):
         def get_name(self):
             r = http.get(rest_target + str(self._id))  # TODO: update w/ URI jazz
             payload = r.json()
-            return payload['name']
+            return payload.get('name', None)
         get_name.__name__ = 'name'
         api_get_name = get_api_decorator(module_logger)(get_name)
 
@@ -129,7 +129,7 @@ class _NamedObjectsFunctionFactory(object):
             module_logger.info(get_object_names_name)
             r = http.get(rest_collection)
             payload = r.json()
-            return [item['name'] for item in payload]
+            return [item.get('name', None) for item in payload]
         get_object_names.__name__ = get_object_names_name
         get_object_names.__doc__ = """{obj_term} names.
 
@@ -145,23 +145,27 @@ class _NamedObjectsFunctionFactory(object):
 
     def create_get_object(self):
         get_object_name = "get_%s" % self._term
-        rest_target = '%ss?name=' % self._term
+        rest_target = '%ss' % self._term
+        rest_target_with_name = '%s?name=' % rest_target
         module_logger = self._module_logger
         http = self._http
         term = self._term
         obj_class = self._class
         get_class = get_loadable_class_from_entity_type
 
-        def get_object(name):
-            module_logger.info("%s(%s)", get_object_name, name)
-            r = http.get(rest_target+name)
+        def get_object(identifier):
+            module_logger.info("%s(%s)", get_object_name, identifier)
+            if isinstance(identifier, basestring):
+                r = http.get(rest_target_with_name + identifier)
+            else:
+                r = http.get('%s/%s' % (rest_target, identifier))
             try:
                 entity_type = r.json()['entity_type']
             except KeyError:
                 return obj_class(r.json())
             else:
                 if not entity_type.startswith(term):
-                    raise ValueError("Object named '%s' is not a %s type" % (name, term))
+                    raise ValueError("Object '%s' is not a %s type" % (identifier, term))
                 cls = get_class(entity_type)
                 return cls(r.json())
         get_object.__name__ = get_object_name

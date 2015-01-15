@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, FrameJoin, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, JoinArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows
@@ -45,7 +45,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Join two data frames (similar to SQL JOIN)
  */
-class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin, DataFrame] {
+class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -62,7 +62,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    */
   override def doc: Option[CommandDoc] = None
 
-  override def numberOfJobs(arguments: FrameJoin)(implicit invocation: Invocation): Int = 2
+  override def numberOfJobs(arguments: JoinArgs)(implicit invocation: Invocation): Int = 2
 
   /**
    * Join two data frames (similar to SQL JOIN)
@@ -73,7 +73,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    * @param arguments parameter contains information for the join operation (user supplied arguments to running this plugin)
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FrameJoin)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: JoinArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val ctx = sc
 
@@ -88,9 +88,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     val leftColumns: List[(String, DataType)] = originalColumns(0)
     val rightColumns: List[(String, DataType)] = originalColumns(1)
     val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
-    val resultFrameName = FrameName.validateOrGenerate(arguments.name, Some("join_"))
 
-    val newJoinFrame = frames.create(DataFrameTemplate(resultFrameName, None))
+    val newJoinFrame = frames.create(DataFrameTemplate(arguments.name, None))
 
     //first validate join columns are valid
     val leftOn: String = arguments.frames(0)._2
@@ -111,7 +110,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
     frames.saveLegacyFrame(newJoinFrame.toReference, new LegacyFrameRDD(Schema.fromTuples(allColumns), joinResultRDD))
   }
 
-  def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext)(implicit invocation: Invocation): List[RDD[(Any, Array[Any])]] = {
+  def createPairRddForJoin(arguments: JoinArgs, ctx: SparkContext)(implicit invocation: Invocation): List[RDD[(Any, Array[Any])]] = {
     val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = arguments.frames.map {
       frame =>
         {

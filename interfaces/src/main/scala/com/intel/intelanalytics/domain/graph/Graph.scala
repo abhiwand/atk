@@ -42,7 +42,7 @@ import org.joda.time.DateTime
  * @param frameSchemaList a list of schema objects corresponding to the frames. This is only required for graphs exported from a Seamless Graph.
  */
 case class Graph(id: Long,
-                 name: String,
+                 name: Option[String],
                  description: Option[String],
                  storage: String,
                  statusId: Long,
@@ -52,12 +52,18 @@ case class Graph(id: Long,
                  createdByUserId: Option[Long] = None,
                  modifiedByUserId: Option[Long] = None,
                  idCounter: Option[Long] = None,
-                 frameSchemaList: Option[SchemaList] = None) extends HasId {
+                 frameSchemaList: Option[SchemaList] = None,
+                 lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
+  require(name match {
+    case Some(n) => n.trim.length > 0
+    case _ => true
+  }, "if name is set it must not be empty or whitespace")
+  // if it is not titan pass this require. if it is titan the name must be defined.
+  require(!isTitan || name.isDefined, "Titan graphs require a name")
 
-  def uri: String = GraphReference(id, None).uri
+  def uri: String = GraphReference(id).uri
 
   StorageFormats.validateGraphFormat(storageFormat)
 
@@ -81,5 +87,6 @@ case class Graph(id: Long,
   def nextId(): Long = {
     idCounter.getOrElse(0L) + 1L
   }
+
 }
 

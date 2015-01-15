@@ -56,7 +56,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
         |
       """.stripMargin
     val myJson = JsonParser(string).asJsObject
-    val myLoadLines = myJson.convertTo[Load]
+    val myLoadLines = myJson.convertTo[LoadFrameArgs]
 
     //myLoadLines.source.uri should be("ia://frame/5")
     myLoadLines.source.sourceType should be("file")
@@ -80,7 +80,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
         |
       """.stripMargin
     val myJson = JsonParser(string).asJsObject
-    val myLoadLines = myJson.convertTo[Load]
+    val myLoadLines = myJson.convertTo[LoadFrameArgs]
 
     myLoadLines.source.uri should be("http://localhost:9099/v1/frames/5")
     myLoadLines.source.sourceType should be("frame")

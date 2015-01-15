@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.domain.graph.{ DefineEdge, SeamlessGraphMeta }
+import com.intel.intelanalytics.domain.graph.{ DefineEdgeArgs, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.EdgeSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Define an edge type for a seamless graph
  */
-class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineEdge, UnitReturn] {
+class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineEdgeArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -84,7 +84,7 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
    * @param arguments specification of the edge type
    * @return data frame which represent the edge of this type
    */
-  override def execute(arguments: DefineEdge)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: DefineEdgeArgs)(implicit invocation: Invocation): UnitReturn = {
     graphStorage.defineEdgeType(arguments.graphRef.id, arguments.edgeSchema)
     UnitReturn()
   }

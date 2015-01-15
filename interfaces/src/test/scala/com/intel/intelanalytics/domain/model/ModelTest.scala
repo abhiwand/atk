@@ -28,7 +28,7 @@ import org.scalatest.WordSpec
 
 class ModelTest extends WordSpec {
 
-  val model = new Model(1, "name", "modelType", None, 1, None, new DateTime(), new DateTime())
+  val model = new Model(1, Some("name"), "modelType", None, 1, None, new DateTime(), new DateTime())
 
   "Model" should {
 
@@ -41,7 +41,7 @@ class ModelTest extends WordSpec {
     }
 
     "require a non-empty name" in {
-      intercept[IllegalArgumentException] { model.copy(name = "") }
+      intercept[IllegalArgumentException] { model.copy(name = Some("")) }
     }
 
     "require a modelType" in {

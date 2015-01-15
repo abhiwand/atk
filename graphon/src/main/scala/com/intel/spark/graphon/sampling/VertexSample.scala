@@ -25,6 +25,7 @@ package com.intel.spark.graphon.sampling
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.domain.frame.FrameName
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -154,16 +155,16 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val edgeSample = vertexInducedEdgeSet(vertexSample, gbEdges)
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
-    val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
+    val subgraphName = Some(FrameName.generate(prefix = Some("graph_")))
 
     val subgraph = Await.result(engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name.get)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
-    VertexSampleResult(subgraphName)
+    VertexSampleResult(subgraphName.get)
   }
 
 }

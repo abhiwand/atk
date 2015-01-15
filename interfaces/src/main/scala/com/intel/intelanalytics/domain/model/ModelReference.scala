@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.frame.FrameReferenceManagement._
-import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.engine.EntityTypeRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }
@@ -34,20 +34,13 @@ import ru._
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
  */
-case class ModelReference(modelId: Long, modelExists: Option[Boolean] = None) extends UriReference {
+case class ModelReference(modelId: Long) extends UriReference {
 
   /** The entity type */
-  override def entity: EntityType = ModelEntity
+  override def entityType: EntityType = ModelEntityType
 
   /** The entity id */
   override def id: Long = modelId
-
-  /**
-   * Is this reference known to be valid at the time it was created?
-   *
-   * None indicates this is unknown.
-   */
-  override def exists: Option[Boolean] = modelExists
 }
 
 /**
@@ -61,7 +54,7 @@ private object ModelTag {
   val referenceTag = typeTag[ModelReference]
 }
 
-object ModelEntity extends EntityType {
+object ModelEntityType extends EntityType {
 
   override type Reference = ModelReference
 
@@ -72,17 +65,14 @@ object ModelEntity extends EntityType {
   }
 
   def name = EntityName("model", "models")
-
-  def apply(frameId: Long, frameExists: Option[Boolean]) = new ModelReference(frameId, frameExists)
-
 }
 
-object ModelReferenceManagement extends EntityManager[ModelEntity.type] { self =>
+object ModelReferenceManagement extends EntityManager[ModelEntityType.type] { self =>
 
-  override implicit val referenceTag = ModelEntity.referenceTag
+  override implicit val referenceTag = ModelEntityType.referenceTag
 
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(ModelEntity, this)
+  EntityTypeRegistry.register(ModelEntityType, this)
 
   override type MetaData = ModelReference with NoMetaData
 
@@ -90,9 +80,9 @@ object ModelReferenceManagement extends EntityManager[ModelEntity.type] { self =
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new ModelReference(id, None)
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new ModelReference(id)
 
   override type Data = ModelReference with NoData
 

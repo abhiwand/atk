@@ -24,25 +24,17 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.EntityRegistry
+import com.intel.intelanalytics.engine.EntityTypeRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 
-case class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
+case class GraphReference(graphId: Long) extends UriReference {
   /** The entity type */
-  override def entity: EntityType = GraphEntity
+  override def entityType: EntityType = GraphEntityType
 
   /** The entity id */
   override def id: Long = graphId
-
-  /**
-   * Is this reference known to be valid at the time it was created?
-   *
-   * None indicates this is unknown.
-   */
-  override def exists: Option[Boolean] = graphExists
-
 }
 
 /**
@@ -56,24 +48,21 @@ private object GraphTag {
   val referenceTag = typeTag[GraphReference]
 }
 
-object GraphEntity extends EntityType {
+object GraphEntityType extends EntityType {
 
   override type Reference = GraphReference
 
   override implicit val referenceTag: TypeTag[Reference] = GraphTag.referenceTag
 
   def name = EntityName("graph", "graphs")
-
-  def apply(graphId: Long, graphExists: Option[Boolean] = None) = new GraphReference(graphId, graphExists)
-
 }
 
-object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =>
+object GraphReferenceManagement extends EntityManager[GraphEntityType.type] { self =>
 
-  override implicit val referenceTag = GraphEntity.referenceTag
+  override implicit val referenceTag = GraphEntityType.referenceTag
 
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityRegistry.register(GraphEntity, this)
+  EntityTypeRegistry.register(GraphEntityType, this)
 
   override type MetaData = Reference with NoMetaData
 
@@ -81,9 +70,9 @@ object GraphReferenceManagement extends EntityManager[GraphEntity.type] { self =
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = ???
+  override def create()(implicit invocation: Invocation): Reference = ???
 
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id, None)
+  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI

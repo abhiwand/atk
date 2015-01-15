@@ -32,12 +32,12 @@ class GraphDecoratorTest extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/graphs"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val graph = new Graph(1, "name", None, "storage", 1L, "hbase/titan", new DateTime, new DateTime)
+  val graph = new Graph(1, Some("name"), None, "storage", 1L, "hbase/titan", new DateTime, new DateTime)
 
   "GraphDecorator" should "be able to decorate a graph" in {
     val decoratedGraph = GraphDecorator.decorateEntity(null, relLinks, graph)
     decoratedGraph.id should be(1)
-    decoratedGraph.name should be("name")
+    decoratedGraph.name should be(Some("name"))
     decoratedGraph.iaUri should be("ia://graph/1")
     decoratedGraph.entityType should be("graph:titan")
     decoratedGraph.links.head.uri should be("http://www.example.com/graphs")

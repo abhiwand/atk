@@ -24,14 +24,19 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.StorageFormats
+import com.intel.intelanalytics.domain.frame.FrameName
 
 /**
  * Arguments for creating the metadata entry for a graph.
  * @param name The user's name for the graph.
  */
-case class GraphTemplate(name: String, storageFormat: String = StorageFormats.SeamlessGraph) {
+case class GraphTemplate(name: Option[String], storageFormat: String = StorageFormats.SeamlessGraph) {
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
+
+  if (name.isDefined) {
+    require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
+    FrameName.validate(name.get)
+  }
 
   require(storageFormat != null, "storageFormat must not be null")
   require(storageFormat.trim.length > 0, "storageFormat must not be empty or whitespace")

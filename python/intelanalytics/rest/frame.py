@@ -44,7 +44,7 @@ from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor
-from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+from intelanalytics.rest.spark import get_udf_arg, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
 """
@@ -120,8 +120,8 @@ class FrameBackendRest(object):
         # TODO - there's got to be a better way to do this with the RDDs, trick is with Python.
         def icountwhere(predicate, iterable):
            return ("[1]" for item in iterable if predicate(item))
-        http_ready_function = prepare_row_function(frame, where, icountwhere)
-        arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'where': get_udf_arg(frame, where, icountwhere)}
         return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
@@ -253,12 +253,10 @@ class FrameBackendRest(object):
         add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
             else get_add_many_columns_function(expression, data_types)
         from itertools import imap
-        http_ready_function = prepare_row_function(frame, add_columns_function, imap)
-
         arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
-                     'expression': http_ready_function}
+                     'udf': get_udf_arg(frame, add_columns_function, imap)}
 
         execute_update_frame_command('add_columns', arguments, frame)
 
@@ -306,26 +304,28 @@ class FrameBackendRest(object):
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
-        http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'udf': get_udf_arg(frame, predicate, ifilterfalse)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
-        http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'udf': get_udf_arg(frame, predicate, ifilter)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
         from itertools import ifilter
         from itertools import ifilterfalse
 
-        if(keep_matching_vertices):
-            http_ready_function = prepare_row_function(frame, predicate, ifilter)
+        if keep_matching_vertices:
+            arguments = {'frame': self.get_ia_uri(frame),
+                         'udf': get_udf_arg(frame, predicate, ifilter)
+                        }
         else:
-            http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-
-        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
+            arguments = {'frame': self.get_ia_uri(frame),
+                         'udf': get_udf_arg(frame, predicate, ifilterfalse)
+                        }
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
@@ -397,8 +397,10 @@ class FrameBackendRest(object):
                 column_names = columns.keys()
             else:
                 column_names = columns
-            from intelanalytics.rest.spark import prepare_row_function_for_copy_columns
-            where = prepare_row_function_for_copy_columns(frame, where, column_names)
+            from intelanalytics.rest.spark import get_udf_arg_for_copy_columns
+            where = get_udf_arg_for_copy_columns(frame, where, column_names)
+        else:
+            where = None
         arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
                      'where': where,
@@ -566,7 +568,7 @@ class FrameInfo(object):
     
     @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
     
     @property
     def ia_uri(self):
@@ -585,10 +587,7 @@ class FrameInfo(object):
 
     @property
     def error_frame_id(self):
-        try:
-            return self._payload['error_frame_id']
-        except:
-            return None
+        return self._payload.get('error_frame_id', None)
 
     @property
     def label(self):
@@ -716,7 +715,7 @@ def execute_update_frame_command(command_name, arguments, frame):
         command_name = 'frame/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+    if command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
         return None
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
