@@ -60,7 +60,7 @@ def add_return_none_postprocessor(command_full_name):
 @postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_to_graph')
 def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
-    return get_graph(json_result['name'])
+    return get_graph(json_result['id'])
 
 @postprocessor('frame/classification_metrics', 'model:logistic_regression/test')
 def return_metrics(json_result):
