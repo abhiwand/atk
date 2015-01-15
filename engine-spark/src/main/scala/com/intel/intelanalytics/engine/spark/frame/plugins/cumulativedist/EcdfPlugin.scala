@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -52,63 +51,6 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
   override def name: String = "frame/ecdf"
 
   override def numberOfJobs(arguments: EcdfArgs)(implicit invocation: Invocation) = 6
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  /**
-   * Replaced by Mark Aldrich to match other functions.
-   *
-   * override def doc: Option[CommandDoc] = Some(CommandDoc("Empirical Cumulative Distribution.", Some("""
-   *   Empirical Cumulative Distribution.
-   */
-  override def doc = Some(CommandDoc(oneLineSummary = "Empirical Cumulative Distribution.",
-    extendedSummary = Some("""
-                           |    Extended Summary
-                           |    ----------------
-                           |    Generates the :term:`empirical cumulative distribution` for the input column.
-                           |
-                           |    Parameters
-                           |    ----------
-                           |    sample_col : str
-                           |        The name of the column containing sample.
-                           |
-                           |    Returns
-                           |    -------
-                           |    frame : Frame
-                           |        a Frame object containing each distinct value in the sample and its
-                           |        corresponding ecdf value.
-                           |
-                           |    Examples
-                           |    --------
-                           |    Consider the following sample data set in *frame* with actual data labels
-                           |    specified in the *labels* column and the predicted labels in the
-                           |    *predictions* column::
-                           |
-                           |        frame.inspect()
-                           |
-                           |          a:unicode   b:int32
-                           |        /---------------------/
-                           |           red         1
-                           |           blue        3
-                           |           blue        1
-                           |           green       0
-                           |
-                           |        result = frame.ecdf('b')
-                           |        result.inspect()
-                           |
-                           |          b:int32   b_ECDF:float64
-                           |        /--------------------------/
-                           |           1             0.2
-                           |           2             0.5
-                           |           3             0.8
-                           |           4             1.0
-                           |
-                           |    .. versionadded:: 0.8
-                           |
-                            """.stripMargin)))
 
   /**
    * Empirical Cumulative Distribution for a column
