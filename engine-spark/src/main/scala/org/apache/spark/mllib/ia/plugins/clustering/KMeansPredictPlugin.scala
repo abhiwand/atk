@@ -20,35 +20,24 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package org.apache.spark.mllib.classification.ia.plugins
+package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, DataFrameTemplate, ClassificationMetricValue, DataFrame }
-import com.intel.intelanalytics.domain.model.{ KmeansModelPredict, ModelLoad }
-import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
-import com.intel.intelanalytics.engine.Rows
-import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.model.KMeansPredictArgs
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.mllib.classification.LogisticRegressionModel
+import com.intel.intelanalytics.engine.spark.frame.{FrameRDD, SparkFrameData}
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.SparkContext._
-import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-import scala.concurrent.ExecutionContext
+class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
 
-class KmeansPredictPlugin extends SparkCommandPlugin[KmeansModelPredict, DataFrame] {
   /**
    * The name of the command.
    *
@@ -62,11 +51,31 @@ class KmeansPredictPlugin extends SparkCommandPlugin[KmeansModelPredict, DataFra
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Predict the cluster for each entry in a frame and return a new frame with existing columns and a predicted centroid's column",
-    extendedSummary = Some(
-      """
-                              |
+    extendedSummary = Some("""
+                             |
+                             |    Parameters
+                             |    ----------
+                             |    predict_frame: Frame
+                             |        Frame whose clusters are to be predicted
+                             |
+                             |    predict_for_observation_columns: List of strings
+                             |        names of the observation columns
+                             |
+                             |
+                             |    Returns
+                             |    -------
+                             |    Frame containing the original frame's columns and a column with the predicted cluster index
+                             |
+                             |
+                             |    Examples
+                             |    --------
+                             |    ::
+                             |
+                             |        model = ia.KMeansModel(name='MyKMeansModel')
+                             |        model.train(train_frame, ['name_of_observation_column1','name_of_observation_column2'])
+                             |        new_frame = model.predict(predict_frame, ['name_of_observation_column1','name_of_observation_column2','name_of_observation_column3'])
+                             |
                            """.stripMargin)))
 
   /**
@@ -74,7 +83,7 @@ class KmeansPredictPlugin extends SparkCommandPlugin[KmeansModelPredict, DataFra
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: KmeansModelPredict)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: KMeansPredictArgs)(implicit invocation: Invocation) = 1
 
   /**
    * Get the predictions for observations in a test frame
@@ -85,49 +94,34 @@ class KmeansPredictPlugin extends SparkCommandPlugin[KmeansModelPredict, DataFra
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KmeansModelPredict)(implicit invocation: Invocation): DataFrame = {
+  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
+ 
     val models = engine.models
     val frames = engine.frames
 
-    //validate arguments
-    val frameId = arguments.frame.id
-    val modelId = arguments.model.id
-
-    val inputFrame = frames.expectFrame(frameId)
-    val modelMeta = models.expectModel(modelId)
+    val inputFrame = frames.expectFrame(arguments.frame.id)
+    val modelMeta = models.expectModel(arguments.model.id)
 
     //create RDD from the frame
-    val predictFrameRDD = frames.loadFrameData(sc, inputFrame)
-    val predictRowRDD: RDD[Row] = predictFrameRDD.toLegacyFrameRDD.rows
+    val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
+    
+    val kmeansJsObject = modelMeta.data.get
+    val kmeansModel = kmeansJsObject.convertTo[KMeansModel]
 
-    val vectorRDD = predictFrameRDD.mapRows(row => {
+    val predictionsRDD = inputFrameRDD.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns)
-      val b = array.map(i => DataTypes.toDouble(i))
-      Vectors.dense(b)
-    })
-
-    //Running MLLib
-    val kMeansJsObject = modelMeta.data.get
-    val kmeansModel = kMeansJsObject.convertTo[KMeansModel]
-
-    //predicting a label for the observation columns
-    val labeledRDD: RDD[Row] = vectorRDD.map { point =>
+      val doubles = array.map(i => DataTypes.toDouble(i))
+      val point = Vectors.dense(doubles)
       val prediction = kmeansModel.predict(point)
-      Array[Any](prediction)
-    }
-    //val predictionsRDD = kmeansModel.predict(vectorRDD)
-    // Creating a new RDD with existing frame's entries and an additional column for predicted cluster
-    val indexedPredictionsRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
-    val indexedLabeledRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
-    val result: RDD[sql.Row] = indexedLabeledRowRDD.join(indexedPredictionsRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
-    //new GenericRow(data._1 ++ data._2)
-    // Creating schema for the new frame
-    val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
-    val outputFrameRDD = new FrameRDD(newSchema, result)
+      row.addValue(prediction)
+    })
+    
+    val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
+    val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
     tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
       save(new SparkFrameData(
-        newPredictedFrame.meta, outputFrameRDD))
+        newPredictedFrame.meta, predictFrameRDD))
     }.meta
   }
 

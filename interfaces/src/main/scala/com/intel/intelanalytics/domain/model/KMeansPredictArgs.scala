@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation columns of the data frame
  */
-case class KmeansModelPredict(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
+case class KMeansPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumns must not be null nor empty")

@@ -30,8 +30,12 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column of the data frame
+ * @param k Optional number of clusters. Default is 2
+ * @param maxIterations Optional number of iterations to run the algorithm. Default is 20
+ * @param epsilon Optional distance threshold within which we've considered centers to have converged. Default is 1e-4
+ * @param initializationMode Optional initialization algorithm can be "random" or "k-means||". Default is "k-means||"
  */
-case class KmeansModelLoad(model: ModelReference,
+case class KMeansTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
                            k: Option[Int],
@@ -41,5 +45,8 @@ case class KmeansModelLoad(model: ModelReference,
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
-  //require(k > 1, "k must be greater than 1")
+  require(k != None, "k must not be None")
+  require(maxIterations != None,"maxIterations must not be None")
+  require(epsilon != None, "epsilon must not be None")
+  require(initializationMode != None, "initializationMode must not be None")
 }
