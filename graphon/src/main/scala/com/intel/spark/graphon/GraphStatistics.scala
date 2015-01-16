@@ -37,9 +37,7 @@ import org.apache.spark.SparkException
  */
 object GraphStatistics {
 
-  private def degreeCalculation(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], calculateOutDegreeFlag: Boolean) :
-  RDD[(GBVertex, Long)] = {
-
+  private def degreeCalculation(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], calculateOutDegreeFlag: Boolean): RDD[(GBVertex, Long)] = {
 
     /*
      * To make sure that we handle degree 0 vertices correctly (an especially important case when there are multiple
@@ -74,7 +72,7 @@ object GraphStatistics {
     // there will be a get on an empty option only if there exists a vertex in the EdgeRDD that is
     // not in the VertexRDD... if this happens something was wrong  with the incoming data
 
-      combinedVDRs.map(vad => (vad.vertexOption.get, vad.degree))
+    combinedVDRs.map(vad => (vad.vertexOption.get, vad.degree))
   }
 
   private case class VertexDegreeRecord(vertexOption: Option[GBVertex], degree: Long)
@@ -115,8 +113,7 @@ object GraphStatistics {
    * @param edgeLabel Edge label for which to calculate out-degrees
    * @return RDD of (VertexID, out-degree with respect to label) pairs
    */
-  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabel: String)
-  : RDD[(GBVertex, Long)] = {
+  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabel: String): RDD[(GBVertex, Long)] = {
     val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
     outDegrees(vertexRDD, filteredEdges)
   }
