@@ -27,9 +27,8 @@ import com.intel.event.{ EventContext, EventLogger, EventLogging }
 import com.intel.intelanalytics.NotNothing
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.domain.{ HasMetaData, User, HasData, UriReference }
-import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.command.{ CommandDocLoader, CommandDoc }
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 import spray.json._
@@ -90,7 +89,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  def doc: Option[CommandDoc] = None
+  def doc: Option[CommandDoc] = CommandDocLoader.getCommandDoc(name)
 
   /**
    * Convert the given JsObject to an instance of the Argument type

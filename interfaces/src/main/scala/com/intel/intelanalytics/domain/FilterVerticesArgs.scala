@@ -23,10 +23,11 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 import com.intel.intelanalytics.domain.frame.FrameReference
 
 /**
  * Command to drop rows from a given vertex type.
- * @param predicate filter expression
+ * @param udf filter expression
  */
-case class FilterVerticesArgs(frameId: FrameReference, predicate: String)
+case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)

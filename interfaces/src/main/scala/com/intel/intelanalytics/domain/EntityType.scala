@@ -110,7 +110,7 @@ trait EntityManager[E <: EntityType] { self =>
 
   type Data <: MetaData with HasData
 
-  def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference
+  def create()(implicit invocation: Invocation): Reference
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI

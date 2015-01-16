@@ -20,18 +20,51 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain.frame
 
-/**
- * Specifies frame creation, used in REST API to support optional name
- * @param name Option name, if not provided, one will be generated
- * @param description Option description
- */
-case class DataFrameCreate(name: Option[String] = None, description: Option[String] = None)
+package com.intel.intelanalytics.apidoc
 
-object DataFrameCreate {
+import org.scalatest.{ FlatSpec, Matchers }
 
-  implicit def toDataFrameTemplate(dataFrameCreate: DataFrameCreate): DataFrameTemplate = {
-    DataFrameTemplate(name = FrameName.validateOrGenerate(dataFrameCreate.name), dataFrameCreate.description)
+class CommandDocTextTest extends FlatSpec with Matchers {
+
+  "getDocText" should "return None if resource file not found" in {
+    CommandDocText.getText("entity/bogus", "test") should be(None)
+  }
+
+  "getDocText" should "find resource file and return contents" in {
+    val doc = CommandDocText.getText("entity/function", "test")
+    doc should not be None
+    doc.get should be("""    One line summary with period.
+
+    Extended Summary
+    ----------------
+    Extended summary about the function which may be
+    multiple lines
+
+    Parameters
+    ----------
+    arg1 : str
+        The description of arg1
+    arg2 : int
+        The description of arg2
+
+    Returns
+    -------
+    result : str
+        The description of the result of the function
+
+    Examples
+    --------
+    Have some really good examples here. And end paragraphs
+    with a double colon to start 'code' sections::
+
+    frame.function("a", 3)
+
+    "aaa"
+
+.. versionadded:: 0.8
+""")
+    println(doc)
   }
 }
+

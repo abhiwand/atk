@@ -1,4 +1,3 @@
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,18 +20,37 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain.model
 
-/**
- * Specifies model creation, used in REST API to support optional name
- * @param name Option name, if not provided, one will be generated
- * @param modelType Option description
- */
-case class ModelCreate(name: Option[String] = None, modelType: String)
+package com.intel.intelanalytics.repository
 
-object ModelCreate {
+import com.intel.intelanalytics.domain.gc.{ GarbageCollection, GarbageCollectionTemplate }
+import com.intel.intelanalytics.domain.model.ModelTemplate
+import org.joda.time.DateTime
+import org.scalatest.Matchers
 
-  implicit def toDataFrameTemplate(modelCreate: ModelCreate): ModelTemplate = {
-    ModelTemplate(name = ModelName.validateOrGenerate(modelCreate.name), modelCreate.modelType)
+class GarbageCollectionRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
+
+  "GarbageCollectionRepository" should "be able to create new items" in {
+    val gcRepo = slickMetaStoreComponent.metaStore.gcRepo
+    slickMetaStoreComponent.metaStore.withSession("gc-test") {
+      implicit session =>
+
+        //create gc
+        val startTime: DateTime = new DateTime
+        val template = new GarbageCollectionTemplate("hostname", 100, startTime)
+
+        val gc = gcRepo.insert(template)
+        gc.get should not be null
+
+        //look it up
+        val gc2: Option[GarbageCollection] = gcRepo.lookup(gc.get.id)
+        gc2.get should not be null
+        gc2.get.hostname should be("hostname")
+        gc2.get.processId should be(100)
+        gc2.get.startTime.getMillis should be(startTime.getMillis)
+        gc2.get.endTime should be(None)
+    }
+
   }
+
 }

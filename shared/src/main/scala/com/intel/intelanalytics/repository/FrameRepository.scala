@@ -29,12 +29,13 @@ import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import com.intel.intelanalytics.security.UserPrincipal
 
-trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, FrameEntity] with NameableRepository[Session, FrameEntity] {
+import scala.util.Try
+
+trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, FrameEntity] with NameableRepository[Session, FrameEntity] with GarbageCollectableRepository[Session, FrameEntity] {
 
   def insert(frame: FrameEntity)(implicit session: Session): FrameEntity
 
   def updateRowCount(frame: FrameEntity, rowCount: Option[Long])(implicit session: Session): FrameEntity
-  def lookupByName(name: String)(implicit session: Session): Option[FrameEntity]
 
   def updateSchema(frame: FrameEntity, schema: Schema)(implicit session: Session): FrameEntity
 

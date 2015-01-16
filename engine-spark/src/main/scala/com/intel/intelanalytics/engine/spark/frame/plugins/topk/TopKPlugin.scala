@@ -151,7 +151,6 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
-    val newFrameName = FrameName.generate(prefix = Some("topk_frame_"))
     val useBottomK = arguments.k < 0
     val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
@@ -162,7 +161,7 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     ))
 
     // save results
-    frames.tryNewFrame(DataFrameTemplate(newFrameName, None)) { newFrame =>
+    frames.tryNewFrame(DataFrameTemplate(None, None)) { newFrame =>
       frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRDD(newSchema, topRdd))
     }
   }

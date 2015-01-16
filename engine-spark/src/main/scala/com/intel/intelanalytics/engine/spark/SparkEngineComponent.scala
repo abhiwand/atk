@@ -23,11 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.util.concurrent.{ Executors, TimeUnit, ScheduledFuture }
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
@@ -42,6 +44,7 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.util.{ DiskSpaceReporter, JvmVersionReporter }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.ConfigFactory
 import org.apache.hadoop.fs.{ Path => HPath }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
@@ -67,7 +70,8 @@ class SparkComponent extends EngineComponent
   SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextFactory,
-    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
+    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries, queryExecutor,
+    sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
 
@@ -92,7 +96,8 @@ class SparkComponent extends EngineComponent
 
   val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
-  val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory), frameStorage)
+  private val backendGraphStorage: SparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory)
+  val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, backendGraphStorage, frameStorage)
 
   val modelStorage: SparkModelStorage = new SparkModelStorage(metaStore.asInstanceOf[SlickMetaStore])
 
@@ -109,6 +114,8 @@ class SparkComponent extends EngineComponent
   JvmVersionReporter.check()
 
   DiskSpaceReporter.checkDiskSpace()
+
+  GarbageCollector.startup(metaStore, frameFileStorage, backendGraphStorage)
 
 }
 

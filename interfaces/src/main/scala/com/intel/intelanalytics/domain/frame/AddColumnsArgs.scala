@@ -22,8 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 package com.intel.intelanalytics.domain.frame
+import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 
-case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], expression: String) {
+case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {
@@ -33,5 +34,6 @@ case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], colu
   }
   require(columnTypes != null, "column types is required")
   require(columnNames.size == columnTypes.size, "Equal number of column names and types is required")
-  require(expression != null, "expression is required")
+  require(udf != null, "User defined expression is required")
 }
+

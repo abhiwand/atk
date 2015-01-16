@@ -11,11 +11,11 @@ class DataFrameTemplateTest extends WordSpec {
     }
 
     "require a non-empty name" in {
-      intercept[IllegalArgumentException] { DataFrameTemplate("", None) }
+      intercept[IllegalArgumentException] { DataFrameTemplate(Some(""), None) }
     }
 
     "require a non-null description" in {
-      intercept[IllegalArgumentException] { DataFrameTemplate("name", null) }
+      intercept[IllegalArgumentException] { DataFrameTemplate(None, null) }
     }
   }
 }
