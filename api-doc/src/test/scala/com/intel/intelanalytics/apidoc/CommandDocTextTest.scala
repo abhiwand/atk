@@ -21,13 +21,50 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.apidoc
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-import com.intel.intelanalytics.domain.frame.FrameReference
+import org.scalatest.{ FlatSpec, Matchers }
 
-/**
- * Command to drop rows from a given vertex type.
- * @param udf filter expression
- */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+class CommandDocTextTest extends FlatSpec with Matchers {
+
+  "getDocText" should "return None if resource file not found" in {
+    CommandDocText.getText("entity/bogus", "test") should be(None)
+  }
+
+  "getDocText" should "find resource file and return contents" in {
+    val doc = CommandDocText.getText("entity/function", "test")
+    doc should not be None
+    doc.get should be("""    One line summary with period.
+
+    Extended Summary
+    ----------------
+    Extended summary about the function which may be
+    multiple lines
+
+    Parameters
+    ----------
+    arg1 : str
+        The description of arg1
+    arg2 : int
+        The description of arg2
+
+    Returns
+    -------
+    result : str
+        The description of the result of the function
+
+    Examples
+    --------
+    Have some really good examples here. And end paragraphs
+    with a double colon to start 'code' sections::
+
+    frame.function("a", 3)
+
+    "aaa"
+
+.. versionadded:: 0.8
+""")
+    println(doc)
+  }
+}
+

@@ -20,14 +20,42 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.domain.command
 
-package com.intel.intelanalytics.domain
-
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.apidoc.CommandDocText
 
 /**
- * Command to drop rows from a given vertex type.
- * @param udf filter expression
+ * Creates CommandDoc objects by loading resource files
  */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+object CommandDocLoader {
+
+  /**
+   * Creates a CommandDoc for the given command name from resource file
+   * @param commandName full name of the command, like "frame/add_columns"
+   * @return CommandDoc, None if command not found in resource files
+   */
+  def getCommandDoc(commandName: String): Option[CommandDoc] = {
+    val path = getPath(commandName)
+    val text = CommandDocText.getText(path, "python")
+    createCommandDoc(text)
+  }
+
+  /**
+   * Creates a CommandDoc from RST text
+   * @param text RST text of Command API doc
+   * @return  CommandDoc, returns None if None given
+   */
+  private def createCommandDoc(text: Option[String]): Option[CommandDoc] = {
+    text match {
+      case Some(t) =>
+        val oneLineSummary = t.lines.next()
+        val extendedSummary = t.drop(oneLineSummary.size)
+        Some(CommandDoc(oneLineSummary.trim, Some(extendedSummary)))
+      case None => None
+    }
+  }
+
+  private def getPath(commandName: String): String = {
+    commandName.replace(':', '-') // e.g.  "frame:vertex/count" is "frame-vertex/count" in the dir structure
+  }
+}
