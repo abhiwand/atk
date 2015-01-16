@@ -21,13 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.domain.frame.UdfArgs
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-import com.intel.intelanalytics.domain.frame.FrameReference
+case class Udf(function: String, dependencies: List[UdfDependency]) {
+  require(function != null, "user defined function is required")
 
-/**
- * Command to drop rows from a given vertex type.
- * @param udf filter expression
- */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+}
+
+case class UdfDependency(fileName: String, fileContent: String) {
+
+}

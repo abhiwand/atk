@@ -40,8 +40,17 @@ then
 fi
 
 PORT=19099
+COUNTER=0
 until netstat -atn | grep -q :$PORT
 do
+    if [ $COUNTER -gt 90 ]
+    then
+        echo "$NAME Tired of waiting for API Server to start up, giving up..."
+        $DIR/api-server-stop.sh
+        exit 3
+    else
+        let COUNTER=COUNTER+1
+    fi
     echo "$NAME Waiting for API Server to start up on port $PORT..."
     sleep 1
 done

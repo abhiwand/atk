@@ -20,14 +20,23 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.apidoc
 
-package com.intel.intelanalytics.domain
+import scala.io.Source
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-import com.intel.intelanalytics.domain.frame.FrameReference
+object CommandDocText {
 
-/**
- * Command to drop rows from a given vertex type.
- * @param udf filter expression
- */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+  /**
+   * Retrieves the text from the resource file according to command name
+   * @param commandName full command name, like "frame/add_columns"
+   * @param client client scope, like "python" (see resource folder structure)
+   * @return file text (returns None if file not found)
+   */
+  def getText(commandName: String, client: String): Option[String] = {
+    val path = "/" + client + "/" + commandName + ".rst"
+    getClass.getResource(path) match {
+      case null => None
+      case r => Some(Source.fromURL(r).mkString)
+    }
+  }
+}

@@ -21,13 +21,30 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.domain.command
+import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.PrivateMethodTester._
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-import com.intel.intelanalytics.domain.frame.FrameReference
+class CommandDocLoaderTest extends FlatSpec with Matchers {
 
-/**
- * Command to drop rows from a given vertex type.
- * @param udf filter expression
- */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+  "createCommandDoc" should "split text into two pieces" in {
+    val createCommandDoc = PrivateMethod[Option[CommandDoc]]('createCommandDoc)
+    val doc = CommandDocLoader invokePrivate createCommandDoc(
+      Some("""    One-liner.
+
+    Line 3
+    Line 4"""))
+    doc should not be None
+    doc.get.oneLineSummary should be("One-liner.")
+    doc.get.extendedSummary.get should be("""
+
+    Line 3
+    Line 4""")
+    println(doc)
+  }
+
+  "getPath" should "replace special chars" in {
+    val getPath = PrivateMethod[String]('getPath)
+    CommandDocLoader invokePrivate getPath("frame:vertex/count") should be("frame-vertex/count")
+  }
+}

@@ -24,8 +24,9 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 
-case class FilterArgs(frame: FrameReference, predicate: String) {
+case class FilterArgs(frame: FrameReference, udf: Udf) {
   require(frame != null, "frame is required")
-  require(predicate != null, "predicate is required")
+  require(udf != null, "predicate is required")
 }
