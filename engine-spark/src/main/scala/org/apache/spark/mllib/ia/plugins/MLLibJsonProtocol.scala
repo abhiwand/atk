@@ -21,12 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.ia.plugins
+package org.apache.spark.mllib.ia.plugins
 
 import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
+import org.apache.spark.mllib.clustering.KMeansModel
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
-
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
  */
@@ -94,11 +94,7 @@ object MLLibJsonProtocol {
      * @return JsValue
      */
     override def write(obj: LogisticRegressionModel): JsValue = {
-      val weights = obj.weights match {
-        case sv: SparseVector => SparseVectorFormat.write(sv)
-        case dv: DenseVector => DenseVectorFormat.write(dv)
-        case _ => throw new IllegalArgumentException("Weights do not conform to Sparse or Dense Vector formats.")
-      }
+      val weights = VectorFormat.write(obj.weights)
       JsObject(
         "weights" -> weights,
         "intercept" -> JsNumber(obj.intercept)
@@ -116,15 +112,60 @@ object MLLibJsonProtocol {
       val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
-        if (v.asJsObject.fields.get("size").isDefined) {
-          SparseVectorFormat.read(v)
-        }
-        else {
-          DenseVectorFormat.read(v)
-        }
-      }).get
+        VectorFormat.read(v)
+      }
+      ).get
 
       new LogisticRegressionModel(weights, intercept)
+    }
+
+  }
+  implicit object VectorFormat extends JsonFormat[Vector] {
+    override def write(obj: Vector): JsValue = {
+      obj match {
+        case sv: SparseVector => SparseVectorFormat.write(sv)
+        case dv: DenseVector => DenseVectorFormat.write(dv)
+        case _ => throw new IllegalArgumentException("Object does not confirm to Vector format.")
+      }
+    }
+
+    override def read(json: JsValue): Vector = {
+      if (json.asJsObject.fields.get("size").isDefined) {
+        SparseVectorFormat.read(json)
+      }
+      else {
+        DenseVectorFormat.read(json)
+      }
+    }
+  }
+
+  implicit object KmeansModelFormat extends JsonFormat[KMeansModel] {
+    /**
+     * The write methods converts from KMeans to JsValue
+     * @param obj KMeansModel. Where KMeansModel's format is
+     *            val clusterCenters: Array[Vector]
+     *            and the weights Vector could be either a SparseVector or DenseVector
+     * @return JsValue
+     */
+    override def write(obj: KMeansModel): JsValue = {
+      val centers = obj.clusterCenters.map(vector => VectorFormat.write(vector))
+      JsObject("clusterCenters" -> JsArray(centers.toList))
+    }
+
+    /**
+     * The read method reads a JsValue to LogisticRegressionModel
+     * @param json JsValue
+     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
+     *         and the weights Vector could be either a SparseVector or DenseVector
+     */
+    override def read(json: JsValue): KMeansModel = {
+      val fields = json.asJsObject.fields
+
+      val centers = fields.get("clusterCenters").map(vector => {
+        VectorFormat.read(vector)
+      }).get
+
+      new KMeansModel(Array(centers))
     }
 
   }
