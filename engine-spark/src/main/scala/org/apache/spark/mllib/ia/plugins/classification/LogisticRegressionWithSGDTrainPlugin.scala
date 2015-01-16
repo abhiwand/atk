@@ -21,40 +21,39 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.ia.plugins
-//Implicits needed for JSON conversion
+package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.KmeansModelLoad
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.model.ModelLoad
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.clustering.KMeans
-import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] {
+//Implicits needed for JSON conversion
+import spray.json._
+
+class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:kmeans/train"
-
+  override def name: String = "model:logistic_regression/train"
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a Kmeans Model using the observation column of a train frame",
-    extendedSummary = Some(
-      """
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a LogisticRegression Model using the observation column and label column of the train frame",
+    extendedSummary = Some("""
                              |
                              |    Parameters
                              |    ----------
@@ -64,18 +63,21 @@ class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] 
                              |    observation_column: str
                              |        column containing the observations
                              |
+                             |    label_column: str
+                             |        column containing the label for each observation
+                             |
                              |
                              |    Returns
                              |    -------
-                             |    Trained Kmeans model object
+                             |    Trained LogisticRegression model object
                              |
                              |
                              |    Examples
                              |    --------
                              |    ::
                              |
-                             |        model = ia.KmeansModel(name='MyKmeansModel')
-                             |        model.train(train_frame, 'name_of_observation_column')
+                             |        model = ia.LogisticRegressionModel(name='LogReg')
+                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
                              |
                              |
                            """.stripMargin)))
@@ -84,7 +86,7 @@ class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] 
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: KmeansModelLoad)(implicit invocation: Invocation) = 109
+  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -94,7 +96,7 @@ class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] 
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KmeansModelLoad)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
       val frames = engine.frames
@@ -108,32 +110,15 @@ class KmeansTrainPlugin extends SparkCommandPlugin[KmeansModelLoad, UnitReturn] 
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
 
-      /**
-       * Constructs a KMeans instance with parameters passed or default parameters if not specified
-       */
-      val kmeansObject = initializeKmeans(arguments)
+      //Running MLLib
+      val logReg = new LogisticRegressionWithSGD()
+      val logRegModel = logReg.run(labeledTrainRDD)
+      val modelObject = logRegModel.toJson.asJsObject
 
-      val vectorRDD = trainFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
-        val b = array.map(i => DataTypes.toDouble(i))
-        Vectors.dense(b)
-      })
-
-      val kmeansModel = kmeansObject.run(vectorRDD)
-      val modelObject = kmeansModel.toJson.asJsObject
-
+      //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta, modelObject)
       new UnitReturn
-
     }
-
-  def initializeKmeans(arguments: KmeansModelLoad): KMeans = {
-    val kmeans = new KMeans()
-    if (arguments.k.isDefined) { kmeans.setK(arguments.k.get) }
-    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.get) }
-    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.get) }
-    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.get) }
-    kmeans
-  }
 }

@@ -23,8 +23,9 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.mllib.classification.ia.plugins.MLLibJsonProtocol
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.scalatest.WordSpec
 import spray.json._

@@ -21,13 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.ia.plugins
+package org.apache.spark.mllib.ia.plugins
 
 import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
+import org.apache.spark.mllib.clustering.KMeansModel
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
 import spray.json._
-import org.apache.spark.mllib.linalg.Vector
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
  */
