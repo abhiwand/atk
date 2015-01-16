@@ -17,7 +17,7 @@ else
     exit 2
 fi
 
-CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf/application.conf:$LOGBACK_JARS
+CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf:$LOGBACK_JARS
 
 if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar
