@@ -46,40 +46,36 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
     GraphStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, "edge label").count() shouldBe 0
   }
 
-    "single node graph" should "have all edge labels degree 0" in {
+  "single node graph" should "have all edge labels degree 0" in {
 
-      val validEdgeLabel = "REALLY likes (wink wink)"
-      val vertexIdPropertyName = "id"
-      val srcIdPropertyName = "srcId"
-      val dstIdPropertyName = "dstId"
+    val validEdgeLabel = "REALLY likes (wink wink)"
+    val vertexIdPropertyName = "id"
+    val srcIdPropertyName = "srcId"
+    val dstIdPropertyName = "dstId"
 
-      val vertexIdList: List[Long] = List(1)
-      val edgeList: List[(Long, Long)] = List()
+    val vertexIdList: List[Long] = List(1)
+    val edgeList: List[(Long, Long)] = List()
 
-      val gbVertexList = vertexIdList.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set()))
+    val gbVertexList = vertexIdList.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set()))
 
-      val gbEdgeList =
-        edgeList.map({
-          case (src, dst) =>
-            GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
-              validEdgeLabel, Set.empty[Property])
-        })
+    val gbEdgeList =
+      edgeList.map({
+        case (src, dst) =>
+          GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
+            validEdgeLabel, Set.empty[Property])
+      })
 
-      val vertexRDD = sparkContext.parallelize(gbVertexList, defaultParallelism)
-      val edgeRDD = sparkContext.parallelize(gbEdgeList, defaultParallelism)
+    val vertexRDD = sparkContext.parallelize(gbVertexList, defaultParallelism)
+    val edgeRDD = sparkContext.parallelize(gbEdgeList, defaultParallelism)
 
+    val expectedOutput =
+      gbVertexList.map(v => (v, 0.toLong)).toSet
 
-
-      val expectedOutput =
-        gbVertexList.map(v => (v, 0.toLong)).toSet
-
-      GraphStatistics.outDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
-      GraphStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, validEdgeLabel).collect().toSet shouldBe expectedOutput
-      GraphStatistics.inDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
-      GraphStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, validEdgeLabel).collect().toSet shouldBe expectedOutput
-    }
-
-
+    GraphStatistics.outDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
+    GraphStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, validEdgeLabel).collect().toSet shouldBe expectedOutput
+    GraphStatistics.inDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
+    GraphStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, validEdgeLabel).collect().toSet shouldBe expectedOutput
+  }
 
   trait SingleUndirectedEdgeTest {
     val invalidEdgeLabel = "likes"
