@@ -42,7 +42,7 @@ trait ModelStorage {
 
   def getModels()(implicit invocation: Invocation): Seq[Model]
 
-  def getModelByName(name: String)(implicit invocation: Invocation): Option[Model]
+  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[Model]
 
   def updateModel(model: Model, newData: JsObject)(implicit invocation: Invocation): Model
 

@@ -67,6 +67,12 @@ class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging { storage =>
+  def updateLastReadDate(graph: Graph): Option[Graph] = {
+    metaStore.withSession("graph.updateLastReadDate") {
+      implicit session =>
+        metaStore.graphRepo.updateLastReadDate(graph).toOption
+    }
+  }
 
   object SparkGraphManagement extends EntityManager[GraphEntityType.type] {
 
@@ -85,8 +91,9 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference.id))
 
-    override def create(annotation: Option[String] = None)(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(GraphName.validateOrGenerate(annotation)))
+    override def create()(implicit invocation: Invocation): Reference = storage.createGraph(
+      GraphTemplate(None)
+    )
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectGraph(id)
 
@@ -152,8 +159,9 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
+          info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -197,7 +205,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
           }
           metaStore.graphRepo.insert(graph).get
         }
@@ -208,14 +216,14 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("spark.graphstorage.rename") {
       implicit session =>
         {
-          val check = metaStore.graphRepo.lookupByName(newName)
+          val check = metaStore.graphRepo.lookupByName(Some(newName))
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
           if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name, newName)
+            backendStorage.renameUnderlyingTable(graph.name.get, newName)
           }
-          val newGraph = graph.copy(name = newName)
+          val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
         }
     }
@@ -229,12 +237,12 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("spark.graphstorage.getGraphs") {
       implicit session =>
         {
-          metaStore.graphRepo.scanAll()
+          metaStore.graphRepo.scanAll().filter(g => g.statusId != Status.Deleted && g.statusId != Status.Dead && g.name.isDefined)
         }
     }
   }
 
-  override def getGraphByName(name: String)(implicit invocation: Invocation): Option[Graph] = {
+  override def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[Graph] = {
     metaStore.withSession("spark.graphstorage.getGraphByName") {
       implicit session =>
         {
@@ -280,7 +288,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val frame = FrameEntity(0, Naming.generateName(prefix = Some("vertex_frame_")), vertexSchema, 1, new DateTime, new DateTime, graphId = Some(graphId))
+          val frame = FrameEntity(0, None, vertexSchema, 1, new DateTime, new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
     }
@@ -308,7 +316,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("define.vertex") {
       implicit session =>
         {
-          val frame = FrameEntity(0, Naming.generateName(prefix = Some("edge_frame_")), edgeSchema, 1, new DateTime,
+          val frame = FrameEntity(0, None, edgeSchema, 1, new DateTime,
             new DateTime, graphId = Some(graphId))
           metaStore.frameRepo.insert(frame)
         }
@@ -396,7 +404,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def getTitanReaderRDD(ctx: SparkContext, graph: Graph): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -427,7 +435,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphId: Long)(implicit invocation: Invocation): TitanGraph = {
     val graph = lookup(graphId).get
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }

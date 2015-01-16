@@ -53,7 +53,7 @@ import org.joda.time.DateTime
  * @param graphId a value means the frame is owned by a graph and shouldn't be exposed to the user in the same way
  */
 case class FrameEntity(id: Long,
-                       name: String,
+                       name: Option[String],
                        schema: Schema = FrameSchema(),
                        status: Long,
                        createdOn: DateTime,
@@ -69,10 +69,15 @@ case class FrameEntity(id: Long,
                        materializationComplete: Option[DateTime] = None,
                        errorFrameId: Option[Long] = None,
                        parent: Option[Long] = None,
-                       graphId: Option[Long] = None) extends HasId {
+                       graphId: Option[Long] = None,
+                       lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
+  require(name match {
+    case Some(n) => n.trim.length > 0
+    case _ => true
+  },
+    "if name is set it must not be empty or whitespace")
   require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
   require(graphId != null, "graphId must not be null because it is an Option")
 
@@ -125,7 +130,7 @@ case class FrameEntity(id: Long,
   def createChild(createdBy: Option[Long], command: Option[Long], schema: Schema): FrameEntity = {
     // id will be auto-assigned on insert, initialize to zero
     copy(id = 0,
-      name = FrameName.generate(),
+      name = None,
       status = Status.Init,
       schema = schema,
       rowCount = None,

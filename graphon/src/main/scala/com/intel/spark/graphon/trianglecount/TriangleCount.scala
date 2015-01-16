@@ -166,11 +166,11 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
+    val newGraph = Await.result(engine.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
     writeToTitan(newTitanConfig, outVertices, outEdges)
 
     gbVertices.unpersist()

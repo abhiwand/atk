@@ -158,7 +158,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     // Update back each vertex in the input Titan graph and the write the community property
     // as the set of communities to which it belongs
     val communityWriterInTitan = new CommunityWriterInTitan()
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
     communityWriterInTitan.run(outVertices, outEdges, titanConfig)
 
     // Get the execution time and print it

@@ -34,7 +34,7 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetModel
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelCreate, Model }
+import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
@@ -103,9 +103,9 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
               } ~
                 post {
                   import spray.httpx.SprayJsonSupport._
-                  implicit val format = DomainJsonProtocol.modelCreateFormat
+                  implicit val format = DomainJsonProtocol.modelTemplateFormat
                   implicit val indexFormat = ViewModelJsonImplicits.getModelFormat
-                  entity(as[ModelCreate]) {
+                  entity(as[ModelTemplate]) {
                     model =>
                       onComplete(engine.createModel(model)) {
                         case Success(model) => complete(decorate(uri + "/" + model.id, model))

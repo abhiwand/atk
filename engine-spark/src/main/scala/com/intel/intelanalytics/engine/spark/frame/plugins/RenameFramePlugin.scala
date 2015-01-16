@@ -55,7 +55,18 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrameArgs, FrameEntity]
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Rename Frame",
+    extendedSummary = Some("""
+    Set the name of this frame.
+
+    Parameters
+    ----------
+    new_name: str
+      the new name of the frame.
+
+    Examples
+    --------
+     frame.rename("myFrame")""")))
 
   /**
    * Rename a frame
