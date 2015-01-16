@@ -59,7 +59,7 @@ import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.ia.plugins.classification.{LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin, LogisticRegressionWithSGDPredictPlugin}
+import org.apache.spark.mllib.ia.plugins.classification.{ LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin, LogisticRegressionWithSGDPredictPlugin }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage

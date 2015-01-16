@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.model.KMeansPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{FrameRDD, SparkFrameData}
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
@@ -95,7 +95,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
- 
+
     val models = engine.models
     val frames = engine.frames
 
@@ -104,7 +104,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
 
     //create RDD from the frame
     val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
-    
+
     val kmeansJsObject = modelMeta.data.get
     val kmeansModel = kmeansJsObject.convertTo[KMeansModel]
 
@@ -115,7 +115,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
       val prediction = kmeansModel.predict(point)
       row.addValue(prediction)
     })
-    
+
     val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 

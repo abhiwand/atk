@@ -37,7 +37,6 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-
 /* Run the LogisticRegressionWithSGD model on the test frame*/
 class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetricValue] {
   /**

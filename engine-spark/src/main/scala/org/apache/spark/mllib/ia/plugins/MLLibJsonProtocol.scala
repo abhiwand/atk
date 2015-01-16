@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins
 
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
