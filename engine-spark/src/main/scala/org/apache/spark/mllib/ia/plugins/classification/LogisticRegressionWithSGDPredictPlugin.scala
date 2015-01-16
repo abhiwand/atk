@@ -24,12 +24,12 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.Naming
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{FrameEntity, FrameMeta}
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.model.ModelPredict
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{FrameRDD, SparkFrameData}
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.classification.LogisticRegressionModel

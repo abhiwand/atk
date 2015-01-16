@@ -46,7 +46,7 @@ case class KMeansTrainArgs(model: ModelReference,
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
   require(k != None, "k must not be None")
-  require(maxIterations != None,"maxIterations must not be None")
+  require(maxIterations != None, "maxIterations must not be None")
   require(epsilon != None, "epsilon must not be None")
   require(initializationMode != None, "initializationMode must not be None")
 }
