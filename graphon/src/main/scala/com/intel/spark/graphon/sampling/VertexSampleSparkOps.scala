@@ -203,12 +203,7 @@ object VertexSampleSparkOps extends Serializable {
    * @return RDD of tuples that contain vertex degree as weight for each vertex
    */
   def addVertexDegreeWeights(vertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[(Long, GBVertex)] = {
-    val vertexIdDegrees = GraphStatistics.outDegrees(edges)
-    val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
-
-    val degreeVertexPairsRdd = vertexIdDegrees.join(vertexIds)
-
-    degreeVertexPairsRdd.map { case (degree, degreeVertexPair) => degreeVertexPair }
+    val vertexDegreePairs: RDD[(GBVertex, Long)] = GraphStatistics.outDegrees(vertices, edges)
+    vertexDegreePairs.map({ case (vertex, degree) => (degree, vertex) })
   }
-
 }
