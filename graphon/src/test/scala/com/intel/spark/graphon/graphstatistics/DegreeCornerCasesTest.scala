@@ -24,7 +24,7 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import DegreeStatistics
+import com.intel.spark.graphon.graphstatistics.DegreeStatistics
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
