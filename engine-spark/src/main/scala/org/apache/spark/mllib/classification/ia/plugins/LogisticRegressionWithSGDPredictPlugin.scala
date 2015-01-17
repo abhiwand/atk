@@ -54,39 +54,6 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    * e.g Python client via code generation.
    */
   override def name: String = "model:logistic_regression/predict"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Predict the labels for a test frame and return a new frame with existing columns and a predicted label's column",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    predict_frame: Frame
-                             |        Frame whose labels are to be predicted
-                             |
-                             |    predict_for_observation_column: str
-                             |        column containing the observations
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Frame containing the original frame's columns and a column with the predicted label
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.LogisticRegressionModel(name='LogReg')
-                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-                             |        new_frame = model.predict(predict_frame, 'predict_for_observation_column')
-                             |
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command

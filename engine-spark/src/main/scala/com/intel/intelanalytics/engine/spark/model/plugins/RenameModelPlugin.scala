@@ -53,13 +53,6 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModel, Model] {
   override def name: String = "model/rename"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
-  /**
    * Rename a graph in the database
    *
    * @param invocation information about the user and the circumstances at the time of the call,
