@@ -21,21 +21,20 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon
+package com.intel.spark.graphon.graphstatistics
 
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
-import org.apache.spark.rdd.RDD
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.SparkContext._
-import org.apache.spark.SparkException
+import org.apache.spark.rdd.RDD
 
 /**
- * Object for calculating basic graph statistics from a property graph represented as a vertex list and an edge list.
+ * Object for calculating degree and its generalizations: Per-vertex statistics about the edges incident to that vertex.
  *
  * Currently supported statistics:
  * - per vertex in-degree (optionally restricted to a specified edge label)
  * - per vertex out-degree (optionally restricted to a specified edge label)
  */
-object GraphStatistics {
+object DegreeStatistics {
 
   private def degreeCalculation(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], calculateOutDegreeFlag: Boolean): RDD[(GBVertex, Long)] = {
 

@@ -24,7 +24,7 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.spark.graphon.GraphStatistics
+import DegreeStatistics
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
@@ -49,52 +49,52 @@ class FactorizationPropertyGraphTest extends FlatSpec with Matchers with Testing
     val srcIdPropertyName = "srcId"
     val dstIdPropertyName = "dstId"
 
-    val vertexIdList: List[Long] = (1 to 20).toList.map(_.toLong)
+    val vertexIdList: List[Long] = (1L to 20L).toList
 
     val numToDivisors: Map[Long, Set[Int]] = Map(
-      1.toLong -> Set(1),
-      2.toLong -> Set(1, 2),
-      3.toLong -> Set(1, 3),
-      4.toLong -> Set(1, 2, 4),
-      5.toLong -> Set(1, 5),
-      6.toLong -> Set(1, 2, 3, 6),
-      7.toLong -> Set(1, 7),
-      8.toLong -> Set(1, 2, 4, 8),
-      9.toLong -> Set(1, 3, 9),
-      10.toLong -> Set(1, 2, 5, 10),
-      11.toLong -> Set(1, 11),
-      12.toLong -> Set(1, 2, 3, 4, 6, 12),
-      13.toLong -> Set(1, 13),
-      14.toLong -> Set(1, 2, 7, 14),
-      15.toLong -> Set(1, 3, 5, 15),
-      16.toLong -> Set(1, 2, 4, 8, 16),
-      17.toLong -> Set(1, 17),
-      18.toLong -> Set(1, 2, 3, 6, 9, 18),
-      19.toLong -> Set(1, 19),
-      20.toLong -> Set(1, 2, 4, 5, 10, 20)
+      1L -> Set(1),
+      2L -> Set(1, 2),
+      3L -> Set(1, 3),
+      4L -> Set(1, 2, 4),
+      5L -> Set(1, 5),
+      6L -> Set(1, 2, 3, 6),
+      7L -> Set(1, 7),
+      8L -> Set(1, 2, 4, 8),
+      9L -> Set(1, 3, 9),
+      10L -> Set(1, 2, 5, 10),
+      11L -> Set(1, 11),
+      12L -> Set(1, 2, 3, 4, 6, 12),
+      13L -> Set(1, 13),
+      14L -> Set(1, 2, 7, 14),
+      15L -> Set(1, 3, 5, 15),
+      16L -> Set(1, 2, 4, 8, 16),
+      17L -> Set(1, 17),
+      18L -> Set(1, 2, 3, 6, 9, 18),
+      19L -> Set(1, 19),
+      20L -> Set(1, 2, 4, 5, 10, 20)
     )
 
     val numToMultiples: Map[Long, Set[Int]] = Map(
-      1.toLong -> (1 to 20).toSet,
-      2.toLong -> Set(2, 4, 6, 8, 10, 12, 14, 16, 18, 20),
-      3.toLong -> Set(3, 6, 9, 12, 15, 18),
-      4.toLong -> Set(4, 8, 12, 16, 20),
-      5.toLong -> Set(5, 10, 15, 20),
-      6.toLong -> Set(6, 12, 18),
-      7.toLong -> Set(7, 14),
-      8.toLong -> Set(8, 16),
-      9.toLong -> Set(9, 18),
-      10.toLong -> Set(10, 20),
-      11.toLong -> Set(11),
-      12.toLong -> Set(12),
-      13.toLong -> Set(13),
-      14.toLong -> Set(14),
-      15.toLong -> Set(15),
-      16.toLong -> Set(16),
-      17.toLong -> Set(17),
-      18.toLong -> Set(18),
-      19.toLong -> Set(19),
-      20.toLong -> Set(20)
+      1L -> (1 to 20).toSet,
+      2L -> Set(2, 4, 6, 8, 10, 12, 14, 16, 18, 20),
+      3L -> Set(3, 6, 9, 12, 15, 18),
+      4L -> Set(4, 8, 12, 16, 20),
+      5L -> Set(5, 10, 15, 20),
+      6L -> Set(6, 12, 18),
+      7L -> Set(7, 14),
+      8L -> Set(8, 16),
+      9L -> Set(9, 18),
+      10L -> Set(10, 20),
+      11L -> Set(11),
+      12L -> Set(12),
+      13L -> Set(13),
+      14L -> Set(14),
+      15L -> Set(15),
+      16L -> Set(16),
+      17L -> Set(17),
+      18L -> Set(18),
+      19L -> Set(19),
+      20L -> Set(20)
     )
 
     val divisorEdgeList: List[(Long, Long)] =
@@ -133,23 +133,23 @@ class FactorizationPropertyGraphTest extends FlatSpec with Matchers with Testing
   }
 
   "factorization graph" should "have correct divisor in-degree" in new FactorizationPGraphTest {
-    val results = GraphStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, divisorOfLabel)
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, divisorOfLabel)
     results.collect().toSet shouldEqual expectedDivisorInDegreeOutput
   }
 
   "factorization graph" should "have correct divisor out-degree" in new FactorizationPGraphTest {
-    val results = GraphStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, divisorOfLabel)
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, divisorOfLabel)
     results.collect().toSet shouldEqual expectedDivisorOutDegreeOutput
   }
 
   "factorization graph" should "have correct multiple-of in-degree" in new FactorizationPGraphTest {
 
-    val results = GraphStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, multipleOfLabel)
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, multipleOfLabel)
     results.collect().toSet shouldEqual expectedMultipleInDegreeOutput
   }
 
   "factorization graph" should "have correct multiple-of out-degree" in new FactorizationPGraphTest {
-    val results = GraphStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, multipleOfLabel)
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, multipleOfLabel)
     results.collect().toSet shouldEqual expectedMultipleOutDegreeOutput
   }
 }
