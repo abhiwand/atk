@@ -51,35 +51,6 @@ class RenameColumnsPlugin extends SparkCommandPlugin[RenameColumnsArgs, FrameEnt
   override def name: String = "frame:/rename_columns"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Rename one or more columns", Some("""
-    Renames columns in a frame.
-
-    Parameters
-    ----------
-    column_names : dictionary of str pairs
-        The name pair (existing name, new name).
-
-    Notes
-    -----
-    Unicode in column names is not supported and will likely cause the drop_frames() function
-    (and others) to fail!
-
-    Examples
-    --------
-    Start with a frame with columns *Wrong* and *Wong*.
-    Rename the columns to *Right* and *Wite*::
-
-        my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
-
-    Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
-
-    .. versionchanged:: 0.8.5""")))
-
-  /**
    * Rename columns of a frame
    *
    * @param invocation information about the user and the circumstances at the time of the call,

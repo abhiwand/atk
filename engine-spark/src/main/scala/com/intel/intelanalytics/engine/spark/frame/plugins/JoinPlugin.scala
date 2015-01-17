@@ -55,13 +55,6 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
    */
   override def name: String = "frame:/join"
 
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
   override def numberOfJobs(arguments: JoinArgs)(implicit invocation: Invocation): Int = 2
 
   /**

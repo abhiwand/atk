@@ -72,25 +72,6 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
   override def name: String = "graph:/export_to_titan"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Convert to TitanGraph",
-    extendedSummary = Some("""
-    Convert this Graph into a TitanGraph object. This will be a new graph backed by Titan with all of the data found in this graph
-
-    Parameters
-    ----------
-    new_graph_name: str
-      the name of the new graph. This is optional. If omitted a name will be generated.
-
-    Examples
-    --------
-                             |graph = ia.get_graph("my_graph")
-                             |titan_graph = graph.export_to_titan("titan_graph") """)))
-
-  /**
    * Number of jobs needs to be known to give a single progress bar
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command

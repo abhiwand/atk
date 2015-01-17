@@ -50,15 +50,6 @@ class VertexCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
    */
   override def name: String = "graph:/vertex_count"
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Get the total number of vertices in the graph.",
-    extendedSummary = Some("""
-    Get the total number of vertices in the graph.
-
-    Examples
-    --------
-                             |graph.vertex_count
-                           """)))
-
   /**
    * Vertex count for a "seamless graph"
    * @param invocation information about the user and the circumstances at the time of the call,
