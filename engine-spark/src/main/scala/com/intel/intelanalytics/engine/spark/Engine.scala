@@ -44,7 +44,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHd
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{CoalescePlugin, RepartitionPlugin, PartitionCountPlugin}
+import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation.{ CorrelationPlugin, CorrelationMatrixPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovariancePlugin
