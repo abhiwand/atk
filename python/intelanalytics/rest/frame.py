@@ -121,7 +121,7 @@ class FrameBackendRest(object):
         def icountwhere(predicate, iterable):
            return ("[1]" for item in iterable if predicate(item))
         arguments = {'frame': self.get_ia_uri(frame),
-                     'where': get_udf_arg(frame, where, icountwhere)}
+                     'udf': get_udf_arg(frame, where, icountwhere)}
         return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
