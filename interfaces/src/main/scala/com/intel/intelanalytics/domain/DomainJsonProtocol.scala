@@ -31,6 +31,7 @@ import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.UdfArgs.{ UdfDependency, Udf }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
 import com.intel.intelanalytics.domain.model._
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -285,6 +286,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   }
   implicit val longValueFormat = jsonFormat1(LongValue)
+  implicit val intValueFormat = jsonFormat1(IntValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
   implicit val boolValueFormat = jsonFormat1(BoolValue)
 
@@ -366,6 +368,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelFormat = jsonFormat11(Model)
   implicit val modelLoadFormat = jsonFormat4(ModelLoad)
   implicit val modelPredictFormat = jsonFormat3(ModelPredict)
+
+  implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
+  implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
+  implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)
