@@ -28,7 +28,7 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.spark.graphon.GraphStatistics
+import com.intel.spark.graphon.graphstatistics.DegreeStatistics
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
@@ -203,12 +203,7 @@ object VertexSampleSparkOps extends Serializable {
    * @return RDD of tuples that contain vertex degree as weight for each vertex
    */
   def addVertexDegreeWeights(vertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[(Long, GBVertex)] = {
-    val vertexIdDegrees = GraphStatistics.outDegrees(edges)
-    val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
-
-    val degreeVertexPairsRdd = vertexIdDegrees.join(vertexIds)
-
-    degreeVertexPairsRdd.map { case (degree, degreeVertexPair) => degreeVertexPair }
+    val vertexDegreePairs: RDD[(GBVertex, Long)] = DegreeStatistics.outDegrees(vertices, edges)
+    vertexDegreePairs.map({ case (vertex, degree) => (degree, vertex) })
   }
-
 }
