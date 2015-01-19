@@ -204,9 +204,10 @@ class HttpMethods(object):
     def _check_response(response, ignore=None):
 
         HttpMethods._check_response_for_build_id(response)
+        if 400 <= response.status_code < 600:
+            raise RuntimeError(response.text)
 
         try:
-            response.raise_for_status()
             #Semantic errors (such as server validation errors) come back as 202,
             #which the requests module doesn't consider an error. Indeed it is not
             #an HTTP protocol error, but it is an error as far as the user is concerned.
