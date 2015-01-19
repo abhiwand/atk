@@ -21,27 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.classification.ia.plugins
+package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ ModelMeta, ModelLoad, Model }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, FrameRDD }
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.model.ModelLoad
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
-import MLLibJsonProtocol._
-import scala.concurrent.ExecutionContext
-
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 /* Run the LogisticRegressionWithSGD model on the test frame*/
 class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ModelLoad, ClassificationMetricValue] {
