@@ -79,6 +79,8 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
 
   override def name: String = "graph:titan/annotate_degrees"
 
+  override def numberOfJobs(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): Int = 4
+
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
@@ -89,6 +91,17 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
     // Titan Settings for input
     val config = configuration
 
+    // validate arguments
+
+    val newGraphName = arguments.outputGraphName
+    require(newGraphName != "", "output graph name cannot be empty")
+    val outputPropertyName = arguments.outputPropertyName
+    require(outputPropertyName != "", "output property name cannot be empty")
+
+    val degreeMethod: String = arguments.degreeOption.getOrElse("out")
+    require("out".startsWith(degreeMethod) || "in".startsWith(degreeMethod) || "undirected".startsWith(degreeMethod),
+      "degreeMethod should be prefix of 'in', 'out' or 'undirected', not " + degreeMethod)
+
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
@@ -97,7 +110,6 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
     gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
     gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val degreeMethod: String = arguments.degreeOption.getOrElse("out")
     val inputEdgeLabels: Option[Set[String]] =
       if (arguments.inputEdgeLabels.isEmpty) {
         None
@@ -106,12 +118,10 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
         Some(arguments.inputEdgeLabels.get.toSet)
       }
 
-    val outputPropertyName = arguments.outputPropertyName
-
-    val vertexDegreePairs: RDD[(GBVertex, Long)] = if (degreeMethod.equals("undirected")) {
+    val vertexDegreePairs: RDD[(GBVertex, Long)] = if ("undirected".startsWith(degreeMethod)) {
       DegreeStatistics.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
     }
-    else if (degreeMethod.equals("in")) {
+    else if ("in".startsWith(degreeMethod)) {
       DegreeStatistics.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
     }
     else {
@@ -125,8 +135,6 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
         properties = v.properties + Property(outputPropertyName, d))
     })
 
-
-    val newGraphName = arguments.outputGraphName
     val newGraph = Await.result(engine.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan)),
       config.getInt("default-timeout") seconds)
 

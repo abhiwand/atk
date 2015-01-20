@@ -161,7 +161,7 @@ object DegreeStatistics {
     outDegrees(vertexRDD, filteredEdges)
   }
 
-  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]) : RDD[GBEdge] = {
+  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[GBEdge] = {
     if (edgeLabels.nonEmpty) {
       edgeRDD.filter(edge => edgeLabels.get.contains(edge.label))
     }
