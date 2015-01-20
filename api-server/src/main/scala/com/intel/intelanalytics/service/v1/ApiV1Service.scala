@@ -28,7 +28,7 @@ import spray.routing._
 /**
  * Single entry point for classes that implement the Intel Analytics V1 REST API
  */
-class ApiV1Service(val dataFrameService: DataFrameService,
+class ApiV1Service(val dataFrameService: FrameService,
                    val commandService: CommandService,
                    val graphService: GraphService,
                    val modelService: ModelService,

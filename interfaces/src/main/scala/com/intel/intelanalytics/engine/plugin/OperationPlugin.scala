@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.plugin
 import com.intel.event.{ EventContext, EventLogger, EventLogging }
 import com.intel.intelanalytics.NotNothing
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
-import com.intel.intelanalytics.domain.{ HasMetaData, User, HasData, UriReference }
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ CommandDocLoader, CommandDoc }
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -37,6 +37,9 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
+import scala.Some
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -190,8 +193,8 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   /**
    * Creates an object of the requested type.
    */
-  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
-    invocation.resolver.create[T](annotation)
+  def create[T <: UriReference: TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
+    invocation.resolver.create[T](args)
   }
 
   /**
@@ -211,8 +214,8 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * Create a new object of the requested type, pass it to the block. If block throws an exception,
    * delete the newly created object and rethrow the exception.
    */
-  def tryNew[T <: UriReference with HasMetaData: TypeTag](name: Option[String])(block: T => T)(implicit invocation: Invocation) = {
-    val thing = create[T](name)
+  def tryNew[T <: UriReference with HasMetaData: TypeTag](args: CreateEntityArgs = CreateEntityArgs())(block: T => T)(implicit invocation: Invocation) = {
+    val thing = create[T](args)
     try {
       block(thing)
     }

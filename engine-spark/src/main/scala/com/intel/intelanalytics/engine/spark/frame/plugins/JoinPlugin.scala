@@ -37,6 +37,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.{ Await, ExecutionContext }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -88,8 +89,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
     val leftColumns: List[(String, DataType)] = originalColumns(0)
     val rightColumns: List[(String, DataType)] = originalColumns(1)
     val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
-
-    val newJoinFrame = frames.create(DataFrameTemplate(arguments.name, None))
+    val newJoinFrame = frames.create(CreateEntityArgs(name = arguments.name, description = Some("created from join operation")))
 
     //first validate join columns are valid
     val leftOn: String = arguments.frames(0)._2

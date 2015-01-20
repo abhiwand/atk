@@ -37,6 +37,12 @@ case class StringValue(value: String)
 case class LongValue(value: Long)
 
 /**
+ * Generic Int value that can be used by plugins that return a single Int
+ * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ */
+case class IntValue(value: Int)
+
+/**
  * Generic Double value that can be used by plugins that return a single Double
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
  */

@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.model.ModelPredict
@@ -137,7 +137,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
 
       val outputFrameRDD = new FrameRDD(newSchema, result)
 
-      tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
+      tryNew(CreateEntityArgs(description = Some("create by logistic regression prediction command"))) { newPredictedFrame: FrameMeta =>
         save(new SparkFrameData(newPredictedFrame.meta, outputFrameRDD))
       }.meta
     }

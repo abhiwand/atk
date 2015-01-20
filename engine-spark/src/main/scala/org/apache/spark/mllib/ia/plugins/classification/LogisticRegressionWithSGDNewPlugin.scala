@@ -20,64 +20,43 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package org.apache.spark.mllib.ia.plugins.classification
 
-package com.intel.intelanalytics.engine.spark.model.plugins
-
-import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModel }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.intelanalytics.domain.model.{ LogisticRegressionWithSGDNewArgs, ModelEntity, ModelPredict }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
-
-// Implicits needed for JSON conversion
+import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
+import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
-/**
- * Rename a graph in the database
- */
-class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
-
+class LogisticRegressionWithSGDNewPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDNewArgs, ModelEntity] {
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model/rename"
+  override def name: String = "model:logistic_regression/new"
 
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
-  /**
-   * Rename a graph in the database
-   *
-   * @param invocation information about the user and the circumstances at the time of the call,
-   *                   as well as a function that can be called to produce a SparkContext that
-   *                   can be used during this invocation.
-   * @param arguments user supplied arguments to running this plugin
-   * @return a value of type declared as the Return type.
-   */
-  override def execute(arguments: RenameModel)(implicit invocation: Invocation): ModelEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val models = engine.models
-
-    // validate arguments
-    val modelId = arguments.model.id
-    val model = models.lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
-    val newName = arguments.newName
-
-    // run the operation and save results
-    models.renameModel(model, newName)
-  }
+  override def execute(arguments: LogisticRegressionWithSGDNewArgs)(implicit invocation: Invocation): ModelEntity =
+    {
+      val models = engine.models
+      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:logistic_regression")))
+    }
 }

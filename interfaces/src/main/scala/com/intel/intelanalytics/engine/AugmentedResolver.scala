@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.{ NotNothing, DefaultsTo }
-import com.intel.intelanalytics.domain.{ UriReference, HasData }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, HasData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -56,8 +56,8 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
-  override def create[T <: UriReference: ru.TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T =
-    base.create(annotation)
+  override def create[T <: UriReference: ru.TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T =
+    base.create(args)
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI

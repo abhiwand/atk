@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,36 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics.domain.frame.partitioning
 
-import com.intel.intelanalytics.domain.model.Model
-import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.mockito.Mockito._
+import com.intel.intelanalytics.domain.frame.FrameReference
 
-import com.intel.intelanalytics.engine.Engine
-import scala.concurrent.Future
-import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
-import com.intel.intelanalytics.domain.schema.Schema
-import org.joda.time.DateTime
-
-class ModelServiceTest extends ServiceTest {
-  implicit val userPrincipal = mock[UserPrincipal]
-  implicit val call: Invocation = Call(userPrincipal)
-  val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("models")).thenReturn(provide(call))
-
-  "ModelService" should "give an empty set when there are no models" in {
-    val engine = mock[Engine]
-    val modelService = new ModelService(commonDirectives, engine)
-
-    when(engine.getModels()).thenReturn(Future.successful(Seq()))
-
-    Get("/models") ~> modelService.modelRoutes() ~> check {
-      assert(responseAs[String] == "[]")
-    }
-  }
-
-}
-
+/** Arguments to RepartitionPlugin (see Spark API) */
+case class RepartitionArgs(frame: FrameReference, numberPartitions: Int)
