@@ -21,30 +21,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, ModelEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.{ JsValue, JsObject }
-import com.intel.intelanalytics.domain.CreateEntityArgs
+import org.scalatest.WordSpec
 
-trait ModelStorage {
+class ModelEntityTemplateTest extends WordSpec {
 
-  def expectModel(modelId: Long): ModelEntity
+  "ModelTemplate" should {
 
-  def lookup(id: Long): Option[ModelEntity]
+    "require a name" in {
+      intercept[IllegalArgumentException] { ModelTemplate(null, "OLS") }
+    }
 
-  def createModel(model: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity
+    "require a non-empty name" in {
+      intercept[IllegalArgumentException] { ModelTemplate(Some(""), "OLS") }
+    }
 
-  def renameModel(model: ModelEntity, newName: String): ModelEntity
+    "require a modelType" in {
+      intercept[IllegalArgumentException] { ModelTemplate(Some("name"), null) }
+    }
 
-  def drop(model: ModelEntity)
-
-  def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
-
-  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
-
-  def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity
-
+  }
 }

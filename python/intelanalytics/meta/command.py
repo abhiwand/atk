@@ -48,6 +48,8 @@ class CommandDefinition(object):
         self.full_name = full_name
         parts = self.full_name.split('/')
         self.entity_type = parts[0]
+        if not self.entity_type:
+            raise ValueError("Invalid empty entity_type, expected non-empty string")
         self.intermediates = tuple(parts[1:-1])
         self.name = parts[-1]
         self.parameters = parameters
@@ -56,9 +58,34 @@ class CommandDefinition(object):
         # do doc last, so we can send populated self to create CommandNumpydoc
         self.doc = '' if doc is None else get_numpy_doc(self, doc.one_line_summary, doc.extended_summary)
 
+    @property
+    def is_constructor(self):
+        return self.name == 'new'
+
+    @property
+    def entity_subtype(self):
+        return EntityType.get_entity_subtype(self.entity_type)
+
+    @property
+    def entity_basetype(self):
+        return EntityType.get_entity_basetype(self.entity_type)
+
     def __repr__(self):
         return "\n".join([self.full_name,
                           "\n".join([repr(p) for p in self.parameters]),
                           repr(self.return_type),
                           repr(self.version),
                           self.doc])
+
+
+class EntityType(object):
+
+    @staticmethod
+    def get_entity_subtype(entity_type):
+        split_index = entity_type.find(':')
+        return '' if split_index < 1 else entity_type[split_index+1:]
+
+    @staticmethod
+    def get_entity_basetype(entity_type):
+        split_index = entity_type.find(':')
+        return entity_type if split_index < 1 else entity_type[:split_index]

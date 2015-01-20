@@ -72,7 +72,7 @@ $DIR/api-server-stop.sh
 
 if [[ $SMOKE_TEST_SUCCESS != 0 ]] ; then
    echo "$NAME Python smoke tests FAILED"
-   ecoh "$NAME bailing out early, no reason to run any other tests if smoke tests are failing"
+   echo "$NAME bailing out early, no reason to run any other tests if smoke tests are failing"
    echo "$NAME see nosetest output: $OUTPUT1"
    echo "$NAME also see log output in target dir"
    exit 1

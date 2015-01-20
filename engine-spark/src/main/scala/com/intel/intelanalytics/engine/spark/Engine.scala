@@ -30,7 +30,7 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.engine.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -60,7 +60,7 @@ import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.ia.plugins.classification.{ LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin, LogisticRegressionWithSGDPredictPlugin }
+import org.apache.spark.mllib.ia.plugins.classification.{LogisticRegressionWithSGDNewPlugin, LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin, LogisticRegressionWithSGDPredictPlugin}
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
@@ -90,7 +90,7 @@ import com.intel.intelanalytics.domain.graph.LoadGraphArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.FilterArgs
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -131,6 +131,7 @@ import com.intel.intelanalytics.domain.frame.JoinArgs
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
+import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -219,7 +220,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDNewPlugin)
   commandPluginRegistry.registerCommand(new RenameModelPlugin)
+  commandPluginRegistry.registerCommand(new KMeansNewPlugin)
+  commandPluginRegistry.registerCommand(new KMeansPredictPlugin)
+  commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -307,9 +312,9 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
       commandPluginRegistry.getCommandDefinitions()
     }
 
-  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[FrameEntity] =
+  def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity] =
     future {
-      frames.create(frame)
+      frames.create(arguments)
     }
 
   def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
@@ -460,13 +465,13 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
 
   /**
    * Register a model name with the metadate store.
-   * @param model Metadata for model creation.
+   * @param createArgs create entity args
    * @return Future of the model to be created.
    */
-  def createModel(model: ModelTemplate)(implicit invocation: Invocation) = {
+  def createModel(createArgs: CreateEntityArgs)(implicit invocation: Invocation) = {
     future {
       withMyClassLoader {
-        models.createModel(model)
+        models.createModel(createArgs)
       }
     }
   }
@@ -475,13 +480,13 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param id Unique identifier for the model provided by the metastore.
    * @return A future of the model metadata entry.
    */
-  def getModel(id: Identifier)(implicit invocation: Invocation): Future[Model] = {
+  def getModel(id: Identifier)(implicit invocation: Invocation): Future[ModelEntity] = {
     future {
       models.lookup(id).get
     }
   }
 
-  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[Model]] =
+  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[ModelEntity]] =
     withContext("se.getModelByName") {
       future {
         val model = models.getModelByName(Some(name))
@@ -492,7 +497,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
       }
     }
 
-  def getModels()(implicit invocation: Invocation): Future[Seq[Model]] =
+  def getModels()(implicit invocation: Invocation): Future[Seq[ModelEntity]] =
     withContext("se.getModels") {
       future {
         models.getModels()
@@ -503,7 +508,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Delete a model from the metastore.
    * @param model Model
    */
-  def deleteModel(model: Model)(implicit invocation: Invocation): Future[Unit] = {
+  def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
         models.drop(model)

@@ -15,7 +15,6 @@ class DataFrameTemplateTest extends WordSpec {
     }
 
     "require a non-null description" in {
-      intercept[IllegalArgumentException] { DataFrameTemplate(None, null) }
     }
   }
 }
