@@ -162,12 +162,12 @@ class _NamedObjectsFunctionFactory(object):
             try:
                 entity_type = r.json()['entity_type']
             except KeyError:
-                return obj_class(r.json())
+                return obj_class(_info=r.json())
             else:
                 if not entity_type.startswith(term):
                     raise ValueError("Object '%s' is not a %s type" % (identifier, term))
                 cls = get_class(entity_type)
-                return cls(r.json())
+                return cls(_info=r.json())
         get_object.__name__ = get_object_name
         get_object.__doc__ = """Get {obj_term} object.
 

@@ -20,26 +20,25 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package org.apache.spark.mllib.ia.plugins.clustering
 
-package com.intel.intelanalytics.domain.model
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.model.{ KMeansNewArgs, ModelEntity }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
-import org.scalatest.WordSpec
+//Implicits needed for JSON conversion
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class ModelTemplateTest extends WordSpec {
+class KMeansNewPlugin extends SparkCommandPlugin[KMeansNewArgs, ModelEntity] {
 
-  "ModelTemplate" should {
+  override def name: String = "model:k_means/new"
 
-    "require a name" in {
-      intercept[IllegalArgumentException] { ModelTemplate(null, "OLS") }
+  override def execute(arguments: KMeansNewArgs)(implicit invocation: Invocation): ModelEntity =
+    {
+      val models = engine.models
+      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:k_means")))
     }
-
-    "require a non-empty name" in {
-      intercept[IllegalArgumentException] { ModelTemplate(Some(""), "OLS") }
-    }
-
-    "require a modelType" in {
-      intercept[IllegalArgumentException] { ModelTemplate(Some("name"), null) }
-    }
-
-  }
 }
+

@@ -36,7 +36,6 @@ import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
-import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameEntity }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
@@ -56,7 +55,7 @@ import ExecutionContext.Implicits.global
 /**
  * REST API Data Frame Service
  */
-class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
+class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
   def frameRoutes() = {
     val prefix = "frames"
@@ -93,11 +92,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
           } ~
             post {
               import spray.httpx.SprayJsonSupport._
-              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+              implicit val format = DomainJsonProtocol.createEntityArgsFormat
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
-              entity(as[DataFrameTemplate]) {
-                frame =>
-                  onComplete(engine.create(frame)) {
+              entity(as[CreateEntityArgs]) {
+                createEntityArgs =>
+                  onComplete(engine.createFrame(createEntityArgs)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
                     case Failure(ex: DuplicateNameException) => ctx => {
                       ctx.complete(202, ex.getMessage)

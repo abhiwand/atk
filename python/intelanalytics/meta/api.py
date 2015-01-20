@@ -149,6 +149,7 @@ class _Api(object):
                 from intelanalytics import _refresh_api_namespace
                 _refresh_api_namespace()
             except Exception as e:
+                _Api.__commands_from_backend = None
                 raise FatalApiLoadError(e)
 
     @staticmethod
@@ -162,7 +163,7 @@ load_api = _Api.load_api  # create alias for export
 class FatalApiLoadError(RuntimeError):
     def __init__(self, e):
         self.details = str(e)
-        RuntimeError(self, """
+        RuntimeError.__init__(self, """
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Fatal error: processing the loaded API information failed and has left the
 client in a state of unknown compatibility with the server.

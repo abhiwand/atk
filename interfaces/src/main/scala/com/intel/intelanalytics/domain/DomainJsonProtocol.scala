@@ -290,6 +290,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val stringValueFormat = jsonFormat1(StringValue)
   implicit val boolValueFormat = jsonFormat1(BoolValue)
 
+  implicit val createEntityArgsFormat = jsonFormat3(CreateEntityArgs.apply)
+
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status.apply)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
@@ -365,11 +367,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntityType)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModel)
-  implicit val modelFormat = jsonFormat11(Model)
+  implicit val modelFormat = jsonFormat11(ModelEntity)
   implicit val modelLoadFormat = jsonFormat4(ModelLoad)
   implicit val modelPredictFormat = jsonFormat3(ModelPredict)
   implicit val kmeansModelLoadFormat = jsonFormat7(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
+  implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
+  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(LogisticRegressionWithSGDNewArgs)
 
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)

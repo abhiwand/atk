@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, CovarianceMatrixArgs, FrameEntity, DataFrameTemplate }
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows._
@@ -36,6 +36,13 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.schema.FrameSchema
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.command.CommandDoc
+import scala.Some
+import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.schema.Column
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -107,7 +114,10 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
     val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    tryNew(arguments.matrixName) { newFrame: FrameMeta =>
+    tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
+      if (arguments.matrixName.isDefined) {
+        engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
+      }
       save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, covarianceRDD)))
     }.meta
   }

@@ -42,17 +42,17 @@ import com.intel.intelanalytics.spray.json.JsonPropertyNameConverter
  * @param modifiedByUserId user who last modified this row
  */
 
-case class Model(id: Long,
-                 name: Option[String],
-                 modelType: String,
-                 description: Option[String],
-                 statusId: Long,
-                 data: Option[JsObject] = None,
-                 createdOn: DateTime,
-                 modifiedOn: DateTime,
-                 createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None,
-                 lastReadDate: DateTime = new DateTime) extends HasId {
+case class ModelEntity(id: Long,
+                       name: Option[String],
+                       modelType: String,
+                       description: Option[String],
+                       statusId: Long,
+                       data: Option[JsObject] = None,
+                       createdOn: DateTime,
+                       modifiedOn: DateTime,
+                       createdByUserId: Option[Long] = None,
+                       modifiedByUserId: Option[Long] = None,
+                       lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name match {
@@ -62,13 +62,14 @@ case class Model(id: Long,
     "if name is set it must not be empty or whitespace")
   require(modelType != null, "modelType must not be null")
   require(!modelType.isEmpty, "modelType must not be empty")
+  require(modelType.startsWith("model:"), "modelType must start with 'model:'")
   require(description != null, "description must not be null")
   require(data != null, "data must not be null")
   require(createdByUserId != null, "createdByUserId must not be null")
   require(modifiedByUserId != null, "modifiedByUserId must not be null")
 
   def entityType: String = {
-    "model:" + JsonPropertyNameConverter.camelCaseToUnderscores(modelType)
+    modelType
   }
 
   def uri: String = ModelReference(id).uri
