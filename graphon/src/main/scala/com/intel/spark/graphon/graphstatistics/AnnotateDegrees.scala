@@ -24,7 +24,7 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
+import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
@@ -44,7 +44,7 @@ import scala.concurrent.Await
 case class AnnotateDegreesArgs(graph: GraphReference,
                                outputGraphName: String,
                                outputPropertyName: String,
-                               degreeOption: String = "out",
+                               degreeOption: Option[String] = None,
                                inputEdgeLabels: Option[List[String]] = None) {
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
   require(!outputGraphName.isEmpty, "Output graph name must be provided")
@@ -97,10 +97,34 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
     gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
     gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    // DO THE FUCKING CALCULATION
-    val outVertices = gbVertices
+    val degreeMethod: String = arguments.degreeOption.getOrElse("out")
+    val inputEdgeLabels: Option[Set[String]] =
+      if (arguments.inputEdgeLabels.isEmpty) {
+        None
+      }
+      else {
+        Some(arguments.inputEdgeLabels.get.toSet)
+      }
+
+    val outputPropertyName = arguments.outputPropertyName
+
+    val vertexDegreePairs: RDD[(GBVertex, Long)] = if (degreeMethod.equals("undirected")) {
+      DegreeStatistics.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+    }
+    else if (degreeMethod.equals("in")) {
+      DegreeStatistics.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+    }
+    else {
+      DegreeStatistics.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+    }
+
     val outEdges = gbEdges
-    // end of profanity
+    val outVertices = vertexDegreePairs.map({
+      case (v: GBVertex, d: Long) => GBVertex(physicalId = v.physicalId,
+        gbId = v.gbId,
+        properties = v.properties + Property(outputPropertyName, d))
+    })
+
 
     val newGraphName = arguments.outputGraphName
     val newGraph = Await.result(engine.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan)),

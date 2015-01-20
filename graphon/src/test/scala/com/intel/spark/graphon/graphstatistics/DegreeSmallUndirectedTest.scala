@@ -76,17 +76,17 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   }
 
   "simple undirected graph" should "have correct degree for edge label A" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(edgeLabelA))
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA)))
     results.collect().toSet shouldEqual excpectedADegrees
   }
 
   "simple undirected graph" should "have correct degree for edge label B" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(edgeLabelB))
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelB)))
     results.collect().toSet shouldEqual expectedBDegrees
   }
 
   "simple undirected graph" should "have correct degree when both edge label A and B requested" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(edgeLabelA, edgeLabelB))
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA, edgeLabelB)))
     results.collect().toSet shouldEqual expectedCombinedDegrees
   }
 
@@ -96,7 +96,7 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   }
 
   "simple undirected graph" should "have all degrees 0 when restricted to empty list of labels" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set())
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
     results.collect().toSet shouldEqual allZeroDegrees
   }
 }

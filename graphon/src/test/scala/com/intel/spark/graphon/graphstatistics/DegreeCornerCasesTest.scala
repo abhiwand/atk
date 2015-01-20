@@ -40,9 +40,9 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
     val edgeRDD = sparkContext.parallelize(List.empty[GBEdge], defaultParallelism)
 
     DegreeStatistics.outDegrees(vertexRDD, edgeRDD).count() shouldBe 0
-    DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set("edge label")).count() shouldBe 0
+    DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set("edge label"))).count() shouldBe 0
     DegreeStatistics.inDegrees(vertexRDD, edgeRDD).count() shouldBe 0
-    DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set("edge label")).count() shouldBe 0
+    DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set("edge label"))).count() shouldBe 0
   }
 
   "single node graph" should "have all edge labels degree 0" in {
@@ -71,11 +71,11 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
       gbVertexList.map(v => (v, 0L)).toSet
 
     DegreeStatistics.outDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
-    DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel)).collect().toSet shouldBe expectedOutput
+    DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
     DegreeStatistics.inDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
-    DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel)).collect().toSet shouldBe expectedOutput
+    DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
     DegreeStatistics.undirectedDegrees(vertexRDD, edgeRDD).collect().toSet shouldBe expectedOutput
-    DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel)).collect().toSet shouldBe expectedOutput
+    DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
   }
 
   trait SingleUndirectedEdgeTest {
@@ -113,12 +113,12 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
   }
 
   "single undirected edge" should "have correct in-degree for valid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel))
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have correct in-degree for invalid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(invalidEdgeLabel))
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
@@ -128,12 +128,12 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
   }
 
   "single undirected edge" should "have correct out-degree for valid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel))
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have correct out-degree for invalid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(invalidEdgeLabel))
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
@@ -143,27 +143,27 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
   }
 
   "single undirected edge" should "have correct undirected degree for valid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel))
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have correct undirected degree for invalid label" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(invalidEdgeLabel))
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
   "single undirected edge" should "have correct in-degree when restricted to empty set of edge labels" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set())
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
   "single undirected edge" should "have correct out-degree when restricted to empty set of edge labels" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set())
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
   "single undirected edge" should "have correct undirected degree when restricted to empty set of edge labels" in new SingleUndirectedEdgeTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Set())
+    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
@@ -207,12 +207,12 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
   }
 
   "single directed edge" should "have correct in-degree for valid label" in new SingleDirectedEdgeTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel))
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputInDegreeValidLabel
   }
 
   "single directed edge" should "have correct in-degree for invalid label" in new SingleDirectedEdgeTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(invalidEdgeLabel))
+    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputInvalidLabel
   }
 
@@ -223,13 +223,13 @@ class DegreeCornerCasesTest extends FlatSpec with Matchers with TestingSparkCont
   }
 
   "single directed edge" should "have correct out-degree for valid label" in new SingleDirectedEdgeTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(validEdgeLabel))
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(validEdgeLabel)))
 
     results.collect().toSet shouldEqual expectedOutputOutDegreeValidLabel
   }
 
   "single directed edge" should "have correct out-degree for invalid label" in new SingleDirectedEdgeTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Set(invalidEdgeLabel))
+    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(invalidEdgeLabel)))
 
     results.collect().toSet shouldEqual expectedOutputInvalidLabel
   }
