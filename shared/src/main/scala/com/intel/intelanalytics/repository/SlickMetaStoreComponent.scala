@@ -1078,7 +1078,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def updateLastReadDate(entity: Graph)(implicit session: Session): Try[Graph] = Try {
       graphs.filter(_.id === entity.id)
         .map(g => (g.lastReadDate, g.statusId, g.modifiedOn))
-        .update((new DateTime, Status.Dead, new DateTime))
+        .update((new DateTime, Status.getNewStatusForRead(entity.id), new DateTime))
       graphs.where(_.id === entity.id).firstOption.get
     }
   }
@@ -1226,7 +1226,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def updateLastReadDate(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
         .map(m => (m.lastReadDate, m.statusId, m.modifiedOn))
-        .update((new DateTime, Status.Dead, new DateTime))
+        .update((new DateTime, Status.getNewStatusForRead(entity.id), new DateTime))
       models.where(_.id === entity.id).firstOption.get
     }
   }
