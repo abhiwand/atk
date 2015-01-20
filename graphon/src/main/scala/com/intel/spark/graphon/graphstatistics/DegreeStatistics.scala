@@ -129,8 +129,8 @@ object DegreeStatistics {
    * @param edgeLabels Set of edge labels for which to calculate out-degrees
    * @return RDD of (VertexID, out-degree with respect to the set of considered edge labels) pairs
    */
-  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Set[String]): RDD[(GBVertex, Long)] = {
-    val filteredEdges = edgeRDD.filter(edge => edgeLabels.contains(edge.label))
+  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
     outDegrees(vertexRDD, filteredEdges)
   }
 
@@ -142,8 +142,8 @@ object DegreeStatistics {
    * @param edgeLabels Set of dge label for which to calculate in-degrees
    * @return RDD of (VertexID, in-degree with respect to set of considered edge labels) pairs
    */
-  def inDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Set[String]): RDD[(GBVertex, Long)] = {
-    val filteredEdges = edgeRDD.filter(edge => edgeLabels.contains(edge.label))
+  def inDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
     inDegrees(vertexRDD, filteredEdges)
   }
 
@@ -156,8 +156,17 @@ object DegreeStatistics {
    * @param edgeLabels Set of edge labels for which to calculate degrees
    * @return RDD of (VertexID, degree with respect to the set of considered edge labels) pairs
    */
-  def undirectedDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Set[String]): RDD[(GBVertex, Long)] = {
-    val filteredEdges = edgeRDD.filter(edge => edgeLabels.contains(edge.label))
+  def undirectedDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
     outDegrees(vertexRDD, filteredEdges)
+  }
+
+  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]) : RDD[GBEdge] = {
+    if (edgeLabels.nonEmpty) {
+      edgeRDD.filter(edge => edgeLabels.get.contains(edge.label))
+    }
+    else {
+      edgeRDD
+    }
   }
 }
