@@ -17,7 +17,8 @@
             "out" (default value) : Degree is calculated as the out-degree.
             "in" : Degree is calculated as the in-degree.
             "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
-    input_edge_labels : list of str
+            (Any prefix of the strings "out", "in", "undirected" will select the corresponding option.)
+        input_edge_labels : list of str
 
 
     Returns
