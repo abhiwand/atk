@@ -83,7 +83,7 @@ object FrameReferenceManagement extends EntityManager[FrameEntityType.type] { se
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create()(implicit invocation: Invocation): Reference = ???
+  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI

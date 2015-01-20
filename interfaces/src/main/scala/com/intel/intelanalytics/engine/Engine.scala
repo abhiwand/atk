@@ -24,11 +24,11 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.{ UriReference, EntityType }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, EntityType }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ Model, ModelTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
@@ -80,7 +80,7 @@ trait Engine {
 
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
-  def create(frame: DataFrameTemplate)(implicit invocation: Invocation): Future[FrameEntity]
+  def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]
 
   def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit]
 
@@ -108,15 +108,15 @@ trait Engine {
 
   def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit]
 
-  def createModel(model: ModelTemplate)(implicit invocation: Invocation): Future[Model]
+  def createModel(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[ModelEntity]
 
-  def getModel(id: Identifier)(implicit invocation: Invocation): Future[Model]
+  def getModel(id: Identifier)(implicit invocation: Invocation): Future[ModelEntity]
 
-  def getModels()(implicit invocation: Invocation): Future[Seq[Model]]
+  def getModels()(implicit invocation: Invocation): Future[Seq[ModelEntity]]
 
-  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[Model]]
+  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[ModelEntity]]
 
-  def deleteModel(model: Model)(implicit invocation: Invocation): Future[Unit]
+  def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit]
 
   /**
    * Cancel a running command

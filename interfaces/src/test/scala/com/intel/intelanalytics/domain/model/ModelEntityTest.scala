@@ -26,9 +26,9 @@ package com.intel.intelanalytics.domain.model
 import org.joda.time.DateTime
 import org.scalatest.WordSpec
 
-class ModelTest extends WordSpec {
+class ModelEntityTest extends WordSpec {
 
-  val model = new Model(1, Some("name"), "modelType", None, 1, None, new DateTime(), new DateTime())
+  val model = new ModelEntity(1, Some("name"), "model:subtype", None, 1, None, new DateTime(), new DateTime())
 
   "Model" should {
 
@@ -46,6 +46,10 @@ class ModelTest extends WordSpec {
 
     "require a modelType" in {
       intercept[IllegalArgumentException] { model.copy(modelType = null) }
+    }
+
+    "require a modelType that starts with 'model:'" in {
+      intercept[IllegalArgumentException] { model.copy(modelType = "frame") }
     }
 
   }

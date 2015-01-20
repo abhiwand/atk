@@ -44,7 +44,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:kmeans/train"
+  override def name: String = "model:k_means/train"
 
   /**
    * User documentation exposed in Python.

@@ -68,15 +68,15 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame(source=payload)
+            frame = Frame(_info=payload)
             return frame
 
-    def create(self, frame, source, name):
+    def create(self, frame, source, name, _info=None):
         logger.info("REST Backend: create frame with name %s" % name)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            initialize_frame(frame, source)
+        if _info is not None and isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            initialize_frame(frame, _info)
         elif isinstance(source, Frame):
             become_frame(frame, source.copy(name=name))
         elif isinstance(source, Column):
@@ -121,7 +121,7 @@ class FrameBackendRest(object):
         def icountwhere(predicate, iterable):
            return ("[1]" for item in iterable if predicate(item))
         arguments = {'frame': self.get_ia_uri(frame),
-                     'where': get_udf_arg(frame, where, icountwhere)}
+                     'udf': get_udf_arg(frame, where, icountwhere)}
         return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
@@ -498,12 +498,12 @@ class FrameBackendRest(object):
 
         return TakeResult(data, updated_schema)
 
-    def create_vertex_frame(self, frame, source, label, graph):
+    def create_vertex_frame(self, frame, source, label, graph, _info=None):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            self.initialize_graph_frame(frame, source, graph)
+        if isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            self.initialize_graph_frame(frame, _info, graph)
             return frame.name  # early exit here
 
         graph.define_vertex_type(label)
@@ -511,12 +511,12 @@ class FrameBackendRest(object):
         self.copy_graph_frame(source_frame, frame)
         return source_frame.name
 
-    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed):
+    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed, _info=None):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            self.initialize_graph_frame(frame, source, graph)
+        if _info is not None and isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            self.initialize_graph_frame(frame, _info, graph)
             return frame.name  # early exit here
 
         graph.define_edge_type(label, src_vertex_label, dest_vertex_label, directed)
@@ -731,7 +731,7 @@ def execute_new_frame_command(command_name, arguments):
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
-    return Frame(frame_info)
+    return Frame(_info=frame_info)
 
 
 

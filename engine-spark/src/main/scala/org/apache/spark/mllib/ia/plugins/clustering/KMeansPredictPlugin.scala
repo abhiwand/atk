@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.model.KMeansPredictArgs
@@ -44,7 +44,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:kmeans/predict"
+  override def name: String = "model:k_means/predict"
 
   /**
    * User documentation exposed in Python.
@@ -119,7 +119,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-    tryNew(Some(Naming.generateName(Some("predicted_frame")))) { newPredictedFrame: FrameMeta =>
+    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
       save(new SparkFrameData(
         newPredictedFrame.meta, predictFrameRDD))
     }.meta
