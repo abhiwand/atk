@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,30 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.frame.partitioning
 
-import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, ModelEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.{ JsValue, JsObject }
-import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.frame.FrameReference
 
-trait ModelStorage {
-
-  def expectModel(modelId: Long): ModelEntity
-
-  def lookup(id: Long): Option[ModelEntity]
-
-  def createModel(model: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity
-
-  def renameModel(model: ModelEntity, newName: String): ModelEntity
-
-  def drop(model: ModelEntity)
-
-  def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
-
-  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
-
-  def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity
-
-}
+/** Arguments to CoalescePlugin (see Spark API) */
+case class CoalesceArgs(frame: FrameReference, numberPartitions: Int, shuffle: Option[Boolean] = Some(false))

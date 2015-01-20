@@ -34,7 +34,7 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetModel
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
+import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
@@ -64,7 +64,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
      * @param model model metadata
      * @return Decorated model for HTTP protocol return
      */
-    def decorate(uri: Uri, model: Model): GetModel = {
+    def decorate(uri: Uri, model: ModelEntity): GetModel = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       ModelDecorator.decorateEntity(uri.toString, links, model)
@@ -103,11 +103,11 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
               } ~
                 post {
                   import spray.httpx.SprayJsonSupport._
-                  implicit val format = DomainJsonProtocol.modelTemplateFormat
+                  implicit val format = DomainJsonProtocol.createEntityArgsFormat
                   implicit val indexFormat = ViewModelJsonImplicits.getModelFormat
-                  entity(as[ModelTemplate]) {
-                    model =>
-                      onComplete(engine.createModel(model)) {
+                  entity(as[CreateEntityArgs]) {
+                    createArgs =>
+                      onComplete(engine.createModel(createArgs)) {
                         case Success(model) => complete(decorate(uri + "/" + model.id, model))
                         case Failure(ex) => ctx => {
                           ctx.complete(500, ex.getMessage)

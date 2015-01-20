@@ -23,18 +23,18 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
+import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
 
 /**
  * Repository for models
  */
-trait ModelRepository[Session] extends Repository[Session, ModelTemplate, Model] with NameableRepository[Session, Model] with GarbageCollectableRepository[Session, Model] {
+trait ModelRepository[Session] extends Repository[Session, ModelTemplate, ModelEntity] with NameableRepository[Session, ModelEntity] with GarbageCollectableRepository[Session, ModelEntity] {
 
   /**
    * Return all the models
    * @param session current session
    * @return all the models
    */
-  def scanAll()(implicit session: Session): Seq[Model]
+  def scanAll()(implicit session: Session): Seq[ModelEntity]
 
 }

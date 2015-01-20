@@ -26,6 +26,7 @@ intelanalytics package init, public API
 import sys
 if not sys.version_info[:2] == (2, 7):
     raise EnvironmentError("Python 2.7 is required for intelanalytics.  Detected version: %s.%s.%s" % tuple(sys.version_info[:3]))
+del sys
 
 from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
@@ -43,7 +44,7 @@ from intelanalytics.core.iapandas import Pandas
 from intelanalytics.rest.udfdepends import Udf
 from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
-from intelanalytics.core.model import LogisticRegressionModel
+from intelanalytics.core.model import _BaseModel
 
 from intelanalytics.rest.connection import server
 connect = server.connect

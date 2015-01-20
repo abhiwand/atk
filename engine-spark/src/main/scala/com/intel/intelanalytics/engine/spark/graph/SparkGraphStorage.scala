@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.{ Status, EntityManager, Naming }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Status, EntityManager, Naming }
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
@@ -91,9 +91,8 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference.id))
 
-    override def create()(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(None)
-    )
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createGraph(
+      GraphTemplate(null))
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectGraph(id)
 

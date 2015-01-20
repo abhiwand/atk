@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine
 import java.net.URI
 
 import com.intel.intelanalytics.{ NotNothing, DefaultsTo }
-import com.intel.intelanalytics.domain.{ UriReference, HasData, HasMetaData }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, HasData, HasMetaData }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -113,8 +113,8 @@ class RegistryReferenceResolver(registry: EntityTypeRegistry) extends ReferenceR
     ReferenceResolver.coerceReference(detailed)
   }
 
-  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]) = {
-    registry.create[T](annotation)
+  def create[T <: UriReference: TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]) = {
+    registry.create[T](args)
   }
 
   /**

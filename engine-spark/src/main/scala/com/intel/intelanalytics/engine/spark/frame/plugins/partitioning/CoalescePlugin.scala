@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,15 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.model.plugins
+package com.intel.intelanalytics.engine.spark.frame.plugins.partitioning
 
-import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModel }
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.frame.partitioning.CoalesceArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-
-import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 
@@ -37,30 +36,28 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
- * Rename a graph in the database
+ * Runs RDD#coalesce (useful for debugging)
  */
-class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
+class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
 
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model/rename"
+  override def name: String = "frame/_coalesce"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
 
   /**
-   * Rename a graph in the database
+   * Runs RDD#coalesce (useful for debugging)
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -68,16 +65,18 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: RenameModel)(implicit invocation: Invocation): ModelEntity = {
+  override def execute(arguments: CoalesceArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val models = engine.models
+    val frames = engine.frames
 
     // validate arguments
-    val modelId = arguments.model.id
-    val model = models.lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
-    val newName = arguments.newName
+    val frame = frames.expectFrame(arguments.frame.id)
 
-    // run the operation and save results
-    models.renameModel(model, newName)
+    // run the operation
+    val frameRdd = frames.loadFrameData(sc, frame)
+    val coalescedRdd = frameRdd.coalesce(arguments.numberPartitions, arguments.shuffle.get)
+
+    // save results
+    frames.saveFrameData(frame.toReference, new FrameRDD(frameRdd.frameSchema, coalescedRdd))
   }
 }

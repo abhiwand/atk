@@ -42,4 +42,5 @@ muted_commands = ['frame/load',
                   'graph/rename',
                   'graph:/rename',
                   'graph:titan/rename',
+                  'model/rename',
                   ]
