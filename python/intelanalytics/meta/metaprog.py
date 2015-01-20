@@ -38,6 +38,7 @@ from decorator import decorator
 
 from intelanalytics.meta.api import get_api_decorator
 from intelanalytics.meta.mute import muted_commands
+from intelanalytics.meta.command import EntityType
 
 _created_classes = {}
 """All the dynamically created loadable classes, added as they are created"""
@@ -54,6 +55,8 @@ LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
 
 EXECUTE_COMMAND_FUNCTION_NAME = 'execute_command'
 ALIASED_EXECUTE_COMMAND_FUNCTION_NAME = 'aliased_execute_command'
+
+INIT_INFO_ARGUMENT_NAME = '_info'
 
 DOC_STUB = 'doc_stub'
 DOC_STUB_LOADABLE_CLASS_PREFIX = 'DocStubs'
@@ -145,6 +148,7 @@ def get_entity_type_from_class_name(class_name):
     return "%s:%s" % (pieces[-1], '_'.join(pieces[:-1]))
 
 
+
 def get_loadable_class_name_from_entity_type(entity_type):
     if not entity_type:
         raise ValueError("Invalid empty entity_type, expected non-empty string")
@@ -172,7 +176,7 @@ def get_loadable_class_from_name(class_name, entity_type):
             return item
     base_class_name = get_base_class_name_from_entity(entity_type)
     base_class = CommandLoadable if base_class_name == CommandLoadable.__name__ or base_class_name == class_name\
-        else get_loadable_class_from_name(base_class_name, entity_type)
+        else get_loadable_class_from_name(base_class_name, EntityType.get_entity_basetype(entity_type))
     loadable_class = create_loadable_class(class_name, base_class, api_globals, "", entity_type)
     api_globals.add(loadable_class)
     return loadable_class
@@ -283,11 +287,13 @@ def load_loadable(loadable_class, command_def, execute_command_function):
     """Adds command dynamically to the loadable_class"""
     check_loadable_class(loadable_class, command_def)
     if command_def.full_name not in muted_commands:
-        function = create_function(loadable_class, command_def, execute_command_function)
+        function =  create_function(loadable_class, command_def, execute_command_function)
         # First add any intermediate member classes to provide intended scoping
         current_class = loadable_class
         for intermediate_name in command_def.intermediates:
             current_class = add_intermediate_class(current_class, intermediate_name)
+        if command_def.is_constructor and current_class is not loadable_class:
+            raise RuntimeError("API load error: special method '%s' may only be defined on entity classes, not on entity member classes (i.e. only one slash allowed)." % command_def.full_name)
         add_command(current_class, command_def, function)
 
 
@@ -308,7 +314,10 @@ def get_loaded_commands(loadable_class):
 def add_command(loadable_class, command_def, function):
     # Add the function if it doesn't already exist or exists as a doc_stub
     if not hasattr(loadable_class, command_def.name) or hasattr(getattr(loadable_class, command_def.name), DOC_STUB):
-        setattr(loadable_class, command_def.name, function)
+        if command_def.is_constructor:
+            loadable_class.__init__ = function
+        else:
+            setattr(loadable_class, command_def.name, function)
         get_loaded_commands(loadable_class).append(command_def)
         #print "%s <-- %s" % (loadable_class.__name__, command_def.full_name)
         logger.debug("Added function %s to class %s", command_def.name, loadable_class)
@@ -342,9 +351,9 @@ def create_execute_command_function(command_def, execute_command_function):
     over the parameter info for validating the arguments during usage
     """
     parameters = command_def.parameters
-    def execute_command(name, selfish, **kwargs):
+    def execute_command(_command_name, _selfish, **kwargs):
         arguments = validate_arguments(kwargs, parameters)
-        return execute_command_function(name, selfish, **arguments)
+        return execute_command_function(_command_name, _selfish, **arguments)
     return execute_command
 
 
@@ -367,6 +376,9 @@ def get_function_kwargs(command_def):
 
 def get_function_text(command_def, body_text='pass', decorator_text=''):
     """Produces python code text for a command to be inserted into python modules"""
+    parameters_text=get_function_parameters_text(command_def)
+    if command_def.is_constructor:
+        parameters_text = parameters_text + ", _info=None"
     return '''{decorator}
 def {func_name}({parameters}):
     """
@@ -375,35 +387,61 @@ def {func_name}({parameters}):
     {body_text}
 '''.format(decorator=decorator_text,
            func_name=command_def.name,
-           parameters=get_function_parameters_text(command_def),
+           parameters=parameters_text,
            doc=command_def.doc,
            body_text=body_text)
 
 
 def get_call_execute_command_text(command_def):
     return "%s('%s', self, %s)" % (EXECUTE_COMMAND_FUNCTION_NAME,
-                             command_def.full_name,
-                             get_function_kwargs(command_def))
+                               command_def.full_name,
+                               get_function_kwargs(command_def))
+
+
+def get_init_text(command_def):
+    return '''
+    base_class.__init__(self)
+    if {info} is None:
+        {info} = {call_execute_create}
+    # initialize from _info
+    self._id = _info.get('id', self._id)
+    self._name = _info.get('name', None)  # todo: remove, move to initialize_from_info
+    # initialize_from_info(self, {info})  todo: implement
+    '''.format(info=INIT_INFO_ARGUMENT_NAME,
+               call_execute_create=get_call_execute_command_text(command_def))
 
 
 def _default_val_to_str(param):
     return param.default if param.default is None or param.data_type not in [str, unicode] else "'%s'" % param.default
 
 
+def compile_function(func_name, func_text, dependencies):
+    func_code = compile(func_text, '<string>', "exec")
+    func_globals = {}
+    eval(func_code, dependencies, func_globals)
+    return func_globals[func_name]
+
+
+def get_base_class_from_entity(entity_type):
+    return get_loadable_class_from_name(get_base_class_name_from_entity(entity_type), entity_type)
+
+
 def create_function(loadable_class, command_def, execute_command_function=None):
     """Creates the function which will appropriately call execute_command for this command"""
     execute_command = create_execute_command_function(command_def, execute_command_function)
-    func_text = get_function_text(command_def, body_text='return ' + get_call_execute_command_text(command_def), decorator_text='@api')
+    if command_def.is_constructor:
+        func_text = get_function_text(command_def, body_text=get_init_text(command_def))
+        dependencies = {'base_class': get_base_class_from_entity(command_def.entity_type), EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
+    else:
+        func_text = get_function_text(command_def, body_text='return ' + get_call_execute_command_text(command_def), decorator_text='@api')
+        api_decorator = get_api_decorator(logging.getLogger(loadable_class.__module__))
+        dependencies = {'api': api_decorator, EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
     try:
-        func_code = compile(func_text, '<string>', "exec")
+        function = compile_function(command_def.name, func_text, dependencies)
     except:
-        sys.stderr.write("Metaprogramming problem compiling %s for class %s" %
-                         (command_def.full_name, loadable_class.__name__))
+        sys.stderr.write("Metaprogramming problem compiling %s for class %s in code: %s" %
+                         (command_def.full_name, loadable_class.__name__, func_text))
         raise
-    func_globals = {}
-    api_decorator = get_api_decorator(logging.getLogger(loadable_class.__module__))
-    eval(func_code, {'api': api_decorator, EXECUTE_COMMAND_FUNCTION_NAME: execute_command}, func_globals)
-    function = func_globals[command_def.name]
     function.command = command_def
     function.__doc__ = command_def.doc
     return function

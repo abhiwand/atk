@@ -29,9 +29,9 @@ import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, Model }
+import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
 import com.intel.intelanalytics.domain.schema.Schema
@@ -47,15 +47,31 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.UserTemplate
 import com.intel.event.{ EventContext, EventLogging }
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.domain.schema.FrameSchema
+import com.intel.intelanalytics.domain.query.QueryTemplate
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.model.ModelEntity
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.schema.EdgeSchema
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.SchemaList
+import com.intel.intelanalytics.domain.model.ModelTemplate
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.UserTemplate
+import com.intel.intelanalytics.domain.schema.VertexSchema
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
@@ -1069,9 +1085,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
   class SlickModelRepository extends ModelRepository[Session]
       with EventLogging {
-    this: Repository[Session, ModelTemplate, Model] =>
+    this: Repository[Session, ModelTemplate, ModelEntity] =>
 
-    class ModelTable(tag: Tag) extends Table[Model](tag, "model") {
+    class ModelTable(tag: Tag) extends Table[ModelEntity](tag, "model") {
       def id = column[Long]("model_id", O.PrimaryKey, O.AutoInc)
 
       def name = column[Option[String]]("name")
@@ -1095,7 +1111,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def lastReadDate = column[DateTime]("last_read_date")
 
       /** projection to/from the database */
-      override def * = (id, name, modelType, description, statusId, data, createdOn, modifiedOn, createdByUserId, modifiedByUserId, lastReadDate) <> (Model.tupled, Model.unapply)
+      override def * = (id, name, modelType, description, statusId, data, createdOn, modifiedOn, createdByUserId, modifiedByUserId, lastReadDate) <> (ModelEntity.tupled, ModelEntity.unapply)
 
     }
 
@@ -1105,10 +1121,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       case (model, id) => model.copy(id = id)
     }
 
-    override def insert(model: ModelTemplate)(implicit session: Session): Try[Model] = Try {
+    override def insert(model: ModelTemplate)(implicit session: Session): Try[ModelEntity] = Try {
       // TODO: table name
       // TODO: user name
-      val m = Model(1, model.name, model.modelType, None, 1L, None, new DateTime(), new DateTime(), None, None)
+      val m = ModelEntity(1, model.name, model.modelType, None, 1L, None, new DateTime(), new DateTime(), None, None)
       modelsAutoInc.insert(m)
     }
 
@@ -1116,25 +1132,25 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       models.where(_.id === id).mutate(f => f.delete())
     }
 
-    override def update(model: Model)(implicit session: Session): Try[Model] = Try {
+    override def update(model: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       val updatedModel = model.copy(modifiedOn = new DateTime)
       models.where(_.id === model.id).update(updatedModel)
       updatedModel
     }
 
-    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Model] = {
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[ModelEntity] = {
       models.drop(offset).take(count).list
     }
 
-    override def scanAll()(implicit session: Session): Seq[Model] = {
+    override def scanAll()(implicit session: Session): Seq[ModelEntity] = {
       models.list
     }
 
-    override def lookup(id: Long)(implicit session: Session): Option[Model] = {
+    override def lookup(id: Long)(implicit session: Session): Option[ModelEntity] = {
       models.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: Option[String])(implicit session: Session): Option[Model] = {
+    override def lookupByName(name: Option[String])(implicit session: Session): Option[ModelEntity] = {
       name match {
         case Some(n) => models.where(_.name === n).firstOption
         case _ => None
@@ -1156,7 +1172,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param age the length of time in milliseconds for the newest possible record to be deleted
      * @param session current session
      */
-    override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[Model] = {
+    override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[ModelEntity] = {
       val oldestDate = DateTime.now.minus(age)
       (for (
         m <- models; if m.name.isNull &&
@@ -1172,7 +1188,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session the user session
      * @return the entity marked as deleted
      */
-    override def updateMetaDataDeleted(entity: Model)(implicit session: Session): Try[Model] = Try {
+    override def updateMetaDataDeleted(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
         .map(m => (m.statusId, m.modifiedOn))
         .update((Status.Deleted, new DateTime))
@@ -1184,7 +1200,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param age the length of time in milliseconds for the newest possible record to be deleted
      * @param session current session
      */
-    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[Model] = {
+    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[ModelEntity] = {
       val oldestDate = DateTime.now.minus(age)
       (for (m <- models; if m.name.isNull && m.statusId === Status.Dead && m.lastReadDate < oldestDate) yield m).list
     }
@@ -1195,7 +1211,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session the user session
      * @return the entity
      */
-    override def updateDataDeleted(entity: Model)(implicit session: Session): Try[Model] = Try {
+    override def updateDataDeleted(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
         .map(m => (m.statusId, m.modifiedOn))
         .update((Status.Dead, new DateTime))
@@ -1207,7 +1223,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param entity entity to be updated
      * @param session the user session
      */
-    def updateLastReadDate(entity: Model)(implicit session: Session): Try[Model] = Try {
+    def updateLastReadDate(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
         .map(m => (m.lastReadDate, m.statusId, m.modifiedOn))
         .update((new DateTime, Status.Dead, new DateTime))

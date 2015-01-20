@@ -29,14 +29,14 @@ import com.intel.intelanalytics.domain.model.ModelTemplate
 import org.joda.time.DateTime
 import org.scalatest.Matchers
 
-class ModelRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
+class ModelEntityRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
 
   "ModelRepository" should "be able to create models" in {
     val modelRepo = slickMetaStoreComponent.metaStore.modelRepo
     slickMetaStoreComponent.metaStore.withSession("model-test") {
       implicit session =>
         val name = Some("my_model")
-        val modelType = "LogisticRegression"
+        val modelType = "model:logistic_regression"
 
         // create a model
         val model = modelRepo.insert(new ModelTemplate(name, modelType))
@@ -60,7 +60,7 @@ class ModelRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val age = 10 * 24 * 60 * 60 * 1000 //10 days
 
         val name = Some("my_model")
-        val modelType = "LogisticRegression"
+        val modelType = "model:logistic_regression"
 
         // create graphs
 
@@ -87,7 +87,7 @@ class ModelRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val age = 10 * 24 * 60 * 60 * 1000 //10 days
 
         val name = Some("my_model")
-        val modelType = "LogisticRegression"
+        val modelType = "model:logistic_regression"
 
         // create graphs
 

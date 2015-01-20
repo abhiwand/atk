@@ -50,12 +50,12 @@ class GraphBackendRest(object):
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-    def create(self, graph, rules, name, storage_format):
+    def create(self, graph, rules, name, storage_format, _info=None):
         logger.info("REST Backend: create graph with name %s: " % name)
-        if isinstance(rules, dict):
-            rules = GraphInfo(rules)
-        if isinstance(rules, GraphInfo):
-            return initialize_graph(graph,rules)._id # Early exit here
+        if isinstance(_info, dict):
+            _info = GraphInfo(_info)
+        if isinstance(_info, GraphInfo):
+            return initialize_graph(graph,_info)._id # Early exit here
         new_graph_id = self._create_new_graph(graph, rules, name or self._get_new_graph_name(rules), storage_format, True if name else False)
         return new_graph_id
 
@@ -105,19 +105,19 @@ class GraphBackendRest(object):
 
     def get_vertex_frames(self, graphid):
         r = self.rest_http.get('graphs/%s/vertices' % graphid)
-        return [VertexFrame(x) for x in r.json()]
+        return [VertexFrame(_info=x) for x in r.json()]
 
     def get_vertex_frame(self,graphid, label):
         r = self.rest_http.get('graphs/%s/vertices?label=%s' % (graphid, label))
-        return VertexFrame(r.json())
+        return VertexFrame(_info=r.json())
 
     def get_edge_frames(self, graphid):
         r = self.rest_http.get('graphs/%s/edges' % graphid)
-        return [EdgeFrame(x) for x in r.json()]
+        return [EdgeFrame(_info=x) for x in r.json()]
 
     def get_edge_frame(self,graphid, label):
         r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
-        return EdgeFrame(r.json())
+        return EdgeFrame(_info=r.json())
 
     def get_vertex_count(self, graph):
         arguments = {'graph': self.get_ia_uri(graph)}

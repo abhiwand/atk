@@ -479,16 +479,16 @@ class Graph(DocStubsGraph, _BaseGraph):
     """
     _entity_type = 'graph:'
 
-    def __init__(self, source=None, name=''):
+    def __init__(self, source=None, name='', _info=None):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         from intelanalytics.rest.graph import GraphInfo
-        if isinstance(source, dict):
+        if isinstance(_info, dict):
             source = GraphInfo(source)
-        if isinstance(source, GraphInfo):
-            self._id = source.id_number
+        if isinstance(_info, GraphInfo):
+            self._id = _info.id_number
         elif source is None:
-            self._id = self._backend.create(self, None, name, 'ia/frame')
+            self._id = self._backend.create(self, None, name, 'ia/frame', _info)
         else:
             raise ValueError("Invalid source value of type %s" % type(source))
 
@@ -669,7 +669,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     _entity_type = 'graph:titan'
 
-    def __init__(self, rules=None, name=""):
+    def __init__(self, rules=None, name="", _info=None):
         try:
             check_api_is_loaded()
             self._id = 0
@@ -677,7 +677,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
             _BaseGraph.__init__(self)
-            self._id = self._backend.create(self, rules, name, 'hbase/titan')
+            self._id = self._backend.create(self, rules, name, 'hbase/titan', _info)
             # logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
