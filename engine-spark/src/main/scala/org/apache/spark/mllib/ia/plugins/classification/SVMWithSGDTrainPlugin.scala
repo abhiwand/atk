@@ -37,6 +37,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 //Implicits needed for JSON conversion
 import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn] {
   /**
