@@ -66,38 +66,6 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
   override def name: String = "frame/correlation_matrix"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate correlation matrix for two or more columns",
-    extendedSummary = Some("""
-
-        Compute the correlation matrix for two or more columns.
-
-        Parameters
-        ----------
-        columns: [ str | list of str ]
-            The names of the column from which to compute the matrix
-
-        Returns
-        -------
-        A matrix with the correlation values for the columns
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
-
-        Examples
-        --------
-        Consider Frame *my_frame*, which accesses a frame that contains a single column named *obs*::
-
-            cor_matirx = my_frame.correlation_matrix(['col_0', 'col_1', 'col_2'])
-
-            cor_matrix.inspect()
-
-                           """)))
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */

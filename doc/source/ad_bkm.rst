@@ -11,19 +11,8 @@ Best Known Methods (Admin)
     ad_gitune
     ad_hbtune
     ad_partit
+    ad_how.rst
 
----
-Yum
----
-
-If you have trouble downloading any of the dependencies run::
-
-    yum clean all
-
-or::
-
-    yum clean expire-cache
-    
 -------------------------
 Configuration information
 -------------------------
@@ -52,14 +41,14 @@ Resolving disk full issue while running Spark jobs
 If you are using a Red Hat cluster or an old CentOS cluster, due to the way the /tmp file system is setup,
 you might see that while running spark jobs, your /tmp drive becomes full and causes the jobs to fail.
 
-This is because Spark and other CDH services, by default use /tmp as the temporary location to store files required during
+This is because Spark and other :abbr:`CDH (Cloudera Hadoop)` services, by default use /tmp as the temporary location to store files required during
 run time including but not limited to shuffle data.
 
 In order to resolve this, follow these instructions:
 
 1)  Stop the intelanalytics service
 
-#)  From CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
+#)  From :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
 
 #)  Now run the following steps on each node:
 
@@ -81,7 +70,7 @@ In order to resolve this, follow these instructions:
 
     #)  Reboot the machine
 
-#)  After all the nodes are rebooted, from CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
+#)  After all the nodes are rebooted, from :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
 
 Spark space concerns
 ====================
@@ -89,7 +78,7 @@ Whenever you run a Spark application, redundant jars and logs go to /va/run/spar
 if configured in Cloudera Manager).
 These can use up a bit of space eventually (over 140MB per command).
 
-* Short-term workarounds:
+* Short-term workarounds\:
 
     *   Periodically delete these files
     *   Create a cron job to delete these files on a periodic basis.
@@ -97,17 +86,17 @@ These can use up a bit of space eventually (over 140MB per command).
 
             00 02 * * * sudo rm -rf /var/run/spark/work/app*
 
-* Long-term fix:
+* Long-term fix\:
 
     *   Spark 1.0 will automatically clean up the files
+
+.. include:: ad_how.rst
 
 ----------
 References
 ----------
 
-Spark Docs
-    | http://spark.apache.org/docs/0.9.0/configuration.html
-    | http://spark.apache.org/docs/0.9.0/tuning.html
+`Spark Docs <https://spark.apache.org/documentation.html>`__
 
 Nice thread on how Shuffle works in Spark:
     http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html

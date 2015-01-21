@@ -116,15 +116,11 @@ function Err {
     fi
     if [ "$2" == "Yes" ]; then
         read -p "View .log file? [Y/n] " UserResponse
-        if [ -z $UserResponse ]; then UserResponse='y'; fi
-        if [ ${UserResponse:0:1} == 'Y' ]; then UserResponse='y';fi
-        if [ ${UserResponse:0:1} == 'y' ]; then
+        if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
             less $LogFile
         fi
         read -p "Abort? [Y/n] " UserResponse
-        if [ -z $UserResponse ]; then UserResponse='y'; fi
-        if [ ${UserResponse:0:1} == 'Y' ]; then UserResponse='y';fi
-        if [ ${UserResponse:0:1} == 'y' ]; then
+        if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
             return 1
         fi
     else
@@ -233,7 +229,7 @@ function main {
             # debug: Update scala server
             pushd ../ > /dev/null
             update_scala $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" == "1" ]; then popd; return 1; fi
+            if [ "$?" != "0" ]; then popd; return 1; fi
 
             # debug: Update the additional python documentation files
             cd python
@@ -259,8 +255,9 @@ function main {
                     else
                         echo "The sphinx documentation system does not seem to be present."
                         read -p "Abort? [Y/n] "
-                        if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-                        if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+                        if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+                            return 1
+                        fi
                         SphinxFlag=No
                     fi
                 fi
@@ -282,8 +279,9 @@ function main {
             else
                 echo "The latex to pdf convert does not seem to be present."
                 read -p "Abort? [Y/n] "
-                if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-                if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+                if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+                    return 1
+                fi
             fi
         fi
     fi
@@ -298,8 +296,9 @@ function main {
         else
             echo "The zip utility does not seem to be present."
             read -p "Abort? [Y/n] "
-            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-            if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+            if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+                return 1
+            fi
         fi
     fi
 }
@@ -405,14 +404,16 @@ function update_python {
         else
             echo "The python script cmdgen.py seems to be missing."
             read -p "Abort? [Y/n] "
-            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-            if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+            if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+                return 1
+            fi
         fi
     else
         echo "Python seems to be missing."
         read -p "Abort? [Y/n] "
-        if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-        if [ "${UserResponse:0:1}" == 'y' ]; then return 1; fi
+        if [ -z $UserResponse -o ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+            return 1
+        fi
     fi
     return 0
 }
@@ -429,16 +430,16 @@ function update_scala {
         RunCommand="mvn compile"
         log_step "$RunCommand" $2 $4
         $RunCommand > $3
-        if [ "$?" == "1" ]; then
+        if [ "$?" != "0" ]; then
             Err "$RunCommand" $1 $2 $3 $4
             if [ "$?" == "1" ]; then return 1; fi
             RunCommand="mvn clean install -DskipTests"
             read -p "Try \"$RunCommand\"? [y|N]" UserResponse
-            if [ "${UserResponse:0:1}" == 'Y' ]; then UserResponse='y';fi
-            if [ "${UserResponse:0:1}" == 'y' ]; then
-                do_this "$RunCommand" $1 $2 $3 $4
-                return $?
+            if [ -z $UserResponse -o ${UserResponse:0:1} == 'N' -o ${UserResponse:0:1} == 'n' ]; then
+                return 1
             fi
+            do_this "$RunCommand" $1 $2 $3 $4
+            return $?
         else
             rm $3 > /dev/null
         fi

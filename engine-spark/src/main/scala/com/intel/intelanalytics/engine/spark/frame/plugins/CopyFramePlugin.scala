@@ -44,8 +44,6 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
   override def name: String = "frame/copy"
 
-  override def doc: Option[CommandDoc] = None // Provided in the Python client, since there is special logic there
-
   override def numberOfJobs(arguments: CopyFrameArgs)(implicit invocation: Invocation) = {
     arguments.where match {
       case Some(function) => 2 // predicated copy requires a row count operation

@@ -55,13 +55,6 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, Graph] {
   override def name: String = "graph:titan/load"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
