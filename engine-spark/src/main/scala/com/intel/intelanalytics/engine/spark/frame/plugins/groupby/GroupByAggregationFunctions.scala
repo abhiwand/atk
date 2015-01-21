@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
-import com.intel.intelanalytics.domain.schema.{Column, DataTypes, FrameSchema, Schema}
+import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 
