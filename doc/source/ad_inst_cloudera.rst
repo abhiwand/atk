@@ -48,9 +48,9 @@ Specifying Hosts
 
 This step connects your master node to the rest of the cluster.
 The syntax used to search for hostnames is identical to what you will find in the ``/etc/hosts`` file or
-by :abbr:`DNS (Domain Name Service)` lookup.
+by |DNS| lookup.
 
-Hit *Continue* through the "Thank you for choosing Cloudera Manager and CDH" window.
+Hit *Continue* through the "Thank you for choosing Cloudera Manager and |CDH|" window.
 In the text field, enter the hostnames of each node in the following syntax::
 
     master.clustername.cluster
@@ -66,22 +66,22 @@ If all correct hosts are selected, hit *Continue*.
 Otherwise, click *New Search*. 
 
 .. image:: ad_inst_cloudera_04.*
-   :width: 80%
+   :width: 60%
    :align: center
 
-----------------------------
-Select CDH Parcel Repository
-----------------------------
+------------------------------
+Select |CDH| Parcel Repository
+------------------------------
 
 The repository/proxy information should populate the parcel list in a minute.
 If not, click on *More Options* field to reconfigure.
 Make sure ``CDH-5.1.2-1.cdh5.1.2.p).3`` is selected under *Remote Parcel Repository* and then hit *Continue*.
 
-.. image:: ad_inst_cloudera_05.*
-   :width: 80%
-   :align: center
+.. figure:: ad_inst_cloudera_05.*
+    :width: 60%
+    :align: center
 
-Note: Screencap is out of date, but resembles what you should see.
+    Note: Screencapture is out of date, but resembles what you should see.
 
 -----------------------
 Java Encryption Setting
@@ -91,7 +91,7 @@ Java encryption is not currently supported.
 ---------------------
 SSH Login Credentials
 ---------------------
-Fill out appropriate login information for CDH administrator user.
+Fill out appropriate login information for |CDH| administrator user.
 
 --------------------------------------
 Wait Through Installation on All Nodes
@@ -104,7 +104,7 @@ You will be greeted by more progress bars.
 Wait and hit *Continue* when they finish too.   
 
 .. image:: ad_inst_cloudera_07.*
-   :width: 80%
+   :width: 60%
    :align: center
 
 --------------------------------------
@@ -116,12 +116,12 @@ Take note of anything else that doesn't have a green check mark next to it and r
 Click *Finish*
 
 .. image:: ad_inst_cloudera_08.*
-   :width: 80%
+   :width: 60%
    :align: center
 
---------------------------------------------------- 
-Choose the CDH5 Services to Install On Your Cluster
---------------------------------------------------- 
+------------------------------------------------------
+Choose the |CDH| 5 Services to Install On Your Cluster
+------------------------------------------------------
 
 The following windows will bring you through the process of installing services and roles on each node in the cluster.
 This is our default setup.
@@ -130,7 +130,7 @@ In the "Choose a combination of services to install" dialogue, select the "Custo
 In the drop-down menu, mark the following boxes:
 
 * HBase
-* :abbr:`HDFS (Hadoop Distributed File System)`
+* HDFS
 * Oozie
 * Spark
 * Sqoop 2
@@ -140,7 +140,7 @@ In the drop-down menu, mark the following boxes:
 Click *Continue*.                
 
 .. image:: ad_inst_cloudera_09.*
-   :width: 80%
+   :width: 60%
    :align: center
 
 --------------------------
@@ -151,7 +151,7 @@ This page allows you to designate which roles your different nodes will take up.
 In a default loadout, almost all of these fields will be left to their default, but there are four that need to be changed.
 
 1. Under the HBase section, click on the *HBase Thrift Server* dialogue and select the "master" node of your cluster
-#. Under the :abbr:`HDFS (Hadoop Distributed File System)` section, click on the *Secondary Name Node* dialogue and select "node01" of your cluster
+#. Under the |HDFS| section, click on the *Secondary Name Node* dialogue and select "node01" of your cluster
 #. Under the *YARN* section, click on the *Job History Server* dialogue and select "node01" of your cluster
 #. Under the *ZooKeeper* section, click on the *Server* dialogue and select "node01", "node02" and "node03" of your cluster
 
@@ -160,14 +160,14 @@ Leave all other fields in their default values and click *Continue*.
 Changes to make near the top:
 
 .. image:: ad_inst_cloudera_10a.*
-   :width: 80%
+   :width: 60%
    :align: center
  
 
 Changes to make near the bottom:
 
 .. image:: ad_inst_cloudera_10b.*
-   :width: 80%
+   :width: 60%
    :align: center
  
 -------------- 
@@ -181,7 +181,7 @@ Click *Test Connection*.
 If successful, click *Continue*.
 
 .. image:: ad_inst_cloudera_11.*
-   :width: 80%
+   :width: 60%
    :align: center
  
 -------------- 
@@ -212,13 +212,13 @@ The next page requires no interaction. Just more loading bars.
     #.  Select the *Work Directory* field and change the value to a directory with the capacity to store lots of temporaty data (the /mnt directory for virtual clusers)
 
 .. image:: ad_inst_cloudera_13.*
-   :width: 50%
+   :width: 40%
    :align: center
  
 ------------------------ 
 Final Settings and Tests
 ------------------------ 
-Test functionality of :abbr:`HDFS (Hadoop Distributed File System)`.
+Test functionality of |HDFS|.
 
 ------
 Tweaks
@@ -230,24 +230,33 @@ We recommend at least 4GB of memory per map task to cater for graphs with supern
 Giraph jobs are scheduled using YARN.
 If a Giraph job requests twice the amount of memory configured in YARN, then the YARN resource manager will not schedule it causing the job to hang.
 
-To run Giraph jobs, ensure that the memory settings in CDH match those in application.conf using one of the following approaches: 
+To run Giraph jobs, ensure that the memory settings in |CDH| match those in application.conf using one of the following approaches: 
 
-1.  Modify the following YARN configuration in CDH to match the setting under intel.analytics.giraph in application.conf.
-    Under the YARN section in CDH, click on *Configuration* and select *View and Edit*.
+1.  Modify the following YARN configuration in |CDH| to match the setting under intel.analytics.giraph in application.conf.
+    Under the YARN section in |CDH|, click on *Configuration* and select *View and Edit*.
 
     a.  Search for ``mapreduce.map.memory.mb`` in the search box on the upper left corner.
         Modify ``mapreduce.map.memory.mb`` to match mapreduce.map.memory.mb in application.conf (currently 8192 MB)
     #.  Search for ``mapreduce.map.java.opts.max`` in the search box.
         Modify this setting to match mapreduce.map.java.opts in application.conf (currently 6554MB).
         The rule of thumb is that mapreduce.map.java.opts.max should be at most 85% of mapreduce.map.memory.mb
+    #.  Search for ``yarn.nodemanager.resource.memory-mb`` in the search box. 
+        Modify this setting to a multiple of ``mapreduce.map.memory.mb``.
+        For example, if you would like to run at most 4 mappers on each node, and ``mapreduce.map.memory.mb`` is set to 8192MB, then set ``yarn.nodemanager.resource.memory-mb`` to 32768MB.
     #.  Save these changes.
     #.  Click on *Actions*, on the top-right corner and then *Deploy Client Configuration* to update the configurations across the cluster.
     #.  Restart YARN.
 
-#.  Limit the Giraph memory allocation in application.conf to match the configured CDH settings in YARN.
+#.  Limit the Giraph memory allocation in application.conf to match the configured |CDH| settings in YARN.
     The relevant settings in our application.conf file are in intel.analytics.giraph:
 
     a.  mapreduce.map.memory.mb. This setting should match mapreduce.map.memory.mb in YARN.
     #.  mapreduce.map.java.opts. This setting should match mapreduce.map.java.opts.max in YARN.
+    #.  giraph.maxWorkers.
+        The maximum value for this setting should be the maximum number of map tasks that can run on the cluster - 1.
+        One mapper is reserved for the Giraph master, while the rest of the mappers are Giraph workers.
+        Since Giraph is memory-intensive, a good estimate for giraph.maxWorkers is ((``Number of Yarn node managers`` * ``yarn.nodemanager.resource.memory-mb`` / ``yarn.nodemanager.resource.memory-mb``)-1).
 
 .. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html
+
+

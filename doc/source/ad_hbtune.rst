@@ -3,7 +3,7 @@ HBase Performance Tuning
 
 Two comprehensive sources for performance tuning in HBase are:
 
-*   `HBase reference guide <http://hbase.apache.org/book.html#important_configurations>`_
+*   `HBase reference guide <http://hbase.apache.org/book.html#important_configurations>`__
 
 *   `The HBase Administration Cookbook`_
 
@@ -23,7 +23,7 @@ Remember to sync these changes to all servers in the cluster.
     For latency-sensitive applications, Cloudera recommends **-XX:+UseParNewGC** and
     **-XX:+UseConcMarkSweepGC** in *hbase-env.sh*.
     The MemStore-Local Allocation buffers (MSLAB) which reduce heap fragmentation under heavy write-load are
-    enabled by default in HBase 0.94.
+    enabled by default in HBase.
     The MSLAB setting is **hbase.hregion.memstore.mslab.enabled** in *hbase-site.xml*.
     http://blog.cloudera.com/blog/2011/02/avoiding-full-gcs-in-hbase-with-memstore-local-allocation-buffers-part-1
 
