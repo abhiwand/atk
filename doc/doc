@@ -444,7 +444,7 @@ function update_scala {
             rm $3 > /dev/null
         fi
     else
-        Err "Maven does not appear installed." $1 $2 $3 $4
+        Err "Maven does not appear to be installed." $1 $2 $3 $4
         if [ "$?" == "1" ]; then return 1; fi
     fi
     return 0
