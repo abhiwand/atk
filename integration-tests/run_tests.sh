@@ -40,8 +40,17 @@ then
 fi
 
 PORT=19099
+COUNTER=0
 until netstat -atn | grep -q :$PORT
 do
+    if [ $COUNTER -gt 90 ]
+    then
+        echo "$NAME Tired of waiting for API Server to start up, giving up..."
+        $DIR/api-server-stop.sh
+        exit 3
+    else
+        let COUNTER=COUNTER+1
+    fi
     echo "$NAME Waiting for API Server to start up on port $PORT..."
     sleep 1
 done
@@ -63,7 +72,7 @@ $DIR/api-server-stop.sh
 
 if [[ $SMOKE_TEST_SUCCESS != 0 ]] ; then
    echo "$NAME Python smoke tests FAILED"
-   ecoh "$NAME bailing out early, no reason to run any other tests if smoke tests are failing"
+   echo "$NAME bailing out early, no reason to run any other tests if smoke tests are failing"
    echo "$NAME see nosetest output: $OUTPUT1"
    echo "$NAME also see log output in target dir"
    exit 1

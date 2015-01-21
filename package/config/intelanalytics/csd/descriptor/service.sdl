@@ -132,7 +132,6 @@
                     "required" : "true",
                     "type" : "memory",
                     "unit" : "bytes",
-                    "min" : 268435456,
                     "default" : 536870912,
                     "scaleFactor" : 1.3,
                     "autoConfigShare" : 100
@@ -344,7 +343,6 @@
                       "required": "false",
                       "type" : "memory",
                       "unit" : "megabytes",
-                      "min" : 512,
                       "default" : 8192
                 },
                 {

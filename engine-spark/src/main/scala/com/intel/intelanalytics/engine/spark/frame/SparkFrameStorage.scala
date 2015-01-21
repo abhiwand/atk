@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
-import com.intel.intelanalytics.domain.{ Status, Naming, EntityManager }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Status, Naming, EntityManager }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine._
@@ -76,8 +76,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference.id))
 
-    override def create()(implicit invocation: Invocation): Reference =
-      storage.create(DataFrameTemplate(None))
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference =
+      storage.create(args)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(id)
 
@@ -471,16 +471,17 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(None))(implicit invocation: Invocation): FrameEntity = {
+  override def create(arguments: CreateEntityArgs = CreateEntityArgs())(implicit invocation: Invocation): FrameEntity = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-          if (frameTemplate.name != None) {
-            metaStore.frameRepo.lookupByName(frameTemplate.name).foreach { existingFrame =>
-              throw new DuplicateNameException("frame", frameTemplate.name.get, "Frame with same name exists. Create aborted.")
+          if (arguments.name != None) {
+            metaStore.frameRepo.lookupByName(arguments.name).foreach {
+              existingFrame =>
+                throw new DuplicateNameException("frame", arguments.name.get, "Frame with same name exists. Create aborted.")
             }
           }
-
+          val frameTemplate = DataFrameTemplate(arguments.name)
           val frame = metaStore.frameRepo.insert(frameTemplate).get
 
           //remove any existing artifacts to prevent collisions when a database is reinitialized.
@@ -544,13 +545,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * the frame is deleted from the metastore.  Typical usage would be during the creation of a brand new frame,
    * where data processing needs to occur, any error means the frame should not continue to exist in the metastore.
    *
-   * @param template - template describing a new frame
+   * @param args - create entity arguments
    * @param work - Frame to Frame function.  This function typically loads RDDs, does work, and saves RDDS
    * @return - the frame result of work if successful, otherwise an exception is raised
    */
   // TODO: change to return a Try[DataFrame] instead of raising exception?
-  def tryNewFrame(template: DataFrameTemplate)(work: FrameEntity => FrameEntity)(implicit invocation: Invocation): FrameEntity = {
-    val frame = create(template)
+  def tryNewFrame(args: CreateEntityArgs = CreateEntityArgs())(work: FrameEntity => FrameEntity)(implicit invocation: Invocation): FrameEntity = {
+    val frame = create(args)
     Try {
       work(frame)
     } match {

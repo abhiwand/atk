@@ -24,12 +24,33 @@
 package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.frame.FrameReferenceManagement._
 import com.intel.intelanalytics.engine.EntityTypeRegistry
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+
+trait ModelRef extends UriReference {
+
+  override def entityType: EntityType = ModelEntityType
+
+}
+
+case class ModelReferenceImpl(override val id: Long) extends ModelRef
+
+trait ModelInfo extends ModelRef {
+
+  /**  The entity subtype, like "logistic_regression" */
+  //def entitySubtype: String =
+}
+
+//case class ModelInfoImpl() extends ModelInfo
+
+case class MyBrickInfo(override val id: Long, color: String, weight: Long) extends ModelInfo {
+  //require(ModelReferenceManagement.getMetaData(ModelReferenceManagement.getReference(id)).entitySubtype == "my_brick")
+
+  //override def entitySubtype: String = "my_brick"
+}
 
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
@@ -80,7 +101,7 @@ object ModelReferenceManagement extends EntityManager[ModelEntityType.type] { se
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
 
-  override def create()(implicit invocation: Invocation): Reference = ???
+  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
 
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new ModelReference(id)
 

@@ -23,14 +23,14 @@
 
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.model.Model
+import com.intel.intelanalytics.domain.model.ModelEntity
 import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetModels, GetModel }
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
  * for delivering via REST services
  */
-object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
+object ModelDecorator extends EntityDecorator[ModelEntity, GetModels, GetModel] {
 
   /**
    * Decorate a single entity (like you would want in "GET /entities/id")
@@ -40,7 +40,7 @@ object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
    * @param entity the entity to decorate
    * @return the View/Model
    */
-  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Model): GetModel = {
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: ModelEntity): GetModel = {
 
     GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList, entity.entityType)
   }
@@ -52,7 +52,7 @@ object ModelDecorator extends EntityDecorator[Model, GetModels, GetModel] {
    * @param entities the list of entities to decorate
    * @return the View/Model
    */
-  override def decorateForIndex(uri: String, entities: Seq[Model]): List[GetModels] = {
+  override def decorateForIndex(uri: String, entities: Seq[ModelEntity]): List[GetModels] = {
     entities.map(model => new GetModels(id = model.id,
       name = model.name,
       url = uri + "/" + model.id,

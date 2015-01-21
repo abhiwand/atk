@@ -23,27 +23,28 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, Model }
+import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.{ JsValue, JsObject }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 trait ModelStorage {
 
-  def expectModel(modelId: Long): Model
+  def expectModel(modelId: Long): ModelEntity
 
-  def lookup(id: Long): Option[Model]
+  def lookup(id: Long): Option[ModelEntity]
 
-  def createModel(model: ModelTemplate)(implicit invocation: Invocation): Model
+  def createModel(model: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity
 
-  def renameModel(model: Model, newName: String): Model
+  def renameModel(model: ModelEntity, newName: String): ModelEntity
 
-  def drop(model: Model)
+  def drop(model: ModelEntity)
 
-  def getModels()(implicit invocation: Invocation): Seq[Model]
+  def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
 
-  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[Model]
+  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
 
-  def updateModel(model: Model, newData: JsObject)(implicit invocation: Invocation): Model
+  def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity
 
 }
