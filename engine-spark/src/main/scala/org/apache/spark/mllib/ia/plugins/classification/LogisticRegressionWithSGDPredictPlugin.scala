@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.ModelPredict
+import com.intel.intelanalytics.domain.model.LogisticRegressionWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -34,6 +34,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -41,7 +42,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPredict, FrameEntity] {
+class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
    *
@@ -88,7 +89,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ModelPredict)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation) = 9
 
   /**
    * Get the predictions for observations in a test frame
@@ -99,46 +100,36 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ModelPre
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ModelPredict)(implicit invocation: Invocation): FrameEntity =
+  override def execute(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
       val frames = engine.frames
 
-      //validate arguments
-      val frameId = arguments.frame.id
-      val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
-      val modelMeta = models.expectModel(modelId)
+      val inputFrame = frames.expectFrame(arguments.frame.id)
+      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
-      val predictFrameRDD = frames.loadFrameData(sc, inputFrame)
-      val predictRowRDD: RDD[Row] = predictFrameRDD.toLegacyFrameRDD.rows
-
-      val observationsVector = predictFrameRDD.toVectorRDD(List(arguments.observationColumn))
+      val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
 
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
       val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
 
       //predicting a label for the observation columns
-      val labeledRDD: RDD[Row] = observationsVector.map { point =>
+      val predictionsRDD = inputFrameRDD.mapRows(row => {
+        val array = row.valuesAsArray(arguments.observationColumns)
+        val doubles = array.map(i => DataTypes.toDouble(i))
+        val point = Vectors.dense(doubles)
         val prediction = logRegModel.predict(point)
-        Array[Any](prediction)
-      }
+        row.addValue(prediction)
+      })
 
-      // Creating a new RDD with existing frame's entries and an additional column for predicted label
-      val indexedPredictedRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
-      val indexedLabeledRowRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
-      val result: RDD[sql.Row] = indexedPredictedRowRDD.join(indexedLabeledRowRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-      // Creating schema for the new frame
-      val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
-
-      val outputFrameRDD = new FrameRDD(newSchema, result)
-
-      tryNew(CreateEntityArgs(description = Some("create by logistic regression prediction command"))) { newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, outputFrameRDD))
+      tryNew(CreateEntityArgs(description = Some("created by LogisticRegressionWithSGDs predict operation"))) {
+        newPredictedFrame: FrameMeta =>
+          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRDD))
       }.meta
     }
 
