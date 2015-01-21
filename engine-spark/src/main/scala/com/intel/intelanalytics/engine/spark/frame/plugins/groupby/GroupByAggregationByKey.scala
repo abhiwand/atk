@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
-import com.intel.intelanalytics.domain.schema.{Column, DataTypes, FrameSchema}
+import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAccumulators._
 import org.apache.spark.SparkContext._
@@ -45,13 +45,12 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
                               aggregationColumns: List[Column],
                               aggregationArguments: List[(String, String, String)]) extends Serializable {
 
-  type U = (aggregator#U) forSome {type aggregator >: GroupByAccumulator <: GroupByAccumulator}
+  type U = (aggregator#U) forSome { type aggregator >: GroupByAccumulator <: GroupByAccumulator }
 
   val numAggregationColumns = aggregationColumns.length
   val columnAccumulators = getColumnAccumulators(aggregationArguments, aggregationColumns)
   val accumulators = columnAccumulators.map(_.accumulator).toArray
   val initialAccumulatorValues = accumulators.map(_.zero)
-
 
   /**
    * Computes the aggregated values (Avg, Count, Max, Min, Mean, Sum, Stdev, ...) for specified columns grouped by key.
@@ -59,16 +58,18 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    * @return Row RDD with results of aggregation
    */
   def aggregateByKey(): RDD[Rows.Row] = {
-    pairedRDD.map { case (key, row) =>
-      mapValues(key, row, columnAccumulators)
+    pairedRDD.map {
+      case (key, row) =>
+        mapValues(key, row, columnAccumulators)
     }
       .aggregateByKey[Seq[Any]](initialAccumulatorValues)(
         (accumulatorValues, columnValues) => accumulateValues(accumulatorValues, columnValues),
         (accumulatorValues1, accumulatorValues2) => combineAccumulators(accumulatorValues1, accumulatorValues2)
       )
-      .map { case (key, row) =>
-      getResults(key, row)
-    }
+      .map {
+        case (key, row) =>
+          getResults(key, row)
+      }
   }
 
   /**
@@ -76,7 +77,7 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    *
    * @param aggregationArguments List of aggregation arguments (i.e., aggregation function, column, new column name)
    * @param aggregationColumns Columns to aggregate
-   * @return  List of columns and corresponding accumulators 
+   * @return  List of columns and corresponding accumulators
    */
   private def getColumnAccumulators(aggregationArguments: List[(String, String, String)], aggregationColumns: List[Column]): List[ColumnAccumulator] = {
     val aggregationSchema = FrameSchema(aggregationColumns)
@@ -123,7 +124,6 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
     (key, seq)
   }
 
-
   /**
    * Accumulates column values for a given key
    *
@@ -132,7 +132,7 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    * @return  Updated accumulated values
    */
   private def accumulateValues(accumulatorValues: Seq[Any],
-                       columnValues: Seq[GroupByAccumulator#V]): Seq[U] = {
+                               columnValues: Seq[GroupByAccumulator#V]): Seq[U] = {
     var i = 0
     val buf = new ListBuffer[U]()
 
@@ -158,7 +158,7 @@ class GroupByAggregationByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    * @return Combined accumulator values
    */
   private def combineAccumulators(accumulatorValues1: Seq[Any],
-                          accumulatorValues2: Seq[Any]): Seq[U] = {
+                                  accumulatorValues2: Seq[Any]): Seq[U] = {
     var i = 0
     val buf = new ListBuffer[U]()
 
