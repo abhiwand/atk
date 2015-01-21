@@ -11,12 +11,12 @@ In particular, Blei's 2011 paper provides a nice introduction, and is freely-ava
 Latent Dirichlet Allocation (LDA) is a commonly-used algorithm for topic modeling, but, more broadly,
 is considered a dimensionality reduction technique.
 It contrasts with other approaches (for example, latent semantic indexing), in that it creates what's referred to as a generative
-probabilistic model :math:`-` a statistical model that allows the algorithm to generalize its approach to topic assignment to other,
+probabilistic model — a statistical model that allows the algorithm to generalize its approach to topic assignment to other,
 never-before-seen data points.
 For the purposes of exposition, we'll limit the scope of our discussion of LDA to the world of natural language processing,
 as it has an intuitive use there (though LDA can be used on other types of data).
 In general, LDA represents documents as random mixtures over topics in the corpus.
-This makes sense, if one can envision almost any work of writing one has encountered :math:`-` writing is rarely about a single subject!
+This makes sense, if one can envision almost any work of writing one has encountered — writing is rarely about a single subject!
 Take the case of a news article on the President of the United States of America's approach to healthcare as an example.
 One could reasonably assign topics like President, USA, health insurance, politics, or healthcare to such a work,
 though it is likely to primarily discuss the President and healthcare.
@@ -31,7 +31,7 @@ For example, this means that if one were using LDA to group online news articles
 it would be possible to use the fitted model to help categorize newly-published news stories.
 Such an application is beyond the scope of approaches like LSI.
 What's more, when fitting an LSI model, the number of parameters that have to be estimated scale linearly with the number of documents in the corpus,
-whereas the number of parameters to estimate for an LDA model scales with the number of topics :math:`-` a much lower number,
+whereas the number of parameters to estimate for an LDA model scales with the number of topics — a much lower number,
 making much better-suited to working with large data sets.
 
 The Typical LDA Workflow
@@ -55,7 +55,7 @@ so it's important that the data scientist familiarizes him or herself with the s
 the text originated.
 For example, in the biomedical text analytics community, it is common practice for text analytics workflows to involve pre-processing for
 identifying negation statements (Chapman et al., 2001 [#LDA2]_ ).
-The reason for this is many analysts in that domain are examining text for diagnostic statements :math:`-` thus, failing to identify
+The reason for this is many analysts in that domain are examining text for diagnostic statements — thus, failing to identify
 a negated statement in which a disease is mentioned could lead to undesirable false-positives, but this phenomenon may not arise in every domain.
 In general, both stemming and stop word filtering are recommended steps for topic modeling pre-processing.
 Stemming refers to a set of methods used to normalize different tenses and variations of the same word (for example, stemmer, stemming, stemmed, and stem).
@@ -80,7 +80,7 @@ Thus, each word will be interpreted independent of where it occurs in a document
 In the text analytics field, this is often referred to as a *bag of words* approach to tokenization, the process of separating input text into
 composite features to be analyzed by some algorithm.
 When choosing pre-processing steps, it helps to keep this in mind.
-Don't worry too much about removing words or modifying their format :math:`-` you're not manipulating your data!
+Don't worry too much about removing words or modifying their format — you're not manipulating your data!
 These steps simply make it easier for the topic modeling algorithm to find the latent topics that comprise your corpus.
 
 Assignment to training or testing partition
@@ -115,7 +115,7 @@ with the we get on the edge in question denoting the number of times the word wa
 After graph construction, many analysts choose to normalize the weights using one of a variety of normalization schemes.
 One approach is to normalize the weights to sum to 1, while another is to use an approach called term frequency-inverse document frequency (tfidf),
 where the resultant weights are meant to reflect how important a word is to a document in the corpus.
-Whether to use normalization :math:`-` or what technique to use :math:`-` is an open question,
+Whether to use normalization — or what technique to use — is an open question,
 and will likely depend on the characteristics of the text being analyzed.
 Typical text analytics experiments will try a variety of approaches on a small subset of the data to determine what works best.
 
@@ -161,7 +161,7 @@ Evaluation
 ----------
 As with every machine learning algorithm, evaluating the accuracy of the model that has been obtained is an important step before
 interpreting the results.
-With many types of algorithms, the best practices in this step are straightforward :math:`-` in supervised classification, for example,
+With many types of algorithms, the best practices in this step are straightforward — in supervised classification, for example,
 we know the true labels of the data being classified, so evaluating performance can be as simple as computing the number of errors,
 calculating receiver operating characteristic, or F1 measure.
 With topic modeling, the situation is not so straightforward.
@@ -171,7 +171,7 @@ Evaluation, then, should proceed with this in mind, and an examination of homoge
 each grouping is often done.
 This issue is discussed further in Blei's 2011 introduction to topic modeling [#LDA7]_ .
 It is of course possible to evaluate a topic model from a statistical perspective using our hold-out testing document
-collection :math:`-` and this is a recommended best practice :math:`-` however, such an evaluation does not assess the topic model
+collection — and this is a recommended best practice — however, such an evaluation does not assess the topic model
 in terms of how they are typically used.
 
 Interpretation of results
@@ -360,4 +360,3 @@ Data scientists will often set some threshold value to make a categorical judgme
 .. [#LDA6] http://machinelearning.wustl.edu/mlpapers/paper_files/NIPS2006_511.pdf
 .. [#LDA7] http://www.cs.princeton.edu/~blei/papers/Blei2011.pdf
 
-.. |IA| replace:: Intel Analytics

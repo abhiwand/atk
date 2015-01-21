@@ -24,7 +24,7 @@ Base Configuration
 
 1. Configure client-side :abbr:`DNS (Domain Name Service)`
 ==========================================================
-Insure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
+Ensure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
 
 2. Disable Firewall
 ===================
@@ -69,8 +69,8 @@ If working behind a proxy, make sure system proxy settings are configured.
     yum clean all
     yum distro-sync
 
-7. Determine primary CDH user
-=============================
+7. Determine primary :abbr:`CDH (Cloudera Hadoop)` user
+=======================================================
 
 Cloudera supports use of root or sudo user as administration user
 If using sudo insure user has full nopassword sudo privileges.

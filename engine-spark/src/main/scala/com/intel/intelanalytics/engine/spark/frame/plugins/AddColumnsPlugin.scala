@@ -48,12 +48,6 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/add_columns"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
 
   /**
    * Adds one or more new columns to the frame by evaluating the given func on each row.

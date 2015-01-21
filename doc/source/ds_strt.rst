@@ -23,6 +23,23 @@ You'll want to know about `Apache Hadoop`_ * and its various components.
 We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
 The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
 
+.. _windows_python_setup:
+
+--------------------
+Windows Python Setup
+--------------------
+
+1. Download Anaconda with python 2.7.
+
+#. Install
+
+   - By default, Anaconda installs to the user's AppData hidden folder. It's better to put this in a more accessible location, like ``c:\anaconda``. This is the only change from the default installation necessary.
+
+#. Open a command prompt.
+
+#. Run the command: ``conda create -n intelanalytics-python python=2.7 numpy=1.8 requests=2.3 ordereddict=1.1``. This creates a virtual python environment that mimics the cluster's configuration.
+
+
 -----------------------------------
 Integrated Development Environments
 -----------------------------------
@@ -111,4 +128,3 @@ If you need to debug changes to the scripts or peak behind the curtain, the log 
 .. _Apache Giraph: http://giraph.apache.org/ 
 .. _Gremlin: https://github.com/tinkerpop/gremlin/wiki
 
-.. |IA| replace:: Intel Analytics
