@@ -30,6 +30,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 trait FrameStorage {
 
@@ -42,7 +43,7 @@ trait FrameStorage {
   def lookup(id: Long)(implicit invocation: Invocation): Option[FrameEntity]
   def lookupByName(name: Option[String])(implicit invocation: Invocation): Option[FrameEntity]
   def getFrames()(implicit invocation: Invocation): Seq[FrameEntity]
-  def create(frameTemplate: DataFrameTemplate)(implicit invocation: Invocation): FrameEntity
+  def create(arguments: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
   def renameFrame(frame: FrameEntity, newName: String)(implicit invocation: Invocation): FrameEntity
   def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity
   def getRows(frame: FrameEntity, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row]

@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.model
 
 import com.intel.event.EventLogging
-import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
+import com.intel.intelanalytics.{ DuplicateNameException, EventLoggingImplicits, NotFoundException }
 import com.intel.intelanalytics.domain.model._
-import com.intel.intelanalytics.domain.{ Status, EntityManager }
+import com.intel.intelanalytics.domain.{ Status, CreateEntityArgs, EntityManager }
 import com.intel.intelanalytics.engine.{ EntityTypeRegistry, ModelStorage }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -37,6 +37,7 @@ import scala.Some
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.SparkAutoPartitioner
 import com.intel.intelanalytics.component.ClassLoaderAware
+import scala.slick.model
 
 import scala.util.Try
 
@@ -48,7 +49,7 @@ import scala.util.Try
 class SparkModelStorage(metaStore: MetaStore)
     extends ModelStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
   storage =>
-  def updateLastReadDate(model: Model): Try[Model] = {
+  def updateLastReadDate(model: ModelEntity): Try[ModelEntity] = {
     metaStore.withSession("model.updateLastReadDate") {
       implicit session =>
         metaStore.modelRepo.updateLastReadDate(model)
@@ -72,12 +73,12 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference.id))
 
-    override def create()(implicit invocation: Invocation): Reference =
-      storage.createModel(new ModelTemplate(None, "unknown")) // TODO - "unknown" is bogus, the create API is not sufficient
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference =
+      storage.createModel(args)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: Model)(implicit invocation: Invocation): Reference = ModelReference(model.id)
+    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = ModelReference(model.id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -100,7 +101,7 @@ class SparkModelStorage(metaStore: MetaStore)
   EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
-  override def expectModel(modelId: Long): Model = {
+  override def expectModel(modelId: Long): ModelEntity = {
     lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
   }
 
@@ -108,7 +109,7 @@ class SparkModelStorage(metaStore: MetaStore)
    * Deletes a model from the metastore.
    * @param model Model metadata object.
    */
-  override def drop(model: Model): Unit = {
+  override def drop(model: ModelEntity): Unit = {
     metaStore.withSession("spark.modelstorage.drop") {
       implicit session =>
         {
@@ -120,18 +121,21 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Registers a new model.
-   * @param model The model being registered.
+   * @param createArgs arguments to create the model entity
    * @return Model metadata.
    */
-  override def createModel(model: ModelTemplate)(implicit invocation: Invocation): Model = {
+  override def createModel(createArgs: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity = {
     metaStore.withSession("spark.modelstorage.create") {
       implicit session =>
         {
-          val check = metaStore.modelRepo.lookupByName(model.name)
-          if (check.isDefined) {
-            throw new RuntimeException("Model with same name exists. Create aborted.")
+          if (createArgs.name.isDefined) {
+            metaStore.modelRepo.lookupByName(createArgs.name).foreach {
+              existingModel =>
+                throw new DuplicateNameException("model", createArgs.name.get, "Model with same name exists. Create aborted.")
+            }
           }
-          metaStore.modelRepo.insert(model).get
+          val modelTemplate = ModelTemplate(createArgs.name, createArgs.entityType.get)
+          metaStore.modelRepo.insert(modelTemplate).get
         }
     }
   }
@@ -142,7 +146,7 @@ class SparkModelStorage(metaStore: MetaStore)
    * @param newName The name the model is being renamed to.
    * @return Model metadata
    */
-  override def renameModel(model: Model, newName: String): Model = {
+  override def renameModel(model: ModelEntity, newName: String): ModelEntity = {
     metaStore.withSession("spark.modelstorage.rename") {
       implicit session =>
         {
@@ -162,7 +166,7 @@ class SparkModelStorage(metaStore: MetaStore)
    * @param id ID being looked up.
    * @return Future of Model metadata.
    */
-  override def lookup(id: Long): Option[Model] = {
+  override def lookup(id: Long): Option[ModelEntity] = {
     metaStore.withSession("spark.modelstorage.lookup") {
       implicit session =>
         {
@@ -171,7 +175,7 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
-  override def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[Model] = {
+  override def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity] = {
     metaStore.withSession("spark.modelstorage.getModelByName") {
       implicit session =>
         {
@@ -184,7 +188,7 @@ class SparkModelStorage(metaStore: MetaStore)
    * Obtain the model metadata for a range of model IDs.
    * @return Sequence of model metadata objects.
    */
-  override def getModels()(implicit invocation: Invocation): Seq[Model] = {
+  override def getModels()(implicit invocation: Invocation): Seq[ModelEntity] = {
     metaStore.withSession("spark.modelstorage.getModels") {
       implicit session =>
         {
@@ -199,7 +203,7 @@ class SparkModelStorage(metaStore: MetaStore)
    * @param newData JsObject storing the result of training.
    */
 
-  override def updateModel(model: Model, newData: JsObject)(implicit invocation: Invocation): Model = {
+  override def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
     metaStore.withSession("spark.modelstorage.updateModel") {
       implicit session =>
         {

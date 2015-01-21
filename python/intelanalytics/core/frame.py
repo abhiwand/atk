@@ -1048,16 +1048,16 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     _entity_type = 'frame:'
 
-    def __init__(self, source=None, name=None):
+    def __init__(self, source=None, name=None, _info=None):
         self._error_frame_id = None
         self._id = 0
         self._ia_uri = None
-        with api_context(logger, 3, self.__init__, self, source, name):
+        with api_context(logger, 3, self.__init__, self, source, name, _info):
             check_api_is_loaded()
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
-            new_frame_name = self._backend.create(self, source, name)
+            new_frame_name = self._backend.create(self, source, name, _info)
             logger.info('Created new frame "%s"', new_frame_name)
 
     @api
@@ -1156,7 +1156,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     _entity_type = 'frame:vertex'
 
-    def __init__(self, source=None, graph=None, label=None):
+    def __init__(self, source=None, graph=None, label=None, _info=None):
         try:
             check_api_is_loaded()
             self._error_frame_id = None
@@ -1165,7 +1165,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
-            new_frame_name = self._backend.create_vertex_frame(self, source, label, graph)
+            new_frame_name = self._backend.create_vertex_frame(self, source, label, graph, _info)
             logger.info('Created new vertex frame "%s"', new_frame_name)
         except:
             error = IaError(logger)
@@ -1274,7 +1274,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
 
     _entity_type = 'frame:edge'
 
-    def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None):
+    def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None, _info=None):
         try:
             check_api_is_loaded()
             self._error_frame_id = None
@@ -1283,7 +1283,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
-            new_frame_name = self._backend.create_edge_frame(self, source, label, graph, src_vertex_label, dest_vertex_label, directed)
+            new_frame_name = self._backend.create_edge_frame(self, source, label, graph, src_vertex_label, dest_vertex_label, directed, _info)
             logger.info('Created new edge frame "%s"', new_frame_name)
         except:
             error = IaError(logger)

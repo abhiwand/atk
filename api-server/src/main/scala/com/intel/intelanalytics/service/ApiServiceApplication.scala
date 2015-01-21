@@ -91,7 +91,7 @@ class ApiServiceApplication extends Archive with EventLogging {
 
     // setup V1 Services
     val commandService = new v1.CommandService(commonDirectives, engine)
-    val dataFrameService = new v1.DataFrameService(commonDirectives, engine)
+    val dataFrameService = new v1.FrameService(commonDirectives, engine)
     val graphService = new v1.GraphService(commonDirectives, engine)
     val modelService = new v1.ModelService(commonDirectives, engine)
     val queryService = new v1.QueryService(commonDirectives, engine)

@@ -44,7 +44,7 @@ from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor
-from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+from intelanalytics.rest.spark import get_udf_arg, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
 """
@@ -68,15 +68,15 @@ class FrameBackendRest(object):
         else:
             r = self.rest_http.get('frames/' + str(id))
             payload = r.json()
-            frame = Frame(source=payload)
+            frame = Frame(_info=payload)
             return frame
 
-    def create(self, frame, source, name):
+    def create(self, frame, source, name, _info=None):
         logger.info("REST Backend: create frame with name %s" % name)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            initialize_frame(frame, source)
+        if _info is not None and isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            initialize_frame(frame, _info)
         elif isinstance(source, Frame):
             become_frame(frame, source.copy(name=name))
         elif isinstance(source, Column):
@@ -120,8 +120,8 @@ class FrameBackendRest(object):
         # TODO - there's got to be a better way to do this with the RDDs, trick is with Python.
         def icountwhere(predicate, iterable):
            return ("[1]" for item in iterable if predicate(item))
-        http_ready_function = prepare_row_function(frame, where, icountwhere)
-        arguments = {'frame': self.get_ia_uri(frame), 'where': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'udf': get_udf_arg(frame, where, icountwhere)}
         return executor.get_command_output("frame", "count_where", arguments)
 
     def get_ia_uri(self, frame):
@@ -253,12 +253,10 @@ class FrameBackendRest(object):
         add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
             else get_add_many_columns_function(expression, data_types)
         from itertools import imap
-        http_ready_function = prepare_row_function(frame, add_columns_function, imap)
-
         arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
-                     'expression': http_ready_function}
+                     'udf': get_udf_arg(frame, add_columns_function, imap)}
 
         execute_update_frame_command('add_columns', arguments, frame)
 
@@ -306,26 +304,28 @@ class FrameBackendRest(object):
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
-        http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'udf': get_udf_arg(frame, predicate, ifilterfalse)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
-        http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'udf': get_udf_arg(frame, predicate, ifilter)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
         from itertools import ifilter
         from itertools import ifilterfalse
 
-        if(keep_matching_vertices):
-            http_ready_function = prepare_row_function(frame, predicate, ifilter)
+        if keep_matching_vertices:
+            arguments = {'frame': self.get_ia_uri(frame),
+                         'udf': get_udf_arg(frame, predicate, ifilter)
+                        }
         else:
-            http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-
-        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
+            arguments = {'frame': self.get_ia_uri(frame),
+                         'udf': get_udf_arg(frame, predicate, ifilterfalse)
+                        }
         execute_update_frame_command("frame:vertex/filter", arguments, frame)
 
     def column_statistic(self, frame, column_name, multiplier_column_name, operation):
@@ -397,8 +397,10 @@ class FrameBackendRest(object):
                 column_names = columns.keys()
             else:
                 column_names = columns
-            from intelanalytics.rest.spark import prepare_row_function_for_copy_columns
-            where = prepare_row_function_for_copy_columns(frame, where, column_names)
+            from intelanalytics.rest.spark import get_udf_arg_for_copy_columns
+            where = get_udf_arg_for_copy_columns(frame, where, column_names)
+        else:
+            where = None
         arguments = {'frame': self.get_ia_uri(frame),
                      'columns': columns,
                      'where': where,
@@ -496,12 +498,12 @@ class FrameBackendRest(object):
 
         return TakeResult(data, updated_schema)
 
-    def create_vertex_frame(self, frame, source, label, graph):
+    def create_vertex_frame(self, frame, source, label, graph, _info=None):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            self.initialize_graph_frame(frame, source, graph)
+        if isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            self.initialize_graph_frame(frame, _info, graph)
             return frame.name  # early exit here
 
         graph.define_vertex_type(label)
@@ -509,12 +511,12 @@ class FrameBackendRest(object):
         self.copy_graph_frame(source_frame, frame)
         return source_frame.name
 
-    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed):
+    def create_edge_frame(self, frame, source, label, graph, src_vertex_label, dest_vertex_label, directed, _info=None):
         logger.info("REST Backend: create vertex_frame with label %s" % label)
-        if isinstance(source, dict):
-            source = FrameInfo(source)
-        if isinstance(source, FrameInfo):
-            self.initialize_graph_frame(frame, source, graph)
+        if _info is not None and isinstance(_info, dict):
+            _info = FrameInfo(_info)
+        if isinstance(_info, FrameInfo):
+            self.initialize_graph_frame(frame, _info, graph)
             return frame.name  # early exit here
 
         graph.define_edge_type(label, src_vertex_label, dest_vertex_label, directed)
@@ -729,7 +731,7 @@ def execute_new_frame_command(command_name, arguments):
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
-    return Frame(frame_info)
+    return Frame(_info=frame_info)
 
 
 
