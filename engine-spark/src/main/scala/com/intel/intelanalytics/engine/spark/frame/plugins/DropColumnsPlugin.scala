@@ -63,7 +63,8 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
     val frame: SparkFrameData = resolve(arguments.frame)
     val schema = frame.meta.schema
     schema.validateColumnsExist(arguments.columns)
-    require(schema.columns.length > arguments.columns.length,
+
+    require(schema.columnNamesExcept(arguments.columns).length > 0,
       "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation

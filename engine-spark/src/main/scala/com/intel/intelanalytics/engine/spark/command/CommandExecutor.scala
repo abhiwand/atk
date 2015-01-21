@@ -131,7 +131,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
     val references = types.map {
       case (name, signature) =>
         val management: EntityManager[_] = EntityTypeRegistry.entityManagerForType(signature.typeSymbol.asType.toType).get
-        (name, management.create())
+        (name, management.create(CreateEntityArgs()))
     }.toMap
     val ctorMap = Reflection.getConstructorMap[Return]()
     ctorMap(references)

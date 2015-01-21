@@ -46,6 +46,7 @@ except Exception as e:
 
 
 @api
+@name_support('model')
 class _BaseModel(DocStubs_BaseModel, CommandLoadable):
     """
     Class with information about a model.
@@ -74,6 +75,10 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
     def _get_model_full_uri(self):
         return self.rest_http.create_full_uri('models/%d' % self._id)
 
+    @staticmethod
+    def _is_entity_info(obj):
+        return isinstance(obj, ModelInfo)
+
     def __repr__(self):
         try:
             model_info = self._get_model_info()
@@ -97,75 +102,75 @@ except Exception as e:
     class DocStubsLogisticRegressionModel(object): pass
 
 
-@api
-@name_support('model')
-class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
-    """
-    LogisticRegressionModel model instantiation.
-
-    Parameters
-    ----------
-    name: str
-        Name of the LogisticRegressionModel
-
-    Returns
-    -------
-    LogisticRegressionModel object
-        An object with access to the LogisticRegressionModel
-
-    Examples
-    --------
-    model = ia.LogisticRegressionModel(name='LogReg')
-    """
-    _entity_type = "model:logistic_regression"
-
-    def __init__(self, source=None, name=None):
-        try:
-            self._id = 0
-            CommandLoadable.__init__(self)
-            self._create(source, name)
-        except:
-            error = IaError(logger)
-            raise error
-
-
-    def _create(self, source, name):
-        if isinstance(source, dict):
-            source = ModelInfo(source)
-        if isinstance(source, ModelInfo):
-            source.initialize_model(self)
-        elif source is None:
-        #if isinstance(source, Frame):
-            # create
-            entity_type = get_entity_type_from_class_name(self.__class__.__name__)
-            payload = {'name': name, 'model_type': entity_type.split(':')[-1]}
-            r = http.post('models', payload)
-            ModelInfo(r.json()).initialize_model(self)
-        #elif source is not None:
-        else:
-            raise ValueError("Invalid source type %s.  Expected Frame or Model, got %s" % type(source))
-
-        return self.name
-
-    def _get_model_info(self):
-        response = http.get_full_uri(self._get_model_full_uri())
-        return ModelInfo(response.json())
-
-    def _get_model_full_uri(self):
-        return http.create_full_uri('models/%d' % self._id)
-
-    def __repr__(self):
-        try:
-            model_info = self._get_model_info()
-            return '%s "%s"' % (self.__class__.__name__, model_info.name)
-        except:
-            return super(_BaseModel,self).__repr__() + " (Unable to collect metadata from server)"
-
-    def __eq__(self, other):
-        if not isinstance(other, _BaseModel):
-            return False
-        return self._id == other._id
-
+# @api
+# #@name_support('model')
+# class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
+#     """
+#     LogisticRegressionModel model instantiation.
+#
+#     Parameters
+#     ----------
+#     name: str
+#         Name of the LogisticRegressionModel
+#
+#     Returns
+#     -------
+#     LogisticRegressionModel object
+#         An object with access to the LogisticRegressionModel
+#
+#     Examples
+#     --------
+#     model = ia.LogisticRegressionModel(name='LogReg')
+#     """
+#     _entity_type = "model:logistic_regression"
+#
+#     def __init__(self, source=None, name=None, _info=None):
+#         try:
+#             self._id = 0
+#             CommandLoadable.__init__(self)
+#             self._create(source, name, _info)
+#         except:
+#             error = IaError(logger)
+#             raise error
+#
+#
+#     def _create(self, source, name, _info):
+#         if isinstance(_info, dict):
+#             _info = ModelInfo(_info)
+#         if isinstance(_info, ModelInfo):
+#             _info.initialize_model(self)
+#         elif _info is None:
+#         #if isinstance(source, Frame):
+#             # create
+#             entity_type = get_entity_type_from_class_name(self.__class__.__name__)
+#             payload = {'name': name, 'entity_type': entity_type}
+#             r = http.post('models', payload)
+#             ModelInfo(r.json()).initialize_model(self)
+#         #elif source is not None:
+#         else:
+#             raise ValueError("Invalid source type %s.  Expected Frame or Model, got %s" % type(source))
+#
+#         return self.name
+#
+#     def _get_model_info(self):
+#         response = http.get_full_uri(self._get_model_full_uri())
+#         return ModelInfo(response.json())
+#
+#     def _get_model_full_uri(self):
+#         return http.create_full_uri('models/%d' % self._id)
+#
+#     def __repr__(self):
+#         try:
+#             model_info = self._get_model_info()
+#             return '%s "%s"' % (self.__class__.__name__, model_info.name)
+#         except:
+#             return super(_BaseModel,self).__repr__() + " (Unable to collect metadata from server)"
+#
+#     def __eq__(self, other):
+#         if not isinstance(other, _BaseModel):
+#             return False
+#         return self._id == other._id
+#
 
 class ModelInfo(object):
     """

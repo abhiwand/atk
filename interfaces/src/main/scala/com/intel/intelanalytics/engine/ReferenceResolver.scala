@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.{ DefaultsTo, NotNothing }
-import com.intel.intelanalytics.domain.{ HasData, UriReference }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, HasData, UriReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.util.Try
@@ -37,8 +37,8 @@ object ReferenceResolver extends ReferenceResolver {
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
-  override def create[T <: UriReference: ru.TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T =
-    EntityTypeRegistry.resolver.create(annotation)
+  override def create[T <: UriReference: ru.TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T =
+    EntityTypeRegistry.resolver.create(args)
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI
@@ -79,7 +79,7 @@ trait ReferenceResolver {
   /**
    * Creates an (empty) instance of the given type, reserving a URI
    */
-  def create[T <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation, ev: NotNothing[T]): T
+  def create[T <: UriReference: TypeTag](args: CreateEntityArgs = CreateEntityArgs())(implicit invocation: Invocation, ev: NotNothing[T]): T
 
   /**
    * Creates an (empty) instance of the given type, reserving a URI

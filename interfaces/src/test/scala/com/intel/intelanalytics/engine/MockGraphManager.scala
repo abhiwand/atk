@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ HasData, HasMetaData, EntityManager }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, HasData, HasMetaData, EntityManager }
 import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntityType }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -50,7 +50,7 @@ class MockGraphManager extends EntityManager[GraphEntityType.type] {
 
   override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
 
-  override def create()(implicit invocation: Invocation): Reference = ???
+  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
 
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
 

@@ -34,6 +34,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.{ Await, ExecutionContext }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -91,7 +92,7 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     ))
 
     // save results
-    frames.tryNewFrame(DataFrameTemplate(None, None)) { newFrame =>
+    frames.tryNewFrame(CreateEntityArgs(description = Some("created by top k command"))) { newFrame =>
       frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRDD(newSchema, topRdd))
     }
   }

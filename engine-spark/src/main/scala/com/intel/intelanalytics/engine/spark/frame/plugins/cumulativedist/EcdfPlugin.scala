@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -69,10 +70,12 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
     val sampleColumn = frame.meta.schema.column(arguments.column)
     require(sampleColumn.dataType.isNumerical, s"Invalid column ${sampleColumn.name} for ECDF.  Expected a numeric data type, but got ${sampleColumn.dataType}.")
     val ecdfSchema = FrameSchema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
-    val ecdfFrameName: String = FrameName.validateOrGenerate(arguments.resultFrameName, Some("ECDF"))
 
     // run the operation
-    tryNew(arguments.resultFrameName) { ecdfFrame: FrameMeta =>
+    tryNew(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameMeta =>
+      if (arguments.resultFrameName.isDefined) {
+        engine.frames.renameFrame(ecdfFrame.meta, FrameName.validate(arguments.resultFrameName.get))
+      }
       val rdd = frame.data.toLegacyFrameRDD
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
       save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),

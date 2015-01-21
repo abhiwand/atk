@@ -27,7 +27,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlati
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.Naming
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -90,7 +90,10 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
     val correlationRDD = Correlation.correlationMatrix(rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    tryNew(arguments.matrixName) { newFrame: FrameMeta =>
+    tryNew(CreateEntityArgs(description = Some("created by correlation matrix command"))) { newFrame: FrameMeta =>
+      if (arguments.matrixName.isDefined) {
+        engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
+      }
       save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, correlationRDD)))
     }.meta
   }
