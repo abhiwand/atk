@@ -56,7 +56,19 @@ class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, Graph] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Rename Graph",
+    extendedSummary = Some("""
+    Set the name of this graph.
+
+    Parameters
+    ----------
+    new_name: str
+      the new name of the graph.
+
+    Examples
+    --------
+    graph.rename("myGraph")""")))
 
   /**
    * Rename a graph in the database
