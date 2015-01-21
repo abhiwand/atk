@@ -23,12 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
-import com.intel.intelanalytics.domain.frame.GroupByArgs
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.domain.schema.{Column, DataTypes, FrameSchema, Schema}
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
-import scala.Product
-import spray.json.JsObject
 
 /**
  * Aggregations for Frames (SUM, COUNT, etc)
@@ -39,98 +36,79 @@ import spray.json.JsObject
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-object GroupByAggregationFunctions {
+private[spark] object GroupByAggregationFunctions extends Serializable {
 
-  def aggregation(groupedRDD: RDD[(Seq[Any], Iterable[Array[Any]])],
-                  args_pair: Seq[(Int, String)],
-                  schema: List[(String, DataTypes.DataType)],
-                  groupedColumnSchema: Array[DataTypes.DataType],
-                  arguments: GroupByArgs): LegacyFrameRDD = {
+  /**
+   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
+   *
+   * @param frameRDD Input frame
+   * @param groupByColumns List of columns to group by
+   * @param aggregationArguments List of aggregation arguments (i.e., aggregation function, column, new column name)
+   * @return Summarized frame with aggregations
+   */
+  def aggregation(frameRDD: FrameRDD,
+                  groupByColumns: List[Column],
+                  aggregationArguments: List[(String, String, String)]): FrameRDD = {
 
-    val resultRdd = groupedRDD.map(elem =>
-      (elem._1 ++ aggregationFunctions(elem._2.toSeq, args_pair, schema)).toArray)
+    val frameSchema = frameRDD.frameSchema
 
-    val aggregated_column_schema = for {
-      i <- args_pair
-    } yield {
-      i._2 match {
-        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int32
-        case "SUM" | "MIN" | "MAX" => schema(i._1)._2
-        case _ => DataTypes.float64
-      }
-    }
+    val pairedRowRDD = pairRowsByGroupKey(frameRDD, groupByColumns, aggregationArguments)
+    val aggregationColumns = getAggregationColumns(frameSchema, aggregationArguments)
 
-    val new_data_types = groupedColumnSchema ++ aggregated_column_schema
+    val aggregator = new GroupByAggregationByKey(pairedRowRDD, aggregationColumns, aggregationArguments)
+    val aggregationRDD = aggregator.aggregateByKey()
 
-    val new_column_names = arguments.groupByColumns ++ {
-      for { i <- arguments.aggregations } yield i._3
-    }
-    val new_schema = new_column_names.zip(new_data_types)
+    val newColumns = groupByColumns ++ aggregationColumns
+    val newSchema = FrameSchema(newColumns)
 
-    new LegacyFrameRDD(Schema.fromTuples(new_schema), resultRdd)
+    FrameRDD.toFrameRDD(newSchema, aggregationRDD)
   }
 
-  private def aggregationFunctions(elem: Seq[Array[Any]],
-                                   argsPair: Seq[(Int, String)],
-                                   schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
-    for {
-      i <- argsPair
-    } yield (i, schema(i._1)._2) match {
-      case ((j: Int, "SUM"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum
-      case ((j: Int, "SUM"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum
-      case ((j: Int, "SUM"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum
-      case ((j: Int, "SUM"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum
-      case ((j: Int, "MAX"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).max
-      case ((j: Int, "MAX"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).max
-      case ((j: Int, "MAX"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).max
-      case ((j: Int, "MAX"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).max
-      case ((j: Int, "MIN"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).min
-      case ((j: Int, "MIN"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).min
-      case ((j: Int, "MIN"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).min
-      case ((j: Int, "MIN"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).min
-      case ((j: Int, "AVG"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum * 1.0 / elem.length
-      case ((j: Int, "AVG"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum * 1.0 / elem.length
-      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum * 1.0 / elem.length
-      case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
-
-      case ((j: Int, "COUNT"), _) => elem.length
-      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length
-
-      case ((j: Int, "VAR"), DataTypes.int32) =>
-        val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
-        val mean = elements.sum / elements.length
-        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
-      case ((j: Int, "VAR"), DataTypes.int64) =>
-        val elements: Seq[Long] = elem.map(e => e(j).asInstanceOf[Long])
-        val mean = elements.sum / elements.length
-        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
-      case ((j: Int, "VAR"), DataTypes.float32) =>
-        val elements: Seq[Float] = elem.map(e => e(j).asInstanceOf[Float])
-        val mean = elements.sum / elements.length
-        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
-      case ((j: Int, "VAR"), DataTypes.float64) =>
-        val elements: Seq[Double] = elem.map(e => e(j).asInstanceOf[Double])
-        val mean = elements.sum / elements.length
-        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
-
-      case ((j: Int, "STDEV"), DataTypes.int32) =>
-        val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
-        val mean = elements.sum / elements.length
-        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
-      case ((j: Int, "STDEV"), DataTypes.int64) =>
-        val elements: Seq[Long] = elem.map(e => e(j).asInstanceOf[Long])
-        val mean = elements.sum / elements.length
-        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
-      case ((j: Int, "STDEV"), DataTypes.float32) =>
-        val elements: Seq[Float] = elem.map(e => e(j).asInstanceOf[Float])
-        val mean = elements.sum / elements.length
-        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
-      case ((j: Int, "STDEV"), DataTypes.float64) =>
-        val elements: Seq[Double] = elem.map(e => e(j).asInstanceOf[Double])
-        val mean = elements.sum / elements.length
-        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
-
-      case _ => throw new IllegalArgumentException(s"Invalid aggregation function $i._2")
+  /**
+   * Get the columns used in the aggregation
+   *
+   * @param frameSchema Frame schema
+   * @param aggregationArguments List of aggregation arguments (i.e., aggregation function, column, new column name)
+   * @return List of aggregation columns
+   */
+  private def getAggregationColumns(frameSchema: Schema, aggregationArguments: List[(String, String, String)]): List[Column] = {
+    aggregationArguments.map {
+      case (aggregationFunction, columnName, newColumnName) =>
+        val column = frameSchema.column(columnName)
+        aggregationFunction match {
+          case "COUNT" | "COUNT_DISTINCT" => Column(newColumnName, DataTypes.int64)
+          case "MIN" | "MAX" => Column(newColumnName, column.dataType)
+          case "SUM" => {
+            val dataType = if (column.dataType == DataTypes.int32 || column.dataType == DataTypes.int64) DataTypes.int64 else DataTypes.float64
+            Column(newColumnName, dataType)
+          }
+          case _ => Column(newColumnName, DataTypes.float64)
+        }
     }
   }
+
+  /**
+   * Get an RDD with the group-by keys, and aggregation columns
+   *
+   * @param frameRDD Input frame
+   * @param groupByColumns Group by column
+   * @param aggregationArguments List of aggregation arguments (i.e., aggregation function, column, new column name)
+   * @return RDD of group-by keys, and aggregation column values
+   */
+  private def pairRowsByGroupKey(frameRDD: FrameRDD, groupByColumns: List[Column], aggregationArguments: List[(String, String, String)]): RDD[(Seq[Any], Seq[Any])] = {
+    val frameSchema = frameRDD.frameSchema
+    val groupByColumnsNames = groupByColumns.map(col => col.name)
+
+    val aggregationColumns = aggregationArguments.map {
+      case (aggregationFunction, columnName, newColumnName) =>
+        frameSchema.column(columnName = columnName)
+    }
+
+    frameRDD.mapRows(row => {
+      val groupByKey = if (groupByColumns.length > 0) row.valuesAsArray(groupByColumnsNames).toSeq else Seq[Any]()
+      val groupByRow = aggregationColumns.map(col => row.data(frameSchema.columnIndex(col.name)))
+      (groupByKey, groupByRow.toSeq)
+    })
+  }
+
 }
