@@ -10,6 +10,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.{ Await, ExecutionContext }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -43,36 +44,16 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val originalFrameID = arguments.frame.id
-    val originalFrame = frames.expectFrame(originalFrameID)
-    val schema = originalFrame.schema
-    val aggregation_arguments = arguments.aggregations
+    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame.id))
+    val frameSchema = originalFrame.frameSchema
+    val aggregationArguments = arguments.aggregations
+    val groupByColumns = arguments.groupByColumns.map(columnName => frameSchema.column(columnName))
 
     // run the operation and save results
+    val groupByRdd = GroupByAggregationFunctions.aggregation(originalFrame, groupByColumns, aggregationArguments)
 
-    val args_pair = for {
-      (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
-    } yield (schema.columnIndex(column_to_apply), aggregation_function)
-
-    val resultRdd = if (arguments.groupByColumns.length > 0) {
-      val groupByColumns = arguments.groupByColumns
-
-      val columnIndices: Seq[(Int, DataType)] = for {
-        col <- groupByColumns
-        columnIndex = schema.columnIndex(col)
-        columnDataType = schema.columnTuples(columnIndex)._2
-      } yield (columnIndex, columnDataType)
-
-      val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
-        for { index <- columnIndices.map(_._1) } yield data(index)
-      }.seq)
-      GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, columnIndices.map(_._2).toArray, arguments)
+    frames.tryNewFrame(CreateEntityArgs(description = Some("created by group_by command"))) {
+      newFrame => frames.saveFrameData(newFrame.toReference, groupByRdd)
     }
-    else {
-      val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => Seq[Any]())
-      GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columnTuples, Array[DataType](), arguments)
-    }
-    val template = DataFrameTemplate(None, None)
-    frames.tryNewFrame(template) { newFrame => frames.saveLegacyFrame(newFrame.toReference, resultRdd) }
   }
 }

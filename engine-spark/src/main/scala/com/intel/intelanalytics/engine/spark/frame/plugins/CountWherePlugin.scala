@@ -54,7 +54,7 @@ class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
   override def execute(arguments: CountWhereArgs)(implicit invocation: Invocation): LongValue = {
     val sourceFrame = engine.frames.expectFrame(arguments.frame)
     val pythonRDDStorage = new PythonRDDStorage(engine.frames)
-    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.where, sc)
+    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.udf.function, sc)
     LongValue(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
   }
 }

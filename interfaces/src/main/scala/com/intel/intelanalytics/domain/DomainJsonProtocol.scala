@@ -31,6 +31,7 @@ import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.UdfArgs.{ UdfDependency, Udf }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
 import com.intel.intelanalytics.domain.model._
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -285,8 +286,11 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   }
   implicit val longValueFormat = jsonFormat1(LongValue)
+  implicit val intValueFormat = jsonFormat1(IntValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
   implicit val boolValueFormat = jsonFormat1(BoolValue)
+
+  implicit val createEntityArgsFormat = jsonFormat3(CreateEntityArgs.apply)
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status.apply)
@@ -362,10 +366,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   // model service formats
   implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntityType)
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
-  implicit val modelRenameFormat = jsonFormat2(RenameModel)
-  implicit val modelFormat = jsonFormat11(Model)
-  implicit val modelLoadFormat = jsonFormat4(ModelLoad)
-  implicit val modelPredictFormat = jsonFormat3(ModelPredict)
+  implicit val modelRenameFormat = jsonFormat2(RenameModelArgs)
+  implicit val modelFormat = jsonFormat11(ModelEntity)
+  implicit val modelLoadFormat = jsonFormat4(LogisticRegressionWithSGDArgs)
+  implicit val modelPredictFormat = jsonFormat3(LogisticRegressionWithSGDPredictArgs)
+  implicit val kmeansModelLoadFormat = jsonFormat7(KMeansTrainArgs)
+  implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
+  implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
+  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(LogisticRegressionWithSGDNewArgs)
+
+  implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
+  implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
+  implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)

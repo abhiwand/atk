@@ -52,6 +52,7 @@ class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, Graph] {
   override def name: String = "graph/rename"
 
   /**
+
    * Rename a graph in the database
    *
    * @param invocation information about the user and the circumstances at the time of the call,

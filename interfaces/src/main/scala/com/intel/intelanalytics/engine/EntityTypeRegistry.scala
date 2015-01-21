@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.{ NotNothing, domain }
-import com.intel.intelanalytics.domain.{ HasData, UriReference, EntityType, EntityManager }
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.plugin.Invocation
 
 import scala.reflect.runtime.{ universe => ru }
@@ -88,9 +88,9 @@ class EntityTypeRegistry {
    *
    * @tparam R the requested reference type
    */
-  def create[R <: UriReference: TypeTag](annotation: Option[String] = None)(implicit invocation: Invocation): R = {
+  def create[R <: UriReference: TypeTag](createEntityArgs: CreateEntityArgs = CreateEntityArgs())(implicit invocation: Invocation): R = {
     val manager: EntityManager[_] = entityManager[R]().get
-    val reference = manager.create()
+    val reference = manager.create(createEntityArgs)
     resolver.resolve[R](reference).get
   }
 

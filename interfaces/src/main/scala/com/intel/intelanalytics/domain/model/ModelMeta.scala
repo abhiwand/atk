@@ -28,9 +28,9 @@ import com.intel.intelanalytics.domain.HasMetaData
 /**
  * A ModelReference with metadata
  */
-class ModelMeta(model: Model) extends ModelReference(model.id) with HasMetaData {
+class ModelMeta(model: ModelEntity) extends ModelReference(model.id) with HasMetaData {
 
-  type Meta = Model
+  type Meta = ModelEntity
 
   val meta = model
 

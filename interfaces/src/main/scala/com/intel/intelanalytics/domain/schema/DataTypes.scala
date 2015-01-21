@@ -474,4 +474,14 @@ object DataTypes {
 
   }
 
+  /**
+   * Determines if data type is an integral data type (e.g., int32, int64).
+   *
+   * @param dataType Data type
+   * @return True for integral data types, otherwise false
+   */
+  def isIntegral(dataType: DataType): Boolean = {
+    dataType == DataTypes.int32 || dataType == DataTypes.int64
+  }
+
 }
