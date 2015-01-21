@@ -62,7 +62,7 @@ case class ModelEntity(id: Long,
     "if name is set it must not be empty or whitespace")
   require(modelType != null, "modelType must not be null")
   require(!modelType.isEmpty, "modelType must not be empty")
-  require(modelType.startsWith("model:"), "modelType must start with 'model:'")
+  //require(modelType.startsWith("model:"), "modelType must start with 'model:'")
   require(description != null, "description must not be null")
   require(data != null, "data must not be null")
   require(createdByUserId != null, "createdByUserId must not be null")

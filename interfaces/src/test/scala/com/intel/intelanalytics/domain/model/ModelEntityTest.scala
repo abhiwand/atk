@@ -48,9 +48,9 @@ class ModelEntityTest extends WordSpec {
       intercept[IllegalArgumentException] { model.copy(modelType = null) }
     }
 
-    "require a modelType that starts with 'model:'" in {
-      intercept[IllegalArgumentException] { model.copy(modelType = "frame") }
-    }
+    //"require a modelType that starts with 'model:'" in {
+    //  intercept[IllegalArgumentException] { model.copy(modelType = "frame") }
+    //}
 
   }
 
