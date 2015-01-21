@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.ModelLoad
+import com.intel.intelanalytics.domain.model.LogisticRegressionWithSGDArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
@@ -38,7 +38,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 //Implicits needed for JSON conversion
 import spray.json._
 
-class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
+class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDArgs, UnitReturn] {
   /**
    * The name of the command.
    *
@@ -86,7 +86,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 109
+  override def numberOfJobs(arguments: LogisticRegressionWithSGDArgs)(implicit invocation: Invocation) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -96,17 +96,13 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: LogisticRegressionWithSGDArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
       val frames = engine.frames
 
-      //validate arguments
-      val frameId = arguments.frame.id
-      val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
-      val modelMeta = models.expectModel(modelId)
+      val inputFrame = frames.expectFrame(arguments.frame.id)
+      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
