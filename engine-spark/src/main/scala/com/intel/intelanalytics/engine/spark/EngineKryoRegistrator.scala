@@ -29,14 +29,14 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{GroupByAccumulators, GroupByAggregationFunctions, GroupByAggregationByKey, GroupByMonoids}
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{CsvRowParser, LoadRDDFunctions, RowParseResult}
+import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAccumulators, GroupByAggregationFunctions, GroupByAggregationByKey, GroupByMonoids }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRDDFunctions, RowParseResult }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.{EntropyRDDFunctions, FlattenColumnFunctions}
-import com.intel.intelanalytics.engine.spark.frame.{FrameRDD, LegacyFrameRDD, MiscFrameFunctions}
+import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, LegacyFrameRDD, MiscFrameFunctions }
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
