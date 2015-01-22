@@ -38,15 +38,11 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 case class KMeansTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
-                           k: Option[Int],
-                           maxIterations: Option[Int],
-                           epsilon: Option[Double],
-                           initializationMode: Option[String]) {
+                           k: Option[Int] = None,
+                           maxIterations: Option[Int] = None,
+                           epsilon: Option[Double] = None,
+                           initializationMode: Option[String] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
-  require(k != None, "k must not be None")
-  require(maxIterations != None, "maxIterations must not be None")
-  require(epsilon != None, "epsilon must not be None")
-  require(initializationMode != None, "initializationMode must not be None")
 }

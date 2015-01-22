@@ -153,19 +153,19 @@ object MLLibJsonProtocol {
     }
 
     /**
-     * The read method reads a JsValue to LogisticRegressionModel
+     * The read method reads a JsValue to KMeansModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
-     *         and the weights Vector could be either a SparseVector or DenseVector
+     * @return KMeansModel with format KMeansModel(val clusterCenters:Array[Vector])
+     *         where Vector could be either a SparseVector or DenseVector
      */
     override def read(json: JsValue): KMeansModel = {
       val fields = json.asJsObject.fields
 
-      val centers = fields.get("clusterCenters").map(vector => {
+      val centers = fields.get("clusterCenters").get.asInstanceOf[JsArray].elements.map(vector => {
         VectorFormat.read(vector)
-      }).get
+      })
 
-      new KMeansModel(Array(centers))
+      new KMeansModel(centers.toArray)
     }
 
   }

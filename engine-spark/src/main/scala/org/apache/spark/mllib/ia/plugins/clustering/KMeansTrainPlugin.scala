@@ -37,6 +37,9 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
+//Implicits needed for JSON conversion
+import spray.json._
+
 class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] {
   /**
    * The name of the command.
@@ -74,7 +77,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
                              |    --------
                              |    ::
                              |
-                             |        model = ia.KmeansModel(name='MyKmeansModel')
+                             |        model = ia.KMeansModel(name='MyKMeansModel')
                              |        model.train(train_frame, ['name_of_observation_column1','name_of_observation_column2'])
                              |
                              |
@@ -118,6 +121,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
       })
 
       val kmeansModel = kMeans.run(vectorRDD)
+      import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
       val jsonModel = kmeansModel.toJson.asJsObject
 
       models.updateModel(modelMeta, jsonModel)
@@ -127,10 +131,10 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
 
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
-    if (arguments.k.isDefined) { kmeans.setK(arguments.k.get) }
-    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.get) }
-    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.get) }
-    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.get) }
+    if (arguments.k.isDefined) { kmeans.setK(arguments.k.getOrElse(2)) }
+    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.getOrElse(20)) }
+    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.getOrElse(1e-4)) }
+    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.getOrElse("k-means||")) }
     kmeans
   }
 }
