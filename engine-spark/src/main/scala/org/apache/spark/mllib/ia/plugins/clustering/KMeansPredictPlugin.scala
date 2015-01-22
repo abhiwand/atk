@@ -105,9 +105,11 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     //create RDD from the frame
     val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
 
+    //Extracting the KMeansModel from the stored JsObject
     val kmeansJsObject = modelMeta.data.get
     val kmeansModel = kmeansJsObject.convertTo[KMeansModel]
 
+    //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
