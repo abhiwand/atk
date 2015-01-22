@@ -29,22 +29,11 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * Command for loading model data into existing model in the model database.
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame
- * @param observationColumns Handle to the observation column of the data frame
- * @param numIterations Optional number of iterations to run the algorithm.
- * @param stepSize Optional number of stepSize.
- * @param regType L1 or L2 regularization
- * @param regParam Optional regularization parameter
+ * @param observationColumns Handle to the observation columns of the data frame
  */
-case class SVMTrainArgs(model: ModelReference,
-                        frame: FrameReference,
-                        observationColumns: List[String],
-                        labelColumn: String,
-                        numIterations: Option[Int] = None,
-                        stepSize: Option[Int] = None,
-                        regType: Option[String] = None,
-                        regParam: Option[Double] = None) {
+case class SVMTestArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String], labelColumn: String) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
+  require(!observationColumns.isEmpty && observationColumns != null, "observationColumns must not be null nor empty")
   require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
 }
