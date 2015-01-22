@@ -24,6 +24,7 @@
 package org.apache.spark.mllib.ia.plugins
 
 import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.mllib.classification.SVMModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
@@ -170,5 +171,40 @@ object MLLibJsonProtocol {
 
   }
 
+  implicit object SVMModelFormat extends JsonFormat[SVMModel] {
+    /**
+     * The write methods converts from SVMModel to JsValue
+     * @param obj SVMModel. Where SVMModel's format is
+     *            SVMModel(val weights: Vector,val intercept: Double)
+     *            and the weights Vector could be either a SparseVector or DenseVector
+     * @return JsValue
+     */
+    override def write(obj: SVMModel): JsValue = {
+      val weights = VectorFormat.write(obj.weights)
+      JsObject(
+        "weights" -> weights,
+        "intercept" -> JsNumber(obj.intercept)
+      )
+    }
+
+    /**
+     * The read method reads a JsValue to LogisticRegressionModel
+     * @param json JsValue
+     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
+     *         and the weights Vector could be either a SparseVector or DenseVector
+     */
+    override def read(json: JsValue): SVMModel = {
+      val fields = json.asJsObject.fields
+      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+
+      val weights = fields.get("weights").map(v => {
+        VectorFormat.read(v)
+      }
+      ).get
+
+      new SVMModel(weights, intercept)
+    }
+
+  }
 }
 

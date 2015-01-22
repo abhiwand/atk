@@ -50,15 +50,6 @@ class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
    */
   override def name: String = "graph:/edge_count"
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Get the total number of edges in the graph.",
-    extendedSummary = Some("""
-    Get the total number of edges in the graph.
-
-    Examples
-    --------
-                             |graph.edge_count
-                           """)))
-
   /**
    * Edge count for a "seamless graph"
    * @param invocation information about the user and the circumstances at the time of the call,
