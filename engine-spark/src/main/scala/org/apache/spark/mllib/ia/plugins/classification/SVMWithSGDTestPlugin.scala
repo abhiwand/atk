@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.model.{ SVMTestArgs, ModelLoad }
+import com.intel.intelanalytics.domain.model.{ClassificationWithSGDArgs, SVMTestArgs, ModelLoad}
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 /* Run the SVMWithSGD model on the test frame*/
-class SVMWithSGDTestPlugin extends SparkCommandPlugin[SVMTestArgs, ClassificationMetricValue] {
+class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
@@ -118,7 +118,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[SVMTestArgs, Classificatio
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: SVMTestArgs)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation) = 9
   /**
    * Get the predictions for observations in a test frame
    *
@@ -128,18 +128,13 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[SVMTestArgs, Classificatio
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: SVMTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
+  override def execute(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation): ClassificationMetricValue =
     {
-
       val models = engine.models
       val frames = engine.frames
 
-      //validate arguments
-      val frameId = arguments.frame.id
-      val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
-      val modelMeta = models.expectModel(modelId)
+      val inputFrame = frames.expectFrame(arguments.frame.id)
+      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
       val testFrameRDD = frames.loadFrameData(sc, inputFrame)
