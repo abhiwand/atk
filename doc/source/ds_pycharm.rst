@@ -77,4 +77,3 @@ Setup
 
 #)  Next take a look at the included examples
 
-.. |IA| replace:: Intel Analytics

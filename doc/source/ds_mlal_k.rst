@@ -14,7 +14,7 @@ Modeling data as a graph captures relations – friendship ties between social n
 Analyzing the community structure of the graph reveals collections of entities that are more likely to interact amongst each
 other – for example, a community of friends in a social network or the “community” of highly interacting proteins of a cellular process.
 
-The |IA| Toolkit (IAT) version 0.8.x provides community detection using the k-Clique percolation method first proposed by
+The |IA| Toolkit (IAT) version |version| provides community detection using the k-Clique percolation method first proposed by
 Palla et. al. [1]_ that has been widely used in many contexts.
 Other community detection algorithms may be offered in future releases of the IAT.
 
@@ -24,7 +24,7 @@ K-clique percolation is one of many different methods for detecting community st
 Here we provide mathematical background on how communities are defined in the context of the k-clique percolation algorithm.
 
 A k-clique is with :math:`k` vertices in which all :math:`\left( \frac {k}{2} \right)` possible edges are present.
-A k-clique is certainly a community in the sense that its nodes are all connected , but, it is too restrictive for most purposes,
+A k-clique is certainly a community in the sense that its nodes are all connected, but, it is too restrictive for most purposes,
 since it is natural that a few members of the community may not interact.
 The k-clique percolation method forms communities by taking unions of k-cliques that overlap in :math:`k - 1` vertices.
 
@@ -78,7 +78,7 @@ The algorithm updates the input graph vertex with updated property named in “c
         import intelanalytics as ia
         ia.connect()
         dataset = r"datasets/kclique_edges.csv"
-        schema= [("source", int64), ("target", int64)]
+        schema = [("source", int64), ("target", int64)]
         csvfile = ia.CsvFile(dataset, schema)
         f = ia.Frame(csvfile)
         source = ia.VertexRule("source", f.source)
@@ -96,6 +96,5 @@ The algorithm updates the input graph vertex with updated property named in “c
 .. [2]
     Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
     "Distributed Clique Percolation based community detection on social networks using MapReduce,"
-    Information and Knowledge Technology (IKT), 2013 5th Conference on , vol., no., pp.478,483, 28-30 May 2013
+    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol., no., pp.478,483, 28-30 May 2013
 
-.. |IA| replace:: Intel Analytics

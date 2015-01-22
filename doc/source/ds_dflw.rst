@@ -10,127 +10,202 @@ Process Flow Examples
 
     ds_apir
 
-When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it
-with other data sets, and finally, analyze it.
 
-The first thing to do is to load the toolkit.
-This is stored in the intelanalytics folder and it's sub-folders.
+-----------------
+Python Path Setup
+-----------------
 
 .. _pythonpath:
 
-It is recommended that you add the location of the *intelanalytics* directory to the PYTHONPATH
-environmental variable prior to starting Python.
+It is recommended that you add the location of the *intelanalytics*
+directory to the PYTHONPATH environmental variable prior to starting Python.
 This can be done from a shell script, similar to::
 
-    PYTHONPATH=/usr/lib/
+    PYTHONPATH=$PYTHONPATH:/usr/lib/
     export PYTHONPATH
     python
 
-This way, from inside Python, it is easy to load the toolkit::
+This way, from inside Python, it is easy to load and connect to the |IAT|'s
+REST server::
 
     import intelanalytics as ia
     ia.connect()
 
-To test whether you have imported the toolkit properly type::
-
-    print ia.valid_data_types
-
-You should see something like this::
-
-    ia.float64, float64, ia.int64, int64, str, unicode
-
-.. _Importing Data:
-
---------------
-Importing Data
---------------
+------------
+Data Sources
+------------
 
 .. _valid_data_types:
 
-Your data is composed of different data types.
-It could be composed of strings, integers, logic(True or False), floating point numbers, and other types.
-Each row of data is probably a combination of these.
-To maintain a database structure, each column of data can only hold one type of data.
+Data is made up of variables of heterogeneous type (e.g., strings, integers,
+etc.) that can be organized as a collection of rows and columns, with each
+row corresponding to the data associated with one observation, and each
+column corresponding to a variable being observed.
+
+.. outdated::
+    Your data is composed of different data types, conceptually laid out as a table with rows and columns.
+    It could be composed of strings, integers, floating point numbers, and other types.
+    Each row of data is probably a combination of these.
+    To maintain a database structure, each column of data can only hold one type of data.
+
+To see the data types currently supported by the |IAT| type::
+
+    # Connect to the server
+    import intelanalytics as ia
+    ia.connect()
+
+    # Record error details (optional but always recommended)
+    ia.errors.show_details = True
+
+    # Clean up any previous frames (optional)
+    for name in ia.get_frame_names():
+        print 'deleting frame: %s' %name
+        ia.drop_frames(name)
+
+    # Clean up any previous graphs (optional)
+    for name in ia.get_graph_names():
+        print 'deleting graph: %s' %name
+        ia.drop_graphs(name)
+
+    print ia.valid_data_types
+
+You should see a string of variable types similar to this::
+
+    float32, float64, int32, int64, unicode
+    (and aliases: float->float64, int->int32, long->int64, str->unicode)
+
+.. note::
+
+    The |IAT| utilizes the Numpy package.
+    Numpy values of positive infinity (np.inf), negative infinity (-np.inf)
+    or nan (np.nan) are treated as None.
+    Results of any user-defined functions which deal with such values are
+    automatically converted to None.
+    Any further usage of those data points should treat the values as None.
+
+.. _Importing Data:
 
 Types Of Raw Data
 =================
 
-The only currently supported raw data format is comma-separated variables (CSV), but JSON and XML will be
-supported in future releases.
+The only currently supported raw data format is |CSV|, but |JSON| and |XML|
+will be supported in future releases.
 
 .. _example_files.csvfile:
 
-Importing a CSV File.
----------------------
+Importing a |CSV| file.
+-----------------------
 
-A CSV file looks similar to this::
+Some example rows from a |CSV| file could look like the below::
 
-    "string",123,True,"again",25.125
-    "next",,,"or not",1.0
-    ,1,False,"again?",
+    "string",123,"again",25.125
+    "next",5,"or not",1.0
+    "fail",1,"again?",11.11
 
-Lines of data, with individual pieces of data separated by a delimiter, in this case the comma character.
-You need to import your data into the database file in a way that the toolkit can understand and access it.
-The first thing to do is to tell the toolkit how your data is formatted.
-A database file can be viewed as a table with rows and columns.
-Each column has a unique name and holds a specific data type.
-Each row holds a set of data.
+.. outdated::
 
-To import CSV data you need a :term:`schema` defining the structure of your data.
-Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being
-composed of a string and a data type.
-The string is the name of the column, and the data type must be valid
-(see :ref:`Valid Data Types <valid_data_types>`).
-Unicode in column names will likely cause the drop_frames() function (and others) to fail, and it is not
-supported.
-The order of the columns in the schema must match the order of columns in the data.
+    Lines of data, with individual pieces of data separated by a delimiter,
+    in this case the comma character.
+    You need to import your data into the database file in a way that the
+    |IAT| can understand and access it.
+    The first thing to do is to tell the |IAT| how your data is formatted.
+    A database file can be viewed as a table with rows and columns.
+    Each column has a unique name and holds a specific data type.
+    Each row holds a set of data.
 
-Let's start with a file *Data.csv* whose contents look like this::
+    To import |CSV| data you need a :term:`schema` defining the structure of
+    your data.
+    Schemas are constructed as a list of tuples, each defining a column in
+    the database, each tuple being composed of a string and a data type.
+    The string is the name of the column, and the data type must be valid
+    (see :ref:`Valid Data Types <valid_data_types>`).
+    Unicode in column names will likely cause the drop_frames() function
+    (and others) to fail, and it is not supported.
+    The order of the columns in the schema must match the order of columns
+    in the data.
+
+|CSV| files contain "\\n"-separated rows of information, within with each
+column field is separated by some character (in the above example, the
+separating character is ",").
+To import data into the |IAT|, you must tell the system how the input file
+is formatted.
+This is done by defining a schema.
+Schemas are constructed as a list of tuples, each of which contains pairs of
+ASCII-character names and data types (see :ref:`Valid Data Types
+<valid_data_types>`), ordered according to the order of columns in the input
+file.
+
+Let's start with a file *datasets/small_songs.csv* whose contents look like
+this::
 
     1,"Easy on My Mind"
     2,"No Rest For The Wicked"
-    ,"Does Your Chewing Gum"
-    4,
-    5,""
+    3,"Does Your Chewing Gum"
+    4,"Gypsies, Tramps, and Theives"
+    5,"Symphony No. 5"
 
-Create the schema *schema_ab* with two columns: *a* (int64), and *b* (string):
+Create the schema *schema_ab* with two columns: *a* (int32), and *b* (str)::
 
-.. code::
+    schema_ab = [('a', ia.int32), ('b', str)]
 
-    schema_ab = [('a', ia.int64), ('b', ia.str)]
+The schema is used in the CsvFile() command to describe the file format::
 
-The delimiter can be declared using the key word ``delimiter``.
-This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for
-tab-delimited records.
-If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be
-passed in with the ``skip_header_lines`` parameter.
+    csv_description = ia.CsvFile(filename, schema)
+    
+The default delimiter to separate column data is a comma, but it can be
+declared using the key word ``delimiter``::
 
-Now we use the schema and the file name to create objects used to define the data layouts::
+    csv_description = ia.CsvFile(filename, schema, delimiter = ":")
 
-    my_csv = ia.CsvFile('Data.csv', schema_ab)
-    csv1 = ia.CsvFile("data.txt", schema_ab)
-    csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
-    csv3 = ia.CsvFile("different_data.txt", schema=[('x', ia.float64), ('y', ia.int64)])
+This can be helpful if the delimiter is something other than a comma, for
+example, ``\t`` for tab-delimited records.
+If there are lines at the beginning of the file that should be skipped, the
+number of lines to skip can be passed in with the ``skip_header_lines``
+parameter::
 
-    raw_csv_data_file = "my_data.csv"
-    column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", ia.bool)]
-    csv4 = ia.CsvFile(raw_csv_data_file,
-                   column_schema_list,
-                   delimiter='|',
-                   skip_header_lines=2)
+    csv_description = ia.CsvFile(filename, schema, skip_header_lines = 5)
+
+.. only:: html
+
+    Now we use the schema and the file name to create objects used to define
+    the data layouts::
+
+        my_csv = ia.CsvFile('datasets/small_songs.csv', schema_ab)
+        csv1 = ia.CsvFile(file_name="data.txt", schema=schema_ab)
+        csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
+
+        raw_csv_data_file = "datasets/my_data.csv"
+        column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
+        csv4 = ia.CsvFile(file_name=raw_csv_data_file, schema=column_schema_list, delimiter='|', skip_header_lines=2)
+
+
+.. only:: latex
+
+    Now we use the schema and the file name to create objects used to define
+    the data layouts::
+
+        my_csv = ia.CsvFile('datasets/small_songs.csv', schema_ab)
+        csv1 = ia.CsvFile(file_name="data.txt", schema=schema_ab)
+        csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
+
+        raw_csv_data_file = "datasets/my_data.csv"
+        column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
+        csv4 = ia.CsvFile(file_name=raw_csv_data_file, \\
+        schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
 .. _example_frame.frame:
 
------
-Frame
------
+------
+Frames
+------
 
-A :term:`Frame` is a class of objects capable of accessing and controlling a :term:`frame` containing
-"big data".
-The frame is visualized as a table structure of rows and columns.
-It can handle large volumes of data, because it is designed to work with data spread over multiple
-clusters.
+A :term:`Frame (capital F)` is a class of objects capable of accessing and
+controlling a :term:`frame (lower case f)` containing "big data".
+The frame is visualized as a two-dimensional table structure of rows and
+columns.
+The |IAT| can handle frames with large volumes of data, because it is
+designed to work with data spread over multiple machines.
 
 Create A Frame
 ==============
@@ -146,53 +221,72 @@ To create an empty frame and a Frame object, *f*, to access it::
 
     f = ia.Frame()
 
-To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a
-Frame object, *my_frame*, to access it::
+To create a frame defined by the schema *my_csv*, import the data, name the
+frame *myframe*, and create a Frame object, *my_frame*, to access it::
 
-    my_frame = ia.Frame(my_csv, 'bf')
+    my_frame = ia.Frame(source=my_csv4, name='myframe')
 
-To create a new frame, identical to the frame named *bf* (except for the name, because the name must always
-be unique), and create a Frame object *f2* to access it::
+To create a new frame, identical to the frame named *myframe* (except for
+the name, because the name must always be unique), and create a Frame object
+*f2* to access it::
 
-    f2 = ia.Frame(my_frame)
+    f2 = my_frame.copy()
+    f2.name = "copy_of_myframe"
 
-To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the Frame
-object as *f3*::
+To create a new frame with only columns *a* and *c* from the original frame
+*myframe*, and save the Frame object as *f3*::
 
-    f3 = ia.Frame(my_frame[['a', 'c']])
+    f3 = my_frame.copy(['x', 'z'])
+    f3.name = "copy_of_myframe2"
+
+To create a frame copy of the original columns *x* and *z*, but only those
+rows where *z* is TRUE::
+
+    f4 = my_frame.copy(['x', 'z'], where = (lambda row: "TRUE" in row.z))
+    f4.name = "copy_of_myframe_true"
 
 Frames (capital 'F') are not the same thing as frames (lower case 'f').
-Frames (lower case 'f') contain data, viewed similarly to a table, while Frames are descriptive pointers
-to the data.
-Commands such as ``f4 = my_frame`` will only give you a copy of the Frame proxy pointing to the same data.
+Frames (lower case 'f') contain data, viewed similarly to a table, while
+Frames are descriptive pointers to the data.
+Commands such as ``f4 = my_frame`` will only give you a copy of the Frame
+proxy pointing to the same data.
+
+Let's create a Frame and check it out::
+
+    small_songs = ia.Frame(my_csv, name = "small_songs")
+    small_songs.inspect()
+    small_songs.get_error_frame().inspect()
 
 .. _example_frame.append:
 
 Append:
 -------
-The ``append`` function adds more rows and columns to a frame.
-If columns are the same in both name and data type, the appended data will go into the existing column.
-Columns and rows are added to the database structure, and data is imported as appropriate.
+The ``append`` function adds rows and columns to a frame.
+If columns are the same in both name and data type, the appended data will
+go into the existing column.
+Columns and rows are added to the database structure, and data is imported
+as appropriate.
 
 As an example, let's start with a frame containing two columns *a* and *b*.
-The frame can be accessed by Frame *BF1*.
-We can look at the data and structure of the database by using the ``inspect`` function::
+The frame can be accessed by Frame *my_frame*.
+We can look at the data and structure of the database by using the
+``inspect`` function::
 
     BF1.inspect()
 
-      a:ia.str   b:ia.int64
-    /-----------------------/
-      apple           182
-      bear             71
-      car            2048
+      a:str   b:ia.int64
+    /--------------------/
+      apple          182
+      bear            71
+      car           2048
 
 To this frame we combine another frame with one column *c*.
 This frame can be accessed by Frame *BF2*::
 
     BF2.inspect()
 
-      c:ia.str
-    /----------/
+      c:str
+    /-------/
       dog
       cat
 
@@ -205,13 +299,42 @@ It would still be accessed by Frame *BF1*::
 
     BF1.inspect()
 
-      a:ia.str     b:ia.int64     c:ia.str
-    /--------------------------------------/
-      apple           182         None
-      bear             71         None
-      car            2048         None
-      None           None         dog
-      None           None         cat
+      a:str     b:ia.int64     c:str
+    /--------------------------------/
+      apple        182         None
+      bear          71         None
+      car         2048         None
+      None        None         dog
+      None        None         cat
+
+.. only:: html
+
+    Try this example with data files *objects1.csv* and *objects2.csv*::
+
+        objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv", schema=[('Object', str), ('Count', ia.int64)], skip_header_lines=1), 'objects1')
+        objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv", schema=[('Thing', str)], skip_header_lines=1), 'objects2')
+
+        objects1.inspect()
+        objects2.inspect()
+
+        objects1.append(objects2)
+        objects1.inspect()
+
+.. only:: latex
+
+    Try this example with data files *objects1.csv* and *objects2.csv*::
+
+        objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv", \\
+            schema=[('Object', str), ('Count', ia.int64)], \\
+            skip_header_lines=1), 'objects1')
+        objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv", \\
+            schema=[('Thing', str)], skip_header_lines=1), 'objects2')
+
+        objects1.inspect()
+        objects2.inspect()
+
+        objects1.append(objects2)
+        objects1.inspect()
 
 See also the *join* method in the :doc:`API <ds_apic>` section.
 
@@ -219,72 +342,153 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-|IA| provides several functions that allow you to inspect your data, including inspect(), and .take().
+|IA| provides several functions that allow you to inspect your data,
+including inspect(), and .take().
+The Frame structure also contains frame information like .row_count.
 
 Examples
 --------
+To see the number of rows::
 
-To print two rows of data::
+    objects1.row_count
 
-    print my_frame.inspect(2)
+To see the number of columns::
 
+    len(objects1.schema)
+
+To see all the Frame data::
+
+    objects1
+
+To see two rows of data::
+
+    print objects1.inspect(2)
+
+    # Gives you something like this:
       a:ia.float64  b:ia.int64   
     /--------------------------/
         12.3000            500    
        195.1230         183954    
 
-To get a section of data from the existing frame, use .take()::
+To see a subsection of data from the existing frame::
 
-    my_data = my_frame.take(10, offset=200)
+    subset_of_objects1 = objects1.take(3, offset=2)
+    print subset_of_objects1
  
-Here, we've created a variable *my_data* of type list.
-The variable *my_data* has 10 lists.
-Each list has the row from the frame accessed by *my_frame*, beginning at row 200.
+    # Gives you something like this:
+    [[12.3, 500], [195.123, 183954], [12.3, 500]]
+
+Here, we see a list of lists of data from *myframe*, containing 10 lists.
+Each list has the data from a row in the frame accessed by *my_frame*,
+beginning at row 200.
+
+.. note::
+    The sequence of the data is NOT guaranteed to match the sequence of the
+    input file.
+    This command might or might not return the same data you would see in
+    lines 201 through 210 of the input file.
+
+.. only:: html
+
+    Some more examples to try::
+
+        animals = ia.Frame(ia.CsvFile("datasets/animals.csv", schema=[('User', ia.int32), ('animals', str), ('Int1', ia.int64), ('Int2', ia.int64), ('Float1', ia.float64), ('Float2', ia.float64)], skip_header_lines=1), 'animals')
+        animals.inspect()
+        freq = animals.top_k('animals', animals.row_count)
+        freq.inspect(freq.row_count)
+
+        from pprint import *
+        summary = {}
+        for col in ['Int1', 'Int2', 'Float1', 'Float2']:
+            summary[col] = animals.column_summary_statistics(col)
+            pprint(summary[col])
+
+.. only:: latex
+
+    Some more examples to try::
+
+        animals = ia.Frame(ia.CsvFile("datasets/animals.csv", \\
+            schema=[('User', ia.int32), ('animals', str), ('Int1', ia.int64), \\
+            ('Int2', ia.int64), ('Float1', ia.float64), ('Float2', \\
+            ia.float64)], skip_header_lines=1), 'animals')
+        animals.inspect()
+        freq = animals.top_k('animals', animals.row_count)
+        freq.inspect(freq.row_count)
+
+        from pprint import *
+        summary = {}
+        for col in ['Int1', 'Int2', 'Float1', 'Float2']:
+            summary[col] = animals.column_summary_statistics(col)
+            pprint(summary[col])
+
 
 .. _Clean The Data:
 
 Clean The Data
 ==============
 
-Cleaning data involves removing incomplete, incorrect, inaccurate, or corrupted information from the data
-set.
-The Frame API should be used for this.
-While these Python libraries do not support all Python functionality, they have been specifically designed
-to handle very large data sets, so when using some Python libraries, be aware that some of them are not
-designed to handle these very large data sets.
+.. outdated::
+    Cleaning data involves removing incomplete, incorrect, inaccurate, or corrupted information from the data set.
+    The Frame API should be used for this.
+    While these Python libraries do not support all Python functionality, they have been specifically designed to handle very large data sets, so when using some Python libraries, be aware that some of them are not designed to handle these very large data sets.
+
+The process of "data cleaning" encompasses the identification and removal of
+incomplete, incorrect, or mal-formed information in a data set.
+While IAT's Frame API provides much of the functionality necessary for these
+tasks, it's important to keep in mind that it was designed with scalability
+in mind.
+Thus, using external Python packages for these tasks, while possible, may
+not provide the same level of efficiency.
 
 .. warning::
 
-    Unless stated otherwise, cleaning functions use the Frame proxy to operate directly on the data,
-    so it changes the data in the frame, rather than return a new frame with the changed data.
-    It is recommended that you copy the data to a new frame on a regular basis and work on the new frame.
+    Unless stated otherwise, cleaning functions use the Frame proxy to
+    operate directly on the data, so it changes the data in the frame,
+    rather than return a new frame with the changed data.
+    It is recommended that you copy the data to a new frame on a regular
+    basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected::
 
         next_frame = ia.Frame(last_frame)
 
-In general, the following functions select rows of data based upon the data in the row.
-For details about row selection based upon its data see :doc:`ds_apir`
+In general, the following functions select rows of data based upon the data
+in the row.
+For details about row selection based upon its data see :doc:`ds_apir`.
+
+Example of data cleaning::
+
+    def clean_animals(row):
+        if 'basset hound' in row.animals:
+            return 'dog'
+        elif 'ginea pig' in row.animals:
+            return 'guinea pig'
+        else:
+            return row.animals
+
+    animals.add_columns(clean_animals, ('animals_cleaned', str))
+    animals.drop_columns('animals')
+    animals.rename_columns({'animals_cleaned' : 'animals'})
 
 .. _example_frame.drop_rows:
 
 Drop Rows:
 ----------
 
-The ``drop`` function takes a predicate function and removes all rows for which the predicate evaluates to
-``True``.
+The ``drop`` function takes a predicate function and removes all rows for
+which the predicate evaluates to ``True``.
 
 Examples:
 ~~~~~~~~~
+Drop any rows in the animals frame where the value in column *Int2* is
+negative::
 
-To drop all rows where column *b* contains a negative number::
+    animals.drop_rows(lambda row: row['Int2'] < 0)
 
-    my_frame.drop_rows(lambda row: row['b'] < 0)
-
-To drop all rows where column *a* is empty::
+To drop any rows where *Float1PlusFloat2* is empty::
 
     my_frame.drop_rows(lambda row: row['a'] is None)
 
-To drop all rows where any column is empty::
+To drop any rows where any column is empty::
 
     my_frame.drop_rows(lambda row: any([cell is None for cell in row]))
 
@@ -293,8 +497,8 @@ To drop all rows where any column is empty::
 Filter Rows:
 ------------
 
-The ``filter`` function is like ``drop``, except it removes all rows for which the predicate evaluates to
-False.
+The ``filter`` function is like ``drop``, except it removes all rows for
+which the predicate evaluates to False.
 
 Examples:
 ~~~~~~~~~
@@ -308,26 +512,30 @@ To keep only those rows where field *b* is in the range 0 to 10::
 Drop Duplicates:
 ----------------
 
-The ``drop_duplicates`` function performs a row uniqueness comparison across the whole table.
+The ``drop_duplicates`` function performs a row uniqueness comparison across
+the whole table.
 
 Examples:
 ~~~~~~~~~
 
-To drop any rows where the data in column *a* and column *b* are duplicates of some previously evaluated
-row::
+To drop any rows where the data in *Float1PlusFloat2* and column *b* are
+duplicates of some previously evaluated row::
 
     my_frame.drop_duplicates(['a', 'b'])
 
-Drop any rows where the data matches some previously-implemented evaluation row in all columns::
+To drop all duplicate rows where the columns *User* and *animals* are
+duplicate::
 
-    my_frame.drop_duplicates()
+    animals.drop_duplicates(['User', 'animals'])
+    animals.inspect(animals.row_count)
  
 .. _example_frame.drop_columns:
 
 Drop Columns:
 -------------
 
-Columns can be dropped either with a string matching the column name or a list of strings::
+Columns can be dropped either with a string matching the column name or a
+list of strings::
 
     my_frame.drop_columns('b')
     my_frame.drop_columns(['a', 'c'])
@@ -337,10 +545,11 @@ Columns can be dropped either with a string matching the column name or a list o
 Rename Columns:
 ---------------
 
-Columns can be renamed by giving the existing column name and the new name, in the form of a dictionary.
+Columns can be renamed by giving the existing column name and the new name,
+in the form of a dictionary.
 Unicode characters should not be used for column names.
 
-Rename column *a* to "id"::
+Rename *Float1PlusFloat2* to "id"::
 
     my_frame.rename_columns(('a': 'id'))
 
@@ -363,150 +572,217 @@ you need the average age of students attending a college.
 Add Columns:
 ------------
 
-Columns can be added to the frame using values from other columns as their value.
+Columns can be added to the frame using values from other columns as their
+value.
 
-Add a column *column3* as an ia.int64 and fill it with the contents of *column1* and *column2* multiplied
-together::
+.. only:: html
 
-    my_frame.add_columns(lambda row: row.column1 * row.column2, ('column3', ia.int64))
+    Add a column *Int1xInt2* as an ia.float64 and fill it with the contents
+    of column *Int1* and column *Int2* multiplied together::
+
+        animals.add_columns(lambda row: row.Int1*row.Int2, ('Int1xInt2', ia.float64))
+
+.. only:: latex
+
+    Add a column *Int1xInt2* as an ia.float64 and fill it with the contents
+    of column *Int1* and column *Int2* multiplied together::
+
+        animals.add_columns(lambda row: row.Int1*row.Int2, ('Int1xInt2', \\
+        ia.float64))
 
 Add a new column *all_ones* and fill the entire column with the value 1::
 
-    my_frame.add_columns(lambda row: 1, ('all_ones', ia.int64))
+    animals.add_columns(lambda row: 1, ('all_ones', ia.int64))
 
-Add a new column *a_plus_b* and fill the entire column with the value of column *a* plus column *b*::
+.. only:: html
 
-    my_frame.add_columns(lambda row: row.a + row.b, ('a_plus_b', ia.int64))
+    Add a new column *Float1PlusFloat2* and fill the entire column with the
+    value of column *Float1* plus column *Float2*, then save a summary of
+    the frame statistics::
 
-Add a new column *a_lpt* and fill the value according to this table:
+        animals.add_columns(lambda row: row.Float1 + row.Float2, ('Float1PlusFloat2', ia.float64))
+        summary['Float1PlusFloat2'] = animals.column_summary_statistics('Float1PlusFloat2')
 
-+-------------------------------------------+-------------------------------------------+
-| value in column *a*                       | value for column *a_lpt*                  |
-+===========================================+===========================================+
-| None                                      | None                                      |
-+-------------------------------------------+-------------------------------------------+
-| Between 30 and 127 (inclusive)            | column *a* times 0.0046 plus 0.4168       |
-+-------------------------------------------+-------------------------------------------+
-| Between 15 and 29 (inclusive)             | column *a* times 0.0071 plus 0.3429       |
-+-------------------------------------------+-------------------------------------------+
-| Between -127 and 14 (inclusive)           | column *a* times 0.0032 plus 0.4025       |
-+-------------------------------------------+-------------------------------------------+
-| None of the above                         | None                                      |
-+-------------------------------------------+-------------------------------------------+
+.. only:: latex
+
+    Add a new column *Float1PlusFloat2* and fill the entire column with the
+    value of column *Float1* plus column *Float2*, then save a summary of
+    the frame statistics::
+
+        animals.add_columns(lambda row: row.Float1 + row.Float2, \\
+        ('Float1PlusFloat2', ia.float64))
+        summary['Float1PlusFloat2'] = \\
+        animals.column_summary_statistics('Float1PlusFloat2')
+
+Add a new column *PWL*, type ia.float64, and fill the value according to
+this table:
+
++-------------------------------------+---------------------------------------------+
+| value in column *Float1PlusFloat2*  | value for column *PWL*                      |
++=====================================+=============================================+
+| None                                | None                                        |
++-------------------------------------+---------------------------------------------+
+| Less than 50                        | *Float1PlusFloat2* times 0.0046 plus 0.4168 |
++-------------------------------------+---------------------------------------------+
+| Between 15 and 29 (inclusive)       | *Float1PlusFloat2* times 0.0071 plus 0.3429 |
++-------------------------------------+---------------------------------------------+
+| Between -127 and 14 (inclusive)     | *Float1PlusFloat2* times 0.0032 plus 0.4025 |
++-------------------------------------+---------------------------------------------+
+| None of the above                   | None                                        |
++-------------------------------------+---------------------------------------------+
 
 An example of Piecewise Linear Transformation::
 
-    def transform_a(row):
-        x = row['a']
+    def piecewise_linear_transformation(row):
+        x = row.Float1PlusFloat2
         if x is None:
             return None
-        if 30 <= x <= 127:
-            m, c = 0.0046, 0.4168
-        elif 15 <= x <= 29:
-            m, c = 0.0071, 0.3429
-        elif -127 <= x <= 14:
-            m, c = 0.0032, 0.4025
+        elif x < 50:
+            m, c =0.0046, 0.4168
+        elif 50 <= x < 81:
+            m, c =0.0071, 0.3429
+        elif 81 <= x:
+            m, c =0.0032, 0.4025
         else:
             return None
         return m * x + c
 
-    my_frame.add_columns(transform_a, ('a_lpt', ia.float64))
+    animals.add_columns(piecewise_linear_transformation, ('PWL', ia.float64))
 
-Create multiple columns at once by making a function return a list of values for the new frame columns::
+.. only:: html
 
-    my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', ia.int64), ('b_abs', ia.int64)])
+    Create multiple columns at once by making a function return a list of
+    values for the new frame columns::
+
+        animals.add_columns(lambda row: [abs(row.Int1), abs(row.Int2)], [('Abs_Int1', ia.int64), ('Abs_Int2', ia.int64)])
+
+.. only:: latex
+
+    Create multiple columns at once by making a function return a list of
+    values for the new frame columns::
+
+        animals.add_columns(lambda row: [abs(row.Int1), abs(row.Int2)], \\
+            [('Abs_Int1', ia.int64), ('Abs_Int2', ia.int64)])
 
 .. _ds_dflw_frame_examine:
 
 Examining the Data
 ==================
 
-Let's say we want to get some standard statistical information about *my_frame*.
-We can use the frame function *column_summary_statistics*::
+To get standard descriptive statistics information about my_frame, use the frame function column_summary_statistics::
 
     my_frame.column_summary_statistics()
 
 .. _example_frame.group_by:
 
-Group_by (and Aggregate):
+Group by (and aggregate):
 -------------------------
 
-Group rows together based on matching column values and then apply :term:`aggregation functions` on each
-group, producing a **new** frame.
+Rows can be grouped together based on matching column values, after which an
+aggregation function can be applied on each group, producing a new frame.
 
-This needs two parameters:
+Example process of using aggregation based on columns:
 
-1. the column(s) to group on
-#. the aggregation function(s)
+#.  given our frame of animals
+#.  create a new frame and a Frame *grouped_animals* to access it
+#.  group by unique values in column *animals*
+#.  average the grouped values in column *Int1* and save it in a
+    column *Int1_avg*
+#.  add up the grouped values in column *Int1* and save it in a
+    column *Int1_sum*
+#.  get the standard deviation of the grouped values in column
+    *Int1* and save it in a column *Int1_stdev*
+#.  average the grouped values in column *Int2* and save it in a
+    column *Int2_avg*
+#.  add up the grouped values in column *Int2* and save it in a
+    column *Int2_sum*
 
-Aggregation based on columns:
-    Given a frame with columns *a*, *b*, *c*, and *d*;
-    Create a new frame and a Frame *grouped_data* to access it;
-    Group by unique values in columns *a* and *b*;
-    Average the grouped values in column *c* and save it in a new column *c_avg*;
-    Add up the grouped values in column *c* and save it in a new column *c_sum*;
-    Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
-    Average the grouped values in column *d* and save it in a new column *d_avg*;
-    Add up the grouped values in column *d* and save it in a new column *d_sum*::
+.. only:: html
 
-        grouped_data = my_frame.group_by(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
-            'd': [agg.avg, agg.sum]})
+    Code::
 
-    Note:
-        The only columns in the new frame will be the grouping columns and the generated columns.
-        In this case, regardless of the original frame size, you will get seven columns:
+        grouped_animals = animals.group_by('animals', {'Int1': [ia.agg.avg, ia.agg.sum, ia.agg.stdev], 'Int2': [ia.agg.avg, ia.agg.sum]})
+        grouped_animals.inspect()
 
-        .. hlist::
-            :columns: 7
+.. only:: latex
 
-            * *a*
-            * *b*
-            * *c_avg*
-            * *c_sum*
-            * *c_stdev*
-            * *d_avg*
-            * *d_sum*
+    Code::
 
-Aggregation based on full row:
-    Given a frame with columns *a*, and *b*;
-    Create a new frame and a Frame *gr_data* to access it;
-    Group by unique values in columns *a* and *b*;
-    Count the number of rows in each group and put that value in column *count*::
+        grouped_animals = animals.group_by('animals', {'Int1': [ia.agg.avg, \\
+            ia.agg.sum, ia.agg.stdev], 'Int2': [ia.agg.avg, ia.agg.sum]})
+        grouped_animals.inspect()
 
-        gr_data = my_frame.group_by(['a', 'b'], agg.count)
+.. note::
 
-    Note:
-        agg.count is the only full row aggregation function supported at this time
+    The only columns in the new frame will be the grouping column and the
+    generated columns.
+    In this case, regardless of the original frame size, you will get six
+    columns.
 
-Aggregation based on both column and row together:
-    Given a frame with columns *a*, *b*, *c*, and *d*;
-    Group by unique values in columns *a* and *b*;
-    Count the number of rows in each group and put that value in column *count*:
-    Average the grouped values in column *c* and save it in a new column *c_avg*;
-    Add up the grouped values in column *c* and save it in a new column *c_sum*;
-    Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
-    Average the grouped values in column *d* and save it in a new column *d_avg*;
-    Add up the grouped values in column *d* and save it in a new column *d_sum*::
+Example process of using aggregation based on both column and row together:
 
-        my_frame.group_by(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
-            'd': [agg.avg, agg.sum]}])
+#.  Using our data accessed by *animals*, create a new frame and a Frame
+    *grouped_animals2* to access it
+#.  Group by unique values in columns *animals* and *Int1*
+#.  Using the data in the *Float1* column, calculate each group's average,
+    standard deviation, variance, minimum, and maximum
+#.  Count the number of rows in each group and put that value in column
+    *Int2_COUNT*
+#.  Count the number of distinct values in column *Int2* for each group and
+    put that number in column *Int2_count_distinct*
 
-Supported aggregation functions:
+.. only:: html
+
+    Code::
+
+        grouped_animals2 = animals.group_by(['animals', 'Int1'], {'Float1': [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max], 'Int2': [ia.agg.count, ia.agg.count_distinct]})
+
+.. only:: latex
+
+        grouped_animals2 = animals.group_by(['animals', 'Int1'], {'Float1': \\
+            [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max], \\
+            'Int2': [ia.agg.count, ia.agg.count_distinct]})
+
+Example process of using aggregation based on row:
+
+#.  Using our data accessed by *animals*, create a new frame and a Frame
+    *grouped_animals2* to access it
+#.  Group by unique values in columns *animals* and *Int1*
+#.  Count the number of rows in each group and put that value in column
+    *COUNT*
+
+.. only:: html
+
+    Code::
+
+        grouped_animals2 = animals.group_by(['animals', 'Int1'], ia.agg.count)
+
+.. only:: latex
+
+    Code::
+
+        grouped_animals2 = animals.group_by(['animals', 'Int1'], \\
+            ia.agg.count)
+
+.. note::
+
+    agg.count is the only full row aggregation function supported at this
+    time.
+
+Aggregation currently supports using the following functions:
 
 ..  hlist::
     :columns: 5
 
     * avg
     * count
+    * count_distinct
     * max
     * mean
     * min
     * stdev
     * sum
     * :term:`variance <Bias-variance tradeoff>`
-    * distinct
-
-
 
 .. _example_frame.join:
 
@@ -515,31 +791,34 @@ Join:
 
 Create a **new** frame from a JOIN operation with another frame.
 
-Given two frames *my_frame* (columns *a*, *b*, *c*) and *your_frame* (columns *b*, *c*, *d*).
-For the sake of readability, in these examples we will refer to the frames and the Frames by the same
-name, unless needed for clarity::
+Given two frames *my_frame* (columns *a*, *b*, *c*) and *your_frame* (columns
+*b*, *c*, *d*).
+For the sake of readability, in these examples we will refer to the frames and
+the Frames by the same name, unless needed for clarity::
 
     my_frame.inspect()                      
 
-    a:ia.str       b:ia.str       c:ia.str           
-    --------------------------------------  
-    alligator   bear        cat             
-    auto        bus         car             
-    apple       berry       cantelope       
-    mirror      frog        ball
+      a:str       b:str       c:str
+    /-----------------------------------/
+      alligator   bear        cat
+      auto        bus         car
+      apple       berry       cantelope     
+      mirror      frog        ball
 
     your_frame.inspect()
                                         
-    b:ia.str       c:ia.int64     d:ia.str
-    ------------------------------------
-    bus             871     dog
-    berry          5218     frog
-    blue              0     log         
+      b:str       c:ia.int64     d:str
+    /----------------------------------/
+      bus             871        dog
+      berry          5218        frog
+      blue              0        log         
 
-Column *b* in both frames is a unique identifier used to tie the two frames together.
-Join *your_frame* to *my_frame*, creating a new frame with a new Frame to access it;
-Include all data from *my_frame* and only that data from *your_frame* which has a value
-in *b* that matches a value in *my_frame* *b*::
+Column *b* in both frames is a unique identifier used to tie the two frames
+together.
+Join *your_frame* to *my_frame*, creating a new frame with a new Frame to
+access it;
+Include all data from *my_frame* and only that data from *your_frame* which
+has a value in *b* that matches a value in *my_frame* *b*::
 
     our_frame = my_frame.join(your_frame, 'b', how='left')
 
@@ -547,14 +826,15 @@ Result is *our_frame*::
 
     our_frame.inspect()
 
-      a:ia.str    b:ia.str    c_L:ia.str   c_R:ia.int64   d:ia.str
-    /--------------------------------------------------------------/
+      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+    /-----------------------------------------------------------/
       alligator   bear        cat          None           None
       auto        bus         car           871           dog
       apple       berry       cantelope    5281           frog
       mirror      frog        ball         None           None
 
-Do it again but this time include only data from *my_frame* and *your_frame* which have matching values in *b*::
+Do it again but this time include only data from *my_frame* and *your_frame*
+which have matching values in *b*::
 
     inner_frame = my_frame.join(your_frame, 'b')
     or
@@ -564,66 +844,94 @@ Result is *inner_frame*::
 
     inner_frame.inspect()
 
-      a:ia.str    b:ia.str    c_L:ia.str   c_R:ia.int64   d:ia.str
-    /--------------------------------------------------------------/
+      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+    /-----------------------------------------------------------/
       auto        bus         car             871         dog
       apple       berry       cantelope      5218         frog
 
-If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
-Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in
-*b* that matches a value in *your_frame* *c*::
+.. only:: html
 
-    right_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
+    If column *b* in *my_frame* and column *d* in *your_frame* are the common
+    column:
+    Doing it again but including all data from *your_frame* and only that data
+    in *my_frame* which has a value in *b* that matches a value in
+    *your_frame* *d*::
+
+        right_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
+
+.. only:: latex
+
+    If column *b* in *my_frame* and column *d* in *your_frame* are the common
+    column:
+    Doing it again but including all data from *your_frame* and only that data
+    in *my_frame* which has a value in *b* that matches a value in
+    *your_frame* *d*::
+
+        right_frame = my_frame.join(your_frame, left_on='b', right_on='d', \\
+        how='right')
 
 Result is *right_frame*::
 
     right_frame.inspect()
 
-      a:ia.str   b_L:ia.str   c:ia.str   b_R:ia.str  c:ia.int64   d:ia.str
-    /----------------------------------------------------------------------/
-      None       None         None       bus          871         dog
-      mirror     frog         ball       berry       5218         frog
-      None       None         None       blue           0         log
+      a:str      b_L:str      c:str      b_R:str    c:ia.int64   d:str
+    /---------------------------------------------------------------------/
+      None       None         None       bus         871         dog
+      mirror     frog         ball       berry      5218         frog
+      None       None         None       blue          0         log
 
 .. _example_frame.flatten_column:
 
 Flatten Column:
 ---------------
 
-The function ``flatten_column`` creates a **new** frame by splitting a particular column and returns a
-Frame object.
-The column is searched for rows where there is more than one value, separated by commas.
-The row is duplicated and that column is spread across the existing and new rows.
+The function ``flatten_column`` creates a **new** frame by splitting a
+particular column and returns a Frame object.
+The column is searched for rows where there is more than one value,
+separated by commas.
+The row is duplicated and that column is spread across the existing and new
+rows.
 
-Given that I have a frame accessed by Frame *my_frame* and the frame has two columns *a* and *b*.
+Given a frame accessed by Frame *my_frame* and the frame has two columns
+*a* and *b*.
 The "original_data"::
 
     1-"solo,mono,single"
     2-"duo,double"
 
-I run my commands to bring the data in where I can work on it::
+.. only:: html
 
-    my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), ('b', ia.str)], delimiter='-')
-    my_frame = ia.Frame(source=my_csv)
+    Bring the data in where it can by worked on::
 
-I look at it and see::
+        my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), ('b', str)], delimiter='-')
+        my_frame = ia.Frame(source=my_csv)
+
+.. only:: latex
+
+    Bring the data in where it can by worked on::
+
+        my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), \\
+        ('b', str)], delimiter='-')
+        my_frame = ia.Frame(source=my_csv)
+
+Check the data::
 
     my_frame.inspect()
 
-      a:ia.int64   b:ia.string
+      a:ia.int64   b:string
     /---------------------------------/
           1        solo, mono, single
           2        duo, double
 
-Now, I want to spread out those sub-strings in column *b*::
+Spread out those sub-strings in column *b*::
 
     your_frame = my_frame.flatten_column('b')
 
-Now I check again and my result is::
+Now check again and the result is::
 
     your_frame.inspect()
 
-      a:ia.int64   b:ia.str
+      a:ia.int64   b:str
     /-----------------------/
         1          solo
         1          mono
@@ -631,133 +939,198 @@ Now I check again and my result is::
         2          duo
         2          double
 
-.. TODO:: Miscellaneous Notes
-    Misc Notes
-
-    Discuss statistics, mean, standard deviation, etcetra.
-
 ----------
 TitanGraph
 ----------
 
-For the examples below, we will use a Frame *my_frame*, which accesses an arbitrary frame of data
-consisting of the following columns:
+For the examples below, we will use a Frame *my_frame*, which accesses an
+arbitrary frame of data consisting of the following columns:
 
-    +-----------+-----------+-----------+-----------+
-    | emp_id    | name      | manager   | years     |
-    +===========+===========+===========+===========+
-    | 00001     | john      | None      | 5         |
-    +-----------+-----------+-----------+-----------+
-    | 00002     | paul      | 00001     | 4         |
-    +-----------+-----------+-----------+-----------+
-    | 00003     | george    | 00001     | 3         |
-    +-----------+-----------+-----------+-----------+
-    | 00004     | ringo     | 00001     | 2         |
-    +-----------+-----------+-----------+-----------+
+    +----------+---------+-------------------+-------+
+    | Employee | Manager | Title             | Years |
+    +==========+=========+===================+=======+
+    | Bob      | Steve   | Associate         | 1     |
+    +----------+---------+-------------------+-------+
+    | Jane     | Steve   | Sn Associate      | 3     |
+    +----------+---------+-------------------+-------+
+    | Anup     | Steve   | Associate         | 3     |
+    +----------+---------+-------------------+-------+
+    | Sue      | Steve   | Market Analyst    | 1     |
+    +----------+---------+-------------------+-------+
+    | Mohit    | Steve   | Associate         | 2     |
+    +----------+---------+-------------------+-------+
+    | Steve    | David   | Marketing Manager | 5     |
+    +----------+---------+-------------------+-------+
+    | Larry    | David   | Product Manager   | 3     |
+    +----------+---------+-------------------+-------+
+    | David    | Rob     | VP of Sales       | 7     |
+    +----------+---------+-------------------+-------+
+
+    download :download:`here <_downloads/employees.csv>`
 
 .. _ds_dflw_building_rules:
+
+From the Frame
+==============
+.. only:: html
+
+    We need to bring the data into a frame::
+
+        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", schema = [('Employee', str),
+            ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+        employees_frame.inspect()
+
+.. only:: latex
+
+    We need to bring the data into a frame::
+
+        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", \\
+        schema = [('Employee', str), ('Manager', str), ('Title', str), \\
+        ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+        employees_frame.inspect()
 
 Building Rules
 ==============
 
-First we make rule objects. These are the criteria for transforming the table data to graph data.
+First we make rule objects. These are the criteria for transforming the table
+data to graph data.
 
 Vertex Rule:
 ------------
 
 To create a rule for :term:`vertices`, one needs to define:
 
-1.  The label for the vertices, for example, the string "empID".
-#.  The identification value of each vertex, for example, the column "emp_id" of our frame.
+#.  The label for the vertices, for example, the string "Employee_Name".
+#.  The identification value of each vertex, for example, the column
+    "Employee" of our frame.
 #.  The properties of the vertex.
 
 Note:
     The properties of a vertex:
 
-    1.  Consist of a label and its value. For example, the property *name* with its value taken from
-        column *name* of our frame.
+    #.  Consist of a label and its value. For example, the property *name*
+            with its value taken from column *name* of our frame.
     #.  Are optional, which means a vertex might have zero or more properties.
 
 Vertex Rule Example:
 ~~~~~~~~~~~~~~~~~~~~
 
-Create a vertex rule called “employee” from the above frame::
+.. only:: html
 
-    employee = ia.VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
+    Create a vertex rule called “employees_vertices” from the above frame::
 
-The created vertices will be grouped under the label “empID”, will have an identification based on the
-values from the column *emp_id*, and will have a property *name* with its value from the specified frame
-column *name*.
+        employees_vertices = ia.VertexRule("Employee_Name", employees_frame['Employee'], {'Title':employees_frame.Title})
 
-Create another vertex rule called “manager”::
+.. only:: latex
 
-    manager = ia.VertexRule(‘empID”, my_frame[“manager”])
+    Create a vertex rule called “employees_vertices” from the above frame::
 
-The identification values for these vertices will be taken from column *manager* of the frame.
+        employees_vertices = ia.VertexRule("Employee_Name", \\
+        employees_frame['Employee'], {'Title':employees_frame.Title})
 
-Both vertex rules will be grouped under label *empID* (we will consider managers to also be employees in
-these examples).
+The created vertices will be grouped under the label “Employee_Name”,
+will have an identification based on the values from the column *Employee*,
+and will have a property *Title* with its value from the specified frame
+column *Title*.
+
+Create another vertex rule called “managers_vertices”::
+
+    managers_vertices = ia.VertexRule("Manager_Name", employees_frame.Manager)
+
+The identification values for these vertices will be taken from column
+*Manager* of the frame.
+This vertex rule will be grouped under label *Manager_Name*. 
 
 Edge Rule:
 ----------
  
-An edge is a link that connects two vertices, in our case, they are *tail* and *head*. An edge can have
-properties similar to a vertex.
+An edge is a link that connects two vertices, in our case, they are *tail*
+and *head*.
+An edge can have properties similar to a vertex.
 
 To create a rule for an edge, one needs to define:
 
-1.  The label or identification for the edge, for example, the string “worksUnder”
+#.  The label or identification for the edge, for example, the string
+    “worksUnder”
 #.  The tail vertex specified in the previously defined vertex rule.
 #.  The head vertex specified in the previously defined vertex rule.
 #.  The properties of the edge:
 
-    A.  consist of a label and its value, for example, the property *name* with value taken from column
-        *name* of a frame
+    #.  consist of a label and its value, for example, the property *name*
+            with value taken from column *name* of a frame
 
     #.  are optional, which means an edge might have zero or more properties
 
 Edge Rule Example:
 ~~~~~~~~~~~~~~~~~~
 
-Create an edge called “reports” from the same frame (accessed by Frame *my_frame*) as above, using
-previously defined *employee* and *manager* rules, and link them together::
+.. only:: html
 
-    reports = ia.EdgeRule("worksUnder", employee, manager, { "years": my_frame[“years”] })
+    Create an edge called “reports” from the same frame (accessed by Frame
+    *employee_frame*) as above, using previously defined *employee_vertices*
+    and *manager_vertices* rules, and link them together::
 
-This rule ties the vertices together, and also defines the property *years*, so the edges created will
-have this property with the value from the frame column *years*.
+        reports = ia.EdgeRule("worksunder", employees_vertices, managers_vertices, {'Years': employees_frame.Years}, bidirectional = True)
+
+.. only:: latex
+
+    Create an edge called “reports” from the same frame (accessed by Frame
+    *employee_frame*) as above, using previously defined *employee_vertices*
+    and *manager_vertices* rules, and link them together::
+
+        reports = ia.EdgeRule("worksunder", employees_vertices, \\
+        managers_vertices, {'Years': employees_frame.Years}, \\
+        bidirectional = True)
+
+This rule ties the vertices together, and also defines the property *Years*,
+so the edges created will have this property with the value from the frame
+column *Years*.
 
 Use of bidirectional:
 ~~~~~~~~~~~~~~~~~~~~~
-In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
 
-In the example above, using the *employee* and *manager* vertices, there is an edge created to link both
-of them with label “worksUnder”.
-This edge is considered “directed” since an employee reports to a manager but not vice versa.
-The bidirectional flag will create an extra edge going in the opposite direction for every edge.
-To enable use the parameter ``bidirectional`` in the edge rule and set it to ``True``,
-as shown in example below::
+In the edge rule, the user can specify whether or not the edge is
+:term:`directed <Undirected Graph>`.
 
-    reports = ia.EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
-        bidirectional = True)
+In the example above, using the vertex rules *employee_vertices* and
+*manager_vertices*, there is an edge rule *reports* created to link both of
+them with label “worksunder”.
+This edge is considered “bidirectional”.
+The bidirectional flag will create an extra edge going in the opposite
+direction for every edge.
 
 .. _ds_dflw_building_a_graph:
 
 Building a Graph From a Set of Rules
 ====================================
 
-Now that you have built some rules, let us put them to use and create a graph by calling TitanGraph.
-We will give the graph the name “employee_graph”::
+.. only:: html
 
-    my_graph = ia.TitanGraph([employee, manager, reports], “employee_graph”)
+    Now that you have built some rules, let us put them to use and create a 
+    graph by calling TitanGraph.
+    We will give the graph the name “employee_graph”::
+
+        my_graph = ia.TitanGraph([employees_vertices, managers_vertices, reports], "employee_graph")
+
+.. only:: latex
+
+    Now that you have built some rules, let us put them to use and create a 
+    graph by calling TitanGraph.
+    We will give the graph the name “employee_graph”::
+
+    my_graph = ia.TitanGraph([employees_vertices, managers_vertices, \\
+    reports], "employee_graph")
 
 The graph is then created in the underlying graph database structure and
-the access control information is saved into the TitanGraph object *my_graph*.
-The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the TitanGraph API.
+the access control information is saved into the TitanGraph object
+*my_graph*.
+The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the
+TitanGraph API.
 
-Similar to what was discussed for Frame, what gets returned is not all the data,
-but a proxy (descriptive pointer) for the data.
-Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
+Similar to what was discussed for Frame, what gets returned is not all the
+data, but a proxy (descriptive pointer) for the data.
+Commands such as ``g4 = my_graph`` will only give you a copy of the proxy,
+pointing to the same graph.
 
 --------------
 Error Handling
@@ -765,9 +1138,19 @@ Error Handling
 
 Examples::
 
-    ia.errors.last  # full exception stack trace and message of the last exception
-        raised at the API layer
-    ia.errors.show_details  # toggle setting to show full stack trace, False by default
+.. only:: html
 
-The above commands may have been split for enhanced readability in some medias.
+        ia.errors.last  # full exception stack trace and message of the last exception raised at the API layer
+        ia.errors.show_details  # toggle setting to show full stack trace, False by default
+
+.. only:: latex
+
+        # full exception stack trace and message of the last exception
+        # raised at the API layer
+        ia.errors.last
+
+        # toggle setting to show full stack trace, False by default
+        ia.errors.show_details
+
+
 
