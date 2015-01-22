@@ -336,12 +336,12 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>1.4.3</version>
+            <version>1.5.0</version>
         </dependency>
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>parquet-column</artifactId>
-            <version>1.4.3</version>
+            <version>1.5.0</version>
         </dependency>
     </dependencies>
 </project>
