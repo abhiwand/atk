@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.model.{ClassificationWithSGDArgs, SVMTestArgs, ModelLoad}
+import com.intel.intelanalytics.domain.model.ClassificationWithSGDArgs
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics

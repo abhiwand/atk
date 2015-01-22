@@ -374,14 +374,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
   implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(ClassificationWithSGDNewArgs)
-  implicit val modelNewFormat = jsonFormat2(NewModelArgs)
 
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
   implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
 
   implicit val svmModelLoadFormat = jsonFormat8(SVMTrainArgs)
-  implicit val svmModelTestFormat = jsonFormat4(SVMTestArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)
