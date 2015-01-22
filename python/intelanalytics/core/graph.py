@@ -484,7 +484,7 @@ class Graph(DocStubsGraph, _BaseGraph):
             self._backend = _get_backend()
         from intelanalytics.rest.graph import GraphInfo
         if isinstance(_info, dict):
-            source = GraphInfo(source)
+            _info = GraphInfo(_info)
         if isinstance(_info, GraphInfo):
             self._id = _info.id_number
         elif source is None:

@@ -67,7 +67,7 @@ class _NamedObjectsFunctionFactory(object):
         # globals
         self.get_object = self.create_get_object()
         self.get_object_names = self.create_get_object_names()
-        self.drop_objects = self.create_drop_objects(self.get_object)
+        self.drop_objects = self.create_drop_objects()
         # locals
         self.name_property = self.create_name_property()
 
@@ -80,6 +80,11 @@ class _NamedObjectsFunctionFactory(object):
     @property
     def class_name_property(self):
         return (self.name_property)
+
+    def get_entity_id_from_name(self, entity_name):
+        rest_target = '%ss' % self._term
+        rest_target_with_name = '%s?name=' % rest_target
+        return self._http.get(rest_target_with_name + entity_name).json()['id']
 
     def create_name_property(self):
         rest_target = '%ss/' % self._term
@@ -185,7 +190,7 @@ class _NamedObjectsFunctionFactory(object):
         set_function_doc_stub_text(get_object, 'name')
         return get_api_decorator(module_logger)(get_object)
 
-    def create_drop_objects(self, get_item_function):
+    def create_drop_objects(self):
         # create local vars for better closures:
         drop_objects_name = "drop_%ss" % self._term
         rest_target = '%ss/' % self._term
@@ -193,22 +198,21 @@ class _NamedObjectsFunctionFactory(object):
         obj_class = self._class
         obj_term = self._term
         http = self._http
-        get_item = get_item_function
 
         def drop_objects(items):
             if not isinstance(items, list) and not isinstance(items, tuple):
                 items = [items]
-            victims = {}
+            victim_ids = {}
             for item in items:
                 if isinstance(item, basestring):
-                    victims[item] = get_item(item)
+                    victim_ids[item] = self.get_entity_id_from_name(item)
                 elif isinstance(item, obj_class):
-                    victims[item.name] = item
+                    victim_ids[item.name] = item._id
                 else:
                     raise TypeError("Excepted argument of type {term} or else the {term}'s name".format(term=obj_term))
-            for name, instance in victims.items():
+            for name, id in victim_ids.items():
                 module_logger.info("Drop %s %s", obj_term, name)
-                http.delete(rest_target + str(instance._id))  # TODO: update w/ URI jazz
+                http.delete(rest_target + str(id))  # TODO: update w/ URI jazz
         drop_objects.__name__ = drop_objects_name
         drop_objects.__doc__ = """Erases data.
 

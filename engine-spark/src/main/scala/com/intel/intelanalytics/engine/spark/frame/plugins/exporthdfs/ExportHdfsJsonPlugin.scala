@@ -51,43 +51,6 @@ class ExportHdfsJsonPlugin extends SparkCommandPlugin[ExportHdfsJsonArgs, UnitRe
   override def name: String = "frame/export_to_json"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Write frame to HDFS in json format",
-    extendedSummary = Some("""
-
-        Export the frame to a file in json format as a hadoop file
-
-        Parameters
-        ----------
-
-        folderName: String
-            The HDFS folder path where the files will be created
-
-        separator: Option[String] = None
-            The separator for separating the values. Default is ","
-
-        count: Option[Int] = None
-            The number of records you want. No value or a negative or zero value for count exports the whole frame
-
-        offset: Option[Int] = None
-            The number of rows to skip before exporting to the file
-
-
-        Returns
-        -------
-        None
-
-        Examples
-        --------
-        Consider Frame *my_frame*
-
-            my_frame.export_to_json('covarianceresults')
-
-                           """)))
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
