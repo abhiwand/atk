@@ -52,43 +52,6 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
   override def name: String = "frame/drop_duplicates"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Remove duplicate rows.", Some("""
-    Remove duplicate rows, keeping only one row per uniqueness criteria match
-
-    Parameters
-    ----------
-    columns:[str | list of str]
-        Column name(s) to identify duplicates.
-        If empty, the function will remove duplicates that have the whole row of data identical.
-
-    Examples
-    --------
-    Remove any rows that have the same data in column * b * as a previously checked row ::
-
-    my_frame.drop_duplicates("b")
-
-    The result is a frame with unique values in column * b *.
-
-    Remove any rows that have the same data in columns * a * and * b * as a previously checked row ::
-
-       my_frame.drop_duplicates([ "a", "b"] )
-
-    The result is a frame with unique values for the combination of columns * a * and * b *.
-
-    Remove any rows that have the whole row identical ::
-
-      my_frame.drop_duplicates()
-
-    The result is a frame where something is different in every row from every other row.
-    Each row is unique.
-
-    .versionadded :: 0.8""")))
-
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
