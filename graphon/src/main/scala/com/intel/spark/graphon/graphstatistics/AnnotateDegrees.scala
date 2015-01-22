@@ -32,6 +32,7 @@ import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.intelanalytics.engine.spark.graph._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -48,6 +49,20 @@ case class AnnotateDegreesArgs(graph: GraphReference,
                                inputEdgeLabels: Option[List[String]] = None) {
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
   require(!outputGraphName.isEmpty, "Output graph name must be provided")
+
+  // validate arguments
+
+  def degreeMethod: String = degreeOption.getOrElse("out")
+  require("out".startsWith(degreeMethod) || "in".startsWith(degreeMethod) || "undirected".startsWith(degreeMethod),
+    "degreeMethod should be prefix of 'in', 'out' or 'undirected', not " + degreeMethod)
+
+  def inputEdgeSet: Option[Set[String]] =
+    if (inputEdgeLabels.isEmpty) {
+      None
+    }
+    else {
+      Some(inputEdgeLabels.get.toSet)
+    }
 }
 
 /**
@@ -88,70 +103,41 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Titan Settings for input
-    val config = configuration
-
-    // validate arguments
-
+    val degreeMethod: String = arguments.degreeMethod
     val newGraphName = arguments.outputGraphName
-    require(newGraphName != "", "output graph name cannot be empty")
-    val outputPropertyName = arguments.outputPropertyName
-    require(outputPropertyName != "", "output property name cannot be empty")
-
-    val degreeMethod: String = arguments.degreeOption.getOrElse("out")
-    require("out".startsWith(degreeMethod) || "in".startsWith(degreeMethod) || "undirected".startsWith(degreeMethod),
-      "degreeMethod should be prefix of 'in', 'out' or 'undirected', not " + degreeMethod)
 
     // Get the graph
     import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+
+    val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
     gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
     gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val inputEdgeLabels: Option[Set[String]] =
-      if (arguments.inputEdgeLabels.isEmpty) {
-        None
-      }
-      else {
-        Some(arguments.inputEdgeLabels.get.toSet)
-      }
+    val inputEdgeSet = arguments.inputEdgeSet
 
     val vertexDegreePairs: RDD[(GBVertex, Long)] = if ("undirected".startsWith(degreeMethod)) {
-      DegreeStatistics.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+      DegreeStatistics.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
     else if ("in".startsWith(degreeMethod)) {
-      DegreeStatistics.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+      DegreeStatistics.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
     else {
-      DegreeStatistics.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeLabels)
+      DegreeStatistics.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
 
-    val outEdges = gbEdges
     val outVertices = vertexDegreePairs.map({
       case (v: GBVertex, d: Long) => GBVertex(physicalId = v.physicalId,
         gbId = v.gbId,
-        properties = v.properties + Property(outputPropertyName, d))
+        properties = v.properties + Property(arguments.outputPropertyName, d))
     })
 
-    val newGraph = Await.result(engine.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan)),
-      config.getInt("default-timeout") seconds)
-
-    // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
-    writeToTitan(newTitanConfig, outVertices, outEdges)
-
+    engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
     gbVertices.unpersist()
     gbEdges.unpersist()
 
     AnnotateDegreesResult(newGraphName)
-  }
-
-  // Helper function to write rdds back to Titan
-  private def writeToTitan(titanConfig: SerializableBaseConfiguration, gbVertices: RDD[GBVertex], gbEdges: RDD[GBEdge], append: Boolean = false) = {
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append))
-    gb.buildGraphWithSpark(gbVertices, gbEdges)
   }
 
 }
