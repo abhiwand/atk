@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.LogisticRegressionWithSGDPredictArgs
+import com.intel.intelanalytics.domain.model.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -42,7 +42,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDPredictArgs, FrameEntity] {
+class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
    *
@@ -50,46 +50,13 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Logistic
    * e.g Python client via code generation.
    */
   override def name: String = "model:logistic_regression/predict"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Predict the labels for a test frame and return a new frame with existing columns and a predicted label's column",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    predict_frame: Frame
-                             |        Frame whose labels are to be predicted
-                             |
-                             |    predict_for_observation_column: str
-                             |        column containing the observations
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Frame containing the original frame's columns and a column with the predicted label
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.LogisticRegressionModel(name='LogReg')
-                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-                             |        new_frame = model.predict(predict_frame, 'predict_for_observation_column')
-                             |
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation) = 9
 
   /**
    * Get the predictions for observations in a test frame
@@ -100,7 +67,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Logistic
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
+  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
       val frames = engine.frames

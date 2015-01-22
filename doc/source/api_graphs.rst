@@ -28,14 +28,20 @@ TitanGraph
 
 .. currentmodule:: intelanalytics.core.docstubs
 
+TitanGraphML
+------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphMl
     :members:
     :inherited-members:
 
+TitanGraphQuery
+---------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphQuery
     :members:
     :inherited-members:
 
+TitanGraphSampling
+------------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphSampling
     :members:
     :inherited-members:

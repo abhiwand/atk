@@ -22,10 +22,10 @@ i.  intelanalytics-python-client
 
 |IA| Python Client
 ==================
-Needs to be installed on every spark worker node as well as the gateway node or other node
-that is going to be the designated client.
-The IA python client submitting requests, the rest server and the rest client package installed
-on the worker nodes must all be the same version.
+Needs to be installed on every spark worker node as well as the gateway node
+or other node that is going to be the designated client.
+The IA python client submitting requests, the rest server and the rest client
+package installed on the worker nodes must all be the same version.
 
 Package Name: intelanalytics-python-rest-client
 
@@ -58,4 +58,3 @@ Dependencies
 
 *   none
 
-.. |IA| replace:: IntelAnalytics
