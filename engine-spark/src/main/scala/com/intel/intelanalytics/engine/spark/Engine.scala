@@ -60,7 +60,7 @@ import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.ia.plugins.classification.{ LogisticRegressionWithSGDNewPlugin, LogisticRegressionWithSGDTrainPlugin, LogisticRegressionWithSGDTestPlugin, LogisticRegressionWithSGDPredictPlugin }
+import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
@@ -225,6 +225,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new KMeansNewPlugin)
   commandPluginRegistry.registerCommand(new KMeansPredictPlugin)
   commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDTrainPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
