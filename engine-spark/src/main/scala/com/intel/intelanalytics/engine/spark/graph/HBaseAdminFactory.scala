@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import java.io.InputStream
+
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.conf.Configuration
@@ -24,7 +26,6 @@ class HBaseAdminFactory {
     // Skip check for default hbase version which causes intermittent errors "|hbase-default.xml file seems to be for and old version of HBase (null), this version is 0.98.1-cdh5.1.2|"
     // This error shows up despite setting the correct classpath in bin/api-server.sh and packaging the correct cdh hbase jars
     config.setBoolean("hbase.defaults.for.version.skip", true)
-    config.getFinalParameters.add("hbase.defaults.for.version.skip")
 
     new HBaseAdmin(HBaseConfiguration.addHbaseResources(config))
   }

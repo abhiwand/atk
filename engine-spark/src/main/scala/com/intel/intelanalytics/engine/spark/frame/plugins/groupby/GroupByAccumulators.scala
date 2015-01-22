@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{Column, DataTypes}
+import com.intel.intelanalytics.domain.schema.{ Column, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByMonoids._
 
 private[spark] object GroupByAccumulators extends Serializable {
@@ -88,7 +88,7 @@ private[spark] object GroupByAccumulators extends Serializable {
      * Other accumulators output an intermediate value, so this method computes the
      * final result. For example, the arithmetic mean is represented as a count and sum,
      * so this method computes the mean by dividing the count by the sum.
-     * 
+     *
      * @param result Results of accumulator (might be an intermediate value)
      * @return Final result
      */
@@ -234,7 +234,6 @@ private[spark] object GroupByAccumulators extends Serializable {
       super.computeVariance(result)
     }
   }
-
 
   /**
    * Computes standard deviation by key
