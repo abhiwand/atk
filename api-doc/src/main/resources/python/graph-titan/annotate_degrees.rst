@@ -5,18 +5,12 @@
     Creates a new graph which is the same as the input graph, with the addition that every vertex of the graph
     has its :term:`degree` stored in a user-specified property.
 
-    If the user specifies a property containing edge weights, the weighted :term `degree` is calculated.
-    This is defined as follows: Each edge has a weight (that comes from the user-specified property).
-    The weighted degree of a vertex is the sum of the weight of the edges incident to that vertex.
-
     Parameters
     ----------
     output_graph_name : str
         The name of the new graph to which the results are written.
-
-        output_property_name : str
+    output_property_name : str
         The name of the new property to which the
-
     degree_option : str (optional)
         Indicator for the definition of degree to be used for the calculation.
         Legal values:
@@ -24,25 +18,17 @@
             "in" : Degree is calculated as the in-degree.
             "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
             (Any prefix of the strings "out", "in", "undirected" will select the corresponding option.)
-
     input_edge_labels : list of str (optional)
-        If this list is provided, only edges whose labels are included in the given set will be consided in the degree
+        If this list is provided, only edges whose labels are included in the given set will be considered in the degree
         calculation. In the default situation (when no list is provided), all edges will be used in the degree
         calculation, regardless of label.
 
-    edge_weight_property : str (optional)
-        The name of the edge property that contains the weights of edges.
-        If this field is not provided, the calculation defaults to unweighted degree: All edges have weight 1.
-
-    edge_weight_default : double (optional)
-        Default weight to use for an edge if the edge does not possess a property of key edge_weight_property.
-        Only used if edge_weight_property is provided and the calculation is therefore weighted.
 
     Returns
     -------
     graph : graph
         a graph object that is a copy of the input graph with the addition that every vertex of the graph
-        has its (weighted) :term:`degree` stored in a user-specified property.
+        has its :term:`degree` stored in a user-specified property.
 
     Examples
     --------
