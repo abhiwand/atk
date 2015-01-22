@@ -21,30 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.model.{ ClassificationWithSGDArgs, ModelTemplate, ModelEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.{ JsValue, JsObject }
-import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.frame.FrameReference
 
-trait ModelStorage {
-
-  def expectModel(modelId: Long): ModelEntity
-
-  def lookup(id: Long): Option[ModelEntity]
-
-  def createModel(model: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity
-
-  def renameModel(model: ModelEntity, newName: String): ModelEntity
-
-  def drop(model: ModelEntity)
-
-  def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
-
-  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
-
-  def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity
-
+/**
+ * Command for loading model data into existing model in the model database.
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumns Handle to the observation column of the data frame
+ */
+case class ClassificationWithSGDPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
+  require(model != null, "model must not be null")
+  require(frame != null, "frame must not be null")
+  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
 }
