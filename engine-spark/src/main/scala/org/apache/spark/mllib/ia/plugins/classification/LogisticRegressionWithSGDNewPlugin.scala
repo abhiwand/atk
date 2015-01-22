@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.{ LogisticRegressionWithSGDNewArgs, ModelEntity, LogisticRegressionWithSGDPredictArgs }
+import com.intel.intelanalytics.domain.model.{ ClassificationWithSGDNewArgs, ModelEntity, ClassificationWithSGDPredictArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -45,7 +45,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class LogisticRegressionWithSGDNewPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDNewArgs, ModelEntity] {
+class LogisticRegressionWithSGDNewPlugin extends SparkCommandPlugin[ClassificationWithSGDNewArgs, ModelEntity] {
   /**
    * The name of the command.
    *
@@ -54,7 +54,7 @@ class LogisticRegressionWithSGDNewPlugin extends SparkCommandPlugin[LogisticRegr
    */
   override def name: String = "model:logistic_regression/new"
 
-  override def execute(arguments: LogisticRegressionWithSGDNewArgs)(implicit invocation: Invocation): ModelEntity =
+  override def execute(arguments: ClassificationWithSGDNewArgs)(implicit invocation: Invocation): ModelEntity =
     {
       val models = engine.models
       models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:logistic_regression")))
