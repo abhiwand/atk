@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.model.plugins
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModel }
+import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModelArgs }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
@@ -40,9 +40,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 // TODO: shouldn't be a Spark Plugin, doesn't need Spark
 
 /**
- * Rename a graph in the database
+ * Rename a model in the database
  */
-class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
+class RenameModelPlugin extends SparkCommandPlugin[RenameModelArgs, ModelEntity] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -53,14 +53,6 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
   override def name: String = "model/rename"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
-  /**
-   * Rename a graph in the database
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -68,7 +60,7 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModel, ModelEntity] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: RenameModel)(implicit invocation: Invocation): ModelEntity = {
+  override def execute(arguments: RenameModelArgs)(implicit invocation: Invocation): ModelEntity = {
     // dependencies (later to be replaced with dependency injection)
     val models = engine.models
 

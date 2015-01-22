@@ -105,4 +105,3 @@ After updating the level attribute, save the file and either restart the |IA| se
     Be careful while changing the LOGback configuration.
     You might cause undue strain on the server or the Intel Analytics service by setting DEBUG logging level in a production environment.
 
-.. |IA| replace:: Intel Analytics

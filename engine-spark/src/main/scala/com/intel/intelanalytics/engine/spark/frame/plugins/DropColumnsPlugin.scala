@@ -49,42 +49,6 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
    * e.g Python client via code generation.
    */
   override def name: String = "frame:/drop_columns"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns.",
-    extendedSummary = Some("""
-                           |    Remove columns from the frame.
-                           |    The data from the columns is lost.
-                           |
-                           |    Parameters
-                           |    ----------
-                           |      columns: [ str | list of str ]
-                           |        column name OR list of column names to be removed from the frame
-                           |
-                           |    Returns
-                           |    -------
-                           |      None
-                           |
-                           |    Notes
-                           |    -----
-                           |      Cannot delete all columns from a frame. At least one column needs to remain.
-                           |      If you want to delete all columns, then please delete the frame
-                           |
-                           |    Examples
-                           |    --------
-                           |    For this example, Frame object *my_frame* accesses a frame with
-                           |    columns *column_a*, *column_b*, *column_c* and *column_d*.
-                           |    Eliminate columns *column_b* and *column_d*::
-                           |
-                           |        my_frame.drop_columns([column_b, column_d])
-                           |
-                           |    Now the frame only has the columns *column_a* and *column_c*.
-                           |    For further examples, see: ref: `example_frame.drop_columns`.
-                           |
-                            """.stripMargin)))
 
   /**
    * Remove columns from a frame.
@@ -99,7 +63,8 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
     val frame: SparkFrameData = resolve(arguments.frame)
     val schema = frame.meta.schema
     schema.validateColumnsExist(arguments.columns)
-    require(schema.columns.length > arguments.columns.length,
+
+    require(schema.columnNamesExcept(arguments.columns).length > 0,
       "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation

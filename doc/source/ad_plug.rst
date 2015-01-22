@@ -159,7 +159,7 @@ Single Value Results
 ====================
 
 The result returned by command plugins can be as complex as needed.
-It can also be very simple :math:`-` for example, a single floating point value.
+It can also be very simple — for example, a single floating point value.
 Since the result type of the plugin must be a case class, the convention is to return a case class with one field, which must be named "value".
 When the client receives such a result, it should extract and return the single value.
 
@@ -280,4 +280,3 @@ For your installation, you can control this list using the application.conf file
 
 Once this setting has been updated, restart the server to activate the changes.
 
-.. |IA| replace:: Intel Analytics
