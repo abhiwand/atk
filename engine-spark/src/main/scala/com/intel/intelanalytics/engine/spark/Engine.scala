@@ -29,7 +29,7 @@ import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.engine.gc.GarbageCollector
@@ -89,7 +89,7 @@ import com.intel.intelanalytics.domain.graph.RenameGraphArgs
 import com.intel.intelanalytics.domain.graph.LoadGraphArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
@@ -227,6 +227,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDTrainPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -422,7 +424,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param id Unique identifier for the graph provided by the metastore.
    * @return A future of the graph metadata entry.
    */
-  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[Graph] = {
+  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[GraphEntity] = {
     future {
       graphs.lookup(id).get
     }
@@ -432,14 +434,14 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Get the metadata for a range of graph identifiers.
    * @return Future of the sequence of graph metadata entries to be returned.
    */
-  def getGraphs()(implicit invocation: Invocation): Future[Seq[Graph]] =
+  def getGraphs()(implicit invocation: Invocation): Future[Seq[GraphEntity]] =
     withContext("se.getGraphs") {
       future {
         graphs.getGraphs()
       }
     }
 
-  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[Graph]] =
+  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[GraphEntity]] =
     withContext("se.getGraphByName") {
       future {
         val graph = graphs.getGraphByName(Some(name))
@@ -455,7 +457,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param graph The graph to be deleted.
    * @return A future of unit.
    */
-  def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit] = {
+  def deleteGraph(graph: GraphEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletegraph") {
       future {
         graphs.drop(graph)

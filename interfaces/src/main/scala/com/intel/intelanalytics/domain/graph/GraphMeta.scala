@@ -28,9 +28,9 @@ import com.intel.intelanalytics.domain.HasMetaData
 /**
  * A GraphReference with metadata
  */
-class GraphMeta(graph: Graph) extends GraphReference(graph.id) with HasMetaData {
+class GraphMeta(graph: GraphEntity) extends GraphReference(graph.id) with HasMetaData {
 
-  type Meta = Graph
+  type Meta = GraphEntity
 
   val meta = graph
 

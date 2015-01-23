@@ -24,13 +24,13 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, Graph }
+import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 
 /**
  * A GraphReference with metadata and a Spark RDD representing the data in the frame
  */
-class SparkGraphData(graph: Graph, rdd: Option[FrameRDD])
+class SparkGraphData(graph: GraphEntity, rdd: Option[FrameRDD])
     extends GraphMeta(graph)
     with HasData {
 
