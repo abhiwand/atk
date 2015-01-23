@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
  * @param graphEntity the graph meta data
  * @param frameEntities the vertex and edge frames owned by this graph (might be empty but never null)
  */
-case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[FrameEntity]) {
+case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[FrameEntity]) {
   require(graphEntity != null, "graph is required")
   require(frameEntities != null, "frame is required, it can be empty but not null")
   require(graphEntity.storageFormat == "ia/frame", "Storage format should be ia/frame")

@@ -25,14 +25,14 @@ package com.intel.intelanalytics.service.v1.decorators
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import org.joda.time.DateTime
 
 class GraphDecoratorTest extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/graphs"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val graph = new Graph(1, Some("name"), None, "storage", 1L, "hbase/titan", new DateTime, new DateTime)
+  val graph = new GraphEntity(1, Some("name"), None, "storage", 1L, "hbase/titan", new DateTime, new DateTime)
 
   "GraphDecorator" should "be able to decorate a graph" in {
     val decoratedGraph = GraphDecorator.decorateEntity(null, relLinks, graph)

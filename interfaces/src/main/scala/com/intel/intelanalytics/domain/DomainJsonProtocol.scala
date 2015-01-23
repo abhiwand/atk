@@ -45,7 +45,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction._
-import com.intel.intelanalytics.domain.graph.{ Graph, LoadGraphArgs, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -529,14 +529,14 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat13(Graph)
+  implicit object graphFormat extends JsonFormat[GraphEntity] {
+    implicit val graphFormatOriginal = jsonFormat13(GraphEntity)
 
-    override def read(value: JsValue): Graph = {
+    override def read(value: JsValue): GraphEntity = {
       graphFormatOriginal.read(value)
     }
 
-    override def write(graph: Graph): JsValue = {
+    override def write(graph: GraphEntity): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
         ("entity_type" -> JsString(graph.entityType)))
