@@ -352,7 +352,7 @@ To keep your system time in sync with the world run::
 
 
 The |IA| Dependency repository and the yum-s3 package must be installed before
-trying to :ref:`add the |IA| private repository <add_IA_private_repository>`.
+trying to add the |IA| :ref:`private repository <add_IA_private_repository>`.
 
 If you are performing the yum commands inside a corporate proxy make sure your
 http_proxy and https_proxy environment variables are set.
