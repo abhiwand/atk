@@ -1180,6 +1180,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <scope>test</scope>
             </dependency>
 
+            <!-- parquet -->
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-hadoop</artifactId>
+                <version>1.6.0rc3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-column</artifactId>
+                <version>1.6.0rc3</version>
+            </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
