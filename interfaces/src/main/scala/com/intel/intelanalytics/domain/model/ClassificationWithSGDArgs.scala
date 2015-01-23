@@ -32,9 +32,9 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param observationColumn Handle to the observation column of the data frame
  * @param labelColumn Handle to the label column of the data frame
  */
-case class LogisticRegressionWithSGDArgs(model: ModelReference, frame: FrameReference, observationColumn: String, labelColumn: String) {
+case class ClassificationWithSGDArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String], labelColumn: String) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
+  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
   require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
 }
