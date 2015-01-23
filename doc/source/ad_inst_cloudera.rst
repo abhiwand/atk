@@ -18,11 +18,9 @@ Set Proxy and Parcel Info in Cloudera Manager
 
 The first step to take in the Cloudera Manager web interface is to add your proxy information.
 
-1.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of the window.
-#.  Click the *Administration* drop-down along the top of the window, then select *Settings*.
+1.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of the window
+#.  Click the *Administration* drop-down along the top of the window, then select *Settings*
 #.  Select the *Network* button along the menu pane to the left
-    a.  In the *Proxy Server* field, enter ``proxy.jf.intel.com``
-    #.  In the *Proxy Port* field, enter ``911``
 #.  In the *Proxy Server* field, enter the proxy qualified name, for example, ``proxy.my.company.com``
 #.  In the *Proxy Port* field, enter your proxy port number
 #.  Select the *Parcels* button along the menu pane to the left
