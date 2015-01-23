@@ -26,11 +26,12 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.UriReference
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.Column
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, PythonRDDStorage, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -61,11 +62,13 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
   override def execute(arguments: AddColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     val frame: SparkFrameData = resolve(arguments.frame)
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
-    val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    //    val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val newSchema = new FrameSchema(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
+    /* TODO - Add a schema add method in Schema class */
+    val finalSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     // Update the data
-    val rdd = PythonRDDStorage.mapWith(frame.data, arguments.udf, newSchema, sc)
-
-    save(new SparkFrameData(frame.meta.withSchema(newSchema), rdd)).meta
+    val rdd = PythonRDDStorage.mapWith(frame.data.cache(), arguments.udf, newSchema, sc)
+    save(new SparkFrameData(frame.meta.withSchema(finalSchema), frame.data.zipFrameRDD(rdd))).meta
   }
 }
