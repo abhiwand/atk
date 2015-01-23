@@ -1,0 +1,37 @@
+Train frame model.
+
+Creating a SVM Model using the observation column and label column of the train frame",
+
+Parameters
+----------
+frame: Frame
+    Frame to train the model on
+
+observation_column: str
+    column containing the observations
+
+label_column: str
+    column containing the label for each observation
+
+numOptIterations: Int (Optional)
+    number of iterations
+
+stepSize: Int (Optional)
+    step size for optimizer
+
+ regType: String (Optional)
+    regularization L1 or L2. Default is L2
+
+ regParam: Double (Optional)
+    regularization parameter
+
+Returns
+-------
+Trained SVM model object
+
+Examples
+--------
+    model = ia.SvmModel(name='mySvm')
+    model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
+
+

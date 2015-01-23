@@ -47,41 +47,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
    * e.g Python client via code generation.
    */
   override def name: String = "model:svm/train"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a Support Vector Machine(SVM) Model using the observation column and label column of the train frame",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    frame: Frame
-                             |        Frame to train the model on
-                             |
-                             |    observation_column: str
-                             |        column containing the observations
-                             |
-                             |    label_column: str
-                             |        column containing the label for each observation
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Trained SVM model object
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.SvmModel(name='mySvm')
-                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-                             |
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
@@ -125,7 +90,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
 
   private def initializeSVM(arguments: SVMTrainArgs): SVMWithSGD = {
     val svm = new SVMWithSGD()
-    if (arguments.numIterations.isDefined) { svm.optimizer.setNumIterations(arguments.numIterations.get) }
+    if (arguments.numOptIterations.isDefined) { svm.optimizer.setNumIterations(arguments.numOptIterations.get) }
     if (arguments.stepSize.isDefined) { svm.optimizer.setStepSize(arguments.stepSize.get) }
     if (arguments.regType.isDefined) {
       svm.optimizer.setUpdater(arguments.regType.get match {
