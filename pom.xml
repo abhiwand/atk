@@ -122,7 +122,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.mahout.version>0.9</dep.mahout.version>
 
         <dep.spark.version>1.2.0-cdh5.3.0</dep.spark.version>
-
+        <dep.parquet.version>1.5.0-cdh5.3.0</dep.parquet.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -1184,12 +1184,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.twitter</groupId>
                 <artifactId>parquet-hadoop</artifactId>
-                <version>1.6.0rc3</version>
+                <version>${dep.parquet.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.twitter</groupId>
                 <artifactId>parquet-column</artifactId>
-                <version>1.6.0rc3</version>
+                <version>${dep.parquet.version}</version>
             </dependency>
 
             <dependency>
