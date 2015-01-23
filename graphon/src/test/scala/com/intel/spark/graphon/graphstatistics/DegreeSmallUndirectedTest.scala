@@ -47,7 +47,6 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   val defaultParallelism = 3 // use of parellelism > 1 to catch stupid parallelization bugs
   val floatingPointEqualityThreshold: Double = 0.000000001d
 
-
   trait UndirectedGraphTest {
 
     // helper class for setting up the test data
@@ -68,19 +67,17 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
 
     // for purposes of encoding, missing weights are denoted as -1.0d, see the function getPropertiesFromWeight below
 
-    val edgeListA: List[WeightedEdge] = List(WeightedEdge(1, 2, 0.1d), WeightedEdge(1,3,0.01d), WeightedEdge(2,3,0.001d),
-    WeightedEdge(3,4, -1d))
+    val edgeListA: List[WeightedEdge] = List(WeightedEdge(1, 2, 0.1d), WeightedEdge(1, 3, 0.01d), WeightedEdge(2, 3, 0.001d),
+      WeightedEdge(3, 4, -1d))
 
     val aDegreeMap: Map[Long, Long] = Map((1L, 2L), (2L, 2L), (3L, 3L), (4L, 1L), (5L, 0L))
     val aWeightedDegreeMap: Map[Long, Double] = Map((1L, 0.11d), (2L, 0.101d), (3L, 0.511d), (4L, 0.5d), (5L, 0.0d))
 
-
-    val edgeListB: List[WeightedEdge] = List(WeightedEdge(1,5,0.0001d), WeightedEdge(3,4,0.00001d),
-      WeightedEdge(3,5,0.000001d), WeightedEdge(4,5, -1d))
-
+    val edgeListB: List[WeightedEdge] = List(WeightedEdge(1, 5, 0.0001d), WeightedEdge(3, 4, 0.00001d),
+      WeightedEdge(3, 5, 0.000001d), WeightedEdge(4, 5, -1d))
 
     val bDegreeMap: Map[Long, Long] = Map((1L, 1L), (2L, 0L), (3L, 2L), (4L, 2L), (5L, 3L))
-    val bWeightedDegreeMap: Map[Long, Double] = Map((1L, 0.0001d), (2L, 0.0d), (3L, 0.000011d ),
+    val bWeightedDegreeMap: Map[Long, Double] = Map((1L, 0.0001d), (2L, 0.0d), (3L, 0.000011d),
       (4L, 0.50001d), (5L, 0.500101d))
 
     val combinedDegreesMap: Map[Long, Long] = Map((1L, 3L), (2L, 2L), (3L, 5L), (4L, 3L), (5L, 3L))
@@ -89,11 +86,11 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
 
     val gbVertexList = vertexIdList.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set()))
 
-
     private def getPropertiesFromWeight(weight: Double) = {
       if (weight >= 0) {
         Set(Property(weightProperty, weight))
-      } else {
+      }
+      else {
         Set[Property]()
       }
     }
@@ -104,7 +101,7 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
           GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
             edgeLabelA, getPropertiesFromWeight(weight)),
           GBEdge(None, dst, src, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
-            edgeLabelA,getPropertiesFromWeight(weight))
+            edgeLabelA, getPropertiesFromWeight(weight))
         )
       })
 
@@ -114,7 +111,7 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
           GBEdge(None, src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
             edgeLabelB, getPropertiesFromWeight(weight)),
           GBEdge(None, dst, src, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst),
-            edgeLabelB,getPropertiesFromWeight(weight))
+            edgeLabelB, getPropertiesFromWeight(weight))
         )
       })
 
@@ -129,7 +126,6 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
 
     val expectedCombinedDegrees: Set[(GBVertex, Long)] =
       gbVertexList.map(v => (v, combinedDegreesMap(v.physicalId.asInstanceOf[Long]))).toSet
-
 
     val expectedAWeightedDegrees: Set[(GBVertex, Double)] =
       gbVertexList.map(v => (v, aWeightedDegreeMap(v.physicalId.asInstanceOf[Long]))).toSet
@@ -172,8 +168,6 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
     results.collect().toSet shouldEqual allZeroDegrees
   }
 
-
-
   "simple undirected graph" should "have correct weighted degrees for edge label A" in new UndirectedGraphTest {
     val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelA)))
     val test = approximateMapEquality(results.collect().toMap, expectedAWeightedDegrees.toMap)
@@ -183,7 +177,7 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   "simple undirected graph" should "have correct weighted degrees for edge label B" in new UndirectedGraphTest {
     val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelB)))
     val test = approximateMapEquality(results.collect().toMap, expectedBWeightedDegrees.toMap)
-    val x= results.collect().toMap
+    val x = results.collect().toMap
     test shouldBe true
   }
 
@@ -202,7 +196,7 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
     results.collect().toSet shouldEqual allZeroDegreesDouble
   }
 
-  private def approximateMapEquality(map1 : Map[GBVertex, Double], map2: Map[GBVertex, Double]) : Boolean = {
+  private def approximateMapEquality(map1: Map[GBVertex, Double], map2: Map[GBVertex, Double]): Boolean = {
     (map1.keySet equals map2.keySet) && map1.keySet.forall(k => (Math.abs(map1.apply(k) - map2.apply(k)) < floatingPointEqualityThreshold))
   }
 }
