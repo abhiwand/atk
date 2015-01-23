@@ -120,10 +120,10 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
     val defaultEdgeWeight = arguments.getDefaultEdgeWeight()
 
     val vertexWeightPairs: RDD[(GBVertex, Double)] = if ("undirected".startsWith(degreeMethod)) {
-      WeightedDegrees.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
+      WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
     }
     else if ("in".startsWith(degreeMethod)) {
-      WeightedDegrees.inDegreesByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
+      WeightedDegrees.inWeightByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
     }
     else {
       WeightedDegrees.outDegreesByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)

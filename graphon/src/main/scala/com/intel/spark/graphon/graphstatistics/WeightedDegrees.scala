@@ -47,7 +47,7 @@ object WeightedDegrees {
    * @param defaultWeight Default edge weight if the property is not present on an edge.
    * @return RDD of (Vertex, weighted out-degree) pairs
    */
-  def outDegrees(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
+  def outWeight(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
 
     weightedDegreeCalculation(vertexRDD, edgeRDD, weightProperty, defaultWeight, calculateOutDegreeFlag = true)
   }
@@ -61,7 +61,7 @@ object WeightedDegrees {
    * @param defaultWeight Default edge weight if the property is not present on an edge.
    * @return RDD of (Vertex, weighted in-degree) pairs
    */
-  def inDegrees(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
+  def inWeight(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
     weightedDegreeCalculation(vertexRDD, edgeRDD, weightProperty, defaultWeight, calculateOutDegreeFlag = false)
   }
 
@@ -75,7 +75,7 @@ object WeightedDegrees {
    * @param defaultWeight Default edge weight if the weight property is not present on an edge.
    * @return RDD of (Vertex, weighted degree) pairs
    */
-  def undirectedDegrees(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
+  def undirectedWeightedDegree(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double): RDD[(GBVertex, Double)] = {
     /*
      * Because undirected edges are internally represented as bi-directional edge/anti-edge pairs,
      * this is simply the out degree calculation. A change of the representation would change this
@@ -96,7 +96,7 @@ object WeightedDegrees {
    */
   def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double, edgeLabels: Option[Set[String]]): RDD[(GBVertex, Double)] = {
     val filteredEdges = filterEdges(edgeRDD, edgeLabels)
-    outDegrees(vertexRDD, filteredEdges, weightProperty, defaultWeight)
+    outWeight(vertexRDD, filteredEdges, weightProperty, defaultWeight)
   }
 
   /**
@@ -109,9 +109,9 @@ object WeightedDegrees {
    * @param edgeLabels Set of dge label for which to calculate in-degrees
    * @return RDD of (VertexID, weighted in-degree with respect to set of considered edge labels) pairs
    */
-  def inDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double, edgeLabels: Option[Set[String]]): RDD[(GBVertex, Double)] = {
+  def inWeightByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double, edgeLabels: Option[Set[String]]): RDD[(GBVertex, Double)] = {
     val filteredEdges = filterEdges(edgeRDD, edgeLabels)
-    inDegrees(vertexRDD, filteredEdges, weightProperty, defaultWeight)
+    inWeight(vertexRDD, filteredEdges, weightProperty, defaultWeight)
   }
 
   /**
@@ -125,9 +125,9 @@ object WeightedDegrees {
    * @param edgeLabels Set of edge labels for which to calculate degrees
    * @return RDD of (VertexID, weighted degree with respect to the set of considered edge labels) pairs
    */
-  def undirectedDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double, edgeLabels: Option[Set[String]]): RDD[(GBVertex, Double)] = {
+  def undirectedWeightedDegreeByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], weightProperty: Option[String], defaultWeight: Double, edgeLabels: Option[Set[String]]): RDD[(GBVertex, Double)] = {
     val filteredEdges = filterEdges(edgeRDD, edgeLabels)
-    outDegrees(vertexRDD, filteredEdges, weightProperty, defaultWeight)
+    outWeight(vertexRDD, filteredEdges, weightProperty, defaultWeight)
   }
 
   private def weightedDegreeCalculation(vertexRDD: RDD[GBVertex],
@@ -174,7 +174,24 @@ object WeightedDegrees {
     // there will be a get on an empty option only if there exists a vertex in the EdgeRDD that is
     // not in the VertexRDD... if this happens something was wrong  with the incoming data
 
-    combinedVDRs.map(vad => (vad.vertexOption.get, vad.degree))
+    combinedVDRs.map(vad => (vad.vertexOption.get, vad.weightedDegree))
+  }
+
+  private case class VertexDegreeRecord(vertexOption: Option[GBVertex], weightedDegree: Double)
+
+  private def mergeVertexAndDegrees(vad1: VertexDegreeRecord, vad2: VertexDegreeRecord) = {
+    require(vad1.vertexOption.isEmpty || vad2.vertexOption.isEmpty)
+    val v = if (vad1.vertexOption.isDefined) vad1.vertexOption else vad2.vertexOption
+    VertexDegreeRecord(v, vad1.weightedDegree + vad2.weightedDegree)
+  }
+
+  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[GBEdge] = {
+    if (edgeLabels.nonEmpty) {
+      edgeRDD.filter(edge => edgeLabels.get.contains(edge.label))
+    }
+    else {
+      edgeRDD
+    }
   }
 
   private def getEdgeWeight(e: GBEdge, propertyName: String, defaultValue: Double, useDefault: Boolean) = {
@@ -190,22 +207,6 @@ object WeightedDegrees {
       else {
         propertyOption.get.value.asInstanceOf[Double]
       }
-    }
-  }
-  private case class VertexDegreeRecord(vertexOption: Option[GBVertex], degree: Double)
-
-  private def mergeVertexAndDegrees(vad1: VertexDegreeRecord, vad2: VertexDegreeRecord) = {
-    require(vad1.vertexOption.isEmpty || vad2.vertexOption.isEmpty)
-    val v = if (vad1.vertexOption.isDefined) vad1.vertexOption else vad2.vertexOption
-    VertexDegreeRecord(v, vad1.degree + vad2.degree)
-  }
-
-  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[GBEdge] = {
-    if (edgeLabels.nonEmpty) {
-      edgeRDD.filter(edge => edgeLabels.get.contains(edge.label))
-    }
-    else {
-      edgeRDD
     }
   }
 }

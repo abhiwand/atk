@@ -24,7 +24,7 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.spark.graphon.graphstatistics.DegreeStatistics
+import com.intel.spark.graphon.graphstatistics.UnweightedDegrees
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
@@ -139,43 +139,43 @@ class FactorizationPropertyGraphTest extends FlatSpec with Matchers with Testing
   }
 
   "factorization graph" should "have correct divisor in-degree" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel)))
+    val results = UnweightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel)))
     results.collect().toSet shouldEqual expectedDivisorInDegreeOutput
   }
 
   "factorization graph" should "have correct divisor out-degree" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel)))
+    val results = UnweightedDegrees.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel)))
     results.collect().toSet shouldEqual expectedDivisorOutDegreeOutput
   }
 
   "factorization graph" should "have correct multiple-of in-degree" in new FactorizationPGraphTest {
 
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(multipleOfLabel)))
+    val results = UnweightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(multipleOfLabel)))
     results.collect().toSet shouldEqual expectedMultipleInDegreeOutput
   }
 
   "factorization graph" should "have correct multiple-of out-degree" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(multipleOfLabel)))
+    val results = UnweightedDegrees.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(multipleOfLabel)))
     results.collect().toSet shouldEqual expectedMultipleOutDegreeOutput
   }
 
   "factorization graph" should "have correct in-degree with all labels" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.inDegrees(vertexRDD, edgeRDD)
+    val results = UnweightedDegrees.inDegrees(vertexRDD, edgeRDD)
     results.collect().toSet shouldEqual expectedAllLabelsInDegreeOutput
   }
 
   "factorization graph" should "have correct out-degree with all labels" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.outDegrees(vertexRDD, edgeRDD)
+    val results = UnweightedDegrees.outDegrees(vertexRDD, edgeRDD)
     results.collect().toSet shouldEqual expectedAllLabelsOutDegreeOutput
   }
 
   "factorization graph" should "have correct in-degree with all labels as specified set" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel, multipleOfLabel)))
+    val results = UnweightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel, multipleOfLabel)))
     results.collect().toSet shouldEqual expectedAllLabelsInDegreeOutput
   }
 
   "factorization graph" should "have correct out-degree with all labels as specified set" in new FactorizationPGraphTest {
-    val results = DegreeStatistics.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel, multipleOfLabel)))
+    val results = UnweightedDegrees.outDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(divisorOfLabel, multipleOfLabel)))
     results.collect().toSet shouldEqual expectedAllLabelsOutDegreeOutput
   }
 }

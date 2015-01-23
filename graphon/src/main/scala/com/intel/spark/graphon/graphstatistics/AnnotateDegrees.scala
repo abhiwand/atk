@@ -118,13 +118,13 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
     val inputEdgeSet = arguments.inputEdgeSet
 
     val vertexDegreePairs: RDD[(GBVertex, Long)] = if ("undirected".startsWith(degreeMethod)) {
-      DegreeStatistics.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
     else if ("in".startsWith(degreeMethod)) {
-      DegreeStatistics.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
     else {
-      DegreeStatistics.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
 
     val outVertices = vertexDegreePairs.map({
