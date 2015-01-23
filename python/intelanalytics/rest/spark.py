@@ -28,6 +28,7 @@ Spark-specific implementation on the client-side
 import base64
 import os
 import itertools
+import pstats
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -114,7 +115,8 @@ class RowWrapper(Row):
 
 def pickle_function(func):
     """Pickle the function the way Pyspark does"""
-    command = (func, UTF8Deserializer(), IaBatchedSerializer())
+
+    command = (func, None, UTF8Deserializer(), IaBatchedSerializer())
     pickled_function = CloudPickleSerializer().dumps(command)
     return pickled_function
 
