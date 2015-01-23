@@ -8,8 +8,8 @@ Parameters
 predict_frame : Frame
     frame whose labels are to be predicted
 
-predict_for_observation_column : str
-    Column containing the observations
+predict_for_observation_column : [ str | list of str ]
+    Columns containing the observations
 
 Returns
 -------
@@ -23,7 +23,7 @@ Examples
 ::
 
     model = ia.SvmModel(name='mySVM')
-    model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-    new_frame = model.predict(predict_frame, 'predict_for_observation_column')
+    model.train(train_frame, ['name_of_observation_column'], 'name_of_label_column')
+    new_frame = model.predict(predict_frame, ['predict_for_observation_column'])
 
 
