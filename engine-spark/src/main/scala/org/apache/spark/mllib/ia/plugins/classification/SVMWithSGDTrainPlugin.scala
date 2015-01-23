@@ -82,7 +82,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
       val svm = initializeSVM(arguments)
       val svmModel = svm.run(labeledTrainRDD)
       val modelObject = svmModel.toJson.asJsObject
-
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta, modelObject)
       new UnitReturn
