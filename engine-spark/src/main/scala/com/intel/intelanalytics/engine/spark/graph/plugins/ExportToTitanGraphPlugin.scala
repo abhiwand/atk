@@ -53,7 +53,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * @param frames SparkFrameStorage repository
  * @param graphs SparkGraphStorageRepository
  */
-class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[ExportGraph, Graph] {
+class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[ExportGraph, GraphEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -86,10 +86,10 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ExportGraph)(implicit invocation: Invocation): Graph = {
+  override def execute(arguments: ExportGraph)(implicit invocation: Invocation): GraphEntity = {
     val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
-    val titanGraph: Graph = graphs.createGraph(
+    val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(
         arguments.newGraphName match {
           case Some(name) => arguments.newGraphName

@@ -23,18 +23,4 @@
 
 package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-
-/**
- * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
- * @param frame Handle to the data frame
- * @param observationColumn Handle to the observation column of the data frame
- * @param labelColumn Handle to the label column of the data frame
- */
-case class LogisticRegressionWithSGDArgs(model: ModelReference, frame: FrameReference, observationColumn: String, labelColumn: String) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
-  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
-  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
-}
+case class ClassificationWithSGDNewArgs(dummyModelRef: ModelReference, name: Option[String] = None)

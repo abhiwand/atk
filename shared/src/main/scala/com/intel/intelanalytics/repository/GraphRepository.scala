@@ -24,18 +24,18 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 
 /**
  * Repository for graphs
  */
-trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] with NameableRepository[Session, Graph] with GarbageCollectableRepository[Session, Graph] {
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, GraphEntity] with NameableRepository[Session, GraphEntity] with GarbageCollectableRepository[Session, GraphEntity] {
   /**
    * Return all the graphs
    * @param session current session
    * @return all the graphs
    */
-  def scanAll()(implicit session: Session): Seq[Graph]
+  def scanAll()(implicit session: Session): Seq[GraphEntity]
 
   def updateIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit
 
@@ -44,6 +44,6 @@ trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph]
    * @param id id of graph in question
    * @return true if graph is live, false if it is not
    */
-  def isLive(id: Graph): Boolean
+  def isLive(id: GraphEntity): Boolean
 
 }

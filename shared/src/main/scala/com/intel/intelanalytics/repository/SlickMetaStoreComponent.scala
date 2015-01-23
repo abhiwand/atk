@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
@@ -64,7 +64,7 @@ import com.intel.intelanalytics.domain.model.ModelEntity
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.EdgeSchema
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.domain.graph.SchemaList
 import com.intel.intelanalytics.domain.model.ModelTemplate
 import com.intel.intelanalytics.domain.command.CommandTemplate
@@ -900,7 +900,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
   }
 
-  class GraphTable(tag: Tag) extends Table[Graph](tag, "graph") {
+  class GraphTable(tag: Tag) extends Table[GraphEntity](tag, "graph") {
     def id = column[Long]("graph_id", O.PrimaryKey, O.AutoInc)
 
     def name = column[Option[String]]("name")
@@ -929,7 +929,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def lastReadDate = column[DateTime]("last_read_date")
 
     /** projection to/from the database */
-    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas, lastReadDate) <> (Graph.tupled, Graph.unapply)
+    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas, lastReadDate) <> (GraphEntity.tupled, GraphEntity.unapply)
 
     // foreign key relationships
 
@@ -951,16 +951,16 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class SlickGraphRepository(frameRepo: FrameRepository[Session]) extends GraphRepository[Session]
       with EventLogging {
-    this: Repository[Session, GraphTemplate, Graph] =>
+    this: Repository[Session, GraphTemplate, GraphEntity] =>
 
     protected val graphsAutoInc = graphs returning graphs.map(_.id) into {
       case (graph, id) => graph.copy(id = id)
     }
 
-    override def insert(graph: GraphTemplate)(implicit session: Session): Try[Graph] = Try {
+    override def insert(graph: GraphTemplate)(implicit session: Session): Try[GraphEntity] = Try {
       // TODO: table name
       // TODO: user name
-      val g = Graph(1, graph.name, None, "", 1L, graph.storageFormat, new DateTime(), new DateTime(), None, None)
+      val g = GraphEntity(1, graph.name, None, "", 1L, graph.storageFormat, new DateTime(), new DateTime(), None, None)
       graphsAutoInc.insert(g)
     }
 
@@ -971,7 +971,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.where(_.id === id).mutate(f => f.delete())
     }
 
-    override def update(graph: Graph)(implicit session: Session): Try[Graph] = Try {
+    override def update(graph: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
       val updatedGraph = graph.copy(modifiedOn = new DateTime)
       graphs.where(_.id === graph.id).update(updatedGraph)
       updatedGraph
@@ -982,19 +982,19 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       idCounterCol.update(Some(idCounter))
     }
 
-    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Graph] = {
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[GraphEntity] = {
       graphs.drop(offset).take(count).list
     }
 
-    override def scanAll()(implicit session: Session): Seq[Graph] = {
+    override def scanAll()(implicit session: Session): Seq[GraphEntity] = {
       graphs.list
     }
 
-    override def lookup(id: Long)(implicit session: Session): Option[Graph] = {
+    override def lookup(id: Long)(implicit session: Session): Option[GraphEntity] = {
       graphs.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: Option[String])(implicit session: Session): Option[Graph] = {
+    override def lookupByName(name: Option[String])(implicit session: Session): Option[GraphEntity] = {
       name match {
         case Some(n) => graphs.where(_.name === n).firstOption
         case _ => None
@@ -1015,7 +1015,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * return true if the supplied graph is live.
      * @param g the graph in question
      */
-    override def isLive(g: Graph): Boolean = {
+    override def isLive(g: GraphEntity): Boolean = {
       g.name == None && g.statusId != Status.Dead && g.statusId != Status.Deleted
     }
 
@@ -1024,7 +1024,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param age the length of time in milliseconds for the newest possible record to be deleted
      * @param session current session
      */
-    override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[Graph] = {
+    override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[GraphEntity] = {
       val oldestDate = DateTime.now.minus(age)
       (for (
         g <- graphs; if g.name.isNull &&
@@ -1040,7 +1040,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session the user session
      * @return the entity marked as deleted
      */
-    override def updateMetaDataDeleted(entity: Graph)(implicit session: Session): Try[Graph] = Try {
+    override def updateMetaDataDeleted(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
       graphs.filter(_.id === entity.id)
         .map(g => (g.statusId, g.modifiedOn))
         .update((Status.Deleted, new DateTime))
@@ -1052,7 +1052,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param age the length of time in milliseconds for the newest possible record to be deleted
      * @param session current session
      */
-    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[Graph] = {
+    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[GraphEntity] = {
       val oldestDate = DateTime.now.minus(age)
       (for (g <- graphs; if g.name.isNull && g.statusId === Status.Dead && g.lastReadDate < oldestDate) yield g).list
     }
@@ -1063,7 +1063,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session the user session
      * @return the entity
      */
-    override def updateDataDeleted(entity: Graph)(implicit session: Session): Try[Graph] = Try {
+    override def updateDataDeleted(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
       graphs.filter(_.id === entity.id)
         .map(g => (g.statusId, g.modifiedOn))
         .update((Status.Dead, new DateTime))
@@ -1075,10 +1075,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param entity entity to be updated
      * @param session the user session
      */
-    def updateLastReadDate(entity: Graph)(implicit session: Session): Try[Graph] = Try {
+    def updateLastReadDate(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
       graphs.filter(_.id === entity.id)
         .map(g => (g.lastReadDate, g.statusId, g.modifiedOn))
-        .update((new DateTime, Status.getNewStatusForRead(entity.id), new DateTime))
+        .update((new DateTime, Status.getNewStatusForRead(entity.statusId), new DateTime))
       graphs.where(_.id === entity.id).firstOption.get
     }
   }
@@ -1226,7 +1226,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def updateLastReadDate(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
         .map(m => (m.lastReadDate, m.statusId, m.modifiedOn))
-        .update((new DateTime, Status.getNewStatusForRead(entity.id), new DateTime))
+        .update((new DateTime, Status.getNewStatusForRead(entity.statusId), new DateTime))
       models.where(_.id === entity.id).firstOption.get
     }
   }
