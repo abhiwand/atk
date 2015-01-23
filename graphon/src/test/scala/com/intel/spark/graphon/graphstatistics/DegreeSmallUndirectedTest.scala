@@ -148,57 +148,57 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   }
 
   "simple undirected graph" should "have correct degrees for edge label A" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA)))
+    val results = UnweightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA)))
     results.collect().toSet shouldEqual excpectedADegrees
   }
 
   "simple undirected graph" should "have correct degrees for edge label B" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelB)))
+    val results = UnweightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelB)))
     results.collect().toSet shouldEqual expectedBDegrees
   }
 
   "simple undirected graph" should "have correct degrees when both edge label A and B requested" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA, edgeLabelB)))
+    val results = UnweightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set(edgeLabelA, edgeLabelB)))
     results.collect().toSet shouldEqual expectedCombinedDegrees
   }
 
   "simple undirected graph" should "have net degrees for all labels combined when edge labels are unrestricted " in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegrees(vertexRDD, edgeRDD)
+    val results = UnweightedDegrees.undirectedDegrees(vertexRDD, edgeRDD)
     results.collect().toSet shouldEqual expectedCombinedDegrees
   }
 
   "simple undirected graph" should "have all degrees 0 when restricted to empty list of labels" in new UndirectedGraphTest {
-    val results = DegreeStatistics.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
+    val results = UnweightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, Some(Set()))
     results.collect().toSet shouldEqual allZeroDegrees
   }
 
 
 
   "simple undirected graph" should "have correct weighted degrees for edge label A" in new UndirectedGraphTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelA)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelA)))
     val test = approximateMapEquality(results.collect().toMap, expectedAWeightedDegrees.toMap)
     test shouldBe true
   }
 
   "simple undirected graph" should "have correct weighted degrees for edge label B" in new UndirectedGraphTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelB)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelB)))
     val test = approximateMapEquality(results.collect().toMap, expectedBWeightedDegrees.toMap)
     val x= results.collect().toMap
     test shouldBe true
   }
 
   "simple undirected graph" should "have correct weighted degrees when both edge label A and B requested" in new UndirectedGraphTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelA, edgeLabelB)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(edgeLabelA, edgeLabelB)))
     results.collect().toSet shouldEqual expectedCombinedWeightedDegrees
   }
 
   "simple undirected graph" should "have net weighted degrees for all labels combined when edge labels are unrestricted " in new UndirectedGraphTest {
-    val results = WeightedDegrees.undirectedDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.undirectedWeightedDegree(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedCombinedWeightedDegrees
   }
 
   "simple undirected graph" should "have all weighted degrees 0 when restricted to empty list of labels" in new UndirectedGraphTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
     results.collect().toSet shouldEqual allZeroDegreesDouble
   }
 

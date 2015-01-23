@@ -43,10 +43,10 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
     val vertexRDD = sparkContext.parallelize(List.empty[GBVertex], defaultParallelism)
     val edgeRDD = sparkContext.parallelize(List.empty[GBEdge], defaultParallelism)
 
-    WeightedDegrees.outDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).count() shouldBe 0D
+    WeightedDegrees.outWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).count() shouldBe 0D
     WeightedDegrees.outDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set("edge label"))).count() shouldBe 0
-    WeightedDegrees.inDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).count() shouldBe 0
-    WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set("edge label"))).count() shouldBe 0
+    WeightedDegrees.inWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).count() shouldBe 0
+    WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set("edge label"))).count() shouldBe 0
   }
 
   "single node graph" should "have all edge labels net weight  0" in {
@@ -78,12 +78,12 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
     val expectedOutput =
       gbVertexList.map(v => (v, 0L)).toSet
 
-    WeightedDegrees.outDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
+    WeightedDegrees.outWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
     WeightedDegrees.outDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
-    WeightedDegrees.inDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
-    WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
-    WeightedDegrees.undirectedDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
-    WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
+    WeightedDegrees.inWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
+    WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
+    WeightedDegrees.undirectedWeightedDegree(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect().toSet shouldBe expectedOutput
+    WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel))).collect().toSet shouldBe expectedOutput
   }
 
   trait SingleUndirectedEdgeTest {
@@ -127,32 +127,32 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
   }
 
   "single undirected edge" should "have correct in-weight" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.inWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have correct in-weight for valid label" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have zero in-weight for invalid label" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
   "single undirected edge" should "have default in-weight when label is valid, property is missing" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabelDefaultWeight
   }
 
   "single undirected edge" should "have default in-weight when property is missing" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegrees(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
+    val results = WeightedDegrees.inWeight(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabelDefaultWeight
   }
 
   "single undirected edge" should "have correct out-weight" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.outDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.outWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
@@ -172,37 +172,37 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
   }
 
   "single undirected edge" should "have default out-weight when property is missing" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.outDegrees(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
+    val results = WeightedDegrees.outWeight(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabelDefaultWeight
   }
 
   "single undirected edge" should "have correct undirected weight" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.undirectedWeightedDegree(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have correct undirected weight for valid label" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabel
   }
 
   "single undirected edge" should "have zero undirected weight for invalid label" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
   "single undirected edge" should "have default undirected-weight when label is valid, property is missing" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputValidLabelDefaultWeight
   }
 
   "single undirected edge" should "have default undirected-weight when property is missing" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegrees(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
+    val results = WeightedDegrees.undirectedWeightedDegree(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputValidLabelDefaultWeight
   }
 
   "single undirected edge" should "have zero in-weight when restricted to empty set of edge labels" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
@@ -212,7 +212,7 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
   }
 
   "single undirected edge" should "have zero undirected degree when restricted to empty set of edge labels" in new SingleUndirectedEdgeTest {
-    val results = WeightedDegrees.undirectedDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
+    val results = WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set()))
     results.collect().toSet shouldEqual expectedOutputAllZeroDegrees
   }
 
@@ -267,33 +267,33 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
   }
 
   "single directed edge" should "have correct in-weight" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.inDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.inWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
 
     results.collect().toSet shouldEqual expectedOutputInDegreeValidLabel
   }
 
   "single directed edge" should "have correct in-weight for valid label" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputInDegreeValidLabel
   }
 
   "single directed edge" should "have zero in-weight for invalid label" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight, Some(Set(invalidEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputInvalidLabel
   }
 
   "single directed edge" should "have default in-weight when label is valid, property is missing" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.inDegreesByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
+    val results = WeightedDegrees.inWeightByEdgeLabel(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight, Some(Set(validEdgeLabel)))
     results.collect().toSet shouldEqual expectedOutputInDegreeDefault
   }
 
   "single directed edge" should "have default in-weight when property is missing" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.inDegrees(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
+    val results = WeightedDegrees.inWeight(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputInDegreeDefault
   }
 
   "single directed edge" should "have correct out-weight" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.outDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
+    val results = WeightedDegrees.outWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputOutDegreeValidLabel
   }
 
@@ -315,7 +315,7 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
   }
 
   "single directed edge" should "have default out-weight when property is missing" in new SingleDirectedEdgeTest {
-    val results = WeightedDegrees.outDegrees(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
+    val results = WeightedDegrees.outWeight(vertexRDD, edgeRDD, missingPropertyOption, defaultWeight)
     results.collect().toSet shouldEqual expectedOutputOutDegreeDefault
   }
 
@@ -351,20 +351,20 @@ class WeightedDegreeCornerCasesTest extends FlatSpec with Matchers with TestingS
 
   "bad graph with mismatched edge and vertex RDDs" should "throw spark exception when computing out weight" in new BadGraphTest {
     intercept[org.apache.spark.SparkException] {
-      val results = WeightedDegrees.outDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
+      val results = WeightedDegrees.outWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
     }
   }
 
   "bad graph with mismatched edge and vertex RDDs" should "throw spark exception when computing in weight" in new BadGraphTest {
     intercept[org.apache.spark.SparkException] {
-      val results = WeightedDegrees.inDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
+      val results = WeightedDegrees.inWeight(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
     }
 
   }
 
   "bad graph with mismatched edge and vertex RDDs" should "throw spark exception when computing undirected weight" in new BadGraphTest {
     intercept[org.apache.spark.SparkException] {
-      val results = WeightedDegrees.undirectedDegrees(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
+      val results = WeightedDegrees.undirectedWeightedDegree(vertexRDD, edgeRDD, weightPropertyOption, defaultWeight).collect()
     }
   }
 }
