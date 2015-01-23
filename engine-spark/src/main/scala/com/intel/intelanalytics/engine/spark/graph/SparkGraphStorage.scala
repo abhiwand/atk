@@ -67,7 +67,7 @@ class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging { storage =>
-  def updateLastReadDate(graph: Graph): Option[Graph] = {
+  def updateLastReadDate(graph: GraphEntity): Option[GraphEntity] = {
     metaStore.withSession("graph.updateLastReadDate") {
       implicit session =>
         metaStore.graphRepo.updateLastReadDate(graph).toOption
@@ -96,7 +96,7 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectGraph(id)
 
-    implicit def graphToRef(graph: Graph): Reference = GraphReference(graph.id)
+    implicit def graphToRef(graph: GraphEntity): Reference = GraphReference(graph.id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -124,12 +124,12 @@ class SparkGraphStorage(metaStore: MetaStore,
   EntityTypeRegistry.register(GraphEntityType, SparkGraphManagement)
 
   /** Lookup a Graph, throw an Exception if not found */
-  override def expectGraph(graphId: Long)(implicit invocation: Invocation): Graph = {
+  override def expectGraph(graphId: Long)(implicit invocation: Invocation): GraphEntity = {
     lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
   }
 
   /** Lookup a Graph, throw an Exception if not found */
-  override def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): Graph = expectGraph(graphRef.id)
+  override def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity = expectGraph(graphRef.id)
 
   /**
    * Lookup a Seamless Graph, throw an Exception if not found
@@ -154,7 +154,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * deleting it from the backend storage.
    * @param graph Graph metadata object.
    */
-  override def drop(graph: Graph)(implicit invocation: Invocation): Unit = {
+  override def drop(graph: GraphEntity)(implicit invocation: Invocation): Unit = {
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
@@ -172,7 +172,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph graph instance
    * @param newStatusId status id
    */
-  override def updateStatus(graph: Graph, newStatusId: Long): Unit = {
+  override def updateStatus(graph: GraphEntity, newStatusId: Long): Unit = {
     metaStore.withSession("spark.graphstorage.rename") {
       implicit session =>
         {
@@ -187,7 +187,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph The graph being registered.
    * @return Graph metadata.
    */
-  override def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Graph = {
+  override def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): GraphEntity = {
     metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
@@ -211,7 +211,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  override def renameGraph(graph: Graph, newName: String)(implicit invocation: Invocation): Graph = {
+  override def renameGraph(graph: GraphEntity, newName: String)(implicit invocation: Invocation): GraphEntity = {
     metaStore.withSession("spark.graphstorage.rename") {
       implicit session =>
         {
@@ -232,7 +232,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * Obtain the graph metadata for a range of graph IDs.
    * @return Sequence of graph metadata objects.
    */
-  override def getGraphs()(implicit invocation: Invocation): Seq[Graph] = {
+  override def getGraphs()(implicit invocation: Invocation): Seq[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.getGraphs") {
       implicit session =>
         {
@@ -241,7 +241,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  override def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[Graph] = {
+  override def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.getGraphByName") {
       implicit session =>
         {
@@ -254,7 +254,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
    */
-  override def lookup(id: Long)(implicit invocation: Invocation): Option[Graph] = {
+  override def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.lookup") {
       implicit session =>
         {
@@ -357,7 +357,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    new EdgeFrameRDD(frameRdd)
   //  }
 
-  def loadGbVertices(ctx: SparkContext, graph: Graph)(implicit invocation: Invocation): RDD[GBVertex] = {
+  def loadGbVertices(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
     val graphEntity = expectGraph(graph.id)
     if (graphEntity.isSeamless) {
       val graphEntity = expectSeamless(graph.id)
@@ -372,7 +372,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def loadGbEdges(ctx: SparkContext, graph: Graph)(implicit invocation: Invocation): RDD[GBEdge] = {
+  def loadGbEdges(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBEdge] = {
     val graphEntity = expectGraph(graph.id)
     if (graphEntity.isSeamless) {
       val graphMeta = expectSeamless(graph.id)
@@ -387,7 +387,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def loadGbElements(ctx: SparkContext, graph: Graph)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
+  def loadGbElements(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
     val graphEntity = expectGraph(graph.id)
 
     if (graphEntity.isSeamless) {
@@ -402,7 +402,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def getTitanReaderRDD(ctx: SparkContext, graph: Graph): RDD[GraphElement] = {
+  def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
@@ -418,7 +418,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph Graph metadata object
    * @return RDDs of vertices and edges
    */
-  def loadFromTitan(ctx: SparkContext, graph: Graph): (RDD[GBVertex], RDD[GBEdge]) = {
+  def loadFromTitan(ctx: SparkContext, graph: GraphEntity): (RDD[GBVertex], RDD[GBEdge]) = {
     val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
     import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
@@ -469,7 +469,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
   }
 
-  def updateFrameSchemaList(graphEntity: Graph, schemas: List[Schema])(implicit invocation: Invocation): Graph = {
+  def updateFrameSchemaList(graphEntity: GraphEntity, schemas: List[Schema])(implicit invocation: Invocation): GraphEntity = {
     metaStore.withSession("spark.graphstorage.updateElementIDNames") {
       implicit session =>
         {

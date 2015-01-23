@@ -34,7 +34,7 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetGraph
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
@@ -69,7 +69,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
      * @param graph graph metadata
      * @return Decorated graph for HTTP protocol return
      */
-    def decorate(uri: Uri, graph: Graph): GetGraph = {
+    def decorate(uri: Uri, graph: GraphEntity): GetGraph = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       GraphDecorator.decorateEntity(uri.toString, links, graph)
