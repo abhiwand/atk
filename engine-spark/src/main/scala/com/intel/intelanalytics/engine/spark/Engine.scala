@@ -227,6 +227,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDTrainPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
+  commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
