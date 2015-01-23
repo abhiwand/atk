@@ -45,7 +45,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction._
-import com.intel.intelanalytics.domain.graph.{ Graph, LoadGraphArgs, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -368,16 +368,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModelArgs)
   implicit val modelFormat = jsonFormat11(ModelEntity)
-  implicit val modelLoadFormat = jsonFormat4(LogisticRegressionWithSGDArgs)
-  implicit val modelPredictFormat = jsonFormat3(LogisticRegressionWithSGDPredictArgs)
+  implicit val modelLoadFormat = jsonFormat4(ClassificationWithSGDArgs)
+  implicit val modelPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
   implicit val kmeansModelLoadFormat = jsonFormat7(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
-  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(LogisticRegressionWithSGDNewArgs)
+  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(ClassificationWithSGDNewArgs)
 
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
   implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
+
+  implicit val svmModelLoadFormat = jsonFormat8(SVMTrainArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)
@@ -527,14 +529,14 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat13(Graph)
+  implicit object graphFormat extends JsonFormat[GraphEntity] {
+    implicit val graphFormatOriginal = jsonFormat13(GraphEntity)
 
-    override def read(value: JsValue): Graph = {
+    override def read(value: JsValue): GraphEntity = {
       graphFormatOriginal.read(value)
     }
 
-    override def write(graph: Graph): JsValue = {
+    override def write(graph: GraphEntity): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
         ("entity_type" -> JsString(graph.entityType)))

@@ -30,9 +30,21 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column of the data frame
+ * @param numOptIterations Optional number of iterations to run the algorithm.
+ * @param stepSize Optional number of stepSize.
+ * @param regType L1 or L2 regularization
+ * @param regParam Optional regularization parameter
  */
-case class LogisticRegressionWithSGDPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
+case class SVMTrainArgs(model: ModelReference,
+                        frame: FrameReference,
+                        observationColumns: List[String],
+                        labelColumn: String,
+                        numOptIterations: Option[Int] = None,
+                        stepSize: Option[Int] = None,
+                        regType: Option[String] = None,
+                        regParam: Option[Double] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
+  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
 }

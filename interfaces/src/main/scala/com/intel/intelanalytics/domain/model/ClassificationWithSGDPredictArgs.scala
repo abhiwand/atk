@@ -21,21 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.graph
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.domain.frame.FrameReference
 
 /**
- * A GraphReference with metadata and a Spark RDD representing the data in the frame
+ * Command for loading model data into existing model in the model database.
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumns Handle to the observation column of the data frame
  */
-class SparkGraphData(graph: GraphEntity, rdd: Option[FrameRDD])
-    extends GraphMeta(graph)
-    with HasData {
-
-  type Data = Option[FrameRDD]
-
-  val data = rdd
-
+case class ClassificationWithSGDPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
+  require(model != null, "model must not be null")
+  require(frame != null, "frame must not be null")
+  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
 }
