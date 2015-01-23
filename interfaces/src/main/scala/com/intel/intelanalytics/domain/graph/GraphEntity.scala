@@ -41,19 +41,19 @@ import org.joda.time.DateTime
  * @param idCounter idCounter counter for generating unique ids for vertices and edges with Seamless Graph.
  * @param frameSchemaList a list of schema objects corresponding to the frames. This is only required for graphs exported from a Seamless Graph.
  */
-case class Graph(id: Long,
-                 name: Option[String],
-                 description: Option[String],
-                 storage: String,
-                 statusId: Long,
-                 storageFormat: String,
-                 createdOn: DateTime,
-                 modifiedOn: DateTime,
-                 createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None,
-                 idCounter: Option[Long] = None,
-                 frameSchemaList: Option[SchemaList] = None,
-                 lastReadDate: DateTime = new DateTime) extends HasId {
+case class GraphEntity(id: Long,
+                       name: Option[String],
+                       description: Option[String],
+                       storage: String,
+                       statusId: Long,
+                       storageFormat: String,
+                       createdOn: DateTime,
+                       modifiedOn: DateTime,
+                       createdByUserId: Option[Long] = None,
+                       modifiedByUserId: Option[Long] = None,
+                       idCounter: Option[Long] = None,
+                       frameSchemaList: Option[SchemaList] = None,
+                       lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name match {
