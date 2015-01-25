@@ -49,8 +49,6 @@ class GraphInfoPlugin extends SparkCommandPlugin[GraphNoArgs, SeamlessGraphMeta]
    */
   override def name: String = "graph:/_info"
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "get debug info about a graph", extendedSummary = None))
-
   /**
    * Debug information for a graph
    * @param invocation information about the user and the circumstances at the time of the call,

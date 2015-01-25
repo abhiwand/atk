@@ -101,7 +101,7 @@ To verify the EPEL repository installation, run::
 
     # sample output
     repo id                           ...  repo name
-    cloudera-cdh5                     ...  Cloudera CDH, Version 5                        ...
+    cloudera-cdh5                     ...  Cloudera :abbr:`CDH (Cloudera Hadoop)`, Version 5                        ...
     cloudera-manager                  ...  Cloudera Manager, Version 5.1.0                ...
     epel                              ...  Extra Packages for Enterprise Linux 6 - x86_64 ...
     rhui-REGION-client-config-server-6...  Red Hat Update Infrastructure 2.0 Client Config...
@@ -182,11 +182,11 @@ Verify the IA repository configuration by running::
     Available Packages
     Name     : intelanalytics-rest-server
     Arch     : x86_64
-    Version  : 0.8
+    Version  : 0.9
     Release  : 1474
     Size     : 419 M
     Repo     : intel-analytics
-    Summary  : intelanalytics-rest-server-0.8 Build number: 1474. TimeStamp 20140722...
+    Summary  : intelanalytics-rest-server-0.9 Build number: 1474. TimeStamp 20140722...
     URL      : graphtrial.intel.com
     License  : Confidential
 
@@ -298,4 +298,3 @@ You can start the notebook server with the following command::
     
     $ ipython notebook
 
-.. |IA| replace:: Intel Analytics

@@ -53,7 +53,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * @param frames SparkFrameStorage repository
  * @param graphs SparkGraphStorageRepository
  */
-class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[ExportGraph, Graph] {
+class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[ExportGraph, GraphEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -72,25 +72,6 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
   override def name: String = "graph:/export_to_titan"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Convert to TitanGraph",
-    extendedSummary = Some("""
-    Convert this Graph into a TitanGraph object. This will be a new graph backed by Titan with all of the data found in this graph
-
-    Parameters
-    ----------
-    new_graph_name: str
-      the name of the new graph. This is optional. If omitted a name will be generated.
-
-    Examples
-    --------
-                             |graph = ia.get_graph("my_graph")
-                             |titan_graph = graph.export_to_titan("titan_graph") """)))
-
-  /**
    * Number of jobs needs to be known to give a single progress bar
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
@@ -105,10 +86,10 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ExportGraph)(implicit invocation: Invocation): Graph = {
+  override def execute(arguments: ExportGraph)(implicit invocation: Invocation): GraphEntity = {
     val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
-    val titanGraph: Graph = graphs.createGraph(
+    val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(
         arguments.newGraphName match {
           case Some(name) => arguments.newGraphName

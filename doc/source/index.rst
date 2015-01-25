@@ -3,7 +3,7 @@
 ============
 
 .. toctree::
-    :maxdepth: 4
+    :maxdepth: 3
 
     ia_intro
     ad_over
@@ -33,4 +33,3 @@ References
 
 .. TODOLIST::
 
-.. |IA| replace:: Intel Analytics

@@ -5,7 +5,8 @@ Tracking Metadata
 .. contents:: Table of Contents
     :local:
 
-By default, the |IA| Toolkit uses H2, an in-memory database that is lost on application restart.
+By default, the |IA| Toolkit uses H2, an in-memory database that is lost on
+application restart.
 This is convenient for testing.
 H2 setup is completely automatic.
 No steps below are needed for H2.
@@ -14,16 +15,31 @@ No steps below are needed for H2.
 Using PostgreSQL
 ----------------
 
-By default, the Cloudera Manager installs PostgreSQL_ which is used for tracking metadata.
-PostgreSQL is only required if your engine and API server are on different nodes or if you are in a more production
-environment (where you want your data to persist between restarts).
+By default, the Cloudera Manager installs PostgreSQL_ which is used for
+tracking metadata.
+PostgreSQL is only required if your engine and API server are on different
+nodes or if you are in a more production environment (where you want your
+data to persist between restarts).
 
-*   On your './interfaces/src/main/resources/reference.conf' or your 'application.conf' (if you are using RPM packages) set the following::
+*   On your './interfaces/src/main/resources/reference.conf' or your
+    'application.conf' (if you are using RPM packages) set the following:
+
+.. only:: html
+
+    ::
 
         metastore.connection-postgresql.host = "localhost"
-        metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-
-            postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"$
-            {intel.analytics.metastore.connection-postgresql.database}
+        metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+
+.. only:: latex
+
+    ::
+
+        metastore.connection-postgresql.host = "localhost"
+        metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.
+            connection-postgresql.host}":"${intel.analytics.metastore.connection-
+            postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.
+            database}
 
     The ``metastore.connection.url`` line above was broken across multiple lines to assist display on various media.
     The line should be entered as a single line with no gaps (spaces).
@@ -34,7 +50,8 @@ environment (where you want your data to persist between restarts).
 
             yum info postgresql
         
-        If PostgreSQL is not already installed, you will need to install it before going on.
+        If PostgreSQL is not already installed, you will need to install it
+        before going on.
 
     *   If the data folder 'cd /var/lib/pgsql/data' is empty, you need to run::
 
@@ -48,7 +65,9 @@ environment (where you want your data to persist between restarts).
 
             cd /var/lib/pgsql/data
     
-    *   Modify *pg_hba.conf*, adding a line with the IP that PostgreSQL will listen on for connections, add this **before** the other lines in the file.
+    *   Modify *pg_hba.conf*, adding a line with the IP that PostgreSQL will
+        listen on for connections, add this **before** the other lines in the
+        file.
     
         *   If Engine and PostgreSQL are on the same node::
 
@@ -60,13 +79,17 @@ environment (where you want your data to persist between restarts).
                 TYPE    DATABASE    USER        CIDR-ADDRESS                METHOD
                 host    all         metastore   <IP of Engine Server>/32    md5
     
-    *   Modify ``postgresql.conf`` and uncomment the *listen_addresses* setting with the IP that PostgreSQL should listen on.
+    *   Modify ``postgresql.conf`` and uncomment the *listen_addresses*
+        setting with the IP that PostgreSQL should listen on.
     
-        *   If Engine and PostgreSQL are on the same node, lock PostgreSQL to listen on the local loopback interface only::
+        *   If Engine and PostgreSQL are on the same node, lock PostgreSQL to
+            listen on the local loopback interface only::
         
                 listen_addresses = 'localhost'
             
-        *   If Engine and PostgreSQL are on different nodes allow PostgreSQL to listen to both an externally accessible interface and the local loopback interface::
+        *   If Engine and PostgreSQL are on different nodes allow PostgreSQL
+            to listen to both an externally accessible interface and the local
+            loopback interface::
 
                 listen_addresses = 'localhost,<IP of Accessible Interface>'
                 
@@ -83,21 +106,33 @@ environment (where you want your data to persist between restarts).
 *   Create a metastore user and database
 
     *   Run *psql*
-    *   create user metastore with createdb with encrypted password 'Tribeca123' (you can change it later)
+    *   create user metastore with createdb with encrypted password
+        'Tribeca123' (you can change it later)
     *   create database metastore with owner metastore
-    *   It is also good to create a user for yourself so you don't have to ``sudo`` all of the time
+    *   It is also good to create a user for yourself so you don't have to
+        ``sudo`` all of the time
     
         * create user yourUserName with superuser; // etc
         
-*   Start our application, it will create the schema automatically using Flyway (which is installed by default).
+*   Start our application, it will create the schema automatically using
+    Flyway (which is installed by default).
 
     *   Use *\d* to see the schema, see the `cheatsheet <ad_psql_cs>`
     
-*   Insert a user::
+.. only:: html
 
-        psql metastore
-        insert into users (username, API_key, created_on, modified_on)
-            values( 'metastore', 'test_API_key_1', now(), now() )
+    *   Insert a user::
+
+            psql metastore
+            insert into users (username, API_key, created_on, modified_on) values( 'metastore', 'test_API_key_1', now(), now() )
+
+.. only:: latex
+
+    *   Insert a user::
+
+            psql metastore
+            insert into users (username, API_key, created_on, modified_on)
+                values( 'metastore', 'test_API_key_1', now(), now() )
 
 -------------
 Related Pages
@@ -107,11 +142,9 @@ Related Pages
 
 .. toctree::
     :hidden:
-    :maxdepth: 1
     
     ad_psql_cs
 
 
 .. _PostgreSQL: http://www.postgresql.org
 
-.. |IA| replace:: Intel Analytics

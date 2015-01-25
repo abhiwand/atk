@@ -30,13 +30,6 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
   override def name: String = "frame/group_by"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
-
-  /**
    * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
    *
    * @param invocation information about the user and the circumstances at the time of the call,

@@ -53,25 +53,6 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModelArgs, ModelEntity]
   override def name: String = "model/rename"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Rename Model",
-    extendedSummary = Some("""
-    Set the name of this model.
-
-    Parameters
-    ----------
-    new_name: str
-      the new name of the model.
-
-    Examples
-    --------
-    model.rename("myModel")""")))
-
-  /**
-   * Rename a model in the database
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
