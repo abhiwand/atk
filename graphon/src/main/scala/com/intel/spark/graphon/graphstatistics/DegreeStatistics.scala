@@ -105,28 +105,68 @@ object DegreeStatistics {
   }
 
   /**
-   * Calculates the out-degree of each vertex using edges of a specified label.
+   * Calculates the  undirected degree of each vertex using edges of all possible labels.
+   * Assumes that all provided edge labels are for undirected edges.
    *
    * @param vertexRDD RDD of vertices
    * @param edgeRDD RDD of edges
-   * @param edgeLabel Edge label for which to calculate out-degrees
-   * @return RDD of (VertexID, out-degree with respect to label) pairs
+   * @return RDD of (Vertex, degree) pairs
    */
-  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabel: String): RDD[(GBVertex, Long)] = {
-    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
+  def undirectedDegrees(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge]): RDD[(GBVertex, Long)] = {
+    /*
+     * Because undirected edges are internally represented as bi-directional edge/anti-edge pairs,
+     * this is simply the out degree calculation. A change of the representation would change this
+     * calculation.
+     */
+    degreeCalculation(vertexRDD, edgeRDD, calculateOutDegreeFlag = true)
+  }
+
+  /**
+   * Calculates the out-degree of each vertex using edges from a given set of edge labels.
+   *
+   * @param vertexRDD RDD of vertices
+   * @param edgeRDD RDD of edges
+   * @param edgeLabels Set of edge labels for which to calculate out-degrees
+   * @return RDD of (VertexID, out-degree with respect to the set of considered edge labels) pairs
+   */
+  def outDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
     outDegrees(vertexRDD, filteredEdges)
   }
 
   /**
-   * Calculates the in-degree of each vertex using edges of a specified label.
+   * Calculates the in-degree of each vertex using edges from a given set of edge labels.
    *
    * @param vertexRDD RDD containing vertices
    * @param edgeRDD RDD containing edges
-   * @param edgeLabel Edge label for which to calculate in-degrees
-   * @return RDD of (VertexID, in-degree with respect to label) pairs
+   * @param edgeLabels Set of dge label for which to calculate in-degrees
+   * @return RDD of (VertexID, in-degree with respect to set of considered edge labels) pairs
    */
-  def inDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabel: String): RDD[(GBVertex, Long)] = {
-    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
+  def inDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
     inDegrees(vertexRDD, filteredEdges)
+  }
+
+  /**
+   * Calculates the  undirected degree of each vertex using edges from a given set of edge labels.
+   * Assumes that all provided edge labels are for undirected edges.
+   *
+   * @param vertexRDD RDD of vertices
+   * @param edgeRDD RDD of edges
+   * @param edgeLabels Set of edge labels for which to calculate degrees
+   * @return RDD of (VertexID, degree with respect to the set of considered edge labels) pairs
+   */
+  def undirectedDegreesByEdgeLabel(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[(GBVertex, Long)] = {
+    val filteredEdges = filterEdges(edgeRDD, edgeLabels)
+    outDegrees(vertexRDD, filteredEdges)
+  }
+
+  private def filterEdges(edgeRDD: RDD[GBEdge], edgeLabels: Option[Set[String]]): RDD[GBEdge] = {
+    if (edgeLabels.nonEmpty) {
+      edgeRDD.filter(edge => edgeLabels.get.contains(edge.label))
+    }
+    else {
+      edgeRDD
+    }
   }
 }
