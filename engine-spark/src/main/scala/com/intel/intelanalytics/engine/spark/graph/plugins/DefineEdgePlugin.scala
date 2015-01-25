@@ -51,31 +51,6 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
    */
   override def name: String = "graph:/define_edge_type"
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Define edge type.",
-    extendedSummary = Some("""
-    Define a edge type.
-
-    Parameters
-    ----------
-    label: str
-        label of the edge type
-    source_vertex_label: str
-        label of the source vertex type
-    destination_vertex_label: str
-        label of the destination vertex type
-    directed: bool
-        is the edge directed
-
-    Examples
-    --------
-    ::
-
-        graph = ia.Graph()
-        graph.define_vertex_type('users')
-        graph.define_vertex_type('movie')
-        graph.define_edge_type('ratings', 'users', 'movie', directed=True)
-    """)))
-
   /**
    * Define edge type
    * @param invocation information about the user and the circumstances at the time of the call,

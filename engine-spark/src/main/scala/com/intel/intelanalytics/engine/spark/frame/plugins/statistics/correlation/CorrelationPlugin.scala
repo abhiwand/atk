@@ -51,37 +51,6 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue]
   override def name: String = "frame/correlation"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate correlation for exactly two columns",
-    extendedSummary = Some("""
-
-        Compute the correlation for two columns.
-
-        Parameters
-        ----------
-        columns: [ str | list of str ]
-            The names 2 columns from which to compute the correlation
-
-        Returns
-        -------
-        correlation of the two columns
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
-
-        Examples
-        --------
-        Consider Frame *my_frame*, which accesses a frame that contains a single column named *obs*::
-
-            cov = my_frame.correlation(['col_0', 'col_1'])
-
-            print(cov)
-                           """)))
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */

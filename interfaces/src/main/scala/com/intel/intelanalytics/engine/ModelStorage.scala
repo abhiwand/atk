@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.model.{ ModelLoad, ModelTemplate, ModelEntity }
+import com.intel.intelanalytics.domain.model.{ ClassificationWithSGDArgs, ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.{ JsValue, JsObject }

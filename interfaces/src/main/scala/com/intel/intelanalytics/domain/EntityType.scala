@@ -70,7 +70,7 @@ class NoData extends NoMetaData with HasData {
 /**
  * Entities in the system, things which can be named in URIs and other identifiers.
  *
- * Examples include [[com.intel.intelanalytics.domain.graph.Graph]] and
+ * Examples include [[com.intel.intelanalytics.domain.graph.GraphEntity]] and
  * [[com.intel.intelanalytics.domain.frame.FrameEntity]].
  */
 trait EntityType {

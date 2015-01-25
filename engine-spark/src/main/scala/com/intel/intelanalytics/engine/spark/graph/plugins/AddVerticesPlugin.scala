@@ -52,33 +52,6 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
   override def name: String = "frame:vertex/add_vertices"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Add vertices to a graph",
-    extendedSummary = Some("""
-    Add vertices to a graph.  Includes appending to a list of existing vertices.
-
-    Parameters
-    ----------
-    source_frame: Frame
-        frame that will be the source of the vertex data
-    id_column_name: str
-        column name for a unique id for each vertex
-    column_names: list of strings
-        column names that will be turned into properties for each vertex
-
-    Examples
-    --------
-    ::
-
-        graph = ia.Graph()
-        graph.define_vertex_type('users')
-        graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
-    """)))
-
-  /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */

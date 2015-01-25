@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit
 
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.typesafe.config.ConfigFactory
 import org.joda.time.{ Duration, DateTime }
 import org.scalatest.Matchers
@@ -105,8 +105,8 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame4 = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
         frameRepo.update(frame4.copy(lastReadDate = new DateTime().minus(age * 2), parent = Some(frame3.id)))
 
-        val seamlessWeak: Graph = graphRepo.insert(new GraphTemplate(None)).get
-        val seamlessLive: Graph = graphRepo.insert(new GraphTemplate(Some("liveGraph"))).get
+        val seamlessWeak: GraphEntity = graphRepo.insert(new GraphTemplate(None)).get
+        val seamlessLive: GraphEntity = graphRepo.insert(new GraphTemplate(Some("liveGraph"))).get
 
         //should not be in list. it is too new
         val frame5 = frameRepo.insert(new DataFrameTemplate(None, None)).get
@@ -158,8 +158,8 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame6 = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
         frameRepo.update(frame6.copy(lastReadDate = new DateTime().minus(age * 2), parent = Some(frame5.id)))
 
-        val seamlessWeak: Graph = graphRepo.insert(new GraphTemplate(None)).get
-        val seamlessLive: Graph = graphRepo.insert(new GraphTemplate(Some("liveGraph"))).get
+        val seamlessWeak: GraphEntity = graphRepo.insert(new GraphTemplate(None)).get
+        val seamlessLive: GraphEntity = graphRepo.insert(new GraphTemplate(Some("liveGraph"))).get
 
         //should not be in list. it is too new
         val frame7 = frameRepo.insert(new DataFrameTemplate(None, None)).get

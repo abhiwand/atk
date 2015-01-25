@@ -9,7 +9,7 @@ Virtual Machines
 Introduction
 ------------
 
-Thank you for your interest in the |IA| Toolkit 0.8 beta.
+Thank you for your interest in the |IA| Toolkit |version| beta.
 This guide will walk you through the download and import of the |IA| beta.
 Currently the |IA| toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
 We will not cover the installation of Virtual Box.
@@ -77,7 +77,7 @@ To download the VM run::
 The preceding line was broken across multiple lines for improved viewing on various media.
 The line should be entered as one line with no gaps (spaces).
 You must change ``#.#.#`` to the release you wish to download.
-If the version of CDH has changed, you need to change that as well.
+If the version of :abbr:`CDH (Cloudera Hadoop)` has changed, you need to change that as well.
 
 ---------------
 Extract Archive
@@ -201,19 +201,39 @@ Updating
 
 If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
 Afterwards you will be able to run ``yum`` commands to check for and do updates.
-::
 
-    sudo [vi/vim] /etc/yum.repos.d/ia.repo
+.. only:: html
 
-    [Intel Analytics repo]
-    name=Intel Analytics yum repo
-    baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/#.#.#/yum/dists/rhel/6
-    gpgcheck=0
-    priority=1
-    #enabled=0
-    s3_enabled=0
-    key_id=myKey
-    secret_key=mySecret
+    ::
+
+        sudo [vi/vim] /etc/yum.repos.d/ia.repo
+
+        [Intel Analytics repo]
+        name=Intel Analytics yum repo
+        baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/#.#.#/yum/dists/rhel/6
+        gpgcheck=0
+        priority=1
+        #enabled=0
+        s3_enabled=0
+        key_id=myKey
+        secret_key=mySecret
+
+.. only:: latex
+
+    ::
+
+        sudo [vi/vim] /etc/yum.repos.d/ia.repo
+
+        [Intel Analytics repo]
+        name=Intel Analytics yum repo
+        baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/
+            release/#.#.#/yum/dists/rhel/6
+        gpgcheck=0
+        priority=1
+        #enabled=0
+        s3_enabled=0
+        key_id=myKey
+        secret_key=mySecret
 
 Replace the ``#.#.#`` with the correct release number.
 To check for new updates and see the difference between the new and installed version::
@@ -224,4 +244,3 @@ To update::
 
     sudo yum update intelanalytics-rest-server
 
-.. |IA| replace:: Intel Analytics

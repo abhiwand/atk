@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.ModelLoad
+import com.intel.intelanalytics.domain.model.ClassificationWithSGDArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
@@ -38,7 +38,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 //Implicits needed for JSON conversion
 import spray.json._
 
-class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad, UnitReturn] {
+class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs, UnitReturn] {
   /**
    * The name of the command.
    *
@@ -46,47 +46,12 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * e.g Python client via code generation.
    */
   override def name: String = "model:logistic_regression/train"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a LogisticRegression Model using the observation column and label column of the train frame",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    frame: Frame
-                             |        Frame to train the model on
-                             |
-                             |    observation_column: str
-                             |        column containing the observations
-                             |
-                             |    label_column: str
-                             |        column containing the label for each observation
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Trained LogisticRegression model object
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.LogisticRegressionModel(name='LogReg')
-                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-                             |
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: ModelLoad)(implicit invocation: Invocation) = 109
+  override def numberOfJobs(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation) = 109
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -96,21 +61,17 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ModelLoad,
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ModelLoad)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
       val frames = engine.frames
 
-      //validate arguments
-      val frameId = arguments.frame.id
-      val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
-      val modelMeta = models.expectModel(modelId)
+      val inputFrame = frames.expectFrame(arguments.frame.id)
+      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
-      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, List(arguments.observationColumn))
+      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
       val logReg = new LogisticRegressionWithSGD()
