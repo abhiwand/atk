@@ -40,27 +40,37 @@ import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
-
 case class ClusteringCoefficientArgs(graph: GraphReference,
-                               outputGraphName: Option[String],
-                               outputPropertyName: Option[String],
-                               inputEdgeLabels: Option[List[String]] = None) {
+                                     outputGraphName: Option[String],
+                                     outputPropertyName: Option[String],
+                                     inputEdgeLabels: Option[List[String]] = None) {
   require((outputGraphName.isEmpty && outputPropertyName.isEmpty) ||
     (outputGraphName.nonEmpty && outputPropertyName.nonEmpty),
-    "Either both output_graph_name and output_property_name must be empty or both output_graph_name and output_property_name must be nonempty." )
+    "Either both output_graph_name and output_property_name must be empty or both output_graph_name and output_property_name must be nonempty.")
+
+  def inputEdgeSet: Option[Set[String]] =
+    if (inputEdgeLabels.isEmpty) {
+      None
+    }
+    else {
+      Some(inputEdgeLabels.get.toSet)
+    }
 }
 
 /**
- * The result object
- * @param graph Name of the output graph
+ * Result of clustering coefficient calculation.
+ * @param globalClusteringCoefficient The global clustering coefficient of the graph.
+ * @param graph If local clustering coefficients are requested, a reference to the new graph with local clustering
+ *              coefficients stored at properties at each vertex. If local clustering coefficient is not requested,
+ *              this field is empty.
  */
-case class ClusteringCoefficientResult(graph: String)
+case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: Option[String])
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
   import DomainJsonProtocol._
   implicit val CCFormat = jsonFormat4(ClusteringCoefficientArgs)
-  implicit val CCResultFormat = jsonFormat1(ClusteringCoefficientResult)
+  implicit val CCResultFormat = jsonFormat2(ClusteringCoefficientResult)
 }
 
 import ClusteringCoefficientJsonFormat._
@@ -86,7 +96,9 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    val newGraphName = arguments.outputGraphName
+    val writeOutLocalClusteringCoefficients = arguments.outputGraphName.nonEmpty
+
+    val inputEdgeSet = arguments.inputEdgeSet
 
     // Get the graph
     import scala.concurrent.duration._
@@ -97,16 +109,16 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
     gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
     gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val inputEdgeSet = arguments.inputEdgeLabels.
+    val globalClusteringCoefficient = 0.0d // ClusteringCoefficientRunner(gbVertices, gbEdges)
 
-    val globalClusteringCoefficient = 0.0d  // ClusteringCoefficientRunner(gbVertices, gbEdges)
-
-
-    engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
+    // engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
     gbVertices.unpersist()
     gbEdges.unpersist()
 
-    ClusteringCoefficientResult(newGraphName)
+    if (writeOutLocalClusteringCoefficients) {
+      val newGraphName = arguments.outputGraphName.get
+    }
+    ClusteringCoefficientResult(globalClusteringCoefficient, None)
   }
 
 }
