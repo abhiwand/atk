@@ -1,6 +1,5 @@
 package com.intel.spark.graphon.clusteringcoefficient
 
-
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
@@ -10,11 +9,11 @@ import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the TriangleCountRunnerArgs
- * @param posteriorProperty Name of the property to which the posteriors will be written.
- * @param priorProperties List of prior properties to consider for graph computation
+ * @param outputEdgeLabel (optional) Name of the vertex property for storing local clustering coefficients.
+ * @param inputEdgeSet List of edge labels to consider for clustering coefficient computation
  */
-case class ClusteringCoefficientRunnerArgs(posteriorProperty: String,
-                                   priorProperties: Option[List[String]])
+case class ClusteringCoefficientRunnerArgs(outputEdgeLabel: String,
+                                           inputEdgeSet: Option[Set[String]])
 
 /**
  * Provides a method for running triangle count on a graph using graphx. The result is a new graph with the
@@ -36,8 +35,8 @@ object ClusteringCoefficientRunner extends Serializable {
 
   def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: ClusteringCoefficientRunnerArgs): (RDD[GBVertex], RDD[GBEdge]) = {
 
-    val outputPropertyLabel = args.posteriorProperty
-    val inputEdgeLabels = args.priorProperties
+    val outputPropertyLabel = args.outputEdgeLabel
+    val inputEdgeLabels = args.inputEdgeSet
 
     // Only select edges as specified in inputEdgeLabels
     val filteredEdges: RDD[GBEdge] = inputEdgeLabels match {
