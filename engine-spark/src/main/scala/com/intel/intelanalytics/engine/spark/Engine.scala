@@ -37,7 +37,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.{ HistogramPlugin, BinColumnPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
@@ -195,6 +195,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new PartitionCountPlugin)
   commandPluginRegistry.registerCommand(new CoalescePlugin)
   commandPluginRegistry.registerCommand(new RepartitionPlugin)
+  commandPluginRegistry.registerCommand(new HistogramPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
