@@ -87,7 +87,7 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
 
   override def name: String = "graph:titan/clustering_coefficient"
 
-  override def numberOfJobs(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): Int = 1
+  override def numberOfJobs(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): Int = 6
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
