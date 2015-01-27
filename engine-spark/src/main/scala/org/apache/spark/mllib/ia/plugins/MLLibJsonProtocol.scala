@@ -23,11 +23,15 @@
 
 package org.apache.spark.mllib.ia.plugins
 
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.classification.SVMModel
 import org.apache.spark.mllib.clustering.KMeansModel
+import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
  */
@@ -206,5 +210,7 @@ object MLLibJsonProtocol {
     }
 
   }
+  implicit val kmeansDataFormat = jsonFormat2(KMeansData)
+
 }
 
