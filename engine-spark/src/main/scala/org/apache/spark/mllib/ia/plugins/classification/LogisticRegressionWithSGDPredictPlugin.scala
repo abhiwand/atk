@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.LogisticRegressionWithSGDPredictArgs
+import com.intel.intelanalytics.domain.model.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -42,7 +42,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[LogisticRegressionWithSGDPredictArgs, FrameEntity] {
+class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
    *
@@ -56,7 +56,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Logistic
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation) = 9
 
   /**
    * Get the predictions for observations in a test frame
@@ -67,7 +67,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Logistic
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: LogisticRegressionWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
+  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
       val frames = engine.frames

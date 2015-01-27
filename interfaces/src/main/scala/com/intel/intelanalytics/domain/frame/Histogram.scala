@@ -20,21 +20,12 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.domain.model
-
-import com.intel.intelanalytics.domain.frame.FrameReference
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
- * @param frame Handle to the data frame
- * @param observationColumn Handle to the observation column of the data frame
- * @param labelColumn Handle to the label column of the data frame
+ * a dictionary containing the results of the HistogramPlugin
+ * @param cutoffs a list containing the edges of each bin
+ * @param hist a list containing count of the weighted observations found in each bin
+ * @param density a list containing a decimal containing the percentage of observations found in the total set per bin
  */
-case class LogisticRegressionWithSGDArgs(model: ModelReference, frame: FrameReference, observationColumn: String, labelColumn: String) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
-  require(!observationColumn.isEmpty && observationColumn != null, "observationColumn must not be null nor empty")
-  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
-}
+case class Histogram(cutoffs: Seq[Double], hist: Seq[Double], density: Seq[Double])

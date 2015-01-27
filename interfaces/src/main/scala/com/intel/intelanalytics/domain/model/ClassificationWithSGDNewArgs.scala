@@ -21,21 +21,6 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.graph
+package com.intel.intelanalytics.domain.model
 
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
-
-/**
- * A GraphReference with metadata and a Spark RDD representing the data in the frame
- */
-class SparkGraphData(graph: GraphEntity, rdd: Option[FrameRDD])
-    extends GraphMeta(graph)
-    with HasData {
-
-  type Data = Option[FrameRDD]
-
-  val data = rdd
-
-}
+case class ClassificationWithSGDNewArgs(dummyModelRef: ModelReference, name: Option[String] = None)

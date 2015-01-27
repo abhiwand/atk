@@ -78,7 +78,7 @@ object PageRankRunner extends Serializable {
 
     // convert to graphX vertices
     val graphXVertices: RDD[(Long, Null)] =
-      inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
+      inVertices.cache().map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
     val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => createGraphXEdgeFromGBEdge(edge))
 
