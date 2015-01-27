@@ -1,6 +1,6 @@
 Train frame model.
 
-Creating a LogisticRegression Model using the observation column and label column of the train frame",
+Creating a SVM Model using the observation column and label column of the train frame
 
 Parameters
 ----------
