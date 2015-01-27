@@ -95,6 +95,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
       })
     }
     if (arguments.regParam.isDefined) { svm.optimizer.setRegParam(arguments.regParam.get) }
-    svm
+    svm.setIntercept(true)
   }
 }
