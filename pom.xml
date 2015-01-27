@@ -109,8 +109,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.3</dep.ititan.version>
-        <dep.aurelius.version>0.5.3</dep.aurelius.version>
+        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
