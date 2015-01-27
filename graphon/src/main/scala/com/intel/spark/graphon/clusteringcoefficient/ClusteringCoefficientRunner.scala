@@ -37,11 +37,17 @@ object ClusteringCoefficientRunner extends Serializable {
 
   def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], outputPropertyLabel: Option[String], inputEdgeLabels: Option[Set[String]]): ClusteringCoefficientRunnerReturn = {
 
+    // clustering coefficient is an undirected graph algorithm, so the input graph should
+    // have the directed edge (b,a) present whenever the directed edge (a,b) is present... furthermore,
+    // graphx expects one edge to be present ... from Min(a,b) to Max(a,b)
+    val canonicalEdges: RDD[GBEdge] =
+      inEdges.filter(gbEdge => (gbEdge.tailPhysicalId.asInstanceOf[Long] < gbEdge.headPhysicalId.asInstanceOf[Long]))
+
     val filteredEdges: RDD[GBEdge] = if (inputEdgeLabels.isEmpty) {
-      inEdges
+      canonicalEdges
     }
     else {
-      inEdges.filter(edge => inputEdgeLabels.get.contains(edge.label))
+      canonicalEdges.filter(edge => inputEdgeLabels.get.contains(edge.label))
     }
 
     // convert to graphX vertices
