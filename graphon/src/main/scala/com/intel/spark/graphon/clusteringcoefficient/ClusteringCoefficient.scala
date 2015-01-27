@@ -103,7 +103,7 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
     val ccOutput =
-      ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputGraphName, arguments.inputEdgeSet)
+      ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputPropertyName, arguments.inputEdgeSet)
 
     val outGraph: GraphEntity = if (arguments.outputGraphName.nonEmpty) {
       val newGraphName = arguments.outputGraphName.get
