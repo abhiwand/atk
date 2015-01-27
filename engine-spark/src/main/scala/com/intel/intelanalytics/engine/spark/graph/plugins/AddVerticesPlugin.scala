@@ -33,6 +33,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext
+import org.apache.spark.storage.StorageLevel
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -100,12 +101,17 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     // assign unique ids
     val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds("_vid", startId = graph.nextId())
-    verticesToAdd.cache()
+
+    verticesToAdd.persist(StorageLevel.MEMORY_AND_DISK)
+
     graphs.updateIdCounter(graph.id, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
     val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
+
+    combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
+
     graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
