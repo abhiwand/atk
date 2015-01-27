@@ -6,7 +6,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{ Edge => GraphXEdge }
 import org.apache.spark.graphx.lib.{ ConnectedComponents => GraphXConnectedComponents }
 import org.apache.spark.SparkContext._
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Determine connected components of a graph. The input is a vertex list (an RDD of Longs) and an edge list

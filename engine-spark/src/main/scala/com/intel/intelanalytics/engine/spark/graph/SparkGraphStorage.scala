@@ -423,7 +423,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
     //Cache data to prevent Titan reader from scanning HBase/Cassandra table twice to read vertices and edges
-    titanReaderRDD.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    titanReaderRDD.persist(StorageLevel.MEMORY_ONLY)
     val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
     val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
     titanReaderRDD.unpersist()
