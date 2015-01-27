@@ -130,5 +130,21 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
       hist.density should be(Array(6 / 14.0, 8 / 14.0))
     }
 
+    "zero weights do not throw exceptions" in {
+      // Input data
+      val inputList = List(
+        Array[Any]("A", 1, 3),
+        Array[Any]("B", 2, 0),
+        Array[Any]("C", 5, -1),
+        Array[Any]("D", 7, 0),
+        Array[Any]("E", 9, 5))
+      val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
+      val hist = plugin.computeHistogram(rdd, 1, Some(2), 2, false)
+      hist.cutoffs should be(Array(1.0, 7.0, 9.0))
+      hist.hist should be(Array(3, 5))
+      hist.density should be(Array(3 / 8.0, 5 / 8.0))
+    }
+
+
   }
 }

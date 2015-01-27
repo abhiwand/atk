@@ -180,7 +180,7 @@ object DiscretizationFunctions extends Serializable {
     // try creating RDD[Double] from column
     val columnRdd = rdd.map(row => (DataTypes.toDouble(row(index)),
       weightedIndex match {
-        case Some(i) => math.max(DataTypes.toDouble(row(i)), 0.0)
+        case Some(i) => math.max(DataTypes.toDouble(row(i)), 1)
         case None => 1.0
       }))
     columnRdd.cache()
@@ -219,7 +219,7 @@ object DiscretizationFunctions extends Serializable {
             rankSum = rankSum + rankCounter
             rankCounter = rankCounter + 1
           }
-          val avgRank = BigDecimal(rankSum) / BigDecimal(frequency)
+          val avgRank = BigDecimal(rankSum) / BigDecimal(if (frequency > 0) frequency else 1)
           rank += frequency
           (element, avgRank.toDouble)
       }

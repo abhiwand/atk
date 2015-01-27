@@ -104,16 +104,20 @@ class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
     // set physical ids for tail vertices
     val edgesByTail = self.map(edge => (edge.tailVertexGbId, edge))
 
-    val edgesWithTail = idsByGbId.join(edgesByTail).map {
-      case (gbId, (gbIdToPhysicalId, edge)) => {
+    // TODO: Revisit partitioning after upgrade to Spark 1.2.0+.
+    // This current partitioning strategy works around several memory-related bugs in the shuffle in Spark 1.1.0
+    // Ordering is needed by Spark's range partitioner, and sort-based shuffle enabled by spark.shuffle.manager = "SORT"
+    implicit val propertyOrdering = PropertyOrdering
+
+    val edgesWithTail = edgesByTail.join(idsByGbId).map {
+      case (gbId, (edge, gbIdToPhysicalId)) =>
         val physicalId = gbIdToPhysicalId.physicalId
         (edge.headVertexGbId, edge.copy(tailPhysicalId = physicalId))
-      }
     }
 
     // set physical ids for head vertices
-    val edgesWithPhysicalIds = idsByGbId.join(edgesWithTail).map {
-      case (gbId, (gbIdToPhysicalId, edge)) => {
+    val edgesWithPhysicalIds = edgesWithTail.join(idsByGbId).map {
+      case (gbId, (edge, gbIdToPhysicalId)) => {
         val physicalId = gbIdToPhysicalId.physicalId
         edge.copy(headPhysicalId = physicalId)
       }

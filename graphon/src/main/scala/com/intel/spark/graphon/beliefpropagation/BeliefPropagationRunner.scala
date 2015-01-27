@@ -5,7 +5,6 @@ import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ PartitionStrategy, Graph, Edge }
 import com.intel.intelanalytics._
 import com.intel.spark.graphon.VectorMath
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the BeliefPropagationRunner
