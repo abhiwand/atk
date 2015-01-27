@@ -44,6 +44,45 @@ Annotate Weighted Degrees.
 
     Examples
     --------
-    PENDING.
+    Suppose you have a directed graph with three nodes and two edges like this:
+
+    >>> g.query.gremlin("g.V [0..2]")
+    {u'results': [{u'_vid': 4, u'source': 3, u'_type': u'vertex', u'_id': 30208, u'_label': u'vertex'},
+     {u'_vid': 3, u'source': 2, u'_type': u'vertex', u'_id': 19992, u'_label': u'vertex'},
+      {u'_vid': 1, u'source': 1, u'_type': u'vertex', u'_id': 23384, u'_label': u'vertex'}],
+       u'run_time_seconds': 2.165}
+
+    You can calculate its weighted out-degrees as follows:
+    >>> g.annotate_weighted_degrees(output_graph_name = 'weighty_graph', output_property_name = 'weight', edge_weight_property = 'weight')
+
+    {u'graph': u'weighty_graph'}
+
+    And check out the newly annotated weighted out-degrees as:
+    >>> t = ia.get_graph('weighty_graph')
+    >>> t.query.gremlin("g.V [0..2]")
+
+    {u'results': [{u'_id': 21208,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 1,
+       u'source': 1,
+       u'titanPhysicalId': 21152,
+       u'weight': 0.11},
+      {u'_id': 31704,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 3,
+       u'source': 3,
+       u'titanPhysicalId': 28064,
+       u'weight': 0},
+      {u'_id': 24560,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 4,
+       u'source': 2,
+       u'titanPhysicalId': 28304,
+       u'weight': 0}],
+     u'run_time_seconds': 1.192}
+
 
      .. versionadded:: 1.0
