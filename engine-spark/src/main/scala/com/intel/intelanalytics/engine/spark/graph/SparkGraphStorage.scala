@@ -23,8 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.graphbuilder.parser.InputSchema
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Status, EntityManager, Naming }
+import com.intel.intelanalytics.domain._
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
@@ -35,7 +37,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ EntityTypeRegistry, Rows, GraphBackendStorage, GraphStorage }
-import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
@@ -413,6 +415,26 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   /**
+   * Create a new Titan graph with the given name.
+   * @param graphName Name of the graph to be written.
+   * @param gbVertices RDD of vertices.
+   * @param gbEdges RDD of edges
+   */
+
+  def writeToTitan(graphName: String,
+                   gbVertices: RDD[GBVertex],
+                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation) = {
+
+    val newGraph = createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
+
+    val gb =
+      new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = false))
+
+    gb.buildGraphWithSpark(gbVertices, gbEdges)
+  }
+
+  /**
    * Loads vertices and edges from Titan graph database
    * @param ctx Spark context
    * @param graph Graph metadata object
@@ -423,7 +445,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
     //Cache data to prevent Titan reader from scanning HBase/Cassandra table twice to read vertices and edges
-    titanReaderRDD.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    titanReaderRDD.persist(StorageLevel.MEMORY_ONLY)
     val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
     val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
     titanReaderRDD.unpersist()
