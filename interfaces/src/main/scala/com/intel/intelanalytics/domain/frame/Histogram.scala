@@ -20,22 +20,12 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.engine.spark.graph
-
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+package com.intel.intelanalytics.domain.frame
 
 /**
- * A GraphReference with metadata and a Spark RDD representing the data in the frame
+ * a dictionary containing the results of the HistogramPlugin
+ * @param cutoffs a list containing the edges of each bin
+ * @param hist a list containing count of the weighted observations found in each bin
+ * @param density a list containing a decimal containing the percentage of observations found in the total set per bin
  */
-class SparkGraphData(graph: GraphEntity, rdd: Option[FrameRDD])
-    extends GraphMeta(graph)
-    with HasData {
-
-  type Data = Option[FrameRDD]
-
-  val data = rdd
-
-}
+case class Histogram(cutoffs: Seq[Double], hist: Seq[Double], density: Seq[Double])

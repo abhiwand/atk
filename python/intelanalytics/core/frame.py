@@ -1289,3 +1289,4 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
             error = IaError(logger)
             raise error
 
+

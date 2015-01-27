@@ -20,22 +20,19 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.engine.spark.graph
-
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+package com.intel.intelanalytics.domain.frame
 
 /**
- * A GraphReference with metadata and a Spark RDD representing the data in the frame
+ * Arguments needed to compute a histogram from a column
+ *
+ * @param frame frame containing the column to be computed
+ * @param columnName name of column to be evalueated
+ * @param numBins number of bins in histogram [Optional] if None Square-root choice will be used (ie math.floor(math.sqrt(frame.row_count))
+ * @param weightColumnName of column containing weights [Optional] if None all observations are weighted equally
+ * @param binType the type of binning algorithm to use: "equalwidth", "equaldepth" defaults to "equalwidth"
  */
-class SparkGraphData(graph: GraphEntity, rdd: Option[FrameRDD])
-    extends GraphMeta(graph)
-    with HasData {
-
-  type Data = Option[FrameRDD]
-
-  val data = rdd
-
+case class HistogramArgs(frame: FrameReference, columnName: String, numBins: Option[Int], weightColumnName: Option[String], binType: Option[String] = Some("equalwidth")) {
+  require(binType.isEmpty || binType == Some("equalwidth") || binType == Some("equaldepth"), "bin type must be 'equalwidth' or 'equaldepth', not " + binType)
+  if (numBins.isDefined)
+    require(numBins.get > 0, "the number of bins must be greater than 0")
 }
