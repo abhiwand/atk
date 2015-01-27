@@ -28,6 +28,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.model.SVMTrainArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.SVMWithSGD
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
@@ -65,17 +66,13 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
   override def execute(arguments: SVMTrainArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
-      val frames = engine.frames
-
-      //validate arguments
-      val frameId = arguments.frame.id
       val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
       val modelMeta = models.expectModel(modelId)
 
-      //create RDD from the frame
-      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val frame: SparkFrameData = resolve(arguments.frame)
+      // load frame as RDD
+      val trainFrameRDD = frame.data
+
       val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
