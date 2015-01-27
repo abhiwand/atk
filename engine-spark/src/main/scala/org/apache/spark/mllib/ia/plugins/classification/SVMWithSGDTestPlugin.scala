@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.model.ClassificationWithSGDArgs
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel, SVMWithSGD }
@@ -65,13 +66,12 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs,
   override def execute(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation): ClassificationMetricValue =
     {
       val models = engine.models
-      val frames = engine.frames
-
-      val inputFrame = frames.expectFrame(arguments.frame.id)
       val modelMeta = models.expectModel(arguments.model.id)
 
-      //create RDD from the frame
-      val testFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val frame: SparkFrameData = resolve(arguments.frame)
+      // load frame as RDD
+      val testFrameRDD = frame.data
+
       val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib

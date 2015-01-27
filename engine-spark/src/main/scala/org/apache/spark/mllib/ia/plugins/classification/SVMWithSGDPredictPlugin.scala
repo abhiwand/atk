@@ -32,8 +32,9 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
-import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.classification.{ LogisticRegressionModel, SVMModel }
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -69,39 +70,31 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
-      val frames = engine.frames
-
-      val inputFrame = frames.expectFrame(arguments.frame.id)
       val modelMeta = models.expectModel(arguments.model.id)
 
-      //create RDD from the frame
-      val predictFrameRDD = frames.loadFrameData(sc, inputFrame)
-      val predictRowRDD: RDD[Row] = predictFrameRDD.toLegacyFrameRDD.rows
-
-      val observationsVector = predictFrameRDD.toVectorRDD(arguments.observationColumns)
+      val frame: SparkFrameData = resolve(arguments.frame)
+      // load frame as RDD
+      val inputFrameRDD = frame.data
 
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
       val logRegModel = logRegJsObject.convertTo[SVMModel]
 
       //predicting a label for the observation columns
-      val labeledRDD: RDD[Row] = observationsVector.map { point =>
+      val predictionsRDD = inputFrameRDD.mapRows(row => {
+        val array = row.valuesAsArray(arguments.observationColumns)
+        val doubles = array.map(i => DataTypes.toDouble(i))
+        val point = Vectors.dense(doubles)
         val prediction = logRegModel.predict(point)
-        Array[Any](prediction)
-      }
+        row.addValue(prediction)
+      })
 
-      // Creating a new RDD with existing frame's entries and an additional column for predicted label
-      val indexedPredictedRowRDD = predictRowRDD.zipWithIndex().map { case (x, y) => (y, x) }
-      val indexedLabeledRowRDD = labeledRDD.zipWithIndex().map { case (x, y) => (y, x) }
-      val result: RDD[sql.Row] = indexedPredictedRowRDD.join(indexedLabeledRowRDD).map { case (index, data) => new GenericRow(data._1 ++ data._2) }
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-      // Creating schema for the new frame
-      val newSchema = predictFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
-
-      val outputFrameRDD = new FrameRDD(newSchema, result)
-
-      tryNew(CreateEntityArgs(description = Some("created by SVM prediction command"))) { newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, outputFrameRDD))
+      tryNew(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {
+        newPredictedFrame: FrameMeta =>
+          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRDD))
       }.meta
     }
 
