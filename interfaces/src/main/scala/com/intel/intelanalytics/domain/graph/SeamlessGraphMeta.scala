@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
+import com.intel.intelanalytics.domain.schema.{ GraphElementSchema, Schema, VertexSchema }
 
 /**
  * Wrapper for Seamless Graph Meta data stored in the database
@@ -120,6 +120,18 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
     edgeFrameMetasMap.map {
       case (label: String, frame: FrameEntity) => frame
     }.toList
+  }
+
+  def framesWithLabels(labels: List[String]): List[FrameEntity] = {
+    frameEntities.filter(frame => labels.contains(frame.name))
+  }
+
+  def framesWithoutLabels(labelsToExclude: List[String]): List[FrameEntity] = {
+    frameEntities.filter(frame => !labelsToExclude.contains(frame.name))
+  }
+
+  def labels: List[String] = {
+    frameEntities.map(f => f.schema.asInstanceOf[GraphElementSchema].label)
   }
 
   def vertexLabels: List[String] = {
