@@ -65,8 +65,12 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
     //    val newSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val newSchema = new FrameSchema(newColumns.map { case (name, dataType) => Column(name, dataType) })
 
-    /* TODO - Add a schema add method in Schema class */
     val finalSchema = frame.meta.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+
+    /* TODO: In Memory Caching is ineffective for certain large datasets, we should be experimenting with MEM_SER or MEM_DISK_SER persistance
+       TODO: With cache the performance is better for datasets which can be cached, but the performance drops due to RDD
+       TODO: recomputation when we reach the limit. Additional experimentation required.
+    */
     // Update the data
     val rdd = PythonRDDStorage.mapWith(frame.data.cache(), arguments.udf, newSchema, sc)
     save(new SparkFrameData(frame.meta.withSchema(finalSchema), frame.data.zipFrameRDD(rdd))).meta

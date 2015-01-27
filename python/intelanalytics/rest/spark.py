@@ -70,9 +70,6 @@ def get_add_one_column_function(row_function, data_type):
     def add_one_column(row):
         result = row_function(row)
         cast_value = valid_data_types.cast(result, data_type)
-        #data = row._get_data()
-        #data.append(cast_value)
-        #return row.json_dumps()
         return json.dumps([cast_value], cls=NumpyJSONEncoder)
     return add_one_column
 
@@ -81,12 +78,10 @@ def get_add_many_columns_function(row_function, data_types):
     """Returns a function which adds several columns to a row based on given row function"""
     def add_many_columns(row):
         result = row_function(row)
-        #data = row._get_data()
         data = []
         for i, data_type in enumerate(data_types):
             cast_value = valid_data_types.cast(result[i], data_type)
             data.append(cast_value)
-        #return row.json_dumps()
         return json.dumps(data, cls=NumpyJSONEncoder)
     return add_many_columns
 
