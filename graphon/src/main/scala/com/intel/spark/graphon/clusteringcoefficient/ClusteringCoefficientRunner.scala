@@ -2,6 +2,7 @@ package com.intel.spark.graphon.clusteringcoefficient
 
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.spark.graphon.graphconversions.GraphConversions
+import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD
@@ -55,7 +56,7 @@ object ClusteringCoefficientRunner extends Serializable {
 
     // run graphx clustering coefficient implementation
 
-    val (newGraph, globalClusteringCoefficient) = GraphXClusteringCoefficient.run(graph)
+    val (newGraph, globalClusteringCoefficient) = ClusteringCoefficient.run(graph)
 
     val outVertices = if (outputPropertyLabel.nonEmpty) {
       val outputProperty = outputPropertyLabel.get
