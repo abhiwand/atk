@@ -28,7 +28,7 @@ import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
@@ -62,9 +62,9 @@ case class ClusteringCoefficientArgs(graph: GraphReference,
  * @param globalClusteringCoefficient The global clustering coefficient of the graph.
  * @param graph If local clustering coefficients are requested, a reference to the new graph with local clustering
  *              coefficients stored at properties at each vertex. If local clustering coefficient is not requested,
- *              this field is empty.
+ *              a reference to the input graph.
  */
-case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: Option[String])
+case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: String)
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
@@ -96,29 +96,23 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    val writeOutLocalClusteringCoefficients = arguments.outputGraphName.nonEmpty
-
-    val inputEdgeSet = arguments.inputEdgeSet
-
     // Get the graph
-    import scala.concurrent.duration._
 
     val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
-    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val globalClusteringCoefficient = 0.0d // ClusteringCoefficientRunner(gbVertices, gbEdges)
+    val ccOutput =
+      ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputGraphName, arguments.inputEdgeSet)
 
-    // engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
-    gbVertices.unpersist()
-    gbEdges.unpersist()
-
-    if (writeOutLocalClusteringCoefficients) {
+    val outGraph: GraphEntity = if (arguments.outputGraphName.nonEmpty) {
       val newGraphName = arguments.outputGraphName.get
+      engine.graphs.writeToTitan(newGraphName, ccOutput.vertices, gbEdges)
     }
-    ClusteringCoefficientResult(globalClusteringCoefficient, None)
+    else {
+      graph
+    }
+    ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, outGraph.name.get)
   }
 
 }

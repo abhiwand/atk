@@ -423,7 +423,7 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   def writeToTitan(graphName: String,
                    gbVertices: RDD[GBVertex],
-                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation) = {
+                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation): GraphEntity = {
 
     val newGraph = createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
@@ -432,6 +432,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = false))
 
     gb.buildGraphWithSpark(gbVertices, gbEdges)
+    newGraph
   }
 
   /**
