@@ -105,7 +105,8 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     // TODO: stopping the old spark context and restarting it here avoids a class not found error...
     // there has got to be a better way
-
+    // This issue appears to be due to a classloader bug in Spark https://github.com/tribbloid/ISpark/issues/7
+    // It will be fixed in Spark 1.1.1+
     sc.stop
 
     val ctx = new SparkContext(sc.getConf)
@@ -113,16 +114,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     try {
       ctx.addJar(SparkContextFactory.jarPath("graphon"))
 
-      // Titan Settings for input
-      val config = configuration
-
       // Get the graph
       import scala.concurrent.duration._
-      val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+      val graph = Await.result(engine.getGraph(arguments.graph.id), configuration.getInt("default-timeout") seconds)
 
       val (gbVertices, gbEdges) = engine.graphs.loadGbElements(ctx, graph)
-      gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
       val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
         arguments.priorProperty,
@@ -146,9 +142,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       // Build the graph using spark
       gb.buildGraphWithSpark(outVertices, dummyOutEdges)
 
-      gbVertices.unpersist()
-      gbEdges.unpersist()
-
       // Get the execution time and print it
       val time = (System.currentTimeMillis() - start).toDouble / 1000.0
       BeliefPropagationResult(log, time)
@@ -156,7 +149,5 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     finally {
       ctx.stop
     }
-
   }
-
 }

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.HasId
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 
 /**
  * Repo methods for Entities with Names

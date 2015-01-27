@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, LoadGraphArgs, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntity, LoadGraphArgs, GraphTemplate }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
 
 /**
@@ -35,23 +35,23 @@ import com.intel.intelanalytics.security.UserPrincipal
 trait GraphStorage {
 
   /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphId: Long)(implicit invocation: Invocation): Graph
+  def expectGraph(graphId: Long)(implicit invocation: Invocation): GraphEntity
 
   /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): Graph
+  def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity
 
-  def lookup(id: Long)(implicit invocation: Invocation): Option[Graph]
+  def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity]
 
-  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Graph
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): GraphEntity
 
-  def renameGraph(graph: Graph, newName: String)(implicit invocation: Invocation): Graph
+  def renameGraph(graph: GraphEntity, newName: String)(implicit invocation: Invocation): GraphEntity
 
-  def drop(graph: Graph)(implicit invocation: Invocation)
+  def drop(graph: GraphEntity)(implicit invocation: Invocation)
 
-  def updateStatus(graph: Graph, newStatusId: Long)
+  def updateStatus(graph: GraphEntity, newStatusId: Long)
 
-  def getGraphs()(implicit invocation: Invocation): Seq[Graph]
+  def getGraphs()(implicit invocation: Invocation): Seq[GraphEntity]
 
-  def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[Graph]
+  def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[GraphEntity]
 
 }

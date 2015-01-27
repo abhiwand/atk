@@ -25,6 +25,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkException
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
@@ -37,7 +40,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sparkContext.parallelize(inputList)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList).map(row => new GenericRow(row))
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 2, rdd)
@@ -60,7 +63,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sparkContext.parallelize(inputList)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList).map(row => new GenericRow(row))
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 2, rdd)
@@ -78,7 +81,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 4, rdd)
@@ -103,7 +106,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sparkContext.parallelize(inputList)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList).map(row => new GenericRow(row))
 
     // Get binned results
     an[IllegalArgumentException] shouldBe thrownBy(DiscretizationFunctions.binEqualWidth(1, 0, rdd))
@@ -118,7 +121,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sparkContext.parallelize(inputList)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList).map(row => new GenericRow(row))
 
     // Get binned results
     a[SparkException] shouldBe thrownBy(DiscretizationFunctions.binEqualWidth(0, 4, rdd))
@@ -137,7 +140,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
     val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 20, rdd) // note this creates bins of width 0.55 for this dataset
@@ -165,10 +168,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, None, rdd)
     val result = binnedRdd.collect()
 
     // Validate
@@ -188,10 +191,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, None, rdd)
 
     // Validate
     binnedRdd.map(row => row(2)).distinct.count() shouldEqual 2
@@ -205,10 +208,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 1),
       Array[Any]("D", 1),
       Array[Any]("E", 5))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, None, rdd)
     val result = binnedRdd.collect()
 
     // Validate
@@ -229,10 +232,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 1.6),
       Array[Any]("E", 3),
       Array[Any]("F", 6))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, None, rdd)
     val result = binnedRdd.collect()
 
     // Validate
@@ -258,10 +261,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, None, rdd)
     val result = binnedRdd.collect()
 
     // Validate
@@ -291,10 +294,10 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sparkContext.parallelize(inputList, 2)
+    val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
 
     // Get binned results
-    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 20, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 20, None, rdd)
     val result = binnedRdd.collect()
 
     // Validate
