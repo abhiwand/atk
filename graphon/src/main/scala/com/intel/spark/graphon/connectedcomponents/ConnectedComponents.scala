@@ -104,9 +104,6 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     // Read the graph from Titan
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
-
     val inputVertices: RDD[Long] = gbVertices
       .map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
 
@@ -128,9 +125,6 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
     writeToTitan(newTitanConfig, outVertices, gbEdges)
-
-    gbVertices.unpersist()
-    gbEdges.unpersist()
 
     ConnectedComponentsResult(newGraphName.get)
 
