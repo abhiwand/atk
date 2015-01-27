@@ -37,9 +37,6 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-//Implicits needed for JSON conversion
-import spray.json._
-
 class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] {
   /**
    * The name of the command.
@@ -121,10 +118,9 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
       })
 
       val kmeansModel = kMeans.run(vectorRDD)
-      import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-      val jsonModel = kmeansModel.toJson.asJsObject
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns)
 
-      models.updateModel(modelMeta, jsonModel)
+      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
       new UnitReturn
 
     }
