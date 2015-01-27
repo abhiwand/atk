@@ -20,19 +20,19 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.domain.model
-
-import com.intel.intelanalytics.domain.frame.FrameReference
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
- * @param frame Handle to the data frame
- * @param observationColumns Handle to the observation column of the data frame
+ * Arguments needed to compute a histogram from a column
+ *
+ * @param frame frame containing the column to be computed
+ * @param columnName name of column to be evalueated
+ * @param numBins number of bins in histogram [Optional] if None Square-root choice will be used (ie math.floor(math.sqrt(frame.row_count))
+ * @param weightColumnName of column containing weights [Optional] if None all observations are weighted equally
+ * @param binType the type of binning algorithm to use: "equalwidth", "equaldepth" defaults to "equalwidth"
  */
-case class LogisticRegressionWithSGDPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
+case class HistogramArgs(frame: FrameReference, columnName: String, numBins: Option[Int], weightColumnName: Option[String], binType: Option[String] = Some("equalwidth")) {
+  require(binType.isEmpty || binType == Some("equalwidth") || binType == Some("equaldepth"), "bin type must be 'equalwidth' or 'equaldepth', not " + binType)
+  if (numBins.isDefined)
+    require(numBins.get > 0, "the number of bins must be greater than 0")
 }

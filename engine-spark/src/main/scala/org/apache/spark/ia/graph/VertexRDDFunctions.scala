@@ -18,7 +18,7 @@ class VertexRDDFunctions(parent: RDD[Vertex]) {
   def splitByLabel(schemas: List[VertexSchema]): List[VertexFrameRDD] = {
     parent.cache()
 
-    val split = schemas.map(_.label).map(label => parent.filter(vertex => vertex.label() == label))
+    val split = schemas.map(_.label).map(label => parent.filter(vertex => vertex.label == label))
     split.foreach(_.cache())
 
     val rowRdds = split.map(rdd => rdd.map(vertex => vertex.row))
