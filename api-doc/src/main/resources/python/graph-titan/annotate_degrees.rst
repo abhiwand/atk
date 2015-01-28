@@ -18,7 +18,10 @@
             "in" : Degree is calculated as the in-degree.
             "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
             (Any prefix of the strings "out", "in", "undirected" will select the corresponding option.)
-        input_edge_labels : list of str
+    input_edge_labels : list of str (optional)
+        If this list is provided, only edges whose labels are included in the given set will be considered in the degree
+        calculation. In the default situation (when no list is provided), all edges will be used in the degree
+        calculation, regardless of label.
 
 
     Returns
