@@ -100,7 +100,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
     // run the operation and save results
     val updatedSchema = frame.meta.schema.addColumn(binColumnName, DataTypes.int32)
     val rdd = frame.data
-    val binnedRdd = DiscretizationFunctions.bin(columnIndex, binType, arguments.numBins, rdd.toLegacyFrameRDD)
-    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), FrameRDD.toFrameRDD(updatedSchema, binnedRdd))).meta
+    val binnedRdd = DiscretizationFunctions.bin(columnIndex, binType, arguments.numBins, rdd)
+    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedRdd))).meta
   }
 }

@@ -107,9 +107,6 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
-
     val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
       arguments.input_edge_labels)
 
@@ -123,9 +120,6 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
     writeToTitan(newTitanConfig, outVertices, outEdges)
-
-    gbVertices.unpersist()
-    gbEdges.unpersist()
 
     TriangleCountResult(newGraphName)
   }
