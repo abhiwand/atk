@@ -82,18 +82,18 @@ trait AbstractVertex extends AbstractRow {
    * Return id of the edge
    * @return edge id
    */
-  def vid(): Long = longValue("_vid")
+  def vid: Long = longValue("_vid")
 
   /**
    * Return label of the edge
    * @return label of the edge
    */
-  def label(): String = stringValue("_label")
+  def label: String = stringValue("_label")
 
   /**
    * The value for the user defined ID column
    */
-  def idValue(): Any = value(schema.asInstanceOf[VertexSchema].idColumnName.getOrElse(throw new RuntimeException("id column has not yet been defined in schema: " + schema)))
+  def idValue: Any = value(schema.asInstanceOf[VertexSchema].idColumnName.getOrElse(throw new RuntimeException("id column has not yet been defined in schema: " + schema)))
 
   def setVid(vid: Long): Row = {
     setValue("_vid", vid)
@@ -111,7 +111,7 @@ trait AbstractVertex extends AbstractRow {
    */
   def toGbVertex: GBVertex = {
     val properties = schema.columnsExcept(List("_vid")).map(column => GBProperty(column.name, value(column.name)))
-    GBVertex(null, GBProperty("_vid", vid()), properties.toSet)
+    GBVertex(null, GBProperty("_vid", vid), properties.toSet)
   }
 
   /**
