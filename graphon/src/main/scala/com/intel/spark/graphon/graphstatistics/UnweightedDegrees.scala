@@ -31,10 +31,11 @@ import org.apache.spark.rdd.RDD
  * Object for calculating degree and its generalizations: Per-vertex statistics about the edges incident to that vertex.
  *
  * Currently supported statistics:
- * - per vertex in-degree (optionally restricted to a specified edge label)
- * - per vertex out-degree (optionally restricted to a specified edge label)
+ * - per vertex in-degree (optionally restricted to a specified set of edge labels)
+ * - per vertex out-degree (optionally restricted to a specified set of edge labels)
+ * - per vertex undirected degree (optionally restricted to a specified set of edge labels)
  */
-object DegreeStatistics {
+object UnweightedDegrees {
 
   private def degreeCalculation(vertexRDD: RDD[GBVertex], edgeRDD: RDD[GBEdge], calculateOutDegreeFlag: Boolean): RDD[(GBVertex, Long)] = {
 
