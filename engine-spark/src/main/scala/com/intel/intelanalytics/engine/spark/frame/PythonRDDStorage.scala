@@ -75,6 +75,11 @@ object PythonRDDStorage {
     pythonIncludes
   }
 
+  private def pythonPath = System.getenv("PYTHONPATH") match {
+    case null | "" => System.getenv("SPARK_HOME") + "/python"
+    case p => p
+  }
+
   def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRDD, ctx: SparkContext): EnginePythonRDD[String] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
@@ -90,7 +95,7 @@ object PythonRDDStorage {
     //Without it, only the first added jar (engine-spark.jar) goes on the pythonpath, and since engine-spark.jar has
     //more than 65563 files, python can't import pyspark from it (see SPARK-1520 for details).
     //The relevant code in the Spark core project is in PythonUtils.scala.
-    environment.put("PYTHONPATH", System.getenv("PYTHONPATH"))
+    environment.put("PYTHONPATH", pythonPath)
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
     val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
