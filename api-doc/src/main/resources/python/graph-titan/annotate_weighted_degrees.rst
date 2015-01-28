@@ -1,0 +1,88 @@
+Annotate Weighted Degrees.
+
+    Extended Summary
+    ----------------
+    Creates a new graph which is the same as the input graph, with the addition that every vertex of the graph
+    has its weighted :term:`degree` stored in a user-specified property. This is defined as follows: Each edge has a
+    weight (that comes from the user-specified property). The weighted degree of a vertex is the sum of the weight of
+    the edges incident to that vertex.
+
+    Parameters
+    ----------
+    output_graph_name : str
+        The name of the new graph to which the results are written.
+
+        output_property_name : str
+        The name of the new property to which the
+
+    degree_option : str (optional)
+        Indicator for the definition of degree to be used for the calculation.
+        Legal values:
+            "out" (default value) : Degree is calculated as the out-degree.
+            "in" : Degree is calculated as the in-degree.
+            "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
+            (Any prefix of the strings "out", "in", "undirected" will select the corresponding option.)
+
+    input_edge_labels : list of str (optional)
+        If this list is provided, only edges whose labels are included in the given set will be considered in the degree
+        calculation. In the default situation (when no list is provided), all edges will be used in the degree
+        calculation, regardless of label.
+
+    edge_weight_property : str (optional)
+        The name of the edge property that contains the weights of edges.
+        If this field is not provided, all edges receive weight 1.0D.
+
+    edge_weight_default : double (optional)
+        Default weight to use for an edge if the edge does not possess a property of key edge_weight_property.
+        Defaults value is 1.0D.
+
+    Returns
+    -------
+    graph : graph
+        a graph object that is a copy of the input graph with the addition that every vertex of the graph
+        has its weighted :term:`degree` stored in a user-specified property.
+
+    Examples
+    --------
+    Suppose you have a directed graph with three nodes and two edges like this:
+
+    >>> g.query.gremlin("g.V [0..2]")
+    {u'results': [{u'_vid': 4, u'source': 3, u'_type': u'vertex', u'_id': 30208, u'_label': u'vertex'},
+     {u'_vid': 3, u'source': 2, u'_type': u'vertex', u'_id': 19992, u'_label': u'vertex'},
+      {u'_vid': 1, u'source': 1, u'_type': u'vertex', u'_id': 23384, u'_label': u'vertex'}],
+       u'run_time_seconds': 2.165}
+
+    You can calculate its weighted out-degrees as follows:
+    >>> g.annotate_weighted_degrees(output_graph_name = 'weighty_graph', output_property_name = 'weight', edge_weight_property = 'weight')
+
+    {u'graph': u'weighty_graph'}
+
+    And check out the newly annotated weighted out-degrees as:
+    >>> t = ia.get_graph('weighty_graph')
+    >>> t.query.gremlin("g.V [0..2]")
+
+    {u'results': [{u'_id': 21208,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 1,
+       u'source': 1,
+       u'titanPhysicalId': 21152,
+       u'weight': 0.11},
+      {u'_id': 31704,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 3,
+       u'source': 3,
+       u'titanPhysicalId': 28064,
+       u'weight': 0},
+      {u'_id': 24560,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 4,
+       u'source': 2,
+       u'titanPhysicalId': 28304,
+       u'weight': 0}],
+     u'run_time_seconds': 1.192}
+
+
+     .. versionadded:: 1.0
