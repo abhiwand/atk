@@ -130,7 +130,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
       }))
     val histSizes: Seq[Double] = pairedRDD.reduceByKey(_ + _).collect().sortBy(_._1).map(_._2)
     val totalSize: Double = histSizes.reduce(_ + _)
-    val frequencies: Seq[Double] = histSizes.map(size => if(totalSize > 0) size / totalSize else 0)
+    val frequencies: Seq[Double] = histSizes.map(size => if (totalSize > 0) size / totalSize else 0)
 
     new Histogram(cutoffs, histSizes, frequencies)
   }
