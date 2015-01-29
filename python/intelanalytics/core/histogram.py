@@ -43,6 +43,6 @@ class Histogram:
 
     def __repr__(self):
         return """Histogram:
-            cutoffs: %s,
-            hist: %s,
-            density: %s""" % (self.cutoffs, self.hist, self.density)
+cutoffs: %s,
+hist: %s,
+density: %s""" % (self.cutoffs, self.hist, self.density)
