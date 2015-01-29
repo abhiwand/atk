@@ -53,7 +53,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: SVMTrainArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: SVMTrainArgs)(implicit invocation: Invocation) = 103
   /**
    * Run MLLib's SVMWithSGD() on the training frame and create a Model for it.
    *
@@ -95,6 +95,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
       })
     }
     if (arguments.regParam.isDefined) { svm.optimizer.setRegParam(arguments.regParam.get) }
-    svm
+    svm.setIntercept(true)
   }
 }
