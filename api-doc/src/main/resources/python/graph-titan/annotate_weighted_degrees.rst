@@ -38,8 +38,10 @@ Annotate Weighted Degrees.
 
     Returns
     -------
-    graph : graph
-        a graph object that is a copy of the input graph with the addition that every vertex of the graph
+    The return value is a dictionary containing one key value pair.
+
+    graph : string
+        The name of a graph object that is a copy of the input graph with the addition that every vertex of the graph
         has its weighted :term:`degree` stored in a user-specified property.
 
     Examples
