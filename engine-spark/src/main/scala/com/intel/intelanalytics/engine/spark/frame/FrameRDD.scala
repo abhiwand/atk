@@ -146,6 +146,12 @@ class FrameRDD(val frameSchema: Schema,
     new FrameRDD(frameSchema.copySubsetWithRename(columnNamesWithRename), mapRows(row => row.valuesAsRow(preservedOrderColumnNames)))
   }
 
+  /* Please see documentation. Zip works if 2 SchemaRDDs have the same number of partitions
+     and same number of elements in  each partition */
+  def zipFrameRDD(frameRdd: FrameRDD): FrameRDD = {
+    new FrameRDD(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.fromSeq(a ++ b) })
+  }
+
   /**
    * Drop columns - create a new FrameRDD with the columns specified removed
    */
