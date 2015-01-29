@@ -75,13 +75,13 @@ object ClusteringCoefficient {
       (doubleCountOfTriangles / 2.0d) / totalDegreesChooseTwo.toDouble
     }
     else {
-      1.0d
+      0.0d
     }
 
     val localClusteringCoefficientGraph = degreesChooseTwo.outerJoinVertices(triangleDoubleCounts) {
       (vid, dC2, optCounter: Option[Int]) =>
         if (dC2 == 0L) {
-          1.0d
+          0.0d
         }
         else {
           val triangleDoubleCount = optCounter.getOrElse(0)
