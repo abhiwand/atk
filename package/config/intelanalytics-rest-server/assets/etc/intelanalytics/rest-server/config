@@ -113,6 +113,7 @@ args = parser.parse_args()
 
 LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 IAUSER = "iauser"
+SPARK_USER = "spark"
 IA_LOG_PATH = "/var/log/intelanalytics/rest-server/output.log"
 IA_START_WAIT_LOOPS = 10
 IA_START_WAIT = 2
@@ -841,6 +842,10 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     config_tpl_text = search_replace_config("spark.executor.memory",
                                             'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
+    #set spark event logging
+    config_tpl_text = search_replace_config("spark.eventLog.dir",
+                                            'spark.eventLog.dir = "hdfs://' + hdfs_host_name[0] +
+                                            ":" + hdfs_namenode_port + '/user/' + SPARK_USER + '/applicationHistory"', config_tpl_text)
     #set db configuration
     config_tpl_text = search_replace_config("metastore.connection-postgresql.host",
                                             'metastore.connection-postgresql.host = "' + db_host + '"', config_tpl_text)

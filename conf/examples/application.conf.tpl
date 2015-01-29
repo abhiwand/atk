@@ -146,6 +146,11 @@ intel.analytics {
 
           //spark.worker.timeout=600
           //spark.worker.timeout=30000
+          
+          # To enable event logging, set spark.eventLog.enabled to true
+          # and spark.eventLog.dir to the directory to which your event logs are written
+          // spark.eventLog.enabled = true
+          // spark.eventLog.dir = "hdfs://invalid-fsroot-host:8020/user/spark/applicationHistory"
         }
 
       }
