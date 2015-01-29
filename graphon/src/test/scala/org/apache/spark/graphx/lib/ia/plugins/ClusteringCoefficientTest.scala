@@ -28,7 +28,7 @@ class ClusteringCoefficientTest extends FlatSpec with Matchers with TestingSpark
     testEdges.length shouldBe 0
   }
 
-  "clustering coefficient" should "should correctly give an isolated vertex clustering coefficient 1.0d" in {
+  "clustering coefficient" should "should correctly give an isolated vertex clustering coefficient 0.0d" in {
 
     val vertex = sparkContext.parallelize(Array((1L, null)), defaultParallelism)
     val edges = sparkContext.parallelize(Array[graphx.Edge[Null]](), defaultParallelism)
@@ -42,8 +42,8 @@ class ClusteringCoefficientTest extends FlatSpec with Matchers with TestingSpark
 
     val testVertexClusteringCoefficient: Double = testVertices(0)._2
 
-    Math.abs(testVertexClusteringCoefficient - 1.0d) should be < floatingPointEqualityThreshold
-    Math.abs(testGCC - 1.0d) should be < floatingPointEqualityThreshold
+    Math.abs(testVertexClusteringCoefficient - 0.0d) should be < floatingPointEqualityThreshold
+    Math.abs(testGCC - 0.0d) should be < floatingPointEqualityThreshold
   }
 
   "clustering coefficient" should "give every vertex a CC 1.0d when analyzing a complete graph" in {
@@ -72,7 +72,7 @@ class ClusteringCoefficientTest extends FlatSpec with Matchers with TestingSpark
      * The edge set of the graph is 12, 13, 14, 34
      * A simple inspection reveals that the local clustering coefficients are:
      * vertex 1 has CC 0.333333333333333d
-     * vertex 2 has CC 1.0d
+     * vertex 2 has CC 0.0d
      * vertex 3 has CC 1.0d
      * vertex 4 has CC 1.0d
      */
@@ -88,7 +88,7 @@ class ClusteringCoefficientTest extends FlatSpec with Matchers with TestingSpark
     val testVertexMap = testVertices.toMap
 
     Math.abs(testVertexMap(1) - 0.33333333333d) should be < floatingPointEqualityThreshold
-    Math.abs(testVertexMap(2) - 1.0d) should be < floatingPointEqualityThreshold
+    Math.abs(testVertexMap(2) - 0.0d) should be < floatingPointEqualityThreshold
     Math.abs(testVertexMap(3) - 1.0d) should be < floatingPointEqualityThreshold
     Math.abs(testVertexMap(4) - 1.0d) should be < floatingPointEqualityThreshold
 
