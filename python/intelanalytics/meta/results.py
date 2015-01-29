@@ -62,7 +62,7 @@ def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['id'])
 
-@postprocessor('frame/classification_metrics', 'model:logistic_regression/test')
+@postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test')
 def return_metrics(json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
@@ -70,3 +70,9 @@ def return_metrics(json_result):
 @postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns', 'frame/bin_column', 'frame/drop_duplicates', 'frame/flatten_column')
 def return_none(json_result):
     return None
+
+@postprocessor('frame/histogram')
+def return_histogram(json_result):
+    from intelanalytics.core.histogram import Histogram
+    return Histogram(json_result["cutoffs"], json_result["hist"], json_result["density"])
+

@@ -188,9 +188,9 @@ object MLLibJsonProtocol {
     }
 
     /**
-     * The read method reads a JsValue to LogisticRegressionModel
+     * The read method reads a JsValue to SVMModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
+     * @return LogisticRegressionModel with format SVMModel(val weights: Vector,val intercept: Double)
      *         and the weights Vector could be either a SparseVector or DenseVector
      */
     override def read(json: JsValue): SVMModel = {

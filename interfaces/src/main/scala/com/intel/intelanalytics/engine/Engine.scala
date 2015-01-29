@@ -27,7 +27,7 @@ import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, EntityType }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -90,13 +90,13 @@ trait Engine {
 
   def shutdown(): Unit
 
-  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[Graph]
+  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[GraphEntity]
 
-  def getGraphs()(implicit invocation: Invocation): Future[Seq[Graph]]
+  def getGraphs()(implicit invocation: Invocation): Future[Seq[GraphEntity]]
 
-  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[Graph]]
+  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[GraphEntity]]
 
-  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[Graph]
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[GraphEntity]
 
   def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
@@ -106,7 +106,7 @@ trait Engine {
 
   def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
-  def deleteGraph(graph: Graph)(implicit invocation: Invocation): Future[Unit]
+  def deleteGraph(graph: GraphEntity)(implicit invocation: Invocation): Future[Unit]
 
   def createModel(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[ModelEntity]
 
