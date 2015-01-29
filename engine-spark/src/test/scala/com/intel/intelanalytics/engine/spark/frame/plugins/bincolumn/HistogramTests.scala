@@ -145,6 +145,5 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
       hist.density should be(Array(3 / 8.0, 5 / 8.0))
     }
 
-
   }
 }
