@@ -149,8 +149,8 @@ intel.analytics {
           
           # To enable event logging, set spark.eventLog.enabled to true
           # and spark.eventLog.dir to the directory to which your event logs are written
-          // spark.eventLog.enabled = true
-          // spark.eventLog.dir = "hdfs://invalid-spark-application-history-folder:8020/user/spark/applicationHistory"
+          spark.eventLog.enabled = true
+          spark.eventLog.dir = "hdfs://invalid-spark-application-history-folder:8020/user/spark/applicationHistory"
         }
 
       }
