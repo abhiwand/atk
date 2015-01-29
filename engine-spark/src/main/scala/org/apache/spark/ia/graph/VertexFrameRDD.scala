@@ -51,7 +51,7 @@ class VertexFrameRDD(schema: VertexSchema,
   }
 
   def groupVerticesById() = {
-    this.groupBy(data => vertexWrapper(data).idValue())
+    this.groupBy(data => vertexWrapper(data).idValue)
   }
 
   /**
@@ -69,7 +69,7 @@ class VertexFrameRDD(schema: VertexSchema,
    * RDD of idColumn and _vid
    */
   def idColumns: RDD[(Any, Long)] = {
-    mapVertices(vertex => (vertex.idValue(), vertex.vid()))
+    mapVertices(vertex => (vertex.idValue, vertex.vid))
   }
 
   /**
@@ -102,11 +102,11 @@ class VertexFrameRDD(schema: VertexSchema,
   def append(other: FrameRDD, preferNewVertexData: Boolean = true): VertexFrameRDD = {
     val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
 
-    val part2 = new VertexFrameRDD(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue(), (vertex.data, preferNewVertexData)))
+    val part2 = new VertexFrameRDD(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue, (vertex.data, preferNewVertexData)))
 
     // TODO: better way to check for empty?
     val appended = if (take(1).length > 0) {
-      val part1 = convertToNewSchema(unionedSchema).mapVertices(vertex => (vertex.idValue(), (vertex.data, !preferNewVertexData)))
+      val part1 = convertToNewSchema(unionedSchema).mapVertices(vertex => (vertex.idValue, (vertex.data, !preferNewVertexData)))
       dropDuplicates(part1.union(part2))
     }
     else {

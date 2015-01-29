@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.{ RenameGraphArgs, Graph }
+import com.intel.intelanalytics.domain.graph.{ RenameGraphArgs, GraphEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename a graph in the database
  */
-class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, Graph] {
+class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, GraphEntity] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -61,7 +61,7 @@ class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, Graph] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: RenameGraphArgs)(implicit invocation: Invocation): Graph = {
+  override def execute(arguments: RenameGraphArgs)(implicit invocation: Invocation): GraphEntity = {
     // dependencies (later to be replaced with dependency injection)
     val graphs = engine.graphs
 
