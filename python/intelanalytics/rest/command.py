@@ -57,7 +57,7 @@ def execute_command(command_name, selfish, **arguments):
             selfish._id = command_info.result['id']
     postprocessor = get_postprocessor(command_name)
     if postprocessor:
-        result = postprocessor(command_info.result)
+        result = postprocessor(selfish, command_info.result)
     elif command_info.result.has_key('value') and len(command_info.result) == 1:
         result = command_info.result.get('value')
     elif is_frame:
