@@ -68,26 +68,16 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
       case None => None
     }
 
-    val numBins: Int = arguments.numBins match {
-      case Some(n) => n
-      case None => {
-        math.min(math.floor(math.sqrt(frame.meta.rowCount match {
-          case Some(r) => r
-          case None => frame.data.count()
-        })), HistogramPlugin.MAX_COMPUTED_NUMBER_OF_BINS).toInt
-      }
-    }
+    val numBins: Int = HistogramPlugin.getNumBins(arguments.numBins, frame)
 
     computeHistogram(frame.data, columnIndex, weightColumnIndex, numBins, arguments.binType.getOrElse("equalwidth") == "equalwidth")
   }
 
   /**
-   * //   * Number of spark jobs needed for computing this information
-   * //   * @param arguments command arguments: used if a command can produce variable number of jobs
-   * //   * @param invocation
-   * //   * @return number of jobs in this command
-   * //
-   * //
+   *
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @param invocation
+   * @return number of jobs in this command
    */
   override def numberOfJobs(arguments: HistogramArgs)(implicit invocation: Invocation): Int = arguments.binType match {
     case Some("equaldepth") => 8
@@ -104,35 +94,23 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
    * @return a new RDD containing the inclusive start, exclusive end, size and density of each bin.
    */
   def computeHistogram(dataFrame: RDD[Row], columnIndex: Int, weightColumnIndex: Option[Int], numBins: Int, equalWidth: Boolean = true): Histogram = {
-    val (cutoffs: Array[Double], binnedRDD) = if (equalWidth) {
-      val cutoffs = DiscretizationFunctions.getBinEqualWidthCutoffs(columnIndex,
-        numBins,
-        dataFrame)
-
-      val binnedRDD = DiscretizationFunctions.binColumns(columnIndex, cutoffs, dataFrame)
-      (cutoffs, binnedRDD)
-    }
-    else {
-      val binNumberMap = DiscretizationFunctions.getBinEqualDepthNumberMap(columnIndex, numBins, weightColumnIndex, dataFrame)
-      val binnedRDD = DiscretizationFunctions.binUsingBroadcast(columnIndex, binNumberMap, dataFrame)
-
-      val sortedTuples: List[(Int, Map[Double, Int])] = binNumberMap.groupBy(_._2).toList.sortBy(_._1)
-      val cutoffs = sortedTuples.map(_._2.keys.min) :+ sortedTuples.last._2.keys.max
-      (cutoffs.toArray, binnedRDD)
-    }
+    val binnedResults = if (equalWidth)
+      DiscretizationFunctions.binEqualWidth(columnIndex, numBins, dataFrame)
+    else
+      DiscretizationFunctions.binEqualDepth(columnIndex, numBins, weightColumnIndex, dataFrame)
 
     //get the size of each observation in the rdd. if it is negative do not count the observation
     //todo: warn user if a negative weight appears
-    val pairedRDD: RDD[(Int, Double)] = binnedRDD.map(row => (DataTypes.toInt(row.last),
+    val pairedRDD: RDD[(Int, Double)] = binnedResults.rdd.map(row => (DataTypes.toInt(row.last),
       weightColumnIndex match {
         case Some(i) => math.max(DataTypes.toDouble(row(i)), 0.0)
         case None => HistogramPlugin.UNWEIGHTED_OBSERVATION_SIZE
       }))
     val histSizes: Seq[Double] = pairedRDD.reduceByKey(_ + _).collect().sortBy(_._1).map(_._2)
     val totalSize: Double = histSizes.reduce(_ + _)
-    val frequencies: Seq[Double] = histSizes.map(size => if(totalSize > 0) size / totalSize else 0)
+    val frequencies: Seq[Double] = histSizes.map(size => size / totalSize)
 
-    new Histogram(cutoffs, histSizes, frequencies)
+    new Histogram(binnedResults.cutoffs, histSizes, frequencies)
   }
 
 }
@@ -140,4 +118,16 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 object HistogramPlugin {
   val MAX_COMPUTED_NUMBER_OF_BINS: Int = 1000
   val UNWEIGHTED_OBSERVATION_SIZE: Double = 1.0
+
+  def getNumBins(numBins: Option[Int], frame: SparkFrameData): Int = {
+    numBins match {
+      case Some(n) => n
+      case None => {
+        math.min(math.floor(math.sqrt(frame.meta.rowCount match {
+          case Some(r) => r
+          case None => frame.data.count()
+        })), HistogramPlugin.MAX_COMPUTED_NUMBER_OF_BINS).toInt
+      }
+    }
+  }
 }

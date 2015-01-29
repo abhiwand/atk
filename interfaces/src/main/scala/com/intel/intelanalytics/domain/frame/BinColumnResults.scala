@@ -20,24 +20,11 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Represents a BinColumn object
- *
- * @param frame identifier for the input dataframe
- * @param columnName name of the column to bin
- * @param cutoffs cutoff points of the bins
- * @param includeLowest if true the lowerbound of the bin will be inclusive while the upperbound is exclusive if false it is the opposite
- * @param strictBinning if true values smaller than the first bin or larger than the last bin will not be given a bin.
- *                      if false smaller vales will be in the first bin and larger values will be in the last
- * @param binColumnName name for the created binned column
+ * An containing a reference to a binned frame and the list of cutoffs used to bin
+ * @param frame the binned frame
+ * @param cutoffs a list containing the edges of each bin
  */
-case class BinColumnArgs(frame: FrameReference, columnName: String, cutoffs: List[Double],
-                         includeLowest: Option[Boolean], strictBinning: Option[Boolean], binColumnName: Option[String]) {
-  require(frame != null, "frame is required")
-  require(columnName != null, "column name is required")
-  require(cutoffs.size >= 2, "at least one bin is required")
-  require(cutoffs == cutoffs.sorted, "the cutoff points of the bins must be monotonically increasing")
-}
+case class BinColumnResults(frame: FrameEntity, cutoffs: Seq[Double])
