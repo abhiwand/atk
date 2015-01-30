@@ -33,22 +33,22 @@ if ia.server.port != 19099:
 ia.connect()
 
 class ModelKMeansTest(unittest.TestCase):
-    def setUpFrame(self):
+    def testKMeans(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/KmeansTestFile.csv", schema= [('data', ia.float64),
-                                                             ('label', ia.float64)], skip_header_lines=1)
+        csv = ia.CsvFile("/datasets/KMeansTestFile.csv", schema= [('data', ia.float64),
+                                                             ('name', str)], skip_header_lines=1)
 
         print "create frame"
-        self.frame = ia.Frame(csv)
+        frame = ia.Frame(csv)
 
         print "Initializing a KMeansModel object"
         k = ia.KMeansModel(name='myKMeansModel')
 
         print "Training the model on the Frame"
-        self.k.train(self.frame,['data'])
+        k.train(frame,['data'])
 
         print "Predicting the clusters for data in the frame"
-        self.k.predict(self.k.frame)
+        k.predict(frame)
 
 
 if __name__ == "__main__":
