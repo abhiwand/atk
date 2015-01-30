@@ -110,7 +110,6 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     val totalSize: Double = histSizes.reduce(_ + _)
     val frequencies: Seq[Double] = histSizes.map(size => if (totalSize > 0) size / totalSize else 0)
 
-
     new Histogram(binnedResults.cutoffs, histSizes, frequencies)
   }
 

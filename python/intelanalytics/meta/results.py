@@ -59,8 +59,8 @@ def add_return_none_postprocessor(command_full_name):
 
 @postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_to_graph',
                'graph:titan/annotate_degrees', 'graph:titan/annotate_weighted_degrees')
-
 def return_graph(selfish, json_result):
+
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['id'])
 
