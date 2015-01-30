@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,23 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 /**
- * Represents a BinColumn object
- *
- * @param frame identifier for the input dataframe
- * @param columnName name of the column to bin
- * @param cutoffs cutoff points of the bins
- * @param includeLowest if true the lowerbound of the bin will be inclusive while the upperbound is exclusive if false it is the opposite
- * @param strictBinning if true values smaller than the first bin or larger than the last bin will not be given a bin.
- *                      if false smaller vales will be in the first bin and larger values will be in the last
- * @param binColumnName name for the created binned column
+ * class for the returned value of a discretization method
+ * @param cutoffs list of cutoff points for abinned rdd
+ * @param rdd modified rdd
  */
-case class BinColumnArgs(frame: FrameReference, columnName: String, cutoffs: List[Double],
-                         includeLowest: Option[Boolean], strictBinning: Option[Boolean], binColumnName: Option[String]) {
-  require(frame != null, "frame is required")
-  require(columnName != null, "column name is required")
-  require(cutoffs.size >= 2, "at least one bin is required")
-  require(cutoffs == cutoffs.sorted, "the cutoff points of the bins must be monotonically increasing")
-}
+case class RddWithCutoffs(cutoffs: Array[Double], rdd: RDD[Row])

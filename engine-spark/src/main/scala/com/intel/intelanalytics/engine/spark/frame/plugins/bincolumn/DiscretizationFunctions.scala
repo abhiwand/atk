@@ -44,34 +44,6 @@ import org.apache.spark.SparkContext._
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
 object DiscretizationFunctions extends Serializable {
-
-  /**
-   * Column values into bins.
-   *
-   * Two types of binning are provided: equalwidth and equaldepth.
-   *
-   * Equal width binning places column values into bins such that the values in each bin fall within the same
-   * interval and the interval width for each bin is equal.
-   *
-   * Equal depth binning attempts to place column values into bins such that each bin contains the same number
-   * of elements
-   *
-   * @param columnIndex column index
-   * @param binType equalwidth or equaldepth
-   * @param numberOfBins requested number of bins
-   * @param rdd the input with the column for binning
-   * @return the new RDD with a column added
-   */
-  def bin(columnIndex: Int, binType: String, numberOfBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    binType match {
-      case "equalwidth" =>
-        DiscretizationFunctions.binEqualWidth(columnIndex, numberOfBins, rdd)
-      case "equaldepth" =>
-        DiscretizationFunctions.binEqualDepth(columnIndex, numberOfBins, None, rdd)
-      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${binType}, please choose from: equalwidth, equaldepth.")
-    }
-  }
-
   /**
    * Bin column at index using equal width binning.
    *
@@ -83,37 +55,61 @@ object DiscretizationFunctions extends Serializable {
    * @param rdd RDD that contains the column for binning
    * @return new RDD with binned column appended
    */
-  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
-
+  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RddWithCutoffs = {
     val cutoffs: Array[Double] = getBinEqualWidthCutoffs(index, numBins, rdd)
 
     // map each data element to its bin id, using cutoffs index as bin id
-    val binnedColumnRdd = binColumns(index, cutoffs, rdd)
-    binnedColumnRdd
+    val binnedColumnRdd = binColumns(index, cutoffs.toList, lowerInclusive = true, strictBinning = false, rdd)
+    new RddWithCutoffs(cutoffs, binnedColumnRdd)
   }
 
   /**
    * Bin column at index using list of cutoff values
    * @param index column index
-   * @param cutoffs Array containing the cutoff for each bin
+   * @param cutoffs Array containing the cutoff for each bin must be monotonically increasing
+   * @param lowerInclusive if true the lowerbound of the bin will be inclusive while the upperbound is exclusive if false it is the opposite
+   * @param strictBinning if true values smaller than the first bin or larger than the last bin will not be given a bin.
+   *                      if false smaller vales will be in the first bin and larger values will be in the last
    * @param rdd RDD that contains the column for binning
    * @return new RDD with binned column appended
    */
-  def binColumns(index: Int, cutoffs: Array[Double], rdd: RDD[Row]): RDD[Row] = {
-    rdd.map { row: Row =>
-      var binIndex = 0
-      val element = DataTypes.toDouble(row(index))
+  def binColumns(index: Int, cutoffs: List[Double], lowerInclusive: Boolean, strictBinning: Boolean, rdd: RDD[Row]): RDD[Row] = {
+    def determineLowerInclusiveBin(element: Double): Int = {
       for (i <- 0 to cutoffs.length - 2) {
-        // inclusive upper-bound on last cutoff range
-        if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) {
-          binIndex = i
-        }
-        else if ((element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) < 0)) {
-          binIndex = i
+        if (element < cutoffs(i + 1)) {
+          return i
         }
       }
-      new GenericRow(row.toArray :+ binIndex.asInstanceOf[Any])
+      cutoffs.length - 2
+    }
+    def determineUpperInclusiveBin(element: Double): Int = {
+      for (i <- 0 to cutoffs.length - 2) {
+        if (element <= cutoffs(i + 1)) {
+          return i
+        }
+      }
+      cutoffs.length - 2
+    }
+    val binMethod = if (lowerInclusive)
+      determineLowerInclusiveBin(_)
+    else
+      determineUpperInclusiveBin(_)
+
+    rdd.map { row: Row =>
+      {
+        val element = DataTypes.toDouble(row(index))
+        val inBounds = if (strictBinning) element match {
+          case x if cutoffs(0) <= x && x <= cutoffs.last => true
+          case _ => false
+        }
+        else
+          true
+        val binIndex: Int = if (inBounds)
+          binMethod(element)
+        else
+          -1
+        new GenericRow(row.toArray :+ binIndex)
+      }
     }
   }
 
@@ -166,9 +162,12 @@ object DiscretizationFunctions extends Serializable {
    * @param rdd RDD for binning
    * @return new RDD with binned column appended
    */
-  def binEqualDepth(index: Int, numBins: Int, weightedIndex: Option[Int], rdd: RDD[Row]): RDD[Row] = {
+  def binEqualDepth(index: Int, numBins: Int, weightedIndex: Option[Int], rdd: RDD[Row]): RddWithCutoffs = {
     val binNumberMap: Map[Double, Int] = getBinEqualDepthNumberMap(index, numBins, weightedIndex, rdd)
-    binUsingBroadcast(index, binNumberMap, rdd)
+    val sortedTuples: List[(Int, Map[Double, Int])] = binNumberMap.groupBy(_._2).toList.sortBy(_._1)
+    val cutoffs = sortedTuples.map(_._2.keys.min) :+ sortedTuples.last._2.keys.max
+    val binnedRdd = binUsingBroadcast(index, binNumberMap, rdd)
+    new RddWithCutoffs(cutoffs.toArray, binnedRdd)
   }
 
   def binUsingBroadcast(index: Int, binNumberMap: Map[Double, Int], rdd: RDD[Row]): RDD[Row] = {
