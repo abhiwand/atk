@@ -29,7 +29,6 @@ import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ PageRank => GraphXPageRank }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the PageRankRunnerArgs
@@ -101,12 +100,12 @@ object PageRankRunner extends Serializable {
     val outVertices: RDD[GBVertex] = inVertices
       .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
       .join(intermediateVertices)
-      .map({ case (_, (vertex, property)) => GraphConversions.addPropertyToVertex(property, vertex) })
+      .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
 
     val outEdges: RDD[GBEdge] = inEdges
       .map(gbEdge => ((gbEdge.tailPhysicalId.asInstanceOf[Long], gbEdge.headPhysicalId.asInstanceOf[Long]), gbEdge))
       .join(edgePropertyPairs)
-      .map({ case (_, (edge, property)) => GraphConversions.addPropertyToEdge(property, edge) })
+      .map({ case (_, (edge, property)) => edge.copy(properties = edge.properties + property) })
 
     (outVertices, outEdges)
   }
