@@ -6,6 +6,9 @@ Computes the :term `global clustering coefficient` of the graph and optionally
 creates a new graph which is the same as the input graph, with the addition that every vertex of the graph
 has its :term:`local clustering coefficient` stored in a user-specified property.
 
+THIS FUNCTION IS FOR UNDIRECTED GRAPHS. If it is called on a directed graph, its output is NOT guaranteed to calculate
+the local directed clustering coefficients.
+
 Parameters
 ----------
 output_graph_name : str (optional)

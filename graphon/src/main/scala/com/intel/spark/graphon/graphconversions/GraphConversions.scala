@@ -28,10 +28,6 @@ import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 
 object GraphConversions {
 
-  type EdgeSrcDestPair = (Long, Long)
-  type GBVertexPropertyPair = (GBVertex, Property)
-  type GBEdgePropertyPair = (GBEdge, Property)
-
   /**
    * Converts GraphBuilder edges (ATK internal representation) into GraphX edges.
    *
@@ -48,18 +44,25 @@ object GraphConversions {
       GraphXEdge[Long](srcId, destId)
   }
 
-  // generates GBVertex from value pair obtained as a result of join and appends the clustering coefficient
-  // property to the GBVertex
-
   /**
-   * Creates a new vertex from an incoming vertex and a property/value pair.
-   * @param vertexPropertyPair The vertex property pair
+   * Creates a new vertex from an incoming vertex by copying the vertex and
+   * adding a given property to that vertex's property list.
+   * @param property A property to add to the vertex.
+   * @param vertex The vertex which will be copied and the property will be added to the copy.
    * @return A new vertex which is the result of adding the property to the incoming vertex.
    */
-  def generateGBVertex(vertexPropertyPair: (Long, GBVertexPropertyPair)): GBVertex = {
-    val (gbVertex, newProperty) = vertexPropertyPair._2 match {
-      case value: GBVertexPropertyPair => (value._1, value._2)
-    }
-    gbVertex.copy(properties = gbVertex.properties + newProperty)
+  def addPropertyToVertex(property: Property, vertex: GBVertex): GBVertex = {
+    vertex.copy(properties = vertex.properties + property)
+  }
+
+  /**
+   * Creates a new edge from an incoming edge by copying the edge and
+   * adding a given property to that edge's property list.
+   * @param property A property to add to the edge.
+   * @param edge The edge which will be copied and the property will be added to the copy.
+   * @return A new edge which is the result of adding the property to the incoming vertex.
+   */
+  def addPropertyToEdge(property: Property, edge: GBEdge): GBEdge = {
+    edge.copy(properties = edge.properties + property)
   }
 }
