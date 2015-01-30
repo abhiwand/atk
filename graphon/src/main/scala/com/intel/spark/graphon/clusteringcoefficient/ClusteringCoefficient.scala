@@ -64,7 +64,7 @@ case class ClusteringCoefficientArgs(graph: GraphReference,
  *              coefficients stored at properties at each vertex. If local clustering coefficient is not requested,
  *              a reference to the input graph.
  */
-case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: String)
+case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: GraphEntity)
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
@@ -112,7 +112,8 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
     else {
       graph
     }
-    ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, outGraph.name.get)
+
+    ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, outGraph)
   }
 
 }

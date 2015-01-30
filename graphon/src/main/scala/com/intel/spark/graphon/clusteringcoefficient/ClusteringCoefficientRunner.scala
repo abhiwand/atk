@@ -22,10 +22,6 @@ case class ClusteringCoefficientRunnerReturn(vertices: RDD[GBVertex], globalClus
  */
 object ClusteringCoefficientRunner extends Serializable {
 
-  type EdgeSrcDestPair = (Long, Long)
-  type GBVertexPropertyPair = (GBVertex, Property)
-  type GBEdgePropertyPair = (GBEdge, Property)
-
   /**
    * Run clustering coefficient analysis of a graph.
    * @param inVertices Vertices of the incoming graph.
@@ -75,7 +71,7 @@ object ClusteringCoefficientRunner extends Serializable {
       inVertices
         .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
         .join(intermediateVertices)
-        .map(vertex => GraphConversions.generateGBVertex(vertex))
+        .map({ case (_, (vertex, property)) => GraphConversions.addPropertyToVertex(property, vertex) })
     }
     else {
       inVertices

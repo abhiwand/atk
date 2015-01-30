@@ -12,6 +12,9 @@ import scala.reflect.ClassTag
  * Note that the input graph should have its edges in canonical direction
  * (i.e. the `sourceId` less than `destId`). Also the graph must have been partitioned
  * using [[org.apache.spark.graphx.Graph#partitionBy]].
+ *
+ * PERFORMANCE/COMPATIBILITY NOTE:  This routine was written to the GraphX API in Spark 1.1
+ * Going forward, an upgrade to the Spark 1.2 GraphX API could yield performance gains.
  */
 object ClusteringCoefficient {
 
@@ -41,8 +44,8 @@ object ClusteringCoefficient {
     }
     // Edge function computes intersection of smaller vertex with larger vertex
     def edgeFunc(et: EdgeTriplet[VertexSet, ED]): Iterator[(VertexId, Int)] = {
-      assert(et.srcAttr != null)
-      assert(et.dstAttr != null)
+      assert(et.srcAttr != null, "GraphX, clustering coefficient, edgeFunc: edge source has null adjacency list.")
+      assert(et.dstAttr != null, "GraphX, clustering coefficient, edgeFunc: edge source has null adjacency list.")
       val (smallSet, largeSet) = if (et.srcAttr.size < et.dstAttr.size) {
         (et.srcAttr, et.dstAttr)
       }
@@ -66,10 +69,10 @@ object ClusteringCoefficient {
     val degreesChooseTwo: Graph[Long, ED] = setGraph.mapVertices({ case (vid, vertexSet) => (chooseTwo(vertexSet.size)) })
 
     val doubleCountOfTriangles: Long =
-      triangleDoubleCounts.aggregate[Long](0L)({ case (x: Long, (vid: VertexId, td: Int)) => x + td.toLong }, _ + _)
+      triangleDoubleCounts.aggregate[Long](0L)({ case (x: Long, (vid: VertexId, triangleDoubleCount: Int)) => x + triangleDoubleCount.toLong }, _ + _)
 
     val totalDegreesChooseTwo: Long =
-      degreesChooseTwo.vertices.aggregate[Long](0L)({ case (x: Long, (vid: VertexId, dc2: Long)) => x + dc2 }, _ + _)
+      degreesChooseTwo.vertices.aggregate[Long](0L)({ case (x: Long, (vid: VertexId, degreeChoose2: Long)) => x + degreeChoose2 }, _ + _)
 
     val globalClusteringCoefficient = if (totalDegreesChooseTwo > 0) {
       (doubleCountOfTriangles / 2.0d) / totalDegreesChooseTwo.toDouble
@@ -79,13 +82,13 @@ object ClusteringCoefficient {
     }
 
     val localClusteringCoefficientGraph = degreesChooseTwo.outerJoinVertices(triangleDoubleCounts) {
-      (vid, dC2, optCounter: Option[Int]) =>
-        if (dC2 == 0L) {
+      (vid, degreeChoose2, optCounter: Option[Int]) =>
+        if (degreeChoose2 == 0L) {
           0.0d
         }
         else {
           val triangleDoubleCount = optCounter.getOrElse(0)
-          (triangleDoubleCount.toDouble / 2.0d) / dC2.toDouble
+          (triangleDoubleCount.toDouble / 2.0d) / degreeChoose2.toDouble
         }
     }
 
