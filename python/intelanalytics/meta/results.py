@@ -59,21 +59,26 @@ def add_return_none_postprocessor(command_full_name):
 
 @postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_to_graph',
                'graph:titan/annotate_degrees', 'graph:titan/annotate_weighted_degrees')
-def return_graph(json_result):
+
+def return_graph(selfish, json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['id'])
 
 @postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test')
-def return_metrics(json_result):
+def return_metrics(selfish, json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
 
 @postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns', 'frame/bin_column', 'frame/drop_duplicates', 'frame/flatten_column')
-def return_none(json_result):
+def return_none(selfish, json_result):
     return None
 
 @postprocessor('frame/histogram')
-def return_histogram(json_result):
+def return_histogram(selfish, json_result):
     from intelanalytics.core.histogram import Histogram
     return Histogram(json_result["cutoffs"], json_result["hist"], json_result["density"])
 
+@postprocessor('frame/bin_column_equal_depth', 'frame/bin_column_equal_width')
+def return_bin_result(selfish, json_result):
+    selfish._id = json_result['frame']['id']
+    return json_result["cutoffs"]
