@@ -4,10 +4,8 @@ import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.spark.graphon.graphconversions.GraphConversions
 import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
-import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Return value for the clustering coefficient runner
@@ -37,7 +35,7 @@ object ClusteringCoefficientRunner extends Serializable {
     // have the directed edge (b,a) present whenever the directed edge (a,b) is present... furthermore,
     // graphx expects one edge to be present ... from Min(a,b) to Max(a,b)
     val canonicalEdges: RDD[GBEdge] =
-      inEdges.filter(gbEdge => (gbEdge.tailPhysicalId.asInstanceOf[Long] < gbEdge.headPhysicalId.asInstanceOf[Long]))
+      inEdges.filter(gbEdge => gbEdge.tailPhysicalId.asInstanceOf[Long] < gbEdge.headPhysicalId.asInstanceOf[Long])
 
     val filteredEdges: RDD[GBEdge] = if (inputEdgeLabels.isEmpty) {
       canonicalEdges
@@ -71,7 +69,7 @@ object ClusteringCoefficientRunner extends Serializable {
       inVertices
         .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
         .join(intermediateVertices)
-        .map({ case (_, (vertex, property)) => GraphConversions.addPropertyToVertex(property, vertex) })
+        .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
     }
     else {
       inVertices

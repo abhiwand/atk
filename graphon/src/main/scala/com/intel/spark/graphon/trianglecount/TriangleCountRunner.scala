@@ -30,7 +30,6 @@ import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the TriangleCountRunnerArgs
@@ -87,7 +86,7 @@ object TriangleCountRunner extends Serializable {
     val outVertices: RDD[GBVertex] = inVertices
       .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
       .join(intermediateVertices)
-      .map({ case (_, (vertex, property)) => GraphConversions.addPropertyToVertex(property, vertex) })
+      .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
 
     (outVertices, inEdges)
   }

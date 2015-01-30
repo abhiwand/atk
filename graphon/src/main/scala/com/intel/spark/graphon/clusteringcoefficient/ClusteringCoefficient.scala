@@ -23,22 +23,11 @@
 
 package com.intel.spark.graphon.clusteringcoefficient
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.graph._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
-import org.apache.spark.{ SparkConf, SparkContext }
-import java.util.UUID
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
 case class ClusteringCoefficientArgs(graph: GraphReference,
                                      outputGraphName: Option[String],
@@ -68,11 +57,10 @@ case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, grap
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
-  import DomainJsonProtocol._
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
   implicit val CCFormat = jsonFormat4(ClusteringCoefficientArgs)
   implicit val CCResultFormat = jsonFormat2(ClusteringCoefficientResult)
 }
-
 import ClusteringCoefficientJsonFormat._
 
 /**
