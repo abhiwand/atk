@@ -23,21 +23,18 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData, LegacyFrameRDD }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.{ Await, ExecutionContext }
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.SparkContext._
 
 /**
  * Column values into bins.
@@ -50,15 +47,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
  */
-class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   *
-   * The format of the name determines how the plugin gets "installed" in the client layer
-   * e.g Python client via code generation.
-   */
-  override def name: String = "frame/bin_column"
+abstract class ComputedBinColumnPlugin extends SparkCommandPlugin[ComputedBinColumnArgs, BinColumnResults] {
 
   /**
    * Column values into bins.
@@ -77,7 +66,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: BinColumnArgs)(implicit invocation: Invocation): FrameEntity = {
+  override def execute(arguments: ComputedBinColumnArgs)(implicit invocation: Invocation): BinColumnResults = {
     val frame: SparkFrameData = resolve(arguments.frame)
     val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
     val columnType = frame.meta.schema.columnDataType(arguments.columnName)
@@ -85,13 +74,28 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
     val binColumnName = arguments.binColumnName.getOrElse(frame.meta.schema.getNewColumnName(arguments.columnName + "_binned"))
     if (frame.meta.schema.hasColumn(binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+    val numBins = HistogramPlugin.getNumBins(arguments.numBins, frame)
 
     // run the operation and save results
     val updatedSchema = frame.meta.schema.addColumn(binColumnName, DataTypes.int32)
     val rdd = frame.data
-    val binnedRdd = DiscretizationFunctions.binColumns(columnIndex, arguments.cutoffs,
-      arguments.includeLowest.getOrElse(true), arguments.strictBinning.getOrElse(false), rdd)
 
-    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedRdd))).meta
+    val binnedResults = executeBinColumn(columnIndex, numBins, rdd)
+
+    val frameMeta = save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedResults.rdd))).meta
+
+    new BinColumnResults(frameMeta, binnedResults.cutoffs)
+
   }
+
+  /**
+   * Discretize a variable into a finite number of bins
+   * @param columnIndex index of column to bin
+   * @param numBins number of bins to use
+   * @param rdd rdd to bin against
+   * @return a result object containing the binned rdd and the list of computed cutoffs
+   */
+  def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRDD): RddWithCutoffs = ???
+
 }
+
