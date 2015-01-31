@@ -79,7 +79,8 @@ def return_histogram(selfish, json_result):
 @postprocessor('graph:titan/clustering_coefficient')
 def return_clustering_coefficient(selfish, json_result):
     from intelanalytics.core.graph import get_graph
-    return (json_result['global_clustering_coefficient'], get_graph(json_result['graph']['id']))
+    from intelanalytics.core.clusteringcoefficient import  ClusteringCoefficient
+    return ClusteringCoefficient(json_result['global_clustering_coefficient'], get_graph(json_result['graph']['id']))
 
 @postprocessor('frame/bin_column_equal_depth', 'frame/bin_column_equal_width')
 def return_bin_result(selfish, json_result):
