@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
+import com.intel.intelanalytics.domain.schema.{ GraphElementSchema, Schema, VertexSchema }
 
 /**
  * Wrapper for Seamless Graph Meta data stored in the database
@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ Schema, VertexSchema }
  * @param graphEntity the graph meta data
  * @param frameEntities the vertex and edge frames owned by this graph (might be empty but never null)
  */
-case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[FrameEntity]) {
+case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[FrameEntity]) {
   require(graphEntity != null, "graph is required")
   require(frameEntities != null, "frame is required, it can be empty but not null")
   require(graphEntity.storageFormat == "ia/frame", "Storage format should be ia/frame")
@@ -120,6 +120,18 @@ case class SeamlessGraphMeta(graphEntity: Graph, frameEntities: List[FrameEntity
     edgeFrameMetasMap.map {
       case (label: String, frame: FrameEntity) => frame
     }.toList
+  }
+
+  def framesWithLabels(labels: List[String]): List[FrameEntity] = {
+    frameEntities.filter(frame => labels.contains(frame.name))
+  }
+
+  def framesWithoutLabels(labelsToExclude: List[String]): List[FrameEntity] = {
+    frameEntities.filter(frame => !labelsToExclude.contains(frame.name))
+  }
+
+  def labels: List[String] = {
+    frameEntities.map(f => f.schema.asInstanceOf[GraphElementSchema].label)
   }
 
   def vertexLabels: List[String] = {

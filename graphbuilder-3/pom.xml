@@ -41,6 +41,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>ititan-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>interfaces</artifactId>
+        </dependency>
         <!-- END BDA dependencies to our modules -->
 
         <!-- START Titan dependencies -->
