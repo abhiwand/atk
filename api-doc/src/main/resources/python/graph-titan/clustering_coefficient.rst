@@ -33,11 +33,46 @@ global_clustering_coefficient : Double
     The global clustering coefficient of the graph.
 
 graph : graph (returned only if both output_graph_name and output_property_name are provided)
-    a graph object that is a copy of the input graph with the addition that every vertex of the graph
+    A graph object that is a copy of the input graph with the addition that every vertex of the graph
     has its :term:`local clustering coefficient` stored in a user-specified property.
 
-Examples
---------
-Coming soon...
+Example
+-------
+    results = g.clustering_coefficient('ccgraph', 'local_clustering_coefficient')
+
+    results
+        Out[8]:
+        ClusteringCoefficient:
+        global_clustering_coefficient: 0.0853107962708,
+        graph: TitanGraph "ccgraph"
+
+    h = results.graph
+
+    h.query.gremlin('g.V [ 0 .. 2]')
+
+        Out[10]:
+        {u'results': [{u'_id': 23040,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 615039,
+        u'local_clustering_coefficient': 1,
+        u'source': 17349,
+        u'titanPhysicalId': 135912},
+        {u'_id': 39424,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 400303,
+        u'local_clustering_coefficient': 0,
+        u'source': 27550,
+        u'titanPhysicalId': 1187184},
+        {u'_id': 55808,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 673676,
+        u'local_clustering_coefficient': 0,
+        u'source': 29958,
+        u'titanPhysicalId': 449424}],
+        u'run_time_seconds': 1.756}
+
 
     .. versionadded:: 1.0
