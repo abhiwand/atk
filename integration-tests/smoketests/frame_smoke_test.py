@@ -61,6 +61,7 @@ class FrameSmokeTest(unittest.TestCase):
         print frame.inspect(20)
         print
         self.assertEquals(frame.row_count, 20, "frame should have 20 rows")
+        self.assertGreaterEqual(frame._size_on_disk, 0, "frame size on disk should be non-negative")
         self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
         self.assertEquals(len(frame.column_names), 6)
 
