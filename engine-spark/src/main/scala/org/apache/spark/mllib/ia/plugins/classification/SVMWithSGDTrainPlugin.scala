@@ -28,6 +28,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.model.SVMTrainArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.SVMWithSGD
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
@@ -47,47 +48,12 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
    * e.g Python client via code generation.
    */
   override def name: String = "model:svm/train"
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a Support Vector Machine(SVM) Model using the observation column and label column of the train frame",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    frame: Frame
-                             |        Frame to train the model on
-                             |
-                             |    observation_column: str
-                             |        column containing the observations
-                             |
-                             |    label_column: str
-                             |        column containing the label for each observation
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Trained SVM model object
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.SvmModel(name='mySvm')
-                             |        model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-                             |
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: SVMTrainArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: SVMTrainArgs)(implicit invocation: Invocation) = 103
   /**
    * Run MLLib's SVMWithSGD() on the training frame and create a Model for it.
    *
@@ -100,24 +66,19 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
   override def execute(arguments: SVMTrainArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
-      val frames = engine.frames
-
-      //validate arguments
-      val frameId = arguments.frame.id
       val modelId = arguments.model.id
-
-      val inputFrame = frames.expectFrame(frameId)
       val modelMeta = models.expectModel(modelId)
 
-      //create RDD from the frame
-      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val frame: SparkFrameData = resolve(arguments.frame)
+      // load frame as RDD
+      val trainFrameRDD = frame.data
+
       val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
       val svm = initializeSVM(arguments)
       val svmModel = svm.run(labeledTrainRDD)
       val modelObject = svmModel.toJson.asJsObject
-
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta, modelObject)
       new UnitReturn
@@ -125,7 +86,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
 
   private def initializeSVM(arguments: SVMTrainArgs): SVMWithSGD = {
     val svm = new SVMWithSGD()
-    if (arguments.numIterations.isDefined) { svm.optimizer.setNumIterations(arguments.numIterations.get) }
+    if (arguments.numOptIterations.isDefined) { svm.optimizer.setNumIterations(arguments.numOptIterations.get) }
     if (arguments.stepSize.isDefined) { svm.optimizer.setStepSize(arguments.stepSize.get) }
     if (arguments.regType.isDefined) {
       svm.optimizer.setUpdater(arguments.regType.get match {
@@ -134,6 +95,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
       })
     }
     if (arguments.regParam.isDefined) { svm.optimizer.setRegParam(arguments.regParam.get) }
-    svm
+    svm.setIntercept(true)
   }
 }

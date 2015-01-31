@@ -45,7 +45,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction._
-import com.intel.intelanalytics.domain.graph.{ Graph, LoadGraphArgs, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -319,7 +319,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicatesArgs)
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
-  implicit val binColumnFormat = jsonFormat5(BinColumnArgs)
+  implicit val binColumnFormat = jsonFormat6(BinColumnArgs)
+  implicit val computedBinColumnFormat = jsonFormat4(ComputedBinColumnArgs)
   implicit val sortByColumnsFormat = jsonFormat2(SortByColumnsArgs)
 
   implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatisticsArgs)
@@ -356,6 +357,11 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val topKFormat = jsonFormat4(TopKArgs)
   implicit val exportHdfsCsvPlugin = jsonFormat5(ExportHdfsCsvArgs)
   implicit val exportHdfsJsonPlugin = jsonFormat4(ExportHdfsJsonArgs)
+
+  //histogram formats
+  implicit val histogramArgsFormat = jsonFormat5(HistogramArgs)
+  implicit val histogramResultFormat = jsonFormat3(Histogram)
+
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetricArgs)
@@ -529,14 +535,14 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  implicit object graphFormat extends JsonFormat[Graph] {
-    implicit val graphFormatOriginal = jsonFormat13(Graph)
+  implicit object graphFormat extends JsonFormat[GraphEntity] {
+    implicit val graphFormatOriginal = jsonFormat13(GraphEntity)
 
-    override def read(value: JsValue): Graph = {
+    override def read(value: JsValue): GraphEntity = {
       graphFormatOriginal.read(value)
     }
 
-    override def write(graph: Graph): JsValue = {
+    override def write(graph: GraphEntity): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields +
         ("ia_uri" -> JsString(graph.uri)) +
         ("entity_type" -> JsString(graph.entityType)))
@@ -544,5 +550,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
 
   implicit val seamlessGraphMetaFormat = jsonFormat2(SeamlessGraphMeta)
+
+  implicit val binColumnResultFormat = jsonFormat2(BinColumnResults)
 
 }
