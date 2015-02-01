@@ -26,48 +26,45 @@ package com.intel.intelanalytics.component
 import com.typesafe.config.Config
 
 /**
- * Base interface for a component / plugin.
+ * The state for an application environment, typically managed globally by {Archive}
  */
-trait Component {
-
-  private var configuredName: Option[String] = None
-
-  private var config: Option[Config] = None
+class SystemConfig(val rootConfiguration: Config, archives: Map[String, Archive] = Map.empty) {
 
   /**
-   * A component's name, useful for error messages
+   * Creates a copy of this system configuration with the given root Config.
    */
-  final def componentName: String = {
-    configuredName.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
-  }
+  def withRootConfiguration(config: Config): SystemConfig = new SystemConfig(config, archives)
 
-  final def configuration: Config = {
-    config.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
-  }
+  val debugConfig = rootConfiguration.getBoolean(SystemConfig.debugConfigKey)
 
   /**
-   * Called before processing any requests.
-   *
-   * @param name          the name that was used to locate this component
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
+   * Look up the classloader for a given archive. Convenience method.
    */
-  final def init(name: String, configuration: Config) = {
-    configuredName = Some(name)
-    config = Some(configuration)
+  def loader(archiveName: String) = {
+    require(archiveName != null, "archiveName cannot be null")
+    archive(archiveName).map(_.classLoader)
   }
 
   /**
-   * Called before processing any requests.
-   *
+   * Look up an archive by name
    */
-  def start() = {}
+  def archive(archiveName: String) = {
+    require(archiveName != null, "archiveName cannot be null")
+    archives.get(archiveName)
+  }
 
   /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
+   * Generate a new system configuration with an additional archive included
    */
-  def stop() = {}
+  def addArchive(archive: Archive) = {
+    require(archive != null, "archive cannot be null")
+
+    new SystemConfig(rootConfiguration, archives + (archive.definition.name -> archive))
+  }
+
 }
 
+object SystemConfig {
+  private[component] val debugConfigKey: String = "intel.analytics.launcher.debug-config"
+
+}
