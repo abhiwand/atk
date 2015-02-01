@@ -23,16 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import com.intel.event.{ EventContext, EventLogging }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.{ SparkConf, SparkContext }
-
-import scala.concurrent.Lock
 
 /**
  * Class Factory for creating spark contexts
@@ -89,10 +86,10 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
    */
   def jarPath(archive: String): String = {
     if (SparkEngineConfig.sparkAppJarsLocal) {
-      "local:" + StringUtils.removeStart(Boot.getJar(archive).getPath, "file:")
+      "local:" + StringUtils.removeStart(Archive.getJar(archive).getPath, "file:")
     }
     else {
-      Boot.getJar(archive).toString
+      Archive.getJar(archive).toString
     }
   }
 

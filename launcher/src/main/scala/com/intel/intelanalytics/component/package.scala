@@ -1,3 +1,7 @@
+package com.intel.intelanalytics
+
+import scala.util.control.NonFatal
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -20,54 +24,45 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.component
-
-import com.typesafe.config.Config
-
-/**
- * Base interface for a component / plugin.
- */
-trait Component {
-
-  private var configuredName: Option[String] = None
-
-  private var config: Option[Config] = None
-
+package object component {
   /**
-   * A component's name, useful for error messages
+   * Run the given expression. If an exception is thrown, instead throw an Exception
+   * that wraps the original, and uses the given failure message.
+   * @param expr the expression to evaluate
+   * @param failureMessage the failure message to use if an exception is thrown
+   * @tparam T the return type of the expression
+   * @return the result of evaluating the expression, or else throws Exception.
    */
-  final def componentName: String = {
-    configuredName.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
+  def attempt[T](expr: => T, failureMessage: => String) = {
+    try {
+      expr
+    }
+    catch {
+      case NonFatal(e) => throw new Exception(failureMessage, e)
+    }
   }
 
-  final def configuration: Config = {
-    config.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
-  }
-
-  /**
-   * Called before processing any requests.
-   *
-   * @param name          the name that was used to locate this component
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  final def init(name: String, configuration: Config) = {
-    configuredName = Some(name)
-    config = Some(configuration)
+  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
+  implicit class RichBoolean(val b: Boolean) extends AnyVal {
+    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
   }
 
   /**
-   * Called before processing any requests.
-   *
+   * For debugging only
    */
-  def start() = {}
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  def stop() = {}
+  private[intelanalytics] def writeFile(fileName: String, content: String) {
+    import java.io._
+    val file = new java.io.File(fileName)
+    val parent = file.getParentFile
+    if (!parent.exists()) {
+      parent.mkdirs()
+    }
+    val writer = new PrintWriter(file)
+    try {
+      writer.append(content)
+    }
+    finally {
+      writer.close()
+    }
+  }
 }
-
