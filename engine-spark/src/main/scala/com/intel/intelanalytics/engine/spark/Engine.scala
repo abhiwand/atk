@@ -199,6 +199,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new HistogramPlugin)
   commandPluginRegistry.registerCommand(new BinColumnEqualDepthPlugin)
   commandPluginRegistry.registerCommand(new BinColumnEqualWidthPlugin)
+  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
@@ -320,6 +321,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
       commandPluginRegistry.getCommandDefinitions()
     }
 
+  @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity] =
     future {
       frames.create(arguments)
@@ -374,7 +376,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     implicit val inv = invocation
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
       val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
-      val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+      val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }
     else {
@@ -415,6 +417,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * @param graph Metadata for graph creation.
    * @return Future of the graph to be created.
    */
+  @deprecated("use engine.graphs.createGraph()")
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation) = {
     future {
       withMyClassLoader {
@@ -468,8 +471,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
       }
     }
   }
-
-  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
 
   /**
    * Register a model name with the metadate store.
