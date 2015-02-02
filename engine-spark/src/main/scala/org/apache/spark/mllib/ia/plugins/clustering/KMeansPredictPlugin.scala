@@ -25,8 +25,10 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.model.KMeansPredictArgs
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -35,6 +37,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
 class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
 
@@ -113,10 +116,20 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
       val doubles = array.map(i => DataTypes.toDouble(i))
       val point = Vectors.dense(doubles)
       val prediction = kmeansModel.predict(point)
+      val clusterCenterValue = kmeansModel.clusterCenters(prediction)
+      val distance = toMahoutVector(point).getDistanceSquared(toMahoutVector(clusterCenterValue))
       row.addValue(prediction)
+      row.addValue(distance)
     })
 
-    val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
+    //val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
+    val columnNames: List[String] = List("predicted_cluster", "distance_from_cluster")
+    val columnTypes: List[String] = List(DataTypes.int32, DataTypes.float64)
+
+    val newColumns = columnNames.zip(columnTypes.map(x => x: DataType))
+    val newSchema = new FrameSchema(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val updatedSchema = inputFrameRDD.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
     tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
