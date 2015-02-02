@@ -57,8 +57,10 @@ def add_return_none_postprocessor(command_full_name):
 
 # post-processor methods --all take a json object argument
 
-@postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_to_graph')
+@postprocessor('graph:titan/sampling/vertex_sample', 'graph:/export_to_titan', 'graph:titan/export_to_graph',
+               'graph:titan/annotate_degrees', 'graph:titan/annotate_weighted_degrees')
 def return_graph(selfish, json_result):
+
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['id'])
 
@@ -76,7 +78,14 @@ def return_histogram(selfish, json_result):
     from intelanalytics.core.histogram import Histogram
     return Histogram(json_result["cutoffs"], json_result["hist"], json_result["density"])
 
+@postprocessor('graph:titan/clustering_coefficient')
+def return_clustering_coefficient(selfish, json_result):
+    from intelanalytics.core.graph import get_graph
+    from intelanalytics.core.clusteringcoefficient import  ClusteringCoefficient
+    return ClusteringCoefficient(json_result['global_clustering_coefficient'], get_graph(json_result['graph']['id']))
+
 @postprocessor('frame/bin_column_equal_depth', 'frame/bin_column_equal_width')
 def return_bin_result(selfish, json_result):
     selfish._id = json_result['frame']['id']
     return json_result["cutoffs"]
+

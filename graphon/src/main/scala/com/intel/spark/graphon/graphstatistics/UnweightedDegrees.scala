@@ -56,13 +56,13 @@ object UnweightedDegrees {
      */
 
     val vertexVDRs: RDD[(Any, VertexDegreeRecord)] =
-      vertexRDD.map(gbVertex => (gbVertex.physicalId, VertexDegreeRecord(Some(gbVertex), 0.toLong)))
+      vertexRDD.map(gbVertex => (gbVertex.physicalId, VertexDegreeRecord(Some(gbVertex), 0L)))
 
     val edgeVDRs: RDD[(Any, VertexDegreeRecord)] =
       if (calculateOutDegreeFlag)
-        edgeRDD.map(e => (e.tailPhysicalId, VertexDegreeRecord(None, 1.toLong)))
+        edgeRDD.map(e => (e.tailPhysicalId, VertexDegreeRecord(None, 1L)))
       else
-        edgeRDD.map(e => (e.headPhysicalId, VertexDegreeRecord(None, 1.toLong)))
+        edgeRDD.map(e => (e.headPhysicalId, VertexDegreeRecord(None, 1L)))
 
     val vdrs = vertexVDRs.union(edgeVDRs)
 

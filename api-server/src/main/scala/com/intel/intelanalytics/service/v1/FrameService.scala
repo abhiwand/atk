@@ -138,7 +138,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                   }
                 }
             } ~ (path("data") & get) {
-              parameters('offset.as[Int], 'count.as[Int]) {
+              parameters('offset.as[Long], 'count.as[Long]) {
                 (offset, count) =>
                   {
                     import ViewModelJsonImplicits._
