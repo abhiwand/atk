@@ -26,11 +26,7 @@ pushd $pkgFolder
     jar -cvf $pkgFolder.jar *
 popd
 
-cp $pkgFolder/$pkgFolder.jar /home/rodorad/Documents/parcels/csd
-scp $pkgFolder/$pkgFolder.jar wolverine:~
-#scp $pkgFolder/$pkgFolder.jar tungsten:~
-ssh wolverine sudo cp /home/hadoop/$pkgFolder.jar /opt/cloudera/csd
-#ssh tungsten sudo cp /home/hadoop/$pkgFolder.jar /opt/cloudera/csd
+
 popd
 
 rm -rf $pkgFolder
