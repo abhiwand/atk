@@ -116,12 +116,19 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
+  /**
+   * Copy the frames using spark
+   *
+   * @param frames List of frames to be copied
+   * @param sc Spark Context
+   * @return List of copied frames
+   */
   def copyFrames(frames: List[FrameReference], sc: SparkContext)(implicit invocation: Invocation): List[FrameEntity] = {
     frames.map(frame => copyFrame(frame, sc))
   }
 
   /**
-   * Create a copy of the frame optionally copying the data
+   * Create a copy of the frame copying the data
    * @param frame the frame to be copied
    * @return the copy
    */
@@ -134,8 +141,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.frameRepo.insert(child)
     }
 
-    // copy the underlying HDFS data
-    //frameFileStorage.copy(frameEntity, child.toReference)
     val frameRdd = loadFrameData(sc, frameEntity)
     saveFrameData(child.toReference, frameRdd)
 

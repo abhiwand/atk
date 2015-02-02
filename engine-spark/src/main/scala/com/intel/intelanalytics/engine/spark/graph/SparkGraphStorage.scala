@@ -169,10 +169,8 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   /**
-   *  *
-   * @param graph
-   * @param labelsToCopyData
-   * @param invocation
+   * @param graph the graph to be copied
+   * @param name name to be given to the copied graph
    * @return
    */
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {

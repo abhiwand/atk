@@ -75,10 +75,6 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
       new Path(concatPaths(fsRoot, path))
     }
   }
-  //
-  //  def copy(fromPath: Path, toPath: Path): Unit = withContext("file.copy") {
-  //    FileUtil.copy(fs, fromPath, fs, toPath, false, true, configuration)
-  //  }
 
   def write(sink: Path, append: Boolean): OutputStream = withContext("file.write") {
     val path: Path = absolutePath(sink.toString)
