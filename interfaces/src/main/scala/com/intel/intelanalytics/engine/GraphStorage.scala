@@ -48,6 +48,8 @@ trait GraphStorage {
 
   def drop(graph: GraphEntity)(implicit invocation: Invocation)
 
+  def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity
+
   def updateStatus(graph: GraphEntity, newStatusId: Long)
 
   def getGraphs()(implicit invocation: Invocation): Seq[GraphEntity]

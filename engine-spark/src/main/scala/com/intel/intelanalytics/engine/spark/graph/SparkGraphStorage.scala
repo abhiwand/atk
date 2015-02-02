@@ -49,7 +49,6 @@ import org.joda.time.DateTime
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -167,6 +166,43 @@ class SparkGraphStorage(metaStore: MetaStore,
           metaStore.graphRepo.delete(graph.id).get
         }
     }
+  }
+
+  /**
+   *  *
+   * @param graph
+   * @param labelsToCopyData
+   * @param invocation
+   * @return
+   */
+  override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
+    info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
+    val graphCopy = createGraph(GraphTemplate(name))
+    if (graph.isTitan) {
+      backendStorage.copyUnderlyingTable(graph.name.get, name)
+
+      val storageName = GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(graph.name.get + "-2"))
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
+          }
+      }
+    }
+    else {
+      val graphMeta = expectSeamless(graph.id)
+      val framesToCopy = graphMeta.frameEntities.map(_.toReference)
+      val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkContext])
+
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
+          }
+      }
+    }
+    // refresh from DB
+    expectGraph(graphCopy.id)
   }
 
   /**

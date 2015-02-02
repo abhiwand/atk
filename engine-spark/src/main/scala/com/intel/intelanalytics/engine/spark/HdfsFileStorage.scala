@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.io.{ InputStream, OutputStream }
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
+import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem, FileUtil }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import com.intel.event.{ EventContext, EventLogging }
 
@@ -75,6 +75,10 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
       new Path(concatPaths(fsRoot, path))
     }
   }
+  //
+  //  def copy(fromPath: Path, toPath: Path): Unit = withContext("file.copy") {
+  //    FileUtil.copy(fs, fromPath, fs, toPath, false, true, configuration)
+  //  }
 
   def write(sink: Path, append: Boolean): OutputStream = withContext("file.write") {
     val path: Path = absolutePath(sink.toString)

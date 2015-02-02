@@ -15,6 +15,31 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     with EventLogging
     with EventLoggingImplicits {
 
+  override def copyUnderlyingTable(graphName: String, newName: Option[String])(implicit invocation: Invocation): Unit = {
+    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    try {
+      info(s"Trying to copy the HBase Table: $tableName")
+      val p = Runtime.getRuntime.exec("hbase shell -n")
+      val outputStream = p.getOutputStream
+
+      val givenName = GraphBackendName.convertGraphUserNameToBackendName(newName.getOrElse(tableName + "-2"))
+      IOUtils.write(s"snapshot '${tableName}', '${tableName}-snapshot'\nclone_snapshot '${tableName}-snapshot', '${givenName}'\n", outputStream)
+      outputStream.flush()
+      outputStream.close()
+
+      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
+      IOUtils.readLines(p.getErrorStream).map(errorMsg => warn(errorMsg))
+
+      val exitValue = p.waitFor()
+      info(s"Hbase shell exited with Exit Value: $exitValue")
+
+      if (exitValue != 0) {
+        throw new IllegalArgumentException(
+          s"Unable to copy the requested HBase table $tableName.")
+      }
+    }
+  }
+
   /**
    * Deletes a graph's underlying table from HBase.
    * @param graphName The user's name for the graph.

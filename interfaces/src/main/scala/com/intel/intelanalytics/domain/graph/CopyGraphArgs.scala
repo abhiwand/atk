@@ -21,19 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
-
-import com.intel.intelanalytics.engine.plugin.Invocation
+package com.intel.intelanalytics.domain.graph
 
 /**
- * This manages the backend storage for graphs, underneath the graph database.
- *
- * The reason that we have to do this is because Titan doesn't provide graph management as part of their interface.
- * So our {@code GraphStorage} component has to know about Titan's backend to clean up the stuff that
- * Titan can not or will not.
+ * Data needed to export a graph.
+ * @param graph reference of the source graph
+ * @param copiedGraphName name of the new copied target graph. optional. if not included a name should be generated.
  */
-trait GraphBackendStorage {
-  def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation)
-  def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation)
-  def copyUnderlyingTable(graphName: String, name: Option[String])(implicit invocation: Invocation)
+case class CopyGraphArgs(graph: GraphReference, copiedGraphName: Option[String] = None) {
+  require(graph != null, "graph is required")
 }
