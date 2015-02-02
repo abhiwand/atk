@@ -37,7 +37,7 @@
 
     g.query.gremlin('g.V [ 0 .. 1]')
 
-        Out[12]:
+    Out[12]:
         {u'results': [{u'_id': 19456,
         u'_label': u'vertex',
         u'_type': u'vertex',
@@ -54,7 +54,8 @@
 
     h.query.gremlin('g.V [ 0 .. 1]')
 
-        Out[14]:
+
+    Out[14]:
         {u'results': [{u'_id': 16384,
         u'_label': u'vertex',
         u'_type': u'vertex',
@@ -70,6 +71,5 @@
         u'source': 31035,
         u'titanPhysicalId': 292368}],
         u'run_time_seconds': 1.428}
-
 
         .. versionadded:: 1.0
