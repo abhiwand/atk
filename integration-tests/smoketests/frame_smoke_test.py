@@ -77,10 +77,6 @@ class FrameSmokeTest(unittest.TestCase):
 
         # TODO: add verification that one Python UDF is working (not working yet)
 
-        #print "filter()"
-        #frame.filter(lambda row: row.rank < 11)
-        #self.assertEquals(frame.row_count, 10, "after filtering there should only be ten cities")
-        ##self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
 
 if __name__ == "__main__":
     unittest.main()
