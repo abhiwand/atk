@@ -98,7 +98,6 @@ import com.intel.intelanalytics.domain.frame.TallyPercentArgs
 import com.intel.intelanalytics.domain.frame.CumulativePercentArgs
 import com.intel.intelanalytics.domain.frame.QuantilesArgs
 import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
-import com.intel.intelanalytics.domain.frame.AssignSampleArgs
 import com.intel.intelanalytics.domain.frame.GroupByArgs
 import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
 import com.intel.intelanalytics.security.UserPrincipal

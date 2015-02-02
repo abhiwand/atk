@@ -23,47 +23,77 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.spark.mllib.util.MLDataSplitter
+import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 import org.apache.spark.rdd.RDD
 
-// Implicits needed for JSON conversion
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.sql
+import spray.json._
+
+case class AssignSampleArgs(frame: FrameReference,
+                            samplePercentages: List[Double],
+                            sampleLabels: Option[List[String]] = None,
+                            outputColumn: Option[String] = None,
+                            randomSeed: Option[Int] = None) {
+  require(frame != null, "AssignSample requires a non-null dataframe.")
+
+  require(samplePercentages != null, "AssignSample requires that the percentages vector be non-null.")
+
+  require(samplePercentages.forall(_ >= 0.0d), "AssignSample requires that all percentages be non-negative.")
+  require(samplePercentages.forall(_ <= 1.0d), "AssignSample requires that all percentages be no more than 1.")
+
+  val sumOfPercentages = samplePercentages.reduce(_ + _)
+
+  require(sumOfPercentages > 1.0d - 0.000000001, "AssignSample:  Sum of provided probabilities falls below one.")
+  require(sumOfPercentages < 1.0d + 0.000000001, "AssignSample:  Sum of provided probabilities exceeds one.")
+
+  def splitLabels: Array[String] = if (sampleLabels.isEmpty) {
+    if (samplePercentages.length == 3) {
+      Array("TR", "TE", "VA")
+    }
+    else {
+      (0 to samplePercentages.length - 1).map(i => "Sample#" + i).toArray
+    }
+  }
+  else {
+    sampleLabels.get.toArray
+  }
+}
+
+/** Json conversion for arguments case class */
+object AssignSampleJsonFormat {
+  implicit val CCFormat = jsonFormat5(AssignSampleArgs)
+}
+
+import AssignSampleJsonFormat._
 
 /**
  * Assign classes to rows.
  */
 class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntity] {
 
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   *
-   * The format of the name determines how the plugin gets "installed" in the client layer
-   * e.g Python client via code generation.
-   */
   override def name: String = "frame/assign_sample"
 
   /**
    * Assign classes to rows.
    *
+   * @param arguments command arguments
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
 
     val frames = engine.frames
     val ctx = sc
 
-    // validate arguments
     val frameID = arguments.frame.id
     val frame = frames.expectFrame(frameID)
     val splitPercentages = arguments.samplePercentages.toArray
@@ -73,28 +103,16 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
       throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
     val seed = arguments.randomSeed.getOrElse(0)
 
-    val splitLabels: Array[String] = if (arguments.sampleLabels.isEmpty) {
-      if (splitPercentages.length == 3) {
-        Array("TR", "TE", "VA")
-      }
-      else {
-        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
-      }
-    }
-    else {
-      arguments.sampleLabels.get.toArray
-    }
-
     // run the operation
-    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
-    val labeledRDD = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
-    val splitRDD: RDD[Seq[Any]] = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
+    val splitter = new MLDataSplitter(splitPercentages, arguments.splitLabels, seed)
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
 
-    val outputRDD: RDD[Rows.Row] = splitRDD.map({ case (x: Seq[Any]) => x.toArray[Any] })
+    val splitRDD: RDD[Rows.Row] =
+      labeledRDD.map((x: LabeledLine[String, sql.Row]) => x.entry.asInstanceOf[Array[Any]] :+ x.label.asInstanceOf[Any])
 
     val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
 
     // save results
-    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, outputRDD))
+    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
   }
 }
