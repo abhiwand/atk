@@ -12,7 +12,7 @@ Annotate Weighted Degrees.
     output_graph_name : str
         The name of the new graph to which the results are written.
 
-        output_property_name : str
+    output_property_name : str
         The name of the new property to which the
 
     degree_option : str (optional)
@@ -110,6 +110,4 @@ Annotate Weighted Degrees.
        u'titanPhysicalId': 28064,
        u'weight': 0}],
      u'run_time_seconds': 1.326}
-
-
      .. versionadded:: 1.0
