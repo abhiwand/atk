@@ -342,7 +342,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Int, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
+  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
     withContext("frame.getPagedRowsRDD") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
@@ -361,7 +361,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param count number of records to retrieve
    * @return records in the dataframe starting from offset with a length of count
    */
-  override def getRows(frame: FrameEntity, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row] =
+  override def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
