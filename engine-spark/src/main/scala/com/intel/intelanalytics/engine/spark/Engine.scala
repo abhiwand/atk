@@ -375,7 +375,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     implicit val inv = invocation
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
       val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
-      val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+      val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }
     else {
