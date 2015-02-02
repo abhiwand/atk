@@ -35,7 +35,7 @@ case class AssignSampleArgs(frame: FrameReference,
   require(samplePercentages.forall(_ >= 0.0d), "AssignSample requires that all percentages be non-negative.")
   require(samplePercentages.forall(_ <= 1.0d), "AssignSample requires that all percentages be no more than 1.")
 
-  val sumOfPercentages = samplePercentages.reduce(_+_)
+  val sumOfPercentages = samplePercentages.reduce(_ + _)
 
   require(sumOfPercentages > 1.0d - 0.000000001, "AssignSample:  Sum of provided probabilities falls below one.")
   require(sumOfPercentages < 1.0d + 0.000000001, "AssignSample:  Sum of provided probabilities exceeds one.")
