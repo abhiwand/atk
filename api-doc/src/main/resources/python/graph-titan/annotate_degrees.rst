@@ -54,6 +54,7 @@
 
     h.query.gremlin('g.V [ 0 .. 1]')
 
+
     Out[14]:
         {u'results': [{u'_id': 16384,
         u'_label': u'vertex',
