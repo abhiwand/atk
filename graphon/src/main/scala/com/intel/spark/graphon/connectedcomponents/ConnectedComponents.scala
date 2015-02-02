@@ -98,8 +98,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val config = configuration
 
     // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     // Read the graph from Titan
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
@@ -119,8 +118,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
     val newGraphName = Some(arguments.output_graph_name)
-    val newGraph = Await.result(engine.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan)),
-      config.getInt("default-timeout") seconds)
+    val newGraph = engine.graphs.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)

@@ -90,8 +90,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val config = configuration
 
     // get the input graph object
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     // get SparkContext and add the graphon jar
     sc.addJar(SparkContextFactory.jarPath("graphon"))
@@ -112,7 +111,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = Some(FrameName.generate(prefix = Some("graph_")))
 
-    val subgraph = Await.result(engine.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan)), config.getInt("default-timeout") seconds)
+    val subgraph = engine.graphs.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan))
 
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name.get)
