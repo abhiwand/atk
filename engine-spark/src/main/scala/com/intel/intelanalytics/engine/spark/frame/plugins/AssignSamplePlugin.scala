@@ -61,19 +61,26 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
    */
   override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
+
+    val floatingPointInexactitudeThreshold = 0.000000001d
     val frames = engine.frames
     val ctx = sc
 
     // validate arguments
     val frameID = arguments.frame.id
     val frame = frames.expectFrame(frameID)
-    val splitPercentages = arguments.sample_percentages.toArray
-    val outputColumn = arguments.output_column.getOrElse("sample_bin")
+    val splitPercentages = arguments.samplePercentages.toArray
+
+    val sumOfPercentages : Double = splitPercentages.reduce(_+_)
+
+
+
+    val outputColumn = arguments.outputColumn.getOrElse("sample_bin")
     if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
       throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
-    val seed = arguments.random_seed.getOrElse(0)
+    val seed = arguments.randomSeed.getOrElse(0)
 
-    val splitLabels: Array[String] = if (arguments.sample_labels.isEmpty) {
+    val splitLabels: Array[String] = if (arguments.sampleLabels.isEmpty) {
       if (splitPercentages.length == 3) {
         Array("TR", "TE", "VA")
       }
@@ -82,7 +89,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
       }
     }
     else {
-      arguments.sample_labels.get.toArray
+      arguments.sampleLabels.get.toArray
     }
 
     // run the operation
