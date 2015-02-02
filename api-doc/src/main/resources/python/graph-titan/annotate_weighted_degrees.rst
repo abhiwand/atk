@@ -38,7 +38,6 @@ Annotate Weighted Degrees.
 
     Returns
     -------
-    The return value is a dictionary containing one key value pair.
 
     graph : BigGraph
         A graph object that is a copy of the input graph with the addition that every vertex of the graph
