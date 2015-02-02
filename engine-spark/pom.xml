@@ -341,5 +341,9 @@
             <groupId>com.twitter</groupId>
             <artifactId>parquet-column</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>imahout</artifactId>
+        </dependency>
     </dependencies>
 </project>
