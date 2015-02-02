@@ -110,5 +110,4 @@ Annotate Weighted Degrees.
        u'titanPhysicalId': 28064,
        u'weight': 0}],
      u'run_time_seconds': 1.326}
-
      .. versionadded:: 1.0
