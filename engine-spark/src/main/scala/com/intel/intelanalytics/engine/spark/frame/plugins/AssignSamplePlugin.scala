@@ -23,20 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameReference, AssignSampleArgs, FrameEntity }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, LegacyFrameRDD }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.spark.mllib.util.MLDataSplitter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -66,7 +60,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
   override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
 
-    val floatingPointInexactitudeThreshold = 0.000000001d
     val frames = engine.frames
     val ctx = sc
 
@@ -75,10 +68,8 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val frame = frames.expectFrame(frameID)
     val splitPercentages = arguments.samplePercentages.toArray
 
-    val sumOfPercentages: Double = splitPercentages.reduce(_ + _)
-
     val outputColumn = arguments.outputColumn.getOrElse("sample_bin")
-    if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
+    if (frame.schema.hasColumn(outputColumn))
       throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
     val seed = arguments.randomSeed.getOrElse(0)
 
