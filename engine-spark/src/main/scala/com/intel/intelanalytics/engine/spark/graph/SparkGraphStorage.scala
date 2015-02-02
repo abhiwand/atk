@@ -256,6 +256,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
    */
+  @deprecated("please use expectGraph() instead")
   override def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.lookup") {
       implicit session =>
