@@ -15,6 +15,13 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     with EventLogging
     with EventLoggingImplicits {
 
+  /**
+   * makes a copy of the titan graph's underlying table in the HBase
+   *
+   * @param graphName Name of the titan graph that is to copied
+   * @param newName Name provided for the copy
+   * @return
+   */
   override def copyUnderlyingTable(graphName: String, newName: Option[String])(implicit invocation: Invocation): Unit = {
     val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
     try {

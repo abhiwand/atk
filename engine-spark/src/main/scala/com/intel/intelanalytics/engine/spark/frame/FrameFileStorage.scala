@@ -75,13 +75,6 @@ class FrameFileStorage(fsRoot: String,
     new Path(framesBaseDirectory + "/" + frameId)
   }
 
-  //  def copy(fromFrame: FrameEntity, toFrame: FrameReference, sc: SparkContext): Unit = {
-  //    if (!frameBaseDirectoryExists(fromFrame)) {
-  //      throw new IllegalArgumentException(s"Source frame id ${fromFrame.id} for copy does NOT exist")
-  //    }
-  //    //hdfs.copy(frameBaseDirectory(fromFrame.id), frameBaseDirectory(toFrame.id))
-  //  }
-
   /**
    * Determine if a dataFrame is saved as parquet
    * @param dataFrame the data frame to verify
