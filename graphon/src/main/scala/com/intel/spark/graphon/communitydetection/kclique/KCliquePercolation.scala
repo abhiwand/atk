@@ -110,8 +110,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val config = configuration
 
     // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = engine.graphs.expectGraph(arguments.graph.id)
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
     val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, arguments.cliqueSize, arguments.communityPropertyLabel)
 
