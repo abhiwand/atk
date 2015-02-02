@@ -47,11 +47,11 @@ case class LabeledLine[L: ClassTag, T: ClassTag](label: L, entry: T)
 class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: Int) extends Serializable {
 
   // verify percentages
-  if (!percentages.forall(p => p > 0)) {
+  if (!percentages.forall(p => p > 0d)) {
     throw new SparkException("Some percentage numbers are negative or zero.")
   }
 
-  if (Math.abs(percentages.sum - 1) > 0.001) {
+  if (Math.abs(percentages.sum - 1.0d) > 0.000000001d) {
     throw new SparkException("Summation of percentages isn't equal to 1.")
   }
 
@@ -59,8 +59,12 @@ class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: In
     throw new SparkException("Number of class labels differs from number of percentages given.")
   }
 
-  var cdf = percentages.scanLeft(0D)(_ + _)
+  var cdf : Array[Double] = percentages.scanLeft(0.0d)(_ + _)
   cdf = cdf.drop(1)
+
+  // clamp the final value to 1.0d so that we cannot get rare (but in big data, still possible!)
+  // occurrences where the sample value falls between the gap of the summed input probabilities and 1.0d
+  cdf(cdf.length -1) = 1.0d
 
   /**
    * Randomly label each entry of an input RDD according to user specified percentage
