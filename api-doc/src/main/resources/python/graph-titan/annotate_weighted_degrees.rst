@@ -12,7 +12,7 @@ Annotate Weighted Degrees.
     output_graph_name : str
         The name of the new graph to which the results are written.
 
-        output_property_name : str
+    output_property_name : str
         The name of the new property to which the
 
     degree_option : str (optional)
@@ -38,53 +38,76 @@ Annotate Weighted Degrees.
 
     Returns
     -------
-    The return value is a dictionary containing one key value pair.
 
-    graph : string
-        The name of a graph object that is a copy of the input graph with the addition that every vertex of the graph
+    graph : BigGraph
+        A graph object that is a copy of the input graph with the addition that every vertex of the graph
         has its weighted :term:`degree` stored in a user-specified property.
 
     Examples
     --------
     Suppose you have a directed graph with three nodes and two edges like this:
 
-    >>> g.query.gremlin("g.V [0..2]")
-    {u'results': [{u'_vid': 4, u'source': 3, u'_type': u'vertex', u'_id': 30208, u'_label': u'vertex'},
-     {u'_vid': 3, u'source': 2, u'_type': u'vertex', u'_id': 19992, u'_label': u'vertex'},
-      {u'_vid': 1, u'source': 1, u'_type': u'vertex', u'_id': 23384, u'_label': u'vertex'}],
-       u'run_time_seconds': 2.165}
+    g.query.gremlin('g.V')
+        Out[23]:
+        {u'results': [{u'_id': 28304,
+           u'_label': u'vertex',
+           u'_type': u'vertex',
+           u'_vid': 4,
+           u'source': 2},
+          {u'_id': 21152,
+           u'_label': u'vertex',
+           u'_type': u'vertex',
+           u'_vid': 1,
+           u'source': 1},
+          {u'_id': 28064,
+           u'_label': u'vertex',
+           u'_type': u'vertex',
+           u'_vid': 3,
+           u'source': 3}],
+         u'run_time_seconds': 1.245}
 
-    You can calculate its weighted out-degrees as follows:
-    >>> g.annotate_weighted_degrees(output_graph_name = 'weighty_graph', output_property_name = 'weight', edge_weight_property = 'weight')
+    g.query.gremlin('g.E')
+        Out[24]:
+        {u'results': [{u'_eid': 3,
+           u'_id': u'34k-gbk-bth-lnk',
+           u'_inV': 28064,
+           u'_label': u'edge',
+           u'_outV': 21152,
+           u'_type': u'edge',
+           u'weight': 0.01},
+          {u'_eid': 4,
+           u'_id': u'1xw-gbk-bth-lu8',
+           u'_inV': 28304,
+           u'_label': u'edge',
+           u'_outV': 21152,
+           u'_type': u'edge',
+           u'weight': 0.1}],
+         u'run_time_seconds': 1.359}
 
-    {u'graph': u'weighty_graph'}
+    h = g.annotate_weighted_degrees('new_graph', 'weight',  edge_weight_property = 'weight')
 
-    And check out the newly annotated weighted out-degrees as:
-    >>> t = ia.get_graph('weighty_graph')
-    >>> t.query.gremlin("g.V [0..2]")
-
-    {u'results': [{u'_id': 21208,
+    h.query.gremlin('g.V')
+    Out[26]:
+    {u'results': [{u'_id': 24112,
+       u'_label': u'vertex',
+       u'_type': u'vertex',
+       u'_vid': 4,
+       u'source': 2,
+       u'titanPhysicalId': 28304,
+       u'weight': 0},
+      {u'_id': 17648,
        u'_label': u'vertex',
        u'_type': u'vertex',
        u'_vid': 1,
        u'source': 1,
        u'titanPhysicalId': 21152,
        u'weight': 0.11},
-      {u'_id': 31704,
+      {u'_id': 30568,
        u'_label': u'vertex',
        u'_type': u'vertex',
        u'_vid': 3,
        u'source': 3,
        u'titanPhysicalId': 28064,
-       u'weight': 0},
-      {u'_id': 24560,
-       u'_label': u'vertex',
-       u'_type': u'vertex',
-       u'_vid': 4,
-       u'source': 2,
-       u'titanPhysicalId': 28304,
        u'weight': 0}],
-     u'run_time_seconds': 1.192}
-
-
+     u'run_time_seconds': 1.326}
      .. versionadded:: 1.0

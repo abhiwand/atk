@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
 // Copyright 2014 Intel Corporation All Rights Reserved.
@@ -19,18 +19,27 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+package com.intel.spark.graphon.graphconversions
 
-package com.intel.intelanalytics.domain.query
+import com.intel.graphbuilder.elements.GBEdge
+import org.apache.spark.graphx.{ Edge => GraphXEdge }
 
-/**
- * Describes the arguments necessary for an execution of a get rows command. Can be used as the input for any command
- *
- * @param id Primary key of object that contains the data needed to be retrieved.
- * @param offset Starting offset of data
- * @param count Number of records to return
- * @tparam Identifier DataType of Primary Key. Will usually be a Long
- */
-case class RowQuery[Identifier](id: Identifier, offset: Long, count: Long) {
-  require(count >= 0, s"Bad count value $count. Count must be >= 0.")
+object GraphConversions {
+
+  /**
+   * Converts GraphBuilder edges (ATK internal representation) into GraphX edges.
+   *
+   * @param gbEdge Incoming ATK edge to be converted into a GraphX edge.
+   * @param canonicalOrientation If true, edges are placed in a canonical orientation in which src < dst.
+   * @return GraphX representation of the incoming edge.
+   */
+  def createGraphXEdgeFromGBEdge(gbEdge: GBEdge, canonicalOrientation: Boolean = false): GraphXEdge[Long] = {
+    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
+    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
+    if (canonicalOrientation && srcId > destId)
+      GraphXEdge[Long](destId, srcId)
+    else
+      GraphXEdge[Long](srcId, destId)
+  }
 }
