@@ -100,6 +100,11 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       outputStream.flush()
       outputStream.close()
     }
+    finally
+    {
+      outputStream.flush()
+      outputStream.close()
+    }
   }
 
   override def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
