@@ -75,7 +75,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       val p = Runtime.getRuntime.exec("hbase shell -n")
       outputStream = p.getOutputStream
 
-      IOUtils.write("disable tableName\nmajor_compact \".META.\"\ndrop tableName", outputStream)
+      IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
       outputStream.flush()
       outputStream.close()
 
