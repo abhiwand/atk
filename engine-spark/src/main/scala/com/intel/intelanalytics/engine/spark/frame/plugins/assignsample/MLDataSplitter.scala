@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
+
+import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.AuxiliaryRDD
+
 import org.apache.spark.SparkException
 import org.apache.spark.rdd._
 
