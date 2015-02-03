@@ -44,10 +44,7 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with Matchers {
     val rnd = new Random(41)
     val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
 
-    val sc = new SparkContext(new SparkConf().setMaster("local")
-      .setAppName(this.getClass.getSimpleName + " " + new Date())
-    )
-    val testRDD = sc.parallelize(testData, 2)
+    val testRDD = sparkContext.parallelize(testData, 2)
 
     // test the size of generated RDD
     val nTotal = testRDD.count()

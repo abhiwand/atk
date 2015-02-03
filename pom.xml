@@ -776,11 +776,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>igiraph</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>imlib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <!--END bda dependencies-->
             <!--STARTititan-->
             <dependency>
