@@ -61,15 +61,6 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
   override def name: String = "frame/bin_column"
 
   /**
-   * Number of Spark jobs that get created by running this command
-   * (this configuration is used to prevent multiple progress bars in Python client)
-   */
-  override def numberOfJobs(arguments: BinColumnArgs)(implicit invocation: Invocation) = arguments.binType match {
-    case Some("equaldepth") => 8
-    case _ => 7
-  }
-
-  /**
    * Column values into bins.
    *
    * Two types of binning are provided: equalwidth and equaldepth.
@@ -94,13 +85,13 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
     val binColumnName = arguments.binColumnName.getOrElse(frame.meta.schema.getNewColumnName(arguments.columnName + "_binned"))
     if (frame.meta.schema.hasColumn(binColumnName))
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
-    val binType = arguments.binType.getOrElse("equalwidth")
-    require(binType == "equalwidth" || binType == "equaldepth", "bin type must be 'equalwidth' or 'equaldepth', not " + binType)
 
     // run the operation and save results
     val updatedSchema = frame.meta.schema.addColumn(binColumnName, DataTypes.int32)
     val rdd = frame.data
-    val binnedRdd = DiscretizationFunctions.bin(columnIndex, binType, arguments.numBins, rdd)
+    val binnedRdd = DiscretizationFunctions.binColumns(columnIndex, arguments.cutoffs,
+      arguments.includeLowest.getOrElse(true), arguments.strictBinning.getOrElse(false), rdd)
+
     save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedRdd))).meta
   }
 }

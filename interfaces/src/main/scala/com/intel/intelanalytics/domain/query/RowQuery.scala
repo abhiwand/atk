@@ -31,6 +31,6 @@ package com.intel.intelanalytics.domain.query
  * @param count Number of records to return
  * @tparam Identifier DataType of Primary Key. Will usually be a Long
  */
-case class RowQuery[Identifier](id: Identifier, offset: Long, count: Int) {
+case class RowQuery[Identifier](id: Identifier, offset: Long, count: Long) {
   require(count >= 0, s"Bad count value $count. Count must be >= 0.")
 }
