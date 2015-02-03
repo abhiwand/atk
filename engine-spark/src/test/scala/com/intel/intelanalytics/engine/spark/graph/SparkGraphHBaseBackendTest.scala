@@ -28,23 +28,23 @@ class SparkGraphHBaseBackendTest extends WordSpec with Matchers with MockitoSuga
   //    }
   //  }
 
-  "Quietly deleting a table that does exist" should {
-    "cause table to be disabled and deleted" in {
-      val userTableName = "mytable"
-      val internalTableName = "iat_graph_mytable"
-      val mockHBaseAdmin = mock[HBaseAdmin]
-      when(mockHBaseAdmin.tableExists(internalTableName)).thenReturn(true)
-      when(mockHBaseAdmin.isTableEnabled(internalTableName)).thenReturn(true)
-
-      val hbaseAdminFactory = mock[HBaseAdminFactory]
-      when(hbaseAdminFactory.createHBaseAdmin()).thenReturn(mockHBaseAdmin)
-
-      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory)
-
-      sparkGraphHBaseBackend.deleteUnderlyingTable(userTableName, quiet = true)
-
-      verify(mockHBaseAdmin, times(1)).disableTable(internalTableName)
-      verify(mockHBaseAdmin, times(1)).deleteTable(internalTableName)
-    }
-  }
+//  "Quietly deleting a table that does exist" should {
+//    "cause table to be disabled and deleted" in {
+//      val userTableName = "mytable"
+//      val internalTableName = "iat_graph_mytable"
+//      val mockHBaseAdmin = mock[HBaseAdmin]
+//      when(mockHBaseAdmin.tableExists(internalTableName)).thenReturn(true)
+//      when(mockHBaseAdmin.isTableEnabled(internalTableName)).thenReturn(true)
+//
+//      val hbaseAdminFactory = mock[HBaseAdminFactory]
+//      when(hbaseAdminFactory.createHBaseAdmin()).thenReturn(mockHBaseAdmin)
+//
+//      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory)
+//
+//      sparkGraphHBaseBackend.deleteUnderlyingTable(userTableName, quiet = true)
+//
+//      verify(mockHBaseAdmin, times(1)).disableTable(internalTableName)
+//      verify(mockHBaseAdmin, times(1)).deleteTable(internalTableName)
+//    }
+//  }
 }
