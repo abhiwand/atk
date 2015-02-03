@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.io.{ InputStream, OutputStream }
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem, FileUtil }
+import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem}
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import com.intel.event.{ EventContext, EventLogging }
 
