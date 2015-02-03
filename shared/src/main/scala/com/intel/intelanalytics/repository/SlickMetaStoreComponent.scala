@@ -626,10 +626,19 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
         case None => false
         case Some(g) => {
           val graph = metaStore.graphRepo.lookup(g)(session.asInstanceOf[metaStore.Session])
-          metaStore.graphRepo.isLive(graph.get)
+          metaStore.graphRepo.isLive(graph.get)(session.asInstanceOf[metaStore.Session])
         }
       }
     }
+
+    /**
+     * determines if a frame is live from its metadat
+     * @param frame frame in question
+     */
+    override def isLive(frame: FrameEntity): Boolean = {
+      frame.name.isDefined && frame.status != Status.Dead && frame.status != Status.Deleted
+    }
+
     /**
      * Return a list of entities ready to delete metadata
      * @param age the length of time in milliseconds for the newest possible record to be deleted
@@ -647,9 +656,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session
      */
     def hasLiveChildren(id: Long)(implicit session: Session): Boolean = {
-      frames.where(f => f.parentId === id &&
+      val list = frames.where(f => f.parentId === id &&
         f.statusId =!= Status.Dead &&
-        f.statusId =!= Status.Deleted).list.length > 0
+        f.statusId =!= Status.Deleted).list
+      list.filter(f => !hasLiveChildren(f.id)).length > 0
     }
 
     /**
@@ -1015,8 +1025,15 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * return true if the supplied graph is live.
      * @param g the graph in question
      */
-    override def isLive(g: GraphEntity): Boolean = {
-      g.name == None && g.statusId != Status.Dead && g.statusId != Status.Deleted
+    override def isLive(g: GraphEntity)(implicit session: Session): Boolean = {
+      val live = g.name.isDefined && g.statusId != Status.Dead && g.statusId != Status.Deleted
+      if (live) {
+        true
+      }
+      else {
+        val frames = metaStore.frameRepo.lookupByGraphId(g.id)(session.asInstanceOf[metaStore.Session])
+        frames.filter(f => metaStore.frameRepo.isLive(f)).length > 0
+      }
     }
 
     /**
@@ -1026,12 +1043,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[GraphEntity] = {
       val oldestDate = DateTime.now.minus(age)
-      (for (
+      val list = (for (
         g <- graphs; if g.name.isNull &&
           g.statusId =!= Status.Dead &&
           g.statusId =!= Status.Deleted &&
           g.lastReadDate < oldestDate
       ) yield g).list
+      list.filter(g => !isLive(g))
     }
 
     /**
