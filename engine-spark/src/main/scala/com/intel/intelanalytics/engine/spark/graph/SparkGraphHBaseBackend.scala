@@ -43,15 +43,26 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       val exitValue = p.waitFor()
       info(s"Hbase shell exited with Exit Value: $exitValue")
 
-      if (exitValue != 0) {
+      if (exitValue == 1) {
         throw new IllegalArgumentException(
-          s"Unable to copy the requested HBase table $tableName.")
+          s"Unable to copy the requested HBase table $tableName. Verify there is no name conflict with existing HBase tables.")
       }
     }
     catch {
+      case ex: IllegalArgumentException => {
+        info(s"Unable to copy the requested HBase table: $tableName. Verify there is no name conflict with existing HBase tables. Exception: $ex")
+        val p = Runtime.getRuntime.exec("hbase shell -n")
+        outputStream = p.getOutputStream
+
+        IOUtils.write(s"delete_snapshot '${tableName}-snapshot'\n", outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        throw ex
+      }
       case _ => {
         info(s"Unable to copy the requested HBase table: $tableName.")
-        throw new IllegalArgumentException(
+        throw new Exception(
           s"Unable to copy the requested HBase table $tableName.")
       }
     }
@@ -92,16 +103,11 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
         info(s"Unable to delete the requested HBase table: $tableName.")
         if (!quiet) {
           throw new IllegalArgumentException(
-            s"Unable to delete the requested HBase table $tableName.")
+            s"Unable to delete the requested HBase table: $tableName.")
         }
       }
     }
     finally {
-      outputStream.flush()
-      outputStream.close()
-    }
-    finally
-    {
       outputStream.flush()
       outputStream.close()
     }
