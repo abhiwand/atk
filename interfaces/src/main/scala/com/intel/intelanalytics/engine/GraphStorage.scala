@@ -40,6 +40,7 @@ trait GraphStorage {
   /** Lookup a Graph, throw an Exception if not found */
   def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity
 
+  @deprecated("please use expectGraph() instead")
   def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity]
 
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): GraphEntity
