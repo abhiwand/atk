@@ -74,9 +74,10 @@ class SizeOnDiskPlugin extends SparkCommandPlugin[FrameNoArgs, LongValue] {
     // run the operation
     val frameRdd = frames.loadFrameData(sc, frame)
 
-    // This 2 lines need to be removed and replaced with the actual frame's size on disk
-    val dummySizeOnDisk = new LongValue(0)
-    return dummySizeOnDisk
-    //new LongValue(frameRdd.sizeOnDisk)
+    val frameSize = frames.getSizeInBytes(frame) match {
+      case Some(size) => LongValue(size)
+      case _ => throw new RuntimeException(s"Unable to calculate size of frame")
+    }
+    frameSize
   }
 }
