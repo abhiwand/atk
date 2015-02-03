@@ -29,8 +29,9 @@ import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.spark.mllib.util.MLDataSplitter
+import com.intel.spark.mllib.util.{LabeledLine, MLDataSplitter}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -87,14 +88,14 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
 
     // run the operation
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
-    val labeledRDD = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
-    val splitRDD: RDD[Seq[Any]] = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
 
-    val outputRDD: RDD[Rows.Row] = splitRDD.map({ case (x: Seq[Any]) => x.toArray[Any] })
+    val splitRDD: RDD[Rows.Row] =
+      labeledRDD.map((x: LabeledLine[String, sql.Row]) => x.entry.asInstanceOf[Array[Any]] :+ x.label.asInstanceOf[Any])
 
     val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
 
     // save results
-    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, outputRDD))
+    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
   }
 }
