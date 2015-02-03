@@ -41,6 +41,7 @@ class FrameClassificationTest(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
 
     def test_classification_metrics_001(self):
         print "define csv file"

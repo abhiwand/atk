@@ -44,6 +44,8 @@ class FrameHistogramTests(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
+
     def setUp(self):
         print "define csv file"
         self.csv = ia.CsvFile("/datasets/movie.csv", schema= [('user', ia.int32),
