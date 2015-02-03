@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package org.apache.spark.mllib.ia.plugins.clustering
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
@@ -39,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
-class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
+class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitReturn] {
 
   /**
    * The name of the command.
@@ -97,7 +98,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
+  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): UnitReturn = {
 
     val models = engine.models
     val frames = engine.frames
@@ -108,11 +109,15 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     //create RDD from the frame
     val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
 
+    //Extracting the KMeansModel from the stored JsObject
     val kmeansJsObject = modelMeta.data.get
-    val kmeansModel = kmeansJsObject.convertTo[KMeansModel]
+    val kmeansData = kmeansJsObject.convertTo[KMeansData]
+    val kmeansModel = kmeansData.kMeansModel
+    val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
 
+    //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
-      val array = row.valuesAsArray(arguments.observationColumns)
+      val array = row.valuesAsArray(kmeansColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
       val point = Vectors.dense(doubles)
       val prediction = kmeansModel.predict(point)
@@ -132,10 +137,8 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
 
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
-      save(new SparkFrameData(
-        newPredictedFrame.meta, predictFrameRDD))
-    }.meta
+    frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
+    new UnitReturn
   }
 
 }
