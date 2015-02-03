@@ -32,7 +32,8 @@ if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
-class FrameCopyTest(unittest.TestCase):
+
+class FrameBinColumnTest(unittest.TestCase):
     """
     Test all frame binning methods. using the flattenable dataset. all tests bin the number column
     number column goes from 1 to 10
@@ -42,6 +43,9 @@ class FrameCopyTest(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
+
+
     def setUp(self):
         print "define csv file"
         csv = ia.CsvFile("/datasets/flattenable.csv", schema= [('number', ia.int32),

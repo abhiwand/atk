@@ -26,35 +26,50 @@
 
     Return
     ------
-    The return value is a dictionary containing one key value pair.
 
-    graph : string
-        The name of a graph object that is a copy of the input graph with the addition that every vertex of the graph
+    graph : BigGraph
+        A graph that is a copy of the input graph with the addition that every vertex of the graph
         has its :term:`degree` stored in a user-specified property.
 
     Examples
     --------
     Suppose you have a graph like this:
 
-    >>> gt.query.gremlin("g.V [0..2]")
-    {u'results': [{u'_vid': 4, u'source': 3, u'_type': u'vertex', u'_id': 30208, u'_label': u'vertex'},
-     {u'_vid': 3, u'source': 2, u'_type': u'vertex', u'_id': 19992, u'_label': u'vertex'},
-      {u'_vid': 1, u'source': 1, u'_type': u'vertex', u'_id': 23384, u'_label': u'vertex'}],
-       u'run_time_seconds': 2.165}
+    g.query.gremlin('g.V [ 0 .. 1]')
 
-    You can calculate its in-degrees as follows:
-    >>> gt.annotate_degrees("dt_indegrees", "in_degree", "i")
-    {u'graph': u'dt_indegrees'}
+    Out[12]:
+        {u'results': [{u'_id': 19456,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 545413,
+        u'source': 6961},
+        {u'_id': 19968,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 511316,
+        u'source': 31599}],
+        u'run_time_seconds': 1.822}
 
-    And check out the newly annotated in-degrees as:
-    >>> t = ia.get_graph('dt_indegrees')
-    >>> t.query.gremlin("g.V [0..2]")
+    h = g.annotate_degrees('degreed_graph', 'degree')
 
-    {u'results': [ {u'_label': u'vertex', u'_type': u'vertex', u'source': 2, u'in_degree': 1, u'titanPhysicalId': 19992,
-                    u'_vid': 3, u'_id': 16928}, {u'_label': u'vertex', u'_type': u'vertex', u'source': 3,
-                    u'in_degree': 1, u'titanPhysicalId': 30208, u'_vid': 4, u'_id': 32640},
-                    {u'_label': u'vertex', u'_type': u'vertex', u'source': 1, u'in_degree': 0,
-                    u'titanPhysicalId': 23384, u'_vid': 1, u'_id': 18872}],
-                     u'run_time_seconds': 2.16}
+    h.query.gremlin('g.V [ 0 .. 1]')
+
+
+    Out[14]:
+        {u'results': [{u'_id': 16384,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 594142,
+        u'degree': 3,
+        u'source': 35562,
+        u'titanPhysicalId': 169968},
+        {u'_id': 25088,
+        u'_label': u'vertex',
+        u'_type': u'vertex',
+        u'_vid': 676474,
+        u'degree': 1,
+        u'source': 31035,
+        u'titanPhysicalId': 292368}],
+        u'run_time_seconds': 1.428}
 
         .. versionadded:: 1.0
