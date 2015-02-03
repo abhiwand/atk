@@ -37,8 +37,6 @@ rm -rf $parcelDir/usr/lib/intelanalytics/rest-client/python
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root
 
-cp $parcelDir-el6.parcel /home/rodorad/Documents/parcels/parcels/
-python /home/rodorad/Documents/parcels/cm_ext/make_manifest/make_manifest.py /home/rodorad/Documents/parcels/parcels/
 popd
 
 rm -rf $parcelDir
