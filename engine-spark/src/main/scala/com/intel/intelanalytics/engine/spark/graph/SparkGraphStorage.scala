@@ -176,21 +176,23 @@ class SparkGraphStorage(metaStore: MetaStore,
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
     val graphCopy = createGraph(GraphTemplate(name))
-    if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.name.get, name)
+    val storageName = {
+      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph"))))
+    }
 
-      val storageName = GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(graph.name.get + "-2"))
-      metaStore.withSession("spark.graphstorage.copyGraph") {
-        implicit session =>
-          {
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
-          }
-      }
+    metaStore.withSession("spark.graphstorage.copyGraph") {
+      implicit session =>
+        {
+          metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
+        }
+    }
+    if (graph.isTitan) {
+      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
     }
     else {
       val graphMeta = expectSeamless(graph.id)
       val framesToCopy = graphMeta.frameEntities.map(_.toReference)
-      val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkContext])
+      val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
 
       metaStore.withSession("spark.graphstorage.copyGraph") {
         implicit session =>

@@ -35,5 +35,5 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 trait GraphBackendStorage {
   def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation)
   def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation)
-  def copyUnderlyingTable(graphName: String, name: Option[String])(implicit invocation: Invocation)
+  def copyUnderlyingTable(graphName: String, name: String)(implicit invocation: Invocation)
 }
