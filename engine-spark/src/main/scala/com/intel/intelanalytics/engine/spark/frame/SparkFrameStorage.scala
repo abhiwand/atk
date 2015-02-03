@@ -388,6 +388,25 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
+  /**
+   * Size of frame in bytes
+   *
+   * @param frameEntity reference to a data frame
+   * @return Optional size of frame in bytes
+   */
+  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
+    (frameEntity.storageFormat, frameEntity.storageLocation) match {
+      case (Some("file/parquet"), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case (Some("file/sequence"), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case _ => {
+        warn(s"Could not get size of frame ${frameEntity.id} / ${frameEntity.name}")
+        None
+      }
+    }
+  }
+
   def getReader(frame: FrameEntity)(implicit invocation: Invocation): ParquetReader = {
     withContext("frame.getReader") {
       require(frame != null, "frame is required")
