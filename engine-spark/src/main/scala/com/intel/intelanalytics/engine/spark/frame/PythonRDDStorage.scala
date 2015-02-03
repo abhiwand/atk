@@ -109,7 +109,7 @@ object PythonRDDStorage {
 
     val pyRdd = new EnginePythonRDD[String](
       baseRdd, predicateInBytes, environment,
-      pyIncludes, preservePartitioning = false,
+      pyIncludes, preservePartitioning = true,
       pythonExec = pythonExec,
       broadcastVars, accumulator)
     pyRdd

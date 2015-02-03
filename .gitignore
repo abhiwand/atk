@@ -1,5 +1,4 @@
 scratch.py
-
 .ensime*
 TAGS
 dependency-reduced-pom.xml
@@ -53,7 +52,6 @@ tags
 *.diff
 patches-*
 virtpy
-lib
 *.jar
 *.orig
 atlassian-ide-plugin.xml
