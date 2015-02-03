@@ -23,10 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
-import java.util.Date
-
 import com.intel.testutils.TestingSparkContextFunSuite
-import org.apache.spark.{ SparkConf, SparkContext }
 import org.scalatest.Matchers
 
 import scala.util.Random
