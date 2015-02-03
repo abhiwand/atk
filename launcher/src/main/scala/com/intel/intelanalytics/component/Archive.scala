@@ -30,39 +30,19 @@ import com.typesafe.config.{ ConfigParseOptions, ConfigFactory, Config }
 
 import scala.reflect.ClassTag
 import scala.reflect.io.{ File, Directory, Path }
+import scala.util.Try
 
-trait Archive extends Component with ClassLoaderAware {
+abstract class Archive(val definition: ArchiveDefinition, val classLoader: ClassLoader, config: Config)
+    extends Component with ClassLoaderAware {
 
-  private var _classLoader: Option[ClassLoader] = None
-  private var _definition: Option[ArchiveDefinition] = None
-
-  /**
-   * The class loader associated with the archive
-   */
-  def classLoader: ClassLoader = attempt(_classLoader.get, "Archive has not been initialized")
+  //Component initialization
+  init(definition.name, config)
 
   /**
    * Execute a code block using the ClassLoader defined in the {classLoader} member
    * rather than the class loader that loaded this class or the current thread class loader.
    */
   override def withMyClassLoader[T](expression: => T): T = withLoader(classLoader)(expression)
-
-  /**
-   * Configuration / definition of the archive, including name and other
-   * useful information
-   */
-  def definition: ArchiveDefinition = attempt(_definition.get, "Archive has not been initialized")
-
-  /**
-   * Called on archive creation to initialize the archive
-   */
-  private[intelanalytics] def initializeArchive(definition: ArchiveDefinition,
-                                                configuration: Config,
-                                                classLoader: ClassLoader) = {
-    init(definition.name, configuration)
-    this._classLoader = Some(classLoader)
-    this._definition = Some(definition)
-  }
 
   /**
    * Load and initialize a `Component` based on configuration path.
@@ -239,19 +219,15 @@ object Archive {
     case parent => parent
   }
 
-  private [component] val TMP = "/tmp/iat-" + java.util.UUID.randomUUID.toString + "/"
+  private[component] val TMP = "/tmp/iat-" + java.util.UUID.randomUUID.toString + "/"
 
-  //Initialize system with Config that includes only normal class loader. This should be enough for
-  //anything that's supposed to be a default parent archive.
-  var _system = new SystemConfig(ConfigFactory.load())
+  private lazy val defaultParentArchiveClassLoader = buildClassLoader(defaultParentArchiveName, getClass.getClassLoader)
 
-  private val defaultParentArchiveClassLoader = getArchive(defaultParentArchiveName).classLoader
-
-  //Now that we know the default parent archive, reload configs for the system with that in mind.
-  _system = _system.withRootConfiguration(ConfigFactory.load(defaultParentArchiveClassLoader))
+  //Now that we know the default parent loader, reload configs for the system with that in mind.
+  var _system = new SystemConfig(ConfigFactory.load(defaultParentArchiveClassLoader))
+  logger(s"System configuration installed")
 
   def system: SystemConfig = _system
-
 
   /**
    * Initializes an archive instance
@@ -266,7 +242,7 @@ object Archive {
                                 augmentedConfig: Config,
                                 instance: Archive) = {
 
-    instance.initializeArchive(definition, augmentedConfig, classLoader)
+    instance.init(definition.name, augmentedConfig)
 
     //Give each Archive a chance to clean up when the app shuts down
     Runtime.getRuntime.addShutdownHook(new Thread() {
@@ -276,26 +252,35 @@ object Archive {
     })
   }
 
+  private def getAugmentedConfig(archiveName: String, loader: ClassLoader) = {
+    val parseOptions = ConfigParseOptions.defaults()
+    parseOptions.setAllowMissing(true)
+
+    ConfigFactory.invalidateCaches()
+
+    val augmentedConfig = system.rootConfiguration.withFallback(
+      ConfigFactory.parseResources(loader, "reference.conf", parseOptions)
+        .withFallback(system.rootConfiguration)).resolve()
+
+    if (system.debugConfig)
+      writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
+
+    augmentedConfig
+  }
+
   /**
    * Main entry point for archive creation
    *
    * @param archiveName the archive to create
-   * @param inProgress The set of archive names that are already being created, used to detect circular parent chains
    * @return the created, running, `Archive`
    */
   private def buildArchive(archiveName: String,
-                           className: Option[String] = None,
-                           inProgress: List[String] = List.empty): Archive = {
-    require(!inProgress.contains(archiveName),
-      "Circular parent relationship among archives: " + (archiveName :: inProgress).mkString(","))
+                           className: Option[String] = None): Archive = {
     try {
       //We first create a standard plugin class loader, which we will use to query the config
       //to see if this archive needs special treatment (i.e. a parent class loader other than the
       //defaultParentArchive class loader)
       val probe = Archive.buildClassLoader(archiveName, defaultParentArchiveClassLoader)
-
-      val parseOptions = ConfigParseOptions.defaults()
-      parseOptions.setAllowMissing(true)
 
       val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
 
@@ -313,29 +298,31 @@ object Archive {
           Archive.getClass.getClassLoader
         }
         else {
-          buildArchive(definition.parent, inProgress = definition.name :: inProgress).classLoader
+          getArchive(definition.parent).classLoader
         }
       }
 
       val loader = Archive.buildClassLoader(archiveName, parentLoader)
 
-      ConfigFactory.invalidateCaches()
+      val augmentedConfig = getAugmentedConfig(archiveName, loader)
 
-      val augmentedConfig = system.rootConfiguration.withFallback(
-        ConfigFactory.parseResources(loader, "reference.conf", parseOptions)
-          .withFallback(system.rootConfiguration)).resolve()
+      val archiveClass = attempt(loader.loadClass(definition.className),
+        s"Archive class ${definition.className} not found")
 
-      if (system.debugConfig)
-        writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
-
-      val instance = attempt(loader.loadClass(definition.className).newInstance(),
+      val constructor = attempt(archiveClass.getConstructor(classOf[ArchiveDefinition],
+        classOf[ClassLoader],
+        classOf[Config]),
+        s"Class ${definition.className} does not have a constructor of the form (ArchiveDefinition, ClassLoader, Config)")
+      val instance = attempt(constructor.newInstance(definition, loader, augmentedConfig),
         s"Loaded class ${definition.className} in archive ${definition.name}, but could not create an instance of it")
 
       val archiveInstance = attempt(instance.asInstanceOf[Archive],
         s"Loaded class ${definition.className} in archive ${definition.name}, but it is not an Archive")
 
+      val restrictedConfig = Try { augmentedConfig.getConfig(definition.configPath) }.getOrElse(ConfigFactory.empty())
+
       withLoader(loader) {
-        initializeArchive(definition, loader, augmentedConfig.getConfig(definition.configPath), archiveInstance)
+        initializeArchive(definition, loader, restrictedConfig, archiveInstance)
         val currentSystem = system
         try {
           synchronized {
@@ -355,7 +342,7 @@ object Archive {
       archiveInstance
     }
     catch {
-      case e: Exception => throw new ArchiveInitException("Exception while building archive: " + archiveName, e)
+      case e: Throwable => throw new ArchiveInitException("Exception while building archive: " + archiveName, e)
     }
   }
 

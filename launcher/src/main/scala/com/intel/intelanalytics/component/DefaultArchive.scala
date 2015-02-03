@@ -29,9 +29,9 @@ import scala.reflect.ClassTag
 
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
 
-class DefaultArchive extends Archive {
+class DefaultArchive(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) {
 
   /**
    * Obtain instances of a given class. The keys are established purely

@@ -33,7 +33,7 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await
@@ -44,7 +44,8 @@ import scala.reflect.ClassTag
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Archive with EventLogging {
+class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging {
 
   EventLogging.raw = true
   info("API server setting log adapter from configuration")
