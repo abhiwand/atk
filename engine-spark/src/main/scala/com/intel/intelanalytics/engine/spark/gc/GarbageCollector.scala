@@ -5,6 +5,7 @@ import java.net.InetAddress
 import java.util.concurrent.{ Executors, TimeUnit, ScheduledFuture }
 
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -12,6 +13,8 @@ import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFram
 import com.intel.intelanalytics.repository.{ GarbageCollectableRepository, MetaStore, MetaStoreComponent }
 import com.typesafe.config.ConfigFactory
 import org.joda.time.DateTime
+
+import scala.util.Try
 
 /**
  * Runnable Thread that executes garbage collection of unused entities.
@@ -43,7 +46,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
             }
           }
           catch {
-            case e: Exception => error(e.toString)
+            case e: Exception => error("Exception Thrown during Garbage Collection", exception = e)
           }
       }
     }
@@ -81,23 +84,12 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
   def garbageCollectFrames(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
     //get weakly live records that are old
     metaStore.frameRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(frame => {
-      try {
-        val description = s"Deleting Data for DataFrame ID: ${frame.id} Name: ${frame.name}"
-        val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
-          new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
-        info(description)
-        frameStorage.delete(frame)
-        metaStore.frameRepo.updateDataDeleted(frame)
-        gcEntryRepo.updateEndTime(gcEntry)
-      }
-      catch {
-        case e: Exception => error(e.toString)
-      }
+      deleteFrameData(gc, frame)
     })
     //get dead records that are old
     metaStore.frameRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(frame => {
+      val description = s"Marking MetaData as Deleted for DataFrame ID: ${frame.id} Name: ${frame.name}"
       try {
-        val description = s"Marking MetaData as Deleted for DataFrame ID: ${frame.id} Name: ${frame.name}"
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
           new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
         info(description)
@@ -105,9 +97,29 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {
-        case e: Exception => error(e.toString)
+        case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
+  }
+
+  /**
+   * Method deletes data associated with a frame and places an entry into the GarbageCollectionEntry table
+   * @param gc garbage collection database entry
+   * @param frame frame to be deleted
+   */
+  def deleteFrameData(gc: GarbageCollection, frame: FrameEntity)(implicit sesion: metaStore.Session): Unit = {
+    val description = s"Deleting Data for DataFrame ID: ${frame.id} Name: ${frame.name}"
+    try {
+      val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
+        new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
+      info(description)
+      frameStorage.delete(frame)
+      metaStore.frameRepo.updateDataDeleted(frame)
+      gcEntryRepo.updateEndTime(gcEntry)
+    }
+    catch {
+      case e: Exception => error(s"Exception when: $description", exception = e)
+    }
   }
 
   /**
@@ -118,22 +130,23 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    */
   def garbageCollectGraphs(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
     metaStore.graphRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(graph => {
+      val description = s"Deleting Data for Graph ID: ${graph.id} Name: ${graph.name}"
       try {
-        val description = s"Deleting Data for Graph ID: ${graph.id} Name: ${graph.name}"
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
           new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
         info(description)
+        metaStore.frameRepo.lookupByGraphId(graph.id).foreach(frame => deleteFrameData(gc, frame))
         metaStore.graphRepo.updateDataDeleted(graph)
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {
-        case e: Exception => error(e.toString)
+        case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
 
     metaStore.graphRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(graph => {
+      val description = s"Deleting MetaData for Graph ID: ${graph.id} Name: ${graph.name}"
       try {
-        val description = s"Deleting MetaData for Graph ID: ${graph.id} Name: ${graph.name}"
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
           new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
         info(description)
@@ -141,7 +154,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {
-        case e: Exception => error(e.toString)
+        case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
   }
@@ -153,8 +166,8 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    */
   def garbageCollectModels(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
     metaStore.modelRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(model => {
+      val description = s"Deleting Data for Model ID: ${model.id} Name: ${model.name}"
       try {
-        val description = s"Deleting Data for Model ID: ${model.id} Name: ${model.name}"
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
           new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
         info(description)
@@ -162,13 +175,13 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {
-        case e: Exception => error(e.toString)
+        case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
 
     metaStore.modelRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(model => {
+      val description = s"Deleting MetaData for Model ID: ${model.id} Name: ${model.name}"
       try {
-        val description = s"Deleting MetaData for Model ID: ${model.id} Name: ${model.name}"
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
           new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
         info(description)
@@ -176,7 +189,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {
-        case e: Exception => error(e.toString)
+        case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
   }

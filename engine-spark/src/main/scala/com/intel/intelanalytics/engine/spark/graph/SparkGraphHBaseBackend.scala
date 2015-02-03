@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import java.io.OutputStream
+
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.GraphBackendStorage
@@ -23,10 +25,11 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
   override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
     // TODO: To be deleted later. Workaround for TRIB: 4318.
     val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    var outputStream: OutputStream = null
     try {
       //create a new process
       val p = Runtime.getRuntime.exec("hbase shell -n")
-      val outputStream = p.getOutputStream
+      outputStream = p.getOutputStream
 
       IOUtils.write("disable tableName\nmajor_compact \".META.\"\ndrop tableName", outputStream)
       outputStream.flush()
@@ -47,6 +50,11 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
           throw new IllegalArgumentException(
             s"Unable to delete the requested HBase table $tableName. Exception: $e")
         }
+    }
+    finally
+    {
+      outputStream.flush()
+      outputStream.close()
     }
   }
 
