@@ -40,6 +40,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
+import scala.collection.mutable.ListBuffer
+
 class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitReturn] {
 
   /**
@@ -120,21 +122,30 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
       val array = row.valuesAsArray(kmeansColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
       val point = Vectors.dense(doubles)
+
+      val clusterCenters = kmeansModel.clusterCenters
+
+      for (i <- 0 to (clusterCenters.length - 1)) {
+        val distance = toMahoutVector(point).getDistanceSquared(toMahoutVector(clusterCenters(i)))
+        row.addValue(distance)
+      }
       val prediction = kmeansModel.predict(point)
-      val clusterCenterValue = kmeansModel.clusterCenters(prediction)
-      val distance = toMahoutVector(point).getDistanceSquared(toMahoutVector(clusterCenterValue))
-      row.addValue(prediction)
-      row.addValue(distance)
+      row.addValue(prediction + 1)
     })
 
-    //val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_cluster", DataTypes.float64)
-    val columnNames: List[String] = List("predicted_cluster", "distance_from_cluster")
-    val columnTypes: List[String] = List(DataTypes.int32, DataTypes.float64)
+    //Updating the frame schema
+    var columnNames = new ListBuffer[String]()
+    var columnTypes = new ListBuffer[DataTypes.DataType]()
+    for (i <- 0 to (kmeansModel.clusterCenters.length - 1)) {
+      val colName = "distance_from_cluster_" + (i + 1).toString
+      columnNames += colName
+      columnTypes += DataTypes.float64
+    }
+    columnNames += "predicted_cluster"
+    columnTypes += DataTypes.int32
 
-    val newColumns = columnNames.zip(columnTypes.map(x => x: DataType))
-    val newSchema = new FrameSchema(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val newColumns = columnNames.toList.zip(columnTypes.toList.map(x => x: DataType))
     val updatedSchema = inputFrameRDD.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
-
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
     frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
