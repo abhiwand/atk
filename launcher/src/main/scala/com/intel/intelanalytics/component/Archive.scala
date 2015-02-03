@@ -206,11 +206,8 @@ object Archive {
    */
   private[component] def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
     val urls = Archive.getCodePathUrls(archive)
-    val loader = urls match {
-      case u if u.length > 0 => new ArchiveClassLoader(archive, u, parent)
-      case _ => throw new Exception(s"Could not locate archive $archive")
-    }
-    loader
+    require(urls.length > 0, s"Could not locate archive $archive")
+    new ArchiveClassLoader(archive, urls, parent)
   }
 
   private val defaultParentArchiveName = System.getenv("IAT_DEFAULT_ARCHIVE_PARENT") match {
