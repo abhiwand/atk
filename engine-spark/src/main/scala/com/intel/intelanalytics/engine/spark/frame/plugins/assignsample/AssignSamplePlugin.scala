@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
 import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -29,7 +29,6 @@ import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 

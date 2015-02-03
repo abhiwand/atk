@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.mllib.util
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
 import java.util.Random
 
@@ -30,14 +30,14 @@ import org.apache.spark.{ Partition, TaskContext }
 
 import scala.reflect.ClassTag
 
-private[spark] class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partition with Serializable {
+private[intelanalytics] class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partition with Serializable {
   override val index: Int = prev.index
 }
 
 /**
  * Class to generate auxiliary RDD from an input RDD. The generated RDD has the same
  * number of partitions as the input RDD, and each partition has the same number of entries
- * as the corresponding partition of input RDD. The entry values in auxilary RDD are random
+ * as the corresponding partition of input RDD. The entry values in auxiliary RDD are random
  * samples from a uniform distribution on [0, 1].
  *
  * @param prev: An input RDD as a blueprint.
