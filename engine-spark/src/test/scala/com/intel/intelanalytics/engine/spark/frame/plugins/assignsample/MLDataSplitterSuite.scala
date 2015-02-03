@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.mllib.util
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
 import java.util.Date
 
