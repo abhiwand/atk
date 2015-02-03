@@ -1,6 +1,7 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.event.EventContext
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import org.joda.time.DateTime
 import org.scalatest.Matchers
 import com.intel.intelanalytics.domain.graph.GraphTemplate
@@ -28,6 +29,7 @@ class GraphRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
   }
 
   it should "return a list of graphs ready to have their data deleted" in {
+    val frameRepo = slickMetaStoreComponent.metaStore.frameRepo
     val graphRepo = slickMetaStoreComponent.metaStore.graphRepo
     slickMetaStoreComponent.metaStore.withSession("graph-test") {
       implicit session =>
@@ -49,7 +51,18 @@ class GraphRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val graph3 = graphRepo.insert(new GraphTemplate(None)).get
         graphRepo.update(graph3.copy(lastReadDate = new DateTime()))
 
-        graphRepo.listReadyForDeletion(age).length should be(1)
+        //should not be in list has a named frame as part of it.
+        val graph4 = graphRepo.insert(new GraphTemplate(None)).get
+        graphRepo.update(graph4.copy(lastReadDate = new DateTime().minus(age * 2)))
+
+        val frame = frameRepo.insert(new DataFrameTemplate(Some("namedFrame"), None)).get
+        frameRepo.update(frame.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(graph4.id)))
+
+        val readyForDeletion = graphRepo.listReadyForDeletion(age)
+        val idList = readyForDeletion.map(g => g.id).toList
+        idList should contain(graph1.id)
+        println(idList)
+        readyForDeletion.length should be(1)
     }
   }
 
@@ -79,7 +92,10 @@ class GraphRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val graph4 = graphRepo.insert(new GraphTemplate(None)).get
         graphRepo.update(graph4.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 4))
 
-        graphRepo.listReadyForMetaDataDeletion(age).length should be(1)
+        val readyForDeletion = graphRepo.listReadyForMetaDataDeletion(age)
+        val idList = readyForDeletion.map(g => g.id).toList
+        idList should contain(graph1.id)
+        readyForDeletion.length should be(1)
     }
   }
 
