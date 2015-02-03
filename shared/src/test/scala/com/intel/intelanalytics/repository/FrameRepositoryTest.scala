@@ -120,7 +120,12 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame7 = frameRepo.insert(new DataFrameTemplate(None, None)).get
         frameRepo.update(frame7.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(seamlessLive.id)))
 
-        frameRepo.listReadyForDeletion(age).length should be(3)
+        val readyForDeletion = frameRepo.listReadyForDeletion(age)
+        val idList = readyForDeletion.map(f => f.id).toList
+        idList should contain(frame2.id)
+        idList should contain(frame3.id)
+        idList should contain(frame6.id)
+        readyForDeletion.length should be(3)
     }
   }
 
@@ -173,7 +178,11 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame9 = frameRepo.insert(new DataFrameTemplate(None, None)).get
         frameRepo.update(frame9.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(seamlessLive.id), status = 8))
 
-        frameRepo.listReadyForMetaDataDeletion(age).length should be(2)
+        val readyForDeletion = frameRepo.listReadyForMetaDataDeletion(age)
+        val idList = readyForDeletion.map(f => f.id).toList
+        idList should contain(frame3.id)
+        idList should contain(frame8.id)
+        readyForDeletion.length should be(2)
     }
   }
 }
