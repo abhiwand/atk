@@ -25,14 +25,15 @@ package com.intel.intelanalytics.engine
 
 import java.util.concurrent.{ ScheduledFuture, TimeUnit, Executors, ScheduledExecutorService }
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
-import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.component.{ ArchiveDefinition, ClassLoaderAware, Archive }
+import com.typesafe.config.{ Config, ConfigFactory }
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 import com.intel.event.EventLogging
 
-class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
+class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging with ClassLoaderAware {
   if (EventLogging.raw) {
     info("Engine setting log adapter from configuration")
     EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
