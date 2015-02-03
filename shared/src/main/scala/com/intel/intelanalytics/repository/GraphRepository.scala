@@ -44,6 +44,6 @@ trait GraphRepository[Session] extends Repository[Session, GraphTemplate, GraphE
    * @param id id of graph in question
    * @return true if graph is live, false if it is not
    */
-  def isLive(id: GraphEntity): Boolean
+  def isLive(id: GraphEntity)(implicit session: Session): Boolean
 
 }
