@@ -35,8 +35,23 @@ case class AssignSampleArgs(frame: FrameReference,
   require(samplePercentages.forall(_ >= 0.0d), "AssignSample requires that all percentages be non-negative.")
   require(samplePercentages.forall(_ <= 1.0d), "AssignSample requires that all percentages be no more than 1.")
 
-  val sumOfPercentages = samplePercentages.reduce(_ + _)
+  def sumOfPercentages = samplePercentages.reduce(_ + _)
 
   require(sumOfPercentages > 1.0d - 0.000000001, "AssignSample:  Sum of provided probabilities falls below one.")
   require(sumOfPercentages < 1.0d + 0.000000001, "AssignSample:  Sum of provided probabilities exceeds one.")
+
+  def seed = randomSeed.getOrElse(0)
+  def outputColumnName = outputColumn.getOrElse("sample_bin")
+
+  def splitLabels: Array[String] = if (sampleLabels.isEmpty) {
+    if (samplePercentages.length == 3) {
+      Array("TR", "TE", "VA")
+    }
+    else {
+      (0 to samplePercentages.length - 1).map(i => "Sample#" + i).toArray
+    }
+  }
+  else {
+    sampleLabels.get.toArray
+  }
 }
