@@ -37,6 +37,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.frame.plugins._
+import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample._
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.{ BinColumnEqualWidthPlugin, BinColumnEqualDepthPlugin, HistogramPlugin, BinColumnPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
@@ -74,7 +75,6 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._

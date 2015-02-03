@@ -21,10 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.mllib.util
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
-import org.apache.spark.SparkContext._
-import org.apache.spark.{ SparkConf, SparkContext, SparkException }
+import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.AuxiliaryRDD
+import org.apache.spark.SparkException
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
