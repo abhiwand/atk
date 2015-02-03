@@ -177,17 +177,16 @@ class SparkGraphStorage(metaStore: MetaStore,
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
     val graphCopy = createGraph(GraphTemplate(name))
     val storageName = {
-      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph"))))
-    }
-
-    metaStore.withSession("spark.graphstorage.copyGraph") {
-      implicit session =>
-        {
-          metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
-        }
+      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
     }
     if (graph.isTitan) {
       backendStorage.copyUnderlyingTable(graph.name.get, storageName)
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+        {
+          metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan") )
+        }
+      }
     }
     else {
       val graphMeta = expectSeamless(graph.id)
@@ -198,6 +197,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         implicit session =>
           {
             copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
           }
       }
     }

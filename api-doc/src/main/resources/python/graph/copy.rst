@@ -4,19 +4,12 @@ Makes a copy of the graph.
 
 Parameters
 ----------
-label_column : str
-    the name of the column containing the correct label for each
-    instance.
-
-pred_column : str
-    the name of the column containing the predicted label for each
-    instance.
-columns: [ str | list of str ]
-    column name OR list of column names to be removed from the frame
+name : str (optional)
+    The name for the copy of the graph.
 
 Returns
 -------
-None
+graph copy
 
 Notes
 -----
@@ -25,13 +18,9 @@ If you want to delete all columns, then please delete the frame
 
 Examples
 --------
-For this example, Frame object *my_frame* accesses a frame with
-columns *column_a*, *column_b*, *column_c* and *column_d*.
-Eliminate columns *column_b* and *column_d*::
+For this example, graph object *my_graph* accesses a graph ::
 
-    my_frame.drop_columns([column_b, column_d])
+    copied_graph = my_graph.copy('my_graph2')
 
-Now the frame only has the columns *column_a* and *column_c*.
-For further examples, see: ref: `example_frame.drop_columns`.
 
 
