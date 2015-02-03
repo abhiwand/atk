@@ -29,7 +29,7 @@ import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.spark.mllib.util.{LabeledLine, MLDataSplitter}
+import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 
@@ -64,36 +64,22 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val frames = engine.frames
     val ctx = sc
 
-    // validate arguments
-    val frameID = arguments.frame.id
-    val frame = frames.expectFrame(frameID)
-    val splitPercentages = arguments.samplePercentages.toArray
+    val frame = frames.expectFrame(arguments.frame.id)
+    val samplePercentages = arguments.samplePercentages.toArray
 
-    val outputColumn = arguments.outputColumn.getOrElse("sample_bin")
-    if (frame.schema.hasColumn(outputColumn))
-      throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
-    val seed = arguments.randomSeed.getOrElse(0)
+    val outputColumnName = arguments.outputColumnName
 
-    val splitLabels: Array[String] = if (arguments.sampleLabels.isEmpty) {
-      if (splitPercentages.length == 3) {
-        Array("TR", "TE", "VA")
-      }
-      else {
-        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
-      }
-    }
-    else {
-      arguments.sampleLabels.get.toArray
-    }
+    if (frame.schema.hasColumn(outputColumnName))
+      throw new IllegalArgumentException(s"Duplicate column name: $outputColumnName")
 
     // run the operation
-    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
+    val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
     val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
 
     val splitRDD: RDD[Rows.Row] =
       labeledRDD.map((x: LabeledLine[String, sql.Row]) => x.entry.asInstanceOf[Array[Any]] :+ x.label.asInstanceOf[Any])
 
-    val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
+    val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
 
     // save results
     frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
