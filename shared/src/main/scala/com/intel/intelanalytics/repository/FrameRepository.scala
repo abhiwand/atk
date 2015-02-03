@@ -50,4 +50,6 @@ trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, Fr
   def scanAll()(implicit session: Session): Seq[FrameEntity]
 
   def lookupByGraphId(graphId: Long)(implicit session: Session): Seq[FrameEntity]
+
+  def isLive(frame: FrameEntity): Boolean
 }
