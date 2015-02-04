@@ -23,27 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
-import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ GraphName, GraphEntity, CopyGraphArgs }
-import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.Status
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, CopyGraphArgs }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
+ * Makes a copy of the existing graph
  */
 class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
 
@@ -62,7 +51,7 @@ class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
   override def numberOfJobs(arguments: CopyGraphArgs)(implicit invocation: Invocation) = 3
 
   /**
-   * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
+   * Makes a copy of the graph in the database.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
