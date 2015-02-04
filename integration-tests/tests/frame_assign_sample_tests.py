@@ -24,6 +24,7 @@
 import unittest
 import intelanalytics as ia
 import math
+from intelanalytics.rest.command import CommandServerError
 
 # show full stack traces
 ia.errors.show_details = True
@@ -61,14 +62,14 @@ class FrameAssignSampleTests(unittest.TestCase):
         try:
             f = self.frame.assign_sample(sample_percentages= [0.1, 0.2], sample_labels=None, output_column='fuBuddy', random_seed=None)
             self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns")
-        except CommandServerError as e:
+        except CommandServerError:
             pass
 
     def test_assign_sample_high_probabilities(self):
         try:
             f = self.frame.assign_sample(sample_percentages= [0.6, 0.5], sample_labels=None, output_column='fuBuddy', random_seed=None)
-            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns"
-        except CommandServerError as e:
+            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns")
+        except CommandServerError:
             pass
 
 
