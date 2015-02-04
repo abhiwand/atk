@@ -58,11 +58,18 @@ class FrameAssignSampleTests(unittest.TestCase):
         self.frame = ia.Frame(self.csv)
 
     def test_assign_sample_low_probabilities(self):
-        f = self.frame.assign_sample(sample_percentages= [0.1, 0.2], sample_labels=None, output_column='fuBuddy', random_seed=None)
-
+        try:
+            f = self.frame.assign_sample(sample_percentages= [0.1, 0.2], sample_labels=None, output_column='fuBuddy', random_seed=None)
+            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns")
+        except CommandServerError as e:
+            pass
 
     def test_assign_sample_high_probabilities(self):
-        f = self.frame.assign_sample(sample_percentages= [0.6, 0.5], sample_labels=None, output_column='fuBuddy', random_seed=None)
+        try:
+            f = self.frame.assign_sample(sample_percentages= [0.6, 0.5], sample_labels=None, output_column='fuBuddy', random_seed=None)
+            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns"
+        except CommandServerError as e:
+            pass
 
 
 if __name__ == "__main__":
