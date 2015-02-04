@@ -453,6 +453,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
+  @deprecated("please use expectFrame() instead")
   override def lookup(id: Long)(implicit invocation: Invocation): Option[FrameEntity] = {
     metaStore.withSession("frame.lookup") {
       implicit session =>

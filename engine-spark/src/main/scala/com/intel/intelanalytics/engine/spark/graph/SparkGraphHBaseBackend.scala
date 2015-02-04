@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import java.io.OutputStream
+
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.GraphBackendStorage
@@ -21,46 +23,38 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    * @param quiet Whether we attempt to delete quietly(if true) or raise raise an error if table doesn't exist(if false).
    */
   override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
-    // TODO: To be evaluated later per TRIB-4413. Workaround for TRIB: 4318.
+    // TODO: To be deleted later. Workaround for TRIB: 4318.
     val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    var outputStream: OutputStream = null
     try {
-      info(s"Trying to delete the HBase Table: $tableName using HBaseAdmin.")
-      val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
+      //create a new process
+      val p = Runtime.getRuntime.exec("hbase shell -n")
+      outputStream = p.getOutputStream
 
-      if (hbaseAdmin.tableExists(tableName)) {
-        if (hbaseAdmin.isTableEnabled(tableName)) {
-          info(s"disabling hbase table: $tableName")
-          hbaseAdmin.disableTable(tableName)
-        }
-        info(s"deleting hbase table: $tableName")
-        hbaseAdmin.deleteTable(tableName)
-      }
-      else {
-        info(s"The HBase Table: $tableName does not exist in the HBase.")
+      IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
+      outputStream.flush()
+      outputStream.close()
+
+      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
+      IOUtils.readLines(p.getErrorStream).map(errorMsg => error(errorMsg))
+
+      val exitValue = p.waitFor()
+      if (exitValue != 0) {
+        info(s"Hbase shell exited with Exit Value: $exitValue")
       }
     }
     catch {
-      case _ => {
-        info(s"Unable to delete HBase Table: $tableName using the HBaseAdmin. Trying to delete it using HBase shell.")
-        //create a new process
-        val p = Runtime.getRuntime.exec("hbase shell -n")
-        val outputStream = p.getOutputStream
-
-        IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
-        outputStream.flush()
-        outputStream.close()
-
-        IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
-        IOUtils.readLines(p.getErrorStream).map(errorMsg => warn(errorMsg))
-
-        val exitValue = p.waitFor()
-        info(s"Hbase shell exited with Exit Value: $exitValue")
-
-        if (!quiet && exitValue != 0) {
+      case e: Exception =>
+        info(s"Unable to delete the requested HBase table HBase table $tableName. Exception: $e")
+        if (!quiet) {
           throw new IllegalArgumentException(
-            s"Unable to delete the requested HBase table $tableName.")
+            s"Unable to delete the requested HBase table $tableName. Exception: $e")
         }
-      }
+    }
+    finally
+    {
+      outputStream.flush()
+      outputStream.close()
     }
   }
 
