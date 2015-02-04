@@ -138,13 +138,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     metaStore.withTransaction("sfs.copyFrame") { implicit txn =>
       child = frameEntity.createChild(Some(invocation.user.user.id), command = None, schema = frameEntity.schema)
-      metaStore.frameRepo.insert(child)
+      child = metaStore.frameRepo.insert(child)
     }
     //TODO: frameEntity should just have a pointer to the actual frame data so that we don't have to load into Spark.
     val frameRdd = loadFrameData(sc, frameEntity)
     saveFrameData(child.toReference, frameRdd)
 
-    child
+    expectFrame(child.toReference)
   }
 
   def exchangeGraphs(frame1: FrameEntity, frame2: FrameEntity): (FrameEntity, FrameEntity) = {
