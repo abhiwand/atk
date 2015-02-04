@@ -28,7 +28,7 @@ import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
@@ -63,25 +63,25 @@ case class AnnotateDegreesArgs(graph: GraphReference,
     else {
       Some(inputEdgeLabels.get.toSet)
     }
+
+  def useUndirected() = "undirected".startsWith(degreeMethod)
+  def useInDegree() = "in".startsWith(degreeMethod)
+  def useOutDegree() = "out".startsWith(degreeMethod)
 }
 
-/**
- * The result object
- * @param graph Name of the output graph
- */
-case class AnnotateDegreesResult(graph: String)
+import DomainJsonProtocol._
+import spray.json._
 
 /** Json conversion for arguments and return value case classes */
 object AnnotateDegreesJsonFormat {
-  import DomainJsonProtocol._
+
   implicit val ADFormat = jsonFormat5(AnnotateDegreesArgs)
-  implicit val ADResultFormat = jsonFormat1(AnnotateDegreesResult)
 }
 
 import AnnotateDegreesJsonFormat._
 
 /**
- * Calculates the degree of each vertex with repect to an (optional) set of labels.
+ * Calculates the degree of each vertex with respect to an (optional) set of labels.
  *
  *
  *
@@ -90,7 +90,7 @@ import AnnotateDegreesJsonFormat._
  *
  * Right now it uses only Titan for graph storage. Other backends will be supported later.
  */
-class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDegreesResult] {
+class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, GraphEntity] {
 
   override def name: String = "graph:titan/annotate_degrees"
 
@@ -99,28 +99,24 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): AnnotateDegreesResult = {
+  override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): GraphEntity = {
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     val degreeMethod: String = arguments.degreeMethod
-    val newGraphName = arguments.outputGraphName
-
     // Get the graph
     import scala.concurrent.duration._
 
     val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
-    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val inputEdgeSet = arguments.inputEdgeSet
 
-    val vertexDegreePairs: RDD[(GBVertex, Long)] = if ("undirected".startsWith(degreeMethod)) {
+    val vertexDegreePairs: RDD[(GBVertex, Long)] = if (arguments.useUndirected()) {
       UnweightedDegrees.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
-    else if ("in".startsWith(degreeMethod)) {
+    else if (arguments.useInDegree()) {
       UnweightedDegrees.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
     }
     else {
@@ -133,11 +129,9 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDe
         properties = v.properties + Property(arguments.outputPropertyName, d))
     })
 
-    engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
-    gbVertices.unpersist()
-    gbEdges.unpersist()
+    engine.graphs.writeToTitan(arguments.outputGraphName, outVertices, gbEdges)
 
-    AnnotateDegreesResult(newGraphName)
+    engine.graphs.getGraphByName(Some(arguments.outputGraphName)).get
   }
 
 }
