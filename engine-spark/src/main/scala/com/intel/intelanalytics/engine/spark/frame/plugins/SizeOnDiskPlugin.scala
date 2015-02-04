@@ -71,12 +71,9 @@ class SizeOnDiskPlugin extends SparkCommandPlugin[FrameNoArgs, LongValue] {
     // validate arguments
     val frame = frames.expectFrame(arguments.frame.id)
 
-    // run the operation
-    val frameRdd = frames.loadFrameData(sc, frame)
-
     val frameSize = frames.getSizeInBytes(frame) match {
       case Some(size) => LongValue(size)
-      case _ => throw new RuntimeException(s"Unable to calculate size of frame")
+      case _ => throw new RuntimeException(s"Unable to calculate size of frame! Frame is empty or not have been materialized.")
     }
     frameSize
   }
