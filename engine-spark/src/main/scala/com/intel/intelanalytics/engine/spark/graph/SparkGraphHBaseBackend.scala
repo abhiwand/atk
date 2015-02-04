@@ -51,8 +51,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
             s"Unable to delete the requested HBase table $tableName. Exception: $e")
         }
     }
-    finally
-    {
+    finally {
       outputStream.flush()
       outputStream.close()
     }
