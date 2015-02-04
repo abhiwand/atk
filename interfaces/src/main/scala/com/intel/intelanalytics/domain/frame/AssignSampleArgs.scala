@@ -37,8 +37,10 @@ case class AssignSampleArgs(frame: FrameReference,
 
   def sumOfPercentages = samplePercentages.reduce(_ + _)
 
-  require(sumOfPercentages < 1.0d - 0.000000001, "AssignSample:  Sum of provided probabilities falls below one.")
-  require(sumOfPercentages > 1.0d + 0.000000001, "AssignSample:  Sum of provided probabilities exceeds one.")
+  require(sumOfPercentages < 1.0d - 0.000000001,
+    "AssignSample:  Sum of provided probabilities falls below one (" + sumOfPercentages + ")")
+  require(sumOfPercentages > 1.0d + 0.000000001,
+    "AssignSample:  Sum of provided probabilities exceeds one (" + sumOfPercentages + ")")
 
   def seed = randomSeed.getOrElse(0)
   def outputColumnName = outputColumn.getOrElse("sample_bin")

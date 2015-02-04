@@ -76,7 +76,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
 
     val splitRDD: RDD[Rows.Row] =
-      labeledRDD.map((x: LabeledLine[String, sql.Row]) => x.entry.asInstanceOf[Array[Any]] :+ x.label.asInstanceOf[Any])
+      labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.asInstanceOf[Seq[Any]] :+ x.label.asInstanceOf[Any]).toArray[Any])
 
     val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
 
