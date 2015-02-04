@@ -59,7 +59,7 @@ class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: CopyGraphArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: CopyGraphArgs)(implicit invocation: Invocation) = 3
 
   /**
    * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.

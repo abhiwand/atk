@@ -183,9 +183,9 @@ class SparkGraphStorage(metaStore: MetaStore,
       backendStorage.copyUnderlyingTable(graph.name.get, storageName)
       metaStore.withSession("spark.graphstorage.copyGraph") {
         implicit session =>
-        {
-          metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan") )
-        }
+          {
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
+          }
       }
     }
     else {
