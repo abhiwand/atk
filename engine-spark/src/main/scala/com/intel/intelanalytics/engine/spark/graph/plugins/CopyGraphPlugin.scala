@@ -68,7 +68,7 @@ class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
     val graph = graphs.expectGraph(graphId)
 
     //run the copy operation
-    graphs.copyGraph(graph, arguments.copiedGraphName)
+    graphs.copyGraph(graph, arguments.name)
   }
 }
 
