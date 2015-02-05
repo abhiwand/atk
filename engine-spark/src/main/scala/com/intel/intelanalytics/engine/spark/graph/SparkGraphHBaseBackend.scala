@@ -18,6 +18,61 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     with EventLoggingImplicits {
 
   /**
+   * makes a copy of the titan graph's underlying table in the HBase
+   *
+   * @param graphName Name of the titan graph that is to copied
+   * @param newName Name provided for the copy
+   * @return
+   */
+  override def copyUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
+    //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
+    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    var outputStream: OutputStream = null
+    try {
+      info(s"Trying to copy the HBase Table: $tableName")
+      val p = Runtime.getRuntime.exec("hbase shell -n")
+      outputStream = p.getOutputStream
+
+      IOUtils.write(s"snapshot '${tableName}', '${tableName}-snapshot'\nclone_snapshot '${tableName}-snapshot', '${newName}'\ndelete_snapshot '${tableName}-snapshot'\n", outputStream)
+      outputStream.flush()
+      outputStream.close()
+
+      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
+      IOUtils.readLines(p.getErrorStream).map(errorMsg => warn(errorMsg))
+
+      val exitValue = p.waitFor()
+      info(s"Hbase shell exited with Exit Value: $exitValue")
+
+      if (exitValue == 1) {
+        throw new IllegalArgumentException(
+          s"Unable to copy the requested HBase table $tableName. Verify there is no name conflict with existing HBase tables.")
+      }
+    }
+    catch {
+      case ex: IllegalArgumentException => {
+        info(s"Unable to copy the requested HBase table: $tableName. Verify there is no name conflict with existing HBase tables. Exception: $ex")
+        val p = Runtime.getRuntime.exec("hbase shell -n")
+        outputStream = p.getOutputStream
+
+        IOUtils.write(s"delete_snapshot '${tableName}-snapshot'\n", outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        throw ex
+      }
+      case _ => {
+        info(s"Unable to copy the requested HBase table: $tableName.")
+        throw new Exception(
+          s"Unable to copy the requested HBase table $tableName.")
+      }
+    }
+    finally {
+      outputStream.flush()
+      outputStream.close()
+    }
+  }
+
+  /**
    * Deletes a graph's underlying table from HBase.
    * @param graphName The user's name for the graph.
    * @param quiet Whether we attempt to delete quietly(if true) or raise raise an error if table doesn't exist(if false).
@@ -44,12 +99,13 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       }
     }
     catch {
-      case e: Exception =>
-        info(s"Unable to delete the requested HBase table HBase table $tableName. Exception: $e")
+      case _ => {
+        info(s"Unable to delete the requested HBase table: $tableName.")
         if (!quiet) {
           throw new IllegalArgumentException(
-            s"Unable to delete the requested HBase table $tableName. Exception: $e")
+            s"Unable to delete the requested HBase table: $tableName.")
         }
+      }
     }
     finally {
       outputStream.flush()
