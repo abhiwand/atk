@@ -48,6 +48,7 @@ class FrameAssignSampleTests(unittest.TestCase):
     _multiprocess_can_split_ = True
 
     def setUp(self):
+        # there's already a "splits" column in this data set, but for testing purposes, it doesn't affect anything
         print "define csv file"
         self.schema = [('user', ia.int32),
                          ('vertex_type', str),
@@ -75,7 +76,7 @@ class FrameAssignSampleTests(unittest.TestCase):
 
     def test_assign_sample_column_name(self):
         f = self.frame.assign_sample(sample_percentages= [0.1, 0.2, 0.4, 0.3], sample_labels=None, output_column='fuBuddy', random_seed=None)
-        self.assertEqual(f.column_names, [name for name, type in self.schema + ['fuBuddy']])
+        self.assertEqual(f.column_names, [name for name, type in self.schema + [('fuBuddy', str)]])
 
 
 if __name__ == "__main__":
