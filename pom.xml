@@ -180,8 +180,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine-spark</module>
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
-                <!--<module>imahout</module>
-                <module>imllib</module>-->
+                <!--<module>imahout</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -233,7 +232,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
-                <module>imllib</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -778,11 +776,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>igiraph</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>imlib</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--END bda dependencies-->
