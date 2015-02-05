@@ -49,7 +49,6 @@ import org.joda.time.DateTime
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -167,6 +166,43 @@ class SparkGraphStorage(metaStore: MetaStore,
           metaStore.graphRepo.delete(graph.id).get
         }
     }
+  }
+
+  /**
+   * @param graph the graph to be copied
+   * @param name name to be given to the copied graph
+   * @return
+   */
+  override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
+    info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
+    val graphCopy = createGraph(GraphTemplate(name))
+    val storageName = {
+      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
+    }
+    if (graph.isTitan) {
+      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
+          }
+      }
+    }
+    else {
+      val graphMeta = expectSeamless(graph.id)
+      val framesToCopy = graphMeta.frameEntities.map(_.toReference)
+      val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
+
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
+          }
+      }
+    }
+    // refresh from DB
+    expectGraph(graphCopy.id)
   }
 
   /**
