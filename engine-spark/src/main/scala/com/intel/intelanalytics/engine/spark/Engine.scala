@@ -193,6 +193,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new CorrelationMatrixPlugin)
   commandPluginRegistry.registerCommand(new CorrelationPlugin)
   commandPluginRegistry.registerCommand(new PartitionCountPlugin)
+  commandPluginRegistry.registerCommand(new SizeOnDiskPlugin)
   commandPluginRegistry.registerCommand(new CoalescePlugin)
   commandPluginRegistry.registerCommand(new RepartitionPlugin)
   commandPluginRegistry.registerCommand(new HistogramPlugin)
