@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Status, Naming, EntityManager }
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine._
@@ -32,7 +32,10 @@ import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrameTemplate
 import com.intel.intelanalytics.engine.FrameStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark._
+import com.intel.intelanalytics.engine.spark.command
+import com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
+import com.intel.intelanalytics.engine.spark.graph
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
@@ -416,6 +419,25 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     else {
       // TODO: not sure what to do if nothing is persisted?
       throw new NotImplementedError("trying to get a row count on a frame that hasn't been persisted, not sure what to do")
+    }
+  }
+
+  /**
+   * Size of frame in bytes
+   *
+   * @param frameEntity reference to a data frame
+   * @return Optional size of frame in bytes
+   */
+  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
+    (frameEntity.storageFormat, frameEntity.storageLocation) match {
+      case (Some(StorageFormats.FileParquet), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case (Some(StorageFormats.FileSequence), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case _ => {
+        warn(s"Could not get size of frame ${frameEntity.id} / ${frameEntity.name}")
+        None
+      }
     }
   }
 
