@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
-import org.apache.spark.SparkException
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
  * Class that represents the entry content and label of a data point.
@@ -46,7 +46,7 @@ case class LabeledLine[L: ClassTag, T: ClassTag](label: L, entry: T)
 class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: Int) extends Serializable {
 
   require(percentages.forall(p => p > 0d), "MLDataSplitter: Some percentage numbers are negative or zero.")
-  require((Math.abs(percentages.sum - 1.0d) < 0.000000001d), "MLDataSplitter: Sum of percentages does not equal  1.")
+  require(Math.abs(percentages.sum - 1.0d) < 0.000000001d, "MLDataSplitter: Sum of percentages does not equal  1.")
   require(labels.length == percentages.length, "Number of class labels differs from number of percentages given.")
 
   var cdf: Array[Double] = percentages.scanLeft(0.0d)(_ + _)
@@ -64,12 +64,18 @@ class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: In
    */
   def randomlyLabelRDD[T: ClassTag](inputRDD: RDD[T]): RDD[LabeledLine[String, T]] = {
     // generate auxiliary (sample) RDD
-    val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed)
-    val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p =>
+    val auxiliaryRDD: RDD[(T, Double)] = inputRDD.mapPartitionsWithIndex({ case (i, p) => addRandomValues(seed, i, p) })
+
+    val labeledRDD = auxiliaryRDD.map { p =>
       val (line, sampleValue) = p
       val label = labels.apply(cdf.indexWhere(_ >= sampleValue))
       LabeledLine(label, line)
     }
     labeledRDD
+  }
+
+  private def addRandomValues[T: ClassTag](seed: Int, index: Int, it: Iterator[T]): Iterator[(T, Double)] = {
+    val pseudoRandomGenerator = new Random(seed + index)
+    it.map(x => (x, pseudoRandomGenerator.nextDouble()))
   }
 }
