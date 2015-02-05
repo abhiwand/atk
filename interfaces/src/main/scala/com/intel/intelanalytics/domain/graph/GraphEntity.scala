@@ -61,7 +61,7 @@ case class GraphEntity(id: Long,
     case _ => true
   }, "if name is set it must not be empty or whitespace")
   // if it is not titan pass this require. if it is titan the name must be defined.
-  require(!isTitan || name.isDefined, "Titan graphs require a name")
+  //require(!isTitan || name.isDefined, "Titan graphs require a name")
 
   def uri: String = GraphReference(id).uri
 

@@ -194,6 +194,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new CorrelationMatrixPlugin)
   commandPluginRegistry.registerCommand(new CorrelationPlugin)
   commandPluginRegistry.registerCommand(new PartitionCountPlugin)
+  commandPluginRegistry.registerCommand(new SizeOnDiskPlugin)
   commandPluginRegistry.registerCommand(new CoalescePlugin)
   commandPluginRegistry.registerCommand(new RepartitionPlugin)
   commandPluginRegistry.registerCommand(new HistogramPlugin)
@@ -220,6 +221,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new DropEdgeColumnPlugin)
   commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
   commandPluginRegistry.registerCommand(new ExportToGraphPlugin(frames, graphs))
+  commandPluginRegistry.registerCommand(new CopyGraphPlugin)
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
