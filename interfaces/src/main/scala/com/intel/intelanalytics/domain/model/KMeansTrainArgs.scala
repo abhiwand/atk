@@ -46,3 +46,10 @@ case class KMeansTrainArgs(model: ModelReference,
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
 }
+
+/**
+ * Return object when training a KMeansModel
+ * @param clusterSize A dictionary containing the number of elements in each cluster
+ * @param withinSetSumOfSquaredErrors  Within cluster sum of squared distance
+ */
+case class KMeansTrainReturn(clusterSize: Map[String, Int], withinSetSumOfSquaredErrors: Double)

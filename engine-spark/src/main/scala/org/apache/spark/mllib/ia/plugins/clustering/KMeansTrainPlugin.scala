@@ -27,17 +27,19 @@ package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.KMeansTrainArgs
+import com.intel.intelanalytics.domain.model.{ KMeansTrainReturn, KMeansTrainArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.clustering.KMeans
+import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] {
+class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainReturn] {
   /**
    * The name of the command.
    *
@@ -82,19 +84,20 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
 
   /**
    * Number of Spark jobs that get created by running this command
+   *
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: KMeansTrainArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: KMeansTrainArgs)(implicit invocation: Invocation) = 15
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
-   *                   as well as a function that can be called to produce a SparkContext that
-   *                   can be used during this invocation.
+   * as well as a function that can be called to produce a SparkContext that
+   * can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn =
     {
       val models = engine.models
       val frames = engine.frames
@@ -110,27 +113,43 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
        */
       val kMeans = initializeKmeans(arguments)
 
-      /*TODO: Add to FrameRDD */
-      val vectorRDD = trainFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
-        val doubles = array.map(i => DataTypes.toDouble(i))
-        Vectors.dense(doubles)
-      })
-
+      val vectorRDD = trainFrameRDD.toVectorDenseRDD(arguments.observationColumns)
       val kmeansModel = kMeans.run(vectorRDD)
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns)
+      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns)
+      val withinSetSumOfSquaredErrors = kmeansModel.computeCost(vectorRDD)
 
+      //Writing the kmeansModel as JSON
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns)
       models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
-      new UnitReturn
+
+      KMeansTrainReturn(size, withinSetSumOfSquaredErrors)
 
     }
 
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
-    if (arguments.k.isDefined) { kmeans.setK(arguments.k.getOrElse(2)) }
+    if (arguments.k.isDefined) {
+      kmeans.setK(arguments.k.getOrElse(2))
+    }
     if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.getOrElse(20)) }
     if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.getOrElse(1e-4)) }
-    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.getOrElse("k-means||")) }
+    if (arguments.initializationMode.isDefined) {
+      kmeans.
+        setInitializationMode(
+          arguments.
+            initializationMode.getOrElse("k-means||"))
+    }
     kmeans
+  }
+
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String]): Map[String, Int] = {
+
+    val predictRDD = trainFrameRDD.mapRows(row => {
+      val array = row.valuesAsArray(observationColumns)
+      val doubles = array.map(i => DataTypes.toDouble(i))
+      val point = Vectors.dense(doubles)
+      kmeansModel.predict(point)
+    })
+    predictRDD.map(row => ("Cluster:"+(row+1).toString,1)).reduceByKey(_+_).collect().toMap
   }
 }

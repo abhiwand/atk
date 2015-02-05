@@ -382,6 +382,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val kmeansModelLoadFormat = jsonFormat7(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
+  implicit val kmeansModelTrainReturnFormat = jsonFormat2(KMeansTrainReturn)
 
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
