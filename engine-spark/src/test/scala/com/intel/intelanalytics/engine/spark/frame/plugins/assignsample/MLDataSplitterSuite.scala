@@ -21,17 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.mllib.util
-
-import java.util.Date
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
 import com.intel.testutils.TestingSparkContextFunSuite
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import scala.util.Random
 
-class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatchers {
+class MLDataSplitterSuite extends TestingSparkContextFunSuite with Matchers {
 
   // test if we can randomly split a RDD according to a percentage distribution
   test("MLDataSplitter") {
@@ -44,13 +41,10 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatcher
     val rnd = new Random(41)
     val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
 
-    val sc = new SparkContext(new SparkConf().setMaster("local")
-      .setAppName(this.getClass.getSimpleName + " " + new Date())
-    )
-    val testRDD = sc.parallelize(testData, 2)
+    val testRDD = sparkContext.parallelize(testData, 2)
 
     // test the size of generated RDD
-    val nTotal = testRDD.count
+    val nTotal = testRDD.count()
     assert(nTotal == nPoints, "# data points generated isn't equal to specified.")
 
     // split the RDD by labelling
@@ -61,7 +55,7 @@ class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatcher
     val partitionSizes = new Array[Long](percentages.size)
     (0 until percentages.size).foreach { i =>
       val partitionRDD = labeledRDD.filter(p => p.label == labels.apply(i)).map(_.entry)
-      partitionSizes(i) = partitionRDD.count
+      partitionSizes(i) = partitionRDD.count()
     }
 
     // test the total #samples

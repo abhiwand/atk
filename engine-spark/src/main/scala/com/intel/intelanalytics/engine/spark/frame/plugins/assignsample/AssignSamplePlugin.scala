@@ -21,18 +21,16 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.spark.mllib.util.MLDataSplitter
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -61,37 +59,27 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
    */
   override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
+
     val frames = engine.frames
     val ctx = sc
 
-    // validate arguments
-    val frameID = arguments.frame.id
-    val frame = frames.expectFrame(frameID)
-    val splitPercentages = arguments.sample_percentages.toArray
-    val outputColumn = arguments.output_column.getOrElse("sample_bin")
-    if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
-      throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
-    val seed = arguments.random_seed.getOrElse(0)
+    val frame = frames.expectFrame(arguments.frame.id)
+    val samplePercentages = arguments.samplePercentages.toArray
 
-    val splitLabels: Array[String] = if (arguments.sample_labels.isEmpty) {
-      if (splitPercentages.length == 3) {
-        Array("TR", "TE", "VA")
-      }
-      else {
-        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
-      }
-    }
-    else {
-      arguments.sample_labels.get.toArray
-    }
+    val outputColumnName = arguments.outputColumnName
+
+    require(!frame.schema.hasColumn(outputColumnName), s"Duplicate column name: $outputColumnName")
 
     // run the operation
-    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
-    val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
-    val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
-    val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
+    val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
+
+    val splitRDD: RDD[Rows.Row] =
+      labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.asInstanceOf[Seq[Any]] :+ x.label.asInstanceOf[Any]).toArray[Any])
+
+    val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
 
     // save results
-    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(updatedSchema, splitRDD))
+    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
   }
 }
