@@ -28,11 +28,11 @@ package com.intel.intelanalytics.domain
  */
 object StorageFormats {
 
-  val CassandraTitan  = "cassandra/titan"
-  val HBaseTitan      = "hbase/titan"
-  val SeamlessGraph   = "ia/frame"
-  val FileParquet     = "file/parquet"
-  val FileSequence    = "file/sequence"
+  val CassandraTitan = "cassandra/titan"
+  val HBaseTitan = "hbase/titan"
+  val SeamlessGraph = "ia/frame"
+  val FileParquet = "file/parquet"
+  val FileSequence = "file/sequence"
 
   private val graphFormats = Set(SeamlessGraph, CassandraTitan, HBaseTitan)
   private val frameFormats = Set(FileSequence, FileParquet)
