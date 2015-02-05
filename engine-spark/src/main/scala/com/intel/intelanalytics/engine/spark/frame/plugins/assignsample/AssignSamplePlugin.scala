@@ -68,8 +68,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
 
     val outputColumnName = arguments.outputColumnName
 
-    if (frame.schema.hasColumn(outputColumnName))
-      throw new IllegalArgumentException(s"Duplicate column name: $outputColumnName")
+    require(!frame.schema.hasColumn(outputColumnName), s"Duplicate column name: $outputColumnName")
 
     // run the operation
     val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)

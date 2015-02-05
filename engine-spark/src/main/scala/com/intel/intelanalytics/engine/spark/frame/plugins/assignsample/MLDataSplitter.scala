@@ -45,18 +45,9 @@ case class LabeledLine[L: ClassTag, T: ClassTag](label: L, entry: T)
  */
 class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: Int) extends Serializable {
 
-  // verify percentages
-  if (!percentages.forall(p => p > 0d)) {
-    throw new SparkException("Some percentage numbers are negative or zero.")
-  }
-
-  if (Math.abs(percentages.sum - 1.0d) > 0.000000001d) {
-    throw new SparkException("Summation of percentages isn't equal to 1.")
-  }
-
-  if (labels.length != percentages.length) {
-    throw new SparkException("Number of class labels differs from number of percentages given.")
-  }
+  require(percentages.forall(p => p > 0d), "MLDataSplitter: Some percentage numbers are negative or zero.")
+  require((Math.abs(percentages.sum - 1.0d) < 0.000000001d), "MLDataSplitter: Sum of percentages does not equal  1.")
+  require(labels.length == percentages.length, "Number of class labels differs from number of percentages given.")
 
   var cdf: Array[Double] = percentages.scanLeft(0.0d)(_ + _)
   cdf = cdf.drop(1)
