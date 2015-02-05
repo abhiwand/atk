@@ -34,3 +34,4 @@ case class KMeansPredictArgs(model: ModelReference, frame: FrameReference, obser
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
 }
+
