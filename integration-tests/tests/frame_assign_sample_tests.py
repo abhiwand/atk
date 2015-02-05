@@ -72,6 +72,10 @@ class FrameAssignSampleTests(unittest.TestCase):
         except CommandServerError:
             pass
 
+    def test_assign_sample_column_namee(self):
+        f = self.frame.assign_sample(sample_percentages= [0.1, 0.2, 0.4, 0.3], sample_labels=None, output_column='fuBuddy', random_seed=None)
+        self.assertEqual(f.column_names, [name for name, type in self.schema1 + 'fuBuddy'])
+
 
 if __name__ == "__main__":
     unittest.main()
