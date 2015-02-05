@@ -49,11 +49,12 @@ class FrameAssignSampleTests(unittest.TestCase):
 
     def setUp(self):
         print "define csv file"
-        self.csv = ia.CsvFile("/datasets/movie.csv", schema= [('user', ia.int32),
-                                                              ('vertex_type', str),
-                                                              ('movie', ia.int32),
-                                                              ('rating', ia.int32),
-                                                              ('splits', str)])
+        self.schema = [('user', ia.int32),
+                         ('vertex_type', str),
+                         ('movie', ia.int32),
+                         ('rating', ia.int32),
+                         ('splits', str)]
+        self.csv = ia.CsvFile("/datasets/movie.csv", self.schema)
 
         print "creating frame"
         self.frame = ia.Frame(self.csv)
@@ -74,7 +75,7 @@ class FrameAssignSampleTests(unittest.TestCase):
 
     def test_assign_sample_column_namee(self):
         f = self.frame.assign_sample(sample_percentages= [0.1, 0.2, 0.4, 0.3], sample_labels=None, output_column='fuBuddy', random_seed=None)
-        self.assertEqual(f.column_names, [name for name, type in self.schema1 + 'fuBuddy'])
+        self.assertEqual(f.column_names, [name for name, type in self.schema + 'fuBuddy'])
 
 
 if __name__ == "__main__":
