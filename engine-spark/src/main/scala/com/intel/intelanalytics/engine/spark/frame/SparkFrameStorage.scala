@@ -119,6 +119,37 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
+  /**
+   * Copy the frames using spark
+   *
+   * @param frames List of frames to be copied
+   * @param sc Spark Context
+   * @return List of copied frames
+   */
+  def copyFrames(frames: List[FrameReference], sc: SparkContext)(implicit invocation: Invocation): List[FrameEntity] = {
+    frames.map(frame => copyFrame(frame, sc))
+  }
+
+  /**
+   * Create a copy of the frame copying the data
+   * @param frame the frame to be copied
+   * @return the copy
+   */
+  def copyFrame(frame: FrameReference, sc: SparkContext)(implicit invocation: Invocation): FrameEntity = {
+    val frameEntity = expectFrame(frame.id)
+    var child: FrameEntity = null
+
+    metaStore.withTransaction("sfs.copyFrame") { implicit txn =>
+      child = frameEntity.createChild(Some(invocation.user.user.id), command = None, schema = frameEntity.schema)
+      child = metaStore.frameRepo.insert(child)
+    }
+    //TODO: frameEntity should just have a pointer to the actual frame data so that we don't have to load into Spark.
+    val frameRdd = loadFrameData(sc, frameEntity)
+    saveFrameData(child.toReference, frameRdd)
+
+    expectFrame(child.toReference)
+  }
+
   def exchangeGraphs(frame1: FrameEntity, frame2: FrameEntity): (FrameEntity, FrameEntity) = {
     metaStore.withTransaction("SFS.exchangeGraphs") { implicit txn =>
       val f1Graph = frame1.graphId
