@@ -26,8 +26,8 @@ package com.intel.intelanalytics.domain.graph
 /**
  * Data needed to export a graph.
  * @param graph reference of the source graph
- * @param copiedGraphName name of the new copied target graph. optional. if not included a name should be generated.
+ * @param name name of the new copied target graph. optional. if not included a name should be generated.
  */
-case class CopyGraphArgs(graph: GraphReference, copiedGraphName: Option[String] = None) {
+case class CopyGraphArgs(graph: GraphReference, name: Option[String] = None) {
   require(graph != null, "graph is required")
 }
