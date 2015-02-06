@@ -101,14 +101,17 @@ class MLLibJsonProtocolTest extends WordSpec {
 
     "be able to serialize" in {
       val d = new KMeansData(new KMeansModel(Array(new DenseVector(Array(1.2, 2.1)),
-        new DenseVector(Array(3.4, 4.3)))), List("column1", "column2"))
-      assert(d.toJson.compactPrint == "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"]}")
+        new DenseVector(Array(3.4, 4.3)))), List("column1", "column2"), List(1.0, 2.0))
+      assert(d.toJson.compactPrint == "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_weights\":[1.0,2.0]}")
     }
+
     "parse json" in {
-      val string = "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"]}"
+      val string = "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_weights\":[1.0,2.0]}"
       val json = JsonParser(string).asJsObject
       val d = json.convertTo[KMeansData]
       assert(d.kMeansModel.clusterCenters.length == 2)
+      assert(d.observationColumns.length == d.columnWeights.length)
+      assert(d.observationColumns.length == 2)
     }
   }
 

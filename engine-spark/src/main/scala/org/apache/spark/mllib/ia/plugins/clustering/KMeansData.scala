@@ -29,7 +29,10 @@ import org.apache.spark.mllib.clustering.KMeansModel
  * Command for loading model data into existing model in the model database.
  * @param kMeansModel Trained MLLib's KMeansModel object
  * @param observationColumns Handle to the observation columns of the data frame
+ * @param columnWeights Handle to the weights for the observation columns of the data frame
  */
-case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String]) {
+case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String], columnWeights: List[Double]) {
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumns must not be null nor empty")
+  require(!columnWeights.isEmpty && columnWeights != null, "columnWeights must not be null nor empty")
+  require(columnWeights.length == observationColumns.length, "number of elements in observationColumns and columnWeights needs to be the same")
 }

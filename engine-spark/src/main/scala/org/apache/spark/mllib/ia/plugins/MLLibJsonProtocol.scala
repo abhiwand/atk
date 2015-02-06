@@ -210,7 +210,7 @@ object MLLibJsonProtocol {
     }
 
   }
-  implicit val kmeansDataFormat = jsonFormat2(KMeansData)
+  implicit val kmeansDataFormat = jsonFormat3(KMeansData)
 
 }
 
