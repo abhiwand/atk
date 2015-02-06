@@ -21,36 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.domain.graph
 
 /**
- * Storage formats supported by the system
+ * Data needed to export a graph.
+ * @param graph reference of the source graph
+ * @param name name of the new copied target graph. optional. if not included a name should be generated.
  */
-object StorageFormats {
-
-  val CassandraTitan = "cassandra/titan"
-  val HBaseTitan = "hbase/titan"
-  val SeamlessGraph = "ia/frame"
-  val FileParquet = "file/parquet"
-  val FileSequence = "file/sequence"
-
-  private val graphFormats = Set(SeamlessGraph, CassandraTitan, HBaseTitan)
-  private val frameFormats = Set(FileSequence, FileParquet)
-
-  def validateGraphFormat(format: String): Unit = {
-    if (!graphFormats.contains(format)) {
-      throw new IllegalArgumentException(s"Unsupported graph storage format $format, please choose from " + graphFormats.mkString(", "))
-    }
-  }
-
-  def validateFrameFormat(format: String): Unit = {
-    if (!frameFormats.contains(format)) {
-      throw new IllegalArgumentException(s"Unsupported frame storage format $format")
-    }
-  }
-
-  def isSeamlessGraph(format: String): Boolean = {
-    SeamlessGraph == format
-  }
-
+case class CopyGraphArgs(graph: GraphReference, name: Option[String] = None) {
+  require(graph != null, "graph is required")
 }

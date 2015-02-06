@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Status, Naming, EntityManager }
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine._
@@ -32,7 +32,10 @@ import com.intel.intelanalytics.domain.frame.{ FrameReference, DataFrameTemplate
 import com.intel.intelanalytics.engine.FrameStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark._
+import com.intel.intelanalytics.engine.spark.command
+import com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
+import com.intel.intelanalytics.engine.spark.graph
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
@@ -114,6 +117,37 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       val newF2 = metaStore.frameRepo.update(frame2.copy(name = f1Name))
       (newF1.get, newF2.get)
     }
+  }
+
+  /**
+   * Copy the frames using spark
+   *
+   * @param frames List of frames to be copied
+   * @param sc Spark Context
+   * @return List of copied frames
+   */
+  def copyFrames(frames: List[FrameReference], sc: SparkContext)(implicit invocation: Invocation): List[FrameEntity] = {
+    frames.map(frame => copyFrame(frame, sc))
+  }
+
+  /**
+   * Create a copy of the frame copying the data
+   * @param frame the frame to be copied
+   * @return the copy
+   */
+  def copyFrame(frame: FrameReference, sc: SparkContext)(implicit invocation: Invocation): FrameEntity = {
+    val frameEntity = expectFrame(frame.id)
+    var child: FrameEntity = null
+
+    metaStore.withTransaction("sfs.copyFrame") { implicit txn =>
+      child = frameEntity.createChild(Some(invocation.user.user.id), command = None, schema = frameEntity.schema)
+      child = metaStore.frameRepo.insert(child)
+    }
+    //TODO: frameEntity should just have a pointer to the actual frame data so that we don't have to load into Spark.
+    val frameRdd = loadFrameData(sc, frameEntity)
+    saveFrameData(child.toReference, frameRdd)
+
+    expectFrame(child.toReference)
   }
 
   def exchangeGraphs(frame1: FrameEntity, frame2: FrameEntity): (FrameEntity, FrameEntity) = {
@@ -385,6 +419,25 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     else {
       // TODO: not sure what to do if nothing is persisted?
       throw new NotImplementedError("trying to get a row count on a frame that hasn't been persisted, not sure what to do")
+    }
+  }
+
+  /**
+   * Size of frame in bytes
+   *
+   * @param frameEntity reference to a data frame
+   * @return Optional size of frame in bytes
+   */
+  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
+    (frameEntity.storageFormat, frameEntity.storageLocation) match {
+      case (Some(StorageFormats.FileParquet), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case (Some(StorageFormats.FileSequence), Some(absPath)) =>
+        Some(frameFileStorage.hdfs.size(absPath))
+      case _ => {
+        warn(s"Could not get size of frame ${frameEntity.id} / ${frameEntity.name}")
+        None
+      }
     }
   }
 

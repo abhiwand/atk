@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,14 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.frame.FrameNoArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.spark.mllib.util.MLDataSplitter
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 import scala.concurrent.ExecutionContext
 
@@ -39,9 +36,9 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Assign classes to rows.
+ * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
-class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntity] {
+class SizeOnDiskPlugin extends SparkCommandPlugin[FrameNoArgs, LongValue] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -49,49 +46,34 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame/assign_sample"
+  override def name: String = "frame/_size_on_disk"
 
   /**
-   * Assign classes to rows.
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
+  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
+
+  /**
+   * Get the RDD size on disk after loading a frame (useful for debugging/benchmarking purposes)
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
+   * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
+  override def execute(arguments: FrameNoArgs)(implicit invocation: Invocation): LongValue = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
-    val frameID = arguments.frame.id
-    val frame = frames.expectFrame(frameID)
-    val splitPercentages = arguments.sample_percentages.toArray
-    val outputColumn = arguments.output_column.getOrElse("sample_bin")
-    if (frame.schema.columnTuples.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
-      throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
-    val seed = arguments.random_seed.getOrElse(0)
+    val frame = frames.expectFrame(arguments.frame.id)
 
-    val splitLabels: Array[String] = if (arguments.sample_labels.isEmpty) {
-      if (splitPercentages.length == 3) {
-        Array("TR", "TE", "VA")
-      }
-      else {
-        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
-      }
+    frames.getSizeInBytes(frame) match {
+      case Some(size) => LongValue(size)
+      case _ => throw new RuntimeException(s"Unable to calculate size of frame! Frame is empty or has not been materialized.")
     }
-    else {
-      arguments.sample_labels.get.toArray
-    }
-
-    // run the operation
-    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
-    val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
-    val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
-    val updatedSchema = frame.schema.addColumn(outputColumn, DataTypes.string)
-
-    // save results
-    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(updatedSchema, splitRDD))
   }
 }

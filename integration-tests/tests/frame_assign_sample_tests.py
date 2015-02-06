@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,6 +23,8 @@
 
 import unittest
 import intelanalytics as ia
+import math
+from intelanalytics.rest.command import CommandServerError
 
 # show full stack traces
 ia.errors.show_details = True
@@ -32,11 +34,11 @@ if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
-class FrameSmokeTest(unittest.TestCase):
-    """
-    Smoke test basic frame operations to verify functionality that will be needed by all other tests.
+_multiprocess_can_split_ = True
 
-    If these tests don't pass, there is no point in running other tests.
+class FrameAssignSampleTests(unittest.TestCase):
+    """
+    Test frame.assign_sample
 
     This is a build-time test so it needs to be written to be as fast as possible:
     - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
@@ -45,39 +47,36 @@ class FrameSmokeTest(unittest.TestCase):
     """
     _multiprocess_can_split_ = True
 
-    def test_frame(self):
+    def setUp(self):
+        # there's already a "splits" column in this data set, but for testing purposes, it doesn't affect anything
         print "define csv file"
-        csv = ia.CsvFile("/datasets/oregon-cities.csv", schema= [('rank', ia.int32),
-                                            ('city', str),
-                                            ('population_2013', str),
-                                            ('pop_2010', str),
-                                            ('change', str),
-                                            ('county', str)], delimiter='|')
+        self.schema = [('user', ia.int32),
+                         ('vertex_type', str),
+                         ('movie', ia.int32),
+                         ('rating', ia.int32),
+                         ('splits', str)]
+        self.csv = ia.CsvFile("/datasets/movie.csv", self.schema)
 
-        print "create frame"
-        frame = ia.Frame(csv)
+        print "creating frame"
+        self.frame = ia.Frame(self.csv)
 
-        # TODO: add asserts verifying inspect is working
-        print
-        print frame.inspect(20)
-        print
-        self.assertEquals(frame.row_count, 20, "frame should have 20 rows")
-        self.assertGreaterEqual(frame._size_on_disk, 0, "frame size on disk should be non-negative")
-        self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
-        self.assertEquals(len(frame.column_names), 6)
+    def test_assign_sample_low_probabilities(self):
+        try:
+            f = self.frame.assign_sample(sample_percentages= [0.1, 0.2], sample_labels=None, output_column='fuBuddy', random_seed=None)
+            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns")
+        except CommandServerError:
+            pass
 
-        print "get_error_frame()"
-        error_frame = frame.get_error_frame()
+    def test_assign_sample_high_probabilities(self):
+        try:
+            f = self.frame.assign_sample(sample_percentages= [0.6, 0.5], sample_labels=None, output_column='fuBuddy', random_seed=None)
+            self.fail("FAIL. Providing probabilities that do not sum to 1 should raise exception from assign_columns")
+        except CommandServerError:
+            pass
 
-        # TODO: add asserts verifying inspect is working
-
-        print
-        print error_frame.inspect(20)
-        print
-        self.assertEquals(error_frame.row_count, 2, "error frame should have 2 bad rows after loading")
-        self.assertEquals(len(error_frame.column_names), 2, "error frames should have 2 columns (original value and error message)")
-
-        # TODO: add verification that one Python UDF is working (not working yet)
+    def test_assign_sample_column_name(self):
+        f = self.frame.assign_sample(sample_percentages= [0.1, 0.2, 0.4, 0.3], sample_labels=None, output_column='fuBuddy', random_seed=None)
+        self.assertEqual(f.column_names, [name for name, type in self.schema + [('fuBuddy', str)]])
 
 
 if __name__ == "__main__":

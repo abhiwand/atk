@@ -150,6 +150,6 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
       val point = Vectors.dense(doubles)
       kmeansModel.predict(point)
     })
-    predictRDD.map(row => ("Cluster:"+(row+1).toString,1)).reduceByKey(_+_).collect().toMap
+    predictRDD.map(row => ("Cluster:" + (row + 1).toString, 1)).reduceByKey(_ + _).collect().toMap
   }
 }
