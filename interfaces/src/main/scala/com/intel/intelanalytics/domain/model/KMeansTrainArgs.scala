@@ -38,6 +38,7 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 case class KMeansTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
+                           columnWeights: List[Double],
                            k: Option[Int] = None,
                            maxIterations: Option[Int] = None,
                            epsilon: Option[Double] = None,
@@ -45,11 +46,13 @@ case class KMeansTrainArgs(model: ModelReference,
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
+  require(!columnWeights.isEmpty && columnWeights != null, "columnWeights must not be null or empty")
+  require(columnWeights.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
 }
 
 /**
  * Return object when training a KMeansModel
  * @param clusterSize A dictionary containing the number of elements in each cluster
- * @param withinSetSumOfSquaredErrors  Within cluster sum of squared distance
+ * @param withinSetSumOfSquaredError  Within cluster sum of squared distance
  */
-case class KMeansTrainReturn(clusterSize: Map[String, Int], withinSetSumOfSquaredErrors: Double)
+case class KMeansTrainReturn(clusterSize: Map[String, Int], withinSetSumOfSquaredError: Double)

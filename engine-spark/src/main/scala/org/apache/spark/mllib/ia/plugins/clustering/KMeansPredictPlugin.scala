@@ -116,11 +116,13 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val kmeansData = kmeansJsObject.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
     val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
+    val columnWeights = kmeansData.columnWeights
 
     //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
-      val array = row.valuesAsArray(kmeansColumns)
-      val doubles = array.map(i => DataTypes.toDouble(i))
+      val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
+      val columnWeightsArray = columnWeights.toArray
+      val doubles = columnsArray.zip(columnWeightsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
 
       val clusterCenters = kmeansModel.clusterCenters
@@ -136,8 +138,8 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     //Updating the frame schema
     var columnNames = new ListBuffer[String]()
     var columnTypes = new ListBuffer[DataTypes.DataType]()
-    for (i <- 0 to (kmeansModel.clusterCenters.length - 1)) {
-      val colName = "distance_from_cluster_" + (i + 1).toString
+    for (i <- 1 to (kmeansModel.clusterCenters.length)) {
+      val colName = "distance_from_cluster_" + i.toString
       columnNames += colName
       columnTypes += DataTypes.float64
     }

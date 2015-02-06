@@ -113,17 +113,16 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
        */
       val kMeans = initializeKmeans(arguments)
 
-      val vectorRDD = trainFrameRDD.toVectorDenseRDD(arguments.observationColumns)
+      val vectorRDD = trainFrameRDD.toVectorDenseRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
       val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns)
-      val withinSetSumOfSquaredErrors = kmeansModel.computeCost(vectorRDD)
+      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnWeights)
+      val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
 
       //Writing the kmeansModel as JSON
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns)
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnWeights)
       models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
 
-      KMeansTrainReturn(size, withinSetSumOfSquaredErrors)
-
+      KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }
 
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
@@ -142,14 +141,15 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
     kmeans
   }
 
-  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String]): Map[String, Int] = {
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnWeights: List[Double]): Map[String, Int] = {
 
     val predictRDD = trainFrameRDD.mapRows(row => {
-      val array = row.valuesAsArray(observationColumns)
-      val doubles = array.map(i => DataTypes.toDouble(i))
+      val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
+      val columnWeightsArray = columnWeights.toArray
+      val doubles = array.zip(columnWeightsArray).map{case(x,y) => x*y}
       val point = Vectors.dense(doubles)
       kmeansModel.predict(point)
     })
-    predictRDD.map(row => ("Cluster:" + (row + 1).toString, 1)).reduceByKey(_ + _).collect().toMap
+    predictRDD.map(row => ("Cluster:" + (row+1).toString, 1)).reduceByKey(_ + _).collect().toMap
   }
 }
