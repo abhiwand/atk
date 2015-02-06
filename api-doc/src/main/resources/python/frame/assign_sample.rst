@@ -13,7 +13,7 @@ If the number of labels is 3, the labels will default to "TR", "TE" and "VA".
 Parameters
 ----------
 sample_percentages : list of float
-    Entries are non-negative and sum to 1.
+    Entries are non-negative and sum to 1. (See the note below.)
     If the *i*'th entry of the  list is *p*,
     then then each row receives label *i* with independent probability *p*.
 
@@ -28,6 +28,18 @@ output_column : str (optional)
 random_seed : int (optional)
     Random seed used to generate the labels.
     Defaults to 0.
+
+Probability Validation and Floating Point Precision
+---------------------------------------------------
+
+The sample percentages provided by the user are preserved to at least eight decimal places, but beyond this
+there may be small changes do to floating point imprecision.
+
+In particular:
+1. The engine validates that the sum of probabilities sums to 1.0 within eight decimal places and returns an error
+if the sum falls outside of this range.
+2. The probability of the final class is clamped so that each row receives a valid label with probability one.
+
 
 Examples
 --------
