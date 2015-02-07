@@ -21,18 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.model
+package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.intelanalytics.domain.frame.FrameReference
+import org.apache.spark.mllib.clustering.KMeansModel
 
 /**
  * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
- * @param frame Handle to the data frame
+ * @param kMeansModel Trained MLLib's KMeansModel object
  * @param observationColumns Handle to the observation columns of the data frame
+ * @param columnWeights Handle to the weights for the observation columns of the data frame
  */
-case class KMeansPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String]) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumns must not be null nor empty")
+case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String], columnWeights: List[Double]) {
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
+  require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null nor empty")
+  require(columnWeights.length == observationColumns.length, "number of elements in observationColumns and columnWeights needs to be the same")
 }
