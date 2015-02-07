@@ -7,7 +7,8 @@ import java.io.File
  */
 object EnvironmentValidator extends Serializable {
 
-  var skipEnvironmentValidation = false
+  //TODO: It seems this isn't needed anymore - delete and get rid of ispark-deps altogether?
+  var skipEnvironmentValidation = true
 
   /**
    * Validate that ispark-deps.jar is available to Spark.

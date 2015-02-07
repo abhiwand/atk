@@ -25,7 +25,7 @@ package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -56,6 +56,10 @@ case class AnnotateWeightedDegreesArgs(graph: GraphReference,
       Some(inputEdgeLabels.get.toSet)
     }
 
+  def useUndirected() = "undirected".startsWith(degreeMethod)
+  def useInDegree() = "in".startsWith(degreeMethod)
+  def useOutDegree() = "out".startsWith(degreeMethod)
+
   def getDefaultEdgeWeight(): Double = {
     if (edgeWeightProperty.isEmpty) {
       1.0d
@@ -66,17 +70,13 @@ case class AnnotateWeightedDegreesArgs(graph: GraphReference,
   }
 }
 
-/**
- * The result object
- * @param graph Name of the output graph
- */
-case class AnnotateWeightedDegreesResult(graph: String)
+import DomainJsonProtocol._
+import spray.json._
 
 /** Json conversion for arguments and return value case classes */
 object AnnotateWeightedDegreesJsonFormat {
-  import DomainJsonProtocol._
+
   implicit val AWDFormat = jsonFormat7(AnnotateWeightedDegreesArgs)
-  implicit val AWDResultFormat = jsonFormat1(AnnotateWeightedDegreesResult)
 }
 
 import AnnotateWeightedDegreesJsonFormat._
@@ -91,7 +91,7 @@ import AnnotateWeightedDegreesJsonFormat._
  *
  * Right now it uses only Titan for graph storage. Other backends will be supported later.
  */
-class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, AnnotateWeightedDegreesResult] {
+class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, GraphEntity] {
 
   override def name: String = "graph:titan/annotate_weighted_degrees"
 
@@ -100,29 +100,25 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): AnnotateWeightedDegreesResult = {
+  override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): GraphEntity = {
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     val degreeMethod: String = arguments.degreeMethod
-    val newGraphName = arguments.outputGraphName
-
     // Get the graph
 
     val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
-    gbVertices.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    gbEdges.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val inputEdgeSet = arguments.inputEdgeSet
     val weightPropertyOPtion = arguments.edgeWeightProperty
     val defaultEdgeWeight = arguments.getDefaultEdgeWeight()
 
-    val vertexWeightPairs: RDD[(GBVertex, Double)] = if ("undirected".startsWith(degreeMethod)) {
+    val vertexWeightPairs: RDD[(GBVertex, Double)] = if (arguments.useUndirected()) {
       WeightedDegrees.undirectedWeightedDegreeByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
     }
-    else if ("in".startsWith(degreeMethod)) {
+    else if (arguments.useInDegree()) {
       WeightedDegrees.inWeightByEdgeLabel(gbVertices, gbEdges, weightPropertyOPtion, defaultEdgeWeight, inputEdgeSet)
     }
     else {
@@ -135,10 +131,8 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
         properties = v.properties + Property(arguments.outputPropertyName, wd))
     })
 
-    engine.graphs.writeToTitan(newGraphName, outVertices, gbEdges)
-    gbVertices.unpersist()
-    gbEdges.unpersist()
+    engine.graphs.writeToTitan(arguments.outputGraphName, outVertices, gbEdges)
 
-    AnnotateWeightedDegreesResult(newGraphName)
+    engine.graphs.getGraphByName(Some(arguments.outputGraphName)).get
   }
 }

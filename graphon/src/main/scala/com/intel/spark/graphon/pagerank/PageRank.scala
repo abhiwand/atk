@@ -114,8 +114,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val config = configuration
 
     // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = engine.graphs.expectGraph(arguments.graph.id)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
@@ -129,8 +128,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
     val newGraphName = arguments.output_graph_name
-    val newGraph = Await.result(engine.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan)),
-      config.getInt("default-timeout") seconds)
+    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
     val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
