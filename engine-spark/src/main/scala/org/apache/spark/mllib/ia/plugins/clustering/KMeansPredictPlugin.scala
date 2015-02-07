@@ -56,32 +56,6 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Predict the cluster for each entry in a frame and return a new frame with existing columns and a predicted centroid's column",
-    extendedSummary = Some("""
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    predict_frame: Frame
-                             |        Frame whose clusters are to be predicted
-                             |
-                             |    predict_for_observation_columns: List of strings
-                             |        names of the observation columns
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Frame containing the original frame's columns and a column with the predicted cluster index
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.KMeansModel(name='MyKMeansModel')
-                             |        model.train(train_frame, ['name_of_observation_column1','name_of_observation_column2'])
-                             |        new_frame = model.predict(predict_frame, ['name_of_observation_column1','name_of_observation_column2','name_of_observation_column3'])
-                             |
-                           """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command

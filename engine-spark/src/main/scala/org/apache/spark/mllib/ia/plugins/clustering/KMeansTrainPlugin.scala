@@ -53,34 +53,6 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a Kmeans Model using the observation column of a train frame",
-    extendedSummary = Some(
-      """
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    frame: Frame
-                             |        Frame to train the model on
-                             |
-                             |    observation_column: str
-                             |        column containing the observations
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Trained Kmeans model object
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.KMeansModel(name='MyKMeansModel')
-                             |        model.train(train_frame, ['name_of_observation_column1','name_of_observation_column2'])
-                             |
-                             |
-                           """.stripMargin)))
-
   /**
    * Number of Spark jobs that get created by running this command
    *
