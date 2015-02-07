@@ -110,7 +110,7 @@ class RowWrapper(Row):
     """
 
     def load_row(self, s):
-        self._set_data(json.loads(unicode(s)))
+        self._set_data(json.loads(s))
 
 
 def pickle_function(func):
