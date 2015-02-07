@@ -45,7 +45,7 @@ class ModelKMeansTest(unittest.TestCase):
         k = ia.KMeansModel(name='myKMeansModel')
 
         print "Training the model on the Frame"
-        k.train(frame,['data'])
+        k.train(frame,['data'],[2.0])
 
         print "Predicting the clusters for data in the frame"
         k.predict(frame)

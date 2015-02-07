@@ -32,7 +32,7 @@ import org.apache.spark.mllib.clustering.KMeansModel
  * @param columnWeights Handle to the weights for the observation columns of the data frame
  */
 case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String], columnWeights: List[Double]) {
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumns must not be null nor empty")
-  require(!columnWeights.isEmpty && columnWeights != null, "columnWeights must not be null nor empty")
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
+  require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null nor empty")
   require(columnWeights.length == observationColumns.length, "number of elements in observationColumns and columnWeights needs to be the same")
 }

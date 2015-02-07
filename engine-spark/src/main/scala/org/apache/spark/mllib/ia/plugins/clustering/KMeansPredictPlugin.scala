@@ -27,7 +27,6 @@ import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.domain.model.KMeansPredictArgs
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.engine.plugin.Invocation
