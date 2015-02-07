@@ -75,6 +75,8 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
 
       //Running MLLib
       val logReg = new LogisticRegressionWithSGD()
+      logReg.setIntercept(arguments.getIntercept)
+
       val logRegModel = logReg.run(labeledTrainRDD)
       val modelObject = logRegModel.toJson.asJsObject
 
