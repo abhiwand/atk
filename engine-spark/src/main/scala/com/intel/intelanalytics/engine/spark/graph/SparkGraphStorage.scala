@@ -256,6 +256,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
    */
+  @deprecated("please use expectGraph() instead")
   override def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.lookup") {
       implicit session =>
@@ -423,7 +424,7 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   def writeToTitan(graphName: String,
                    gbVertices: RDD[GBVertex],
-                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation) = {
+                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation): GraphEntity = {
 
     val newGraph = createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
@@ -432,6 +433,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = false))
 
     gb.buildGraphWithSpark(gbVertices, gbEdges)
+    newGraph
   }
 
   /**

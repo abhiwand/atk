@@ -25,11 +25,11 @@
 package com.intel.spark.graphon.trianglecount
 
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.spark.graphon.graphconversions.GraphConversions
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ TriangleCount => GraphXTriangleCount }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Arguments for the TriangleCountRunnerArgs
@@ -44,10 +44,6 @@ case class TriangleCountRunnerArgs(posteriorProperty: String,
  * posterior value placed as a vertex property.
  */
 object TriangleCountRunner extends Serializable {
-
-  type EdgeSrcDestPair = (Long, Long)
-  type GBVertexPropertyPair = (GBVertex, Property)
-  type GBEdgePropertyPair = (GBEdge, Property)
 
   /**
    * Run pagerank on a graph.
@@ -72,7 +68,7 @@ object TriangleCountRunner extends Serializable {
     val graphXVertices: RDD[(Long, Null)] =
       inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
-    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => createGraphXEdgeFromGBEdge(edge))
+    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge))
 
     // create graphx Graph instance from graphx vertices and edges
     val graph = Graph[Null, Long](graphXVertices, graphXEdges)
@@ -90,31 +86,8 @@ object TriangleCountRunner extends Serializable {
     val outVertices: RDD[GBVertex] = inVertices
       .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
       .join(intermediateVertices)
-      .map(vertex => generateGBVertex(vertex))
+      .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
 
     (outVertices, inEdges)
   }
-
-  // converts GBEdge to a GraphXEdge to be consumed by the triangle count computation
-  // Note: GraphX Triangle count expects the edge to be in canonical orientation i.e. srcId < destId
-  // Triangle Count makes sense on a undirected graph, hence we can change the edges to the canonical orientation
-  // before passing it to graphx. We do not need the edges henceforth for join purposes.
-  // Refer: https://spark.apache.org/docs/1.0.2/api/scala/index.html#org.apache.spark.graphx.lib.TriangleCount$
-  private def createGraphXEdgeFromGBEdge(gbEdge: GBEdge, canonicalOrientation: Boolean = true): GraphXEdge[Long] = {
-    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
-    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
-    if (canonicalOrientation && srcId > destId)
-      GraphXEdge[Long](destId, srcId)
-    else
-      GraphXEdge[Long](srcId, destId)
-  }
-
-  // generates GBVertex from value pair obtained as a result of join and appends the pagerank property to the GBVertex
-  private def generateGBVertex(joinValuePair: (Long, GBVertexPropertyPair)): GBVertex = {
-    val (gbVertex, pagerankProperty) = joinValuePair._2 match {
-      case value: GBVertexPropertyPair => (value._1, value._2)
-    }
-    gbVertex.copy(properties = gbVertex.properties + pagerankProperty)
-  }
-
 }
