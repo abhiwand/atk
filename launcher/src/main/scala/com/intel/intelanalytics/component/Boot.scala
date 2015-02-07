@@ -29,7 +29,7 @@ package com.intel.intelanalytics.component
  * Manages a registry of plugins.
  *
  */
-object Boot extends App with ClassLoaderAware {
+object Boot {
 
   /**
    * Returns the requested archive, loading it if needed.
@@ -51,22 +51,29 @@ object Boot extends App with ClassLoaderAware {
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 
-  if (args.length < 1 || args.length > 2) {
-    usage()
-  }
-  else {
-    try {
-      val archiveName: String = args(0)
-      val applicationName: Option[String] = { if (args.length == 2) Some(args(1)) else None }
-      Archive.logger(s"Starting $archiveName")
-      val instance = getArchive(archiveName, applicationName)
-      Archive.logger(s"Started $archiveName with ${instance.definition}")
+  def main(args: Array[String]) = {
+    if (args.length < 1 || args.length > 2) {
+      usage()
     }
-    catch {
-      case e: Throwable =>
-        Archive.logger(e.toString)
-        println(e)
-        e.printStackTrace()
+    else {
+      try {
+        val archiveName: String = args(0)
+        val applicationName: Option[String] = { if (args.length == 2) Some(args(1)) else None }
+        println("Starting application")
+        Archive.logger(s"Starting $archiveName")
+        val instance = getArchive(archiveName, applicationName)
+        Archive.logger(s"Started $archiveName with ${instance.definition}")
+      }
+      catch {
+        case e: Throwable =>
+          var current = e
+          while (current != null) {
+            Archive.logger(current.toString)
+            println(current)
+            current.printStackTrace()
+            current = current.getCause
+          }
+      }
     }
   }
 }

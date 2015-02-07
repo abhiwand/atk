@@ -74,5 +74,4 @@ java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" \
 API_SERVER_PID=$!
 
 echo $API_SERVER_PID > $TARGET_DIR/api-server.pid
-
 popd

@@ -36,11 +36,11 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
     extends Archive(archiveDefinition, classLoader, config) with EventLogging with ClassLoaderAware {
   if (EventLogging.raw) {
     info("Engine setting log adapter from configuration")
-    EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
+    EventLogging.raw = configuration.getBoolean("intel.analytics.engine.logging.raw")
     info("Engine set log adapter from configuration")
   } // else api-server already installed an SLF4j adapter
 
-  EventLogging.profiling = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.profile")
+  EventLogging.profiling = configuration.getBoolean("intel.analytics.engine.logging.profile")
   info(s"Engine profiling: ${EventLogging.profiling}")
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null

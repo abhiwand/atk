@@ -50,10 +50,10 @@ class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: C
   EventLogging.raw = true
   info("API server setting log adapter from configuration")
 
-  EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.api.logging.raw")
+  EventLogging.raw = configuration.getBoolean("intel.analytics.api.logging.raw")
   info("API server set log adapter from configuration")
 
-  EventLogging.profiling = ConfigFactory.load().getBoolean("intel.analytics.api.logging.profile")
+  EventLogging.profiling = configuration.getBoolean("intel.analytics.api.logging.profile")
   info(s"API server profiling: ${EventLogging.profiling}")
 
   //Direct subsequent archive messages to the normal log
