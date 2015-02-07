@@ -91,7 +91,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
         row.addValue(prediction)
       })
 
-      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
       tryNew(CreateEntityArgs(description = Some("created by LogisticRegressionWithSGDs predict operation"))) {

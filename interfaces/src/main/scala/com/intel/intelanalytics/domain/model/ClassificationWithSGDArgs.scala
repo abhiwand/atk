@@ -32,9 +32,17 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * @param observationColumns Handle to the observation column of the data frame
  * @param labelColumn Handle to the label column of the data frame
  */
-case class ClassificationWithSGDArgs(model: ModelReference, frame: FrameReference, observationColumns: List[String], labelColumn: String) {
+case class ClassificationWithSGDArgs(model: ModelReference,
+                                     frame: FrameReference,
+                                     observationColumns: List[String],
+                                     labelColumn: String,
+                                     intercept:Option[Boolean]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
   require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
+
+  def getIntercept : Boolean = {
+    intercept.getOrElse(false)
+  }
 }
