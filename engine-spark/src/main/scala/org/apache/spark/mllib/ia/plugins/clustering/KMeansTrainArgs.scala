@@ -21,9 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.model
+package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.
@@ -38,15 +39,37 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 case class KMeansTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
-                           k: Option[Int],
-                           maxIterations: Option[Int],
-                           epsilon: Option[Double],
-                           initializationMode: Option[String]) {
+                           columnWeights: List[Double],
+                           k: Option[Int] = None,
+                           maxIterations: Option[Int] = None,
+                           epsilon: Option[Double] = None,
+                           initializationMode: Option[String] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
-  require(k != None, "k must not be None")
-  require(maxIterations != None, "maxIterations must not be None")
-  require(epsilon != None, "epsilon must not be None")
-  require(initializationMode != None, "initializationMode must not be None")
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
+  require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null or empty")
+  require(columnWeights.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
+
+  def getK: Int = {
+    k.getOrElse(2)
+  }
+
+  def getMaxIterations: Int = {
+    maxIterations.getOrElse(20)
+  }
+
+  def geteEpsilon: Double = {
+    epsilon.getOrElse(1e-4)
+  }
+
+  def getInitializationMode: String = {
+    initializationMode.getOrElse("k-means||")
+  }
 }
+
+/**
+ * Return object when training a KMeansModel
+ * @param clusterSize A dictionary containing the number of elements in each cluster
+ * @param withinSetSumOfSquaredError  Within cluster sum of squared distance
+ */
+case class KMeansTrainReturn(clusterSize: Map[String, Int], withinSetSumOfSquaredError: Double)
