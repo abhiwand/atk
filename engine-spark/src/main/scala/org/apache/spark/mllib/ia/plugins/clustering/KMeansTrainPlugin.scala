@@ -27,7 +27,6 @@ package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.{ KMeansTrainReturn, KMeansTrainArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
@@ -113,7 +112,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
        */
       val kMeans = initializeKmeans(arguments)
 
-      val vectorRDD = trainFrameRDD.toVectorDenseRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
+      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
       val kmeansModel = kMeans.run(vectorRDD)
       val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnWeights)
       val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
@@ -127,18 +126,11 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
 
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
-    if (arguments.k.isDefined) {
-      kmeans.setK(arguments.k.getOrElse(2))
-    }
-    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.getOrElse(20)) }
-    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.getOrElse(1e-4)) }
-    if (arguments.initializationMode.isDefined) {
-      kmeans.
-        setInitializationMode(
-          arguments.
-            initializationMode.getOrElse("k-means||"))
-    }
-    kmeans
+
+    kmeans.setK(arguments.getK)
+    kmeans.setMaxIterations(arguments.getMaxIterations)
+    kmeans.setInitializationMode(arguments.getInitializationMode)
+    kmeans.setEpsilon(arguments.geteEpsilon)
   }
 
   private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnWeights: List[Double]): Map[String, Int] = {
@@ -146,10 +138,10 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
     val predictRDD = trainFrameRDD.mapRows(row => {
       val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
       val columnWeightsArray = columnWeights.toArray
-      val doubles = array.zip(columnWeightsArray).map{case(x,y) => x*y}
+      val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
       kmeansModel.predict(point)
     })
-    predictRDD.map(row => ("Cluster:" + (row+1).toString, 1)).reduceByKey(_ + _).collect().toMap
+    predictRDD.map(row => ("Cluster:" + (row + 1).toString, 1)).reduceByKey(_ + _).collect().toMap
   }
 }

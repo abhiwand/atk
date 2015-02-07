@@ -21,9 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.model
+package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.
@@ -45,9 +46,25 @@ case class KMeansTrainArgs(model: ModelReference,
                            initializationMode: Option[String] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
-  require(!columnWeights.isEmpty && columnWeights != null, "columnWeights must not be null or empty")
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
+  require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null or empty")
   require(columnWeights.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
+
+  def getK: Int = {
+    k.getOrElse(2)
+  }
+
+  def getMaxIterations: Int = {
+    maxIterations.getOrElse(20)
+  }
+
+  def geteEpsilon: Double = {
+    epsilon.getOrElse(1e-4)
+  }
+
+  def getInitializationMode: String = {
+    initializationMode.getOrElse("k-means||")
+  }
 }
 
 /**
