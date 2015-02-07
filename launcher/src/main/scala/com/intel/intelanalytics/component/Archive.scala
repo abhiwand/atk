@@ -110,7 +110,7 @@ abstract class Archive(val definition: ArchiveDefinition, val classLoader: Class
 /**
  * Companion object for Archives.
  */
-object Archive {
+object Archive extends ClassLoaderAware {
 
   /**
    * Can be set at runtime to use whatever logging framework is desired.
@@ -218,13 +218,20 @@ object Archive {
 
   private[component] val TMP = "/tmp/iat-" + java.util.UUID.randomUUID.toString + "/"
 
-  private lazy val defaultParentArchiveClassLoader = buildClassLoader(defaultParentArchiveName, getClass.getClassLoader)
+  private lazy val defaultParentArchiveClassLoader =
+    attempt(buildClassLoader(defaultParentArchiveName, getClass.getClassLoader),
+      s"Failed to build default parent class loader '$defaultParentArchiveName'")
 
-  //Now that we know the default parent loader, reload configs for the system with that in mind.
-  var _system = new SystemConfig(ConfigFactory.load(defaultParentArchiveClassLoader))
-  logger(s"System configuration installed")
+  var _system: SystemConfig = null
 
-  def system: SystemConfig = _system
+  def system: SystemConfig = {
+    if (_system == null) {
+      _system = attempt(new SystemConfig(ConfigFactory.load(defaultParentArchiveClassLoader)),
+        s"Failed to load default configuration")
+      logger(s"System configuration installed")
+    }
+    _system
+  }
 
   /**
    * Initializes an archive instance

@@ -32,8 +32,13 @@ import java.net.{ URLClassLoader, URL }
 class ArchiveClassLoader(archiveName: String, urls: Array[URL], parent: ClassLoader)
     extends URLClassLoader(urls, parent) {
   override def loadClass(className: String, resolve: Boolean): Class[_] = {
-    val klass = attempt(super.loadClass(className, resolve),
-      s"Could not find class $className in archive $archiveName")
-    klass
+    //Interestingly, cannnot use "attempt" here, have to use try/catch, probably due to stack depth check in ClassLoader.
+    try {
+      val klass = super.loadClass(className, resolve)
+      klass
+    }
+    catch {
+      case e: ClassNotFoundException => throw new ClassNotFoundException(s"Could not find class $className in archive $archiveName", e)
+    }
   }
 }
