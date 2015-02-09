@@ -311,6 +311,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val renameFrameFormat = jsonFormat2(RenameFrameArgs)
   implicit val renameColumnsFormat = jsonFormat2(RenameColumnsArgs)
   implicit val joinFrameLongFormat = jsonFormat3(JoinArgs)
+  implicit val groupByAggregationsFormat = jsonFormat3(GroupByAggregationArgs)
   implicit val groupByColumnFormat = jsonFormat3(GroupByArgs)
   implicit val copyWhereFormat = jsonFormat2(CountWhereArgs)
 

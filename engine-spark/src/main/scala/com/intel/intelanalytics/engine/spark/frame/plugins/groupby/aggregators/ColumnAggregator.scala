@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2014-2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,20 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators
 
-/** Arguments to GroupByPlugin (see Spark API) */
-case class GroupByArgs(frame: FrameReference, groupByColumns: List[String], aggregations: List[GroupByAggregationArgs]) {
-  require(frame != null, "frame is required")
-  require(groupByColumns != null, "group_by columns is required")
-  require(aggregations != null, "aggregation list is required")
-}
+import com.intel.intelanalytics.domain.schema.Column
 
 /**
- * Arguments for GroupBy aggregation
- *
- * @param function Name of aggregation function (e.g., count, sum, variance)
- * @param columnName Name of column to aggregate
- * @param newColumnName Name of new column that stores the aggregated results
+ * Column and corresponding aggregator.
  */
-case class GroupByAggregationArgs(function: String, columnName: String, newColumnName: String)
+case class ColumnAggregator(column: Column, aggregator: GroupByAggregator)
