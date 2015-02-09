@@ -1,4 +1,4 @@
-package com.intel.intelanalytics
+package com.intel.intelanalytics.component
 
 import scala.util.control.NonFatal
 
@@ -24,11 +24,21 @@ import scala.util.control.NonFatal
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package object component {
-
-  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
-  implicit class RichBoolean(val b: Boolean) extends AnyVal {
-    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
+object ExceptionUtil {
+  /**
+   * Run the given expression. If an exception is thrown, instead throw an Exception
+   * that wraps the original, and uses the given failure message.
+   * @param expr the expression to evaluate
+   * @param failureMessage the failure message to use if an exception is thrown
+   * @tparam T the return type of the expression
+   * @return the result of evaluating the expression, or else throws Exception.
+   */
+  def attempt[T](expr: => T, failureMessage: => String) = {
+    try {
+      expr
+    }
+    catch {
+      case NonFatal(e) => throw new Exception(failureMessage, e)
+    }
   }
-
 }

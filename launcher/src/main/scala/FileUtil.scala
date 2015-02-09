@@ -1,7 +1,4 @@
-package com.intel.intelanalytics
-
-import scala.util.control.NonFatal
-
+package com.intel.intelanalytics.component
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -24,11 +21,25 @@ import scala.util.control.NonFatal
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package object component {
 
-  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
-  implicit class RichBoolean(val b: Boolean) extends AnyVal {
-    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
+object FileUtil {
+  /**
+   * For debugging only
+   */
+  private[intelanalytics] def writeFile(fileName: String, content: String) {
+    import java.io._
+    val file = new java.io.File(fileName)
+    val parent = file.getParentFile
+    if (!parent.exists()) {
+      parent.mkdirs()
+    }
+    val writer = new PrintWriter(file)
+    try {
+      writer.append(content)
+    }
+    finally {
+      writer.close()
+    }
   }
 
 }
