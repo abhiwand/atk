@@ -94,7 +94,7 @@ Graph Analytics and Machine Learning
 
 The |IAT| provides a suite of graph algorithms that make it easy to apply :term:`collaborative clustering`, :term:`classification`, :term:`collaborative filtering`, :term:`belief propagation`, and :term:`topic modeling`, in addition to common graph statistics.
 
-Each algorithm provides metrics needed to assess its accuracy and the relative performance of parameter settings, including confusion matrices, receiver operating (ROC) curve, precision, recall, F-measure, and Kolmogorov-Smirnov test.
+Each algorithm provides metrics needed to assess its accuracy and the relative performance of parameter settings, including confusion matrices, receiver operating (ROC) curve, precision, recall, F-measure, and |K-S| test.
 Graph mining and machine learning algorithms included in this release include the following:
 
 .. outdated::
@@ -180,7 +180,7 @@ The toolkit is installed mainly as a "head unit" on a machine within or adjacent
     Summary calculations: group_by, accuracy, cumulative_sum
     data inspection, such as counts: group_by, cumulative count
     measures of central tendency: -----------   (Michael?)
-    distribution of data: ecdf
+    distribution of data: |ECDF|
     percentile of data: cumulative_percent_sum, cumulative_percent_count
     dispersions: ------------  (Michael?)
     binning: bin_column

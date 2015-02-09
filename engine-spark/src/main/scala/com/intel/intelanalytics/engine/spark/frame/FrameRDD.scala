@@ -95,6 +95,17 @@ class FrameRDD(val frameSchema: Schema,
     })
   }
 
+  def toDenseVectorRDDWithWeights(featureColumnNames: List[String], columnWeights: List[Double]): RDD[Vector] = {
+    require(columnWeights.length == featureColumnNames.length, "Length of columnWeights and featureColumnNames needs to be the same")
+    this.mapRows(row => {
+      val array = row.valuesAsArray(featureColumnNames).map(row => DataTypes.toDouble(row))
+      val columnWeightsArray = columnWeights.toArray
+      val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }
+      Vectors.dense(doubles)
+    }
+    )
+  }
+
   def toVectorRDD(featureColumnNames: List[String]) = {
     this mapRows (row =>
       {

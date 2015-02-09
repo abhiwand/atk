@@ -61,7 +61,11 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val command = new Command(commandId, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
     val listener = new SparkProgressListener(new TestProgressUpdater(), command, 1)
 
-    val stageIds = Array(1, 2, 3)
+    val stageOne = new StageInfo(1, 1, "one", 1, Seq(), "one")
+    val stageTwo = new StageInfo(2, 2, "two", 2, Seq(), "two")
+    val stageThree = new StageInfo(3, 3, "three", 3, Seq(), "three")
+
+    val stageIds = Seq(stageOne, stageTwo, stageThree)
 
     val job = mock[ActiveJob]
     when(job.jobId).thenReturn(1)
@@ -86,18 +90,26 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   def createListener_two_jobs(commandId: Long, expectedJobs: Int = 2): SparkProgressListener = {
     val command = new Command(commandId, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
     val listener = new SparkProgressListener(new TestProgressUpdater(), command, expectedJobs)
-    val stageIds = Array(1, 2, 3)
+    val stageOne = new StageInfo(1, 1, "one", 1, Seq(), "one")
+    val stageTwo = new StageInfo(2, 2, "two", 2, Seq(), "two")
+    val stageThree = new StageInfo(3, 3, "three", 3, Seq(), "three")
+    val stagefour = new StageInfo(4, 4, "four", 4, Seq(), "four")
+    val stagefive = new StageInfo(5, 5, "five", 5, Seq(), "five")
+    val stagesix = new StageInfo(6, 6, "six", 6, Seq(), "six")
+    val stageseven = new StageInfo(7, 7, "seven", 7, Seq(), "seven")
+
+    val stageIds = Seq(stageOne, stageTwo, stageThree)
 
     val job1 = mock[ActiveJob]
     when(job1.jobId).thenReturn(1)
 
-    val jobStart1 = SparkListenerJobStart(job1.jobId, Array(1, 2, 3))
+    val jobStart1 = SparkListenerJobStart(job1.jobId, stageIds)
     listener onJobStart jobStart1
 
     val job2 = mock[ActiveJob]
     when(job2.jobId).thenReturn(2)
 
-    val jobStart2 = SparkListenerJobStart(job2.jobId, Array(4, 5, 6, 7))
+    val jobStart2 = SparkListenerJobStart(job2.jobId, Array(stagefour, stagefive, stagesix, stageseven))
     listener onJobStart jobStart2
 
     listener
@@ -125,10 +137,15 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   "get all stages" in {
     val command = new Command(1, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
     val listener = new SparkProgressListener(new TestProgressUpdater(), command, 1)
+    val stageOne = new StageInfo(1, 1, "one", 1, Seq(), "one")
+    val stageTwo = new StageInfo(2, 2, "two", 2, Seq(), "two")
+    val stageThree = new StageInfo(3, 3, "three", 3, Seq(), "three")
+    val stageFour = new StageInfo(4, 4, "four", 4, Seq(), "four")
+    val stageFive = new StageInfo(5, 5, "five", 5, Seq(), "five")
     val job = mock[ActiveJob]
     when(job.jobId).thenReturn(1)
 
-    val jobStart = SparkListenerJobStart(job.jobId, Array[Int](1, 2, 3, 4, 5), null)
+    val jobStart = SparkListenerJobStart(job.jobId, Seq(stageOne, stageTwo, stageThree, stageFour, stageFive), null)
     listener onJobStart jobStart
 
     listener.jobIdToStagesIds(1).toList.sorted shouldEqual List(1, 2, 3, 4, 5)
@@ -234,14 +251,18 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
   }
 
-  "failed at first stage" in {
+   "failed at first stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
 
+    val jobFailed = mock[JobFailed]
     val jobEnd = mock[SparkListenerJobEnd]
+    when(jobEnd.jobResult).thenReturn(jobFailed)
+
     val stage = mock[Stage]
 
     when(stage.id).thenReturn(1)
+
 
     listener.onJobEnd(jobEnd)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(0)

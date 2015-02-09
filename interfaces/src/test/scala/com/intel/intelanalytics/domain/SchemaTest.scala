@@ -235,9 +235,22 @@ class SchemaTest extends WordSpec with Matchers {
       }
     }
 
-  }
+    "be able to validate column types when valid" in {
+      abcSchema.requireColumnIsType("a", int64)
+    }
 
-  "FrameSchema" should {
+    "be able to validate column types when invalid type" in {
+      intercept[IllegalArgumentException] {
+        abcSchema.requireColumnIsType("a", str)
+      }
+    }
+
+    "be able to validate column types when invalid name" in {
+      intercept[IllegalArgumentException] {
+        abcSchema.requireColumnIsType("invalid", str)
+      }
+    }
+
     "preserve column order in columnNames" in {
       ajSchema.columnNames shouldBe List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
     }

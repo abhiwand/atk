@@ -74,7 +74,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
           case Failure(ex) =>
-            error(ex.toString, exception = ex)
+            error(s"command completed with error, id: $id, name: ${command.name}, args: ${command.compactArgs} ", exception = ex)
             command.copy(complete = true,
               error = Some(throwableToError(ex)),
               correlationId = corId)

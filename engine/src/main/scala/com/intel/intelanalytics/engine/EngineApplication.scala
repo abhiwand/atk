@@ -61,7 +61,7 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
       engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
-        .load("com.intel.intelanalytics.engine.spark.SparkComponent")
+        .load("com.intel.intelanalytics.engine.spark.SparkEngineComponent")
         .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
     }
     catch {

@@ -5,17 +5,8 @@ Capabilities
 .. contents:: Table of Contents
     :local:
 
-Easier Development
+Easier_Development
 ==================
-
-.. outdated::
-
-    The |IAT| makes analytics development easier for both experts and new practitioners due to its familiar, consistent, and unified programming environment across the workflow — from data preparation to queries, analytics, and :term:`machine learning`.
-    Instead of switching between various low-level languages and data formatting environments of the Hadoop platform, the analytics developer uses a convenient and easy to learn Python based environment.
-    Data is represented with a familiar “data frame”, and :abbr:`API (Application Programming Interface)` environment that mirrors the broadly-used and easy to learn Python desktop analytics programming environment.
-    However, the |IAT| can run all analytics functionality at full cluster scale, overcoming the memory limitations of desktop Python analytic tools.
-    An extensive set of libraries is provided for preparing data models, including feature engineering and data segmentation.
-    Deploying a unified programming approach can improve productivity by enabling easier iteration and collaboration and by reducing the learning curve for cluster scale analytics.
 
 The unified programming environment of the |IAT| makes development easier across the entire analytics workflow — from data ingress and wrangling, to querying, analysis, and visualization — meaning the analyst doesn't have to spend time switching between various standalone tools.
 Data is represented as "data frames" (as in R, or Big Tables), and the analyst uses an easy-to-learn python-based analytics environment.
