@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import spray.json.DefaultJsonProtocol._
+import spray.json.{ JsValue, _ }
+
 import scala.collection.immutable.Set
 import scala.util.Try
-import spray.json.JsValue
 
-import spray.json._
-import DefaultJsonProtocol._
 /**
  * Datatypes supported for frames, graphs, etc.
  */
@@ -52,6 +52,9 @@ object DataTypes {
     def asDouble(raw: Any): Double
 
     def isNumerical: Boolean
+
+    /** True if data type is an integral data type (e.g., int32, int64). */
+    def isIntegral: Boolean
   }
 
   /**
@@ -80,6 +83,8 @@ object DataTypes {
     }
 
     override def isNumerical = true
+
+    override def isIntegral = true
   }
 
   /**
@@ -108,6 +113,8 @@ object DataTypes {
     }
 
     override def isNumerical = true
+
+    override def isIntegral = true
   }
 
   /**
@@ -136,6 +143,8 @@ object DataTypes {
     }
 
     override def isNumerical = true
+
+    override def isIntegral = false
   }
 
   /**
@@ -165,6 +174,8 @@ object DataTypes {
     }
 
     override def isNumerical = true
+
+    override def isIntegral = false
   }
 
   /**
@@ -199,6 +210,8 @@ object DataTypes {
     }
 
     override def isNumerical = false
+
+    override def isIntegral = false
   }
 
   /**
@@ -230,6 +243,8 @@ object DataTypes {
     }
 
     override def isNumerical = false
+
+    override def isIntegral = false
   }
 
   /**
@@ -473,15 +488,4 @@ object DataTypes {
     }
 
   }
-
-  /**
-   * Determines if data type is an integral data type (e.g., int32, int64).
-   *
-   * @param dataType Data type
-   * @return True for integral data types, otherwise false
-   */
-  def isIntegral(dataType: DataType): Boolean = {
-    dataType == DataTypes.int32 || dataType == DataTypes.int64
-  }
-
 }
