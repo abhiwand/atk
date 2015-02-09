@@ -21,54 +21,65 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.graph.plugins
+package com.intel.intelanalytics.engine.spark.frame.plugins.assignsample
 
+import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, CopyGraphArgs }
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Makes a copy of the existing graph
+ * Assign classes to rows.
  */
-class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
+class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntity] {
 
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph/copy"
+  override def name: String = "frame/assign_sample"
 
   /**
-   * Number of Spark jobs that get created by running this command
-   * (this configuration is used to prevent multiple progress bars in Python client)
-   */
-  override def numberOfJobs(arguments: CopyGraphArgs)(implicit invocation: Invocation) = 3
-
-  /**
-   * Makes a copy of the graph in the database.
+   * Assign classes to rows.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
-   * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: CopyGraphArgs)(implicit invocation: Invocation): GraphEntity = {
+  override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = engine.graphs
 
-    // validate arguments
-    val graphId = arguments.graph.id
-    val graph = graphs.expectGraph(graphId)
+    val frames = engine.frames
+    val ctx = sc
 
-    //run the copy operation
-    graphs.copyGraph(graph, arguments.name)
+    val frame = frames.expectFrame(arguments.frame.id)
+    val samplePercentages = arguments.samplePercentages.toArray
+
+    val outputColumnName = arguments.outputColumnName
+
+    require(!frame.schema.hasColumn(outputColumnName), s"Duplicate column name: $outputColumnName")
+
+    // run the operation
+    val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
+
+    val splitRDD: RDD[Rows.Row] =
+      labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.asInstanceOf[Seq[Any]] :+ x.label.asInstanceOf[Any]).toArray[Any])
+
+    val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
+
+    // save results
+    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
   }
 }
-

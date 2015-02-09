@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
+import com.intel.intelanalytics.domain.frame.GroupByAggregationArgs
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.testutils.TestingSparkContextFlatSpec
@@ -7,8 +8,10 @@ import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
+import scala.math.BigDecimal.RoundingMode
+import scala.util.Try
+
 class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with Matchers {
-  val epsilon = 0.000000001
 
   val inputRows: Array[sql.Row] = Array(
     new GenericRow(Array[Any]("a", 1, 1d, "w")),
@@ -19,7 +22,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     new GenericRow(Array[Any]("b", -1, 1d, "1")),
     new GenericRow(Array[Any]("b", 0, 1d, "2")),
     new GenericRow(Array[Any]("b", 1, 2d, "3")),
-    new GenericRow(Array[Any]("b", 2, 2d, "4")),
+    new GenericRow(Array[Any]("b", 2, null, "4")),
     new GenericRow(Array[Any]("c", 5, 1d, "5"))
   )
 
@@ -34,14 +37,17 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("COUNT", "col_1", "col1_count"), ("SUM", "col_2", "col2_sum"), ("SUM", "col_1", "col1_sum"))
+    val groupByArguments = List(
+      GroupByAggregationArgs("COUNT", "col_1", "col1_count"),
+      GroupByAggregationArgs("SUM", "col_2", "col2_sum"),
+      GroupByAggregationArgs("SUM", "col_1", "col1_sum"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
       new GenericRow(Array[Any]("a", 5, 9d, 15)),
-      new GenericRow(Array[Any]("b", 4, 6d, 2)),
+      new GenericRow(Array[Any]("b", 4, 4d, 2)),
       new GenericRow(Array[Any]("c", 1, 1d, 5))
     )
 
@@ -51,7 +57,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("COUNT", "col_1", "col_count"))
+    val groupByArguments = List(GroupByAggregationArgs("COUNT", "col_1", "col_count"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
@@ -70,14 +76,14 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("COUNT_DISTINCT", "col_2", "col_distinct_count"))
+    val groupByArguments = List(GroupByAggregationArgs("COUNT_DISTINCT", "col_2", "col_distinct_count"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
       new GenericRow(Array[Any]("a", 3)),
-      new GenericRow(Array[Any]("b", 2)),
+      new GenericRow(Array[Any]("b", 3)),
       new GenericRow(Array[Any]("c", 1))
     )
 
@@ -88,7 +94,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("MIN", "col_1", "col_min"))
+    val groupByArguments = List(GroupByAggregationArgs("MIN", "col_1", "col_min"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
@@ -106,7 +112,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("MAX", "col_1", "col_max"))
+    val groupByArguments = List(GroupByAggregationArgs("MAX", "col_1", "col_max"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
@@ -124,7 +130,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("SUM", "col_1", "col_sum"))
+    val groupByArguments = List(GroupByAggregationArgs("SUM", "col_1", "col_sum"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
@@ -142,15 +148,17 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("AVG", "col_1", "col_mean"))
+    val groupByArguments = List(GroupByAggregationArgs("AVG", "col_2", "col_mean"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
-    val results = resultRDD.collect().map(row => new GenericRow(Array[Any](row(0), BigDecimal(row.getDouble(1)))))
+    val results = resultRDD.collect().map(row => {
+      new GenericRow(Array[Any](row(0), BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)))
+    })
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", BigDecimal(3d))),
-      new GenericRow(Array[Any]("b", BigDecimal(0.5d))),
-      new GenericRow(Array[Any]("c", BigDecimal(5d)))
+      new GenericRow(Array[Any]("a", BigDecimal(1.8d).setScale(9, RoundingMode.HALF_UP))),
+      new GenericRow(Array[Any]("b", BigDecimal(4 / 3d).setScale(9, RoundingMode.HALF_UP))),
+      new GenericRow(Array[Any]("c", BigDecimal(1d).setScale(9, RoundingMode.HALF_UP)))
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -160,18 +168,21 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val rdd = sparkContext.parallelize(inputRows)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
-    val groupByArguments = List(("VAR", "col_1", "col_var"))
+    val groupByArguments = List(GroupByAggregationArgs("VAR", "col_2", "col_var"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
-    val results = resultRDD.collect().map(row => new GenericRow(Array[Any](row(0), row.getDouble(1))))
+    val results = resultRDD.collect().map(row => {
+      new GenericRow(Array[Any](row(0), Try(BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)).getOrElse("NaN")))
+    })
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", BigDecimal(2.5d))),
-      new GenericRow(Array[Any]("b", BigDecimal(1.6666666666666667d))),
+      new GenericRow(Array[Any]("a", BigDecimal(0.7d).setScale(9, RoundingMode.HALF_UP))),
+      new GenericRow(Array[Any]("b", BigDecimal(1 / 3d).setScale(9, RoundingMode.HALF_UP))),
       new GenericRow(Array[Any]("c", "NaN"))
     )
 
-    results.size shouldBe 3
+    results should contain theSameElementsAs (expectedResults)
+
   }
 
 }
