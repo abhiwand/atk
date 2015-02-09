@@ -26,6 +26,14 @@ object WritableRowConversions {
     }
   }
 
+  def valueToWritableComparable(value: Any): WritableComparable[_] = {
+    val writable = valueToWritable(value)
+    writable match {
+      case wc: WritableComparable[_] => wc
+      case _ => throw new IllegalArgumentException(s"Type ${value.getClass.getName} converts to ${writable.getClass.getName} which is NOT a WritableComparable")
+    }
+  }
+
   /**
    * Convert a Writable to a Row value
    * @param writable

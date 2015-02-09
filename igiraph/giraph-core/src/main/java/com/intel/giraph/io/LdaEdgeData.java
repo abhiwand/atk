@@ -21,72 +21,71 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.mahout.math;
+package com.intel.giraph.io;
 
-import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.hadoop.io.Writable;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.VectorWritable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Writable to handle serialization of a vector and an associated Id
+ * Writable to handle serialization of a vector and an associated wordCount
  */
-public final class IdWithVectorWritable extends NumberWithVectorWritable<Long> {
+public final class LdaEdgeData implements Writable {
 
-    /**
-     * Default constructor
-     */
-    public IdWithVectorWritable() {
-        super();
+    private Double wordCount = null;
+    private final VectorWritable vectorWritable = new VectorWritable(new DenseVector());
+
+    public LdaEdgeData() {
     }
 
     /**
      * Constructor
      *
-     * @param id of type long
-     * @param vector of type Vector
+     * @param wordCount of type double
      */
-    public IdWithVectorWritable(long id, Vector vector) {
-        super(id, vector);
+    public LdaEdgeData(double wordCount) {
+        this.wordCount = wordCount;
+    }
+
+    /**
+     * @deprecated this Constructor is the one Titan used but I don't think we need it
+     */
+    public LdaEdgeData(double wordCount, Vector vector) {
+        setWordCount(wordCount);
+        setVector(vector);
+    }
+
+    public void setWordCount(Double data) {
+        this.wordCount = data;
+    }
+
+    public Double getWordCount() {
+        return wordCount;
+    }
+
+    public Vector getVector() {
+        return vectorWritable.get();
+    }
+
+    public void setVector(Vector vector) {
+        vectorWritable.set(vector);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        setData(in.readLong());
-        super.readFields(in);
+        wordCount = in.readDouble();
+        vectorWritable.readFields(in);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeLong(getData());
-        super.write(out);
-    }
-
-    /**
-     * Read id and vector to DataInput
-     *
-     * @param in of type DataInput
-     * @return IdWithVectorWritable
-     * @throws IOException
-     */
-    public static IdWithVectorWritable read(DataInput in) throws IOException {
-        IdWithVectorWritable writable = new IdWithVectorWritable();
-        writable.readFields(in);
-        return writable;
-    }
-
-    /**
-     * Write id and vector to DataOutput
-     *
-     * @param out of type DataOutput
-     * @param id of type Long
-     * @param ssv of type SequentailAccessSparseVector
-     * @throws IOException
-     */
-    public static void write(DataOutput out, long id, SequentialAccessSparseVector ssv) throws IOException {
-        new IdWithVectorWritable(id, ssv).write(out);
+        out.writeDouble(wordCount);
+        vectorWritable.write(out);
     }
 
 }

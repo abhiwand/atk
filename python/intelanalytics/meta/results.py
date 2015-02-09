@@ -90,3 +90,9 @@ def return_bin_result(selfish, json_result):
     selfish._id = json_result['frame']['id']
     return json_result["cutoffs"]
 
+@postprocessor('model:lda/train')
+def return_lda_train(selfish, json_result):
+    from intelanalytics.core.frame import get_frame
+    doc_frame = get_frame(json_result['doc_results']['id'])
+    word_frame= get_frame(json_result['word_results']['id'])
+    return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }

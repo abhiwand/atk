@@ -68,7 +68,7 @@ echo "$NAME Api Server logging going to $LOG"
 
 java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" \
     -Dconfig.resource=integration-test.conf \
-    -Dintel.analytics.engine.fs.root=file://$FS_ROOT \
+    -Dintel.analytics.engine.fs.root=file:$FS_ROOT \
     com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication > $LOG 2>&1 &
 
 API_SERVER_PID=$!

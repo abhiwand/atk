@@ -377,7 +377,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelFormat = jsonFormat11(ModelEntity)
   implicit val modelLoadFormat = jsonFormat4(ClassificationWithSGDArgs)
   implicit val modelPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
-  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(ClassificationWithSGDNewArgs)
+  implicit val genericNewModelArgsFormat = jsonFormat2(GenericNewModelArgs)
 
   // kmeans formats
   implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
