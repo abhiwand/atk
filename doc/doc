@@ -411,10 +411,10 @@ function update_python {
     # $4 = LogFile
 
 # Update the additional python documentation files
-    which python > /dev/null
+    which python2.7 > /dev/null
     if [ "$?" == "0" ]; then
         if [[ -f cmdgen.py ]]; then
-            do_this "python cmdgen.py" $1 $2 $3 $4
+            do_this "python2.7 cmdgen.py" $1 $2 $3 $4
             return $?
         else
             echo "The python script cmdgen.py seems to be missing."
@@ -427,7 +427,7 @@ function update_python {
             fi
         fi
     else
-        echo "Python seems to be missing."
+        echo "Python 2.7 seems to be missing."
         read -p "Abort? [Y/n] "
         if [ -z $UserResponse ];then
             UserResponse='y'
