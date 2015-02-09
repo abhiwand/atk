@@ -1,6 +1,6 @@
 import os
 import sys
-import intelanalytics
+import intelanalytics.rest.spark
 
 
 class Udf(object):

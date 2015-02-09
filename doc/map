@@ -5,17 +5,15 @@ index
         ia_intro_2: 0.8 Preview Release
     ad_over: Administration
         ad_reqs: System Requirements
-        ad_inst: Installation
             ad_inst_pre_cloudera: Physical Machine Configuration
             ad_inst_cloudera: Cloudera Hadoop 5 Configuration
-            ad_inst_IA: Intel Analytics Package Installation
-            ad_psql: Tracking Metadata
-                ad_psql_cs: PostgreSQL Cheatsheet
-            ad_ipython: IPython Setup Instructions
-            ad_inst_vm: Virtual Machines
-                ad_log: Intel Analytics Logging
-            ad_plug: Plugin Authoring Guide
-        ad_python: Python Client Setup
+        ad_inst_IA: Intel Analytics Package Installation
+        ad_psql: Tracking Metadata
+            ad_psql_cs: PostgreSQL Cheatsheet
+        ad_ipython: IPython Setup Instructions
+        ad_inst_vm: Virtual Machines
+        ad_log: Intel Analytics Logging
+        ad_plug: Plugin Authoring Guide
         ad_bkm: Best Known Methods (Admin)
     ds_over: User Manual
         ds_strt: Getting Started
