@@ -415,6 +415,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVerticesArgs)
   implicit val copyGraphFormat = jsonFormat2(CopyGraphArgs)
 
+  implicit val assignSampleTitanFormat = jsonFormat5(AssignSampleTitanArgs)
+
   implicit val exportGraphFormat = jsonFormat2(ExportGraph)
 
   // garbage collection formats

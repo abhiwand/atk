@@ -35,6 +35,8 @@ csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
 print("create big frame")
 frame = ia.Frame(csv)
 
+
+
 errors = frame.get_error_frame()
 
 print("inspect frame")
