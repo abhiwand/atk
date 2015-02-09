@@ -16,22 +16,27 @@ import sys
 import os
 
 rst_epilog = """
-.. |COPY|   unicode:: U+000A9 .. COPYRIGHT SIGN
+.. |ALPHA|  image:: _static/red_penguin.*
+.. |BETA|   image:: _static/yellow_penguin.*
+.. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
+.. |COPY|   unicode:: U+000A9 .. Copyright symbol
+.. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
+.. |DEPRECATED|   image:: _static/blue_penguin.*
+.. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
+.. |ECDF|   replace:: :abbr:`ECDF (empirical cumulative distribution function)`
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
+.. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: Intel Analytics
 .. |IAT|    replace:: Intel Analytics Toolkit
-.. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
-.. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
-.. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
-.. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
-.. |KS|     replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
+.. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
-.. |TRADE|  unicode:: U+2122 .. TRADEMARK SIGH
+.. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
+.. |YCSB|		replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,
