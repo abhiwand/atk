@@ -84,6 +84,8 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    * - graph would mean command is loaded into class BaseGraph, which applies to all graph classes
    * - frame: and means command is loaded in class Frame.  Example: "frame:/assign_sample"
    * - model:logistic_regression  means command is loaded into class LogisticRegressionModel
+   *
+   * The key word 'new' has special meaning.  'model:lda/new' represents the constructor to LdaModel
    */
   def name: String
 

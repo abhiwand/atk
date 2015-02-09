@@ -441,6 +441,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def parentId = column[Option[Long]]("parent_frame_id")
 
     def lastReadDate = column[DateTime]("last_read_date")
+
     /** projection to/from the database */
     override def * = (id, name, schema, statusId, createdOn, modifiedOn,
       storageFormat, storageLocation, description, rowCount, commandId, createdById, modifiedById,

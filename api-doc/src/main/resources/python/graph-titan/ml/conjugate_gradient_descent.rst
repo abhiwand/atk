@@ -19,7 +19,9 @@ output_vertex_property_list : list of string
     The list of vertex properties to store output vertex values
 
 vertex_type_property_key : string
-    The name of vertex property which contains vertex type
+    The name of vertex property which contains vertex type.
+    Vertices must have a property to identify them as either left-side
+    ("L") or right-side ("R").
 
 edge_type_property_key : string
     The name of edge property which contains edge type
@@ -167,3 +169,8 @@ Examples
         superstep = 20\\tcost(train) = 10331.742207\\t
             mse(validate) = 1.191606\\trmse(test) = 3.757683'}
 
+    Report may show zero edges and/or vertices if parameters were supplied wrong, or if the graph was not the expected input::
+
+        ======Graph Statistics======
+        Number of vertices: 12673 (left: 12673, right: 0)
+        Number of edges: 0 (train: 0, validate: 0, test: 0)

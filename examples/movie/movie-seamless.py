@@ -65,7 +65,7 @@ print ("vertex count: " + str(graph.vertex_count))
 print ("edge count: " + str(graph.edge_count))
 
 
-graph.edges['ratings'].bin_column('rating', 3, 'equalwidth', 'rating_binned')
+graph.edges['ratings'].bin_column_equal_width('rating', 3, 'rating_binned')
 
 graph.edges['ratings'].inspect(20)
 

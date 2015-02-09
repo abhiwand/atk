@@ -28,6 +28,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>igiraph-titan</artifactId>
     <packaging>jar</packaging>
+
+    <!-- TODO: this module should be renamed or combined into another module since it has more than just Titan in/out -->
     <name>IntelAnalytics iGiraph Titan I/O</name>
     <description>iGiraph Titan input/output classes</description>
 
@@ -264,6 +266,37 @@
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.short.version}</artifactId>
+            <version>${dep.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.typesafe</groupId>
+                    <artifactId>scalalogging-slf4j_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_${scala.short.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scalacheck</groupId>
+                    <artifactId>scala_check_${scala.short.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest_${scala.short.version}</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!--START Test dependencies -->

@@ -5,7 +5,8 @@ Cloudera Hadoop 5 Configuration
 .. contents:: Table of Contents
     :local:
 
-This guide will walk you through the process of configuring Cloudera Hadoop 5 on a physical or virtual cluster.
+This guide will walk you through the process of configuring Cloudera Hadoop 5
+on a physical or virtual cluster.
 
 ------------------------
 Install Cloudera Manager
@@ -16,18 +17,27 @@ Download and install the `Cloudera Manager`_.
 Set Proxy and Parcel Info in Cloudera Manager
 ---------------------------------------------
 
-The first step to take in the Cloudera Manager web interface is to add your proxy information.
+The first step to take in the Cloudera Manager web interface is to add your
+proxy information.
 
-1.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of the window
-#.  Click the *Administration* drop-down along the top of the window, then select *Settings*
+1.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of
+    the window
+#.  Click the *Administration* drop-down along the top of the window, then
+    select *Settings*
 #.  Select the *Network* button along the menu pane to the left
-#.  In the *Proxy Server* field, enter the proxy qualified name, for example, ``proxy.my.company.com``
+#.  In the *Proxy Server* field, enter the proxy qualified name, for example,
+    ``proxy.my.company.com``
 #.  In the *Proxy Port* field, enter your proxy port number
 #.  Select the *Parcels* button along the menu pane to the left
-    a.  Overwrite the field that says ``http://archive.cloudera.com/cdh5/parcels/latest/`` with ``http//archive.cloudera.com/cdh5/parcels/5.1.2/``
+
+    a.  Overwrite the field that says
+        ``http://archive.cloudera.com/cdh5/parcels/latest/`` with
+        ``http//archive.cloudera.com/cdh5/parcels/5.1.2/``
+
 #.  Hit the *Save Changes* button to the top right of the active menu
-#.  Hit the admin drop-down menu at the top right corner of the window and logout
-#.  Log back in using the same admin admin username password combo
+#.  Hit the admin drop-down menu at the top right corner of the window and
+    logout
+#.  Log back in using the same admin username password combo
 
 -------------------
 Submit License File
@@ -35,37 +45,40 @@ Submit License File
 
 To complete this step, you must first acquire the Cloudera license file.
 
-1. Under the *Cloudera Enterprise* column, click on the empty text field to the left of the Upload button
-#. Select the license file
-#. Hit the *Upload* button
-#. Hit *Continue* on the bottom right of the window  
+1.  Under the *Cloudera Enterprise* column, click on the empty text field to
+    the left of the Upload button
+#.  Select the license file
+#.  Hit the *Upload* button
+#.  Hit *Continue* on the bottom right of the window  
 
 ----------------
 Specifying Hosts
 ----------------
 
 This step connects your master node to the rest of the cluster.
-The syntax used to search for hostnames is identical to what you will find in the ``/etc/hosts`` file or
-by |DNS| lookup.
+The syntax used to search for hostnames is identical to what you will find in
+the ``/etc/hosts`` file or by |DNS| lookup.
 
-Hit *Continue* through the "Thank you for choosing Cloudera Manager and |CDH|" window.
+Hit *Continue* through the "Thank you for choosing Cloudera Manager and |CDH|"
+window.
 In the text field, enter the hostnames of each node in the following syntax::
 
     master.clustername.cluster
     node[01-03].clustername.cluster
 
-Where ``clustername`` is the name of your cluster,
-and ``[01-03]`` is the range of slave nodes in your cluster (``[01-07]`` for an 8 node cluster,
+Where ``clustername`` is the name of your cluster, and ``[01-03]`` is the range
+of slave nodes in your cluster (``[01-07]`` for an 8 node cluster,
 ``[01-15]`` for a 16 node cluster).
 
-Hit *Search* and make sure that you detect as many hosts as there are nodes in your cluster.
-Check below images for examples.
+Hit *Search* and make sure that you detect as many hosts as there are nodes in
+your cluster.
+See :ref:`ad_inst_cloudera_04` for examples.
 If all correct hosts are selected, hit *Continue*.
 Otherwise, click *New Search*. 
 
-.. image:: ad_inst_cloudera_04.*
-   :width: 60%
-   :align: center
+.. _ad_inst_cloudera_04:
+
+|ad_inst_cloudera_04|
 
 ------------------------------
 Select |CDH| Parcel Repository
@@ -73,13 +86,12 @@ Select |CDH| Parcel Repository
 
 The repository/proxy information should populate the parcel list in a minute.
 If not, click on *More Options* field to reconfigure.
-Make sure ``CDH-5.1.2-1.cdh5.1.2.p).3`` is selected under *Remote Parcel Repository* and then hit *Continue*.
+Make sure ``CDH-5.1.2-1.cdh5.1.2.p).3`` is selected under *Remote Parcel
+Repository* and then hit *Continue*.
 
-.. figure:: ad_inst_cloudera_05.*
-    :width: 60%
-    :align: center
+.. _ad_inst_cloudera_05:
 
-    Note: Screencapture is out of date, but resembles what you should see.
+|ad_inst_cloudera_05|
 
 -----------------------
 Java Encryption Setting
@@ -95,51 +107,53 @@ Fill out appropriate login information for |CDH| administrator user.
 Wait Through Installation on All Nodes
 --------------------------------------
 The next couple of windows are just progress bars.
-If any of them fail and turn red, sometimes just hitting *Retry* will fix the problem nodes.
+If any of them fail and turn red, sometimes just hitting *Retry* will fix the
+problem nodes.
 
 Hit *Continue* button when it lights up after the progress bar fills.
 You will be greeted by more progress bars.
 Wait and hit *Continue* when they finish too.   
 
-.. image:: ad_inst_cloudera_07.*
-   :width: 60%
-   :align: center
+.. _ad_inst_cloudera_07:
+
+|ad_inst_cloudera_07|
 
 --------------------------------------
 Inspect Hosts For Proper Configuration
 --------------------------------------
 Check that the host inspector doesn't throw any critical errors at you.
-Take note of anything else that doesn't have a green check mark next to it and resolve issue.
+Take note of anything else that doesn't have a green check mark next to it and
+resolve issue.
 
 Click *Finish*
 
-.. image:: ad_inst_cloudera_08.*
-   :width: 60%
-   :align: center
+.. _ad_inst_cloudera_08:
+
+|ad_inst_cloudera_08|
 
 ------------------------------------------------------
 Choose the |CDH| 5 Services to Install On Your Cluster
 ------------------------------------------------------
 
-The following windows will bring you through the process of installing services and roles on each node in the cluster.
+The following windows will bring you through the process of installing services
+and roles on each node in the cluster.
 This is our default setup.
 
-In the "Choose a combination of services to install" dialogue, select the "Custom Services" button.
+In the "Choose a combination of services to install" dialogue, select the
+"Custom Services" button.
 In the drop-down menu, mark the following boxes:
 
 * HBase
 * HDFS
-* Oozie
 * Spark
-* Sqoop 2
 * YARN (MR2 Included)
 * ZooKeeper
 
 Click *Continue*.                
 
-.. image:: ad_inst_cloudera_09.*
-   :width: 60%
-   :align: center
+.. _ad_inst_cloudera_08:
+
+|ad_inst_cloudera_08|
 
 --------------------------
 Customize Role Assignments
@@ -157,16 +171,19 @@ Leave all other fields in their default values and click *Continue*.
 
 Changes to make near the top:
 
-.. image:: ad_inst_cloudera_10a.*
-   :width: 60%
-   :align: center
+.. figure:: ad_inst_cloudera_10a.*
+    :width: 60%
+    :align: center
  
+    Figure 6
 
 Changes to make near the bottom:
 
-.. image:: ad_inst_cloudera_10b.*
-   :width: 60%
-   :align: center
+.. figure:: ad_inst_cloudera_10b.*
+    :width: 60%
+    :align: center
+
+    Figure 7
  
 -------------- 
 Database Setup
@@ -178,9 +195,11 @@ If not, fill that in.
 Click *Test Connection*.
 If successful, click *Continue*.
 
-.. image:: ad_inst_cloudera_11.*
-   :width: 60%
-   :align: center
+.. figure:: ad_inst_cloudera_11.*
+    :width: 60%
+    :align: center
+
+    Figure 8
  
 -------------- 
 Review Changes
@@ -209,10 +228,12 @@ The next page requires no interaction. Just more loading bars.
     #.  Select *Worker Default Group* along the left side menu pane
     #.  Select the *Work Directory* field and change the value to a directory with the capacity to store lots of temporaty data (the /mnt directory for virtual clusers)
 
-.. image:: ad_inst_cloudera_13.*
-   :width: 40%
-   :align: center
+.. figure:: ad_inst_cloudera_13.*
+    :width: 40%
+    :align: center
  
+    Figure 9
+
 ------------------------ 
 Final Settings and Tests
 ------------------------ 
@@ -257,4 +278,34 @@ To run Giraph jobs, ensure that the memory settings in |CDH| match those in appl
 
 .. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html
 
+
+.. figure:: ad_inst_cloudera_04.*
+    :width: 60%
+    :align: center
+
+    Figure 1
+
+.. figure:: ad_inst_cloudera_05.*
+    :width: 60%
+    :align: center
+
+    Figure 2
+
+.. figure:: ad_inst_cloudera_07.*
+    :width: 60%
+    :align: center
+
+    Figure 3
+
+.. figure:: ad_inst_cloudera_08.*
+    :width: 60%
+    :align: center
+
+    Figure 4
+
+.. figure:: ad_inst_cloudera_09.*
+    :width: 60%
+    :align: center
+
+    Figure 5
 
