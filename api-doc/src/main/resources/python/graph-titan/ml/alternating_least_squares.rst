@@ -26,7 +26,9 @@ output_vertex_property_list : comma-separated string
     The list of vertex properties to store output vertex values
 
 vertex_type_property_key : string
-    The name of vertex property which contains vertex type
+    The name of vertex property which contains vertex type.
+    Vertices must have a property to identify them as either left-side
+    ("L") or right-side ("R").
 
 edge_type_property_key : string
     The name of edge property which contains edge type
@@ -200,4 +202,10 @@ Examples
             cost(train) = 396.281966\\t
             rmse(validate) = 1.165723\\t
             rmse(test) = 1.169451'}
+
+    Report may show zero edges and/or vertices if parameters were supplied wrong, or if the graph was not the expected input::
+
+        ======Graph Statistics======
+        Number of vertices: 12673 (left: 12673, right: 0)
+        Number of edges: 0 (train: 0, validate: 0, test: 0)
 
