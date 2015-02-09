@@ -251,18 +251,22 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
   }
 
-  /*  "failed at first stage" in {
+   "failed at first stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
 
+    val jobFailed = mock[JobFailed]
     val jobEnd = mock[SparkListenerJobEnd]
+    when(jobEnd.jobResult).thenReturn(jobFailed)
+
     val stage = mock[Stage]
 
     when(stage.id).thenReturn(1)
 
+
     listener.onJobEnd(jobEnd)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(0)
-  }*/
+  }
 
   "failed at middle of stage" in {
     val listener = createListener_one_job(1)
