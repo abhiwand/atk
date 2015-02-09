@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
 import scala.reflect.io.{ File, Directory, Path }
 import scala.util.Try
 
+import ExceptionUtil.attempt
+
 abstract class Archive(val definition: ArchiveDefinition, val classLoader: ClassLoader, config: Config)
     extends Component with ClassLoaderAware {
 
@@ -61,7 +63,7 @@ abstract class Archive(val definition: ArchiveDefinition, val classLoader: Class
       Archive.logger(s"Component config for $path follows:")
       Archive.logger(restricted.root().render())
       Archive.logger(s"End component config for $path")
-      writeFile(Archive.TMP + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+      FileUtil.writeFile(Archive.TMP + path.replace("/", "_") + ".effective-conf", restricted.root().render())
     }
     component.init(path, restricted)
     component.start()
@@ -267,7 +269,7 @@ object Archive extends ClassLoaderAware {
         .withFallback(system.rootConfiguration)).resolve()
 
     if (system.debugConfig)
-      writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
+      FileUtil.writeFile(TMP + archiveName + ".effective-conf", augmentedConfig.root().render())
 
     augmentedConfig
   }

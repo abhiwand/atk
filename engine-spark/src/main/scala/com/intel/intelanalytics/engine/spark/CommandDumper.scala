@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.event.{ EventContext, EventLogging }
-import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, writeFile, DefaultArchive }
+import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }
+import FileUtil.writeFile
 import com.intel.intelanalytics.engine.plugin.Call
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
