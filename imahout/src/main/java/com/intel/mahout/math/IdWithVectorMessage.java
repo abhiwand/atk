@@ -31,62 +31,37 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Writable to handle serialization of a vector and an associated data
+ * Writable to handle serialization of a vector and an associated Id
  */
-public final class DoubleWithVectorWritable extends NumberWithVectorWritable<Double> {
+public final class IdWithVectorMessage extends NumberWithVectorWritable<Long> {
 
     /**
      * Default constructor
      */
-    public DoubleWithVectorWritable() {
+    public IdWithVectorMessage() {
         super();
     }
 
     /**
      * Constructor
      *
-     * @param data of type double
+     * @param id of type long
      * @param vector of type Vector
      */
-    public DoubleWithVectorWritable(double data, Vector vector) {
-        super(data, vector);
+    public IdWithVectorMessage(long id, Vector vector) {
+        super(id, vector);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        setData(in.readDouble());
+        setData(in.readLong());
         super.readFields(in);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeDouble(getData());
+        out.writeLong(getData());
         super.write(out);
-    }
-
-    /**
-     * Read data and vector to DataInput
-     *
-     * @param in of type DataInput
-     * @return DoubleWithVectorWritable
-     * @throws IOException
-     */
-    public static DoubleWithVectorWritable read(DataInput in) throws IOException {
-        DoubleWithVectorWritable writable = new DoubleWithVectorWritable();
-        writable.readFields(in);
-        return writable;
-    }
-
-    /**
-     * Write data and vector to DataOutput
-     *
-     * @param out of type DataOutput
-     * @param data of type Double
-     * @param ssv of type SequentailAccessSparseVector
-     * @throws IOException
-     */
-    public static void write(DataOutput out, double data, SequentialAccessSparseVector ssv) throws IOException {
-        new DoubleWithVectorWritable(data, ssv).write(out);
     }
 
 }

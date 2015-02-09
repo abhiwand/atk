@@ -276,6 +276,14 @@ trait AbstractRow {
     indices.map(i => row(i)).toArray
   }
 
+  def valueAsWritable(name: String): Writable = {
+    WritableRowConversions.valueToWritable(value(name))
+  }
+
+  def valueAsWritableComparable(name: String): WritableComparable[_] = {
+    WritableRowConversions.valueToWritableComparable(value(name))
+  }
+
   def valuesAsWritable(names: Seq[String] = schema.columnNames): List[Writable] = {
     val indices = schema.columnIndices(names).toList
     indices.map(i => WritableRowConversions.valueToWritable(row(i)))

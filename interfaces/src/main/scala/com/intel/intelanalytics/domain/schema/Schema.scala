@@ -192,6 +192,11 @@ trait Schema {
     columnNames
   }
 
+  def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
+    require(hasColumn(columnName), "column $columnName was not found")
+    require(columnDataType(columnName) == dataType, "column $columnName is required to be of type $dataType")
+  }
+
   /**
    * Column names as comma separated list in a single string
    * (useful for error messages, etc)

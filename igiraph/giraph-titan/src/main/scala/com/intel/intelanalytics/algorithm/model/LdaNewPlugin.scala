@@ -20,7 +20,29 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.algorithm.model
 
-package com.intel.intelanalytics.domain.model
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 
-case class ClassificationWithSGDNewArgs(dummyModelRef: ModelReference, name: Option[String] = None)
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+/**
+ * Latent Dirichlet allocation - create a 'new' instance of this model
+ */
+class LdaNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
+  /**
+   * The name of the command.
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "model:lda/new"
+
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    val models = engine.models
+    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:lda")))
+  }
+}
