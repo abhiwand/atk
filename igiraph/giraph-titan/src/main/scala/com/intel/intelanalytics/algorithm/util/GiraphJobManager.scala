@@ -64,7 +64,7 @@ class GiraphJobListener extends DefaultJobObserver {
     val commandId = getCommandId(jobToSubmit)
     GiraphJobListener.commandIdMap.-(commandId)
     println(jobToSubmit.toString)
-    if (jobToSubmit.isSuccessful == false) {
+    if (!jobToSubmit.isSuccessful) {
       val taskCompletionEvents = jobToSubmit.getTaskCompletionEvents(0)
       val numTasks = taskCompletionEvents.length
       val lastEvent = taskCompletionEvents(numTasks - 1)
@@ -73,7 +73,7 @@ class GiraphJobListener extends DefaultJobObserver {
         case index if index > 0 => diagnostics.substring(index)
         case _ => diagnostics
       }
-      throw new Exception(s"Execution was unsuccessful. ${errorMessage}")
+      throw new Exception(s"Execution was unsuccessful. $errorMessage")
     }
   }
 

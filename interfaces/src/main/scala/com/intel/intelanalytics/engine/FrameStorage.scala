@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate, _ }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -51,6 +51,9 @@ trait FrameStorage {
   def drop(frame: FrameEntity)(implicit invocation: Invocation)
   def loadFrameData(context: Context, frame: FrameEntity)(implicit invocation: Invocation): Data
   def saveFrameData(frame: FrameReference, data: Data)(implicit invocation: Invocation): FrameEntity
+
+  def prepareForSave(createEntity: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
+  def postSave(originalFrameRef: Option[FrameReference], targetFrameRef: FrameReference, schema: Schema)(implicit invocation: Invocation): FrameEntity
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist
