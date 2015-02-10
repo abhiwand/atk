@@ -55,7 +55,6 @@ import org.apache.mahout.math.function.Functions;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -70,6 +69,8 @@ import java.util.Random;
 )
 public class CVB0LDAComputation extends BasicComputation<LdaVertexId, LdaVertexData,
         LdaEdgeData, LdaMessage> {
+
+    // TODO: looks like SUM_OCCURRENCE_COUNT might cause divide by zero error if word_count is zero or you had an unconnected vertex
 
     private LdaConfig config = null;
 
@@ -100,7 +101,7 @@ public class CVB0LDAComputation extends BasicComputation<LdaVertexId, LdaVertexD
     @Override
     public void preSuperstep() {
         config = new LdaConfiguration(getConf()).ldaConfig();
-        getConf().setLong(CURRENT_MAX_SUPERSTEPS, config.maxSupersteps());
+        getConf().setLong(CURRENT_MAX_SUPERSTEPS, config.maxIterations());
         // Set custom parameters
         numWords = this.<LongWritable>getAggregatedValue(SUM_WORD_VERTEX_COUNT).get();
         nk = this.<VectorWritable>getAggregatedValue(SUM_WORD_VERTEX_VALUE).get().clone();
@@ -130,7 +131,7 @@ public class CVB0LDAComputation extends BasicComputation<LdaVertexId, LdaVertexD
         updateEdge(vertex, map);
         updateVertex(vertex);
 
-        if (step < getConf().getLong(CURRENT_MAX_SUPERSTEPS, config.maxSupersteps())) {
+        if (step < getConf().getLong(CURRENT_MAX_SUPERSTEPS, config.maxIterations())) {
             // send out messages
             LdaMessage newMessage = new LdaMessage(vertex.getId().copy(),
                     vertex.getValue().getLdaResult());
@@ -421,13 +422,13 @@ public class CVB0LDAComputation extends BasicComputation<LdaVertexId, LdaVertexD
                 output.writeBytes(String.format("alpha: %f%n", ldaConfig.alpha()));
                 output.writeBytes(String.format("beta: %f%n", ldaConfig.beta()));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", ldaConfig.convergenceThreshold()));
-                output.writeBytes(String.format("maxSupersteps: %d%n", ldaConfig.maxSupersteps()));
+                output.writeBytes(String.format("maxIterations: %d%n", ldaConfig.maxIterations()));
                 output.writeBytes(String.format("evaluateCost: %b%n", ldaConfig.evaluationCost()));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
             } else if (realStep > 0) {
                 // output learning progress
-                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("iteration = %d%c", realStep, '\t'));
                 if (ldaConfig.evaluationCost()) {
                     double cost = Double.parseDouble(map.get(SUM_COST));
                     output.writeBytes(String.format("cost = %f%c", cost, '\t'));
