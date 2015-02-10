@@ -58,7 +58,7 @@ case class LdaOutputFormatConfig(documentResultsFileLocation: String, wordResult
  * @param documentColumnName column name that contains the "documents"
  * @param wordColumnName column name that contains the "words"
  * @param wordCountColumnName column name that contains "word count"
- * @param maxSupersteps see LdaTrainArgs for doc
+ * @param maxIterations see LdaTrainArgs for doc
  * @param alpha see LdaTrainArgs for doc
  * @param beta see LdaTrainArgs for doc
  * @param convergenceThreshold see LdaTrainArgs for doc
@@ -70,7 +70,7 @@ case class LdaConfig(inputFormatConfig: LdaInputFormatConfig,
                      documentColumnName: String,
                      wordColumnName: String,
                      wordCountColumnName: String,
-                     maxSupersteps: Long,
+                     maxIterations: Long,
                      alpha: Float,
                      beta: Float,
                      convergenceThreshold: Float,
@@ -83,7 +83,7 @@ case class LdaConfig(inputFormatConfig: LdaInputFormatConfig,
       args.documentColumnName,
       args.wordColumnName,
       args.wordCountColumnName,
-      args.getMaxSupersteps,
+      args.getMaxIterations,
       args.getAlpha,
       args.getBeta,
       args.getConvergenceThreshold,
@@ -95,10 +95,10 @@ case class LdaConfig(inputFormatConfig: LdaInputFormatConfig,
   require(StringUtils.isNotBlank(documentColumnName), "document column name is required")
   require(StringUtils.isNotBlank(wordColumnName), "word column name is required")
   require(StringUtils.isNotBlank(wordCountColumnName), "word count column name is required")
-  require(maxSupersteps > 0, "Max supersteps should be > 0")
+  require(maxIterations > 0, "Max iterations should be greater than 0")
   require(alpha > 0, "Alpha should be greater than 0")
   require(beta > 0, "Beta should be greater than 0")
-  require(numTopics > 0, "Number of topics (K) should be > 0")
+  require(numTopics > 0, "Number of topics (K) should be greater than 0")
 }
 
 /**

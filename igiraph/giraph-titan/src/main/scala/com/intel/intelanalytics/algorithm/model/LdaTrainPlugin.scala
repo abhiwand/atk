@@ -88,6 +88,7 @@ class LdaTrainPlugin
 
     val resultsColumn = Column("lda_results", DataTypes.str)
 
+    // After saving update timestamps, status, row count, etc.
     frames.postSave(None, docOut.toReference, new FrameSchema(List(frame.schema.column(arguments.documentColumnName), resultsColumn)))
     frames.postSave(None, wordOut.toReference, new FrameSchema(List(frame.schema.column(arguments.wordColumnName), resultsColumn)))
 

@@ -81,7 +81,7 @@ class CVBOLDAComputationTest extends WordSpec {
 
       val numTopics = 2
       val ldaArgs = new LdaTrainArgs(new ModelReference(1), new FrameReference(2), "dummy_doc", "dummy_word", "dummy_word_count",
-        maxSupersteps = Some(10), numTopics = Some(numTopics))
+        maxIterations = Some(10), numTopics = Some(numTopics))
 
       val ldaConfig = new LdaConfig(ldaInputConfig, ldaOutputConfig, ldaArgs)
       conf.setLdaConfig(ldaConfig)
