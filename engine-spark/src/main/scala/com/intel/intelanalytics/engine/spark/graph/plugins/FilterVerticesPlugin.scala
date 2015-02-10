@@ -79,7 +79,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
 
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
-    val vertexFrame: SparkFrameData = resolve(arguments.frameId)
+    val vertexFrame: SparkFrameData = resolve(arguments.frame)
     require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
