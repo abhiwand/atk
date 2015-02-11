@@ -23,48 +23,59 @@
 
 package com.intel.intelanalytics.component
 
-import com.typesafe.config.Config
+import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory, Config }
+
+import scala.collection.JavaConverters._
 
 /**
- * The state for an application environment, typically managed globally by {Archive}
+ * The configuration for an application environment, typically managed globally by {Archive}
  */
-class SystemConfig(val rootConfiguration: Config, archives: Map[String, Archive] = Map.empty) {
+class SystemConfig(val rootConfiguration: Config = ConfigFactory.load(SystemConfig.getClass.getClassLoader,
+                     //Allow unresolved subs because user may have specified subs on the command line
+                     //that can't be resolved yet until other archives are loaded
+                     ConfigResolveOptions.defaults().setAllowUnresolved(true))) {
 
-  /**
-   * Creates a copy of this system configuration with the given root Config.
-   */
-  def withRootConfiguration(config: Config): SystemConfig = new SystemConfig(config, archives)
+  def extraClassPath(archivePath: String): Array[String] = {
+    val path = archivePath + ".extra-classpath"
+    getStrings(path)
+  }
+
+  def extraArchives(archivePath: String): Array[String] = {
+    val path = archivePath + ".extra-archives"
+    getStrings(path)
+  }
+
+  def getStrings(path: String): Array[String] = {
+    if (rootConfiguration.hasPath(path)) {
+      rootConfiguration.getStringList(path).asScala.toArray
+    }
+    else {
+      Array.empty
+    }
+  }
+
+  val defaultParentArchiveName: String = rootConfiguration.getString(SystemConfig.defaultParentArchiveKey)
 
   val debugConfig = rootConfiguration.getBoolean(SystemConfig.debugConfigKey)
 
-  /**
-   * Look up the classloader for a given archive. Convenience method.
-   */
-  def loader(archiveName: String) = {
-    require(archiveName != null, "archiveName cannot be null")
-    archive(archiveName).map(_.classLoader)
-  }
+  val debugConfigFolder = rootConfiguration.getString(SystemConfig.debugConfigPrefix) + java.util.UUID.randomUUID.toString + "/"
 
-  /**
-   * Look up an archive by name
-   */
-  def archive(archiveName: String) = {
-    require(archiveName != null, "archiveName cannot be null")
-    archives.get(archiveName)
-  }
+  val jarFolders = rootConfiguration.getStringList(SystemConfig.jarFolders).asScala.toArray
 
-  /**
-   * Generate a new system configuration with an additional archive included
-   */
-  def addArchive(archive: Archive) = {
-    require(archive != null, "archive cannot be null")
-
-    new SystemConfig(rootConfiguration, archives + (archive.definition.name -> archive))
-  }
+  val sourceRoots = rootConfiguration.getStringList(SystemConfig.sourceRoots).asScala.toArray
 
 }
 
 object SystemConfig {
-  private[component] val debugConfigKey: String = "intel.analytics.launcher.debug-config"
+
+  private[component] val debugConfigKey: String = "intel.analytics.launcher.debug-config.enabled"
+
+  private[component] val debugConfigPrefix: String = "intel.analytics.launcher.debug-config.prefix"
+
+  private[component] val defaultParentArchiveKey = "intel.analytics.launcher.default-parent-archive"
+
+  private[component] val jarFolders = "intel.analytics.launcher.jar-folders"
+
+  private[component] val sourceRoots = "intel.analytics.launcher.source-roots"
 
 }
