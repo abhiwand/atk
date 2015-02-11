@@ -21,8 +21,8 @@ object MatcherUtils extends Matchers {
     Matcher { (left: Array[Double]) =>
       MatchResult(
         (left zip right) forall { case (a, b) => a === (b +- tolerance) },
-        left + " did not equal " + right + " with tolerance " + tolerance,
-        left + " equaled " + right + " with tolerance " + tolerance
+        left.deep.mkString(" ") + " did not equal " + right.deep.mkString(" ") + " with tolerance " + tolerance,
+        left.deep.mkString(" ") + " equaled " + right.deep.mkString(" ") + " with tolerance " + tolerance
       )
     }
 
