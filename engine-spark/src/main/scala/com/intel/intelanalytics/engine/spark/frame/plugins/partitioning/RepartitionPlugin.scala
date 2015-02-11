@@ -47,7 +47,7 @@ class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity]
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame/_partitions/repartition"
+  override def name: String = "frame/_repartition"
 
   /**
    * User documentation exposed in Python.
