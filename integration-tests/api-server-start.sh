@@ -8,33 +8,15 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 echo "$NAME DIR=$DIR"
 
-if [ "$DIR/stage" != "" ]; then
-	rm -rf $DIR/stage
-fi
-
-# need the logback jars from somewhere
-if [ -e /usr/lib/intelanalytics/rest-server/lib/logback-classic-1.1.1.jar ]; then
-    LOGBACK_JARS=/usr/lib/intelanalytics/rest-server/lib/logback-classic-1.1.1.jar:/usr/lib/intelanalytics/rest-server/lib/logback-core-1.1.1.jar
-elif [ -e ~/.m2/repository/ch/qos/logback/logback-classic/1.1.1/logback-classic-1.1.1.jar ]; then
-    LOGBACK_JARS=~/.m2/repository/ch/qos/logback/logback-classic/1.1.1/logback-classic-1.1.1.jar:~/.m2/repository/ch/qos/logback/logback-core/1.1.1/logback-core-1.1.1.jar
-elif [ -e $DIR/target/logback-deps/logback-classic-1.1.1.jar ]; then
-     # Maven will copy jars here
-    LOGBACK_JARS=$DIR/target/logback-deps/logback-classic-1.1.1.jar:$DIR/target/logback-deps/logback-core-1.1.1.jar
-else
-    echo "$NAME ERROR: could not find logback jars"
-    exit 2
-fi
-
-CONFDIR=$DIR/conf:$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf/application.conf:$LOGBACK_JARS
+CONFDIR=$DIR/conf
 
 if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar
 fi
 
-CONFIG_CLASSPATH="/etc/hbase/conf:/etc/hadoop/conf"
 
 # EXTRA_CLASSPATH is not used in this script
-CONF="$CONFDIR:$CONFIG_CLASSPATH"
+CONF="$CONFDIR"
 
 pushd $DIR/..
 pwd
