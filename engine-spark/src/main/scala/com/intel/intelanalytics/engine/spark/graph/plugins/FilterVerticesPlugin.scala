@@ -84,8 +84,6 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
     val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.udf, ctx = sc).toLegacyFrameRDD
-
-    // always cache if you are calculating row count
     filteredRdd.cache()
 
     val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
@@ -105,7 +103,7 @@ object FilterVerticesFunctions {
    * Remove dangling edges after filtering on the vertices
    * @param vertexLabel vertex label of the filtered vertex frame
    * @param frameStorage frame storage
-   * @param seamlessGraph seemless graph instance
+   * @param seamlessGraph seamless graph instance
    * @param ctx spark context
    * @param filteredRdd rdd with predicate applied
    */
