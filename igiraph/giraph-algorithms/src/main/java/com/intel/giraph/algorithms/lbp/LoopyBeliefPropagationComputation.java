@@ -25,13 +25,12 @@ package com.intel.giraph.algorithms.lbp;
 
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
-import com.intel.mahout.math.IdWithVectorWritable;
+import com.intel.mahout.math.IdWithVectorMessage;
 
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
-import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
@@ -59,7 +58,7 @@ import java.util.Map.Entry;
     name = "Loopy belief propagation on MRF"
 )
 public class LoopyBeliefPropagationComputation extends BasicComputation<LongWritable, VertexData4LBPWritable,
-    DoubleWritable, IdWithVectorWritable> {
+    DoubleWritable, IdWithVectorMessage> {
 
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "lbp.maxSupersteps";
@@ -206,7 +205,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             return;
         }
         // calculate messages
-        IdWithVectorWritable newMessage = new IdWithVectorWritable();
+        IdWithVectorMessage newMessage = new IdWithVectorMessage();
         newMessage.setData(vertex.getId().get());
         // calculate initial belief
         Vector belief = prior.clone();
@@ -238,7 +237,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
 
     @Override
     public void compute(Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> vertex,
-        Iterable<IdWithVectorWritable> messages) throws IOException {
+        Iterable<IdWithVectorMessage> messages) throws IOException {
         long step = getSuperstep();
         if (step == 0) {
             initializeVertex(vertex);
@@ -247,7 +246,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
 
         // collect messages sent to this vertex
         HashMap<Long, Vector> map = new HashMap<Long, Vector>();
-        for (IdWithVectorWritable message : messages) {
+        for (IdWithVectorMessage message : messages) {
             map.put(message.getData(), message.getVector());
         }
         if (bidirectionalCheck) {
@@ -269,7 +268,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         }
         // sum of prior and messages
         Vector sumPosterior = prior;
-        for (IdWithVectorWritable message : messages) {
+        for (IdWithVectorMessage message : messages) {
             sumPosterior = sumPosterior.plus(message.getVector());
         }
         sumPosterior = sumPosterior.plus(-sumPosterior.maxValue());
@@ -303,7 +302,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             if (vt != VertexType.TRAIN) {
                 return;
             }
-            IdWithVectorWritable newMessage = new IdWithVectorWritable();
+            IdWithVectorMessage newMessage = new IdWithVectorMessage();
             newMessage.setData(vertex.getId().get());
             // update belief
             Vector belief = prior.clone();

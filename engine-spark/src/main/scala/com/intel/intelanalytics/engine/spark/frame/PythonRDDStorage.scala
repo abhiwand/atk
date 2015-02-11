@@ -12,9 +12,8 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRDD, PythonBroadcast }
 import org.apache.commons.codec.binary.Base64.decodeBase64
-
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
@@ -98,7 +97,7 @@ object PythonRDDStorage {
     environment.put("PYTHONPATH", pythonPath)
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-    val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+    val broadcastVars = new JArrayList[Broadcast[IAPythonBroadcast]]()
 
     var pyIncludes = new JArrayList[String]()
 

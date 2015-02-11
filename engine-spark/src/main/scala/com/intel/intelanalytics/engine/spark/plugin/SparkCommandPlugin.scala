@@ -24,10 +24,7 @@
 package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.engine.spark.{ SparkEngine, EngineKryoRegistrator }
+import com.intel.intelanalytics.engine.spark.SparkEngine
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
@@ -38,7 +35,10 @@ import com.intel.intelanalytics.engine.spark.{ SparkEngine, EngineKryoRegistrato
 trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     extends CommandPlugin[Argument, Return] {
 
-  override def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[CommandInvocation].engine.asInstanceOf[SparkEngine]
+  override def engine(implicit invocation: Invocation): SparkEngine = {
+    // TODO: ClassCastException here is because of a bug here where SparkCommandPlugins aren't recognized from external jars loaded via config --Todd 1/28/2015
+    invocation.asInstanceOf[SparkInvocation].engine
+  }
 
   def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
 

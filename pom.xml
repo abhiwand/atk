@@ -114,17 +114,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
-
-        <dep.cdh.version>cdh5.2.1</dep.cdh.version>
-
+	<dep.cdh.version>cdh5.3.0</dep.cdh.version>
+	<dep.spark.version>1.2.0-${dep.cdh.version}</dep.spark.version>
+	<dep.spark.yarn.version>1.1.0-cdh5.2.0-SNAPSHOT</dep.spark.yarn.version>
+        <dep.mahout.version>0.9</dep.mahout.version>
+        <dep.parquet.version>1.5.0-${dep.cdh.version}</dep.parquet.version>
         <dep.hbase.version>0.98.6-${dep.cdh.version}</dep.hbase.version>
         <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
-
         <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
-        <dep.mahout.version>0.9</dep.mahout.version>
-
-        <dep.spark.version>1.1.0-${dep.cdh.version}</dep.spark.version>
-
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -837,6 +834,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.cassandra.deps</groupId>
                         <artifactId>avro</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.servicemix.bundles</groupId>
+                        <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -851,6 +852,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
                 <version>${dep.tinkerpop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.fusesource.jansi</groupId>
+                        <artifactId>jansi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--org.scala-->
             <dependency>
@@ -869,6 +876,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
                 <version>${dep.zookeeper.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
@@ -880,11 +893,27 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-hdfs</artifactId>
                 <version>${dep.hadoop2.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet.jsp</groupId>
+                        <artifactId>jsp-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-mapreduce-client-app</artifactId>
                 <version>${dep.hadoop2.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--<dependency>
                 don't use hadoop-core you will break everything. We use yarn you shouldn't need the
@@ -951,11 +980,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.objenesis</groupId>
+                        <artifactId>objenesis</artifactId>
+                    </exclusion>
+
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-yarn_${scala.short.version}</artifactId>
-                <version>${dep.spark.version}</version>
+                <version>${dep.spark.yarn.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -1034,6 +1070,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -1045,12 +1085,42 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet.jsp</groupId>
+                        <artifactId>jsp-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-api-2.1</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -1086,11 +1156,31 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
                 <version>1.6</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -1180,6 +1270,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <scope>test</scope>
             </dependency>
 
+            <!-- parquet -->
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-hadoop</artifactId>
+                <version>${dep.parquet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-column</artifactId>
+                <version>${dep.parquet.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
@@ -1214,6 +1315,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <exclusion>
                         <groupId>com.fasterxml.jackson.datatype</groupId>
                         <artifactId>jackson-datatype-json-org</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1302,17 +1407,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>shapeless_${scala.long.version}</artifactId>
                 <version>2.0.0</version>
             </dependency>
-            <dependency>
-                <groupId>com.twitter</groupId>
-                <artifactId>parquet-hadoop</artifactId>
-                <version>1.4.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twitter</groupId>
-                <artifactId>parquet-column</artifactId>
-                <version>1.4.3</version>
-            </dependency>
-
 
             <!--test scope-->
             <dependency>

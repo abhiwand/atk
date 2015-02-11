@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.{ Status, HasId }
+import com.intel.intelanalytics.domain.{ StorageFormats, Status, HasId }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
 
@@ -117,7 +117,12 @@ case class FrameEntity(id: Long,
    * A minimal toString-like method for debugging messages
    */
   def toDebugString: String = {
-    s"frameId: $id, name: $name, rowCount: $rowCount"
+    s"frameId: $id, name: $name, rowCount: $rowCount, storageFormat: $storageFormat, storageLocation: $storageLocation"
+  }
+
+  /** True if frame is stored in parquet file format */
+  def isParquet: Boolean = {
+    storageFormat.isDefined && storageFormat.get.equals(StorageFormats.FileParquet)
   }
 
   /**
@@ -127,7 +132,7 @@ case class FrameEntity(id: Long,
    *
    * @return the child
    */
-  def createChild(createdBy: Option[Long], command: Option[Long], schema: Schema): FrameEntity = {
+  def createChild(createdBy: Option[Long], command: Option[Long], schema: Schema = FrameSchema()): FrameEntity = {
     // id will be auto-assigned on insert, initialize to zero
     copy(id = 0,
       name = None,

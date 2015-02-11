@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAccumulators, GroupByAggregationFunctions, GroupByAggregationByKey, GroupByMonoids }
+import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAggregationFunctions, GroupByAggregateByKey }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRDDFunctions, RowParseResult }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
@@ -75,8 +75,6 @@ class EngineKryoRegistrator extends KryoRegistrator {
     kryo.register(TopKRDDFunctions.getClass)
     kryo.register(EntropyRDDFunctions.getClass)
     kryo.register(GroupByAggregationFunctions.getClass)
-    kryo.register(GroupByAccumulators.getClass)
-    kryo.register(GroupByMonoids.getClass)
 
     // register GraphBuilder classes
     val gbRegistrator = new GraphBuilderKryoRegistrator()

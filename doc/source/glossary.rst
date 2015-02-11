@@ -8,8 +8,10 @@ Glossary
 
     ASCII
 
-        A data type consisting of a character which be represented in the
-        computer within 7 bits.
+        Abbreviated from American Standard Code for Information Interchange,
+        ASCII is a character-encoding scheme.
+        Originally based on the English alphabet, it encodes 128 specified
+        characters into 7-bit binary integers.
 
     Adjacency List
 
@@ -17,7 +19,7 @@ Glossary
         Each line of the list consists of a unique vertex identification, and
         a list of all of that vertex's neighboring vertices.
 
-        Example adjacency list::
+        Example::
 
               Node   Connection List
             /------------------------/
@@ -28,19 +30,19 @@ Glossary
 
     Aggregation Function
 
-        A mathematical function which is computed over a single column within
-        a specified set of rows.
+        A mathematical function which is usually computed over a single column.
         Supported functions:
 
-        * avg : The average or mean across the rows
+        * avg : The average (mean) value in the column
         * count : The count of the rows
         * count_distinct : The count of unique rows
-        * max : The largest value within the rows
-        * min : The smallest or most negative value within the applicable rows
-        * stdev : The standard deviation of the applicable rows, see
+        * max : The largest (most positive) value in the column
+        * min : The least (most negative) value in the column
+        * stdev : The standard deviation of the values in the column, see
           `Wikipedia\: Standard Deviation`_
-        * sum : The result of adding all the values together
-        * var : The variance of the rows, see `Wikipedia\: Variance`_
+        * sum : The result of adding all the values in the column together
+        * var : The variance of the values in the column, see
+          `Wikipedia\: Variance`_
 
     Alternating Least Squares
 
@@ -52,29 +54,10 @@ Glossary
         See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
         in-depth discussion of this method.
 
-        .. outdated::
-        
-            The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the |IA| Toolkit.
-
-            For more information see:
-
-            | `CiteSeerX\: Large-Scale Parallel Collaborative Filtering`_
-            | `Factorization Meets the Neighborhood (pdf)`_ (see equation 5)
-
     Average Path Length
 
         In network topology, the average number of steps along the shortest
         paths for all possible pairs of vertices.
-
-        .. outdated::
-
-            From `Wikipedia\: Average Path Length`_:
-
-                Average path length is a concept in network topology that is
-                defined as the average number of steps along the shortest
-                paths for all possible pairs of network nodes.
-                It is a measure of the efficiency of information or mass
-                transport on a network.
 
     Belief Propagation
 
@@ -85,21 +68,9 @@ Glossary
         A probabilistic graphical model representing the conditional
         dependencies amongst a set of random variables with a directed acyclic
         graph.
+
+        Contrast with :term:`Markov Random Field`
         
-        .. outdated::
-
-            From `Wikipedia\: Bayesian Network`_:
-
-                A Baysian Network is a probabilistic graphic model that represents a set of random variables and their conditional dependencies through a directed acyclic graph (DAG).
-                For example, a Bayesian network could represent the probabilistic relationships between diseases and symptoms.
-                Given symptoms, the network can be used to compute the probabilities of the presence of various diseases.
-
-            Contrast with :term:`Markov Random Fields`.
-            
-    Baysian Networks
-
-        See :term:`Baysian Network`.
-
     Bias-variance tradeoff
 
         In supervised classifier training, the problem of minimizing two
@@ -107,33 +78,33 @@ Glossary
         algorithm, and sensitivity to small details in the training data (in
         other words, over-fitting) when generalizing to a testing data set.
 
-        .. outdated::
+        From `Wikipedia\: Bias-Variance Tradeoff`_:
 
-            From `Wikipedia\: Bias-Variance Tradeoff`_:
-
-                A first issue is the tradeoff between bias and variance. [#f2]_
-                Imagine that we have available several different, but equally good, training data sets.
-                A learning algorithm is biased for a particular input x if, when trained on each of these data sets, it is systematically incorrect when predicting the correct output for x.
-                A learning algorithm has high variance for a particular input x if it predicts different output values when trained on different training sets.
-                The prediction error of a learned classifier is related to the sum of the bias and the variance of the learning algorithm.
-                Generally, there is a tradeoff between bias and variance.
-                A learning algorithm with low bias must be "flexible" so that it can fit the data well.
-                But if the learning algorithm is too flexible, it will fit each training data set differently,and hence have high variance.
-                A key aspect of many supervised learning methods is that they are able to adjust this tradeoff between bias and variance (either automatically or by providing a bias/variance parameter that the user can adjust).
+            A first issue is the tradeoff between bias and variance. [#f2]_
+            Imagine that we have available several different, but equally good,
+            training data sets.
+            A learning algorithm is biased for a particular input x if,
+            when trained on each of these data sets, it is systematically
+            incorrect when predicting the correct output for x.
+            A learning algorithm has high variance for a particular input x if
+            it predicts different output values when trained on different
+            training sets.
+            The prediction error of a learned classifier is related to the sum
+            of the bias and the variance of the learning algorithm.
+            Generally, there is a tradeoff between bias and variance.
+            A learning algorithm with low bias must be "flexible" so that it
+            can fit the data well.
+            But if the learning algorithm is too flexible, it will fit each
+            training data set differently, and hence have high variance.
+            A key aspect of many supervised learning methods is that they are
+            able to adjust this tradeoff between bias and variance (either
+            automatically or by providing a bias/variance parameter that the
+            user can adjust).
 
     Bias vs Variance
 
         In this context, "bias" means accuracy, while "variance" means
         accounting for outlier data points.
-
-    BigColumn
-
-        An identifier for a single column in a Frame.
-
-    TitanGraph
-
-        A class object with the functionality to manipulate the data in a
-        :term:`graph`.
 
     bool
 
@@ -141,20 +112,12 @@ Glossary
 
     Boolean
 
-        A variable that can hold a single "True" or "False" value.
-        In Python, it can also be "None" meaning that it is not defined.
-
-    Booleans
-
-        See :term:`Boolean`.
-
-    bytearray
-
-        A sequence of integers in the range 0 <= x < 256.
+        A variable that holds a single "True" or "False" value.
+        In Python, it can also be "None" meaning that it is undefined.
 
     Central Tendency
 
-        A central or typical value for a probability distribution.
+        A typical value for a probability distribution.
         It may also be called a center or location of the distribution.
         Colloquially, measures of central tendency are often called averages.
 
@@ -198,55 +161,35 @@ Glossary
         observations based on a model learned from the known categorical
         groupings of another set of observations.
 
-        .. outdated::
+    Clustering
 
-            From `Wikipedia\: Statistical Classification`_:
-
-            In machine learning and statistics, classification is the problem of identifying to which of a set of categories (sub-populations) a new observation belongs, on the basis of a training set of data containing observations (or instances) whose category membership is known.
+        See :term:`Collaborative Clustering`.
 
     Collaborative Clustering
 
         The unsupervised grouping of observations based on one or more
         character traits.
 
-        .. outdated::
-
-            From `Wikipedia\: Cluster Analysis`_:
-
-            Cluster analysis or clustering is the task of grouping a set of objects in such a way, that objects in the same group (called a cluster) are more similar (in some sense or another) to each other than to those in other groups (clusters).
-            It is a main task of exploratory data mining, and a common technique for statistical data analysis, used in many fields, including machine learning, pattern recognition, image analysis, information retrieval, and bioinformatics.
-
     Collaborative Filtering
-
-        From `Wikipedia\: Collaborative Filtering`_:
 
         The process of filtering for information or patterns using techniques
         involving collaboration among multiple agents, viewpoints, data
         sources, etc. [#f5]_
+
+    Comma-Separated Variables
+
+        See :term:`Character-Separated Values`.
 
     Community Structure Detection
 
         For complex networks, the process of identifying vertices that can be
         easily grouped into densely-connected sub-groupings.
 
-        .. outdated::
-
-            From `Wikipedia\: Community Structure`_:
-
-            In the study of complex networks, a network is said to have community structure if the nodes of the network can be easily grouped into (potentially overlapping) sets of nodes such that each  set of nodes is densely connected internally.
-
     Connected Component
 
         In graph theory, a sub-graph in which any two vertices are
         interconnected but share no connections with other vertices in the
         sub-graph.
-
-        .. outdated::
-
-            From `Wikipedia\: Connected Component (Graph Theory)`_:
-
-            In graph theory, a connected component (or just component) of an undirected graph is a subgraph
-            in which any two vertices are connected to each other by paths, and which is connected to no Additional vertices in the supergraph.
 
     Confusion Matrices
 
@@ -261,18 +204,10 @@ Glossary
         Also known as contingency table, error matrix, or misclassification
         matrix.
 
-        .. outdated::
-
-            From `Wikipedia\: Confusion Matrix`_:
-
-            In the field of machine learning, a confusion matrix, also known as a contingency table or an error matrix [#f6]_ , is a specific table layout that allows visualization of the performance of an algorithm, typically a supervised learning one (in unsupervised learning it is usually called a matching matrix).
-            Each column of the matrix represents the instances in a predicted class, while each row represents the instances in an actual class.
-            The name stems from the fact that it makes it easy to see if the system is confusing two classes (i.e. commonly mislabeling one as another).
-
     Conjugate Gradient Descent
 
-        The Congugate Gradient Descent with Bias for Collaborative Filtering
-        algorithm is an algorithm used by the |IA| Toolkit.
+        The |IAT| implements this algorithm.
+        Specifically, it uses CGD with bias for collaborative filtering.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_
         (see equation 5).
@@ -283,9 +218,6 @@ Glossary
         value.
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
-
-    CSV
-        See :term:`Character-Separated Values`
 
     dict
 
@@ -316,41 +248,19 @@ Glossary
         A connection — either directed or not — between two vertices in a
         graph.
 
-        .. outdated::
+    Equal Width Binning
 
-            An edge is the link between two vertices in a graph database.
-            Edges can have direction, or be undirected.
-            Edges are said to have a source and a destination, usually meaning the vertex to the left and the vertex to the right.
-            Each edge has a label, which is the edge's unique name, and a property map.
-            The property map may contain 0 or more properties.
-            An edge can be uniquely identified from its source, destination, and label.
-
-            For more information see: :term:`Vertex`, and `Tinkerpop\: Property Graph Model`_.
-
-    Edges
-
-        See :term:`Edge`.
-
-    EqualDepth
-
-        See :term:`Equal Depth Binning`.
-
-    EqualWidth
-
-        See :term:`Equal Depth Binning`.
+        Equal width binning places column values into groups such that the
+        values in each group fall within the same interval and the interval
+        width for each group is equal.
 
     Equal Depth Binning
 
-        Equal width binning places column values into bins such that the
-        values in each bin fall within the same interval and the interval
-        width for each bin is equal.
-
-        Equal depth binning attempts to place column values into bins such
-        that each bin contains the same number of elements.
+        Equal depth binning places column values into groups such
+        that each group contains the same number of elements.
 
     Empirical Cumulative Distribution
     
-        The :abbr:`ECDF (empirical cumulative distribution function)`
         :math:`\hat F_{n}(t)` is a step function with jumps :math:`i/n` at
         observation values, where :math:`i` is the number of tied observations
         at that value.
@@ -372,9 +282,7 @@ Glossary
         This implies that :math:`\hat F_{n}(t)` is an unbiased estimator for
         :math:`F(t)`.
 
-    ETL
-    
-        Extract, Transform, and Load
+    Extract, Transform, and Load
 
         From `Wikipedia\: Extract, Transform, and Load`_:
 
@@ -406,23 +314,17 @@ Glossary
         Traditionally defined as the harmonic mean of precision and recall.
         Also known as F1 score.
 
-        .. outdated::
-
-            From `Wikipedia\: F1 score`_:
-
-            In statistical analysis of binary classification, the F1 score (also F-score or F-measure) is a measure of a test's accuracy.
-
     F-Score
 
         See :term:`F-Measure`.
 
     float32
 
-        A real non-integer number with 32 bits of precision as appropriate.
+        A real number with 32 bits of precision.
 
     float64
 
-        A real non-integer number with 64 bits of precision as appropriate.
+        A real number with 64 bits of precision.
 
     frame (lower case f)
 
@@ -442,11 +344,6 @@ Glossary
         A special case of belief propagation when the underlying distributions
         are :term:`Gaussian <gaussian distribution>` (Weiss & Freeman [#f11]_).
         
-        .. outdated::
-
-            Gaussian belief propagation is a variant of the belief propagation algorithm when the underlying distributions are Gaussian.
-            The first work analyzing this special model was the seminal work of Weiss and Freeman [#f11]_ .
-
     Gaussian Distribution
     Normal Distribution
 
@@ -588,10 +485,6 @@ Glossary
         influence by taking into account the total number of walks between a
         pair of actors. [#f9]_
 
-    |K-S| Tests
-
-        See :term:`Kolmogorov–Smirnov Test`.
-
     |K-S| Test
 
         From `Wikipedia\: Kolmogorov–Smirnov Test`_:
@@ -715,7 +608,7 @@ Glossary
     Markov Random Fields
 
         Markov Random fields, or Markov Network, are an undirected graph model that may be cyclic.
-        This contrasts with :term:`Baysian Networks`, which are directed and acyclic.
+        This contrasts with :term:`Baysian Network`, which is directed and acyclic.
 
         For more information see: `Wikipedia\: Markov Random Field`_.
 
@@ -886,6 +779,15 @@ Glossary
         These algorithms train the software to make a certain calculation.
 
         For more information see: :term:`Unsupervised Learning`, and :term:`Semi-Supervised Learning`.
+
+    Tab-Separated Variables
+
+        See :term:`Character-Separated Values`.
+
+    TitanGraph
+
+        A class object with the functionality to manipulate the data in a
+        :term:`graph`.
 
     Topic Modeling
 
