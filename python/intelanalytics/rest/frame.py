@@ -414,13 +414,13 @@ class FrameBackendRest(object):
             group_by_columns = [group_by_columns]
 
         first_column_name = None
-        aggregation_list = []
+        aggregation_list = []   #aggregationFunction : String, columnName : String, newColumnName
 
         for arg in aggregation:
             if arg == agg.count:
                 if not first_column_name:
                     first_column_name = frame.column_names[0]  #only make this call once, since it goes to http - TODO, ultimately should be handled server-side
-                aggregation_list.append((agg.count, first_column_name, "count"))
+                aggregation_list.append({'function' :agg.count, 'column_name' : first_column_name, 'new_column_name' :"count"})
             elif isinstance(arg, dict):
                 for k,v in arg.iteritems():
                     # leave the valid column check to the server
@@ -428,9 +428,9 @@ class FrameBackendRest(object):
                         for j in v:
                             if j not in agg:
                                 raise ValueError("%s is not a valid aggregation function, like agg.max.  Supported agg methods: %s" % (j, agg))
-                            aggregation_list.append((j, k, "%s_%s" % (k, j)))
+                            aggregation_list.append({'function': j, 'column_name' : k, 'new_column_name' : "%s_%s" % (k, j)})
                     else:
-                        aggregation_list.append((v, k, "%s_%s" % (k, v)))
+                        aggregation_list.append({'function': v, 'column_name' :k, 'new_column_name' : "%s_%s" % (k, v)})
             else:
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 

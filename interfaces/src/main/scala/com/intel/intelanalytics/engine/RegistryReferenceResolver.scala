@@ -77,11 +77,11 @@ class RegistryReferenceResolver(registry: EntityTypeRegistry) extends ReferenceR
     require(invocation != null, "invocation is required")
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
-      .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
+      .getOrElse(throw new IllegalArgumentException(s"Could not find entity name in $uri with regex ${regex.pattern.pattern()}"))
 
     //Error should never happen on next line, since our regex includes subgroups -
     //a match means there is at least one subgroup match as well.
-    val matched = regexMatch.subgroups.find(s => s != null).getOrElse(throw new Exception("Internal error"))
+    val matched = regexMatch.subgroups.find(s => s != null).getOrElse(throw new Exception(s"Internal error - should never happen, problem with regex subgroups"))
 
     val parts = matched.split("/")
     if (parts.length < 2) {

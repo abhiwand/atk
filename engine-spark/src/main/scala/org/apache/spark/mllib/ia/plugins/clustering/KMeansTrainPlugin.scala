@@ -27,17 +27,18 @@ package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.KMeansTrainArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.clustering.KMeans
+import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] {
+class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainReturn] {
   /**
    * The name of the command.
    *
@@ -52,49 +53,22 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
 
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Creating a Kmeans Model using the observation column of a train frame",
-    extendedSummary = Some(
-      """
-                             |
-                             |    Parameters
-                             |    ----------
-                             |    frame: Frame
-                             |        Frame to train the model on
-                             |
-                             |    observation_column: str
-                             |        column containing the observations
-                             |
-                             |
-                             |    Returns
-                             |    -------
-                             |    Trained Kmeans model object
-                             |
-                             |
-                             |    Examples
-                             |    --------
-                             |    ::
-                             |
-                             |        model = ia.KmeansModel(name='MyKmeansModel')
-                             |        model.train(train_frame, ['name_of_observation_column1','name_of_observation_column2'])
-                             |
-                             |
-                           """.stripMargin)))
-
   /**
    * Number of Spark jobs that get created by running this command
+   *
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: KMeansTrainArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: KMeansTrainArgs)(implicit invocation: Invocation) = 15
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
-   *                   as well as a function that can be called to produce a SparkContext that
-   *                   can be used during this invocation.
+   * as well as a function that can be called to produce a SparkContext that
+   * can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn =
     {
       val models = engine.models
       val frames = engine.frames
@@ -110,27 +84,36 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, UnitReturn] 
        */
       val kMeans = initializeKmeans(arguments)
 
-      /*TODO: Add to FrameRDD */
-      val vectorRDD = trainFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
-        val doubles = array.map(i => DataTypes.toDouble(i))
-        Vectors.dense(doubles)
-      })
-
+      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
       val kmeansModel = kMeans.run(vectorRDD)
-      val jsonModel = kmeansModel.toJson.asJsObject
+      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnWeights)
+      val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
 
-      models.updateModel(modelMeta, jsonModel)
-      new UnitReturn
+      //Writing the kmeansModel as JSON
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnWeights)
+      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
 
+      KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }
 
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
-    if (arguments.k.isDefined) { kmeans.setK(arguments.k.get) }
-    if (arguments.maxIterations.isDefined) { kmeans.setMaxIterations(arguments.maxIterations.get) }
-    if (arguments.epsilon.isDefined) { kmeans.setEpsilon(arguments.epsilon.get) }
-    if (arguments.initializationMode.isDefined) { kmeans.setInitializationMode(arguments.initializationMode.get) }
-    kmeans
+
+    kmeans.setK(arguments.getK)
+    kmeans.setMaxIterations(arguments.getMaxIterations)
+    kmeans.setInitializationMode(arguments.getInitializationMode)
+    kmeans.setEpsilon(arguments.geteEpsilon)
+  }
+
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnWeights: List[Double]): Map[String, Int] = {
+
+    val predictRDD = trainFrameRDD.mapRows(row => {
+      val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
+      val columnWeightsArray = columnWeights.toArray
+      val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }
+      val point = Vectors.dense(doubles)
+      kmeansModel.predict(point)
+    })
+    predictRDD.map(row => ("Cluster:" + (row + 1).toString, 1)).reduceByKey(_ + _).collect().toMap
   }
 }

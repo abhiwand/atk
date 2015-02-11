@@ -23,8 +23,18 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class GroupByArgs(frame: FrameReference, groupByColumns: List[String], aggregations: List[(String, String, String)]) {
+/** Arguments to GroupByPlugin (see Spark API) */
+case class GroupByArgs(frame: FrameReference, groupByColumns: List[String], aggregations: List[GroupByAggregationArgs]) {
   require(frame != null, "frame is required")
   require(groupByColumns != null, "group_by columns is required")
   require(aggregations != null, "aggregation list is required")
 }
+
+/**
+ * Arguments for GroupBy aggregation
+ *
+ * @param function Name of aggregation function (e.g., count, sum, variance)
+ * @param columnName Name of column to aggregate
+ * @param newColumnName Name of new column that stores the aggregated results
+ */
+case class GroupByAggregationArgs(function: String, columnName: String, newColumnName: String)

@@ -206,7 +206,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * @tparam A plugin arguments
    * @return plugin return value as JSON
    */
-  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = {
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}")
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
@@ -295,6 +295,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
                                                                           commandContext: CommandContext)(implicit invocation: Invocation): Invocation with Product with Serializable = {
     val cmd = commandContext.command
     command match {
+
+      // TODO: there is a bug here where SparkCommandPlugins aren't recognized from external jars loaded via config --Todd 1/28/2015
+
       case c: SparkCommandPlugin[A, R] =>
         val context: SparkContext = commandContext("sparkContext") match {
           case None =>

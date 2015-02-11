@@ -50,7 +50,14 @@ object FrameExportHdfs extends Serializable {
 
     val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
     val headers = frameRDD.frameSchema.columnNames.mkString(separator)
-    val csvRdd = filterRdd.map(row => { row.map(col => (if (col == null) "" else col.toString)).mkString(separator) })
+    val csvRdd = filterRdd.map(row => {
+      row.map(col => (if (col == null) "" else {
+        var str = col.toString
+        if (str.contains(separator)) str = "\"" + str + "\""
+        str
+      }
+      )).mkString(separator)
+    })
     val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
     addHeaders.saveAsTextFile(filename)
   }

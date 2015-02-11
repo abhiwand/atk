@@ -6,8 +6,8 @@ Frames
     :local:
 
 
-Globals Methods
----------------
+Global Methods
+--------------
 .. autofunction:: intelanalytics.get_frame
 
 .. autofunction:: intelanalytics.get_frame_names
