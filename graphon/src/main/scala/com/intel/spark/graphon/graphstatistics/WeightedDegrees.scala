@@ -25,6 +25,7 @@ package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 
 /**
@@ -194,7 +195,7 @@ object WeightedDegrees {
     }
   }
 
-  private def getEdgeWeight(e: GBEdge, propertyName: String, defaultValue: Double, useDefault: Boolean) = {
+  private def getEdgeWeight(e: GBEdge, propertyName: String, defaultValue: Double, useDefault: Boolean): Double = {
     if (useDefault) {
       defaultValue
     }
@@ -205,7 +206,16 @@ object WeightedDegrees {
         defaultValue
       }
       else {
-        propertyOption.get.value.asInstanceOf[Double]
+        propertyOption.get.value match {
+          case d: Double => d
+          case f: Float => f.toDouble
+          case i: Int => i.toDouble
+          case l: Long => l.toDouble
+          case bad => throw new SparkException("WeightedDegrees: At edge ID, " + e.id
+            + ", between source " + e.tailPhysicalId + " and destination " + e.headPhysicalId
+            + ", the property " + propertyName + " contains non-numeric data: " + bad)
+
+        }
       }
     }
   }
