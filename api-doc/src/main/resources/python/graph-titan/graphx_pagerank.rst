@@ -44,7 +44,7 @@ Examples
 --------
 ::
 
-    g.ml.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+    g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
 
 The expected output is like this::
 
