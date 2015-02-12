@@ -106,11 +106,11 @@ class CsvFile(DataFile):
 
     def __init__(self, file_name, schema, delimiter=',', skip_header_lines=0):
         if not file_name  or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty str")
+            raise ValueError("file_name must be a non-empty string")
         if not schema:
             raise ValueError("schema must be non-empty list of tuples")
         if not delimiter or not isinstance(delimiter, basestring):
-            raise ValueError("delimiter must be a non-empty str")
+            raise ValueError("delimiter must be a non-empty string")
         self.file_name = file_name
         self.schema = list(schema)
         self._validate()
@@ -233,7 +233,7 @@ class LineFile(DataFile):
 
     def __init__(self, file_name):
         if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty str")
+            raise ValueError("file_name must be a non-empty string")
         self.file_name = file_name
 
     def __repr__(self):
@@ -245,7 +245,7 @@ class MultiLineFile(DataFile):
 
     def __init__(self, file_name, start_tag=None, end_tag=None):
         if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty str")
+            raise ValueError("file_name must be a non-empty string")
         self.file_name = file_name
         self.start_tag = start_tag
         self.end_tag = end_tag
@@ -365,7 +365,7 @@ class JsonFile(MultiLineFile):
 
     def __init__(self, file_name):
         if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty str")
+            raise ValueError("file_name must be a non-empty string")
         MultiLineFile.__init__(self, file_name, ['{'], ['}'])
 
     def __repr__(self):
@@ -481,7 +481,7 @@ class XmlFile(MultiLineFile):
 
     def __init__(self, file_name, tag_name):
         if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty str")
+            raise ValueError("file_name must be a non-empty string")
         if not tag_name or not isinstance(tag_name, basestring):
             raise ValueError("tag_name is required")
         MultiLineFile.__init__(self, file_name, ['<%s>' % tag_name, '<%s ' % tag_name], ['</%s>' % tag_name])

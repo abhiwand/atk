@@ -183,8 +183,7 @@ class _NamedObjectsFunctionFactory(object):
 
     Returns
     -------
-    {obj_term}
-        {obj_term} object.""".format(obj_term=self._term)
+    class | {obj_term} object.""".format(obj_term=self._term)
         set_function_doc_stub_text(get_object, 'name')
         return get_api_decorator(module_logger)(get_object)
 
