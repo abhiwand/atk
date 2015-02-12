@@ -74,5 +74,3 @@ Example
         u'titanPhysicalId': 449424}],
         u'run_time_seconds': 1.756}
 
-
-    .. versionadded:: 1.0

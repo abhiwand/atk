@@ -78,29 +78,6 @@ Glossary
         algorithm, and sensitivity to small details in the training data (in
         other words, over-fitting) when generalizing to a testing data set.
 
-        From `Wikipedia\: Bias-Variance Tradeoff`_:
-
-            A first issue is the tradeoff between bias and variance. [#f2]_
-            Imagine that we have available several different, but equally good,
-            training data sets.
-            A learning algorithm is biased for a particular input x if,
-            when trained on each of these data sets, it is systematically
-            incorrect when predicting the correct output for x.
-            A learning algorithm has high variance for a particular input x if
-            it predicts different output values when trained on different
-            training sets.
-            The prediction error of a learned classifier is related to the sum
-            of the bias and the variance of the learning algorithm.
-            Generally, there is a tradeoff between bias and variance.
-            A learning algorithm with low bias must be "flexible" so that it
-            can fit the data well.
-            But if the learning algorithm is too flexible, it will fit each
-            training data set differently, and hence have high variance.
-            A key aspect of many supervised learning methods is that they are
-            able to adjust this tradeoff between bias and variance (either
-            automatically or by providing a bias/variance parameter that the
-            user can adjust).
-
     Bias vs Variance
 
         In this context, "bias" means accuracy, while "variance" means
@@ -357,7 +334,8 @@ Glossary
 
         .. math::
 
-            f(x,\mu,\sigma) = \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{(x-\mu)^{2}}{2\sigma^2}}
+            f(x,\mu,\sigma) = \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{(x-\mu) \
+            ^{2}}{2\sigma^2}}
 
         *   :math:`\mu` is the mean of the distribution.
         *   :math:`\sigma` is the standard deviation.
@@ -367,18 +345,6 @@ Glossary
 
         A random group of vertices displaying a :term:`Gaussian distribution`
         of one or more sets of properties.
-
-        .. outdated::
-
-            From `Wikipedia\: Gaussian Random Fields`_:
-
-            A Gaussian random field (GRF) is a random field involving Gaussian probability density functions of the variables.
-            A one-dimensional GRF is also called a Gaussian process.
-
-            One way of constructing a GRF is by assuming that the field is the sum of a large number of plane, cylindrical, or spherical waves with uniformly distributed random phase.
-            Where applicable, the central limit theorem dictates that at any point, the sum of these individual plane-wave contributions will exhibit a Gaussian distribution.
-            This type of GRF is completely described by its power spectral density, and hence, through the Wiener-Khinchin theorem, by its two-point autocorrelation function, which is related to the power spectral density through a Fourier transformation.
-            For details on the generation of Gaussian random fields using Matlab, see the circulant embedding method for Gaussian random field.
 
     Graph
 
@@ -505,23 +471,6 @@ Glossary
 
         See :doc:`ds_mlal_lp`.
 
-        .. outdated::
-
-            Label propagation is a way of labeling things so that similar things get the same label.
-
-            You start out with a few things that are labeled (with a "kind" or "class" marker).
-            And a whole bunch of things that are unlabeled.
-            The goal is compute labels for the unlabeled things so that things that are similar get the same
-            label.
-
-            Mathematically, similarity means that when you model these things as points in space, they are close.
-            So, if you want to be all pretty and geometric about it, it's a way of taking a bunch of points,
-            some of which are colored, and then coloring the uncolored ones,
-            so that at the end the points that are close share the same color.
-
-            Applications of this could include classifying customer profiles (or really any profile, of course),
-            identifying communities of interacting agents, etc.
-
         For additional reference:
         `Learning from Labeled and Unlabeled Data with Label Propagation`_.
 
@@ -557,28 +506,45 @@ Glossary
     Lambda Function
 
         An anonymous function or function literal in code.
-        Lambda functions are used when a method requires a function as an input parameter and the function is coded directly in the method call.
+        Lambda functions are used when a method requires a function as an input
+        parameter and the function is coded directly in the method call.
 
-        Further examples and explanations can be found at this page: :doc:`ds_apir`.
+        Further examples and explanations can be found at this page:
+        :doc:`ds_apir`.
 
         Related term: :term:`User Functions <Python User Function>`.
 
-        .. warning:: This term is often used where a :term:`python user function` is more accurate.
-            A key distinction is that the lambda function is not referable by a name.
+        .. warning:: This term is often used where a :term:`Python user
+            function` is more accurate.
+            A key distinction is that the lambda function is not referable by a
+            name.
 
     Latent Dirichlet Allocation
 
         From `Wikipedia\: Latent Dirichlet Allocation`_:
 
-            In natural language processing, latent Dirichlet allocation (LDA) is a generative model that allows sets of observations to be explained by unobserved groups that explain why some parts of the data are similar.
-            For example, if observations are words collected into documents, it posits that each document is a mixture of a small number of topics and that each word's creation is attributable to one of the document's topics.
-            LDA is an example of a topic model and was first presented as a graphical model for topic discovery by David Blei, Andrew Ng, and Michael Jordan in 2003.
+            [A] generative model that allows sets of observations to be
+            explained by unobserved groups that explain why some parts of the
+            data are similar.
+            For example, if observations are words collected into documents,
+            it posits that each document is a mixture of a small number of
+            topics and that each word's creation is attributable to one of the
+            document's topics.
+            |LDA| is an example of a topic model and was first presented as a
+            graphical model for topic discovery by David Blei, Andrew Ng,
+            and Michael Jordan in 2003.
 
     Least Squares
 
-        A mathematical procedure for finding the best-fitting curve to a given set of points by minimizing the sum of the squares of the offsets ("the residuals") of the points from the curve.
-        The sum of the squares of the offsets is used instead of the offset absolute values because this allows the residuals to be treated as a continuous differentiable quantity.
-        However, because squares of the offsets are used, outlying points can have a disproportionate effect on the fit, a property which may or may not be desirable depending on the problem at hand.
+        A mathematical procedure for finding the best-fitting curve to a given
+        set of points by minimizing the sum of the squares of the offsets ("the
+        residuals") of the points from the curve.
+        The sum of the squares of the offsets is used instead of the offset
+        absolute values because this allows the residuals to be treated as a
+        continuous differentiable quantity.
+        However, because squares of the offsets are used, outlying points can
+        have a disproportionate effect on the fit, a property which may or may
+        not be desirable depending on the problem at hand.
         
     list
 
@@ -586,29 +552,44 @@ Glossary
 
     Loopy Belief Propagation
 
-        Belief Propagation is an algorithm that makes inferences on graph models, like a Bayesian network or Markov Random Fields.
-        It is called Loopy when the algorithm runs iteratively until convergence.
+        Belief Propagation is an algorithm that makes inferences on graph
+        models, like a Bayesian network or Markov Random Fields.
+        It is called Loopy when the algorithm runs iteratively until
+        convergence.
 
         For more information see: `Wikipedia\: Belief Propagation`_.
 
     Machine Learning
 
         Machine learning is a branch of artificial intelligence.
-        It is about constructing and studying software that can "learn" from data.
-        The more iterations the software computes, the better it gets at making that calculation.
+        It is about constructing and studying software that can "learn" from
+        data.
+        The more iterations the software computes, the better it gets at making
+        that calculation.
 
     MapReduce
 
-        MapReduce is a programming model for processing large data sets with a parallel, distributed algorithm on a cluster.
-        It is composed of a map() procedure that performs filtering and sorting (such as sorting students by first name into queues, one queue for each name) and a reduce() procedure that performs a summary operation (such as counting the number of students in each queue, yielding name frequencies).
-        The "MapReduce System" (also called "infrastructure" or "framework") orchestrates by marshaling the distributed servers, running the various tasks in parallel, managing all communications and data transfers between the various parts of the system, and providing for redundancy and fault tolerance.
+        MapReduce is a programming model for processing large data sets with a
+        parallel, distributed algorithm on a cluster.
+        It is composed of a map() procedure that performs filtering and sorting
+        (such as sorting students by first name into queues, one queue for each
+        name) and a reduce() procedure that performs a summary operation (such
+        as counting the number of students in each queue, yielding name
+        frequencies).
+        The "MapReduce System" (also called "infrastructure" or "framework")
+        orchestrates by marshaling the distributed servers, running the various
+        tasks in parallel, managing all communications and data transfers
+        between the various parts of the system, and providing for redundancy
+        and fault tolerance.
 
         For more information see: `Wikipedia\: MapReduce`_.
 
     Markov Random Fields
 
-        Markov Random fields, or Markov Network, are an undirected graph model that may be cyclic.
-        This contrasts with :term:`Baysian Network`, which is directed and acyclic.
+        Markov Random fields, or Markov Network, are an undirected graph model
+        that may be cyclic.
+        This contrasts with :term:`Baysian Network`, which is directed and
+        acyclic.
 
         For more information see: `Wikipedia\: Markov Random Field`_.
 
@@ -616,15 +597,19 @@ Glossary
 
         Online analytical processing.
         An approach to answering |MDA| queries swiftly.
-        The term |OLAP| was created as a slight modification of the traditional database term |OLTP|.
+        The term |OLAP| was created as a slight modification of the traditional
+        database term |OLTP|.
 
         For more information see: `Wikipedia\: Online analytical processing`_.
 
     OLTP
 
         Online transaction processing.
-        A class of information systems that facilitate and manage transaction-oriented applications.
-        |OLTP| involves gathering input information, processing the information and updating existing information to reflect the gathered and processed information.
+        A class of information systems that facilitate and manage
+        transaction-oriented applications.
+        |OLTP| involves gathering input information, processing the information
+        and updating existing information to reflect the gathered and processed
+        information.
 
         For more information see: `Wikipedia\: Online transaction processing`_.
 
@@ -632,8 +617,10 @@ Glossary
 
         An algorithm to measure the importance of vertices.
 
-        PageRank works by counting the number and quality of edges to a vertex to determine a rough estimate of how important the vertex is.
-        The underlying assumption is that more important vertices are likely to have more edges from other vertices.
+        PageRank works by counting the number and quality of edges to a vertex
+        to determine a rough estimate of how important the vertex is.
+        The underlying assumption is that more important vertices are likely to
+        have more edges from other vertices.
 
         For more information see: `Wikipedia\: PageRank`_.
 
@@ -645,8 +632,13 @@ Glossary
 
         From `Wikipedia\: Precision and Recall`_:
 
-        In pattern recognition and information retrieval with binary classification, precision (also called positive predictive value) is the fraction of retrieved instances that are relevant, while recall (also known as sensitivity) is the fraction of relevant instances that are retrieved.
-        Both precision and recall are therefore based on an understanding and measure of relevance.
+        In pattern recognition and information retrieval with binary
+        classification, precision (also called positive predictive value) is
+        the fraction of retrieved instances that are relevant, while recall
+        (also known as sensitivity) is the fraction of relevant instances that
+        are retrieved.
+        Both precision and recall are therefore based on an understanding and
+        measure of relevance.
         
     Property Map
 
@@ -661,7 +653,9 @@ Glossary
 
     Python User Function
 
-        A Python User Function (PUF) is a python function written by the user on the client-side which can execute in a distributed fashion on the cluster.
+        A Python User Function (PUF) is a Python function written by the user
+        on the client-side which can execute in a distributed fashion on the
+        cluster.
         For further explanation, see :doc:`ds_apir`
 
         Further examples and explanations can be found at :doc:`ds_apir`.
@@ -671,38 +665,60 @@ Glossary
 
     Quantile
 
-        One of the class of values of a variate which divides the members of a batch or sample into equal-sized subgroups of adjacent values or a probability distribution into distributions of equal probability.    
+        One value of a set that partitions a collection of data.
+        Each partition (also known as a quantile) contains all the collection
+        elements from the given value, up to (but not including) the lowest
+        value of the next quantile.
 
     Receiver Operating Characteristic
     
         From `Wikipedia\: Receiver Operating Characteristic`_:
 
-        In signal detection theory, a receiver operating characteristic (ROC), or simply ROC curve, is a graphical plot which illustrates the performance of a binary classifier system as its discrimination threshold is varied.
-        It is created by plotting the fraction of true positives out of the total actual positives (TPR = true positive rate) vs. the fraction of false positives out of the total actual negatives (FPR = false positive rate), at various threshold settings.
+        In signal detection theory, a receiver operating characteristic (ROC),
+        or simply ROC curve, is a graphical plot which illustrates the
+        performance of a binary classifier system as its discrimination
+        threshold is varied.
+        It is created by plotting the fraction of true positives out of the
+        total actual positives (TPR = true positive rate) vs. the fraction of
+        false positives out of the total actual negatives (FPR = false positive
+        rate), at various threshold settings.
         TPR is also known as sensitivity or recall in machine learning.
-        The FPR is also known as the fall-out and can be calculated as one minus the more well known specificity.
+        The FPR is also known as the fall-out and can be calculated as one
+        minus the more well known specificity.
         The ROC curve is then the sensitivity as a function of fall-out.
-        In general, if both of the probability distributions for detection and false alarm are known,
-        the ROC curve can be generated by plotting the Cumulative Distribution Function (area under the probability distribution from -inf to +inf) of the detection probability in the y-axis versus the Cumulative Distribution Function of the false alarm probability in x-axis.
+        In general, if both of the probability distributions for detection and
+        false alarm are known,
+        the ROC curve can be generated by plotting the Cumulative Distribution
+        Function (area under the probability distribution from -inf to +inf) of
+        the detection probability in the y-axis versus the Cumulative
+        Distribution Function of the false alarm probability in x-axis.
         
     Recommendation Systems
 
         From `Wikipedia\: Recommender System`_:
 
-        Recommender systems or recommendation systems (sometimes replacing "system" with a synonym such as platform or engine) are a subclass of information filtering system that seek to predict the 'rating' or 'preference' that user would give to an item [#f3]_ [#f4]_ .
+        Recommender systems or recommendation systems (sometimes replacing
+        "system" with a synonym such as platform or engine) are a subclass of
+        information filtering system that seek to predict the 'rating' or
+        'preference' that user would give to an item [#f3]_ [#f4]_ .
 
 
     Resource Description Framework
 
         A specific format for storing graphs.
-        Vertices also referred to as resources, have property/value pairs describing the resource.
+        Vertices also referred to as resources, have property/value pairs
+        describing the resource.
         A vertex is any object which can be pointed to by a URI.
-        Properties are attributes of the vertex, and values are either specific values for the attribute, or the URI for another vertex.
-        For example, information in a particular vertex, might include the property "Author".
-        The value for the Author property could be either a string giving the name of the author, or a link to another resource describing the author. 
+        Properties are attributes of the vertex, and values are either specific
+        values for the attribute, or the URI for another vertex.
+        For example, information in a particular vertex, might include the
+        property "Author".
+        The value for the Author property could be either a string giving the
+        name of the author, or a link to another resource describing the author. 
         Sets of properties are defined within RDF Vocabularies (or schemas).
         A vertex may include properties defined in different schemas.
-        The properties within a resource description are associated with a certain schema definition using the XML namespace mechanism.
+        The properties within a resource description are associated with a
+        certain schema definition using the XML namespace mechanism.
 
     ROC
     
@@ -718,10 +734,13 @@ Glossary
 
     Semi-Supervised Learning
 
-        In Semi-Supervised learning algorithms, most the input data are not labeled and a small amount are labeled.
-        The expectation is that the software "learns" to calculate faster than in either supervised or unsupervised algorithms.
+        In Semi-Supervised learning algorithms, most the input data are not
+        labeled and a small amount are labeled.
+        The expectation is that the software "learns" to calculate faster than
+        in either supervised or unsupervised algorithms.
 
-        For more information see: :term:`Supervised Learning`, and :term:`Unsupervised Learning`.
+        For more information see: :term:`Supervised Learning`, and
+        :term:`Unsupervised Learning`.
 
     Schema
 
@@ -729,8 +748,13 @@ Glossary
 
     Simple Random Sampling
 
-        In statistics, a simple random sample (SRS) is a subset of individuals (a sample) chosen from a larger set (a population).
-        Each individual is chosen randomly and entirely by chance, such that each individual has the same probability of being chosen at any stage during the sampling process, and each subset of *k* individuals has the same probability of being chosen for the sample as any other subset of *k* individuals [#f1]_.
+        In statistics, a simple random sample (SRS) is a subset of individuals
+        (a sample) chosen from a larger set (a population).
+        Each individual is chosen randomly and entirely by chance, such that
+        each individual has the same probability of being chosen at any stage
+        during the sampling process, and each subset of *k* individuals has the
+        same probability of being chosen for the sample as any other subset of
+        *k* individuals [#f1]_.
         This process and technique is known as simple random sampling.
         A simple random sample is an unbiased surveying technique.
 
@@ -739,7 +763,10 @@ Glossary
     Smoothing
 
         Smoothing means to reduce the "noise" in a data set.
-        "In smoothing, the data points of a signal are modified so individual points (presumably because of noise) are reduced, and points that are lower than the adjacent points are increased leading to a smoother signal."
+        "In smoothing, the data points of a signal are modified so individual
+        points (presumably because of noise) are reduced, and points that are
+        lower than the adjacent points are increased leading to a smoother 
+        signal."
 
         For more information see:
 
@@ -748,14 +775,23 @@ Glossary
 
     Stratified Sampling
 
-        In statistics, stratified sampling is a method of sampling from a population.
-        In statistical surveys, when subpopulations within an overall population vary, it is advantageous to sample each subpopulation (stratum) independently.
-        Stratification is the process of dividing members of the population into homogeneous subgroups before sampling.
-        The strata should be mutually exclusive: every element in the population must be assigned to only one stratum.
-        The strata should also be collectively exhaustive: no population element can be excluded.
-        Then simple random sampling or systematic sampling is applied within each stratum.
-        This often improves the representativeness of the sample by reducing sampling error.
-        It can produce a weighted mean that has less variability than the arithmetic mean of a simple random sample of the population.
+        In statistics, stratified sampling is a method of sampling from a
+        population.
+        In statistical surveys, when subpopulations within an overall
+        population vary, it is advantageous to sample each subpopulation
+        (stratum) independently.
+        Stratification is the process of dividing members of the population
+        into homogeneous subgroups before sampling.
+        The strata should be mutually exclusive: every element in the
+        population must be assigned to only one stratum.
+        The strata should also be collectively exhaustive: no population
+        element can be excluded.
+        Then simple random sampling or systematic sampling is applied within
+        each stratum.
+        This often improves the representativeness of the sample by reducing
+        sampling error.
+        It can produce a weighted mean that has less variability than the
+        arithmetic mean of a simple random sample of the population.
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
 
@@ -763,22 +799,18 @@ Glossary
 
         A Python function for converting an object to type string.
 
-        .. outdated::
-            A string data type in Python using the :term:`ASCII` encoding.
-
     string
 
         A Python data type and a class for general string operations.
 
-        .. outdated::
-            A string data type in Python using the UTF-8 encoding.
-
     Supervised Learning
 
-        Supervised learning refers to algorithms where the input data are all labeled, and the outcome of the calculation is known.
+        Supervised learning refers to algorithms where the input data are all
+        labeled, and the outcome of the calculation is known.
         These algorithms train the software to make a certain calculation.
 
-        For more information see: :term:`Unsupervised Learning`, and :term:`Semi-Supervised Learning`.
+        For more information see: :term:`Unsupervised Learning`, and
+        :term:`Semi-Supervised Learning`.
 
     Tab-Separated Variables
 
@@ -791,16 +823,21 @@ Glossary
 
     Topic Modeling
 
-        Topic models provide a simple way to analyze large volumes of unlabeled text.
+        Topic models provide a simple way to analyze large volumes of unlabeled
+        text.
         A "topic" consists of a cluster of words that frequently occur together.
-        Using contextual clues, topic models can connect words with similar meanings and distinguish between uses of words with multiple meanings.
+        Using contextual clues, topic models can connect words with similar
+        meanings and distinguish between uses of words with multiple meanings.
 
     Transaction Processing
 
         From `Wikipedia\: Transaction Processing`_:
 
-        In computer science, transaction processing is information processing that is divided into individual, indivisible operations, called transactions.
-        Each transaction must succeed or fail as a complete unit; it cannot be only partially complete.
+        In computer science, transaction processing is information processing
+        that is divided into individual, indivisible operations, called
+        transactions.
+        Each transaction must succeed or fail as a complete unit; it cannot be
+        only partially complete.
 
     Transactional Functionality
 
@@ -810,9 +847,13 @@ Glossary
 
     Undirected Graph
 
-        An undirected graph is one in which the edges have no orientation (direction).
-        The edge (a, b) is identical to the edge (b, a), in other words, they are not ordered pairs, but sets {u, v} (or 2-multisets) of vertices.
-        The maximum number of edges in an undirected graph without a self-loop is :math:`\dfrac{n (n - 1)}{2}`
+        An undirected graph is one in which the edges have no orientation
+        (direction).
+        The edge (a, b) is identical to the edge (b, a), in other words,
+        they are not ordered pairs, but sets {u, v} (or 2-multisets) of
+        vertices.
+        The maximum number of edges in an undirected graph without a self-loop
+        is :math:`\dfrac{n (n - 1)}{2}`
 
         Contrast with :term:`Directed Acyclic Graph (DAG)`.
 
@@ -820,14 +861,17 @@ Glossary
 
     Unicode
 
-        A data type consisting of a string of characters designed to represent all characters in the world, a universal character set.
+        A data type consisting of a string of characters designed to represent
+        all characters in the world, a universal character set.
 
     Unsupervised Learning
 
-        Unsupervised learning refers to algorithms where the input data are not labeled, and the outcome of the calculation is unknown.
+        Unsupervised learning refers to algorithms where the input data are not
+        labeled, and the outcome of the calculation is unknown.
         In this case, the software needs to "learn" how to make the calculation.
 
-        For more information see: :term:`Supervised Learning`, and :term:`Semi-Supervised Learning`.
+        For more information see: :term:`Supervised Learning`, and
+        :term:`Semi-Supervised Learning`.
 
     Vertex
 
@@ -837,99 +881,145 @@ Glossary
         The property map may contain 0 or more properties.
         Each vertex is connected to others by edges.
 
-        For more information see: :term:`Edge`, and `Tinkerpop\: Property Graph Model`_.
+        For more information see: :term:`Edge`, and
+        `Tinkerpop\: Property Graph Model`_.
 
     Vertex Degree
 
         From `Wikipedia\: Vertex Degree`_:
 
-        In graph theory, the degree (or valency) of a vertex of a graph is the number of edges incident to the vertex, with loops counted twice [#f7]_.
+        In graph theory, the degree (or valency) of a vertex of a graph is the
+        number of edges incident to the vertex, with loops counted twice [#f7]_.
         The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
-        The maximum degree of a graph :math:`G`, denoted by :math:`\Delta(G)`, and the minimum degree of a graph, denoted by :math:`\delta(G)`, are the maximum and minimum degree of its vertices.
+        The maximum degree of a graph :math:`G`, denoted by :math:`\Delta(G)`,
+        and the minimum degree of a graph, denoted by :math:`\delta(G)`, are
+        the maximum and minimum degree of its vertices.
 
     Vertex Degree Distribution
 
         From `Wikipedia\: Degree Distribution`_:
 
-        In the study of graphs and networks, the degree of a node in a network is the number of connections it has to other nodes and the degree distribution is the probability distribution of these degrees over the whole network.
+        In the study of graphs and networks, the degree of a node in a network
+        is the number of connections it has to other nodes and the degree
+        distribution is the probability distribution of these degrees over the
+        whole network.
 
     Vertices
 
         See :term:`Vertex`.
 
-.. _Wikipedia\: Standard Deviation: http://en.wikipedia.org/wiki/Standard_deviation
+.. _Wikipedia\: Standard Deviation:
+    http://en.wikipedia.org/wiki/Standard_deviation
 .. _Wikipedia\: Variance: https://en.wikipedia.org/wiki/Variance
 .. _CiteSeerX\: Large-Scale Parallel Collaborative Filtering:
     http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
-.. _Factorization Meets the Neighborhood (pdf): http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
-.. _Wikipedia\: Average Path Length: http://en.wikipedia.org/wiki/Average_path_length.
+.. _Factorization Meets the Neighborhood (pdf):
+    http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
+.. _Wikipedia\: Average Path Length:
+    http://en.wikipedia.org/wiki/Average_path_length.
 .. _Wikipedia\: Bayesian Network: http://en.wikipedia.org/wiki/Bayesian_network
-.. _Wikipedia\: Bias-Variance Tradeoff: http://en.wikipedia.org/wiki/Bias_variance#Bias-variance_tradeoff
-.. _Wikipedia\: Convergence (mathematics): http://en.wikipedia.org/wiki/Convergence_(mathematics)
-.. _Wikipedia\: Directed Acyclic Graph: https://en.wikipedia.org/wiki/Directed_acyclic_graph
-.. _Tinkerpop\: Property Graph Model: https://github.com/tinkerpop/blueprints/wiki/Property-Graph-Model
-.. _Wikipedia\: Extract, Transform, and Load: http://en.wikipedia.org/wiki/Extract,_transform,_load
-.. _Wikipedia\: Gaussian Random Fields: http://en.wikipedia.org/wiki/Gaussian_random_field
-.. _Wikipedia\: Graph (mathematics): http://en.wikipedia.org/wiki/Graph_(mathematics)
+.. _Wikipedia\: Bias-Variance Tradeoff:
+    http://en.wikipedia.org/wiki/Bias_variance#Bias-variance_tradeoff
+.. _Wikipedia\: Convergence (mathematics):
+    http://en.wikipedia.org/wiki/Convergence_(mathematics)
+.. _Wikipedia\: Directed Acyclic Graph:
+    https://en.wikipedia.org/wiki/Directed_acyclic_graph
+.. _Tinkerpop\: Property Graph Model:
+    https://github.com/tinkerpop/blueprints/wiki/Property-Graph-Model
+.. _Wikipedia\: Extract, Transform, and Load:
+    http://en.wikipedia.org/wiki/Extract,_transform,_load
+.. _Wikipedia\: Gaussian Random Fields:
+    http://en.wikipedia.org/wiki/Gaussian_random_field
+.. _Wikipedia\: Graph (mathematics):
+    http://en.wikipedia.org/wiki/Graph_(mathematics)
 .. _Gremlin Wiki: https://github.com/tinkerpop/gremlin/wiki
 .. _Wikipedia\: Ising Model: http://en.wikipedia.org/wiki/Ising_model
-.. _Wikipedia\: Machine Learning / Algorithm Types: http://en.wikipedia.org/wiki/Machine_learning#Algorithm_types
-.. _Wikipedia\: Semi-Supervised Learning: http://en.wikipedia.org/wiki/Semi-supervised_learning
+.. _Wikipedia\: Machine Learning / Algorithm Types:
+    http://en.wikipedia.org/wiki/Machine_learning#Algorithm_types
+.. _Wikipedia\: Semi-Supervised Learning:
+    http://en.wikipedia.org/wiki/Semi-supervised_learning
 .. _Stanford\: Machine Learning:
     http://openclassroom.stanford.edu/MainFolder/DocumentPage.php?course=MachineLearning&doc=exercises/ex5/ex5.html
-.. _Wikipedia\: Latent Dirichlet Allocation: http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
-.. _Wikipedia\: Belief Propagation: http://en.wikipedia.org/wiki/Loopy_belief_propagation
+.. _Wikipedia\: Latent Dirichlet Allocation:
+    http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
+.. _Wikipedia\: Belief Propagation:
+    http://en.wikipedia.org/wiki/Loopy_belief_propagation
 .. _Wikipedia\: MapReduce: http://en.wikipedia.org/wiki/Map_reduce
-.. _Wikipedia\: Markov Random Field: http://en.wikipedia.org/wiki/Markov_random_field
+.. _Wikipedia\: Markov Random Field:
+    http://en.wikipedia.org/wiki/Markov_random_field
 .. _Wikipedia\: PageRank: http://en.wikipedia.org/wiki/PageRank
-.. _Tinkerpop\: Property Graph Model: https://github.com/tinkerpop/blueprints/wiki/Property-Graph-Model
-.. _Wikipedia\: Resource Description Framework: http://en.wikipedia.org/wiki/Resource_Description_Framework
-.. _Wikipedia\: Simple Random Sample: https://en.wikipedia.org/wiki/Simple_random_sampling
+.. _Tinkerpop\: Property Graph Model:
+    https://github.com/tinkerpop/blueprints/wiki/Property-Graph-Model
+.. _Wikipedia\: Resource Description Framework:
+    http://en.wikipedia.org/wiki/Resource_Description_Framework
+.. _Wikipedia\: Simple Random Sample:
+    https://en.wikipedia.org/wiki/Simple_random_sampling
 .. _Wikipedia\: Smoothing: http://en.wikipedia.org/wiki/Smoothing
-.. _Wikipedia\: Relaxation (iterative method): http://en.wikipedia.org/wiki/Relaxation_(iterative_method 
-.. _Wikipedia\: Stratified Sampling: https://en.wikipedia.org/wiki/Stratified_sampling
-.. _Wikipedia\: Undirected Graph: http://en.wikipedia.org/wiki/Undirected_graph#Undirected_graph
-.. _Wikipedia\: Cluster Analysis: http://en.wikipedia.org/wiki/Cluster_analysis
-.. _Wikipedia\: Statistical Classification: http://en.wikipedia.org/wiki/Statistical_classification
-.. _Wikipedia\: Recommender System: http://en.wikipedia.org/wiki/Recommendation_system
-.. _How Computers Know What We Want — Before We Do: http://content.time.com/time/magazine/article/0,9171,1992403,00.html
+.. _Wikipedia\: Relaxation (iterative method):
+    http://en.wikipedia.org/wiki/Relaxation_(iterative_method 
+.. _Wikipedia\: Stratified Sampling:
+    https://en.wikipedia.org/wiki/Stratified_sampling
+.. _Wikipedia\: Undirected Graph:
+    http://en.wikipedia.org/wiki/Undirected_graph#Undirected_graph
+.. _Wikipedia\: Cluster Analysis:
+    http://en.wikipedia.org/wiki/Cluster_analysis
+.. _Wikipedia\: Statistical Classification:
+    http://en.wikipedia.org/wiki/Statistical_classification
+.. _Wikipedia\: Recommender System:
+    http://en.wikipedia.org/wiki/Recommendation_system
+.. _How Computers Know What We Want — Before We Do:
+    http://content.time.com/time/magazine/article/0,9171,1992403,00.html
 .. _Wikipedia\: Topic Modeling: http://en.wikipedia.org/wiki/Topic_modeling
-.. _Wikipedia\: Community Structure: http://en.wikipedia.org/wiki/Community_structure
-.. _Wikipedia\: Transaction Processing: http://en.wikipedia.org/wiki/Transaction_processing
+.. _Wikipedia\: Community Structure:
+    http://en.wikipedia.org/wiki/Community_structure
+.. _Wikipedia\: Transaction Processing:
+    http://en.wikipedia.org/wiki/Transaction_processing
 .. _Wikipedia\: Adjacency List: http://en.wikipedia.org/wiki/Edge_list
-.. _Wikipedia\: Collaborative Filtering: http://en.wikipedia.org/wiki/Collaborative_filtering
+.. _Wikipedia\: Collaborative Filtering:
+    http://en.wikipedia.org/wiki/Collaborative_filtering
 .. _Wikipedia\: Confusion Matrix: http://en.wikipedia.org/wiki/Confusion_matrix
 .. _Wikipedia\: Kolmogorov–Smirnov Test: http://en.wikipedia.org/wiki/K-S_Test
-.. _Wikipedia\: Precision and Recall: http://en.wikipedia.org/wiki/Precision_and_recall
+.. _Wikipedia\: Precision and Recall:
+    http://en.wikipedia.org/wiki/Precision_and_recall
 .. _Wikipedia\: F1 score: http://en.wikipedia.org/wiki/F-measure
-.. _Wikipedia\: Connected Component (Graph Theory): http://en.wikipedia.org/wiki/Connected_component_%28graph_theory%29
+.. _Wikipedia\: Connected Component (Graph Theory):
+    http://en.wikipedia.org/wiki/Connected_component_%28graph_theory%29
 .. _Wikipedia\: Vertex Degree: http://en.wikipedia.org/wiki/Vertex_degree
-.. _Wikipedia\: Degree Distribution: http://en.wikipedia.org/wiki/Degree_distribution
+.. _Wikipedia\: Degree Distribution:
+    http://en.wikipedia.org/wiki/Degree_distribution
 .. _Wikipedia\: Katz Centrality: http://en.wikipedia.org/wiki/Katz_centrality
-.. _Introduction to Social Network Methods: http://faculty.ucr.edu/~hanneman/nettext/
+.. _Introduction to Social Network Methods:
+    http://faculty.ucr.edu/~hanneman/nettext/
 .. _Wikipedia\: Centrality: http://en.wikipedia.org/wiki/Centrality
-.. _Learning from Labeled and Unlabeled Data with Label Propagation: http://lvk.cs.msu.su/~bruzz/articles/classification/zhu02learning.pdf
-.. _Wikipedia\: Receiver Operating Characteristic: https://en.wikipedia.org/wiki/Receiver_operating_characteristic
-.. _Wikipedia\: Online analytical processing: https://en.wikipedia.org/wiki/Online_analytical_processing
-.. _Wikipedia\: Online transaction processing: https://en.wikipedia.org/wiki/Online_transaction_processing
+.. _Learning from Labeled and Unlabeled Data with Label Propagation:
+    http://lvk.cs.msu.su/~bruzz/articles/classification/zhu02learning.pdf
+.. _Wikipedia\: Receiver Operating Characteristic:
+    https://en.wikipedia.org/wiki/Receiver_operating_characteristic
+.. _Wikipedia\: Online analytical processing:
+    https://en.wikipedia.org/wiki/Online_analytical_processing
+.. _Wikipedia\: Online transaction processing:
+    https://en.wikipedia.org/wiki/Online_transaction_processing
 
 .. rubric:: Footnotes
 
-.. [#f1] Yates, Daniel S.; David S. Moore, Daren S. Starnes (2008). The Practice of Statistics, 3rd Ed. Freeman.
-    ISBN 978-0-7167-7309-2.
-.. outdated:: [#f2] S. Geman, E. Bienenstock, and R. Doursat (1992). Neural networks and the bias/variance dilemma.
-    Neural Computation 4, 1–58.
-.. [#f3] Francesco Ricci and Lior Rokach and Bracha Shapira (2011). Recommender Systems Handbook, pp. 1-35. Springer.
-.. [#f4] Lev Grossman (2010). `How Computers Know What We Want — Before We Do`_. Time.
-.. [#f5] Terveen, Loren; Hill, Will (2001). Beyond Recommender Systems: Helping People Help Each Other pp. 6.
+.. [#f1] Yates, Daniel S.; David S. Moore, Daren S. Starnes (2008).
+    The Practice of Statistics, 3rd Ed. Freeman. ISBN 978-0-7167-7309-2.
+.. [#f3] Francesco Ricci and Lior Rokach and Bracha Shapira (2011).
+    Recommender Systems Handbook, pp. 1-35. Springer.
+.. [#f4] Lev Grossman (2010).
+    `How Computers Know What We Want — Before We Do`_. Time.
+.. [#f5] Terveen, Loren; Hill, Will (2001).
+    Beyond Recommender Systems: Helping People Help Each Other pp. 6.
     Addison-Wesley.
-.. outdated:: [#f6] Stehman, Stephen V. (1997). Selecting and interpreting measures of thematic classification accuracy.
-    Remote Sensing of Environment 62 (1): 77–89. doi:10.1016/S0034-4257(97)00083-7.
-.. [#f7] Diestel, Reinhard (2005). Graph Theory (3rd ed.). Berlin, New York: Springer-Verlag. ISBN 978-3-540-26183-4.
-.. [#f8] Katz, L. (1953). A New Status Index Derived from Sociometric Index. Psychometrika, 39-43.
-.. [#f9] Hanneman, R. A., & Riddle, M. (2005). `Introduction to Social Network Methods`_.
-.. [#f10] Newman, M.E.J. 2010. Networks: An Introduction. Oxford, UK: Oxford University Press.
-.. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of Belief Propagation in Gaussian
-    Graphical Models of Arbitrary Topology". Neural Computation 13 (10): 2173–2200.
-    doi:10.1162/089976601750541769. PMID 11570995.
+.. [#f7] Diestel, Reinhard (2005). Graph Theory (3rd ed.). Berlin, New York:
+    Springer-Verlag. ISBN 978-3-540-26183-4.
+.. [#f8] Katz, L. (1953). A New Status Index Derived from Sociometric Index.
+    Psychometrika, 39-43.
+.. [#f9] Hanneman, R. A., & Riddle, M. (2005).
+    `Introduction to Social Network Methods`_.
+.. [#f10] Newman, M.E.J. 2010. Networks: An Introduction. Oxford, UK:
+    Oxford University Press.
+.. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of
+    Belief Propagation in Gaussian Graphical Models of Arbitrary Topology".
+    Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.
 

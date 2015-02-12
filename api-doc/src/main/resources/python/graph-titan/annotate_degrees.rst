@@ -72,4 +72,3 @@
         u'titanPhysicalId': 292368}],
         u'run_time_seconds': 1.428}
 
-        .. versionadded:: 1.0
