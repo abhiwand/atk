@@ -431,6 +431,12 @@ We have a configuration script that will create the application.conf for you.
 We also walk through the manual configuration, if you would like to get
 familiar with the |IA| configuration.
 
+.. note::
+
+Before you update the application.conf file, first you need to create a new database and user in postgresql.
+You will do all the database and user creation commands from the postgres client.
+See the section on `postgresql <ia_inst_ia1_postgresql>`_.
+
 Configuration Script
 --------------------
 
@@ -871,7 +877,7 @@ you.
 
 **H2**
 
-Configuration is very simple but you loose all your metadata on a service
+Configuration is very simple but you lose all your metadata on a service
 restart.
 Enabling H2 is very easy and only requires us to comment and uncomment some
 lines in the application.conf file.
@@ -940,12 +946,122 @@ Next uncomment the following line:
 
     metastore.connection = ${intel.analytics.metastore.connection-h2}
 
+.. _ad_inst_ia1_postgresql:
+
 **Postgresql**
 
 The PostgreSQL configuration is a bit more advanced and should probably only be
 attempted by an advanced user.
 Using PostgreSQL will allow your graphs and frames to persist across service
 restarts.
+
+First, log into the postges user on the linux system::
+
+    $ sudo su postgres
+
+Start the postgres command line client::
+
+    $ psql
+
+Wait for the command line prompt to come::
+
+    postgres=# 
+
+Then create a user::
+
+    postgres=# create user YOURUSER with createdb encrypted password 'YOUR_PASSWORD';
+
+User creation confirmation::
+
+    CREATE ROLE
+
+Then create a database for that user::
+
+    postgres=# create database YOURDATABASE with owner YOURUSER;
+
+Database creation confirmation::
+
+    CREATE DATABASE
+
+After creating the database exit the postgres command line by hitting ``ctrl + d``
+
+Once your database and user are created, open '/var/lib/pgsql/data/pg_hba.conf' and add this line
+``host    all         YOURUSER     127.0.0.1/32            md5`` to the top of the file::
+
+    $ vi /var/lib/pgsql/data/pg_hba.conf
+
+You can add the new line at the very top of the file or before any uncommented lines.
+If the pg_hba.conf file doesn't exist you need to initialize postgresql with::
+
+    $ sudo survice postgresql initdb
+ 
+Now that you created your database, you can enter the configuration in the ``application.conf`` file.
+You want to uncomment all the postgres lines in the application.conf file.
+
+Before::
+
+    //metastore.connection-postgresql.host = "invalid-postgresql-host"
+    //metastore.connection-postgresql.port = 5432
+    //metastore.connection-postgresql.database = "ia-metastore"
+    //metastore.connection-postgresql.username = "iauser"
+    //metastore.connection-postgresql.password = "myPassword"
+    //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+    //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
+After::
+
+    metastore.connection-postgresql.host = "localhost"
+    metastore.connection-postgresql.port = 5432
+    metastore.connection-postgresql.database = "YOURDATABASE"
+    metastore.connection-postgresql.username = "YOURUSER"
+    metastore.connection-postgresql.password = "YOUR_PASSWORD"
+    metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+    metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
+Comment any h2 configuration lines with a # or //::
+
+     //metastore.connection = ${intel.analytics.metastore.connection-h2}
+
+When you are done updating the application.conf file with the postgres information restart the Intel Analytics service and insert the meta user into the database::
+
+    $ sudo service intelanalytics restart
+
+After restarting the service, the |IA| will create all the database tables after which we will insert a meta user to enable python client requests.
+
+Login to the postgres linux user::
+
+    $ sudo su postgres
+
+Open the postgres command line::
+
+    $ psql
+
+Switch databases::
+
+    postgres=# \c YOURDATABASE
+    psql (8.4.18)
+
+You are now connected to database "YOURDATABASE".
+Then insert into the users table::
+
+    postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
+    INSERT 0 1
+
+After you get a confirmation of the insert you can send commands from the python client.
+You can view the insertion by doing a select on the users table::
+
+    postgres=# select * from users;
+
+You should only get a single row per api_key::
+
+      user_id | username  |    api_key     |         created_on         |        modified_on
+    /---------+-----------+----------------+----------------------------+----------------------------/
+            1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
+    (1 row)
+
+If you get more than one row for a single api key, remove one of them or create a new database.
+If you have duplicate api keys that will not get validated by the rest server which means a broken python client. 
+         
 
 Starting |IA| REST Server
 =========================

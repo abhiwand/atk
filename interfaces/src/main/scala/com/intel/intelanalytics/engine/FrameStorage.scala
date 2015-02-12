@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate, _ }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -40,16 +40,20 @@ trait FrameStorage {
   def expectFrame(frameId: Long)(implicit invocation: Invocation): FrameEntity
   def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity
 
+  @deprecated("please use expectFrame() instead")
   def lookup(id: Long)(implicit invocation: Invocation): Option[FrameEntity]
   def lookupByName(name: Option[String])(implicit invocation: Invocation): Option[FrameEntity]
   def getFrames()(implicit invocation: Invocation): Seq[FrameEntity]
   def create(arguments: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
   def renameFrame(frame: FrameEntity, newName: String)(implicit invocation: Invocation): FrameEntity
   def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity
-  def getRows(frame: FrameEntity, offset: Long, count: Int)(implicit invocation: Invocation): Iterable[Row]
+  def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Row]
   def drop(frame: FrameEntity)(implicit invocation: Invocation)
   def loadFrameData(context: Context, frame: FrameEntity)(implicit invocation: Invocation): Data
   def saveFrameData(frame: FrameReference, data: Data)(implicit invocation: Invocation): FrameEntity
+
+  def prepareForSave(createEntity: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
+  def postSave(originalFrameRef: Option[FrameReference], targetFrameRef: FrameReference, schema: Schema)(implicit invocation: Invocation): FrameEntity
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist

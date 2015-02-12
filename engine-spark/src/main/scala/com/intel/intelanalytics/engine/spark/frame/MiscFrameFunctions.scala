@@ -51,7 +51,7 @@ object MiscFrameFunctions extends Serializable {
    * @param count total rows to be included in the new RDD
    * @param limit limit on number of rows to be included in the new RDD
    */
-  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
+  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Long, limit: Int): RDD[T] = {
 
     val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(rdd)
     val capped = limit match {

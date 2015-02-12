@@ -6,8 +6,8 @@ Models
     :local:
 
 
-Globals Methods
----------------
+Global Methods
+--------------
 .. autofunction:: intelanalytics.get_model
 
 .. autofunction:: intelanalytics.get_model_names

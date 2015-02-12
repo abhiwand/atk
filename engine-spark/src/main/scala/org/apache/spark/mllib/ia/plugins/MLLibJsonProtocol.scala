@@ -23,11 +23,16 @@
 
 package org.apache.spark.mllib.ia.plugins
 
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.classification.SVMModel
 import org.apache.spark.mllib.clustering.KMeansModel
+import org.apache.spark.mllib.ia.plugins.classification._
+import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
  */
@@ -154,19 +159,19 @@ object MLLibJsonProtocol {
     }
 
     /**
-     * The read method reads a JsValue to LogisticRegressionModel
+     * The read method reads a JsValue to KMeansModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
-     *         and the weights Vector could be either a SparseVector or DenseVector
+     * @return KMeansModel with format KMeansModel(val clusterCenters:Array[Vector])
+     *         where Vector could be either a SparseVector or DenseVector
      */
     override def read(json: JsValue): KMeansModel = {
       val fields = json.asJsObject.fields
 
-      val centers = fields.get("clusterCenters").map(vector => {
+      val centers = fields.get("clusterCenters").get.asInstanceOf[JsArray].elements.map(vector => {
         VectorFormat.read(vector)
-      }).get
+      })
 
-      new KMeansModel(Array(centers))
+      new KMeansModel(centers.toArray)
     }
 
   }
@@ -206,5 +211,14 @@ object MLLibJsonProtocol {
     }
 
   }
+  implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
+  implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
+  implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
+  implicit val classificationWithSGDTestFormat = jsonFormat4(ClassificationWithSGDTestArgs)
+  implicit val svmDataFormat = jsonFormat2(SVMData)
+  implicit val kmeansDataFormat = jsonFormat3(KMeansData)
+  implicit val kmeansModelTrainReturnFormat = jsonFormat2(KMeansTrainReturn)
+  implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
+  implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
 }
 

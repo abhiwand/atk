@@ -32,7 +32,6 @@ if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
-_multiprocess_can_split_ = True
 
 class FrameAppendTests(unittest.TestCase):
     """
@@ -43,6 +42,8 @@ class FrameAppendTests(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
+
     def setUp(self):
         self.schema1 = [('rank', ia.int32),
                         ('city', str),
