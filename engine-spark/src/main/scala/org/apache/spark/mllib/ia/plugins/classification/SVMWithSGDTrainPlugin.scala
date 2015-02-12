@@ -88,7 +88,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
 
   private def initializeSVMModel(arguments: ClassificationWithSGDTrainArgs): SVMWithSGD = {
     val svm = new SVMWithSGD()
-    svm.optimizer.setNumIterations(arguments.getNumOptIterations)
+    svm.optimizer.setNumIterations(arguments.getNumIterations)
     svm.optimizer.setStepSize(arguments.getStepSize)
     svm.optimizer.setRegParam(arguments.getRegParam)
 

@@ -86,7 +86,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
     }
   private def initializeLogisticRegressionModel(arguments: ClassificationWithSGDTrainArgs): LogisticRegressionWithSGD = {
     val logReg = new LogisticRegressionWithSGD()
-    logReg.optimizer.setNumIterations(arguments.getNumOptIterations)
+    logReg.optimizer.setNumIterations(arguments.getNumIterations)
     logReg.optimizer.setStepSize(arguments.getStepSize)
     logReg.optimizer.setRegParam(arguments.getRegParam)
 

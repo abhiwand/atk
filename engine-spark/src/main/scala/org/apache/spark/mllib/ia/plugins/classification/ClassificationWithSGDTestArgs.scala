@@ -36,10 +36,9 @@ import com.intel.intelanalytics.domain.model.ModelReference
 case class ClassificationWithSGDTestArgs(model: ModelReference,
                                          frame: FrameReference,
                                          labelColumn: String,
-                                         observationColumns: Option[List[String]]
-                                         ) {
+                                         observationColumns: Option[List[String]]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
+  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
 }

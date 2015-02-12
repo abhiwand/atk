@@ -32,4 +32,5 @@ import org.apache.spark.mllib.classification.SVMModel
  */
 case class SVMData(svmModel: SVMModel, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
+  require(svmModel != null, "svmModel must not be null")
 }

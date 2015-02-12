@@ -85,6 +85,7 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
       val svmJsObject = modelMeta.data.get
       val svmData = svmJsObject.convertTo[SVMData]
       val svmModel = svmData.svmModel
+      require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
       val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
       //predicting a label for the observation columns
@@ -98,7 +99,6 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
 
       val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
-
 
       frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
       new UnitReturn
