@@ -51,7 +51,7 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVerticesArgs, UnitReturn] {
+class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVerticesArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -75,7 +75,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FilterVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: FilterVerticesArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
@@ -89,11 +89,11 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
     val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
     FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-    frames.saveFrameData(vertexFrame.meta.toReference, filteredRdd)
+    val modifiedFrame = frames.saveFrameData(vertexFrame.meta.toReference, filteredRdd)
 
     filteredRdd.unpersist(blocking = false)
 
-    new UnitReturn
+    modifiedFrame
   }
 }
 
