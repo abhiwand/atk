@@ -68,4 +68,3 @@ Compute the histogram for a column in a frame.
         hist: [2, 1, 2],
         density: [0.4, 0.2, 0.4]
 
-.. versionadded:: 0.9

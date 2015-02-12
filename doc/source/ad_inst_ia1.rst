@@ -85,8 +85,8 @@ i.  HDFS
 #.  Yarn(MR2)
 #.  Zookeeper
 
-You need python to run the |IA| python client.
-The |IA| python client will run with python 2.6 or 2.7.
+You need Python to run the |IA| Python client.
+The |IA| Python client will run with Python 2.6 or 2.7.
 
 Yum Repository Requirements
 ===========================
@@ -318,7 +318,8 @@ Run the following command to create ``/etc/yum.repos.d/ia.repo`` file.
 
 .. Note::
 
-    Don't forget to replace **YOUR_KEY**, and **YOUR_SECRET** with the keys that were given to you.
+    Don't forget to replace **YOUR_KEY**, and **YOUR_SECRET** with the keys
+    that were given to you.
 
 Verify the installation of the |IA| repository by running::
 
@@ -371,7 +372,8 @@ Installing |IA| Packages
 Installing Master Node
 ----------------------
 
-This next step is going to install the |IA| REST server and all it's dependencies.
+This next step is going to install the |IA| REST server and all it's
+dependencies.
 Only one instance of the rest server needs to be installed.
 Although it doesn't matter where it's installed it's usually installed along
 side the HDFS name node.
@@ -433,15 +435,17 @@ familiar with the |IA| configuration.
 
 .. note::
 
-Before you update the application.conf file, first you need to create a new database and user in postgresql.
-You will do all the database and user creation commands from the postgres client.
-See the section on `postgresql <ia_inst_ia1_postgresql>`_.
+  Before you update the application.conf file, first you need to create a new
+  database and user in postgresql.
+  You will do all the database and user creation commands from the postgres
+  client.
+  See the section on `postgresql <ia_inst_ia1_postgresql>`_.
 
 Configuration Script
 --------------------
 
 The configuration of application.conf is semi-automated via the use of a
-python script in /etc/intelanalytics/rest-server/config.py.
+Python script in /etc/intelanalytics/rest-server/config.py.
 It will query Cloudera Manager for the necessary configuration values and
 create a new application.conf based off the application.conf.tpl file.
 The script will also fully configure your local PostgreSQL installation to
@@ -612,7 +616,7 @@ run the same command with --help::
         --password PASSWORD   Cloudera Manager Password
         --cluster CLUSTER     Cloudera Manager Cluster Name if more than one cluster
                               is managed by Cloudera Manager.
-        --python PYTHON       The name of the python executable to use. It must be
+        --python PYTHON       The name of the Python executable to use. It must be
                               in the path
         --restart RESTART     Weather or not to restart spark service after config
                               changes
@@ -985,48 +989,85 @@ Database creation confirmation::
 
 After creating the database exit the postgres command line by hitting ``ctrl + d``
 
-Once your database and user are created, open '/var/lib/pgsql/data/pg_hba.conf' and add this line
-``host    all         YOURUSER     127.0.0.1/32            md5`` to the top of the file::
+Once your database and user are created, open '/var/lib/pgsql/data/pg_hba.conf'
+and add this line
+``host    all         YOURUSER     127.0.0.1/32            md5``
+to the top of the file::
 
     $ vi /var/lib/pgsql/data/pg_hba.conf
 
-You can add the new line at the very top of the file or before any uncommented lines.
+You can add the new line at the very top of the file or before any uncommented
+lines.
 If the pg_hba.conf file doesn't exist you need to initialize postgresql with::
 
     $ sudo survice postgresql initdb
  
-Now that you created your database, you can enter the configuration in the ``application.conf`` file.
+Now that you created your database, you can enter the configuration in the
+``application.conf`` file.
 You want to uncomment all the postgres lines in the application.conf file.
 
-Before::
+.. only:: html
 
-    //metastore.connection-postgresql.host = "invalid-postgresql-host"
-    //metastore.connection-postgresql.port = 5432
-    //metastore.connection-postgresql.database = "ia-metastore"
-    //metastore.connection-postgresql.username = "iauser"
-    //metastore.connection-postgresql.password = "myPassword"
-    //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-    //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+    Before::
 
-After::
+        //metastore.connection-postgresql.host = "invalid-postgresql-host"
+        //metastore.connection-postgresql.port = 5432
+        //metastore.connection-postgresql.database = "ia-metastore"
+        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.password = "myPassword"
+        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
-    metastore.connection-postgresql.host = "localhost"
-    metastore.connection-postgresql.port = 5432
-    metastore.connection-postgresql.database = "YOURDATABASE"
-    metastore.connection-postgresql.username = "YOURUSER"
-    metastore.connection-postgresql.password = "YOUR_PASSWORD"
-    metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-    metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+    After::
+
+        metastore.connection-postgresql.host = "localhost"
+        metastore.connection-postgresql.port = 5432
+        metastore.connection-postgresql.database = "YOURDATABASE"
+        metastore.connection-postgresql.username = "YOURUSER"
+        metastore.connection-postgresql.password = "YOUR_PASSWORD"
+        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
+.. only:: latex
+
+    Before::
+
+        //metastore.connection-postgresql.host = "invalid-postgresql-host"
+        //metastore.connection-postgresql.port = 5432
+        //metastore.connection-postgresql.database = "ia-metastore"
+        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.password = "myPassword"
+        //metastore.connection-postgresql.url = "jdbc:postgresql://"
+            ${intel.analytics.metastore.connection-postgresql.host}":"
+            ${intel.analytics.metastore.connection-postgresql.port}"/"
+            ${intel.analytics.metastore.connection-postgresql.database}
+        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
+    After::
+
+        metastore.connection-postgresql.host = "localhost"
+        metastore.connection-postgresql.port = 5432
+        metastore.connection-postgresql.database = "YOURDATABASE"
+        metastore.connection-postgresql.username = "YOURUSER"
+        metastore.connection-postgresql.password = "YOUR_PASSWORD"
+        metastore.connection-postgresql.url = "jdbc:postgresql://"
+            ${intel.analytics.metastore.connection-postgresql.host}":"
+            ${intel.analytics.metastore.connection-postgresql.port}"/"
+            ${intel.analytics.metastore.connection-postgresql.database}
+        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
 Comment any h2 configuration lines with a # or //::
 
      //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
-When you are done updating the application.conf file with the postgres information restart the Intel Analytics service and insert the meta user into the database::
+When you are done updating the application.conf file with the postgres
+information restart the Intel Analytics service and insert the meta user into
+the database::
 
     $ sudo service intelanalytics restart
 
-After restarting the service, the |IA| will create all the database tables after which we will insert a meta user to enable python client requests.
+After restarting the service, the |IA| will create all the database tables
+after which we will insert a meta user to enable Python client requests.
 
 Login to the postgres linux user::
 
@@ -1047,7 +1088,8 @@ Then insert into the users table::
     postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
     INSERT 0 1
 
-After you get a confirmation of the insert you can send commands from the python client.
+After you get a confirmation of the insert you can send commands from the
+Python client.
 You can view the insertion by doing a select on the users table::
 
     postgres=# select * from users;
@@ -1059,8 +1101,10 @@ You should only get a single row per api_key::
             1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
     (1 row)
 
-If you get more than one row for a single api key, remove one of them or create a new database.
-If you have duplicate api keys that will not get validated by the rest server which means a broken python client. 
+If you get more than one row for a single api key, remove one of them or create
+a new database.
+If you have duplicate api keys that will not get validated by the rest server
+which means a broken Python client. 
          
 
 Starting |IA| REST Server
@@ -1094,7 +1138,7 @@ More details about the logs can be found here: :doc:`ad_log`.
 Upgrading Python to 2.7
 =======================
 
-Remove the old python 2.7 client on all your nodes::
+Remove the old Python 2.7 client on all your nodes::
 
     sudo yum remove intelanalytics-python-rest-client-python27
  

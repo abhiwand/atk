@@ -30,6 +30,8 @@ rst_epilog = """
 .. |IAT|    replace:: Intel Analytics Toolkit
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
+.. |LDA|	  replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
+.. |LSI|		replace:: :abbr:`LSI (Latent Semantic Indexing)1
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
@@ -87,7 +89,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Intel Analytics'
 #project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
-copyright = u'2014, Intel - INTEL CONFIDENTIAL'
+copyright = u'2015, Intel - INTEL CONFIDENTIAL'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
