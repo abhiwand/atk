@@ -11,7 +11,7 @@ predict_frame : Frame
 label_column : str
     Column containing the actual label for each observation
 
-observation_column : List of strings (Optional)
+observation_column : list of str (Optional)
     Columns containing the observations. Default is the same column names used to train the model
 
 Returns
