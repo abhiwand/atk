@@ -37,8 +37,8 @@ case class ClassificationWithSGDTestArgs(model: ModelReference,
                                          frame: FrameReference,
                                          labelColumn: String,
                                          observationColumns: Option[List[String]]) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
   require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
 }

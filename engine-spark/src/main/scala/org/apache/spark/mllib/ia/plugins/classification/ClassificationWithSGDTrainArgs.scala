@@ -48,8 +48,8 @@ case class ClassificationWithSGDTrainArgs(model: ModelReference,
                                           regType: Option[String] = None,
                                           regParam: Option[Double] = None,
                                           miniBatchFraction: Option[Double] = None) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
   require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
