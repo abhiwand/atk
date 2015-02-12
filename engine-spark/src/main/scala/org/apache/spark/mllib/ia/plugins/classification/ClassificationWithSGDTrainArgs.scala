@@ -50,10 +50,10 @@ case class ClassificationWithSGDTrainArgs(model: ModelReference,
                                           miniBatchFraction: Option[Double] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(!observationColumns.isEmpty && observationColumns != null, "observationColumn must not be null nor empty")
-  require(!labelColumn.isEmpty && labelColumn != null, "labelColumn must not be null nor empty")
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
+  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
-  def getNumOptIterations: Int = { numIterations.getOrElse(100) }
+  def getNumIterations: Int = { numIterations.getOrElse(100) }
 
   def getIntercept: Boolean = { intercept.getOrElse(true) }
 

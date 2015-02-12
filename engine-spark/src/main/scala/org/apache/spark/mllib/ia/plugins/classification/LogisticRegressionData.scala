@@ -32,4 +32,5 @@ import org.apache.spark.mllib.classification.{ LogisticRegressionModel }
  */
 case class LogisticRegressionData(logRegModel: LogisticRegressionModel, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
+  require(logRegModel != null, "logRegModel must not be null")
 }

@@ -35,4 +35,5 @@ case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String]
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
   require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null nor empty")
   require(columnWeights.length == observationColumns.length, "number of elements in observationColumns and columnWeights needs to be the same")
+  require(kMeansModel != null, "kMeansModel must not be null")
 }

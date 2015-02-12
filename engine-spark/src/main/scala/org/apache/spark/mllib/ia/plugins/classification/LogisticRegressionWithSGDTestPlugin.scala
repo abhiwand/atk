@@ -77,6 +77,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[Classificat
       val logRegJsObject = modelMeta.data.get
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
+      require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
       val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
       val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, logRegColumns)
