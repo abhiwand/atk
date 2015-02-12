@@ -90,6 +90,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
     val titanIAGraph: GraphMeta = resolve(arguments.graph)
 
+    require(titanIAGraph.meta.frameSchemaList.isDefined, "Currently this method only works on TitanGraphs that were originally exported from ia.Graph")
+
     val (vertices, edges) = graphs.loadFromTitan(sc, titanIAGraph.meta)
     vertices.cache()
 
