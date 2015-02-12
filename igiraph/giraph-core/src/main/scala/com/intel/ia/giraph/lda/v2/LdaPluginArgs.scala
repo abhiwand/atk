@@ -36,7 +36,7 @@ case class LdaTrainArgs(model: ModelReference,
                         documentColumnName: String,
                         wordColumnName: String,
                         wordCountColumnName: String,
-                        maxSupersteps: Option[Int] = None,
+                        maxIterations: Option[Int] = None,
                         alpha: Option[Float] = None,
                         beta: Option[Float] = None,
                         convergenceThreshold: Option[Float] = None,
@@ -48,13 +48,17 @@ case class LdaTrainArgs(model: ModelReference,
   require(StringUtils.isNotBlank(documentColumnName), "document column name is required")
   require(StringUtils.isNotBlank(wordColumnName), "word column name is required")
   require(StringUtils.isNotBlank(wordCountColumnName), "word count column name is required")
+  require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
+  require(alpha.isEmpty || alpha.get > 0, "Alpha should be greater than 0")
+  require(beta.isEmpty || beta.get > 0, "Beta should be greater than 0")
+  require(numTopics.isEmpty || numTopics.get > 0, "Number of topics (K) should be greater than 0")
 
   def columnNames: List[String] = {
     List(documentColumnName, wordColumnName, wordCountColumnName)
   }
 
-  def getMaxSupersteps: Int = {
-    maxSupersteps.getOrElse(20)
+  def getMaxIterations: Int = {
+    maxIterations.getOrElse(20)
   }
 
   def getAlpha: Float = {

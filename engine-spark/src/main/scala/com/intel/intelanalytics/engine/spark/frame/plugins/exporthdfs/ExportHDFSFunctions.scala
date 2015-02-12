@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
+import org.apache.commons.csv.{ CSVPrinter, CSVFormat }
 
 /**
  * Object for exporting frames to files
@@ -50,7 +51,16 @@ object FrameExportHdfs extends Serializable {
 
     val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
     val headers = frameRDD.frameSchema.columnNames.mkString(separator)
-    val csvRdd = filterRdd.map(row => { row.map(col => (if (col == null) "" else col.toString)).mkString(separator) })
+    val csvFormat = CSVFormat.RFC4180.withDelimiter(separator.trim().charAt(0))
+
+    val csvRdd = filterRdd.map(row => {
+      val stringBuilder = new java.lang.StringBuilder
+      val printer = new CSVPrinter(stringBuilder, csvFormat)
+      val array = row.map(col => if (col == null) "" else col.toString)
+      for (i <- array) printer.print(i)
+      stringBuilder.toString()
+    })
+
     val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
     addHeaders.saveAsTextFile(filename)
   }

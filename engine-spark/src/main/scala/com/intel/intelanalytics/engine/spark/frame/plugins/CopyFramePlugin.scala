@@ -23,15 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage, FrameRDD }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, FrameRDD }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -63,36 +60,30 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
   override def execute(arguments: CopyFrameArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val sourceFrame: SparkFrameData = resolve(arguments.frame)
+    val sourceRdd = sourceFrame.data
 
-    // run the operation
-    if (arguments.where.isEmpty) {
-      val rdd = arguments.columns match {
-        case None => sourceFrame.data.toPlainFrame() // full copy
-        case Some(cols) => sourceFrame.data.toPlainFrame().selectColumnsWithRename(cols) // partial copy
-      }
-      engine.frames.tryNewFrame() { newFrame: FrameEntity =>
-        if (arguments.name.isDefined) {
-          engine.frames.renameFrame(newFrame, FrameName.validate(arguments.name.get))
-        }
-        engine.frames.saveFrameData(newFrame.toReference, rdd)
-      }
-    }
-    else {
-      // TODO: there is a bug with predicated copy if only a subset of columns are selected in the rename TRIB-4155
-      val newSchema = arguments.columns match {
-        case None => sourceFrame.meta.schema.toFrameSchema // full copy
-        case Some(cols) => sourceFrame.meta.schema.toFrameSchema.copySubsetWithRename(cols) // partial copy
+    val finalRdd = if (arguments.where.isDefined) {
+      val finalSchema = arguments.columns.isDefined match {
+        case true => sourceRdd.frameSchema.copySubsetWithRename(arguments.columns.get)
+        case false => sourceRdd.frameSchema
       }
 
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
-      // TODO - update if UDF wrapping logic ever moves out of the client and into the server
-      val pyRdd = PythonRDDStorage.mapWith(sourceFrame.data, arguments.where.get, newSchema, sc)
-      engine.frames.tryNewFrame() { newFrame: FrameEntity =>
-        if (arguments.name.isDefined) {
-          engine.frames.renameFrame(newFrame, FrameName.validate(arguments.name.get))
-        }
-        engine.frames.saveFrameData(newFrame.toReference, pyRdd)
+      // Note: Update if UDF wrapping logic ever moves out of the client and into the server
+      PythonRDDStorage.mapWith(sourceRdd, arguments.where.get, finalSchema, sc)
+    }
+    else {
+      if (arguments.columns.isDefined) {
+        sourceRdd.selectColumnsWithRename(arguments.columns.get)
       }
+      else {
+        sourceRdd
+      }
+    }
+
+    val frames = engine.frames
+    frames.tryNewFrame(CreateEntityArgs(description = Some("created by copy command"))) {
+      newFrame => frames.saveFrameData(newFrame.toReference, finalRdd)
     }
   }
 }

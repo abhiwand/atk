@@ -18,7 +18,7 @@ max_supersteps : integer (optional)
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
-    If the change is less than this threshold, the algorithm exists earlier
+    If the change is less than this threshold, the algorithm exits earlier
     before it reaches the maximum number of super steps.
     The valid value range is all Float and zero.
     The default value is 0.001.

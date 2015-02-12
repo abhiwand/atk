@@ -77,7 +77,7 @@ private[testutils] object TestingSparkContext {
     serializer: String = "org.apache.spark.serializer.KryoSerializer",
     registrator: String = "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator"): SparkContext = {
     // LogUtils.silenceSpark()
-
+    System.setProperty("spark.driver.allowMultipleContexts", "true")
     val conf = new SparkConf()
       .setMaster("local")
       .setAppName(this.getClass.getSimpleName + " " + new Date())

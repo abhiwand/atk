@@ -80,5 +80,9 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-protocol</artifactId>
         </dependency>
+				<dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+				</dependency>
     </dependencies>
 </project>
