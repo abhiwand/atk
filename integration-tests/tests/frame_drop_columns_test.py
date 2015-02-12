@@ -32,7 +32,6 @@ if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
-_multiprocess_can_split_ = True
 
 class FrameDropColumnsTest(unittest.TestCase):
     """
@@ -43,6 +42,7 @@ class FrameDropColumnsTest(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
 
     def setUp(self):
         print "define csv file"

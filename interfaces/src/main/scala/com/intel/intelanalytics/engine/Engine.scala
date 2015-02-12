@@ -45,6 +45,8 @@ trait Engine {
 
   val graphs: GraphStorage
 
+  val models: ModelStorage
+
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
@@ -80,6 +82,7 @@ trait Engine {
 
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
+  @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]
 
   def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit]
@@ -96,6 +99,7 @@ trait Engine {
 
   def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[GraphEntity]]
 
+  @deprecated("use engine.graphs.createGraph()")
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[GraphEntity]
 
   def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]

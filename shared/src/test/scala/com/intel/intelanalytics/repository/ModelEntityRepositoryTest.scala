@@ -48,7 +48,6 @@ class ModelEntityRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         model2.get.name shouldBe name
         model2.get.createdOn should not be null
         model2.get.modifiedOn should not be null
-
     }
 
   }
@@ -76,7 +75,10 @@ class ModelEntityRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val model3 = modelRepo.insert(new ModelTemplate(None, modelType)).get
         modelRepo.update(model3.copy(lastReadDate = new DateTime()))
 
-        modelRepo.listReadyForDeletion(age).length should be(1)
+        val readyForDeletion = modelRepo.listReadyForDeletion(age)
+        readyForDeletion.length should be(1)
+        val idList = readyForDeletion.map(m => m.id).toList
+        idList should contain(model1.id)
     }
   }
 
@@ -103,11 +105,14 @@ class ModelEntityRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val model3 = modelRepo.insert(new ModelTemplate(None, modelType)).get
         modelRepo.update(model3.copy(lastReadDate = new DateTime(), statusId = 8))
 
-        //should be in list wrong status type
+        //should not be in list wrong status type
         val model4 = modelRepo.insert(new ModelTemplate(None, modelType)).get
         modelRepo.update(model4.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 4))
 
-        modelRepo.listReadyForMetaDataDeletion(age).length should be(1)
+        val readyForDeletion = modelRepo.listReadyForMetaDataDeletion(age)
+        readyForDeletion.length should be(1)
+        val idList = readyForDeletion.map(m => m.id).toList
+        idList should contain(model1.id)
     }
 
   }

@@ -618,11 +618,12 @@ def set_db_user_access(db_username):
         system("service postgresql initdb")
         pg_hba = codecs.open(r"/var/lib/pgsql/data/pg_hba.conf", encoding="utf-8", mode="r+")
 
-
     pg_hba_text = pg_hba.read()
     pg_hba.seek(0)
     pg_hba.write("host    all         " + db_username + "      127.0.0.1/32            md5 #IATINSERT\n" + pg_hba_text)
     pg_hba.close()
+
+    restart_db()
 
 
 def create_db_user(db_username, db_password):

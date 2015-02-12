@@ -43,6 +43,7 @@ class FrameSmokeTest(unittest.TestCase):
     - Tests are ran in parallel
     - Tests should be short and isolated.
     """
+    _multiprocess_can_split_ = True
 
     def test_frame(self):
         print "define csv file"
@@ -61,6 +62,7 @@ class FrameSmokeTest(unittest.TestCase):
         print frame.inspect(20)
         print
         self.assertEquals(frame.row_count, 20, "frame should have 20 rows")
+        self.assertGreaterEqual(frame._size_on_disk, 0, "frame size on disk should be non-negative")
         self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
         self.assertEquals(len(frame.column_names), 6)
 
@@ -77,10 +79,6 @@ class FrameSmokeTest(unittest.TestCase):
 
         # TODO: add verification that one Python UDF is working (not working yet)
 
-        #print "filter()"
-        #frame.filter(lambda row: row.rank < 11)
-        #self.assertEquals(frame.row_count, 10, "after filtering there should only be ten cities")
-        ##self.assertEqual(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
 
 if __name__ == "__main__":
     unittest.main()

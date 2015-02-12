@@ -41,6 +41,7 @@ import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, QueryPluginResults }
 import com.intel.intelanalytics.schema._
+//import org.apache.spark.mllib.ia.plugins.classification.{SVMTrainArgs, ClassificationWithSGDPredictArgs, ClassificationWithSGDArgs}
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
@@ -311,6 +312,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val renameFrameFormat = jsonFormat2(RenameFrameArgs)
   implicit val renameColumnsFormat = jsonFormat2(RenameColumnsArgs)
   implicit val joinFrameLongFormat = jsonFormat3(JoinArgs)
+  implicit val groupByAggregationsFormat = jsonFormat3(GroupByAggregationArgs)
   implicit val groupByColumnFormat = jsonFormat3(GroupByArgs)
   implicit val copyWhereFormat = jsonFormat2(CountWhereArgs)
 
@@ -374,18 +376,14 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModelArgs)
   implicit val modelFormat = jsonFormat11(ModelEntity)
-  implicit val modelLoadFormat = jsonFormat5(ClassificationWithSGDArgs)
-  implicit val modelPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
-  implicit val kmeansModelLoadFormat = jsonFormat7(KMeansTrainArgs)
-  implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
+  implicit val genericNewModelArgsFormat = jsonFormat2(GenericNewModelArgs)
+
+  // kmeans formats
   implicit val kmeansModelNewFormat = jsonFormat2(KMeansNewArgs)
-  implicit val logisticRegressionModelNewArgsFormat = jsonFormat2(ClassificationWithSGDNewArgs)
 
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
   implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
-
-  implicit val svmModelLoadFormat = jsonFormat8(SVMTrainArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)
@@ -412,6 +410,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val addEdgesFormat = jsonFormat6(AddEdgesArgs)
   implicit val getAllGraphFramesFormat = jsonFormat1(GetAllGraphFrames)
   implicit val filterVertexRowsFormat = jsonFormat2(FilterVerticesArgs)
+  implicit val copyGraphFormat = jsonFormat2(CopyGraphArgs)
+
+  implicit val assignSampleTitanFormat = jsonFormat5(AssignSampleTitanArgs)
 
   implicit val exportGraphFormat = jsonFormat2(ExportGraph)
 

@@ -115,9 +115,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       ctx.addJar(SparkContextFactory.jarPath("graphon"))
 
       // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(engine.getGraph(arguments.graph.id), configuration.getInt("default-timeout") seconds)
-
+      val graph = engine.graphs.expectGraph(arguments.graph.id)
       val (gbVertices, gbEdges) = engine.graphs.loadGbElements(ctx, graph)
 
       val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,

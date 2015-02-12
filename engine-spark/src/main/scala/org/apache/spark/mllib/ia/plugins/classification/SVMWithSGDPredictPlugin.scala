@@ -22,10 +22,11 @@
 //////////////////////////////////////////////////////////////////////////////
 package org.apache.spark.mllib.ia.plugins.classification
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.ClassificationWithSGDPredictArgs
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -42,7 +43,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
+class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, UnitReturn] {
   /**
    * The name of the command.
    *
@@ -67,35 +68,41 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
+  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
       val modelMeta = models.expectModel(arguments.model.id)
 
+      val frames = engine.frames
+      val inputFrame = frames.expectFrame(arguments.frame.id)
+
       val frame: SparkFrameData = resolve(arguments.frame)
+
       // load frame as RDD
       val inputFrameRDD = frame.data
 
       //Running MLLib
-      val logRegJsObject = modelMeta.data.get
-      val logRegModel = logRegJsObject.convertTo[SVMModel]
+      val svmJsObject = modelMeta.data.get
+      val svmData = svmJsObject.convertTo[SVMData]
+      val svmModel = svmData.svmModel
+      val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
       //predicting a label for the observation columns
       val predictionsRDD = inputFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
+        val array = row.valuesAsArray(svmColumns)
         val doubles = array.map(i => DataTypes.toDouble(i))
         val point = Vectors.dense(doubles)
-        val prediction = logRegModel.predict(point)
-        row.addValue(prediction)
+        val prediction = svmModel.predict(point)
+        row.addValue(prediction.toInt)
       })
 
-      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRDD))
-      }.meta
+
+      frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
+      new UnitReturn
+
     }
 
 }

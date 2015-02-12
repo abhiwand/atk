@@ -54,7 +54,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -115,13 +115,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
 
-        <dep.hbase.version>0.98.6-cdh5.2.0</dep.hbase.version>
-        <dep.hadoop2.version>2.5.0-cdh5.2.0</dep.hadoop2.version>
+        <dep.cdh.version>cdh5.2.1</dep.cdh.version>
 
-        <dep.zookeeper.version>3.4.5-cdh5.2.0</dep.zookeeper.version>
+        <dep.hbase.version>0.98.6-${dep.cdh.version}</dep.hbase.version>
+        <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
+
+        <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.mahout.version>0.9</dep.mahout.version>
 
-        <dep.spark.version>1.1.0-cdh5.2.0</dep.spark.version>
+        <dep.spark.version>1.1.0-${dep.cdh.version}</dep.spark.version>
 
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
@@ -178,8 +180,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine-spark</module>
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
-                <!--<module>imahout</module>
-                <module>imllib</module>-->
+                <!--<module>imahout</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -231,7 +232,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
-                <module>imllib</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -778,11 +778,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>igiraph</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>imlib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <!--END bda dependencies-->
             <!--STARTititan-->
             <dependency>
@@ -955,6 +950,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-yarn_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
             </dependency>
             <dependency>

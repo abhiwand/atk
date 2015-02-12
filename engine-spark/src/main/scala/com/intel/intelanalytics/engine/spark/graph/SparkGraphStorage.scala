@@ -49,7 +49,6 @@ import org.joda.time.DateTime
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
@@ -170,6 +169,43 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   /**
+   * @param graph the graph to be copied
+   * @param name name to be given to the copied graph
+   * @return
+   */
+  override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
+    info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
+    val graphCopy = createGraph(GraphTemplate(name))
+    val storageName = {
+      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
+    }
+    if (graph.isTitan) {
+      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
+          }
+      }
+    }
+    else {
+      val graphMeta = expectSeamless(graph.id)
+      val framesToCopy = graphMeta.frameEntities.map(_.toReference)
+      val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
+
+      metaStore.withSession("spark.graphstorage.copyGraph") {
+        implicit session =>
+          {
+            copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
+          }
+      }
+    }
+    // refresh from DB
+    expectGraph(graphCopy.id)
+  }
+
+  /**
    * Update status id of the graph
    * @param graph graph instance
    * @param newStatusId status id
@@ -256,6 +292,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
    */
+  @deprecated("please use expectGraph() instead")
   override def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity] = {
     metaStore.withSession("spark.graphstorage.lookup") {
       implicit session =>
@@ -419,19 +456,25 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graphName Name of the graph to be written.
    * @param gbVertices RDD of vertices.
    * @param gbEdges RDD of edges
+   * @param append if true will attempt to append to an existing graph
    */
 
   def writeToTitan(graphName: String,
                    gbVertices: RDD[GBVertex],
-                   gbEdges: RDD[GBEdge])(implicit invocation: Invocation) = {
+                   gbEdges: RDD[GBEdge],
+                   append: Boolean = false)(implicit invocation: Invocation): GraphEntity = {
 
-    val newGraph = createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
+    val graph = if (append)
+      getGraphByName(Some(graphName)).get
+    else
+      createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
 
     val gb =
-      new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = false))
+      new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
 
     gb.buildGraphWithSpark(gbVertices, gbEdges)
+    graph
   }
 
   /**

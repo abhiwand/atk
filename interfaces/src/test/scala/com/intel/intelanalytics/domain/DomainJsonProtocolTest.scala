@@ -30,6 +30,11 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       assert(schema.toJson.compactPrint == """{"columns":[{"name":"a","data_type":"int64","index":0},{"name":"b","data_type":"string","index":1}]}""")
     }
 
+    "be able to handle empty frame schemas" in {
+      val schema = new FrameSchema(List())
+      assert(schema.toJson.compactPrint == """{"columns":[]}""")
+    }
+
     "be able to handle vertex schemas" in {
       val schema = new VertexSchema(List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("id", DataTypes.string)), "mylabel", Some("id"))
       assert(schema.toJson.compactPrint == """{"columns":[{"name":"_vid","data_type":"int64","index":0},{"name":"_label","data_type":"string","index":1},{"name":"id","data_type":"string","index":2}],"label":"mylabel","id_column_name":"id"}""")

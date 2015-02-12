@@ -139,7 +139,8 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    */
   def size(path: String): Long = {
     val abPath: Path = absolutePath(path)
-    val fileStatuses = fs.globStatus(abPath)
+    // globStatus() was returning zero if File was directory
+    val fileStatuses = if (fs.isDirectory(abPath)) fs.listStatus(abPath) else fs.globStatus(abPath)
     if (ArrayUtils.isEmpty(fileStatuses.asInstanceOf[Array[AnyRef]])) {
       throw new RuntimeException("No file found at path " + abPath)
     }
