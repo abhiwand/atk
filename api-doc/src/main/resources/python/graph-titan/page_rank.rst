@@ -42,7 +42,7 @@ Examples
 
     ::
 
-        g.ml.page_rank(input_edge_label_list = "edge", output_vertex_property_list = "pr_result")
+        g.page_rank(input_edge_label_list = "edge", output_vertex_property_list = "pr_result")
 
     The expected output is like this::
 
@@ -52,7 +52,7 @@ Examples
 
     ::
 
-        g.ml.page_rank(input_edge_label_list = "edge", \\
+        g.page_rank(input_edge_label_list = "edge", \\
             output_vertex_property_list = "pr_result")
 
     The expected output is like this::

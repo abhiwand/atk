@@ -83,7 +83,7 @@ import ConnectedComponentsJsonFormat._
  */
 class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsResult] {
 
-  override def name: String = "graph:titan/ml/graphx_connected_components"
+  override def name: String = "graph:titan/graphx_connected_components"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

@@ -101,7 +101,7 @@ import PageRankJsonFormat._
  */
 class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
-  override def name: String = "graph:titan/ml/graphx_pagerank"
+  override def name: String = "graph:titan/graphx_pagerank"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

@@ -24,7 +24,7 @@ Examples
 
     ::
 
-        g.ml.graphx_connected_components(output_property = "ccId", output_graph_name = "cc_graph")
+        g.graphx_connected_components(output_property = "ccId", output_graph_name = "cc_graph")
 
     The expected output is like this::
 
@@ -41,7 +41,7 @@ Examples
 
     ::
 
-        g.ml.graphx_connected_components(output_property = "ccId", \\
+        g.graphx_connected_components(output_property = "ccId", \\
             output_graph_name = "cc_graph")
 
     The expected output is like this::
