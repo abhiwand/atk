@@ -979,40 +979,44 @@ class Frame(DocStubsFrame, _BaseFrame):
     """
     Data handle.
 
-    Class with information about a large 2D table of data.
+    Class with information about a large row and columnar data store in a
+    frame,
     Has information needed to modify data and table structure.
 
     Parameters
     ----------
     source : [ CsvFile | Frame | BigColumn(s) ]
         A source of initial data.
-
-    name : string
+    name : str (optional)
         The name of the newly created frame.
+        Default: None.
 
     Returns
     -------
-    Frame
+    class | Frame object
         An object with access to the frame.
 
     Notes
     -----
-    If no name is provided for the Frame object, it will generate one.
-    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
-    if allowed, an "_" character then the name of the data source.
-    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
+    A frame with no name is subject to garbage collection.
 
-    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
-    off of the data before it is put into the field.
-    Anything, including delimiters, between the double-quote characters is considered part of the string.
-    If the first character after the delimiter is anything other than a double-quote character,
-    the string will be composed of all the characters between the delimiters, including double-quotes.
-    If the first field type is string, leading spaces on each row are considered part of the string.
-    If the last field type is string, trailing spaces on each row are considered part of the string.
+    If a string in the CSV file starts and ends with a double-quote (")
+    character, the character is stripped off of the data before it is put into
+    the field.
+    Anything, including delimiters, between the double-quote characters is
+    considered part of the string.
+    If the first character after the delimiter is anything other than a
+    double-quote character, the string will be composed of all the characters
+    between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are
+    considered part of the string.
+    If the last field type is string, trailing spaces on each row are
+    considered part of the string.
 
     Examples
     --------
-    Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
+    Create a new frame based upon the data described in the CsvFile object
+    *my_csv_schema*.
     Name the frame "my_frame".
     Create a Frame *g* to access the data::
 
@@ -1028,9 +1032,6 @@ class Frame(DocStubsFrame, _BaseFrame):
 
     A frame has been created and Frame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
-
-
-    .. versionadded:: 0.8
 
     """
     # For other examples, see :ref:`example_frame.bigframe`.
@@ -1054,9 +1055,7 @@ class Frame(DocStubsFrame, _BaseFrame):
     @api
     def append(self, data):
         """
-        Add data.
-
-        Adds more data (rows and/or columns) to the frame.
+        Adds more data to the current frame.
 
         Parameters
         ----------
@@ -1065,23 +1064,25 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Examples
         --------
-        Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
+        Given a frame with a single column *col_1* and a frame with two columns
+        *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
-        Frame *my_frame* points to the first frame and *your_frame* points to the second.
+        The Frame *my_frame* points to the first frame and *your_frame* points
+        to the second.
         Add the contents of *your_frame* to *my_frame*::
 
             my_frame.append(your_frame)
 
         Now the first frame has two columns, *col_1* and *col_2*.
         Column *col_1* has the data from *col_1* in both original frames.
-        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the
-        value of the second frame column *col_2* in the rows matching the new data in *col_1*.
+        Column *col_2* has None (undefined) in all of the rows in the original
+        first frame, and has the value of the second frame column *col_2* in
+        the rows matching the new data in *col_1*.
 
-        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2*
-        and this new column is filled with non-defined data.
+        Breaking it down differently, the original rows referred to by
+        *my_frame* have a new column *col_2* and this new column is filled with
+        non-defined data.
         The frame referred to by *your_frame* is then added to the bottom.
-
-        .. versionadded:: 0.8
 
         """
         self._backend.append(self, data)
@@ -1094,51 +1095,51 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     A VertexFrame is similar to a Frame but with a few important differences:
 
-    - VertexFrames are not instantiated directly by the user, instead they are created by defining a Vertex type in a Graph
-    - Each row of a VertexFrame represents a Vertex in a Graph
-    - VertexFrames have many of the same methods as found on Frames but not all (e.g. flatten_column())
-    - VertexFrames have extra methods not found on Frames (e.g. add_vertices())
-    - Removing a Vertex (or row) from a VertexFrame also removes Edges connected to that Vertex from the Graph
-    - VertexFrames have special system columns (_vid, _label) that are maintained automatically by the system and cannot be modified by the user
-    - VertexFrames have a special user defined id column whose value uniquely identifies a Vertex
-    - "Columns" on a VertexFrame can also be thought of as "properties" on Vertices
+    -   VertexFrames are not instantiated directly by the user, instead they
+        are created by defining a vertex type in a graph
+    -   Each row of a VertexFrame represents a vertex in a graph
+    -   VertexFrames have many of the same methods as Frames but not all (for
+        example, flatten_column())
+    -   VertexFrames have extra methods not found on Frames (for example,
+        add_vertices())
+    -   Removing a vertex (or row) from a VertexFrame also removes edges
+        connected to that vertex from the graph
+    -   VertexFrames have special system columns (_vid, _label) that are
+        maintained automatically by the system and cannot be modified by the
+        user
+    -   VertexFrames have a special user defined id column whose value uniquely
+        identifies the vertex
+    -   "Columns" on a VertexFrame can also be thought of as "properties" on
+        vertices
 
     Examples
     --------
-    Define a new VertexFrame and add data to it::
+    Given a data file, create a frame, move the data to graph and then define a
+    new VertexFrame and add data to it::
 
-        # create a frame as the source for a graph
-        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
-                                            ('user_name', str),
-                                            ('movie_id', int32),
-                                            ('movie_title', str),
+        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), \
+                                            ('user_name', str),     \
+                                            ('movie_id', int32),    \
+                                            ('movie_title', str),   \
                                             ('rating', str)])
         my_frame = ia.Frame(csv)
-
-        # create a Graph
         my_graph = ia.Graph()
         my_graph.define_vertex_type('users')
         my_vertex_frame = my_graph.vertices['users']
         my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
 
-    Retrieve a previously defined VertexFrame::
+    Retrieve a previously defined graph and retrieve a VertexFrame from it::
 
-        # Retrieve a Graph object.
         my_graph = ia.get_graph("your_graph")
-
-        # Retrieve a VertexFrame from the graph
         my_vertex_frame = my_graph.vertices["your_label"]
 
     Calling methods on a VertexFrame::
 
-        g.vertices["your_label"].inspect(20)
+        my_vertex_frame.vertices["your_label"].inspect(20)
 
-    Convert a VertexFrame to a Frame::
+    Convert a VertexFrame to a frame::
 
-        # The copy method creates a new Frame
-        f = g.vertices["label"].copy()
-
-    .. versionadded:: 0.8
+        new_Frame = my_vertex_frame.vertices["label"].copy()
 
     """
     # For other examples, see :ref:`example_frame.bigframe`.
@@ -1164,30 +1165,37 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     def drop_vertices(self, predicate):
         """
-        Drop vertex rows.
-
-        Remove all vertex rows from the frame which satisfy the predicate.
+        Delete rows that qualify.
 
         Parameters
         ----------
         predicate : function
-            Function or :term:`lambda` which takes a row argument and evaluates to a boolean value.
+            Function or :term:`lambda` which takes a row argument and evaluates
+            to a boolean value.
 
         Examples
         --------
-        For this example, my_frame is a Frame object accessing a frame with lots of data for the
-        attributes of *lions*, *tigers*, and *ligers*.
-        Get rid of the *lions* and *tigers*::
+        Given VertexFrame object *my_vertex_frame* accessing a graph with lots
+        of data for the attributes of *lions*, *tigers*, and *ligers*.
+        Get rid of the *lions* and *tigers*:
 
-            my_frame.drop_rows(lambda row: row.animal_type == "lion" or
-                row.animal_type == "tiger")
+        .. only:: html
+
+            ::
+
+                my_vertex_frame.drop_vertices(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+
+        .. only:: latex
+
+            ::
+
+                my_vertex_frame.drop_vertices(lambda row:   \
+                    row.animal_type == "lion" or            \
+                    row.animal_type == "tiger")
 
         Now the frame only has information about *ligers*.
 
         More information on row functions can be found at :doc:`ds_apir`
-
-
-        .. versionchanged:: 0.9
 
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
@@ -1203,60 +1211,56 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
 
     An EdgeFrame is similar to a Frame but with a few important differences:
 
-    - EdgeFrames are not instantiated directly by the user, instead they are created by defining an Edge type in a Graph
-    - Each row of an EdgeFrame represents an Edge in a Graph
-    - EdgeFrames have many of the same methods as found on Frames but not all
-    - EdgeFrames have extra methods not found on Frames (e.g. add_edges())
-    - EdgeFrames have a dependency on one or two VertexFrames.  Adding an Edge to an EdgeFrame requires either Vertices to be present or for the user to specify create_missing_vertices=True.
-    - EdgeFrames have special system columns (_eid, _label, _src_vid, _dest_vid) that are maintained automatically by the system and cannot be modified by the user
-    - "Columns" on an EdgeFrame can also be thought of as "properties" on Edges
+    -   EdgeFrames are not instantiated directly by the user, instead they are
+        created by defining an edge type in a graph
+    -   Each row of an EdgeFrame represents an edge in a graph
+    -   EdgeFrames have many of the same methods as Frames but not all
+    -   EdgeFrames have extra methods not found on Frames (e.g. add_edges())
+    -   EdgeFrames have a dependency on one or two VertexFrames.
+        Adding an edge to an EdgeFrame requires either vertices to be present
+        or for the user to specify create_missing_vertices=True.
+    -   EdgeFrames have special system columns (_eid, _label, _src_vid,
+        _dest_vid) that are maintained automatically by the system and cannot
+        be modified by the user
+    -   "Columns" on an EdgeFrame can also be thought of as "properties" on
+        Edges
 
     Examples
     --------
-    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices
-    connected by 'rating' edges::
+    Given a data file, create a frame, move the data to the graph, define a
+    couple of vertex types, then define an edge type
+    ``ratings`` as directed edges from ``user`` vertices to ``movie`` vertices::
 
-        # create a frame as the source for a graph
         csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
                                             ('user_name', str),
                                             ('movie_id', int32),
                                             ('movie_title', str),
                                             ('rating', str)])
         my_frame = ia.Frame(csv)
-
-        # create a graph
         my_graph = ia.Graph()
-
-        # define the types of vertices and edges this graph will be made of
         my_graph.define_vertex_type('users')
         my_graph.define_vertex_type('movies')
-        # 'ratings' are directed edges from 'user' vertices to 'movie' vertices
         my_graph.define_edge_type('ratings','users','movies',directed=True)
 
-        # add data to the graph
+    Add data to the graph::
+
         graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
         graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
         my_edge_frame = graph.edges['ratings']
         my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
 
-    Retrieve a previously defined EdgeFrame::
+    Retrieve a previously defined graph and retrieve an EdgeFrame from it::
 
-        # Retrieve a Graph object.
         g = ia.get_graph("your_graph")
-
-        # Retrieve an EdgeFrame from the graph
         f = g.edges["your_label"]
 
     Calling methods on an EdgeFrame::
 
         g.edges["your_label"].inspect(20)
 
-    Convert an EdgeFrame to a Frame::
+    Convert an EdgeFrame to a Frame using the copy method::
 
-        # The copy method creates a new Frame
         f = g.edges["label"].copy()
-
-    .. versionadded:: 0.8
 
     """
     # For other examples, see :ref:`example_frame.bigframe`.
