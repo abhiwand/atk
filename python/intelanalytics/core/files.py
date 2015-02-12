@@ -36,16 +36,16 @@ class CsvFile(DataFile):
     file_name : str
         Name of data input file.
         File must be in the Hadoop file system.
-        Relative paths are interpreted relative to the
-				intel.analytics.engine.fs.root configuration.
-        Absolute paths (beginning with hdfs://..., for example) are also
-				supported.
+        Relative paths are interpreted relative to the path set in
+        ``intel.analytics.engine.fs.root`` configuration.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
         See :ref:`Configure File System Root
-				<ad_inst_IA_configure_file_system_root>`.
+        <ad_inst_IA_configure_file_system_root>`.
     schema : list of tuples of the form (string, type)
         Description of the fields of data.
         It is a list of tuples which describe each field, (field name, field
-				type), where the field name is a string, and file is a supported type,
+        type), where the field name is a string, and file is a supported type,
         (See data_types from the iatypes module).
         Unicode characters should not be used in the column name.
         The type ``ignore`` may also be used if the field should be ignored on loads.
@@ -57,7 +57,7 @@ class CsvFile(DataFile):
 
     Returns
     -------
-		class : File definition
+    class : CsvFile object
         A class which holds both the name and schema of a :term:`CSV` file.
 
     Examples
@@ -84,16 +84,16 @@ class CsvFile(DataFile):
         csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
 
     The default delimiter, a comma, was used to separate fields in the file, so
-		it was not specified.
+    it was not specified.
     If the columns of data were separated by a character other than comma, the
-		appropriate delimiter would be specified.
+    appropriate delimiter would be specified.
     For example if the data columns were separated by the colon character, the
-		instruction would be::
+    instruction would be::
 
         ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
 
     If the data had some lines of header at the beginning of the file, the
-		lines should be skipped::
+    lines should be skipped::
 
         csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
 
@@ -137,7 +137,7 @@ class CsvFile(DataFile):
         Examples
         --------
         Given a raw data file ``raw_data.csv`` with columns *col1* (*int32*)
-				and *col2* (*float32*)::
+        and *col2* (*float32*)::
 
             csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
             print(csv_class.field_names())
@@ -163,7 +163,7 @@ class CsvFile(DataFile):
         Examples
         --------
         Given a raw data file ``raw_data.csv`` with columns *col1* (*int32*)
-				and *col2* (*float32*)::
+        and *col2* (*float32*)::
 
             csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
             print(csv_class.field_types())
@@ -181,7 +181,7 @@ class CsvFile(DataFile):
         for field in self.schema:
             name = field[0]
             if not isinstance(name, basestring):
-                raise ValueError("First item in CSV schema tuple must be a str")
+                raise ValueError("First item in CSV schema tuple must be a string")
             try:
                 data_type = valid_data_types.get_from_type(field[1])
             except ValueError:
@@ -200,15 +200,15 @@ class LineFile(DataFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-				intel.analytics.engine.fs.root configuration.
-        Absolute paths (beginning with hdfs://..., for example) are also
-				supported.
+        ``intel.analytics.engine.fs.root`` configuration.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
         See :ref:`Configure File System Root
-				<ad_inst_IA_configure_file_system_root>`.
+        <ad_inst_IA_configure_file_system_root>`.
 
     Returns
     -------
-		class : File definition
+    class : LineFile object
         A class which holds the name of a :term:`Line` file.
 
     Examples
@@ -258,8 +258,8 @@ class JsonFile(MultiLineFile):
     """
     Define a file as having data in JSON format.
 
-		When JSON files are loaded into the system all top level JSON objects are
-		recorded into the frame as seperate elements.
+    When JSON files are loaded into the system all top level JSON objects are
+    recorded into the frame as seperate elements.
 
     Parameters
     ----------
@@ -267,15 +267,15 @@ class JsonFile(MultiLineFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-				intel.analytics.engine.fs.root configuration.
-        Absolute paths (beginning with hdfs://..., for example) are also
-				supported.
+        ``intel.analytics.engine.fs.root`` configuration.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
         See :ref:`Configure File System Root
-				<ad_inst_IA_configure_file_system_root>`.
+        <ad_inst_IA_configure_file_system_root>`.
 
     Returns
     -------
-    class
+    class : JsonFile object
         An object which holds both the name and tag of a :term:`JSON` file.
 
     Examples
@@ -283,7 +283,7 @@ class JsonFile(MultiLineFile):
     Give a raw data file named "raw_data.json" located at
     hdfs://localhost.localdomain/user/iauser/data/.
     It consists of a 3 top level json objects with a single value each called
-		obj. Each object contains the attributes color, size, and shape.
+    obj. Each object contains the attributes color, size, and shape.
 
     The example JSON file::
         { "obj": {
@@ -311,7 +311,7 @@ class JsonFile(MultiLineFile):
 
         json_file = ia.JsonFile("data/raw_data.json")
 
-		Create a frame using this JsonFile::
+    Create a frame using this JsonFile::
 
         f = ia.Frame(json_file)
 
@@ -345,19 +345,19 @@ class JsonFile(MultiLineFile):
 
         f.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
 
-		Original XML column is no longer necessary::
+    Original XML column is no longer necessary::
 
         f.drop_columns(['data_lines'])
 
-		Result::
+    Result::
 
-				f.inspect()
+        f.inspect()
 
-				  color:str   size:str    shape:str
+          color:str   size:str    shape:str
         /-----------------------------------/
-        	blue        3           square
-        	green       7           triangle
-        	orange      10          square
+          blue        3           square
+          green       7           triangle
+          orange      10          square
 
     """
 
@@ -375,10 +375,10 @@ class JsonFile(MultiLineFile):
 class XmlFile(MultiLineFile):
     """
     Define an file as having data in XML format.
-		
-		When XML files are loaded into the system individual records are separated
-		into the highest level elements found with the specified tag name and
-		places them into a column called data_lines.
+    
+    When XML files are loaded into the system individual records are separated
+    into the highest level elements found with the specified tag name and
+    places them into a column called data_lines.
 
     Parameters
     ----------
@@ -386,17 +386,17 @@ class XmlFile(MultiLineFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-				intel.analytics.engine.fs.root configuration.
-        Absolute paths (beginning with hdfs://..., for example) are also
-				supported.
+        ``intel.analytics.engine.fs.root`` configuration.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
         See :ref:`Configure File System Root
-				<ad_inst_IA_configure_file_system_root>`.
+        <ad_inst_IA_configure_file_system_root>`.
     tag_name : str
         Tag name used to determine the split of elements into separate records.
 
     Returns
     -------
-    class
+    class : XmlFile object
         An object which holds both the name and tag of a :term:`XML` file.
 
     Examples
@@ -404,7 +404,7 @@ class XmlFile(MultiLineFile):
     Given a raw data file named "raw_data.xml" located at
     ``hdfs://localhost.localdomain/user/iauser/data/``.
     It consists of a root element called shapes with 2 sub elements with the
-		tag name square.
+    tag name square.
     Each of these subelements has two subelements called name and size.
     One of the elements has an attribute called color.
     Additionally there is one triangle element that is not needed.
@@ -435,7 +435,7 @@ class XmlFile(MultiLineFile):
 
         xml_file = ia.XmlFile("data/raw_data.xml", "square")
 
-		Create a frame using this XmlFile::
+    Create a frame using this XmlFile::
 
         f = ia.Frame(xml_file)
 
@@ -461,16 +461,16 @@ class XmlFile(MultiLineFile):
 
         f.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
-		Original XML column is no longer necessary::
+    Original XML column is no longer necessary::
 
         f.drop_columns(['data_lines'])
 
-		Result::
+    Result::
 
-				f.inspect()
+        f.inspect()
 
-			  	color:str   name:str    size:str
-				/----------------------------------/
+          color:str   name:str    size:str
+        /----------------------------------/
           None        left        3
           blue        right       5
 
