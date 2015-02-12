@@ -132,6 +132,10 @@ class FrameRDD(val frameSchema: Schema,
     })
   }
 
+  def selectColumn(columnName: String): FrameRDD = {
+    selectColumns(List(columnName))
+  }
+
   /**
    * Create a new FrameRDD that is only a subset of the columns of this FrameRDD
    * @param columnNames names to include
