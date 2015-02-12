@@ -42,6 +42,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.AssignSa
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.{ BinColumnEqualWidthPlugin, BinColumnEqualDepthPlugin, HistogramPlugin, BinColumnPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
+import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
@@ -201,6 +202,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new BinColumnEqualDepthPlugin)
   commandPluginRegistry.registerCommand(new BinColumnEqualWidthPlugin)
   commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
+  commandPluginRegistry.registerCommand(new DotProductPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
