@@ -57,14 +57,16 @@ done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
 
+# Rene said each build agent has about 24 cores (Jan 2015)
+
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
-nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=5 --process-timeout=90 --with-isolation
+nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=18 --process-timeout=90 --with-isolation
 SMOKE_TEST_SUCCESS=$?
 
 if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     echo "$NAME Python smoke tests PASSED -- basic frame,graph,model functionality verified"
     echo "$NAME Running the rest of the tests, calling nosetests again"
-    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=5 --process-timeout=90 --with-isolation
+    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=18 --process-timeout=90 --with-isolation
     TEST_SUCCESS=$?
 fi
 
