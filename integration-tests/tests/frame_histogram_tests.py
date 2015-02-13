@@ -24,6 +24,7 @@
 import unittest
 import intelanalytics as ia
 import math
+import numpy
 
 # show full stack traces
 ia.errors.show_details = True
@@ -53,7 +54,6 @@ class FrameHistogramTests(unittest.TestCase):
                                                         ('movie', ia.int32),
                                                         ('rating', ia.int32),
                                                         ('splits', str)])
-
         print "creating frame"
         self.frame = ia.Frame(self.csv)
 
@@ -61,7 +61,7 @@ class FrameHistogramTests(unittest.TestCase):
         h = self.frame.histogram('user', 4)
         self.assertEquals(h.cutoffs, [-2347.0, -1759.5, -1172.0, -584.5, 3.0])
         self.assertEquals(h.hist, [1.0, 5.0, 1.0, 13.0])
-        self.assertEquals(h.density, [0.05, 0.25, 0.05, 0.65])
+        numpy.testing.assert_array_almost_equal(h.density, [1.0/20.0, 5.0/20.0, 1.0/20.0, 13.0/20.0])
 
     def test_histogram_generate_num_bins(self):
         # the number of bins should be equal to the square root of the row count rounded down
@@ -72,15 +72,13 @@ class FrameHistogramTests(unittest.TestCase):
         h = self.frame.histogram('user', 4, 'rating')
         self.assertEquals(h.cutoffs, [-2347.0, -1759.5, -1172.0, -584.5, 3.0])
         self.assertEquals(h.hist, [3.0, 13.0, 1.0, 29.0])
-        self.assertEquals(h.density, [0.06521739130434782, 0.2826086956521739, 0.021739130434782608, 0.6304347826086957])
+        numpy.testing.assert_array_almost_equal(h.density, [3/46.0, 13/46.0, 1/46.0, 29/46.0])
 
     def test_histogram_equal_depth(self):
         h = self.frame.histogram('user', 4, bin_type='equaldepth')
         self.assertEquals(h.cutoffs,  [-2347.0, -1209.0, 1.0, 2.0, 3.0])
         self.assertEquals(h.hist, [5.0, 5.0, 5.0, 5.0])
-        self.assertEquals(h.density, [0.25, 0.25, 0.25, 0.25])
-
-
+        numpy.testing.assert_array_almost_equal(h.density,  [0.25, 0.25, 0.25, 0.25])
 
 
 if __name__ == "__main__":

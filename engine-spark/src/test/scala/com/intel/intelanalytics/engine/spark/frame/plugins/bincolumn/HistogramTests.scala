@@ -145,5 +145,20 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
       hist.density should be(Array(3 / 8.0, 5 / 8.0))
     }
 
+    "bins with 0 records are included" in {
+      val data = List(
+        Array[Any]("A", 1),
+        Array[Any]("B", 2),
+        Array[Any]("C", 3),
+        Array[Any]("D", 9),
+        Array[Any]("E", 10))
+      val rdd: RDD[Row] = sparkContext.parallelize(data).map(row => new GenericRow(row))
+      val numBins = 3
+      val hist = plugin.computeHistogram(rdd, 1, None, numBins)
+      hist.cutoffs should be(Array(1, 4, 7, 10))
+      hist.hist should be(Array(3.0, 0.0, 2.0))
+      hist.density should be(Array(3 / 5.0, 0, 2 / 5.0))
+    }
+
   }
 }
