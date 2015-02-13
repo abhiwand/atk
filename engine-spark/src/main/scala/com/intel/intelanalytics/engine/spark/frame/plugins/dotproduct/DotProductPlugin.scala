@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,62 +23,64 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins.partitioning
-
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.frame.partitioning.RepartitionArgs
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
-
-import scala.concurrent.ExecutionContext
-
-// Implicits needed for JSON conversion
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.plugin.Invocation
+import org.apache.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+
+/** Json conversion for arguments and return value case classes */
+object DotProductJsonFormat {
+  implicit val dotProductFormat = jsonFormat6(DotProductArgs)
+}
+
+import DotProductJsonFormat._
 
 /**
- * Template to follow when writing plugins
+ * Plugin that calculates the dot product for each row in a frame.
+ *
+ * This is an experimental plugin used by the Netflow POC for scoring. The plugin should be revisited
+ * once we support lists as data types.
  */
-class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity] {
-
+class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame/_repartition"
+  override def name: String = "frame/dot_product"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
-
-  /**
-   * Runs RDD#repartition (useful for debugging)
+   * Calculates the dot product for each row in a frame using values from two equal-length sequences of columns.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
-   * @param arguments user supplied arguments to running this plugin
-   * @return a value of type declared as the Return type.
+   * @param arguments user supplied arguments to running dot-product plugin
+   * @return Updated frame with dot product stored in new column
    */
-  override def execute(arguments: RepartitionArgs)(implicit invocation: Invocation): FrameEntity = {
+  override def execute(arguments: DotProductArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-
-    // validate arguments
     val frame = frames.expectFrame(arguments.frame.id)
+    val frameSchema = frame.schema
+
+    // validate arguments    
+    frameSchema.validateColumnsExist(arguments.leftColumnNames)
+    frameSchema.validateColumnsExist(arguments.rightColumnNames)
+    require(arguments.leftColumnNames.forall(frameSchema.columnDataType(_).isNumerical), "All left columns should contain numerical data.")
+    require(arguments.rightColumnNames.forall(frameSchema.columnDataType(_).isNumerical), "All right columns should contain numerical data.")
+    require(!frameSchema.hasColumn(arguments.dotProductColumnName), s"Column name already exists: ${arguments.dotProductColumnName}")
 
     // run the operation
     val frameRdd = frames.loadFrameData(sc, frame)
-    val repartitionedRdd = frameRdd.repartition(arguments.numberPartitions)
+    val dotProductRdd = DotProductFunctions.dotProduct(frameRdd, arguments.leftColumnNames, arguments.rightColumnNames,
+      arguments.defaultLeftValues, arguments.defaultRightValues)
 
     // save results
-    frames.saveFrameData(frame.toReference, new FrameRDD(frameRdd.frameSchema, repartitionedRdd))
+    val updatedSchema = frameSchema.addColumn(arguments.dotProductColumnName, DataTypes.float64)
+    frames.saveFrameData(frame.toReference, new FrameRDD(updatedSchema, dotProductRdd))
   }
 }
