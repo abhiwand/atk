@@ -21,21 +21,23 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame
+package org.apache.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD, RowWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{ SparkContext, sql }
+import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
+import org.apache.spark.{ Partition, SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import SparkContext._
+import parquet.hadoop.ParquetInputSplit
 
 import scala.reflect.ClassTag
 
@@ -82,6 +84,29 @@ class FrameRDD(val frameSchema: Schema,
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
         new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
       })
+  }
+
+  override def getPartitions(): Array[org.apache.spark.Partition] = {
+    val partitions = super.getPartitions
+
+    if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
+      val sorted = partitions.toList.sortBy(partition => {
+        val uri = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value.asInstanceOf[ParquetInputSplit].getPath.toUri
+        val index = uri.getPath.lastIndexOf("/")
+        val filename = uri.getPath.substring(index)
+        val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
+        fileNumber.toLong
+      })
+      sorted.zipWithIndex.map {
+        case (p: Partition, i: Int) => {
+          val hp = p.asInstanceOf[NewHadoopPartition]
+          new NewHadoopPartition(id, i, hp.serializableHadoopSplit.value)
+        }
+      }.toArray
+    }
+    else {
+      partitions
+    }
   }
 
   /**

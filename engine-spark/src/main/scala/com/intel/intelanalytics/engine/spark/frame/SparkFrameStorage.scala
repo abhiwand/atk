@@ -42,6 +42,8 @@ import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
+import org.apache.spark.frame.FrameRDD
+//import org.apache.spark.frame.FrameRDD.OrderedParquetInputFormat
 import org.apache.spark.sql
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -202,7 +204,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
-        info(frame.toDebugString + ", partitions:" + rows.partitions.length)
+        //ctx.hadoopFile[OrderedParquetInputFormat](absPath.toString)
+        //val partitions = new FrameRDD(frame.schema, rows).getPartitions()
         new FrameRDD(frame.schema, rows)
       case (Some("file/sequence"), Some(absPath)) =>
         val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))

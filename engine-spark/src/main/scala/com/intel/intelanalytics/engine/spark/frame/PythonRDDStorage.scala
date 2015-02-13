@@ -17,6 +17,7 @@ import org.apache.commons.codec.binary.Base64.decodeBase64
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

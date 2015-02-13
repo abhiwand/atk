@@ -29,7 +29,8 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema._
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction

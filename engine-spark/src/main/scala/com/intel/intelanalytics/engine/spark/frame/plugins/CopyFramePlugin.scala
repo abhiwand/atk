@@ -26,12 +26,13 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRDD
 
 // Implicits needed for JSON conversion
 import spray.json._

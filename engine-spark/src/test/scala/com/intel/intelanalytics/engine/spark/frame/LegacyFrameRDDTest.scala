@@ -28,6 +28,7 @@ import com.intel.testutils.{ TestingSparkContextWordSpec, TestingSparkContextFla
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
 import org.scalatest.Matchers
+import org.apache.spark.frame.FrameRDD
 
 /**
  * Sample Class used for a test case below
