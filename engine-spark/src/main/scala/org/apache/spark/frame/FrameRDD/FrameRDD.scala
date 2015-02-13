@@ -98,16 +98,14 @@ class FrameRDD(val frameSchema: Schema,
     if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
       val sorted = partitions.toList.sortBy(partition => {
         val split = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value
-        if(split.isInstanceOf[ParquetInputSplit])
-        {
+        if (split.isInstanceOf[ParquetInputSplit]) {
           val uri = split.asInstanceOf[ParquetInputSplit].getPath.toUri
           val index = uri.getPath.lastIndexOf("/")
           val filename = uri.getPath.substring(index)
           val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
           fileNumber.toLong
         }
-        else
-        {
+        else {
           partition.index
         }
       })
