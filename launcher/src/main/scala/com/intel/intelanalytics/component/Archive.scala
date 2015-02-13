@@ -214,7 +214,9 @@ object Archive extends ClassLoaderAware {
         case s => new URL("file://" + s)
       }
     require(urls.length > 0, s"Could not locate archive $archive")
-    new ArchiveClassLoader(archive, urls, parent, additionalArchives.map(_.classLoader))
+    val loader = new ArchiveClassLoader(archive, urls, parent, additionalArchives.map(_.classLoader))
+    Archive.logger(s"Created class loader: $loader")
+    loader
   }
 
   var _system: SystemState = null
@@ -329,7 +331,9 @@ object Archive extends ClassLoaderAware {
         }
       }
 
-      val additionalArchiveDependencies = system.systemConfig.extraArchives(definition.configPath).map(s => getArchive(s))
+      val probeConfig = new SystemConfig(augmentedConfigForProbe)
+
+      val additionalArchiveDependencies = probeConfig.extraArchives(definition.configPath).map(s => getArchive(s))
 
       //And now we can build the class loader for this archive
       val loader = Archive.buildClassLoader(archiveName,
@@ -337,7 +341,7 @@ object Archive extends ClassLoaderAware {
         system.systemConfig.sourceRoots,
         system.systemConfig.jarFolders,
         additionalArchiveDependencies,
-        system.systemConfig.extraClassPath(definition.configPath))
+        probeConfig.extraClassPath(definition.configPath))
 
       val augmentedConfig = getAugmentedConfig(archiveName, loader)
 

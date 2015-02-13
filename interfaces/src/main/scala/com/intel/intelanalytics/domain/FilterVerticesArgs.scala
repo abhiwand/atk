@@ -30,4 +30,7 @@ import com.intel.intelanalytics.domain.frame.FrameReference
  * Command to drop rows from a given vertex type.
  * @param udf filter expression
  */
-case class FilterVerticesArgs(frameId: FrameReference, udf: Udf)
+case class FilterVerticesArgs(frame: FrameReference, udf: Udf) {
+  require(frame != null, "frame is required")
+  require(udf != null, "udf is required")
+}
