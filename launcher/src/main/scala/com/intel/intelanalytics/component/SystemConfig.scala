@@ -36,8 +36,11 @@ class SystemConfig(val rootConfiguration: Config = ConfigFactory.load(SystemConf
                      ConfigResolveOptions.defaults().setAllowUnresolved(true))) {
 
   def extraClassPath(archivePath: String): Array[String] = {
+    Archive.logger(s"Checking archive path $archivePath for extra classpath")
     val path = archivePath + ".extra-classpath"
-    getStrings(path)
+    val result = getStrings(path)
+    Archive.logger(s"Checking archive path $archivePath for extra classpath - result: [${result.mkString(", ")}]")
+    result
   }
 
   def extraArchives(archivePath: String): Array[String] = {

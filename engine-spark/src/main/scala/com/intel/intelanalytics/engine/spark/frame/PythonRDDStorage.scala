@@ -21,24 +21,26 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+import scala.reflect.io.{ Directory, Path }
+
 object PythonRDDStorage {
 
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     decodeBase64(byteStr)
   }
 
-  private def UploadUdfDependencies(udf: Udf): List[String] = {
+  //TODO: Use config + UUID rather than hard coded paths.
+  private def uploadUdfDependencies(udf: Udf): List[String] = {
     val filesToUpload = udf.dependencies.map(f => f.fileName)
     val fileData = udf.dependencies.map(f => f.fileContent)
     var includes = List[String]()
 
-    val path = new File("/tmp/intelanalytics/python_udf_deps/")
-
-    if (!path.exists()) {
-      if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
-    }
-
     if (filesToUpload != null) {
+      val path = new File("/tmp/intelanalytics/python_udf_deps/")
+      if (!path.exists()) {
+        if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+      }
+
       for {
         i <- 0 until filesToUpload.size
       } {
@@ -54,16 +56,17 @@ object PythonRDDStorage {
     includes
   }
 
-  def mapWith(data: FrameRDD, udf: Udf, schema: Schema = null, ctx: SparkContext): FrameRDD = {
-    val newSchema = if (schema == null) { data.frameSchema } else { schema }
+  def mapWith(data: FrameRDD, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRDD = {
+    val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
     val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRDD, ctx)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
-    new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
+    FrameRDD.toFrameRDD(newSchema, frameRdd)
   }
 
-  def UploadFilesToSpark(uploads: List[String], ctx: SparkContext): JArrayList[String] = {
+  //TODO: fix hardcoded paths
+  def uploadFilesToSpark(uploads: List[String], ctx: SparkContext): JArrayList[String] = {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
       for (k <- 0 until uploads.size) {
@@ -72,11 +75,6 @@ object PythonRDDStorage {
       }
     }
     pythonIncludes
-  }
-
-  private def pythonPath = System.getenv("PYTHONPATH") match {
-    case null | "" => System.getenv("SPARK_HOME") + "/python"
-    case p => p
   }
 
   def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRDD, ctx: SparkContext): EnginePythonRDD[String] = {
@@ -93,8 +91,17 @@ object PythonRDDStorage {
     //This is needed to make the python executors put the spark jar (with the pyspark files) on the PYTHONPATH.
     //Without it, only the first added jar (engine-spark.jar) goes on the pythonpath, and since engine-spark.jar has
     //more than 65563 files, python can't import pyspark from it (see SPARK-1520 for details).
-    //The relevant code in the Spark core project is in PythonUtils.scala.
-    environment.put("PYTHONPATH", pythonPath)
+    //The relevant code in the Spark core project is in PythonUtils.scala. This code must use, e.g. the same
+    //version number for py4j that Spark's PythonUtils uses.
+
+    //TODO: Refactor Spark's PythonUtils to better support this use case
+    val sparkPython: Path = (SparkEngineConfig.sparkHome: Path) / "python"
+    environment.put("PYTHONPATH",
+      Seq(sparkPython,
+        sparkPython / "lib" / "py4j-0.8.2.1-src.zip",
+        //Support dev machines without installing python packages
+        //TODO: Maybe hide behind a flag?
+        Directory.Current.get / "python").map(_.toString).mkString(":"))
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
     val broadcastVars = new JArrayList[Broadcast[IAPythonBroadcast]]()
@@ -102,8 +109,8 @@ object PythonRDDStorage {
     var pyIncludes = new JArrayList[String]()
 
     if (udf.dependencies != null) {
-      val includes = UploadUdfDependencies(udf)
-      pyIncludes = UploadFilesToSpark(includes, ctx)
+      val includes = uploadUdfDependencies(udf)
+      pyIncludes = uploadFilesToSpark(includes, ctx)
     }
 
     val pyRdd = new EnginePythonRDD[String](

@@ -67,4 +67,8 @@ class ArchiveClassLoader(archiveName: String, urls: Array[URL], parent: ClassLoa
     }
     buff.toArray
   }
+
+  override def toString = {
+    s"ArchiveClassLoader($archiveName, [${urls.mkString(", ")}], $parent, [${dependencies.mkString(", ")}])"
+  }
 }

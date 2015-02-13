@@ -17,7 +17,7 @@ print("frame row count " + str(frame.row_count))
 model = ia.LdaModel()
 results = model.train(frame,
             'doc_id', 'word_id', 'word_count',
-            max_supersteps = 3,
+            max_iterations = 3,
             num_topics = 2)
 
 doc_results = results['doc_results']
