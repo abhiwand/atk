@@ -86,16 +86,30 @@ class FrameRDD(val frameSchema: Schema,
       })
   }
 
+  /**
+   * overrides the default behavior so new partitions get created in the sorted order to maintain the data order for the
+   * user
+   *
+   * @return an array of partitions
+   */
   override def getPartitions(): Array[org.apache.spark.Partition] = {
     val partitions = super.getPartitions
 
     if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
       val sorted = partitions.toList.sortBy(partition => {
-        val uri = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value.asInstanceOf[ParquetInputSplit].getPath.toUri
-        val index = uri.getPath.lastIndexOf("/")
-        val filename = uri.getPath.substring(index)
-        val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
-        fileNumber.toLong
+        val split = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value
+        if(split.isInstanceOf[ParquetInputSplit])
+        {
+          val uri = split.asInstanceOf[ParquetInputSplit].getPath.toUri
+          val index = uri.getPath.lastIndexOf("/")
+          val filename = uri.getPath.substring(index)
+          val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
+          fileNumber.toLong
+        }
+        else
+        {
+          partition.index
+        }
       })
       sorted.zipWithIndex.map {
         case (p: Partition, i: Int) => {
