@@ -90,13 +90,13 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val kmeansModel = kmeansData.kMeansModel
     require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
     val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
-    val columnWeights = kmeansData.columnWeights
+    val scalingValues = kmeansData.columnScalings
 
     //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
       val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
-      val columnWeightsArray = columnWeights.toArray
-      val doubles = columnsArray.zip(columnWeightsArray).map { case (x, y) => x * y }
+      val columnScalingsArray = scalingValues.toArray
+      val doubles = columnsArray.zip(columnScalingsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
 
       val clusterCenters = kmeansModel.clusterCenters

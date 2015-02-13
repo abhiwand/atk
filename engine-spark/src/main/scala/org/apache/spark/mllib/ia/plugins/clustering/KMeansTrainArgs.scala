@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.model.ModelReference
 case class KMeansTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            observationColumns: List[String],
-                           columnWeights: List[Double],
+                           columnScalings: List[Double],
                            k: Option[Int] = None,
                            maxIterations: Option[Int] = None,
                            epsilon: Option[Double] = None,
@@ -47,8 +47,8 @@ case class KMeansTrainArgs(model: ModelReference,
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
-  require(columnWeights != null && !columnWeights.isEmpty, "columnWeights must not be null or empty")
-  require(columnWeights.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
+  require(columnScalings != null && !columnScalings.isEmpty, "columnWeights must not be null or empty")
+  require(columnScalings.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
 
   def getK: Int = {
     k.getOrElse(2)
