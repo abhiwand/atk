@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 import com.intel.testutils.MatcherUtils._
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
