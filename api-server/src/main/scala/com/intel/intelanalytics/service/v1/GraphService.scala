@@ -50,7 +50,9 @@ import com.intel.event.EventLogging
 import ExecutionContext.Implicits.global
 
 /**
- * REST API Graph Service
+ * REST API Graph Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
