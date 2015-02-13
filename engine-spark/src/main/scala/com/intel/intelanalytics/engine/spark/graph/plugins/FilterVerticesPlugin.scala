@@ -52,7 +52,7 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVerticesArgs, UnitReturn] {
+class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[FilterVerticesArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
@@ -76,7 +76,7 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: FilterVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: FilterVerticesArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
@@ -84,19 +84,17 @@ class FilterVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommand
     require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
-    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.udf, ctx = sc).toLegacyFrameRDD
-
-    // always cache if you are calculating row count
+    val filteredRdd = PythonRDDStorage.mapWith(vertexFrame.data, arguments.udf, ctx = sc)
     filteredRdd.cache()
 
     val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
     FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-    frames.saveLegacyFrame(vertexFrame.meta.toReference, filteredRdd)
+    val modifiedFrame = frames.saveFrameData(vertexFrame.meta.toReference, filteredRdd)
 
     filteredRdd.unpersist(blocking = false)
 
-    new UnitReturn
+    modifiedFrame
   }
 }
 
@@ -106,29 +104,27 @@ object FilterVerticesFunctions {
    * Remove dangling edges after filtering on the vertices
    * @param vertexLabel vertex label of the filtered vertex frame
    * @param frameStorage frame storage
-   * @param seamlessGraph seemless graph instance
+   * @param seamlessGraph seamless graph instance
    * @param ctx spark context
    * @param filteredRdd rdd with predicate applied
    */
   def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta,
-                          ctx: SparkContext, filteredRdd: LegacyFrameRDD)(implicit invocation: Invocation): Unit = {
+                          ctx: SparkContext, filteredRdd: FrameRDD)(implicit invocation: Invocation): Unit = {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
     val vertexFrameSchema = vertexFrame.schema
 
-    val sourceRDD: LegacyFrameRDD = frameStorage.loadLegacyFrameRdd(ctx, vertexFrame)
-    val droppedVerticesRdd = sourceRDD.map(a => a.toList).subtract(filteredRdd.map(a => a.toList)).map(l => l.toArray)
-
-    val vidColumnIndex = vertexFrameSchema.columnIndex("_vid")
-    val droppedVerticesPairRdd = droppedVerticesRdd.map(row => (row(vidColumnIndex), row))
+    val originalVertexIds = frameStorage.loadFrameData(ctx, vertexFrame).mapRows(_.value("_vid"))
+    val filteredVertexIds = filteredRdd.mapRows(_.value("_vid"))
+    val droppedVertexIdsRdd = originalVertexIds.subtract(filteredVertexIds)
 
     // drop edges connected to the vertices
     seamlessGraph.edgeFrames.map(frame => {
       val edgeSchema = frame.schema.asInstanceOf[EdgeSchema]
       if (edgeSchema.srcVertexLabel.equals(vertexLabel)) {
-        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_src_vid")
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVertexIdsRdd, frame, "_src_vid")
       }
       else if (edgeSchema.destVertexLabel.equals(vertexLabel)) {
-        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVerticesPairRdd, frame, "_dest_vid")
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, ctx, droppedVertexIdsRdd, frame, "_dest_vid")
       }
     })
   }
@@ -137,19 +133,19 @@ object FilterVerticesFunctions {
    * Remove dangling edges in edge frame and save.
    * @param frameStorage frame storage
    * @param ctx spark context
-   * @param droppedVerticesPairRdd pair rdd of dropped vertices. key is the vertex id
+   * @param droppedVertexIdsRdd rdd of vertex ids
    * @param edgeFrame edge frame
    * @param vertexIdColumn source vertex id column or destination id column
    * @return dataframe object
    */
   def dropDanglingEdgesAndSave(frameStorage: SparkFrameStorage,
                                ctx: SparkContext,
-                               droppedVerticesPairRdd: RDD[(Any, Row)],
+                               droppedVertexIdsRdd: RDD[Any],
                                edgeFrame: FrameEntity,
                                vertexIdColumn: String)(implicit invocation: Invocation): FrameEntity = {
     val edgeRdd = frameStorage.loadLegacyFrameRdd(ctx, edgeFrame)
     val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd,
-      edgeFrame.schema.columnIndex(vertexIdColumn), droppedVerticesPairRdd)
+      edgeFrame.schema.columnIndex(vertexIdColumn), droppedVertexIdsRdd)
     val toFrameRDD: FrameRDD = new LegacyFrameRDD(edgeFrame.schema, remainingEdges).toFrameRDD()
     frameStorage.saveFrameData(edgeFrame.toReference, toFrameRDD)
   }
@@ -158,11 +154,12 @@ object FilterVerticesFunctions {
    * Remove dangling edges in rdd
    * @param edgeRdd edge rdd
    * @param vertexIdColumnIndex column index of vertex id in edge row
-   * @param droppedVerticesPairRdd pair rdd of dropped vertices. key is the vertex id
+   * @param droppedVertexIdsRdd rdd of vertex ids
    * @return a edge rdd with dangling edges removed
    */
-  def dropDanglingEdgesFromEdgeRdd(edgeRdd: LegacyFrameRDD, vertexIdColumnIndex: Int, droppedVerticesPairRdd: RDD[(Any, Row)]): RDD[Row] = {
+  def dropDanglingEdgesFromEdgeRdd(edgeRdd: LegacyFrameRDD, vertexIdColumnIndex: Int, droppedVertexIdsRdd: RDD[Any]): RDD[Row] = {
     val keyValueEdgeRdd = edgeRdd.map(row => (row(vertexIdColumnIndex), row))
+    val droppedVerticesPairRdd = droppedVertexIdsRdd.map(vid => (vid, null))
     keyValueEdgeRdd.leftOuterJoin(droppedVerticesPairRdd).filter {
       case (key, (leftResult, rightResult)) => rightResult match {
         case None => true

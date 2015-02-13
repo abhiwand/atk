@@ -33,13 +33,12 @@ object PythonRDDStorage {
     val fileData = udf.dependencies.map(f => f.fileContent)
     var includes = List[String]()
 
-    val path = new File("/tmp/intelanalytics/python_udf_deps/")
-
-    if (!path.exists()) {
-      if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
-    }
-
     if (filesToUpload != null) {
+      val path = new File("/tmp/intelanalytics/python_udf_deps/")
+      if (!path.exists()) {
+        if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+      }
+
       for {
         i <- 0 until filesToUpload.size
       } {
@@ -55,13 +54,13 @@ object PythonRDDStorage {
     includes
   }
 
-  def mapWith(data: FrameRDD, udf: Udf, schema: Schema = null, ctx: SparkContext): FrameRDD = {
-    val newSchema = if (schema == null) { data.frameSchema } else { schema }
+  def mapWith(data: FrameRDD, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRDD = {
+    val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
     val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRDD, ctx)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
-    new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
+    FrameRDD.toFrameRDD(newSchema, frameRdd)
   }
 
   def UploadFilesToSpark(uploads: List[String], ctx: SparkContext): JArrayList[String] = {
