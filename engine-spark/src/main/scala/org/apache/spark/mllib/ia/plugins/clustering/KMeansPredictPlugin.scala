@@ -30,7 +30,8 @@ import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors

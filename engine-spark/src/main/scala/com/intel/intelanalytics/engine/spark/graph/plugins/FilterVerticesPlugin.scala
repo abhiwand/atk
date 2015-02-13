@@ -29,7 +29,8 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameStorage, LegacyFrameRDD, PythonRDDStorage }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, LegacyFrameRDD, PythonRDDStorage }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import org.apache.spark.SparkContext

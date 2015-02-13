@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.model
 
 import com.intel.intelanalytics.domain.model.{ ModelMeta, ModelEntity }
 import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 
 class SparkModel(model: ModelEntity)
     extends ModelMeta(model)

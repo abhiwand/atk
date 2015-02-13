@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.hadoop.io.{ Text, LongWritable }
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SchemaRDD

@@ -27,8 +27,8 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.RepartitionArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRDD
 
 import scala.concurrent.ExecutionContext
 

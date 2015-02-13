@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.domain.HasData
 import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 
 /**
  * A GraphReference with metadata and a Spark RDD representing the data in the frame

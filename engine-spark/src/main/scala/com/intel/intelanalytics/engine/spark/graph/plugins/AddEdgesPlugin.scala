@@ -28,11 +28,12 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ RowWrapper }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._

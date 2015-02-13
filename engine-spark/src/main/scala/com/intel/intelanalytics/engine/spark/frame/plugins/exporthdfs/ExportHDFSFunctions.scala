@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions }
+import org.apache.spark.frame.FrameRDD
 
 /**
  * Object for exporting frames to files
