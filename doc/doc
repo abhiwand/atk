@@ -303,7 +303,12 @@ function main {
     if [ $? == 0 ]; then
         which pdflatex > /dev/null
         if [ "$?" == "0" ]; then
-            RunCommand="zip -q -9 -r intel_analytics_docs build/*"
+            if [ -e intel_analytics_docs.zip]; then
+                rm intel_analytics_docs.zip
+            fi
+            do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+            
+            RunCommand="zip -q -9 -r intel_analytics_docs build"
             do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
         else
             echo "The zip utility does not seem to be present."
