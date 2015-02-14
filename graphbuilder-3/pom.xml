@@ -48,6 +48,11 @@
         <!-- END BDA dependencies to our modules -->
 
         <!-- START Titan dependencies -->
+				<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-berkeleyje</artifactId>
@@ -221,10 +226,7 @@
         </dependency>
         <!--END Titan dependencies -->
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
@@ -313,7 +315,6 @@
             <scope>test</scope>
         </dependency>
 
-
         <!--
             =======================================================================================================
              These are the direct dependencies for titan-core excluding Kryo to get around ClassLoader issue
@@ -363,10 +364,6 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>

@@ -45,9 +45,9 @@ class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
     val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
     val edgeLegacyRdd = new LegacyFrameRDD(schema, edgeRdd)
 
-    val vertexArray = Array((5, Array(5, "Jack")), (13, Array(13, "Doris")))
+    val vertexArray = Array(5, 13)
 
-    val vertexRdd = sparkContext.parallelize(vertexArray).asInstanceOf[RDD[(Any, Row)]]
+    val vertexRdd = sparkContext.parallelize(vertexArray).asInstanceOf[RDD[Any]]
 
     val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeLegacyRdd, 1, vertexRdd)
     val data = remainingEdges.collect().sortWith { case (row1, row2) => row1(0).asInstanceOf[Int] <= row2(0).asInstanceOf[Int] }

@@ -12,9 +12,8 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRDD, PythonBroadcast }
 import org.apache.commons.codec.binary.Base64.decodeBase64
-
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
@@ -33,13 +32,12 @@ object PythonRDDStorage {
     val fileData = udf.dependencies.map(f => f.fileContent)
     var includes = List[String]()
 
-    val path = new File("/tmp/intelanalytics/python_udf_deps/")
-
-    if (!path.exists()) {
-      if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
-    }
-
     if (filesToUpload != null) {
+      val path = new File("/tmp/intelanalytics/python_udf_deps/")
+      if (!path.exists()) {
+        if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+      }
+
       for {
         i <- 0 until filesToUpload.size
       } {
@@ -55,13 +53,13 @@ object PythonRDDStorage {
     includes
   }
 
-  def mapWith(data: FrameRDD, udf: Udf, schema: Schema = null, ctx: SparkContext): FrameRDD = {
-    val newSchema = if (schema == null) { data.frameSchema } else { schema }
+  def mapWith(data: FrameRDD, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRDD = {
+    val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
     val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRDD, ctx)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
-    new LegacyFrameRDD(newSchema, frameRdd).toFrameRDD()
+    FrameRDD.toFrameRDD(newSchema, frameRdd)
   }
 
   def UploadFilesToSpark(uploads: List[String], ctx: SparkContext): JArrayList[String] = {
@@ -98,7 +96,7 @@ object PythonRDDStorage {
     environment.put("PYTHONPATH", pythonPath)
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-    val broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+    val broadcastVars = new JArrayList[Broadcast[IAPythonBroadcast]]()
 
     var pyIncludes = new JArrayList[String]()
 

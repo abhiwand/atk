@@ -258,7 +258,7 @@ class EdgeRule(Rule):
         or a BigColumn source, which must be from same Frame as head,
         tail and label.
     bidirectional : bool (optional)
-        Indicates the edge is bidirectional. The default value is false.
+        Indicates the edge is bidirectional. The default value is True.
 
     Examples
     --------
@@ -269,7 +269,7 @@ class EdgeRule(Rule):
     .. versionadded:: 0.8
 
     """
-    def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
+    def __init__(self, label, tail, head, properties=None, bidirectional=True, is_directed=None):
         #raise_deprecation_warning("EdgeRule", titan_rule_deprecation)
         self.bidirectional = bool(bidirectional)
         if is_directed is not None:

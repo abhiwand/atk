@@ -45,13 +45,14 @@ class EnginePythonRDD[T: ClassTag](
   pythonIncludes: JList[String],
   preservePartitioning: Boolean,
   pythonExec: String,
-  broadcastVars: JList[Broadcast[Array[Byte]]],
+  broadcastVars: JList[Broadcast[IAPythonBroadcast]],
   accumulator: Accumulator[JList[Array[Byte]]])
     extends PythonRDD(parent, command, envVars, pythonIncludes,
-      preservePartitioning, pythonExec, broadcastVars, accumulator) {
+      preservePartitioning, pythonExec, broadcastVars.asInstanceOf[JList[Broadcast[PythonBroadcast]]], accumulator) {
 
 }
 
+class IAPythonBroadcast extends PythonBroadcast("") {}
 /**
  * Internal class that acts as an `AccumulatorParam` for Python accumulators. Inside, it
  * collects a list of pickled strings that we pass to Python through a socket.
