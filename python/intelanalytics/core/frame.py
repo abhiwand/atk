@@ -510,8 +510,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         We end up with a new frame accessed by the pandas DataFrame *pandas_frame* again, but this time it has a copy of
         rows 101 to 600 of the original frame.
 
-        .. versionadded:: 0.8
-
         """
         import pandas as pd
         result = self._backend.take(self, count, offset, columns)
@@ -555,8 +553,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         More information on row functions can be found at :doc:`ds_apir`
 
 
-        .. versionchanged:: 0.8.5
-
         """
         # For further examples, see :ref:`example_frame.drop_rows`
         self._backend.drop(self, predicate)
@@ -590,8 +586,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         More information on row functions can be found at :doc:`ds_apir`.
 
 
-
-        .. versionadded:: 0.8
 
         """
         # For further examples, see :ref:`example_frame.filter`
@@ -737,8 +731,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
              big     1           3        6.333333    19.0             5.0           7
 
 
-        .. versionchanged:: 0.8.5
-
         """
         # For further examples, see :ref:`example_frame.group_by`.
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
@@ -784,8 +776,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
                             elephant    Shep          5           8630.0
 
 
-
-        .. versionadded:: 0.8
 
         """
         # For another example, see :ref:`example_frame.inspect`.
@@ -869,8 +859,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         but only those rows where the data in the original frame in column *b* matched the data in column
         *book*.
 
-
-        .. versionadded:: 0.8
 
         """
         # For further examples, see :ref:`example_frame.join`.
@@ -965,8 +953,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         We end up with a new frame accessed by the Frame *your_frame* again, but this time it has a copy
         of rows 1001 to 5000 of the original frame.
-
-        .. versionadded:: 0.8
 
         """
         result = self._backend.take(self, n, offset, columns)
