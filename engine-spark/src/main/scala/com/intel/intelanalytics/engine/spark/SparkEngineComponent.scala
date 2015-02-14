@@ -53,7 +53,7 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 /**
  * Main class for initializing the Spark Engine
  */
-class SparkComponent extends EngineComponent
+class SparkEngineComponent extends EngineComponent
     with FrameComponent
     with GraphComponent
     with ModelComponent

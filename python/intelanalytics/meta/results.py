@@ -69,7 +69,8 @@ def return_metrics(selfish, json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
 
-@postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns', 'frame/bin_column', 'frame/drop_duplicates', 'frame/flatten_column')
+@postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns',
+               'frame/bin_column', 'frame/drop_duplicates', 'frame/flatten_column', 'graph:titan/sampling/assign_sample')
 def return_none(selfish, json_result):
     return None
 
@@ -89,3 +90,9 @@ def return_bin_result(selfish, json_result):
     selfish._id = json_result['frame']['id']
     return json_result["cutoffs"]
 
+@postprocessor('model:lda/train')
+def return_lda_train(selfish, json_result):
+    from intelanalytics.core.frame import get_frame
+    doc_frame = get_frame(json_result['doc_results']['id'])
+    word_frame= get_frame(json_result['word_results']['id'])
+    return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }

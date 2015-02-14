@@ -85,24 +85,39 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
       file <- files if currentCount < capped
     ) {
       val metaData = file.getParquetMetadata
-      val schema = metaData.getFileMetaData.getSchema
+      val fileRowCount = getRowCountFromMetaData(metaData)
 
-      val reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
-      var store: PageReadStore = reader.readNextRowGroup()
-      while (store != null && currentCount < capped) {
-        if ((currentOffset + store.getRowCount) > offset) {
-          val start: Long = math.max(offset - currentOffset, 0)
-          val amountToTake: Long = math.min(store.getRowCount - start, capped - currentCount)
+      if ((currentOffset + fileRowCount) > offset) {
+        // Only process the file if it contains data that we need. 
+        // If it does not skip and increase the offset by the file row count (derived from summary file).
+        val schema = metaData.getFileMetaData.getSchema
+        var reader: ParquetFileReader = null
+        try {
+          reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
+          var store: PageReadStore = reader.readNextRowGroup()
+          while (store != null && currentCount < capped) {
+            if ((currentOffset + store.getRowCount) > offset) {
+              val start: Long = math.max(offset - currentOffset, 0)
+              val amountToTake: Long = math.min(store.getRowCount - start, capped - currentCount)
 
-          val crstore = this.parquetApiFactory.newColumnReadStore(store, schema)
+              val crstore = this.parquetApiFactory.newColumnReadStore(store, schema)
 
-          val pageReadStoreResults = takeFromPageReadStore(schema, crstore, amountToTake.toInt, start.toInt)
-          result ++= pageReadStoreResults
-          currentCount = currentCount + pageReadStoreResults.size
+              val pageReadStoreResults = takeFromPageReadStore(schema, crstore, amountToTake.toInt, start.toInt)
+              result ++= pageReadStoreResults
+              currentCount = currentCount + pageReadStoreResults.size
+            }
+
+            currentOffset = currentOffset + store.getRowCount.toInt
+            store = reader.readNextRowGroup()
+          }
         }
-
-        currentOffset = currentOffset + store.getRowCount.toInt
-        store = reader.readNextRowGroup()
+        finally {
+          if (reader != null)
+            reader.close()
+        }
+      }
+      else {
+        currentOffset = currentOffset + fileRowCount
       }
     }
     result.toList
@@ -156,12 +171,21 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
   }
 
   /**
+   * Compute the total number of rows in a file by summing the row counts of all blocks
+   * @param metaData ParquetMetaData object for the corresponding file (may come from a summary file)
+   * @return row count
+   */
+  private[parquet] def getRowCountFromMetaData(metaData: ParquetMetadata): Long = {
+    metaData.getBlocks.asScala.map(b => b.getRowCount).sum
+  }
+
+  /**
    * Returns a sequence of Paths that will be evaluated for finding the required rows
    * @return  List of FileStatus objects corresponding to grouped parquet files
    */
   private[parquet] def getFiles(): List[Footer] = {
     def fileHasRows(metaData: ParquetMetadata): Boolean = {
-      metaData.getBlocks.asScala.map(b => b.getRowCount).sum > 0
+      getRowCountFromMetaData(metaData) > 0
     }
     val fs: FileSystem = fileStorage.fs
     if (!fs.isDirectory(path)) {

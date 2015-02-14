@@ -90,6 +90,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
     val titanIAGraph: GraphMeta = resolve(arguments.graph)
 
+    require(titanIAGraph.meta.frameSchemaList.isDefined, "Currently this method only works on TitanGraphs that were originally exported from ia.Graph")
+
     val (vertices, edges) = graphs.loadFromTitan(sc, titanIAGraph.meta)
     vertices.cache()
 
@@ -256,7 +258,7 @@ object ExportToGraphPlugin {
   def getSchemaFromProperties(columns: List[String], titanGraph: TitanGraph): List[Column] = {
     val manager = titanGraph.getManagementSystem
     val result = columns.map(c => {
-      val dataType = javaTypeToIATType(manager.getPropertyKey(c).getDataType)
+      val dataType = DataTypes.javaTypeToDataType(manager.getPropertyKey(c).getDataType)
       Column(c, dataType)
     }).toList
 
@@ -264,25 +266,5 @@ object ExportToGraphPlugin {
     result
   }
 
-  /**
-   * Match java type object and return DataType instance.
-   * @return DataType instance
-   */
-  def javaTypeToIATType = (a: java.lang.Class[_]) => {
-    val intType = classOf[java.lang.Integer]
-    val longType = classOf[java.lang.Long]
-    val floatType = classOf[java.lang.Float]
-    val doubleType = classOf[java.lang.Double]
-    val stringType = classOf[java.lang.String]
-
-    a match {
-      case `intType` => int32
-      case `longType` => int64
-      case `floatType` => float32
-      case `doubleType` => float64
-      case `stringType` => string
-      case _ => throw new IllegalArgumentException(s"unsupported type $a")
-    }
-  }
 }
 

@@ -105,35 +105,35 @@ trait AbstractRow {
    * @param columnName name of the property
    * @return property value
    */
-  def intValue(columnName: String): Int = row(schema.columnIndex(columnName)).asInstanceOf[Int]
+  def intValue(columnName: String): Int = DataTypes.toInt(row(schema.columnIndex(columnName)))
 
   /**
    * Get property of long data type
    * @param columnName name of the property
    * @return property value
    */
-  def longValue(columnName: String): Long = row(schema.columnIndex(columnName)).asInstanceOf[Long]
+  def longValue(columnName: String): Long = DataTypes.toLong(row(schema.columnIndex(columnName)))
 
   /**
    * Get property of float data type
    * @param columnName name of the property
    * @return property value
    */
-  def floatValue(columnName: String): Float = row(schema.columnIndex(columnName)).asInstanceOf[Float]
+  def floatValue(columnName: String): Float = DataTypes.toFloat(row(schema.columnIndex(columnName)))
 
   /**
    * Get property of double data type
    * @param columnName name of the property
    * @return property value
    */
-  def doubleValue(columnName: String): Double = row(schema.columnIndex(columnName)).asInstanceOf[Double]
+  def doubleValue(columnName: String): Double = DataTypes.toDouble(row(schema.columnIndex(columnName)))
 
   /**
    * Get property of string data type
    * @param columnName name of the property
    * @return property value
    */
-  def stringValue(columnName: String): String = row(schema.columnIndex(columnName)).asInstanceOf[String]
+  def stringValue(columnName: String): String = DataTypes.toStr(row(schema.columnIndex(columnName)))
 
   /**
    * True if value for this column is null.
@@ -276,9 +276,37 @@ trait AbstractRow {
     indices.map(i => row(i)).toArray
   }
 
+  def valueAsWritable(name: String): Writable = {
+    WritableRowConversions.valueToWritable(value(name))
+  }
+
+  def valueAsWritableComparable(name: String): WritableComparable[_] = {
+    WritableRowConversions.valueToWritableComparable(value(name))
+  }
+
   def valuesAsWritable(names: Seq[String] = schema.columnNames): List[Writable] = {
     val indices = schema.columnIndices(names).toList
     indices.map(i => WritableRowConversions.valueToWritable(row(i)))
+  }
+
+  /**
+   * Select several property values from their names, and converts them to double
+   *
+   * @param names the names of the properties
+   * @param defaultValues Optional default values used to substitute null values. If not specified, nulls are replaced with zeros
+   * @return double values for the supplied properties
+   */
+  def valuesAsDouble(names: Seq[String], defaultValues: Option[Seq[Double]] = None): Seq[Double] = {
+    require(defaultValues.isEmpty || defaultValues.get.size == names.size, "size of default values must match number of columns")
+    names.zipWithIndex.map {
+      case (name, i) =>
+        if (isNull(name)) {
+          if (defaultValues.isDefined) defaultValues.get(i) else 0
+        }
+        else {
+          doubleValue(name)
+        }
+    }
   }
 
   /**

@@ -47,7 +47,9 @@ import ExecutionContext.Implicits.global
 import com.intel.event.EventLogging
 
 /**
- * REST API Model Service
+ * REST API Model Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 

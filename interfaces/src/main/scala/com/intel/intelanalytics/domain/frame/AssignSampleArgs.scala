@@ -50,7 +50,7 @@ case class AssignSampleArgs(frame: FrameReference,
       Array("TR", "TE", "VA")
     }
     else {
-      (0 to samplePercentages.length - 1).map(i => "Sample#" + i).toArray
+      (0 to samplePercentages.length - 1).map(i => "Sample_" + i).toArray
     }
   }
   else {

@@ -74,43 +74,81 @@ object DiscretizationFunctions extends Serializable {
    * @return new RDD with binned column appended
    */
   def binColumns(index: Int, cutoffs: List[Double], lowerInclusive: Boolean, strictBinning: Boolean, rdd: RDD[Row]): RDD[Row] = {
-    def determineLowerInclusiveBin(element: Double): Int = {
-      for (i <- 0 to cutoffs.length - 2) {
-        if (element < cutoffs(i + 1)) {
-          return i
-        }
-      }
-      cutoffs.length - 2
-    }
-    def determineUpperInclusiveBin(element: Double): Int = {
-      for (i <- 0 to cutoffs.length - 2) {
-        if (element <= cutoffs(i + 1)) {
-          return i
-        }
-      }
-      cutoffs.length - 2
-    }
-    val binMethod = if (lowerInclusive)
-      determineLowerInclusiveBin(_)
-    else
-      determineUpperInclusiveBin(_)
-
+    val min: Int = 0
+    val max: Int = cutoffs.length - 2
     rdd.map { row: Row =>
       {
         val element = DataTypes.toDouble(row(index))
-        val inBounds = if (strictBinning) element match {
-          case x if cutoffs(0) <= x && x <= cutoffs.last => true
-          case _ => false
-        }
-        else
-          true
-        val binIndex: Int = if (inBounds)
-          binMethod(element)
-        else
-          -1
+        //if lower than first cutoff
+        val binIndex: Int =
+          // if lower than first cutoff
+          if (element < cutoffs(0))
+            if (strictBinning) -1 else min
+          // if larger than last cutoff
+          else if (cutoffs.last < element)
+            if (strictBinning) -1 else max
+          else if (lowerInclusive) {
+            if ((element - cutoffs.last).abs < 0.00001d)
+              max
+            else
+              bSearchRangeLowerInclusive(element, cutoffs, min, max)
+          }
+          else {
+            if ((element - cutoffs(0)).abs < 0.00001d)
+              min
+            else
+              bSearchRangeUpperInclusive(element, cutoffs, min, max)
+          }
+
         new GenericRow(row.toArray :+ binIndex)
       }
     }
+  }
+
+  /**
+   * determine which bin the element should be grouped into if including the lower bound as part of the bin.
+   * The bin corresponds to the area between two values.
+   * For an element 5 with a cutoff list of [1,4,7,10] the bin would be 2, being between 4 and 7.
+   *
+   * @param element element to bin
+   * @param cutoffs list of cutoffs
+   * @param min lowest bin to search
+   * @param max highest bin to search
+   * @return -1 if item is out of bounds, bin number if found
+   */
+  def bSearchRangeLowerInclusive(element: Double, cutoffs: List[Double], min: Int, max: Int): Int = {
+    if (max < min) // number not in cutoffs
+      return -1
+    val mid = (max + min) / 2
+    if (cutoffs(mid + 1) <= element)
+      bSearchRangeLowerInclusive(element, cutoffs, mid + 1, max)
+    else if (element < cutoffs(mid))
+      bSearchRangeLowerInclusive(element, cutoffs, min, mid - 1)
+    else
+      mid
+  }
+
+  /**
+   * determine which bin the element should be grouped into if including the upper bound as part of the bin.
+   * The bin corresponds to the area between two values.
+   * For an element 5 with a cutoff list of [1,4,7,10] the bin would be 2, being between 4 and 7.
+   *
+   * @param element element to bin
+   * @param cutoffs list of cutoffs
+   * @param min lowest bin to search
+   * @param max highest bin to search
+   * @return -1 if item is out of bounds, bin number if found
+   */
+  def bSearchRangeUpperInclusive(element: Double, cutoffs: List[Double], min: Int, max: Int): Int = {
+    if (max < min) // number not in cutoffs
+      return -1
+    val mid = (max + min) / 2
+    if (cutoffs(mid + 1) < element)
+      bSearchRangeUpperInclusive(element, cutoffs, mid + 1, max)
+    else if (element <= cutoffs(mid))
+      bSearchRangeUpperInclusive(element, cutoffs, min, mid - 1)
+    else
+      mid
   }
 
   /**

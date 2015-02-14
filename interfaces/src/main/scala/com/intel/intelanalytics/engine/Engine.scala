@@ -45,6 +45,8 @@ trait Engine {
 
   val graphs: GraphStorage
 
+  val models: ModelStorage
+
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
