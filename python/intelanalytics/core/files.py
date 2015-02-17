@@ -53,7 +53,6 @@ class CsvFile(DataFile):
         String indicator of the delimiter for the fields
     skip_header_lines : int (optional)
         Indicates numbers of lines to skip before parsing records.
-        Small datasets may affect the number of lines skipped.
 
     Returns
     -------

@@ -16,9 +16,8 @@ Data Import, Data Cleaning, and Feature Engineering
 
 The |IAT| provides a baseline set of capabilities for importing data into the
 framework.
-This enables users to operate on the data using the friendlier
-"Big Data Frame" concept, referenced through Python API documentation laid out
-in a familiar fashion.
+This enables users to operate on the data through a Python |API| laid
+out in a familiar fashion.
 All functionality is performed on the cluster, at scale,
 using `Apache Spark <https://spark.apache.org/>`__.   
 

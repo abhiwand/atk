@@ -25,13 +25,17 @@ Graphs are a natural way of associating things by common attributes, see
 tools specifically-designed for graph data facilitate finding insights latent
 in data—a problem that is computationally difficult when the data in question
 is large, or the graph they form is densely connected.
-For example, graph databases enable analysts to explore connected data without
-regard for the volume of information, in contrast with relational databases,
-which give slower performance, requiring table joins to traverse the
-connections in the network.
+The structure of graph databases allow very efficient traversal of the graph
+which is much slower in relational databases.
 Graph engines enable the entire data set to reveal useful statistical
 information, such as centrality measures, the location of embedded communities,
 and the shortest paths between connections.
+
+.. _ia_intro_1_01: 
+
+.. figure:: ia_intro_1_01.*
+
+    Simple Graph
 
 The |IAT| provides an environment for creating and analyzing big data graphs
 across the workflow, from data extraction and wrangling, to graph construction;
@@ -79,3 +83,4 @@ Users are able to switch out many components of the standard IAT deployment.
 Importantly, this allows users to write their own custom algorithms
 for specialized data types, such as are often found in bioinformatics or the
 security sectors.
+

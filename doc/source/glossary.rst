@@ -28,6 +28,13 @@ Glossary
                C         B 
                D         A, B
 
+    Alpha
+
+        A function or feature which has been developed, but has not been
+        completely tested.
+        Use this function with utmost caution.
+        This function may be changed or eliminated in future releases.
+
     Aggregation Function
 
         A mathematical function which is usually computed over a single column.
@@ -59,10 +66,6 @@ Glossary
         In network topology, the average number of steps along the shortest
         paths for all possible pairs of vertices.
 
-    Belief Propagation
-
-        See :term:`Loopy Belief Propagation`.
-
     Baysian Network
 
         A probabilistic graphical model representing the conditional
@@ -70,7 +73,18 @@ Glossary
         graph.
 
         Contrast with :term:`Markov Random Field`
-        
+
+    Belief Propagation
+
+        See :term:`Loopy Belief Propagation`.
+
+    Beta
+
+        A function or feature which has been developed and preliminarily
+        tested, but has not been completely tested.
+        Use this function with caution.
+        This function may be changed in future releases.
+
     Bias-variance tradeoff
 
         In supervised classifier training, the problem of minimizing two
@@ -195,6 +209,14 @@ Glossary
         value.
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
+
+
+    Deprecated
+
+        A function or feature which is no longer supported.
+        It is recommended that an alternate solution be found.
+        Use this function with caution.
+        This function may be removed in future releases.
 
     dict
 
