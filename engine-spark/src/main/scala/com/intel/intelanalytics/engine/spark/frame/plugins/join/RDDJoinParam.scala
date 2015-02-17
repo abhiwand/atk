@@ -21,15 +21,16 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.join
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
 
 /**
- * frame join command
- * @param name name of new frame to be created, eg: result
- * @param frames input frames for the join operation
- * @param how methods of join. inner, left or right
+ * Join parameters for RDD
+ *
+ * @param rdd RDD of (key, value) pairs used for join
+ * @param columnCount Number of columns in value array
+ * @param estimatedSizeInBytes Optional estimated size of RDD in bytes used to determine whether to use a broadcast join
  */
-case class JoinArgs(frames: List[(Long, String)], how: String, name: Option[String] = None) {
-  require(frames != null, "frame is required")
-  require(frames.length == 2, "Two frames are required for the join operation")
-}
+case class RDDJoinParam(rdd: RDD[(Any, sql.Row)], columnCount: Int, estimatedSizeInBytes: Option[Long] = None)
