@@ -88,7 +88,10 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val kmeansJsObject = modelMeta.data.get
     val kmeansData = kmeansJsObject.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
-    require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+    if (arguments.observationColumns.isDefined) {
+      require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+    }
+
     val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
     val scalingValues = kmeansData.columnScalings
 

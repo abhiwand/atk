@@ -83,7 +83,9 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
       val logRegJsObject = modelMeta.data.get
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
-      require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+      if (arguments.observationColumns.isDefined) {
+        require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+      }
       val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
       //predicting a label for the observation columns
