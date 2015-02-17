@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -107,10 +107,10 @@ class _NamedObjectsFunctionFactory(object):
         set_name.__name__ = 'name'
         api_set_name = get_api_decorator(module_logger)(set_name)
 
-        doc = """The name of the {term} object.
+        doc = """Set or get the name of the {term} object.
 
-        When setting, the object is renamed on the server side.  Names must be alphanumeric + '_',
-        and must start with a letter
+        When setting, the object is renamed.
+				Names must be alphanumeric + '_', and must start with a letter.
 
         Examples
         --------
@@ -136,14 +136,14 @@ class _NamedObjectsFunctionFactory(object):
             payload = r.json()
             return [item.get('name', None) for item in payload]
         get_object_names.__name__ = get_object_names_name
-        get_object_names.__doc__ = """{obj_term} names.
+        get_object_names.__doc__ = """Retrieve all {obj_term} names.
 
-    Gets the names of {obj_term} objects available for retrieval
+    Gets the names of {obj_term} objects available for retrieval.
 
     Returns
     -------
-    list of strings
-        Names of the all {obj_term} objects
+    list of str
+        Names of the all {obj_term} objects.
     """.format(obj_term=self._term)
         set_function_doc_stub_text(get_object_names, '')
         return get_api_decorator(module_logger)(get_object_names)
@@ -174,19 +174,16 @@ class _NamedObjectsFunctionFactory(object):
                 cls = get_class(entity_type)
                 return cls(_info=r.json())
         get_object.__name__ = get_object_name
-        get_object.__doc__ = """Get {obj_term} object.
-
-    Creates client-side proxy object for the server-side {obj_term} object stored under the given name.
+        get_object.__doc__ = """Get access to {obj_term} object.
 
     Parameters
     ----------
-    name : string
-        String containing the name of the object
+    name : str
+        String containing the name of the object.
 
     Returns
     -------
-    {obj_term}
-        {obj_term} object""".format(obj_term=self._term)
+    class | {obj_term} object.""".format(obj_term=self._term)
         set_function_doc_stub_text(get_object, 'name')
         return get_api_decorator(module_logger)(get_object)
 
@@ -214,13 +211,12 @@ class _NamedObjectsFunctionFactory(object):
                 module_logger.info("Drop %s %s", obj_term, name)
                 http.delete(rest_target + str(id))  # TODO: update w/ URI jazz
         drop_objects.__name__ = drop_objects_name
-        drop_objects.__doc__ = """Erases data.
-
-    Deletes the {obj_term} from the backing store
+        drop_objects.__doc__ = """Deletes the {obj_term} and it's data.
 
     Parameters
     ----------
-    items : string, {obj_term} object, or a list of strings or objects
-        Either the name of the {obj_term} object to delete or the {obj_term} object itself""".format(obj_term=obj_term)
+    items : str, {obj_term} object, or a list of str or objects
+        Either the name of the {obj_term} object to delete or the {obj_term}
+				object itself""".format(obj_term=obj_term)
         set_function_doc_stub_text(drop_objects, 'items')
         return get_api_decorator(module_logger)(drop_objects)

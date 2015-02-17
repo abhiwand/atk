@@ -1,47 +1,49 @@
-The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering algorithms.
+The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering
+algorithms.
 
 CGD implementation of the algorithm presented in Y. Koren.
-Factorization Meets the Neighborhood: a Multifaceted
-Collaborative Filtering Model.
+Factorization Meets the Neighborhood: a Multifaceted Collaborative Filtering
+Model.
 In ACM KDD 2008. (Equation 5)
 
 Parameters
 ----------
-edge_value_property_list : list of string
+edge_value_property_list : list of str
     The edge properties which contain the input edge values.
     A comma-separated list of property names when declaring
     more than one edge property.
 
-input_edge_label_list : list of string
-    The name of edge label
+input_edge_label_list : list of str
+    The name of edge label.
 
-output_vertex_property_list : list of string  
-    The list of vertex properties to store output vertex values
+output_vertex_property_list : list of str  
+    The list of vertex properties to store output vertex values.
 
-vertex_type_property_key : string
+vertex_type_property_key : str
     The name of vertex property which contains vertex type.
     Vertices must have a property to identify them as either left-side
     ("L") or right-side ("R").
 
-edge_type_property_key : string
-    The name of edge property which contains edge type
+edge_type_property_key : str
+    The name of edge property which contains edge type.
 
-vector_value : string (optional)
-    True means a vector as vertex value is supported,
-    False means a vector as vertex value is not supported.
-    The default value is False.
+vector_value : str (optional)
+    "True" means a vector as vertex value is supported,
+    "False" means a vector as vertex value is not supported.
+    Default is "False".
 
 max_supersteps : int (optional)
-    The maximum number of super steps (iterations) that the algorithm
-    will execute.  The default value is 20.
+    The maximum number of supersteps (iterations) that the algorithm
+    will execute.
+    Default is 20.
 
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
-    If the change is less than this threshold, the algorithm exits earlier
-    before it reaches the maximum number of super steps.
+    If the change is less than this threshold, the algorithm exits
+    before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
-    The default value is 0.
+    Default is 0.
 
 cgd_lambda : float (optional)
     The tradeoff parameter that controls the strength of regularization.
@@ -50,50 +52,50 @@ cgd_lambda : float (optional)
     large.
     The value is usually determined by cross validation (CV).
     The valid value range is all positive float and zero.
-    The default value is 0.065.
+    Default is 0.065.
 
 feature_dimension : int (optional)
     The length of feature vector to use in CGD model.
     Larger value in general results in more accurate parameter estimation,
     but slows down the computation.
     The valid value range is all positive integer.
-    The default value is 3.
+    Default is 3.
 
 learning_curve_output_interval : int (optional)
     The learning curve output interval.
-    Since each CGD iteration is composed by 2 super steps,
-    the default one (1) iteration means two super steps.
+    Each CGD iteration is composed of 2 supersteps.
+    Default is 1 (means two supersteps).
 
-validate_graph_structure : boolean (optional)
+validate_graph_structure : bool (optional)
     Checks if the graph meets certain structural requirements before starting
-    the algorithm.
+    the algorithm: at every vertex, the in-degree equals the out-degree.
+    This algorithm is intended for undirected graphs.
+    Therefore, this is a necessary, but insufficient, check for valid input.
 
-    At present, this checks that at every vertex, the in-degree equals the
-    out-degree.
-    Because this algorithm is for undirected graphs, this is a necessary
-    but not sufficient, check for valid input.
-
-bias_on : boolean (optional)
+bias_on : bool (optional)
     True means turn on the update for bias term and False means turn off
     the update for bias term.
     Turning it on often yields more accurate model with minor performance
-    penalty; turning it off disables term update and leaves the value of
-    bias term to be zero.
-    The default value is false.
+    penalty.
+    Turning it off disables term update and treats the value of
+    bias term as 0.
+    Default is False.
 
 max_value : float (optional)
-    The maximum edge weight value. If an edge weight is larger than this
-    value, the algorithm will throw an exception and terminate. This option
-    is mainly for graph integrity check.
-    Valid value range is all Float.
-    The default value is "Infinity".
+    The maximum edge weight value.
+    If an edge weight is larger than this value, the algorithm will throw an
+    exception and terminate.
+    This option is mainly for graph integrity check.
+    Valid value range is all float.
+    Default is Infinity.
 
 min_value : float (optional)
-    The minimum edge weight value. If an edge weight is smaller than this
-    value, the algorithm will throw an exception and terminate. This option
-    is mainly for graph integrity check.
-    Valid value range is all Float.
-    The default value is "-Infinity".
+    The minimum edge weight value.
+    If an edge weight is smaller than this value, the algorithm will throw an
+    exception and terminate.
+    This option is mainly for graph integrity check.
+    Valid value range is all float.
+    Default is -Infinity.
 
 Notes
 -----
@@ -102,7 +104,7 @@ See vertex rules.
 
 Returns
 -------
-Multiple line string
+Multiple line str
     The configuration and learning curve report for CGD.
 
 Examples
@@ -119,14 +121,14 @@ Examples
 .. only:: latex
 
     ::
-        g.ml.conjugate_gradient_descent(
-            edge_value_property_list = "rating", \\
-            vertex_type_property_key = "vertex_type", \\
-            input_edge_label_list = "edge", \\
+        g.ml.conjugate_gradient_descent(                \\
+            edge_value_property_list = "rating",        \\
+            vertex_type_property_key = "vertex_type",   \\
+            input_edge_label_list = "edge",             \\
             output_vertex_property_list = "cgd_result", \\
-            edge_type_property_key = "splits", \\
-            vector_value = "true", \\
-            cgd_lambda = 0.065, \\
+            edge_type_property_key = "splits",          \\
+            vector_value = "true",                      \\
+            cgd_lambda = 0.065,                         \\
             num_iters = 3)
 
     The expected output is like this::
@@ -169,7 +171,8 @@ Examples
         superstep = 20\\tcost(train) = 10331.742207\\t
             mse(validate) = 1.191606\\trmse(test) = 3.757683'}
 
-    Report may show zero edges and/or vertices if parameters were supplied wrong, or if the graph was not the expected input::
+    Report may show zero edges and/or vertices if parameters were supplied
+    wrong, or if the graph was not the expected input::
 
         ======Graph Statistics======
         Number of vertices: 12673 (left: 12673, right: 0)

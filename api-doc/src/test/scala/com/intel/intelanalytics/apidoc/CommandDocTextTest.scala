@@ -62,7 +62,6 @@ class CommandDocTextTest extends FlatSpec with Matchers {
 
     "aaa"
 
-.. versionadded:: 0.8
 """)
     println(doc)
   }
