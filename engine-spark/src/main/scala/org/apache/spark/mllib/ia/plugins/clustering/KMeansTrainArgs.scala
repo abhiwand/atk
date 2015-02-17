@@ -51,14 +51,23 @@ case class KMeansTrainArgs(model: ModelReference,
   require(columnScalings.length == observationColumns.length, "Length of columnWeights and observationColumns needs to be the same")
 
   def getK: Int = {
+    if (k.isDefined) {
+      require(k.get > 0, "k must be at least 1")
+    }
     k.getOrElse(2)
   }
 
   def getMaxIterations: Int = {
+    if (maxIterations.isDefined) {
+      require(maxIterations.get > 0, "maxIterations must be a positive value")
+    }
     maxIterations.getOrElse(20)
   }
 
   def geteEpsilon: Double = {
+    if (epsilon.isDefined) {
+      require(epsilon.get > 0.0, "epsilon must be a positive value")
+    }
     epsilon.getOrElse(1e-4)
   }
 

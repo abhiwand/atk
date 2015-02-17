@@ -76,7 +76,9 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
       val svmJsObject = modelMeta.data.get
       val svmData = svmJsObject.convertTo[SVMData]
       val svmModel = svmData.svmModel
-      require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
+      if (arguments.observationColumns.isDefined) {
+        require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
+      }
       val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
       val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, svmColumns)
