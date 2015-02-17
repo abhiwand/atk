@@ -53,7 +53,10 @@ case class ClassificationWithSGDTrainArgs(model: ModelReference,
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
   require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
-  def getNumIterations: Int = { numIterations.getOrElse(100) }
+  def getNumIterations: Int = {
+    if (numIterations.isDefined) { require(numIterations.get > 0, "numIterations must be a positive value") }
+    numIterations.getOrElse(100)
+  }
 
   def getIntercept: Boolean = { intercept.getOrElse(true) }
 
