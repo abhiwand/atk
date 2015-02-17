@@ -384,7 +384,10 @@ class FrameBackendRest(object):
     def join(self, left, right, left_on, right_on, how, name=None):
         if right_on is None:
             right_on = left_on
-        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
+        arguments = {"name": name,
+                     "how": how,
+                     "left_frame": {"frame": self.get_ia_uri(left), "join_column": left_on},
+                     "right_frame": {"frame": self.get_ia_uri(right), "join_column": right_on} }
         return execute_new_frame_command('frame:/join', arguments)
 
     def copy(self, frame, columns=None, where=None, name=None):
