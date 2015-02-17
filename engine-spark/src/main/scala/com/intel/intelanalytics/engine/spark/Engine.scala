@@ -45,6 +45,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RDDJoinParam, JoinArgs, JoinPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
@@ -106,7 +107,6 @@ import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DropColumnsArgs
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
@@ -129,7 +129,6 @@ import com.intel.intelanalytics.domain.frame.FlattenColumnArgs
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
-import com.intel.intelanalytics.domain.frame.JoinArgs
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
