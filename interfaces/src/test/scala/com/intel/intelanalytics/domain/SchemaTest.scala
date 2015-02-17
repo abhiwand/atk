@@ -250,7 +250,6 @@ class SchemaTest extends WordSpec with Matchers {
         abcSchema.requireColumnIsType("invalid", str)
       }
     }
-
     "preserve column order in columnNames" in {
       ajSchema.columnNames shouldBe List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
     }
@@ -258,6 +257,79 @@ class SchemaTest extends WordSpec with Matchers {
     "preserve column order during union" in {
       abcSchema.union(ajSchema) shouldBe FrameSchema(ajColumns)
     }
+  }
+
+  "Schema" should {
+    "resolve name conflicts when they exist" in {
+      val leftColumns = List(Column("same", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List(Column("same", DataTypes.int32), Column("foo", DataTypes.string))
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 4
+      result(0).name shouldBe "same_L"
+      result(1).name shouldBe "bar"
+      result(2).name shouldBe "same_R"
+      result(3).name shouldBe "foo"
+    }
+
+    "not do anything to resolve conflicts when they don't exist" in {
+      val leftColumns = List(Column("left", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List(Column("right", DataTypes.int32), Column("foo", DataTypes.string))
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 4
+      result(0).name shouldBe "left"
+      result(1).name shouldBe "bar"
+      result(2).name shouldBe "right"
+      result(3).name shouldBe "foo"
+    }
+
+    "handle empty column lists" in {
+      val leftColumns = List(Column("left", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List.empty[Column]
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 2
+      result(0).name shouldBe "left"
+      result(1).name shouldBe "bar"
+    }
+
+    "repeatedly appending L if L already exists in the left hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32), Column("data_L", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L_L"
+      result(1).name shouldBe "data_L"
+      result(2).name shouldBe "data_R"
+    }
+
+    "repeatedly appending L if L already exists in the right hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32), Column("data_L", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L_L"
+      result(1).name shouldBe "data_R"
+      result(2).name shouldBe "data_L"
+    }
+
+    "repeatedly appending R if R already exists in the left hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32), Column("data_R", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L"
+      result(1).name shouldBe "data_R"
+      result(2).name shouldBe "data_R_R"
+    }
+
   }
 
   val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
