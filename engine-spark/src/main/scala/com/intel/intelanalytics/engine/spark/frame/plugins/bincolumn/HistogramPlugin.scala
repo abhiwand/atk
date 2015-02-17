@@ -32,7 +32,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAggreg
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
@@ -93,7 +93,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
    * @param equalWidth true if we are using equalwidth binning false if not
    * @return a new RDD containing the inclusive start, exclusive end, size and density of each bin.
    */
-  def computeHistogram(dataFrame: RDD[Row], columnIndex: Int, weightColumnIndex: Option[Int], numBins: Int, equalWidth: Boolean = true): Histogram = {
+  private[bincolumn] def computeHistogram(dataFrame: RDD[Row], columnIndex: Int, weightColumnIndex: Option[Int], numBins: Int, equalWidth: Boolean = true): Histogram = {
     val binnedResults = if (equalWidth)
       DiscretizationFunctions.binEqualWidth(columnIndex, numBins, dataFrame)
     else
@@ -105,8 +105,18 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
       weightColumnIndex match {
         case Some(i) => math.max(DataTypes.toDouble(row(i)), 0.0)
         case None => HistogramPlugin.UNWEIGHTED_OBSERVATION_SIZE
-      }))
-    val histSizes: Seq[Double] = pairedRDD.reduceByKey(_ + _).collect().sortBy(_._1).map(_._2)
+      })).reduceByKey(_ + _)
+
+    val filledBins = pairedRDD.collect()
+    val emptyBins = (0 to binnedResults.cutoffs.length - 2).map(i => (i, 0.0))
+    //reduce by key and return either 0 or the value from filledBins
+    val bins = (filledBins ++ emptyBins).groupBy(_._1).map {
+      case (key, values) => (key, values.map(_._2).max)
+    }.toList
+
+    //sort by key return values
+    val histSizes: Seq[Double] = bins.sortBy(_._1).map(_._2)
+
     val totalSize: Double = histSizes.reduce(_ + _)
     val frequencies: Seq[Double] = histSizes.map(size => size / totalSize)
 

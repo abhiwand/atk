@@ -17,6 +17,8 @@
 
 package org.apache.spark.engine
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
+
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
 
@@ -36,11 +38,12 @@ object Spark {
    * (k, (Some(v), Some(w))) for v in `this`, or the pair (k, (None, Some(w))) if no elements
    * in `this` have key k. Uses the given Partitioner to partition the output RDD.
    */
-  def fullOuterJoin(left: RDD[(Any, Array[Any])], other: RDD[(Any, Array[Any])]): RDD[(Any, (Option[Array[Any]], Option[Array[Any]]))] = {
+  def fullOuterJoin(left: RDD[(Any, sql.Row)],
+                    other: RDD[(Any, sql.Row)]): RDD[(Any, (Option[sql.Row], Option[sql.Row]))] = {
     left.cogroup(other).flatMapValues {
       case (vs, Seq()) => vs.map(v => (Some(v), None))
       case (Seq(), ws) => ws.map(w => (None, Some(w)))
       case (vs, ws) => for (v <- vs; w <- ws) yield (Some(v), Some(w))
-    }.asInstanceOf[RDD[(Any, (Option[Array[Any]], Option[Array[Any]]))]]
+    }.asInstanceOf[RDD[(Any, (Option[sql.Row], Option[sql.Row]))]]
   }
 }

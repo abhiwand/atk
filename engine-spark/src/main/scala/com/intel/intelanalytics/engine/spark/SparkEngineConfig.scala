@@ -223,6 +223,13 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   *  Use broadcast join if file size is lower than threshold.
+   *
+   *  A threshold of zero disables broadcast joins.
+   */
+  val broadcastJoinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
+
+  /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
    *
    * True if engine-spark.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
