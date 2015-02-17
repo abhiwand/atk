@@ -20,13 +20,14 @@ References
 * :doc:`glossary`
 * :doc:`ia_legal`
 * :ref:`genindex`
-* :ref:`search`
-* :download:`PDF <_downloads/IntelAnalytics.pdf>`
+* :doc:`errata`
+* :download:`*PDF* <_downloads/IntelAnalytics.pdf>`
 
 .. toctree::
     :hidden:
     :maxdepth: 1
-    
+
+    errata
     glossary
     ia_legal
 

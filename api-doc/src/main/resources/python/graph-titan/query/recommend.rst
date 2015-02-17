@@ -12,6 +12,9 @@ vertex_id : string
 vertex_type : string
     The vertex type to get recommendation for.
     The valid value is either "L" or "R".
+
+.. sidebar:: "L" Versus "R"
+
     "L" stands for left-side vertices of a bipartite graph.
     "R" stands for right-side vertices of a bipartite graph.
     For example, if your input data is "user,movie,rating" and

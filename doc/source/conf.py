@@ -16,7 +16,9 @@ import sys
 import os
 
 rst_epilog = """
+
 .. |ALPHA|  image:: _static/red_penguin.*
+.. |API|    replace:: abbr:`API (Application Programming Interface)`
 .. |BETA|   image:: _static/yellow_penguin.*
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
@@ -24,21 +26,22 @@ rst_epilog = """
 .. |DEPRECATED|   image:: _static/blue_penguin.*
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (empirical cumulative distribution function)`
+.. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: Intel Analytics
 .. |IAT|    replace:: Intel Analytics Toolkit
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
-.. |LDA|	  replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
-.. |LSI|		replace:: :abbr:`LSI (Latent Semantic Indexing)1
+.. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
+.. |LSI|    replace:: :abbr:`LSI (Latent Semantic Indexing)1
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
-.. |YCSB|		replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
+.. |YCSB|   replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,
