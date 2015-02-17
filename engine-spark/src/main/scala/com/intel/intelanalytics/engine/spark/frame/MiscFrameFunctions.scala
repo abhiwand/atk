@@ -23,15 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import scala.collection.mutable
-
-import scala.Some
-import scala.reflect.ClassTag
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.apache.spark.engine.Spark
-import com.intel.intelanalytics.domain.schema.Schema
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
+import scala.reflect.ClassTag
+import scala.util.Try
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 /**
@@ -128,65 +129,6 @@ object MiscFrameFunctions extends Serializable {
       key = key :+ data(i)
 
     (key, data)
-  }
-
-  /**
-   * perform join operation
-   * @param left parameter regarding the first dataframe
-   * @param right parameter regarding the second dataframe
-   * @param how join method
-   */
-  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
-
-    val result = how match {
-      case "left" => left.rdd.leftOuterJoin(right.rdd).map {
-        case (_, (leftValues, rightValues)) => {
-          rightValues match {
-            case s: Some[Array[Any]] => leftValues ++ s.get
-            case None => leftValues ++ (1 to right.columnCount).map(i => null)
-          }
-        }
-      }
-
-      case "right" => left.rdd.rightOuterJoin(right.rdd).map {
-        case (_, (leftValues, rightValues)) => {
-          leftValues match {
-            case s: Some[Array[Any]] => s.get ++ rightValues
-            case None => {
-              var array: Array[Any] = rightValues
-              (1 to left.columnCount).foreach(i => array = null +: array)
-              array
-            }
-          }
-        }
-      }
-
-      case "outer" => Spark.fullOuterJoin(left.rdd, right.rdd).map {
-        case (_, outerJoinResult) => {
-          outerJoinResult match {
-            case (Some(leftValues), Some(rightValues)) => { leftValues ++ rightValues }
-            case (Some(leftValues), None) => {
-              leftValues ++ (1 to right.columnCount).map(i => null)
-            }
-            case (None, Some(rightValues)) => {
-              var array: Array[Any] = rightValues
-              (1 to left.columnCount).foreach(i => array = null +: array)
-              array
-            }
-          }
-        }
-      }
-
-      case "inner" => left.rdd.join(right.rdd).map {
-        case (key, (leftValues, rightValues)) => {
-          leftValues ++ rightValues
-        }
-      }
-
-      case other: String => throw new IllegalArgumentException(s"Method $other not supported. only support left, right, outer and inner.")
-    }
-
-    result.asInstanceOf[RDD[Array[Any]]]
   }
 
   /**
