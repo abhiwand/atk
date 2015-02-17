@@ -82,6 +82,9 @@ intel.analytics {
 
         # max-partitions is used if value is above the max upper-bound
         max-partitions = 10000
+
+        # use broadcast join if file size is lower than threshold. zero disables broadcast joins.
+        broadcast-join-threshold = "0MB"
     }
   }
 

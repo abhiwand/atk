@@ -137,6 +137,15 @@ class FrameRDD(val frameSchema: Schema,
   }
 
   /**
+   * Spark keyBy with a rowWrapper
+   */
+  def keyByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, sql.Row)] = {
+    this.keyBy(row => {
+      function(rowWrapper(row))
+    })
+  }
+
+  /**
    * Create a new FrameRDD that is only a subset of the columns of this FrameRDD
    * @param columnNames names to include
    * @return the FrameRDD with only some columns
