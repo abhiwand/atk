@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,18 +24,16 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.event.{ EventContext, EventLogging }
-import com.intel.intelanalytics.component.{ Boot, DefaultArchive }
-import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }
+import FileUtil.writeFile
 import com.intel.intelanalytics.engine.plugin.Call
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.Config
 import org.joda.time.DateTime
-import spray.json._
 import com.intel.intelanalytics.domain.{ User, DomainJsonProtocol }
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import spray.json._
 import DomainJsonProtocol.commandDefinitionFormat
 import scala.concurrent.Await
@@ -47,7 +45,8 @@ import scala.concurrent.duration._
  *
  * This is used for generating the Python docs, it isn't part of the running system.
  */
-class CommandDumper extends DefaultArchive
+class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config)
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
@@ -89,10 +88,15 @@ class CommandDumper extends DefaultArchive
     val commandDump = "{ \"commands\": [" + commandDefs.map(_.toJson).mkString(",\n") + "] }"
     val currentDir = System.getProperty("user.dir")
     val fileName = currentDir + "/target/command_dump.json"
-    Boot.writeFile(fileName, commandDump)
+    writeFile(fileName, commandDump)
     println("Command Dump written to " + fileName)
     eventContext.close()
   }
+
+  /**
+   * Not actually used in this implementation.
+   */
+  override def getAll[T: ClassManifest](descriptor: String): Seq[T] = ???
 }
 
 /**

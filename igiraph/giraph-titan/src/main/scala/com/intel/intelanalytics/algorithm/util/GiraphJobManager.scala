@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -66,14 +66,17 @@ class GiraphJobListener extends DefaultJobObserver {
     println(jobToSubmit.toString)
     if (!jobToSubmit.isSuccessful) {
       val taskCompletionEvents = jobToSubmit.getTaskCompletionEvents(0)
-      val numTasks = taskCompletionEvents.length
-      val lastEvent = taskCompletionEvents(numTasks - 1)
-      val diagnostics = jobToSubmit.getTaskDiagnostics(lastEvent.getTaskAttemptId)(0)
-      val errorMessage = diagnostics.lastIndexOf("Caused by:") match {
-        case index if index > 0 => diagnostics.substring(index)
-        case _ => diagnostics
+      taskCompletionEvents.lastOption match {
+        case Some(e) =>
+          val diagnostics = jobToSubmit.getTaskDiagnostics(e.getTaskAttemptId)(0)
+          val errorMessage = diagnostics.lastIndexOf("Caused by:") match {
+            case index if index > 0 => diagnostics.substring(index)
+            case _ => diagnostics
+          }
+          throw new Exception(s"Execution was unsuccessful. $errorMessage")
+        case None => throw new Exception("Execution was unsuccessful, but no further information was provided. " +
+          "Consider server checking logs for further information.")
       }
-      throw new Exception(s"Execution was unsuccessful. $errorMessage")
     }
   }
 
@@ -94,7 +97,7 @@ object GiraphJobManager {
   def run(jobName: String, computationClassCanonicalName: String,
           config: Config, giraphConf: GiraphConfiguration, invocation: Invocation, reportName: String): String = {
 
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
+    val giraphLoader = Boot.getArchive(config.getString("giraph.archive.name")).classLoader
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]

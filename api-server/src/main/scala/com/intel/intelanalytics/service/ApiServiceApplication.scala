@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -33,7 +33,7 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await
@@ -44,15 +44,16 @@ import scala.reflect.ClassTag
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Archive with EventLogging {
+class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging {
 
   EventLogging.raw = true
   info("API server setting log adapter from configuration")
 
-  EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.api.logging.raw")
+  EventLogging.raw = configuration.getBoolean("intel.analytics.api.logging.raw")
   info("API server set log adapter from configuration")
 
-  EventLogging.profiling = ConfigFactory.load().getBoolean("intel.analytics.api.logging.profile")
+  EventLogging.profiling = configuration.getBoolean("intel.analytics.api.logging.profile")
   info(s"API server profiling: ${EventLogging.profiling}")
 
   //Direct subsequent archive messages to the normal log
