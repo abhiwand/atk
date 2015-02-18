@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -270,4 +270,3 @@ trait EventLogging {
             substitutions: Seq[String] = Nil,
             exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
 }
-
