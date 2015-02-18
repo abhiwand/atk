@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.domain.schema.DataTypes.{ float64, float32, int64, int32 }
 import org.scalatest.{ FlatSpec, Matchers }
 
 class DataTypesTest extends FlatSpec with Matchers {
@@ -67,6 +68,13 @@ class DataTypesTest extends FlatSpec with Matchers {
     intercept[IllegalArgumentException] {
       DataTypes.toBigDecimal(value)
     }
+  }
+
+  "javaTypeToDataType" should "get type from java type object" in {
+    DataTypes.javaTypeToDataType(new java.lang.Integer(3).getClass) shouldBe int32
+    DataTypes.javaTypeToDataType(new java.lang.Long(3).getClass) shouldBe int64
+    DataTypes.javaTypeToDataType(new java.lang.Float(3.0).getClass) shouldBe float32
+    DataTypes.javaTypeToDataType(new java.lang.Double(3).getClass) shouldBe float64
   }
 
 }

@@ -68,10 +68,4 @@ class ExportToGraphPluginTest extends FlatSpec with Matchers with MockitoSugar {
   //    columns(2) shouldBe Column("col3", float32)
   //  }
 
-  "javaTypeToIATType" should "get type from java type object" in {
-    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Integer(3).getClass) shouldBe int32
-    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Long(3).getClass) shouldBe int64
-    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Float(3.0).getClass) shouldBe float32
-    ExportToGraphPlugin.javaTypeToIATType(new java.lang.Double(3).getClass) shouldBe float64
-  }
 }

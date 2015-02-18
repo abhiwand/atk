@@ -21,14 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame
+package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
- * This object exists to avoid having to serialize the entire engine in order to use spark
- *
- * If you don't know what this means please read about Closure Mishap
- * [[http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-part-1-amp-camp-2012-spark-intro.pdf]]
+ * Command for loading model data into existing model in the model database.
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumns Handle to the list of observation columns of the data frame
+ * @param labelColumn Handle to the label column of the data frame
  */
-case class RDDJoinParam(rdd: RDD[(Any, Array[Any])], columnCount: Int)
+case class ClassificationWithSGDTestArgs(model: ModelReference,
+                                         frame: FrameReference,
+                                         labelColumn: String,
+                                         observationColumns: Option[List[String]]) {
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
+  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
+
+}

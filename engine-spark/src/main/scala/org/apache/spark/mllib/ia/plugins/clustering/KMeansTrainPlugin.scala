@@ -84,13 +84,13 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
        */
       val kMeans = initializeKmeans(arguments)
 
-      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
+      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
       val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnWeights)
+      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnScalings)
       val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
 
       //Writing the kmeansModel as JSON
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnWeights)
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
       models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
@@ -105,11 +105,11 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
     kmeans.setEpsilon(arguments.geteEpsilon)
   }
 
-  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnWeights: List[Double]): Map[String, Int] = {
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnScalings: List[Double]): Map[String, Int] = {
 
     val predictRDD = trainFrameRDD.mapRows(row => {
       val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
-      val columnWeightsArray = columnWeights.toArray
+      val columnWeightsArray = columnScalings.toArray
       val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
       kmeansModel.predict(point)

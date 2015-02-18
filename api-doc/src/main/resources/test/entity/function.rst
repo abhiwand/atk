@@ -26,4 +26,3 @@
 
     "aaa"
 
-.. versionadded:: 0.8
