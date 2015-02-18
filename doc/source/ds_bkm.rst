@@ -72,11 +72,11 @@ Reset configuration back to defaults::
 Errors
 ======
 
-By default the toolkit does not print the full stack trace when exceptions occur.  To see the full python stack trace of the last (i.e. most recent) exception::
+By default the toolkit does not print the full stack trace when exceptions occur.  To see the full Python stack trace of the last (i.e. most recent) exception::
 
     ia.errors.last
 
-To enable always printing the full python stack trace, set the 'show_details' property::
+To enable always printing the full Python stack trace, set the 'show_details' property::
 
     import intelanalytics as ia
      

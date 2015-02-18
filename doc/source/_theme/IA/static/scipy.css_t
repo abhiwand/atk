@@ -132,7 +132,7 @@ dl.method blockquote p
  */
 
 div.sphinxsidebarwrapper {
-    overflow: hidden;
+    overflow: auto; /* Changed 20150213.1541 from hidden to auto
 }
 
 div.spc-rightsidebar h3 {

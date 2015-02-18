@@ -133,6 +133,40 @@ object Schema {
     new FrameSchema(columns)
   }
 
+  /**
+   * Join two lists of columns.
+   *
+   * Join resolves naming conflicts when both left and right columns have same column names
+   *
+   * @param leftColumns columns for the left side
+   * @param rightColumns columns for the right side
+   * @return Combined list of columns
+   */
+  def join(leftColumns: List[Column], rightColumns: List[Column]): List[Column] = {
+
+    val funcAppendLetterForConflictingNames = (left: List[Column], right: List[Column], appendLetter: String) => {
+
+      var leftColumnNames = left.map(column => column.name)
+      val rightColumnNames = right.map(column => column.name)
+
+      left.map(column =>
+        if (right.map(i => i.name).contains(column.name)) {
+          var name = column.name + "_" + appendLetter
+          while (leftColumnNames.contains(name) || rightColumnNames.contains(name)) {
+            name = name + "_" + appendLetter
+          }
+          leftColumnNames = leftColumnNames ++ List(name)
+          Column(name, column.dataType)
+        }
+        else
+          column)
+    }
+
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "R")
+
+    left ++ right
+  }
 }
 
 /**

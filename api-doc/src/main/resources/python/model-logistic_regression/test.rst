@@ -8,11 +8,12 @@ Parameters
 predict_frame : Frame
     frame whose labels are to be predicted
 
-observation_column : str
-    Column containing the observations
-
 label_column : str
     Column containing the actual label for each observation
+
+observation_column : list of str (Optional)
+    Columns containing the observations. Default is the same column names used to train the model
+
 
 Returns
 -------

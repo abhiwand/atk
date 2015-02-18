@@ -25,9 +25,11 @@ package org.apache.spark.mllib.ia.plugins
 
 //import org.apache.commons.math3.geometry.VectorFormat
 
+import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.classification.{ SVMData, LogisticRegressionData }
 import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.scalatest.WordSpec
@@ -73,7 +75,8 @@ class MLLibJsonProtocolTest extends WordSpec {
         |
         |
         | }
-      """.stripMargin
+      """.
+          stripMargin
       val json = JsonParser(string).asJsObject
       val sv = json.convertTo[SparseVector]
       assert(sv.size == 3)
@@ -102,17 +105,52 @@ class MLLibJsonProtocolTest extends WordSpec {
     "be able to serialize" in {
       val d = new KMeansData(new KMeansModel(Array(new DenseVector(Array(1.2, 2.1)),
         new DenseVector(Array(3.4, 4.3)))), List("column1", "column2"), List(1.0, 2.0))
-      assert(d.toJson.compactPrint == "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_weights\":[1.0,2.0]}")
+      assert(d.toJson.compactPrint == "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_scalings\":[1.0,2.0]}")
     }
 
     "parse json" in {
-      val string = "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_weights\":[1.0,2.0]}"
+      val string = "{\"k_means_model\":{\"clusterCenters\":[{\"values\":[1.2,2.1]},{\"values\":[3.4,4.3]}]},\"observation_columns\":[\"column1\",\"column2\"],\"column_scalings\":[1.0,2.0]}"
       val json = JsonParser(string).asJsObject
       val d = json.convertTo[KMeansData]
       assert(d.kMeansModel.clusterCenters.length == 2)
-      assert(d.observationColumns.length == d.columnWeights.length)
+      assert(d.observationColumns.length == d.columnScalings.length)
       assert(d.observationColumns.length == 2)
     }
   }
 
+  "LogisticRegressionDataFormat" should {
+
+    "be able to serialize" in {
+      val l = new LogisticRegressionData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
+      assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}")
+    }
+
+    "parse json" in {
+      val string = "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}"
+      val json = JsonParser(string).asJsObject
+      val l = json.convertTo[LogisticRegressionData]
+
+      assert(l.logRegModel.weights.size == 2)
+      assert(l.logRegModel.intercept == 3.5)
+      assert(l.observationColumns.length == 2)
+    }
+  }
+
+  "SVMDataFormat" should {
+
+    "be able to serialize" in {
+      val s = new SVMData(new SVMModel(new DenseVector(Array(2.3, 3.4, 4.5)), 3.0), List("column1", "column2", "columns3", "column4"))
+      assert(s.toJson.compactPrint == "{\"svm_model\":{\"weights\":{\"values\":[2.3,3.4,4.5]},\"intercept\":3.0},\"observation_columns\":[\"column1\",\"column2\",\"columns3\",\"column4\"]}")
+    }
+
+    "parse json" in {
+      val string = "{\"svm_model\":{\"weights\":{\"values\":[2.3,3.4,4.5]},\"intercept\":3.0},\"observation_columns\":[\"column1\",\"column2\",\"columns3\",\"column4\"]}"
+      val json = JsonParser(string).asJsObject
+      val s = json.convertTo[SVMData]
+
+      assert(s.svmModel.weights.size == 3)
+      assert(s.svmModel.intercept == 3.0)
+      assert(s.observationColumns.length == 4)
+    }
+  }
 }
