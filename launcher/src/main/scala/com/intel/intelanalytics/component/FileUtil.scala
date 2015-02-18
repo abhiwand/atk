@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.component
 
-
 object FileUtil {
   /**
    * For debugging only
