@@ -4,37 +4,37 @@ The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
 Parameters
 ----------
-input_edge_label : list of string
-    The name of edge label
+input_edge_label : list of str
+    The name(s) of edge label(s).
 
-output_vertex_property_list : list of string
-    The list of vertex properties to store output vertex values
+output_vertex_property_list : list of str
+    Vertex properties to store output vertex values.
 
-max_supersteps : integer (optional)
+max_supersteps : int (optional)
     The maximum number of super steps that the algorithm will execute.
-    The valid value range is all positive integer.
+    The valid range is all positive int.
     The default value is 20.
 
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
-    If the change is less than this threshold, the algorithm exits earlier
+    If the change is less than this threshold, the algorithm exits earlier,
     before it reaches the maximum number of super steps.
-    The valid value range is all Float and zero.
+    The valid range is all float and zero.
     The default value is 0.001.
 
 reset_probability : float (optional)
     The probability that the random walk of a page is reset.
 
-convergence_output_interval : integer (optional)
-    The convergence progress output interval
-    The valid value range is [1, max_supersteps]
+convergence_output_interval : int (optional)
+    The convergence progress output interval.
+    The valid value range is [1, max_supersteps].
     The default value is 1, which means output every super step.
 
 Returns
 -------
-Multiple line string
-    The configuration and convergence report for Page Rank
+str : Multiple line str
+    The configuration and convergence report for Page Rank.
 
 Examples
 --------

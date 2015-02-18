@@ -53,7 +53,7 @@ Setup
 
         i)  Choose "Manual Configure"
         #)  Choose the "New" button
-        #)  Browse for python 2.7.  On RedHat and Centos this is probably
+        #)  Browse for Python 2.7.  On RedHat and Centos this is probably
             /usr/bin/python
         #)  Choose the "Ok" button
         #)  Choose the "Ok" button

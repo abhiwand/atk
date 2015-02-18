@@ -5,7 +5,7 @@ Python User Functions
 .. contents:: Table of Contents
     :local:
 
-A :abbr:`PUF (Python User Function)` is a python function written by the user on the client-side which can
+A :abbr:`PUF (Python User Function)` is a Python function written by the user on the client-side which can
 execute in a distributed fashion on the cluster.
 The function is serialized and copies are distributed throughout the cluster as part of command execution.
 Various API command methods accept PUFs as parameters.
@@ -52,7 +52,7 @@ Here is an equivalent row function::
         return row.score > 0
 
 The *dot-member* notation is provided for convenience (it follows the pandas DataFrame technique) and only
-works for columns whose names are legal python variable names (i.e. alphanumeric plus underscore, not
+works for columns whose names are legal Python variable names (i.e. alphanumeric plus underscore, not
 starting with a number).
 Columns whose names do not meet this criteria must be referenced using square brackets with strings.
 
@@ -90,7 +90,7 @@ For example::
 .. Note::
 
     This example is for illustration only.
-    There are other, perhaps more pythonic, ways of doing this, like using a list comprehension.
+    There are other, perhaps more Pythonic, ways of doing this, like using a list comprehension.
 
 --------------
 PUF Guidelines

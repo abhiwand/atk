@@ -21,19 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.ia.plugins.clustering
+package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.mllib.clustering.KMeansModel
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.
- * @param kMeansModel Trained MLLib's KMeansModel object
- * @param observationColumns Handle to the observation columns of the data frame
- * @param columnScalings Handle to the weights for the observation columns of the data frame
+ * @param model Handle to the model to be written to.
+ * @param frame Handle to the data frame
+ * @param observationColumns Handle to the observation column of the data frame
  */
-case class KMeansData(kMeansModel: KMeansModel, observationColumns: List[String], columnScalings: List[Double]) {
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
-  require(columnScalings != null && !columnScalings.isEmpty, "columnWeights must not be null nor empty")
-  require(columnScalings.length == observationColumns.length, "number of elements in observationColumns and columnWeights needs to be the same")
-  require(kMeansModel != null, "kMeansModel must not be null")
+case class ClassificationWithSGDPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
+
 }

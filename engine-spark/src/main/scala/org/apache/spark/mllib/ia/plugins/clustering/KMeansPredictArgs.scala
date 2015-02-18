@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.model.ModelReference
  * @param frame Handle to the data frame whose cluster assignments are to be predicted
  */
 case class KMeansPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
-  require(model != null, "model must not be null")
-  require(frame != null, "frame must not be null")
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
 }
 

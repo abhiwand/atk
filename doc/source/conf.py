@@ -16,7 +16,9 @@ import sys
 import os
 
 rst_epilog = """
+
 .. |ALPHA|  image:: _static/red_penguin.*
+.. |API|    replace:: abbr:`API (Application Programming Interface)`
 .. |BETA|   image:: _static/yellow_penguin.*
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
@@ -24,19 +26,22 @@ rst_epilog = """
 .. |DEPRECATED|   image:: _static/blue_penguin.*
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (empirical cumulative distribution function)`
+.. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: Intel Analytics
 .. |IAT|    replace:: Intel Analytics Toolkit
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
+.. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
+.. |LSI|    replace:: :abbr:`LSI (Latent Semantic Indexing)1
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
-.. |YCSB|		replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
+.. |YCSB|   replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -87,7 +92,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Intel Analytics'
 #project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
-copyright = u'2014, Intel - INTEL CONFIDENTIAL'
+copyright = u'2015, Intel - INTEL CONFIDENTIAL'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -216,7 +221,8 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
+# html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
+html_sidebars = {'**': ['globaltoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -282,7 +288,7 @@ latex_logo = "_static/intel-logo.jpg"
 latex_use_parts = True
 
 # If true, show page references after internal links.
-latex_show_pagerefs = True
+latex_show_pagerefs = False
 
 # If true, show URL addresses after external links.
 latex_show_urls = 'footnote'
