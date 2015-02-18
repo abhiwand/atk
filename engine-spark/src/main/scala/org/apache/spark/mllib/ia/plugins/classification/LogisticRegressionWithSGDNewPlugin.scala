@@ -25,7 +25,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity, ClassificationWithSGDPredictArgs }
+import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation

@@ -26,11 +26,11 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.model.SVMTrainArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.SVMWithSGD
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTrainArgs
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -40,7 +40,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn] {
+class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrainArgs, UnitReturn] {
   /**
    * The name of the command.
    *
@@ -53,7 +53,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: SVMTrainArgs)(implicit invocation: Invocation) = 103
+  override def numberOfJobs(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation) = 103
   /**
    * Run MLLib's SVMWithSGD() on the training frame and create a Model for it.
    *
@@ -63,7 +63,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: SVMTrainArgs)(implicit invocation: Invocation): UnitReturn =
+  override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
       val modelId = arguments.model.id
@@ -76,25 +76,29 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[SVMTrainArgs, UnitReturn]
       val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
-      val svm = initializeSVM(arguments)
+      val svm = initializeSVMModel(arguments)
       val svmModel = svm.run(labeledTrainRDD)
-      val modelObject = svmModel.toJson.asJsObject
+
+      val jsonModel = new SVMData(svmModel, arguments.observationColumns)
+
       //TODO: Call save instead once implemented for models
-      models.updateModel(modelMeta, modelObject)
+      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
       new UnitReturn
     }
 
-  private def initializeSVM(arguments: SVMTrainArgs): SVMWithSGD = {
+  private def initializeSVMModel(arguments: ClassificationWithSGDTrainArgs): SVMWithSGD = {
     val svm = new SVMWithSGD()
-    if (arguments.numOptIterations.isDefined) { svm.optimizer.setNumIterations(arguments.numOptIterations.get) }
-    if (arguments.stepSize.isDefined) { svm.optimizer.setStepSize(arguments.stepSize.get) }
+    svm.optimizer.setNumIterations(arguments.getNumIterations)
+    svm.optimizer.setStepSize(arguments.getStepSize)
+    svm.optimizer.setRegParam(arguments.getRegParam)
+
     if (arguments.regType.isDefined) {
       svm.optimizer.setUpdater(arguments.regType.get match {
         case "L1" => new L1Updater()
         case other => new SquaredL2Updater()
       })
     }
-    if (arguments.regParam.isDefined) { svm.optimizer.setRegParam(arguments.regParam.get) }
-    svm.setIntercept(true)
+    svm.optimizer.setMiniBatchFraction(arguments.getMiniBatchFraction)
+    svm.setIntercept(arguments.getIntercept)
   }
 }

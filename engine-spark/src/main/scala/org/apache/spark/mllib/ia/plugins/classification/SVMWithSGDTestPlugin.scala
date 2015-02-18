@@ -25,13 +25,13 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.model.ClassificationWithSGDArgs
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel, SVMWithSGD }
+import org.apache.spark.mllib.classification.{ SVMModel, SVMWithSGD }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 /* Run the SVMWithSGD model on the test frame*/
-class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs, ClassificationMetricValue] {
+class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
@@ -53,7 +53,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs,
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation) = 9
+  override def numberOfJobs(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation) = 9
   /**
    * Get the predictions for observations in a test frame
    *
@@ -63,7 +63,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs,
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDArgs)(implicit invocation: Invocation): ClassificationMetricValue =
+  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
     {
       val models = engine.models
       val modelMeta = models.expectModel(arguments.model.id)
@@ -72,11 +72,16 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDArgs,
       // load frame as RDD
       val testFrameRDD = frame.data
 
-      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
-
-      //Running MLLib
+      //Extracting the model and data to run on
       val svmJsObject = modelMeta.data.get
-      val svmModel = svmJsObject.convertTo[SVMModel]
+      val svmData = svmJsObject.convertTo[SVMData]
+      val svmModel = svmData.svmModel
+      if (arguments.observationColumns.isDefined) {
+        require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
+      }
+      val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
+
+      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, svmColumns)
 
       //predicting and testing
       val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
