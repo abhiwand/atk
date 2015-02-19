@@ -48,7 +48,7 @@ convergence_threshold : float (optional)
     Valid value range is all positive float and 0.0.
     Default is 0.001.
 
-evaluate_cost : str (optional)
+evaluate_cost : bool (optional)
     "True" means turn on cost evaluation and "False" means turn off
     cost evaluation.
     It's relatively expensive for LDA to evaluate cost function.
