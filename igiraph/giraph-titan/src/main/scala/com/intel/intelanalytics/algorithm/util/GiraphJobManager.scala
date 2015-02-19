@@ -68,8 +68,8 @@ class GiraphJobListener extends DefaultJobObserver {
           val group = submittedJob.getCounters().getGroup("Giraph Timers")
           if (null != group) {
             var progress = (group.size() - 1) / maxSteps
-            if ( progress > 0.95) progress = 0.95f //each algorithm calculates steps differently and this sometimes cause it to be greater than 1. It is easier to fix it here
-            commandStorage.updateProgress(commandId, List(ProgressInfo( progress * 100, None)))
+            if (progress > 0.95) progress = 0.95f //each algorithm calculates steps differently and this sometimes cause it to be greater than 1. It is easier to fix it here
+            commandStorage.updateProgress(commandId, List(ProgressInfo(progress * 100, None)))
           }
           else {
             commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
