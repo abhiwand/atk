@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -27,10 +27,11 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
+import org.apache.giraph.counters.GiraphTimers
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
-import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.{ CounterGroup, Job, Counters }
 import com.typesafe.config.Config
 import scala.collection.mutable.HashMap
 
@@ -56,7 +57,22 @@ class GiraphJobListener extends DefaultJobObserver {
     val commandId = getCommandId(submittedJob)
     val commandStorage = getCommandStorage(commandId)
     Stream.continually(submittedJob.isComplete).takeWhile(_ == false).foreach {
-      _ => commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+      _ =>
+        {
+          val conf = submittedJob.getConfiguration()
+          val str = conf.get("giraphjob.maxSteps")
+          var maxSteps: Float = 20
+          if (str != null) {
+            maxSteps = str.toInt + 4 //4 for init, input, step and shutdown
+          }
+          val group = submittedJob.getCounters().getGroup("Giraph Timers")
+          if (null != group) {
+            commandStorage.updateProgress(commandId, List(ProgressInfo(((group.size() - 1) / maxSteps) * 100, None)))
+          }
+          else {
+            commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+          }
+        }
     }
   }
 
@@ -66,14 +82,17 @@ class GiraphJobListener extends DefaultJobObserver {
     println(jobToSubmit.toString)
     if (!jobToSubmit.isSuccessful) {
       val taskCompletionEvents = jobToSubmit.getTaskCompletionEvents(0)
-      val numTasks = taskCompletionEvents.length
-      val lastEvent = taskCompletionEvents(numTasks - 1)
-      val diagnostics = jobToSubmit.getTaskDiagnostics(lastEvent.getTaskAttemptId)(0)
-      val errorMessage = diagnostics.lastIndexOf("Caused by:") match {
-        case index if index > 0 => diagnostics.substring(index)
-        case _ => diagnostics
+      taskCompletionEvents.lastOption match {
+        case Some(e) =>
+          val diagnostics = jobToSubmit.getTaskDiagnostics(e.getTaskAttemptId)(0)
+          val errorMessage = diagnostics.lastIndexOf("Caused by:") match {
+            case index if index > 0 => diagnostics.substring(index)
+            case _ => diagnostics
+          }
+          throw new Exception(s"Execution was unsuccessful. $errorMessage")
+        case None => throw new Exception("Execution was unsuccessful, but no further information was provided. " +
+          "Consider server checking logs for further information.")
       }
-      throw new Exception(s"Execution was unsuccessful. $errorMessage")
     }
   }
 
@@ -94,7 +113,7 @@ object GiraphJobManager {
   def run(jobName: String, computationClassCanonicalName: String,
           config: Config, giraphConf: GiraphConfiguration, invocation: Invocation, reportName: String): String = {
 
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
+    val giraphLoader = Boot.getArchive(config.getString("giraph.archive.name")).classLoader
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]
