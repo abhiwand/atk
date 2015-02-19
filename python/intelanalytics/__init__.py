@@ -60,3 +60,8 @@ def _refresh_api_namespace():
 
 _refresh_api_namespace()
 
+
+def _get_api_names():
+    from intelanalytics.meta.api import get_api_names
+    import sys
+    return get_api_names(sys.modules[__name__])
