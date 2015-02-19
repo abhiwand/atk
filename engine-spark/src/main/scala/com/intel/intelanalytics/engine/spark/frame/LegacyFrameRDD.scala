@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.{ UnionRDD, RDD }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil, Schema }

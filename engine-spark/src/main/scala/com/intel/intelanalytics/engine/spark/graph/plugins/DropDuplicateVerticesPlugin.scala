@@ -38,7 +38,7 @@ import org.apache.spark.SparkContext
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 
 // Implicits needed for JSON conversion
 import spray.json._

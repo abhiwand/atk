@@ -29,9 +29,8 @@ import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.rdd.RDD

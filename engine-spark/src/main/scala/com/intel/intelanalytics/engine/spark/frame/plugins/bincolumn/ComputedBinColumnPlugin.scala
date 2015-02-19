@@ -26,8 +26,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
