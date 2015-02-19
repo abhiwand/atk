@@ -218,11 +218,11 @@ object DataTypes {
   /**
    * Vectors
    */
-  type Vec = Vector[Double]
+  type VectorDataType = Vector[Double]
 
   case object vector extends DataType {
 
-    override type ScalaType = Vec
+    override type ScalaType = VectorDataType
 
     // TODO
     override def parse(raw: Any) = Try {
@@ -231,18 +231,18 @@ object DataTypes {
 
     override def isType(raw: Any): Boolean = {
       // where null is allowed we accept null as this type
-      raw == null || raw.isInstanceOf[Vec]
+      raw == null || raw.isInstanceOf[VectorDataType]
     }
 
-    override def scalaType = classOf[Vec]
+    override def scalaType = classOf[VectorDataType]
 
     override def typedJson(raw: Any): JsValue = {
-      raw.asInstanceOf[Vec].toJson
+      raw.asInstanceOf[VectorDataType].toJson
     }
 
     override def asDouble(raw: Any): Double = {
       try {
-        val vec = raw.asInstanceOf[Vec] // we'll try to convert a Vector if it only has one item in
+        val vec = raw.asInstanceOf[VectorDataType] // we'll try to convert a Vector if it only has one item in
         require(vec.size == 1, "Vector must be of size 1.")
         vec(0)
       }
@@ -433,7 +433,7 @@ object DataTypes {
       case d: Double => d
       case bd: BigDecimal => bd.toDouble
       case s: String => s.trim().toDouble
-      case v: Vec => vector.asDouble(v)
+      case v: VectorDataType => vector.asDouble(v)
       case _ => throw new IllegalArgumentException(s"The following value is not a numeric data type: $value")
     }
   }
@@ -447,7 +447,7 @@ object DataTypes {
       case d: Double => BigDecimal(d)
       case bd: BigDecimal => bd
       case s: String => BigDecimal(s)
-      case v: Vec => BigDecimal(vector.asDouble(v))
+      case v: VectorDataType => BigDecimal(vector.asDouble(v))
       case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
     }
   }
@@ -461,7 +461,7 @@ object DataTypes {
       case d: Double => d.toLong
       case bd: BigDecimal => bd.toLong
       case s: String => s.trim().toLong
-      case v: Vec => vector.asDouble(v).toLong
+      case v: VectorDataType => vector.asDouble(v).toLong
       case _ => throw new RuntimeException(s"${value.getClass.getName} toLong is not yet implemented")
     }
   }
@@ -475,7 +475,7 @@ object DataTypes {
       case d: Double => d.toInt
       case bd: BigDecimal => bd.toInt
       case s: String => s.trim().toInt
-      case v: Vec => vector.asDouble(v).toInt
+      case v: VectorDataType => vector.asDouble(v).toInt
       case _ => throw new RuntimeException(s"${value.getClass.getName} toInt is not yet implemented")
     }
   }
@@ -489,7 +489,7 @@ object DataTypes {
       case d: Double => d.toFloat
       case bd: BigDecimal => bd.toFloat
       case s: String => s.trim().toFloat
-      case v: Vec => vector.asDouble(v).toFloat
+      case v: VectorDataType => vector.asDouble(v).toFloat
       case _ => throw new RuntimeException(s"${value.getClass.getName} toFloat is not yet implemented")
     }
   }
@@ -503,12 +503,12 @@ object DataTypes {
       case d: Double => d.toString
       case bd: BigDecimal => bd.toString()
       case s: String => s
-      case v: Vec => v.toString()
+      case v: VectorDataType => v.toString()
       case _ => throw new RuntimeException(s"${value.getClass.getName} toStr is not yet implemented")
     }
   }
 
-  def toVector(value: Any): Vec = {
+  def toVector(value: Any): VectorDataType = {
     value match {
       case null => null
       case i: Int => toVector(i.toDouble)
@@ -517,7 +517,7 @@ object DataTypes {
       case d: Double => Vector[Double](d)
       case bd: BigDecimal => toVector(bd.toDouble)
       case s: String => JsonParser(s).convertTo[List[Double]].toVector
-      case v: Vec => v
+      case v: VectorDataType => v
       case abd: ArrayBuffer[Double] => abd.toVector
       case ld: List[Double] => ld.toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not yet implemented")
