@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -27,13 +27,4 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class BootTest extends FlatSpec with Matchers {
 
-  "An empty Set" should "have size 0" in {
-    assert(Set.empty.size == 0)
-  }
-
-  it should "produce NoSuchElementException when head is invoked" in {
-    intercept[NoSuchElementException] {
-      Set.empty.head
-    }
-  }
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -60,8 +60,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    */
   override def numberOfJobs(arguments: AddEdgesArgs)(implicit invocation: Invocation): Int = {
     if (arguments.isCreateMissingVertices) {
-      // TODO: this this right?
-      10
+      15
     }
     else {
       8
@@ -84,7 +83,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // validate arguments
     val edgeFrameEntity = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
-    val graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
+    var graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
     val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
     sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
 
@@ -111,6 +110,9 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
       addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+
+      // refresh graph from DB for building self-to-self graph edge
+      graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
       addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 

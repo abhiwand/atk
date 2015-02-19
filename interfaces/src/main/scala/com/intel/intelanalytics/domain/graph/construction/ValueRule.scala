@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -33,4 +33,3 @@ case class ValueRule(source: String, value: String) {
     s"source must be one of (${GBValueSourcing.CONSTANT}, ${GBValueSourcing.VARYING})")
   require(value != null, "value must not be null")
 }
-

@@ -56,3 +56,4 @@ virtpy
 *.orig
 atlassian-ide-plugin.xml
 logback.xml
+*~

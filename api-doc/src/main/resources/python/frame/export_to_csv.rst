@@ -1,6 +1,6 @@
 Write frame to HDFS in csv format.
 
-Export the frame to a file in csv format as a hadoop file.
+Export the frame to a file in csv format as a Hadoop file.
 
 Parameters
 ----------

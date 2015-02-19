@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.UnitReturn
@@ -88,14 +89,18 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val kmeansJsObject = modelMeta.data.get
     val kmeansData = kmeansJsObject.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
+    if (arguments.observationColumns.isDefined) {
+      require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+    }
+
     val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
-    val columnWeights = kmeansData.columnWeights
+    val scalingValues = kmeansData.columnScalings
 
     //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
       val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
-      val columnWeightsArray = columnWeights.toArray
-      val doubles = columnsArray.zip(columnWeightsArray).map { case (x, y) => x * y }
+      val columnScalingsArray = scalingValues.toArray
+      val doubles = columnsArray.zip(columnScalingsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
 
       val clusterCenters = kmeansModel.clusterCenters

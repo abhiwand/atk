@@ -166,9 +166,9 @@ The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/
     -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
 The datasets in '/home/cloudera/examples/datasets' are for reference,
-the actual data that is being used by the python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
+the actual data that is being used by the Python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
 
-To run any of the python example scripts, make sure you are in the examples directory and start python with the script name::
+To run any of the Python example scripts, make sure you are in the examples directory and start Python with the script name::
 
     python <SCRIPT_NAME>.py
 
