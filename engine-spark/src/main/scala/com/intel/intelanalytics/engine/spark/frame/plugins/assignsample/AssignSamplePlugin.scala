@@ -27,8 +27,8 @@ import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 

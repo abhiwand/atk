@@ -25,7 +25,8 @@ package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBVertex }
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, GraphSchema, Schema }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, MiscFrameFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions }
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
