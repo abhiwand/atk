@@ -73,8 +73,6 @@ class Pandas(object):
 
         my_pandas = ia.PandasFrame(your_pandas, schema, False)
 
-    .. versionadded:: 0.8
-
     """
 
     # TODO - Review docstring
@@ -121,8 +119,6 @@ class Pandas(object):
 
             ["col1", "col2"]
 
-        .. versionadded:: 0.8
-
         """
         # TODO - Review docstring
         return [x[0] for x in self.schema]
@@ -150,8 +146,6 @@ class Pandas(object):
         The output would be::
 
             [numpy.int32, numpy.float32]
-
-        .. versionadded:: 0.8
 
         """
         # TODO - Review docstring
