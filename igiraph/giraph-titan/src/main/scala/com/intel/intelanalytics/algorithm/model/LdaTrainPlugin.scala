@@ -74,6 +74,7 @@ class LdaTrainPlugin
     val ldaConfig = new LdaConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setLdaConfig(ldaConfig)
+    GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
 
     //giraphConf.setVertexInputFormatClass(classOf[LdaParquetFrameVertexValueInputFormat])
     giraphConf.setEdgeInputFormatClass(classOf[LdaParquetFrameEdgeInputFormat])

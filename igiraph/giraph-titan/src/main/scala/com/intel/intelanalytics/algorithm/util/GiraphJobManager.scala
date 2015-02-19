@@ -27,10 +27,11 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
+import org.apache.giraph.counters.GiraphTimers
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
-import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.{ CounterGroup, Job, Counters }
 import com.typesafe.config.Config
 import scala.collection.mutable.HashMap
 
@@ -56,7 +57,24 @@ class GiraphJobListener extends DefaultJobObserver {
     val commandId = getCommandId(submittedJob)
     val commandStorage = getCommandStorage(commandId)
     Stream.continually(submittedJob.isComplete).takeWhile(_ == false).foreach {
-      _ => commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+      _ =>
+        {
+          val conf = submittedJob.getConfiguration()
+          val str = conf.get("giraphjob.maxSteps")
+          var maxSteps: Float = 20
+          if (str != null) {
+            maxSteps = str.toInt + 4 //4 for init, input, step and shutdown
+          }
+          val group = submittedJob.getCounters().getGroup("Giraph Timers")
+          if (null != group) {
+            var progress = (group.size() - 1) / maxSteps
+            if (progress > 0.95) progress = 0.95f //each algorithm calculates steps differently and this sometimes cause it to be greater than 1. It is easier to fix it here
+            commandStorage.updateProgress(commandId, List(ProgressInfo(progress * 100, None)))
+          }
+          else {
+            commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+          }
+        }
     }
   }
 

@@ -94,6 +94,8 @@ class LoopyBeliefPropagation
     GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
     GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignoreVertexType)
 
+    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
