@@ -44,6 +44,7 @@ json_type_id_to_data_type  = {
     "ia:long": int64,
     "ia:float": float32,
     "ia:double": float64,
+    "ia:vector": vector,
 }
 
 json_str_formats_to_data_type = {
