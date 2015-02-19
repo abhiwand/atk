@@ -112,6 +112,8 @@ class ConjugateGradientDescent
     GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.minValue)
     GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.numIters)
 
+    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))

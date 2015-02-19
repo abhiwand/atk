@@ -86,6 +86,8 @@ class LabelPropagation
     GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchorThreshold)
     GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.validateGraphStructure)
 
+    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
