@@ -26,7 +26,6 @@ package com.intel.intelanalytics.domain
 import com.intel.intelanalytics.domain.command.Command
 import org.joda.time.DateTime
 
-
 /**
  * ComputeStatus captures the stages of execution for a demand-executed (lazy)
  * value.

@@ -108,6 +108,8 @@ class AlternatingLeastSquares
     GiraphConfigurationUtil.set(hConf, "als.maxVal", arguments.maxValue)
     GiraphConfigurationUtil.set(hConf, "als.minVal", arguments.minValue)
 
+    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))

@@ -32,7 +32,6 @@ import scala.collection.JavaConverters._
 import scala.reflect.io.Directory
 import com.intel.event.EventLogging
 
-
 /**
  * Helper methods for classes that need to use Hadoop classes
  */
