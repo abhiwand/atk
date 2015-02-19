@@ -414,6 +414,11 @@ object FrameRDD {
   }
 
   /**
+   * Defines a VectorType "StructType" for SchemaRDDs
+   */
+  val VectorType = ArrayType(DoubleType, containsNull = false)
+
+  /**
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
@@ -426,6 +431,7 @@ object FrameRDD {
           case x if x.equals(DataTypes.float32) => FloatType
           case x if x.equals(DataTypes.float64) => DoubleType
           case x if x.equals(DataTypes.string) => StringType
+          case x if x.equals(DataTypes.vector) => VectorType
           case x if x.equals(DataTypes.ignore) => StringType
         }, nullable = true)
     }

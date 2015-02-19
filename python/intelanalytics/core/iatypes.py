@@ -26,7 +26,7 @@ intel_analytics definitions for Data Types
 
 # TODO - consider server providing types, similar to commands
 
-__all__ = ['valid_data_types', 'ignore', 'unknown', 'float32', 'float64', 'int32', 'int64', 'supported_types']
+__all__ = ['valid_data_types', 'ignore', 'unknown', 'float32', 'float64', 'int32', 'int64', 'vector']
 
 import numpy as np
 
@@ -35,6 +35,16 @@ float32 = np.float32
 float64 = np.float64
 int32 = np.int32
 int64 = np.int64
+vector = np.ndarray
+
+
+def vector_constructor(value):
+    return np.array(value, dtype=np.float64)  # ensures the array is entirely made of doubles
+
+# any special constructor mappings go here.  Most types are themselves constructors...
+_constructors = {
+    vector: vector_constructor  # http://stackoverflow.com/questions/15879315/what-is-the-difference-between-ndarray-and-array-in-numpy
+}
 
 
 class _Ignore(object):
@@ -51,6 +61,7 @@ class _Unknown(object):
 unknown = _Unknown
 
 
+# map types to their string identifier
 _types = {
     #bool: "bool", TODO
     #bytearray: "bytearray", TODO
@@ -59,11 +70,13 @@ _types = {
     float64: "float64",
     int32: "int32",
     int64: "int64",
+    vector: "vector",
     #list: "list", TODO
     unicode: "unicode",
     ignore: "ignore"
 }
 
+# build reverse map string -> type
 _strings = dict([(s, t) for t, s in _types.iteritems()])
 
 _alias_types = {
@@ -71,6 +84,7 @@ _alias_types = {
     int: int32,
     long: int64,
     str: unicode,
+    list: vector,
 }
 
 _alias_strings = dict([(alias.__name__, t) for alias, t in _alias_types.iteritems()])
@@ -168,12 +182,16 @@ class _DataTypes(frozenset):
         _DataTypes.get_from_type(data_type)
 
     @staticmethod
-    def checkMissingValues(value):
-        if value in [None, np.inf, -np.inf]:
-            return True
-        if type(value) in [float32, float64, float] and np.isnan(value):
-            return True
-        return False
+    def is_missing_value(value):
+        return value is None or (type(value) in [float32, float64, float] and (np.isnan(value) or value in [np.inf, -np.inf]))
+
+    @staticmethod
+    def get_constructor(to_type):
+        """gets the constructor for the to_type"""
+        try:
+            return _constructors[to_type]
+        except KeyError:
+            return to_type
 
     @staticmethod
     def cast(value, to_type):
@@ -204,16 +222,16 @@ class _DataTypes(frozenset):
         >>> valid_data_types.cast(np.inf, float32)
         None
         """
-        if _DataTypes.checkMissingValues(value):  ## Special handling for missing values
+        if _DataTypes.is_missing_value(value):  ## Special handling for missing values
             return None
         elif type(value) is to_type:                  ## Optimization
             return value
         try:
-            result = to_type(value)
-            return None if _DataTypes.checkMissingValues(result) else result
+            constructor = _DataTypes.get_constructor(to_type)
+            result = constructor(value)
+            return None if _DataTypes.is_missing_value(result) else result
         except Exception as e:
             raise ValueError(("Unable to cast to type %s\n" % to_type) + str(e))
-
 
     def __repr__(self):
         aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _alias_types.iteritems()])))
@@ -225,5 +243,3 @@ valid_data_types = _DataTypes(_types.keys())
 # inside _DataTypes requires overriding  __new__ because frozenset
 # is immutable.  Doing so broke execution in Spark.  An alternative
 # was to provide them in the constructor call here.  TODO - improve
-
-supported_types = valid_data_types  # creating alias for now, until to we TODO - deprecate supported_types
