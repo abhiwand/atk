@@ -12,7 +12,9 @@ observation_column : list of str (Optional)
 
 Returns
 -------
-None
+Frame
+    Frame containing the original frame's columns and a column with the
+    predicted label
 
 Examples
 --------
