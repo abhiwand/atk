@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.google.common.primitives.Doubles
+import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
 
@@ -521,6 +523,20 @@ object DataTypes {
       case abd: ArrayBuffer[Double] => abd.toVector
       case ld: List[Double] => ld.toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not yet implemented")
+    }
+  }
+
+  /**
+   * Convert de-limited string to array of big decimals
+   */
+  def toBigDecimalArray(value: Any, delimiter: String = ","): Array[BigDecimal] = {
+    //TODO: Re-visit once we support lists
+    value match {
+      case null => Array.empty[BigDecimal]
+      case s: String => s.split(delimiter).map(x => {
+        if (StringUtils.isBlank(x)) null.asInstanceOf[BigDecimal] else toBigDecimal(x)
+      })
+      case _ => throw new IllegalArgumentException(s"The following value is not an array of doubles: $value")
     }
   }
 
