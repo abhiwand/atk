@@ -40,9 +40,11 @@ import org.apache.commons.codec.binary.Base64.decodeBase64
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import scala.collection.mutable.ArrayBuffer
 
 import scala.reflect.io.{ Directory, Path }
 
@@ -106,6 +108,8 @@ object PythonRDDStorage {
     val baseRdd: RDD[String] = rdd
       .map(x => x.map {
         case null => JsNull
+        case ab: ArrayBuffer[Double] => ab.toList.toJson
+        case v: Vector[Double] => v.toList.toJson
         case a => a.toJson
       }.toJson.toString())
 
@@ -149,6 +153,7 @@ object PythonRDDStorage {
       case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
       case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value
       case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+      case x if x.isInstanceOf[JsArray] => x.asInstanceOf[JsArray].elements.map(d => d.asInstanceOf[JsNumber].value.toDouble).toVector
       case _ => null
     }).toArray.asInstanceOf[Array[Any]]))
       .flatMap(identity)

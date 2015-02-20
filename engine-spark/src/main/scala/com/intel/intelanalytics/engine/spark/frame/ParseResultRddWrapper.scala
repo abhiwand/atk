@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.Schema
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 

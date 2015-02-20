@@ -57,7 +57,7 @@ done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
 
-# Rene said each build agent has about 24 cores (Jan 2015)
+# Rene said each build agent has about 18 cores (Feb 2015)
 
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
 nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=2 --process-timeout=90 --with-isolation

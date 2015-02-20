@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.HasData
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
+import org.apache.spark.frame.FrameRDD
 
 /**
  * A FrameReference with metadata and a Spark RDD representing the data in the frame.
