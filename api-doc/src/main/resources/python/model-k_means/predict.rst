@@ -12,15 +12,16 @@ observation_columns : list of str (optional)
 
 Returns
 -------
-    It creates a new revision of the frame consisting of the existing columns of the frame along with the following new columns:
-        'k' columns of type Double containing squared distance of each point to every cluster center
-        'predicted_cluster' column of type Int containing the cluster assignment
+Frame
+    A new frame consisting of the existing columns of the frame along with the following new columns:
+    'k' columns of type Double containing squared distance of each point to every cluster center
+    predicted_cluster' column of type Int containing the cluster assignment
 
 
 Examples
 --------
     model = ia.KMeansModel(name='MyKmeansModel')
     model.train(frame, ['name_of_observation_column1', 'name_of_observation_column2'],[2.0, 5.0] 3, 10, 0.0002, "random")
-    model.predict(frame)
+    new_frame = model.predict(frame)
 
 

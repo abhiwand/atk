@@ -34,7 +34,7 @@ Examples
 
     model = ia.SvmModel(name='mySVM')
     model.train(train_frame, ['name_of_observation_column'], 'name_of_label_column')
-    metrics = model.test(test_frame,['name_of_observation_column'], 'name_of_label_column')
+    metrics = model.test(test_frame, 'name_of_label_column',['name_of_observation_column'])
 
     metrics.f_measure
     0.66666666666666663
