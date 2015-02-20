@@ -66,10 +66,9 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModelArgs, ModelEntity]
 
     // validate arguments
     val modelId = arguments.model.id
-    val model = models.lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
     val newName = arguments.newName
 
     // run the operation and save results
-    models.renameModel(model, newName)
+    models.renameModel(modelId, newName)
   }
 }

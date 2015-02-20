@@ -81,7 +81,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
       val jsonModel = new SVMData(svmModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models
-      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
+      models.updateModel(modelMeta.id, jsonModel.toJson.asJsObject)
       new UnitReturn
     }
 
