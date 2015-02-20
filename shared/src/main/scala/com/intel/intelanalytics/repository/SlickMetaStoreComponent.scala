@@ -1143,6 +1143,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def insert(model: ModelTemplate)(implicit session: Session): Try[ModelEntity] = Try {
       // TODO: table name
       // TODO: user name
+      val m = ModelEntity(1, model.name, model.modelType, None, Status.Active, None, new DateTime(), new DateTime(), None, None)
       modelsAutoInc.insert(m)
     }
 
