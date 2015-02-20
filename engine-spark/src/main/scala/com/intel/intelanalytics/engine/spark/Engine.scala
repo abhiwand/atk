@@ -78,6 +78,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import org.apache.spark.frame.FrameRDD
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._

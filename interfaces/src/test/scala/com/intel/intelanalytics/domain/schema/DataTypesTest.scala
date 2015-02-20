@@ -70,6 +70,29 @@ class DataTypesTest extends FlatSpec with Matchers {
     }
   }
 
+  "vector.asDouble" should "convert a Vector of size 1 to a double" in {
+    val v = Vector[Double](2.5)
+    DataTypes.vector.asDouble(v) shouldBe 2.5
+  }
+
+  "vector.asDouble" should "throw Exception when Vector size != 1" in {
+    val vFat = Vector[Double](2.5, 3.6, 4.7)
+    intercept[IllegalArgumentException] {
+      DataTypes.vector.asDouble(vFat)
+    }
+    val vThin = Vector[Double]()
+    intercept[IllegalArgumentException] {
+      DataTypes.vector.asDouble(vThin)
+    }
+  }
+  "vector.typeJson" should "produce good Json" in {
+    val v = Vector[Double](2.5, 3.6, 4.7)
+    DataTypes.vector.typedJson(v).toString shouldBe "[2.5,3.6,4.7]"
+  }
+  "vector" should "be a supported type" in {
+    DataTypes.supportedTypes.contains("vector") shouldBe true
+  }
+
   "javaTypeToDataType" should "get type from java type object" in {
     DataTypes.javaTypeToDataType(new java.lang.Integer(3).getClass) shouldBe int32
     DataTypes.javaTypeToDataType(new java.lang.Long(3).getClass) shouldBe int64

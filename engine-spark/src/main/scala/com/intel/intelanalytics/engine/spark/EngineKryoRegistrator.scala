@@ -36,7 +36,9 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericals
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, LegacyFrameRDD, MiscFrameFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
+import org.apache.spark.frame.FrameRDD
+
 import org.apache.spark.serializer.KryoRegistrator
 
 /**

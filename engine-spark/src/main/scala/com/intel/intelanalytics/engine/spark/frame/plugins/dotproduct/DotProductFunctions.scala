@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import java.io.Serializable
 
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow

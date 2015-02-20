@@ -76,7 +76,7 @@ Given *my_graph* is a Graph object accessing a graph with data:
 Append a new property *sample_bin* to every vertex in the graph;
 Assign the value in the new vertex property to "train", "test", or "validate"::
 
-    my_graph.assign_split([0.3, 0.3, 0.4], ["train", "test", "validate"])
+    my_graph.sampling.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
 
 Now the vertices of *my_graph* have a new vertex property named "sample_bin" and
 each vertex contains one of the values "train", "test", or "validate".
