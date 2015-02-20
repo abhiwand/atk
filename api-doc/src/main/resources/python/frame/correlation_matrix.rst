@@ -1,7 +1,5 @@
 Calculate correlation matrix for two or more columns.
 
-Compute the correlation matrix for two or more columns.
-
 Parameters
 ----------
 columns : [ str | list of str ]

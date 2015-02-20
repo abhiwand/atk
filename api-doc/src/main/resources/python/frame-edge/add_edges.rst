@@ -1,6 +1,5 @@
 Add edges to a graph.
 
-Add edges to a graph.
 Includes appending to a list of existing edges.
 
 Parameters

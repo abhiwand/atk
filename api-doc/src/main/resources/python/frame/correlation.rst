@@ -1,6 +1,4 @@
-Calculate correlation for exactly two columns.
-
-Compute the correlation for two columns.
+Calculate correlation for two columns of current frame.
 
 Parameters
 ----------

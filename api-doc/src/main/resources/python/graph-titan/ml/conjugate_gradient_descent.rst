@@ -1,3 +1,5 @@
+Personalized suggestions relyng on Collaborating Filtering.
+
 The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering
 algorithms.
 

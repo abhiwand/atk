@@ -1,4 +1,4 @@
-Connected Components.
+Make sub-graph of interconnected but isolated vertices.
 
 ** Experimental Feature **
 Connected components.

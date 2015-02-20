@@ -1,4 +1,4 @@
-Predict frame labels.
+Make new frame with additional column for predicted label.
 
 Predict the labels for a test frame and return a new frame with existing
 columns and a predicted label's column.

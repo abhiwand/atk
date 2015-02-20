@@ -1,4 +1,4 @@
-Write frame to HDFS in csv format.
+Write current frame to HDFS in csv format.
 
 Export the frame to a file in csv format as a Hadoop file.
 

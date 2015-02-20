@@ -1,4 +1,4 @@
-Annotate Degrees.
+Make new graph with degrees.
 
 Creates a new graph which is the same as the input graph, with the addition
 that every vertex of the graph has its :term:`degree` stored in a

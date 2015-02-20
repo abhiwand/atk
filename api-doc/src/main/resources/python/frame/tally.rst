@@ -1,6 +1,4 @@
-Computes a cumulative count.
-
-Compute a cumulative count.
+Count number of times a value is seen.
 
 A cumulative count is computed by sequentially stepping through the column
 values and keeping track of the the number of times the specified
