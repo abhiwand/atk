@@ -524,7 +524,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
-        models.drop(model)
+        models.drop(model.id)
       }
     }
   }

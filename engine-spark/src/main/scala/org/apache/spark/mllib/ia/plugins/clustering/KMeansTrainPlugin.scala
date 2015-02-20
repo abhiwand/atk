@@ -74,7 +74,6 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
       val frames = engine.frames
 
       val inputFrame = frames.expectFrame(arguments.frame.id)
-      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
@@ -91,7 +90,8 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
 
       //Writing the kmeansModel as JSON
       val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
-      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
+      val modelMeta = models.expectModel(arguments.model.id)
+      models.updateModel(modelMeta.id, jsonModel.toJson.asJsObject)
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }
