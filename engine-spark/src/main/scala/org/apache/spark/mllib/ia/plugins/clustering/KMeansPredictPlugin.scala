@@ -42,7 +42,7 @@ import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
 import scala.collection.mutable.ListBuffer
 
-class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitReturn] {
+class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
 
   /**
    * The name of the command.
@@ -74,7 +74,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val models = engine.models
     val frames = engine.frames
@@ -128,8 +128,10 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val updatedSchema = inputFrameRDD.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-    frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
-    new UnitReturn
+    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
+      save(new SparkFrameData(
+        newPredictedFrame.meta, predictFrameRDD))
+    }.meta
   }
 
 }
