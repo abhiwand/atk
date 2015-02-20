@@ -12,7 +12,9 @@ observation_column : list of str (Optional)
 
 Returns
 -------
-None
+Frame
+    Frame containing the original frame's columns and a column with the
+    predicted label
 
 Examples
 --------
@@ -20,6 +22,4 @@ Examples
 
     model = ia.SvmModel(name='mySVM')
     model.train(train_frame, ['name_of_observation_column1'], 'name_of_label_column')
-    model.predict(predict_frame, ['predict_for_observation_column'])
-
-
+    predicted_frame = model.predict(predict_frame, ['predict_for_observation_column'])
