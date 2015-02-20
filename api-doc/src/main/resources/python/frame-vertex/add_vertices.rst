@@ -1,6 +1,5 @@
 Add vertices to a graph.
 
-Add vertices to a graph.
 Includes appending to a list of existing vertices.
 
 Parameters

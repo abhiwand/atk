@@ -1,4 +1,4 @@
-Flattens cell to multiple rows.
+Convert single cell to multiple rows in current frame.
 
 Splits cells in the specified column into multiple rows according to a string
 delimiter.

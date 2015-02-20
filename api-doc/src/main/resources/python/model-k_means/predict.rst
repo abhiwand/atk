@@ -1,5 +1,3 @@
-Predict frame labels.
-
 Predict the cluster assignments for the data points. 
 
 Parameters

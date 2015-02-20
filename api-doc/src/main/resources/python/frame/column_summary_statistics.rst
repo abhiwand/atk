@@ -1,6 +1,4 @@
-Column summary statistics.
-
-Calculate summary statistics of a column.
+Calculate multiple statistics for a column.
 
 Parameters
 ----------

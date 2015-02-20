@@ -1,6 +1,6 @@
-Write frame to HDFS in json format.
+Write current frame to HDFS in JSON format.
 
-Export the frame to a file in json format as a Hadoop file.
+Export the frame to a file in JSON format as a Hadoop file.
 
 Parameters
 ----------

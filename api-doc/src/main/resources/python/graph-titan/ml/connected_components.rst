@@ -1,3 +1,5 @@
+Make sub-graph of interconnected but isolated vertices.
+
 Label vertices by their connected component in the graph induced by a given
 edge label.
 

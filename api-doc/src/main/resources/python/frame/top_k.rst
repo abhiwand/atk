@@ -1,4 +1,4 @@
-Top/bottom K values.
+Most or least frequent column values.
 
 Calculate the top (or bottom) K distinct values by count of a column.
 The column can be weighted.

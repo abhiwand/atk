@@ -1,76 +1,76 @@
 Compute the histogram for a column in a frame.
 
-    Extended Summary
-    ----------------
-    Compute the histogram of the data in a column. The returned value is a Histogram object containing
-    3 lists one each for; the cutoff points of the bins, size of each bin, and density of each bin.
+Extended Summary
+----------------
+Compute the histogram of the data in a column. The returned value is a Histogram object containing
+3 lists one each for; the cutoff points of the bins, size of each bin, and density of each bin.
 
 
-    Parameters
-    ----------
-    column_name: str
-        name of column to be evaluated
+Parameters
+----------
+column_name: str
+    name of column to be evaluated
 
-    num_bins: int (optional)
-        number of bins in histogram
-        if omitted the system will use the Square-root choice `math.floor(math.sqrt(frame.row_count))`
+num_bins: int (optional)
+    number of bins in histogram
+    if omitted the system will use the Square-root choice `math.floor(math.sqrt(frame.row_count))`
 
-    weight_column_name: str (optional)
-        name of column containing weights.
-        if omitted the system will weigh all observations equally
+weight_column_name: str (optional)
+    name of column containing weights.
+    if omitted the system will weigh all observations equally
 
-    bin_type : str (optional)
-        The binning algorithm to use ['equalwidth' | 'equaldepth'].
-        if omitted defaults to equalwidth.
+bin_type : str (optional)
+    The binning algorithm to use ['equalwidth' | 'equaldepth'].
+    if omitted defaults to equalwidth.
 
-    Notes
-    -----
-    1)  The num_bins parameter is considered to be the maximum permissible number
-        of bins because the data may dictate fewer bins.
-        With equal depth binning, for example, if the column to be binned has 10
-        elements with only 2 distinct values and the *num_bins* parameter is
-        greater than 2, then the number of actual number of bins will only be 2.
-        This is due to a restriction that elements with an identical value must
-        belong to the same bin.
-
-
-    Returns
-    -------
-    histogram : Histogram
-        a Histogram object containing the result set. It contains three attributes:
-        cutoffs: array of type float
-            a list containing the edges of each bin
-        hist: array of type float
-            a list containing count of the weighted observations found in each bin
-        density: array of type float
-            a list containing a decimal containing the percentage of observations found in the total set per bin
+Notes
+-----
+1)  The num_bins parameter is considered to be the maximum permissible number
+    of bins because the data may dictate fewer bins.
+    With equal depth binning, for example, if the column to be binned has 10
+    elements with only 2 distinct values and the *num_bins* parameter is
+    greater than 2, then the number of actual number of bins will only be 2.
+    This is due to a restriction that elements with an identical value must
+    belong to the same bin.
 
 
-    Examples
-    --------
-    Consider the following sample data set::
-
-        frame.inspect()
-
-          a:unicode   b:int32
-        /-----------------------/
-            a           2
-            b           7
-            c           3
-            d           9
-            e           1
-
-        hist = frame.histogram("b")
-        print hist
-
-        Histogram:
-            cutoffs: [1, 3, 6, 9],
-            hist: [2, 1, 2],
-            density: [0.4, 0.2, 0.4]
+Returns
+-------
+histogram : Histogram
+    a Histogram object containing the result set. It contains three attributes:
+    cutoffs: array of type float
+        a list containing the edges of each bin
+    hist: array of type float
+        a list containing count of the weighted observations found in each bin
+    density: array of type float
+        a list containing a decimal containing the percentage of observations found in the total set per bin
 
 
-    Plot hist as a bar chart using matplotlib::
+Examples
+--------
+Consider the following sample data set::
 
-        import matplotlib.pyplot as plt
+    frame.inspect()
 
-        plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+      a:unicode   b:int32
+    /-----------------------/
+        a           2
+        b           7
+        c           3
+        d           9
+        e           1
+
+    hist = frame.histogram("b")
+    print hist
+
+    Histogram:
+        cutoffs: [1, 3, 6, 9],
+        hist: [2, 1, 2],
+        density: [0.4, 0.2, 0.4]
+
+
+Plot hist as a bar chart using matplotlib::
+
+    import matplotlib.pyplot as plt
+
+    plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])

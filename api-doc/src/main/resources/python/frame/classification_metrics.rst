@@ -1,4 +1,4 @@
-Computes Model accuracy.
+Model statistics of accuracy, precision, and others.
 
 Calculate the accuracy, precision, confusion_matrix, recall and
 :math:`F_{\\beta}` measure for a classification model.

@@ -126,7 +126,9 @@ class CsvFile(DataFile):
     @property
     def field_names(self):
         """
-        Schema field names from the CsvFile class.
+        |BETA| Schema field names from the CsvFile class.
+
+        |TB|
 
         Returns
         -------
@@ -191,7 +193,9 @@ class CsvFile(DataFile):
 
 class LineFile(DataFile):
     """
-    Define a line-separated file.
+    |DEPRECATED| Define a line-separated file.
+
+    |TD|
 
     Parameters
     ----------

@@ -1,4 +1,4 @@
-Assign classes to rows.
+Randomly group rows into user-defined classes.
 
 Randomly assign classes to rows given a vector of percentages.
 The table receives an additional column that contains a random label.

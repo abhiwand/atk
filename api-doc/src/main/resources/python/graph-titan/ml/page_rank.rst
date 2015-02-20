@@ -1,4 +1,4 @@
-PageRank.
+Determining which vertices are the most important.
 
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 

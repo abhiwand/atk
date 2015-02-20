@@ -1,4 +1,4 @@
-K-clique percolation is used to find communities.
+Find groups of vertices with similar attributes.
 
 Parameters
 ----------

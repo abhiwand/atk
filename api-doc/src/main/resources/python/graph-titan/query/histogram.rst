@@ -1,4 +1,4 @@
-Generate histograms.
+Make histogram of probabilities.
 
 Generate histograms of prior and posterior probabilities.
 The prerequisite is that either LBP, ALS or CGD has been run before this query.
