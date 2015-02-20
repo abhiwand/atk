@@ -1,4 +1,4 @@
-from intelanalytics.core.orddict import OrderedDict
+from collections import OrderedDict
 from intelanalytics.core.iatypes import valid_data_types
 
 import json
