@@ -66,7 +66,7 @@ SMOKE_TEST_SUCCESS=$?
 if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     echo "$NAME Python smoke tests PASSED -- basic frame,graph,model functionality verified"
     echo "$NAME Running the rest of the tests, calling nosetests again"
-    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=20 --process-timeout=300 --with-isolation
+    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=10 --process-timeout=300 --with-isolation
     TEST_SUCCESS=$?
 fi
 
