@@ -82,7 +82,7 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
     }
 
     val frames = engine.frames
-    frames.tryNewFrame(CreateEntityArgs(description = Some("created by copy command"))) {
+    frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created by copy command"))) {
       newFrame => frames.saveFrameData(newFrame.toReference, finalRdd)
     }
   }
