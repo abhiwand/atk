@@ -67,7 +67,7 @@ object TriangleCountRunner extends Serializable {
     val graphXVertices: RDD[(Long, Null)] =
       inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
-    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge))
+    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge, true)).distinct()
 
     // create graphx Graph instance from graphx vertices and edges
     val graph = Graph[Null, Long](graphXVertices, graphXEdges)
