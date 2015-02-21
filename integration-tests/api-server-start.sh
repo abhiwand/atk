@@ -48,7 +48,7 @@ cp -rp $DIR/datasets $FS_ROOT
 echo "$NAME fs.root is $FS_ROOT"
 echo "$NAME Api Server logging going to $LOG"
 
-java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" \
+java $@ -XX:MaxPermSize=256m -Xss10m -cp "$CONF:$LAUNCHER" \
     -Dconfig.resource=integration-test.conf \
     -Dintel.analytics.engine.fs.root=file:$FS_ROOT \
     com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication > $LOG 2>&1 &

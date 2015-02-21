@@ -70,8 +70,6 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
     // validate arguments    
     frameSchema.validateColumnsExist(arguments.leftColumnNames)
     frameSchema.validateColumnsExist(arguments.rightColumnNames)
-    require(arguments.leftColumnNames.forall(frameSchema.columnDataType(_).isNumerical), "All left columns should contain numerical data.")
-    require(arguments.rightColumnNames.forall(frameSchema.columnDataType(_).isNumerical), "All right columns should contain numerical data.")
     require(!frameSchema.hasColumn(arguments.dotProductColumnName), s"Column name already exists: ${arguments.dotProductColumnName}")
 
     // run the operation
