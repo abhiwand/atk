@@ -26,6 +26,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles
 import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
@@ -37,8 +40,8 @@ class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
       (Array[Any](24, "")), (Array[Any](12, "")), (Array[Any](2, "")), (Array[Any](14, "")), (Array[Any](25, ""))
     )
 
-    val rdd = sparkContext.parallelize(numbers, 3)
-    val result = QuantilesFunctions.quantiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32).collect()
+    val rdd: RDD[Row] = sparkContext.parallelize(numbers.map(a => new GenericRow(a)), 3)
+    val result = QuantilesFunctions.quantiles(rdd, Seq(0, 3, 5, 40, 100), 0, numbers.size.toLong).collect()
     result.size shouldBe 5
     result(0) shouldBe Array(0.0, 1.0)
     result(1) shouldBe Array(3.0, 1.0)

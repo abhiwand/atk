@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.google.common.primitives.Doubles
+import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
 
@@ -51,6 +53,10 @@ object DataTypes {
     def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
+
+    def asString(raw: Any): String = {
+      raw.toString
+    }
 
     def isNumerical: Boolean
 
@@ -251,9 +257,41 @@ object DataTypes {
       }
     }
 
+    override def asString(raw: Any): String = {
+      try {
+        val v = raw.asInstanceOf[VectorDataType]
+        v.mkString(",")
+      }
+      catch {
+        case e: Exception => throw new IllegalArgumentException(s"Could not parse $raw as a Vector: ${e.getMessage}")
+      }
+    }
+
     override def isNumerical = false
 
     override def isIntegral = false
+
+    def compare(valueA: VectorDataType, valueB: VectorDataType): Int = {
+      if (valueB == null) {
+        if (valueA == null) {
+          0
+        }
+        else {
+          1
+        }
+      }
+      else {
+        var comparison: Int = valueA.size.compare(valueB.size)
+        if (comparison == 0) {
+          (0 until valueA.size).takeWhile(i => {
+            comparison = valueA(i).compare(valueB(i))
+            comparison == 0
+          })
+        }
+        comparison
+      }
+    }
+
   }
 
   /**
@@ -503,7 +541,7 @@ object DataTypes {
       case d: Double => d.toString
       case bd: BigDecimal => bd.toString()
       case s: String => s
-      case v: VectorDataType => v.toString()
+      case v: VectorDataType => vector.asString(v)
       case _ => throw new RuntimeException(s"${value.getClass.getName} toStr is not yet implemented")
     }
   }
@@ -516,11 +554,28 @@ object DataTypes {
       case f: Float => toVector(f.toDouble)
       case d: Double => Vector[Double](d)
       case bd: BigDecimal => toVector(bd.toDouble)
-      case s: String => JsonParser(s).convertTo[List[Double]].toVector
+      case s: String => {
+        val jsonStr = if (s.trim.startsWith("[")) s else "[" + s + "]"
+        JsonParser(jsonStr).convertTo[List[Double]].toVector
+      }
       case v: VectorDataType => v
       case abd: ArrayBuffer[Double] => abd.toVector
       case ld: List[Double] => ld.toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not yet implemented")
+    }
+  }
+
+  /**
+   * Convert de-limited string to array of big decimals
+   */
+  def toBigDecimalArray(value: Any, delimiter: String = ","): Array[BigDecimal] = {
+    //TODO: Re-visit once we support lists
+    value match {
+      case null => Array.empty[BigDecimal]
+      case s: String => s.split(delimiter).map(x => {
+        if (StringUtils.isBlank(x)) null.asInstanceOf[BigDecimal] else toBigDecimal(x)
+      })
+      case _ => throw new IllegalArgumentException(s"The following value is not an array of doubles: $value")
     }
   }
 
@@ -547,7 +602,7 @@ object DataTypes {
         case f: Float => f.compare(DataTypes.toFloat(valueB))
         case d: Double => d.compare(DataTypes.toDouble(valueB))
         case s: String => s.compareTo(valueB.toString)
-        //case v: Vec => v.compare(DataTypes.toVec(valueB)) // TODO
+        case v: VectorDataType => vector.compare(v, DataTypes.toVector(valueB))
         case _ => throw new RuntimeException(s"${valueA.getClass.getName} comparison is not yet implemented")
       }
     }
