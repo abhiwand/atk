@@ -241,7 +241,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan) {
+          if (graph.isTitan && graph.name.isDefined) {
             backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
           }
           metaStore.graphRepo.insert(graph).get
