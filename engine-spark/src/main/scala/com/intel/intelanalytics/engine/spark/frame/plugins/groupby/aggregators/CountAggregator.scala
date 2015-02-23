@@ -26,9 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
- *  Aggregator for counting column values using Spark's aggregateByKey().
- *
- *  @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
+ *  Aggregator for counting column values.
  */
 case class CountAggregator() extends GroupByAggregator {
 
