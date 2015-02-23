@@ -24,12 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.join
 
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.engine.Spark
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-
-import scala.util.Random
 
 //implicit conversion for PairRDD
 
@@ -207,11 +204,12 @@ object JoinRDDFunctions extends Serializable {
   def broadcastLeftOuterJoin(left: RDDJoinParam, right: RDDJoinParam): RDD[(Any, (Row, Option[Row]))] = {
     val sparkContext = left.rdd.sparkContext
     //Use multi-map to handle duplicate keys
-    val rightBroadcastVariable = JoinBroadcastVariable(right)
+    val rightMultiMap = listToMultiMap(right.rdd.collect().toList)
+    val broadcastRightMultiMap = sparkContext.broadcast(rightMultiMap)
 
     left.rdd.flatMap {
       case (leftKey, leftValues) => {
-        rightBroadcastVariable.get(leftKey) match {
+        broadcastRightMultiMap.value.get(leftKey) match {
           case Some(rightValueSet) => for (values <- rightValueSet) yield (leftKey, (leftValues, Some(values)))
           case _ => List((leftKey, (leftValues, None))).asInstanceOf[List[(Any, (Row, Option[Row]))]]
         }
@@ -230,11 +228,12 @@ object JoinRDDFunctions extends Serializable {
   def broadcastRightOuterJoin(left: RDDJoinParam, right: RDDJoinParam): RDD[(Any, (Option[Row], Row))] = {
     val sparkContext = left.rdd.sparkContext
     //Use multi-map to handle duplicate keys
-    val leftBroadcastVariable = JoinBroadcastVariable(left)
+    val leftMultiMap = listToMultiMap(left.rdd.collect().toList)
+    val broadcastLeftMultiMap = sparkContext.broadcast(leftMultiMap)
 
     right.rdd.flatMap {
       case (rightKey, rightValues) => {
-        leftBroadcastVariable.get(rightKey) match {
+        broadcastLeftMultiMap.value.get(rightKey) match {
           case Some(leftValueSet) => for (values <- leftValueSet) yield (rightKey, (Some(values), rightValues))
           case _ => List((rightKey, (None, rightValues))).asInstanceOf[List[(Any, (Option[Row], Row))]]
         }
@@ -258,10 +257,11 @@ object JoinRDDFunctions extends Serializable {
 
     val innerJoinedRDD = if (rightSizeInBytes < broadcastJoinThreshold) {
       //Use multi-map to handle duplicate keys
-      val rightBroadcastVariable = JoinBroadcastVariable(right)
+      val rightMultiMap = listToMultiMap(right.rdd.collect().toList)
+      val broadcastRightMultiMap = sparkContext.broadcast(rightMultiMap)
       left.rdd.flatMap {
         case (leftKey, leftValues) => {
-          val rightValueList = rightBroadcastVariable.get(leftKey).toList
+          val rightValueList = broadcastRightMultiMap.value.get(leftKey).toList
           rightValueList.flatMap(rightValues => {
             for (values <- rightValues) yield (leftKey, (leftValues, values))
           })
@@ -270,10 +270,11 @@ object JoinRDDFunctions extends Serializable {
     }
     else if (leftSizeInBytes < broadcastJoinThreshold) {
       //Use multi-map to handle duplicate keys
-      val leftBroadcastVariable = JoinBroadcastVariable(left)
+      val leftMultiMap = listToMultiMap(right.rdd.collect().toList)
+      val broadcastLeftMultiMap = sparkContext.broadcast(leftMultiMap)
       right.rdd.flatMap {
         case (rightKey, rightValues) => {
-          val leftValueList = leftBroadcastVariable.get(rightKey).toList
+          val leftValueList = broadcastLeftMultiMap.value.get(rightKey).toList
           leftValueList.flatMap(leftValues => {
             for (values <- leftValues) yield (rightKey, (values, rightValues))
           })
@@ -283,5 +284,10 @@ object JoinRDDFunctions extends Serializable {
     else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: ${broadcastJoinThreshold}.")
     innerJoinedRDD
   }
+
+  //Converts list to multi-map
+  //Broadcast variables are stored as multi-maps to ensure results are not lost when RDD has duplicate keys
+  private def listToMultiMap[A, B](list: List[(A, B)]) =
+    list.foldLeft(new HashMap[A, Set[B]] with MultiMap[A, B]) { (acc, pair) => acc.addBinding(pair._1, pair._2) }
 
 }

@@ -23,20 +23,18 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.File
-import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
-import com.intel.event.{ EventContext, EventLogging }
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{ ConfigFactory, Config }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.util.Try
+import java.net.InetAddress
+import java.io.File
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -225,20 +223,11 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
-   * Use broadcast join if file size is lower than threshold.
+   *  Use broadcast join if file size is lower than threshold.
    *
-   * A threshold of zero disables broadcast joins. This threshold should not exceed the maximum size of results
-   * that can be returned to the Spark driver (i.e., spark.driver.maxResultSize).
+   *  A threshold of zero disables broadcast joins.
    */
-  val broadcastJoinThreshold = {
-    val joinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
-    val maxResultSize = config.getBytes("intel.analytics.engine.spark.conf.properties.spark.driver.maxResultSize")
-    if (joinThreshold > maxResultSize) {
-      throw new RuntimeException(
-        s"Broadcast join threshold: ${joinThreshold} shouldn't be larger than spark.driver.maxResultSize: ${maxResultSize}")
-    }
-    joinThreshold
-  }
+  val broadcastJoinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
