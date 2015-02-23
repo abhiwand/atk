@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -29,7 +29,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.Vectors
@@ -74,7 +74,6 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
       val frames = engine.frames
 
       val inputFrame = frames.expectFrame(arguments.frame.id)
-      val modelMeta = models.expectModel(arguments.model.id)
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
@@ -84,14 +83,15 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
        */
       val kMeans = initializeKmeans(arguments)
 
-      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnWeights)
+      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
       val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnWeights)
+      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnScalings)
       val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
 
       //Writing the kmeansModel as JSON
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnWeights)
-      models.updateModel(modelMeta, jsonModel.toJson.asJsObject)
+      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
+      val modelMeta = models.expectModel(arguments.model.id)
+      models.updateModel(modelMeta.id, jsonModel.toJson.asJsObject)
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }
@@ -105,11 +105,11 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
     kmeans.setEpsilon(arguments.geteEpsilon)
   }
 
-  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnWeights: List[Double]): Map[String, Int] = {
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnScalings: List[Double]): Map[String, Int] = {
 
     val predictRDD = trainFrameRDD.mapRows(row => {
       val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
-      val columnWeightsArray = columnWeights.toArray
+      val columnWeightsArray = columnScalings.toArray
       val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
       kmeansModel.predict(point)

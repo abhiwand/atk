@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -1115,7 +1115,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def description = column[Option[String]]("description")
 
-      def statusId = column[Long]("status_id", O.Default(1))
+      def statusId = column[Long]("status_id", O.Default(Status.Active))
 
       def data = column[Option[JsObject]]("data")
 
@@ -1143,7 +1143,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def insert(model: ModelTemplate)(implicit session: Session): Try[ModelEntity] = Try {
       // TODO: table name
       // TODO: user name
-      val m = ModelEntity(1, model.name, model.modelType, None, 1L, None, new DateTime(), new DateTime(), None, None)
+      val m = ModelEntity(1, model.name, model.modelType, None, Status.Active, None, new DateTime(), new DateTime(), None, None)
       modelsAutoInc.insert(m)
     }
 

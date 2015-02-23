@@ -507,7 +507,7 @@ class Graph(DocStubsGraph, _BaseGraph):
     """
     _entity_type = 'graph:'
 
-    def __init__(self, source=None, name='', _info=None):
+    def __init__(self, source=None, name=None, _info=None):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         from intelanalytics.rest.graph import GraphInfo
@@ -701,7 +701,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     _entity_type = 'graph:titan'
 
-    def __init__(self, rules=None, name="", _info=None):
+    def __init__(self, rules=None, name=None, _info=None):
         try:
             check_api_is_loaded()
             self._id = 0

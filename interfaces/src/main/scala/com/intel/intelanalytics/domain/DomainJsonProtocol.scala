@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -41,6 +41,7 @@ import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, QueryPluginResults }
 import com.intel.intelanalytics.schema._
+//import org.apache.spark.mllib.ia.plugins.classification.{SVMTrainArgs, ClassificationWithSGDPredictArgs, ClassificationWithSGDArgs}
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
@@ -65,6 +66,8 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * Implicit conversions for domain objects to/from JSON
  */
@@ -268,6 +271,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case n: Float => new JsNumber(n)
         case n: Double => new JsNumber(n)
         case s: String => new JsString(s)
+        case v: ArrayBuffer[Double] => new JsArray(v.map(d => JsNumber(d)).toList) // for vector DataType
         case n: java.lang.Long => new JsNumber(n.longValue())
         case unk => serializationError("Cannot serialize " + unk.getClass.getName)
       }
@@ -374,8 +378,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModelArgs)
   implicit val modelFormat = jsonFormat11(ModelEntity)
-  implicit val modelLoadFormat = jsonFormat4(ClassificationWithSGDArgs)
-  implicit val modelPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
   implicit val genericNewModelArgsFormat = jsonFormat2(GenericNewModelArgs)
 
   // kmeans formats
@@ -384,8 +386,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val coalesceArgsFormat = jsonFormat3(CoalesceArgs)
   implicit val repartitionArgsFormat = jsonFormat2(RepartitionArgs)
   implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
-
-  implicit val svmModelLoadFormat = jsonFormat8(SVMTrainArgs)
 
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,18 +20,21 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package org.apache.spark.mllib.ia.plugins.classification
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.ClassificationWithSGDPredictArgs
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import org.apache.spark.mllib.linalg.Vectors
@@ -80,18 +83,23 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
 
       //Running MLLib
       val logRegJsObject = modelMeta.data.get
-      val logRegModel = logRegJsObject.convertTo[LogisticRegressionModel]
+      val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
+      val logRegModel = logRegData.logRegModel
+      if (arguments.observationColumns.isDefined) {
+        require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+      }
+      val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
       //predicting a label for the observation columns
       val predictionsRDD = inputFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
+        val array = row.valuesAsArray(logRegColumns)
         val doubles = array.map(i => DataTypes.toDouble(i))
         val point = Vectors.dense(doubles)
         val prediction = logRegModel.predict(point)
-        row.addValue(prediction)
+        row.addValue(prediction.toInt)
       })
 
-      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
       tryNew(CreateEntityArgs(description = Some("created by LogisticRegressionWithSGDs predict operation"))) {

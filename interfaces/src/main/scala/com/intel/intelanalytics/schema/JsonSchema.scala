@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -69,6 +69,8 @@ object JsonSchema {
   val graph = StringSchema(format = Some("uri/ia-graph"))
 
   val model = StringSchema(format = Some("uri/ia-model"))
+
+  val vector = ArraySchema(`type` = Some("ia:vector"))
 }
 
 sealed trait Primitive extends JsonSchema {
@@ -129,4 +131,3 @@ case class NumberSchema(id: Option[URI] = None,
                         multipleOf: Option[Double] = None,
                         `type`: Option[String] = Some("number")) extends Primitive {
 }
-

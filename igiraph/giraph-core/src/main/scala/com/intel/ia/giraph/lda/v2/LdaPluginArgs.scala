@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -40,7 +40,7 @@ case class LdaTrainArgs(model: ModelReference,
                         alpha: Option[Float] = None,
                         beta: Option[Float] = None,
                         convergenceThreshold: Option[Float] = None,
-                        evaluationCost: Option[Boolean] = None,
+                        evaluateCost: Option[Boolean] = None,
                         numTopics: Option[Int] = None) {
 
   require(model != null, "model is required")
@@ -74,7 +74,7 @@ case class LdaTrainArgs(model: ModelReference,
   }
 
   def getEvaluateCost: Boolean = {
-    evaluationCost.getOrElse(false)
+    evaluateCost.getOrElse(false)
   }
 
   def getNumTopics: Int = {

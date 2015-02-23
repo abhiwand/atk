@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -78,6 +78,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import org.apache.spark.frame.FrameRDD
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -523,7 +524,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
-        models.drop(model)
+        models.drop(model.id)
       }
     }
   }

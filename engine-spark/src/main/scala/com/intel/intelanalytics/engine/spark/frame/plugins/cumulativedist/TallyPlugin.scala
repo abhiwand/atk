@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -79,4 +79,3 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }
-

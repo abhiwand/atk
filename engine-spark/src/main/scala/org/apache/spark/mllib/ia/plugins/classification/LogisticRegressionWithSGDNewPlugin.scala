@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,16 +20,18 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity, ClassificationWithSGDPredictArgs }
+import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.rdd.RDD

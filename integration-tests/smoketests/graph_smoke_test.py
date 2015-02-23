@@ -66,10 +66,8 @@ class GraphSmokeTest(unittest.TestCase):
 
         print "create graph"
         graph = ia.Graph()
-        print "created graph " + graph.name
 
         self.assertIsNotNone(graph._id)
-        self.assertTrue(graph.name.startswith('graph'), "name didn't start with 'graph' " + graph.name)
 
         print "define vertices and edges"
         graph.define_vertex_type('movies')
