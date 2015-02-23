@@ -73,12 +73,11 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference.id))
 
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference =
-      storage.createModel(args)
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createModel(args)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = ModelReference(model.id)
+    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -199,15 +198,15 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Store the result of running the train data on a model
-   * @param id The model to update
+   * @param modelReference The model to update
    * @param newData JsObject storing the result of training.
    */
 
-  override def updateModel(id: Long, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
+  override def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
     metaStore.withSession("spark.modelstorage.updateModel") {
       implicit session =>
         {
-          val currentModel = expectModel(id)
+          val currentModel = expectModel(modelReference.modelId)
           val newModel = currentModel.copy(data = Option(newData))
 
           metaStore.modelRepo.update(newModel).get
