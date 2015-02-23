@@ -28,8 +28,9 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 /**
  *  Trait for group-by aggregators
  *
- *  This trait defines methods needed to implement aggregators, e.g. counts and sums,
- *  using Spark's aggregateByKey(). aggregateByKey() aggregates the values of each key using
+ *  This trait defines methods needed to implement aggregators, e.g. counts and sums.
+ *
+ *  This implementation uses Spark's aggregateByKey(). aggregateByKey() aggregates the values of each key using
  *  an initial "zero value", an operation which merges an input value V into an aggregate value U,
  *  and an operation for merging two U's.
  *
@@ -38,26 +39,22 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 trait GroupByAggregator extends Serializable {
 
   /**
-   * A type that represents the aggregate results (e.g., count)
-   *
-   * Corresponds to type U in Spark's aggregateByKey()
+   * The type that represents aggregate results. For example, Double for mean, and Long for distinct count values.
    */
   type AggregateType
 
   /**
-   * A type that represents output of the map function  (e.g., ones when doing count)
-   *
-   * Corresponds to type V in Spark's aggregateByKey()
+   * A type that represents the value to be aggregated. For example, 'ones' for counts, or column values for sums
    */
   type ValueType
 
   /**
-   * The 'empty' or 'zero' or default value for the aggregator
+   * The 'empty' or 'zero' or initial value for the aggregator
    */
   def zero: AggregateType
 
   /**
-   * Map function that transforms column values in each row into the input expected by Spark's aggregateByKey()
+   * Map function that transforms column values in each row into the input expected by the aggregator
    *
    * For example, for counts, the map function would output 'one' for each map value.
    *
@@ -68,10 +65,9 @@ trait GroupByAggregator extends Serializable {
   def mapFunction(columnValue: Any, columnDataType: DataType): ValueType
 
   /**
-   * Adds map value to aggregate value
+   * Adds the output of the map function to the aggregate value
    *
-   * This function corresponds to Spark's aggregateByKey() operation which merges
-   * the map value V into an aggregate value U. For example, incrementing the current count by one.
+   * This function increments the aggregated value within a single Spark partition.
    *
    * @param aggregateValue Current aggregate value
    * @param mapValue Input value
@@ -82,7 +78,7 @@ trait GroupByAggregator extends Serializable {
   /**
    * Combines two aggregate values
    *
-   * This function corresponds to Spark's aggregateByKey() operation which merges for merging two aggregate values (U's)
+   * This function combines aggregate values across Spark partitions.
    * For example, adding two counts
    *
    * @param aggregateValue1 First aggregate value

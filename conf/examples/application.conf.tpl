@@ -84,6 +84,7 @@ intel.analytics {
         max-partitions = 10000
 
         # use broadcast join if file size is lower than threshold. zero disables broadcast joins.
+        # this threshold should be less than the maximum size of results returned to Spark driver (i.e., spark.driver.maxResultSize).
         broadcast-join-threshold = "0MB"
     }
   }
