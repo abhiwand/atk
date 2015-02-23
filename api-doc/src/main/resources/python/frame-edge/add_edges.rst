@@ -15,7 +15,7 @@ column_name_for_dest_vertex_id : str
     column name for a unique id for each destination vertex (this is not the
     system defined _vid)
 
-column_names : list of strings
+column_names : list of str
     column names that will be turned into properties for each edge
 
 create_missing_vertices : Boolean (optional)

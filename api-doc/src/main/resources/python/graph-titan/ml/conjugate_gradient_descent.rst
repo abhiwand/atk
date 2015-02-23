@@ -60,7 +60,7 @@ feature_dimension : int (optional)
     The length of feature vector to use in CGD model.
     Larger value in general results in more accurate parameter estimation,
     but slows down the computation.
-    The valid value range is all positive integer.
+    The valid value range is all positive int.
     Default is 3.
 
 learning_curve_output_interval : int (optional)
