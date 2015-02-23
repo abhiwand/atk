@@ -77,7 +77,7 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.getReference()
+    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 

@@ -81,7 +81,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models
-      models.updateModel(modelMeta.getReference(), jsonModel.toJson.asJsObject)
+      models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
       new UnitReturn
     }
   private def initializeLogisticRegressionModel(arguments: ClassificationWithSGDTrainArgs): LogisticRegressionWithSGD = {

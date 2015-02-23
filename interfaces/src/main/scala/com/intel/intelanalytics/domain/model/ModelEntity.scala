@@ -72,7 +72,7 @@ case class ModelEntity(id: Long,
     modelType
   }
 
-  def uri: String = getReference().uri
+  def uri: String = toReference.uri
 
-  def getReference(): ModelReference = ModelReference(id)
+  def toReference: ModelReference = ModelReference(id)
 }
