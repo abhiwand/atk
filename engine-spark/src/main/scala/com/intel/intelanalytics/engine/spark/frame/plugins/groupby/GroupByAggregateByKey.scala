@@ -48,7 +48,6 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
   // Scala is not that great at handling unions of types
   // These type definitions specify the lower and upper type bounds for GroupByAggregator so that
   // we can operate on a collection of different types of aggregators
-  // These bounds can be interpreted as ( GroupByAggregator is-a aggregator) && (aggregator is-a GroupByAggregator)
   type InputType = (aggregator#ValueType) forSome { type aggregator >: GroupByAggregator <: GroupByAggregator }
   type AggregateType = (aggregator#AggregateType) forSome { type aggregator >: GroupByAggregator <: GroupByAggregator }
 
