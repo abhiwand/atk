@@ -212,7 +212,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @api
     def name(self):
         """
-        The name of the current frame.
+        Retrieve the name of the current frame.
 
         Returns
         -------
@@ -238,7 +238,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @api
     def name(self, value):
         """
-        Assign name to current frame.
+        Assign the name to the current frame.
 
         Examples
         --------
@@ -253,7 +253,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @api
     def row_count(self):
         """
-        Number of rows in current frame.
+        Number of rows in the current frame.
 
         Returns
         -------
@@ -287,7 +287,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        list of tuples
+        list : list of tuples
 
         Examples
         --------
@@ -433,8 +433,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        Frame | Frame
-            A new Frame object accessing data in a frame which is a copy of
+        Frame | access to new frame
+            A new Frame object accessing data in a new frame which is a copy of
             the original frame.
 
         Examples
@@ -631,7 +631,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        Frame : Error frame object
+        Frame : error frame object
             A new object accessing a frame that contains the parse errors of
             the currently active Frame or None if no error frame exists
         """
@@ -992,7 +992,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        list : list of lists
+        list : list of lists of row data
             A list composed of the data from the frame.
             Each item of the overall list is a list of the values of the
             columns for one row of the original frame.

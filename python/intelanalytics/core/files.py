@@ -132,7 +132,7 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list of str
+        list : list of str
             Field names
 
         Examples
@@ -158,7 +158,7 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list of types
+        list : list of types
             Field types
 
         Examples
@@ -193,9 +193,7 @@ class CsvFile(DataFile):
 
 class LineFile(DataFile):
     """
-    |DEPRECATED| Define a line-separated file.
-
-    |TD|
+    Define a line-separated file.
 
     Parameters
     ----------

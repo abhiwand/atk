@@ -21,12 +21,12 @@ input_edge_label_list : list of str
 output_vertex_property_list : list of str
     The list of vertex properties to store output vertex values.
 
-vector_value : boolean
+vector_value : bool
     True means a vector as vertex value is supported,
     False means a vector as vertex value is not supported.
 
 max_supersteps : int (optional)
-    The maximum number of super steps that the algorithm will execute.
+    The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
     The default value is 10.
 
@@ -34,7 +34,7 @@ convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
     If the change is less than this threshold, the algorithm exits earlier
-    before it reaches the maximum number of super steps.
+    before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
     The default value is 0.001.
 

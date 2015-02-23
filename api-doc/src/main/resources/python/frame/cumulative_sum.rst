@@ -5,7 +5,7 @@ values and keeping track of the current cumulative sum for each value.
 
 Parameters
 ----------
-sample_col : string
+sample_col : str
     The name of the column from which to compute the cumulative sum
 
 Returns

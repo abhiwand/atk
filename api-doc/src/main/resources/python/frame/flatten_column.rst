@@ -13,7 +13,7 @@ column : str
 
 delimiter : str (optional)
     The delimiter string.
-    Default is a comma (,).
+    Default is comma (,).
 
 Returns
 -------
@@ -32,7 +32,7 @@ The "original_data"::
 
     I run my commands to bring the data in where I can work on it::
 
-        my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)], delimiter='-')
+        my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', str)], delimiter='-')
         my_frame = Frame(source=my_csv)
 
 .. only:: latex
@@ -40,14 +40,14 @@ The "original_data"::
     I run my commands to bring the data in where I can work on it::
 
         my_csv = CsvFile("original_data.csv", schema=[('a', int32), \\
-            ('b', string)], delimiter='-')
+            ('b', str)], delimiter='-')
         my_frame = Frame(source=my_csv)
 
 I look at it and see::
 
     my_frame.inspect()
 
-      a:int32   b:string
+      a:int32   b:str
     /------------------------------/
         1       solo, mono, single
         2       duo, double
