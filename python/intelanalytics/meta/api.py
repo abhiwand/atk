@@ -117,7 +117,9 @@ def get_api_decorator(logger):
             return item
         else:
             # must be a function, wrap with logging, error handling, etc.
-            return decorator(_api, item)
+            d = decorator(_api, item)
+            d.is_api = True  # add 'is_api' attribute for meta query
+            return d
     return api
 
 
@@ -201,3 +203,30 @@ def _error_if_api_already_loaded(function, *args, **kwargs):
 
 def error_if_api_already_loaded(function):
     return decorator(_error_if_api_already_loaded, function)
+
+
+# methods to dump the names in the API (driven by QA coverage)
+def get_api_names(obj, prefix=''):
+    found = []
+    for name in dir(obj):
+        if not name.startswith("_"):
+            a = getattr(obj, name)
+            suffix = _get_inheritance_suffix(obj, name)
+            if isinstance(a, property):
+                a = a.fget
+            if hasattr(a, "is_api"):
+                found.append(prefix + name + suffix)
+            elif inspect.isclass(a):
+                found.extend(get_api_names(a, prefix + name + "."))
+    return found
+
+
+def _get_inheritance_suffix(obj, member):
+    if inspect.isclass(obj):
+        if member in obj.__dict__:
+            return ''
+        heritage = inspect.getmro(obj)[1:]
+        for base_class in heritage:
+            if member in base_class.__dict__:
+                return "   (inherited from %s)" % base_class.__name__
+    return ''

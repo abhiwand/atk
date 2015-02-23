@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -38,6 +38,7 @@ import scala.collection.JavaConverters._
 
 import scala.collection.mutable.{ ArrayBuffer, ListBuffer }
 import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.schema.DataTypes
 
 /**
  * A class that will read data from parquet files located at a specified path.
@@ -137,6 +138,12 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
 
     columns.zipWithIndex.foreach {
       case (col: ColumnDescriptor, columnIndex: Int) => {
+        // parquet uses nested types based on a definition level and a repetition level, as described by the
+        // "Dremel Paper".  For a good explanation, see https://blog.twitter.com/2013/dremel-made-simple-with-parquet
+
+        // Note: blbarker - the approach in this code is inadequate for general nesting solution, but it works
+        // for primitives and arrays.  More complex types will require work in here to become a true parquet reader.
+
         val dMax = col.getMaxDefinitionLevel
         val creader = store.getColumnReader(col)
 
@@ -148,21 +155,41 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
           })
         }
 
-        0.to(count - 1).foreach(i => {
-          val expectedSize = i
+        // go through each triplet (def level, rep level, values) in the column chunk
+        0.to(count - 1).foreach(chunkRelativeRowIndex => {
 
-          if (result.size <= expectedSize) {
+          if (result.size <= chunkRelativeRowIndex) {
             result += new Array[Any](columnslength)
           }
+
           val dlvl = creader.getCurrentDefinitionLevel
           val value = if (dlvl == dMax) {
-            getValue(creader, col.getType)
+            val v = getValue(creader, col.getType)
+            creader.consume()
+            if (col.getMaxRepetitionLevel > 0 && creader.getCurrentRepetitionLevel > 0) {
+              // indicates nested type, like an array
+              if (col.getType == PrimitiveTypeName.DOUBLE) {
+                val array = new ArrayBuffer[Double]()
+                array += DataTypes.toDouble(v)
+                while (creader.getCurrentRepetitionLevel > 0) { // rep level == 0 indicates start of another group
+                  array += creader.getDouble
+                  creader.consume()
+                }
+                array
+              }
+              // only support arrays of doubles for now
+              else {
+                throw new ClassCastException(s"intelanalytics parquet reader does not support repetition of type ${col.getType}")
+              }
+            }
+            else {
+              v // not nested, just use value
+            }
           }
           else {
             null
           }
-          result(expectedSize)(columnIndex) = value
-          creader.consume()
+          result(chunkRelativeRowIndex)(columnIndex) = value
         })
 
       }

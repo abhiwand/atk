@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles
 
-import com.intel.intelanalytics.algorithm.{ QuantileComposingElement, QuantileTarget, Quantile }
+import com.intel.intelanalytics.algorithm.{ QuantileComposingElement, QuantileTarget }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -65,30 +65,28 @@ object QuantilesFunctions extends Serializable {
    * @param rdd input rdd
    * @param quantiles seq of quantiles to find value for
    * @param columnIndex the index of column to calculate quantile
-   * @param dataType data type of the column
+   * @param rowCount number of records found in RDD. If set to none this will perform an rdd.count to determine
    */
-  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): RDD[Row] = {
-    val totalRows = rdd.count()
-    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
-    val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(ascending = true)
+  def quantiles(rdd: RDD[sql.Row], quantiles: Seq[Double], columnIndex: Int, rowCount: Long): RDD[sql.Row] = {
+    val singleColumn = rdd.map(row => DataTypes.toDouble(row(columnIndex)))
+    val sorted = singleColumn.sortBy(x => x)
 
-    val quantileTargetMapping = getQuantileTargetMapping(totalRows, quantiles)
+    val quantileTargetMapping = getQuantileTargetMapping(rowCount, quantiles)
     val sumsAndCounts: Map[Int, (Int, Int)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(sorted)
 
     //this is the first stage of calculating quantile
     //generate data that has keys as quantiles and values as column data times weight
-    val quantilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+    val quantilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, values) => {
       var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
       val perPartitionResult = ListBuffer[(Double, BigDecimal)]()
 
-      for (row <- rows) {
+      for (value <- values) {
         if (quantileTargetMapping.contains(rowIndex)) {
           val targets: Seq[QuantileTarget] = quantileTargetMapping(rowIndex)
 
           for (quantileTarget <- targets) {
-            val value = row._1
             val numericVal = DataTypes.toBigDecimal(value)
-            perPartitionResult += ((quantileTarget.quantile, numericVal * quantileTarget.weight))
+            perPartitionResult += ((quantileTarget.quantile, value * quantileTarget.weight))
           }
         }
 
@@ -98,7 +96,7 @@ object QuantilesFunctions extends Serializable {
       perPartitionResult.toIterator
     })
 
-    quantilesComponentsRDD.reduceByKey(_ + _).sortByKey(ascending = true).map(pair => Array[Any](pair._1, pair._2.toDouble))
+    quantilesComponentsRDD.reduceByKey(_ + _).sortByKey(ascending = true).map(pair => new GenericRow(Array[Any](pair._1, pair._2.toDouble)))
   }
 
   /**

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -82,7 +82,7 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
     }
 
     val frames = engine.frames
-    frames.tryNewFrame(CreateEntityArgs(description = Some("created by copy command"))) {
+    frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created by copy command"))) {
       newFrame => frames.saveFrameData(newFrame.toReference, finalRdd)
     }
   }

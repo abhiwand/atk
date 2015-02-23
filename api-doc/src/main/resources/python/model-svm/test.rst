@@ -8,11 +8,11 @@ Parameters
 predict_frame : Frame
     frame whose labels are to be predicted
 
-observation_columns : [ str | list of str ]
-    Columns containing the observations
-
 label_column : str
     Column containing the actual label for each observation
+
+observation_column : list of str (Optional)
+    Columns containing the observations. Default is the same column names used to train the model
 
 Returns
 -------
@@ -34,7 +34,7 @@ Examples
 
     model = ia.SvmModel(name='mySVM')
     model.train(train_frame, ['name_of_observation_column'], 'name_of_label_column')
-    metrics = model.test(test_frame,['name_of_observation_column'], 'name_of_label_column')
+    metrics = model.test(test_frame, 'name_of_label_column',['name_of_observation_column'])
 
     metrics.f_measure
     0.66666666666666663

@@ -56,7 +56,7 @@ class GraphBackendRest(object):
             _info = GraphInfo(_info)
         if isinstance(_info, GraphInfo):
             return initialize_graph(graph,_info)._id # Early exit here
-        new_graph_id = self._create_new_graph(graph, rules, name or self._get_new_graph_name(rules), storage_format, True if name else False)
+        new_graph_id = self._create_new_graph(graph, rules, name, storage_format, True if name else False)
         return new_graph_id
 
     def _create_new_graph(self, graph, rules, name, storage_format, is_named):

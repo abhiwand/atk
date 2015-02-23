@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,21 +25,22 @@ package com.intel.intelanalytics.engine
 
 import java.util.concurrent.{ ScheduledFuture, TimeUnit, Executors, ScheduledExecutorService }
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
-import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.component.{ ArchiveDefinition, ClassLoaderAware, Archive }
+import com.typesafe.config.{ Config, ConfigFactory }
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 import com.intel.event.EventLogging
 
-class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
+class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging with ClassLoaderAware {
   if (EventLogging.raw) {
     info("Engine setting log adapter from configuration")
-    EventLogging.raw = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.raw")
+    EventLogging.raw = configuration.getBoolean("intel.analytics.engine.logging.raw")
     info("Engine set log adapter from configuration")
   } // else api-server already installed an SLF4j adapter
 
-  EventLogging.profiling = ConfigFactory.load().getBoolean("intel.analytics.engine.logging.profile")
+  EventLogging.profiling = configuration.getBoolean("intel.analytics.engine.logging.profile")
   info(s"Engine profiling: ${EventLogging.profiling}")
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -93,6 +93,8 @@ class LoopyBeliefPropagation
     GiraphConfigurationUtil.set(hConf, "lbp.power", arguments.power)
     GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
     GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignoreVertexType)
+
+    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 

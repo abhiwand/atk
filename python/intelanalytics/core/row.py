@@ -1,4 +1,4 @@
-from intelanalytics.core.orddict import OrderedDict
+from collections import OrderedDict
 from intelanalytics.core.iatypes import valid_data_types
 
 import json
@@ -11,6 +11,8 @@ class NumpyJSONEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, iatypes.int32) or isinstance(obj, iatypes.float64):
             return int(obj)
+        if isinstance(obj, iatypes.vector):
+            return obj.tolist()
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 

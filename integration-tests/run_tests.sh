@@ -57,16 +57,16 @@ done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
 
-# Rene said each build agent has about 24 cores (Jan 2015)
+# Rene said each build agent has about 18 cores (Feb 2015)
 
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
-nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=18 --process-timeout=90 --with-isolation
+nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=10 --process-timeout=300 --with-isolation
 SMOKE_TEST_SUCCESS=$?
 
 if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     echo "$NAME Python smoke tests PASSED -- basic frame,graph,model functionality verified"
     echo "$NAME Running the rest of the tests, calling nosetests again"
-    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=18 --process-timeout=90 --with-isolation
+    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=10 --process-timeout=300 --with-isolation
     TEST_SUCCESS=$?
 fi
 
@@ -85,6 +85,7 @@ else
    echo "$NAME Python tests FAILED"
    echo "$NAME see nosetest output: $OUTPUT2 "
    echo "$NAME also see log output in target dir"
+   tail -n 1000 $TARGET_DIR/api-server.log
    exit 2
 fi
 
