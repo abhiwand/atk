@@ -257,7 +257,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
-          if (graph.isTitan) {
+          if (graph.isTitan) { /* graph.name should always exist if Titan Graph (either user defined or auto-generated */
             backendStorage.renameUnderlyingTable(graph.name.get, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
