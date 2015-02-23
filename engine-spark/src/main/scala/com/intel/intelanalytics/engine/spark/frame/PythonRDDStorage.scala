@@ -45,6 +45,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import scala.collection.mutable.ArrayBuffer
+import com.google.common.io.Files
 
 import scala.reflect.io.{ Directory, Path }
 
@@ -70,12 +71,9 @@ object PythonRDDStorage {
         i <- 0 until filesToUpload.size
       } {
         val fileToUpload = filesToUpload(i)
-        val data = fileData(i)
+        val data = decodePythonBase64EncodedStrToBytes(fileData(i))
         val fileName = fileToUpload.split("/").last
-        val writer = new PrintWriter(new File("/tmp/intelanalytics/python_udf_deps/" + fileName))
-        includes ::= fileName
-        writer.write(data)
-        writer.close()
+        Files.write(data, new File("/tmp/intelanalytics/python_udf_deps/" + fileName))
       }
     }
     includes

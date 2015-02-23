@@ -48,18 +48,35 @@ from intelanalytics.core.iatypes import valid_data_types
 
 
 import json
+import re
+import zipfile
 
 UdfDependencies = []
 
 
+def _zipdir(path):
+    with zipfile.ZipFile('/tmp/iapydependencies.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                zipf.write(os.path.join(root, file))
+
 def get_file_content_as_str(filename):
-    with open(filename, 'rb') as f:
-        return f.read()
+    if ('/' in filename) or (not filename.endswith('.py')):
+        topdir = filename.split('/')[0]
+        _zipdir(topdir)
+        name, fileToSerialize = ('%s.zip' % topdir, '/tmp/iapydependencies.zip')
+    else:
+        name, fileToSerialize = (filename, filename)
+    with open(fileToSerialize, 'rb') as f:
+        return (name, base64.urlsafe_b64encode(f.read()))
 
 
 def _get_dependencies(filenames):
-    return [{'file_name': filename, 'file_content':get_file_content_as_str(filename)} for filename in filenames]
-
+    dependencies = []
+    for filename in filenames:
+        name, content = get_file_content_as_str(filename)
+        dependencies.append({'file_name': name, 'file_content': content})
+    return dependencies
 
 def ifiltermap(predicate, function, iterable):
     """creates a generator than combines filter and map"""
