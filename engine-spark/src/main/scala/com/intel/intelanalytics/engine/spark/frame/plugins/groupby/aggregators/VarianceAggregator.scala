@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
- * Counter used to compute variance incrementally.
+ * Counter used to compute sample variance incrementally.
  *
  * @param count Current count
  * @param mean Current mean
@@ -38,7 +38,7 @@ case class VarianceCounter(count: Long, mean: Double, m2: Double) {
 }
 
 /**
- * Abstract class used to incrementally the compute variance and standard deviation using Spark's aggregateByKey().
+ * Abstract class used to incrementally the compute sample variance and standard deviation
  *
  * @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
  */
@@ -110,8 +110,9 @@ case class VarianceAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the variance
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    super.calculateVariance(variance)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else variance //TODO: Revisit when data types support NaN
   }
 }
 
@@ -123,8 +124,8 @@ case class StandardDeviationAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the standard deviation
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    val stddev = super.calculateVariance(variance)
-    Math.sqrt(stddev)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else Math.sqrt(variance) //TODO: Revisit when data types support NaN
   }
 }
