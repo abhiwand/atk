@@ -20,18 +20,18 @@ class Udf(object):
         else:
             raise ValueError ("The dependencies list to be installed on the cluster cannot be empty")
 
-    @staticmethod
-    def uninstall():
-        """
-        removes the specified files from the cluster
-        :return:
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    def list():
-        """
-        lists all the user files on the cluster
-        :return:
-        """
-        raise NotImplementedError
+    # @staticmethod
+    # def uninstall():
+    #     """
+    #     removes the specified files from the cluster
+    #     :return:
+    #     """
+    #     raise NotImplementedError
+    #
+    # @staticmethod
+    # def list():
+    #     """
+    #     lists all the user files on the cluster
+    #     :return:
+    #     """
+    #     raise NotImplementedError
