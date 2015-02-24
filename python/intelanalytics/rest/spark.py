@@ -29,6 +29,7 @@ import base64
 import os
 import itertools
 import pstats
+from os.path import basename
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -53,20 +54,59 @@ import zipfile
 
 UdfDependencies = []
 
+# From http://stackoverflow.com/questions/14438928/python-zip-a-sub-folder-and-not-the-entire-folder-path
+def _dirEntries(dir_name, subdir, *args):
+    # Creates a list of all files in the folder
+    '''Return a list of file names found in directory 'dir_name'
+    If 'subdir' is True, recursively access subdirectories under 'dir_name'.
+    Additional arguments, if any, are file extensions to match filenames. Matched
+        file names are added to the list.
+    If there are no additional arguments, all files found in the directory are
+        added to the list.
+    Example usage: fileList = dirEntries(r'H:\TEMP', False, 'txt', 'py')
+        Only files with 'txt' and 'py' extensions will be added to the list.
+    Example usage: fileList = dirEntries(r'H:\TEMP', True)
+        All files and all the files in subdirectories under H:\TEMP will be added
+        to the list. '''
+
+    fileList = []
+    for file in os.listdir(dir_name):
+        dirfile = os.path.join(dir_name, file)
+        if os.path.isfile(dirfile):
+            if not args:
+                fileList.append(dirfile)
+            else:
+                if os.path.splitext(dirfile)[1][1:] in args:
+                    fileList.append(dirfile)
+                    # recursively access file names in subdirectories
+        elif os.path.isdir(dirfile) and subdir:
+            fileList.extend(_dirEntries(dirfile, subdir, *args))
+    return fileList
+
+def _makeArchive(fileList, archive, root):
+    """
+    'fileList' is a list of file names - full path each name
+    'archive' is the file name for the archive with a full path
+    """
+    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for f in fileList:
+            zipf.write(f, os.path.relpath(f, root))
 
 def _zipdir(path):
-    with zipfile.ZipFile('/tmp/iapydependencies.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                zipf.write(os.path.join(root, file))
+    _makeArchive(_dirEntries(path, True), '/tmp/iapydependencies.zip', path[0:path.rfind('/')])
 
 def get_file_content_as_str(filename):
-    if ('/' in filename) or (not filename.endswith('.py')):
-        topdir = filename.split('/')[0]
-        _zipdir(topdir)
-        name, fileToSerialize = ('%s.zip' % topdir, '/tmp/iapydependencies.zip')
-    else:
+    # If the filename is a directory, zip the contents first, else fileToSerialize is same as the python file
+    if os.path.isdir(filename):
+        _zipdir(filename)
+        name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
+    elif not ('/' in filename) and filename.endswith('.py'):
         name, fileToSerialize = (filename, filename)
+    else:
+        raise Exception('%s should be either local python script without any packaging structure \
+        or the absolute path to a valid python package/module which includes the intended python file to be included and all \
+                        its dependencies.' % filename)
+    # Serialize the file contents and send back along with the new serialized file names
     with open(fileToSerialize, 'rb') as f:
         return (name, base64.urlsafe_b64encode(f.read()))
 
