@@ -1,6 +1,7 @@
-Train frame model.
+Train SVM model based on another frame.
 
-Creating a SVM Model using the observation column/s and label column of the train frame
+Creating a SVM Model using the observation column and label column of the train
+frame
 
 Parameters
 ----------

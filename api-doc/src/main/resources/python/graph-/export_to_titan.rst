@@ -1,4 +1,4 @@
-Convert to TitanGraph.
+Convert current graph to TitanGraph.
 
 Convert this Graph into a TitanGraph object.
 This will be a new graph backed by Titan with all of the data found in this

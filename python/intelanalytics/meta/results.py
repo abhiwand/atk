@@ -29,7 +29,10 @@ Results post-processing
 
 
 def get_postprocessor(command_full_name):
-    """Look for a result post-processing function, returns None if not found"""
+    """
+    Look for a result post-processing function.
+    Returns None if not found.
+    """
     return _postprocessors.get(command_full_name, None)
 
 

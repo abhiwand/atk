@@ -1,4 +1,4 @@
-Loopy belief propagation.
+Classification on sparse data using belief propagation.
 
 Belief propagation by the sum-product algorithm.
 This algorithm analyzes a graphical model with prior beliefs using sum

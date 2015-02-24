@@ -1,6 +1,6 @@
-============
-|IA| Toolkit
-============
+=======================
+Intel Analytics Toolkit
+=======================
 
 .. toctree::
     :maxdepth: 3
@@ -21,7 +21,7 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :doc:`errata`
-* :download:`*PDF* <_downloads/IntelAnalytics.pdf>`
+* :download:`|iPDF| <_downloads/IntelAnalytics.pdf>`
 
 .. toctree::
     :hidden:

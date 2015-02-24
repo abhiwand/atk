@@ -1,4 +1,4 @@
-Triangle Count.
+Number of triangles among vertices of current graph.
 
 ** Experimental Feature **
 Triangle Count.

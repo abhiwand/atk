@@ -5,31 +5,30 @@ Upon training the 'k' cluster centers are computed.
 Parameters
 ----------
 frame : Frame
-    Frame to train the model on.
+    Frame to train the model on
 
-observation_columns : list of str
-    Columns containing the observations.
+observation_columns : List[str]
+    Columns containing the observations
 
-column_scalings : list of double
-    Column scalings for each of the observation columns.
-    The scaling value is multiplied by the corresponding value in the observation column.
+column_weights : List[Double]
+    Column weights for each of the observation columns
 
-k : int (Optional)
+k : Int (Optional)
     Desired number of clusters.
-    This is an optional paramter with default value 2
+    This is an optional paramter with default value 2.
 
-maxIterations : int (Optional)
+maxIterations : Int (Optional)
     Number of iterations for which the algorithm should run.
     This is an optional paramter with default value 20
 
-epsilon : double (Optional)
+epsilon : Double (Optional)
     Distance threshold within which we consider k-means to have converged.
     This is an optional parameter with default value 1e-4
 
-initializationMode : str (Optional)
+initializationMode : String (Optional)
     The initialization technique for the algorithm.
     It could be either "random" or "k-means||".
-    Default is "k-means||".
+    The default is "k-means||"
        
 Returns
 -------

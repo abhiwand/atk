@@ -17,20 +17,24 @@ import os
 
 rst_epilog = """
 
-.. |ALPHA|  image:: _static/red_penguin.*
+.. |ALPHA|  replace:: |FLAG_ALPHA| |TA|
 .. |API|    replace:: abbr:`API (Application Programming Interface)`
-.. |BETA|   image:: _static/yellow_penguin.*
+.. |BETA|   replace:: |FLAG_BETA| |TB|
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
-.. |DEPRECATED|   image:: _static/blue_penguin.*
+.. |DEPRECATED| replace:: |FLAG_DEPRECATED| |TD|
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
-.. |ECDF|   replace:: :abbr:`ECDF (empirical cumulative distribution function)`
+.. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
+.. |FLAG_ALPHA| image:: _static/flag_alpha.*
+.. |FLAG_BETA|  image:: _static/yellow_penguin.*
+.. |FLAG_DEPRECATED|    image:: _static/blue_penguin.*
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
-.. |IA|     replace:: Intel Analytics
-.. |IAT|    replace:: Intel Analytics Toolkit
+.. |IA|     replace:: :abbr:`IA (Intel Analytics)`
+.. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
+.. |iPDF|   replace:: *PDF*
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
@@ -39,9 +43,12 @@ rst_epilog = """
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
+.. |TA|     replace:: [:term:`ALPHA`]
+.. |TB|     replace:: [:term:`BETA`]
+.. |TD|     replace:: [:term:`DEPRECATED`]
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
-.. |YCSB|   replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
+.. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,

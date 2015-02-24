@@ -1,4 +1,4 @@
-Column modes.
+Evaluate the weights assigned to rows.
 
 Calculate the modes of a column.
 A mode is a data element of maximum weight.
