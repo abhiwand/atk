@@ -25,15 +25,15 @@ rst_epilog = """
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
 .. |DEPRECATED| replace:: |FLAG_DEPRECATED| |TD|
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
-.. |ECDF|   replace:: :abbr:`ECDF (empirical cumulative distribution function)`
+.. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |FLAG_ALPHA| image:: _static/flag_alpha.*
 .. |FLAG_BETA|  image:: _static/yellow_penguin.*
 .. |FLAG_DEPRECATED|    image:: _static/blue_penguin.*
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
-.. |IA|     replace:: Intel Analytics
-.. |IAT|    replace:: Intel Analytics Toolkit
+.. |IA|     replace:: :abbr:`IA (Intel Analytics)`
+.. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
@@ -47,7 +47,7 @@ rst_epilog = """
 .. |TD|     replace:: [:term:`DEPRECATED`]
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
-.. |YCSB|   replace:: :abbr:`Yahoo Cloud Serving Benchmarking`
+.. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,

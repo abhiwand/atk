@@ -1004,6 +1004,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         We now have a list of data from the original frame.
 
+            print my_data_list
+
+            [[ 1, "text", 3.1415962 ]
+             [ 2, "bob", 25.0 ]
+             [ 3, "weave", .001 ]
+             ...]
+
         If we use the function with an offset like::
 
             my_data_list = my_frame.take( 5000, 1000 )
