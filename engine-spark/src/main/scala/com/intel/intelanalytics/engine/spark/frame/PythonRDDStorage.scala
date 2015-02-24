@@ -74,6 +74,7 @@ object PythonRDDStorage {
         val data = decodePythonBase64EncodedStrToBytes(fileData(i))
         val fileName = fileToUpload.split("/").last
         Files.write(data, new File("/tmp/intelanalytics/python_udf_deps/" + fileName))
+        includes ::= fileName
       }
     }
     includes
