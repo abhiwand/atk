@@ -83,6 +83,11 @@ case class MeanAggregator() extends GroupByAggregator {
     val sum = mean1.sum + mean2.sum
     MeanCounter(count, sum)
   }
-  override def getResult(result: AggregateType): Any = result.sum / result.count
+  override def getResult(mean: AggregateType): Any = if (mean.count > 0) {
+    mean.sum / mean.count
+  }
+  else {
+    null //TODO: Re-visit when data types support Inf and NaN
+  }
 
 }
