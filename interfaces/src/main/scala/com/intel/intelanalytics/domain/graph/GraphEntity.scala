@@ -88,4 +88,7 @@ case class GraphEntity(id: Long,
     idCounter.getOrElse(0L) + 1L
   }
 
+  def toReference: GraphReference = {
+    GraphReference(id)
+  }
 }

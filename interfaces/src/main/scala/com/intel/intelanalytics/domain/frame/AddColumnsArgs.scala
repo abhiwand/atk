@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 
-case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf) {
+case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf, columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {
