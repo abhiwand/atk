@@ -306,7 +306,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_python_user_function_arg
-    def add_columns(self, func, schema):
+    def add_columns(self, func, schema, columns_accessed=None):
         """
         Add columns to current frame.
 
@@ -322,6 +322,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             The schema for the results of the functions, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type and is of the form (str, type).
+
+        columns_accessed : list of str (optional)
+            List of columns which the udf function will access. This adds
+            significant performance benefit if we know which columns will be
+            needed to execute the udf especially when the frames have several
+            columns out of which only a handful are used to evaluate the function
 
         Notes
         -----
@@ -405,7 +411,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
-        self._backend.add_columns(self, func, schema)
+        self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
     def copy(self, columns=None, where=None, name=None):

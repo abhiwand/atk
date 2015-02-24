@@ -6,13 +6,14 @@ Predict the labels for a test frame and run classification metrics on predicted 
 Parameters
 ----------
 predict_frame : Frame
-    frame whose labels are to be predicted
+    frame whose labels are to be predicted.
 
 label_column : str
-    Column containing the actual label for each observation
+    Column containing the actual label for each observation.
 
 observation_column : list of str (Optional)
-    Columns containing the observations. Default is the same column names used to train the model
+    Column(s) containing the observations whose labels are to be predicted and tested.
+    By default, we test over the columns the LogisticRegressionModel was trained on.
 
 
 Returns

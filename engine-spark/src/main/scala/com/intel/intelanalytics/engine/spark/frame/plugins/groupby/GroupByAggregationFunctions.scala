@@ -42,9 +42,11 @@ import org.apache.spark.rdd.RDD
 private[spark] object GroupByAggregationFunctions extends Serializable {
 
   /**
-   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, ...) using Spark's aggregateByKey()
+   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, ...).
    *
-   * New aggregations can be added by implementing GroupByAggregator.
+   * For example, grouping a frame by gender and age, and computing the average income.
+   *
+   * New aggregations can be added by implementing a GroupByAggregator.
    *
    * @see GroupByAggregator
    *
@@ -106,6 +108,9 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
 
   /**
    * Create a pair RDD using the group-by keys, and aggregation columns
+   *
+   * The group-by key is a sequence of column values, for example, group-by gender and age. The aggregation
+   * columns are the columns containing the values to be aggregated, for example, annual income.
    *
    * @param frameRDD Input frame
    * @param groupByColumns Group by columns

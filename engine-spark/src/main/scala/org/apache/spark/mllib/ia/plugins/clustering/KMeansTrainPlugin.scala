@@ -91,7 +91,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
       //Writing the kmeansModel as JSON
       val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
       val modelMeta = models.expectModel(arguments.model.id)
-      models.updateModel(modelMeta.id, jsonModel.toJson.asJsObject)
+      models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }

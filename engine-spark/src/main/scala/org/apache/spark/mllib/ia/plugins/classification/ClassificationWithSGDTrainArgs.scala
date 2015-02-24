@@ -40,8 +40,8 @@ import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
  */
 case class ClassificationWithSGDTrainArgs(model: ModelReference,
                                           frame: FrameReference,
-                                          observationColumns: List[String],
                                           labelColumn: String,
+                                          observationColumns: List[String],
                                           intercept: Option[Boolean] = None,
                                           numIterations: Option[Int] = None,
                                           stepSize: Option[Int] = None,

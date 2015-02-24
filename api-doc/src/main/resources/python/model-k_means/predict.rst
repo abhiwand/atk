@@ -3,10 +3,14 @@ Predict the cluster assignments for the data points.
 Parameters
 ----------
 predict_frame : Frame
-    frame whose labels are to be predicted. By default, predict is run on the same columns over which the model is trained. The user could specify column names too if needed.
+    frame whose labels are to be predicted.
+    By default, predict is run on the same columns over which the model is trained.
+    The user could specify column names too if needed.
 
 observation_columns : list of str (optional)
-    Columns containing the observations whose clusters are to be predicted. By default, we predict the clusters over columns the KMeansModel was trained on. The columns are scaled using the same values used when training the model.
+    Column(s) containing the observations whose clusters are to be predicted.
+    By default, we predict the clusters over columns the KMeansModel was trained on.
+    The columns are scaled using the same values used when training the model.
 
 Returns
 -------

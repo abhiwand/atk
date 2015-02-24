@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
+import com.intel.intelanalytics.domain.model.{ ModelReference, ModelTemplate, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.{ JsValue, JsObject }
@@ -45,6 +45,6 @@ trait ModelStorage {
 
   def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
 
-  def updateModel(modelId: Long, newData: JsObject)(implicit invocation: Invocation): ModelEntity
+  def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity
 
 }
