@@ -46,21 +46,23 @@ import scala.concurrent.duration._
  * This is used for generating the Python docs, it isn't part of the running system.
  */
 class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
-    extends Archive(archiveDefinition, classLoader, config)
+    extends DefaultArchive(archiveDefinition, classLoader, config)
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
   implicit val eventContext = EventContext.enter("CommandDumper")
 
-  override lazy val profile = withContext("command dumper connecting to metastore") {
-    // Initialize a Profile from settings in the config
-    val driver = CommandDumperConfig.metaStoreConnectionDriver
-    new Profile(Profile.jdbcProfileForDriver(driver),
-      connectionString = CommandDumperConfig.metaStoreConnectionUrl,
-      driver,
-      username = CommandDumperConfig.metaStoreConnectionUsername,
-      password = CommandDumperConfig.metaStoreConnectionPassword)
+  override lazy val profile = withMyClassLoader {
+    withContext("command dumper connecting to metastore") {
+      // Initialize a Profile from settings in the config
+      val driver = CommandDumperConfig.metaStoreConnectionDriver
+      new Profile(Profile.jdbcProfileForDriver(driver),
+        connectionString = CommandDumperConfig.metaStoreConnectionUrl,
+        driver,
+        username = CommandDumperConfig.metaStoreConnectionUsername,
+        password = CommandDumperConfig.metaStoreConnectionPassword)
+    }
   }
 
   override def start() = {
@@ -93,10 +95,6 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
     eventContext.close()
   }
 
-  /**
-   * Not actually used in this implementation.
-   */
-  override def getAll[T: ClassManifest](descriptor: String): Seq[T] = ???
 }
 
 /**
