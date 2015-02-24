@@ -26,7 +26,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
@@ -47,6 +47,8 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
    * e.g Python client via code generation.
    */
   override def name: String = "model:logistic_regression/train"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
    * Number of Spark jobs that get created by running this command

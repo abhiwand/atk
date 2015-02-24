@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
@@ -53,6 +53,8 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
    * e.g Python client via code generation.
    */
   override def name: String = "model:logistic_regression/predict"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
    * Number of Spark jobs that get created by running this command

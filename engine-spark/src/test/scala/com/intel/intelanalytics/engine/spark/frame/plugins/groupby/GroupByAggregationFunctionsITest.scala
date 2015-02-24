@@ -188,7 +188,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
   }
 
   "VAR" should "return the variance of values by key" in {
-    val rdd = sparkContext.parallelize(inputRows)
+    val rdd = sparkContext.parallelize(inputRows, 3)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("VAR", "col_2", "col_var"))
