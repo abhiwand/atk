@@ -34,6 +34,7 @@ rst_epilog = """
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: :abbr:`IA (Intel Analytics)`
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
+.. |iPDF|   replace:: *PDF*
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
