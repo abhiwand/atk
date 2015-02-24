@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -66,6 +66,8 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * Implicit conversions for domain objects to/from JSON
  */
@@ -269,6 +271,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case n: Float => new JsNumber(n)
         case n: Double => new JsNumber(n)
         case s: String => new JsString(s)
+        case v: ArrayBuffer[Double] => new JsArray(v.map(d => JsNumber(d)).toList) // for vector DataType
         case n: java.lang.Long => new JsNumber(n.longValue())
         case unk => serializationError("Cannot serialize " + unk.getClass.getName)
       }

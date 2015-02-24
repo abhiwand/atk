@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -61,8 +61,7 @@ trait Component {
    * Called before processing any requests.
    *
    */
-  def start() = {
-  }
+  def start() = {}
 
   /**
    * Called before the application as a whole shuts down. Not guaranteed to be called,
@@ -71,4 +70,3 @@ trait Component {
    */
   def stop() = {}
 }
-

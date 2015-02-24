@@ -1,8 +1,7 @@
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -30,9 +29,8 @@ import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.rdd.RDD
@@ -83,4 +81,3 @@ object Correlation extends Serializable {
     frameRDD.sparkContext.parallelize(arrGenericRow)
   }
 }
-

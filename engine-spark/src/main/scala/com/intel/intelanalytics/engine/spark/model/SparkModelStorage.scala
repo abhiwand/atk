@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -73,12 +73,11 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference.id))
 
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference =
-      storage.createModel(args)
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createModel(args)
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
-    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = ModelReference(model.id)
+    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -94,26 +93,26 @@ class SparkModelStorage(metaStore: MetaStore)
      */
     override def delete(reference: SparkModelStorage.this.SparkModelManagement.Reference)(implicit invocation: Invocation): Unit = {
       val meta = getMetaData(reference)
-      drop(meta.meta)
+      drop(meta.meta.id)
     }
   }
 
   EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
-  override def expectModel(modelId: Long): ModelEntity = {
-    lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
+  override def expectModel(id: Long): ModelEntity = {
+    lookup(id).getOrElse(throw new NotFoundException("model", id.toString))
   }
 
   /**
    * Deletes a model from the metastore.
-   * @param model Model metadata object.
+   * @param id Model metadata object.
    */
-  override def drop(model: ModelEntity): Unit = {
+  override def drop(id: Long): Unit = {
     metaStore.withSession("spark.modelstorage.drop") {
       implicit session =>
         {
-          metaStore.modelRepo.delete(model.id)
+          metaStore.modelRepo.delete(id)
           Unit
         }
     }
@@ -142,11 +141,11 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Renames a model in the metastore.
-   * @param model The model being renamed
+   * @param id The model being renamed
    * @param newName The name the model is being renamed to.
    * @return Model metadata
    */
-  override def renameModel(model: ModelEntity, newName: String): ModelEntity = {
+  override def renameModel(id: Long, newName: String): ModelEntity = {
     metaStore.withSession("spark.modelstorage.rename") {
       implicit session =>
         {
@@ -155,7 +154,7 @@ class SparkModelStorage(metaStore: MetaStore)
             throw new RuntimeException("Model with same name exists. Rename aborted.")
           }
 
-          val newModel = model.copy(name = Some(newName))
+          val newModel = expectModel(id).copy(name = Some(newName))
           metaStore.modelRepo.update(newModel).get
         }
     }
@@ -199,16 +198,17 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Store the result of running the train data on a model
-   * @param model The model to update
+   * @param modelReference The model to update
    * @param newData JsObject storing the result of training.
    */
 
-  override def updateModel(model: ModelEntity, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
+  override def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
     metaStore.withSession("spark.modelstorage.updateModel") {
       implicit session =>
         {
-          expectModel(model.id)
-          val newModel = model.copy(data = Option(newData))
+          val currentModel = expectModel(modelReference.modelId)
+          val newModel = currentModel.copy(data = Option(newData))
+
           metaStore.modelRepo.update(newModel).get
         }
     }

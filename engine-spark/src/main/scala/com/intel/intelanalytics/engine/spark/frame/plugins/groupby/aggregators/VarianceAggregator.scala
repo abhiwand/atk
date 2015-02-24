@@ -1,10 +1,33 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators
 
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
- * Counter used to compute variance incrementally.
+ * Counter used to compute sample variance incrementally.
  *
  * @param count Current count
  * @param mean Current mean
@@ -15,7 +38,7 @@ case class VarianceCounter(count: Long, mean: Double, m2: Double) {
 }
 
 /**
- * Abstract class used to incrementally the compute variance and standard deviation using Spark's aggregateByKey().
+ * Abstract class used to incrementally the compute sample variance and standard deviation
  *
  * @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
  */
@@ -87,8 +110,9 @@ case class VarianceAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the variance
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    super.calculateVariance(variance)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else variance //TODO: Revisit when data types support NaN
   }
 }
 
@@ -100,8 +124,8 @@ case class StandardDeviationAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the standard deviation
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    val stddev = super.calculateVariance(variance)
-    Math.sqrt(stddev)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else Math.sqrt(variance) //TODO: Revisit when data types support NaN
   }
 }
