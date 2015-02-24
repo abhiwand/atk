@@ -1,7 +1,5 @@
 Calculate covariance for exactly two columns.
 
-Compute the covariance for two columns.
-
 Parameters
 ----------
 columns : [ str | list of str ]

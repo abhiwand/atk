@@ -1,6 +1,4 @@
-Rename one or more columns.
-
-Renames columns in a frame.
+Rename one or more columns in current frame.
 
 Parameters
 ----------

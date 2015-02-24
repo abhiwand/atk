@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Command objects
+Command objects.
 """
 import datetime
 import time
@@ -44,7 +44,7 @@ from collections import namedtuple
 
 
 def execute_command(command_name, selfish, **arguments):
-    """Executes command and returns the output"""
+    """Executes command and returns the output."""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     from intelanalytics.meta.results import get_postprocessor
@@ -87,13 +87,14 @@ class ProgressPrinter(object):
 
     def print_progress(self, progress, finished):
         """
-        Print progress information on progress bar
+        Print progress information on progress bar.
 
         Parameters
         ----------
-        progress : List of dictionary
+        progress : list of dictionary
             The progresses of the jobs initiated by the command
-        finished : boolean
+
+        finished : bool
             Indicate whether the command is finished
         """
         if progress == False:
@@ -193,7 +194,7 @@ class CommandRequest(object):
 
     def to_json_obj(self):
         """
-        returns json for REST payload
+        Returns json for REST payload.
         """
         return self.__dict__
 
@@ -497,7 +498,7 @@ class Executor(object):
         return self.__commands
 
     def get_command_output(self, command_type, command_name, arguments):
-        """Executes command and returns the output"""
+        """Executes command and returns the output."""
         command_request = CommandRequest( "%s/%s" % (command_type, command_name), arguments)
         command_info = executor.issue(command_request)
         if command_info.result.has_key('value') and len(command_info.result) == 1:

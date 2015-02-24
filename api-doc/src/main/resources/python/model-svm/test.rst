@@ -1,7 +1,7 @@
-Predict test frame labels.
+Predict test frame labels and return metrics.
 
-Predict the labels for a test frame and run classification metrics on predicted and target labels.
-
+Predict the labels for a test frame and run classification metrics on predicted
+and target labels.
 
 Parameters
 ----------

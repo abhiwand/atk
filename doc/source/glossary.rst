@@ -384,13 +384,14 @@ Glossary
         The broad category of methods used to examine the statistical and
         structural properties of a graph, including:
 
-            traversals
-                algorithmic walk throughs of the graph to determine optimal
-                paths and relationship between vertices
-            statistics
-                important attributes of the graph such as degrees of
+            #.  Traversals --
+                Algorithmic walk throughs of the graph to determine optimal
+                paths and relationship between vertices.
+
+            #.  Statistics --
+                Important attributes of the graph such as degrees of
                 separation, number of triangular counts, centralities (highly
-                influential nodes), and so on
+                influential nodes), and so on.
 
         Some are user-guided interactions, where the user navigates through
         the data connections, others are algorithmic, where a result is
@@ -402,6 +403,9 @@ Glossary
         graph to uncover patterns and relationships.
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
+
+        For more information, see :ref:`the article "Graph Analytics"
+        by Pak Chung Wong <vacommunity.org/article26>`.
 
     Graph Database Directions
 
@@ -588,6 +592,8 @@ Glossary
         data.
         The more iterations the software computes, the better it gets at making
         that calculation.
+        For more information, see `Wikipedia
+        <https://en.wikipedia.org/wiki/Machine_learning>`__.
 
     MapReduce
 

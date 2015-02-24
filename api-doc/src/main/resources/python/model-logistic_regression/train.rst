@@ -1,6 +1,7 @@
-Train frame model.
+Build logistic regression model.
 
-Creating a LogisticRegression Model using the observation column/s and label column of the train frame
+Creating a LogisticRegression Model using the observation column and label
+column of the train frame",
 
 Parameters
 ----------

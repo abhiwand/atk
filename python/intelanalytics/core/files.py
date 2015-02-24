@@ -126,11 +126,13 @@ class CsvFile(DataFile):
     @property
     def field_names(self):
         """
-        Schema field names from the CsvFile class.
+        |BETA| Schema field names from the CsvFile class.
+
+        |TB|
 
         Returns
         -------
-        list of str
+        list : list of str
             Field names
 
         Examples
@@ -156,7 +158,7 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list of types
+        list : list of types
             Field types
 
         Examples

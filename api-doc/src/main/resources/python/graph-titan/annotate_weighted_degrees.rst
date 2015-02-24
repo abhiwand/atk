@@ -1,4 +1,4 @@
-Annotate Weighted Degrees.
+New graph with weight added to vertices.
 
 Creates a new graph which is the same as the input graph, with the addition
 that every vertex of the graph has its weighted :term:`degree` stored in a
@@ -21,12 +21,15 @@ output_property_name : str
 degree_option : str (optional)
     Indicator for the definition of degree to be used for the calculation.
     Permitted values:
-    *   "out" (default value) : Degree is calculated as the out-degree.
+
+    *   "out" : Degree is calculated as the out-degree.
     *   "in" : Degree is calculated as the in-degree.
     *   "undirected" : Degree is calculated as the undirected degree.
         (Assumes that the edges are all undirected.)
-    Any prefix of the strings "out", "in", "undirected" will select the
-    corresponding option.
+
+    Any string with a prefix of the strings "out", "in", "undirected" will
+    select the corresponding option.
+    Default is "out".
 
 input_edge_labels : list of str (optional)
     If this list is provided, only edges whose labels are included in the given
@@ -45,7 +48,6 @@ edge_weight_default : double (optional)
 
 Returns
 -------
-
 Graph : Weighted degree graph
     A graph object that is a copy of the input graph with the addition that
     every vertex of the graph has its weighted :term:`degree` stored in a
