@@ -23,7 +23,7 @@ class Udf(object):
         dependencies.
         e,g: ia.Udf.install(['testcases/auto_tests/my_script.py'] where it is essential to install the whole 'testcases'
         module on the worker nodes as 'my_script.py' has other dependencies in the 'testcases' module. There are certain
-        pitfalls associated with this approach.
+        pitfalls associated with this approach:
         In this case all the folders, subfolders and files within 'testcases' directory get zipped, serialized and
         copied over to each of the worker nodes every time that the user calls a function that uses UDFs.
 
@@ -31,7 +31,8 @@ class Udf(object):
         their python libraries in that folder and simply install that folder to the workers.
         Also, when you do not need the dependencies for future function calls, you can prevent them from getting copied
         over every time by doing ia.Udf.install([]), to empty out the install list.
-
+        This approach does not work for imports that use relative paths.
+        
         :param dependencies: the file dependencies to be serialized to the cluster
         :return: nothing
         """
