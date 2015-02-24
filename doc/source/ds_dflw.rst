@@ -44,22 +44,28 @@ column corresponding to a variable being observed.
 
 To see the data types currently supported by the |IAT| type::
 
-    # Connect to the server
+Connect to the server::
+
     import intelanalytics as ia
     ia.connect()
 
-    # Record error details (optional but always recommended)
+Record error details (optional but always recommended)::
+
     ia.errors.show_details = True
 
-    # Clean up any previous frames (optional)
+Clean up any previous frames (optional)::
+
     for name in ia.get_frame_names():
         print 'deleting frame: %s' %name
         ia.drop_frames(name)
 
-    # Clean up any previous graphs (optional)
+Clean up any previous graphs (optional)::
+
     for name in ia.get_graph_names():
         print 'deleting graph: %s' %name
         ia.drop_graphs(name)
+
+Get the data types::
 
     print ia.valid_data_types
 
@@ -82,8 +88,7 @@ You should see a string of variable types similar to this::
 Types Of Raw Data
 =================
 
-The only currently supported raw data format is |CSV|, but |JSON| and |XML|
-will be supported in future releases.
+The currently supported raw data formats are |CSV| and LineFile.
 
 .. _example_files.csvfile:
 
@@ -96,9 +101,10 @@ Some example rows from a |CSV| file could look like the below::
     "next",5,"or not",1.0
     "fail",1,"again?",11.11
 
-|CSV| files contain "\\n"-separated rows of information, within with each
-column field is separated by some character (in the above example, the
-separating character is ",").
+|CSV| files contain rows of information separated by new-line characters.
+Within each row, the data fields are separated from each other by some standard
+character(s).
+In the above example, the separating character is a comma (,).
 To import data into the |IAT|, you must tell the system how the input file
 is formatted.
 This is done by defining a schema.
@@ -107,8 +113,7 @@ ASCII-character names and data types (see :ref:`Valid Data Types
 <valid_data_types>`), ordered according to the order of columns in the input
 file.
 
-Let's start with a file *datasets/small_songs.csv* whose contents look like
-this::
+Given a file *datasets/small_songs.csv* whose contents look like this::
 
     1,"Easy on My Mind"
     2,"No Rest For The Wicked"
@@ -116,18 +121,24 @@ this::
     4,"Gypsies, Tramps, and Theives"
     5,"Symphony No. 5"
 
-Create the schema *schema_ab* with two columns: *a* (int32), and *b* (str)::
+For easier reuse, create a variable to hold the file name::
 
-    schema_ab = [('a', ia.int32), ('b', str)]
+    my_data_file = "datasets/small_songs.csv"
 
-The schema is used in the CsvFile() command to describe the file format::
+Create the schema *my_schema* with two columns: *id* (int32), and *title*
+(str)::
 
-    csv_description = ia.CsvFile(filename, schema)
+    my_schema = [('id', ia.int32), ('title', str)]
+
+The schema and file name are used in the CsvFile() command to describe the file
+format::
+
+    my_csv_description = ia.CsvFile(my_data_file, my_schema)
     
 The default delimiter to separate column data is a comma, but it can be
 declared using the key word ``delimiter``::
 
-    csv_description = ia.CsvFile(filename, schema, delimiter = ":")
+    my_csv_description = ia.CsvFile(my_data_file, my_schema, delimiter = ",")
 
 This can be helpful if the delimiter is something other than a comma, for
 example, ``\t`` for tab-delimited records.
@@ -135,15 +146,15 @@ If there are lines at the beginning of the file that should be skipped, the
 number of lines to skip can be passed in with the ``skip_header_lines``
 parameter::
 
-    csv_description = ia.CsvFile(filename, schema, skip_header_lines = 5)
+    csv_description = ia.CsvFile(my_data_file, my_schema, skip_header_lines = 5)
 
 .. only:: html
 
     Now we use the schema and the file name to create objects used to define
     the data layouts::
 
-        my_csv = ia.CsvFile('datasets/small_songs.csv', schema_ab)
-        csv1 = ia.CsvFile(file_name="data.txt", schema=schema_ab)
+        my_csv = ia.CsvFile(my_data_file, my_schema)
+        csv1 = ia.CsvFile(file_name="data1.csv", schema=schema_ab)
         csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
 
         raw_csv_data_file = "datasets/my_data.csv"
@@ -156,14 +167,14 @@ parameter::
     Now we use the schema and the file name to create objects used to define
     the data layouts::
 
-        my_csv = ia.CsvFile('datasets/small_songs.csv', schema_ab)
-        csv1 = ia.CsvFile(file_name="data.txt", schema=schema_ab)
+        my_csv = ia.CsvFile(my_data_file, my_schema)
+        csv1 = ia.CsvFile(file_name="data1.csv", schema=schema_ab)
         csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
 
         raw_csv_data_file = "datasets/my_data.csv"
         column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
-        csv4 = ia.CsvFile(file_name=raw_csv_data_file, \\
-        schema=column_schema_list, delimiter='|', skip_header_lines=2)
+        csv4 = ia.CsvFile(file_name=raw_csv_data_file,  \\
+            schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
 .. _example_frame.frame:
@@ -183,15 +194,16 @@ Create A Frame
 ==============
 
 A new frame is created:
-    1. as "empty"", with no columns defined,
+
+    #. as "empty"", with no columns defined,
     #. as defined by a schema and the source file, or
     #. by copying (all or a part of) another frame.
 
 Examples:
 ---------
-To create an empty frame and a Frame object, *f*, to access it::
+To create an empty frame and a Frame object, *my_frame*, to access it::
 
-    f = ia.Frame()
+    my_frame = ia.Frame()
 
 To create a frame defined by the schema *my_csv*, import the data, name the
 frame *myframe*, and create a Frame object, *my_frame*, to access it::
@@ -937,7 +949,7 @@ arbitrary frame of data consisting of the following columns:
 
 .. _ds_dflw_building_rules:
 
-From the Frame
+Fill the Frame
 ==============
 .. only:: html
 
@@ -1100,24 +1112,87 @@ Commands such as ``g4 = my_graph`` will only give you a copy of the proxy,
 pointing to the same graph.
 
 --------------
-Error Handling
+Seamless Graph
 --------------
 
-Examples::
+For the examples below, we will use a Frame *my_frame*, which accesses an
+arbitrary frame of data consisting of the following columns:
 
+    +----------+---------+-------------------+-------+
+    | Employee | Manager | Title             | Years |
+    +==========+=========+===================+=======+
+    | Bob      | Steve   | Associate         | 1     |
+    +----------+---------+-------------------+-------+
+    | Jane     | Steve   | Sn Associate      | 3     |
+    +----------+---------+-------------------+-------+
+    | Anup     | Steve   | Associate         | 3     |
+    +----------+---------+-------------------+-------+
+    | Sue      | Steve   | Market Analyst    | 1     |
+    +----------+---------+-------------------+-------+
+    | Mohit    | Steve   | Associate         | 2     |
+    +----------+---------+-------------------+-------+
+    | Steve    | David   | Marketing Manager | 5     |
+    +----------+---------+-------------------+-------+
+    | Larry    | David   | Product Manager   | 3     |
+    +----------+---------+-------------------+-------+
+    | David    | Rob     | VP of Sales       | 7     |
+    +----------+---------+-------------------+-------+
+
+    download :download:`here <_downloads/employees.csv>`
+
+.. _ds_dflw_building_rules:
+
+Fill the Frame
+==============
 .. only:: html
 
-        ia.errors.last  # full exception stack trace and message of the last exception raised at the API layer
-        ia.errors.show_details  # toggle setting to show full stack trace, False by default
+    We need to bring the data into a frame::
+
+        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", schema = [('Employee', str),
+            ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+        employees_frame.inspect()
 
 .. only:: latex
 
-        # full exception stack trace and message of the last exception
-        # raised at the API layer
-        ia.errors.last
+    We need to bring the data into a frame::
 
-        # toggle setting to show full stack trace, False by default
-        ia.errors.show_details
+        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", \\
+        schema = [('Employee', str), ('Manager', str), ('Title', str), \\
+        ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+        employees_frame.inspect()
 
+Build an Empty Graph
+====================
 
+Make an empty graph and give it a name::
+
+    my_graph = ia.graph()
+    my_graph.name = "eat_at_joes"
+
+Define the vertex types::
+
+    my_graph.define_vertex_type("employee")
+    my_graph.define_vertex_type("manager")
+    my_graph.define_vertex_type("title")
+    my_graph.define_vertex_type("years")
+
+Define the edge type::
+
+    my_graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=True)
+
+Add data::
+
+    my_graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
+    my_graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
+
+Inspect the graph::
+
+    my_graph.vertex_count
+    my_graph.edge_count
+    my_graph.vertices['Employee'].inspect(20)
+    my_graph.edges['worksunder'].inspect(20)
+
+Export the graph to a TitanGraph::
+
+    my_titan_graph = my_graph.export_to_titan("titan_graph")
 

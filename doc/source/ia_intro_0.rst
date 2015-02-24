@@ -1,10 +1,3 @@
----------
-The |IAT|
----------
-
-.. contents:: Table of Contents
-    :local:
-
 Overview
 ========
 The |IAT| is a platform that simplifies applying :term:`graph analytics` and
