@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.domain.model
 
 import com.intel.intelanalytics.domain.{ Naming, HasId }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import org.joda.time.DateTime
 import spray.json.JsObject
-import com.intel.intelanalytics.spray.json.JsonPropertyNameConverter
 
 /**
  *
@@ -72,5 +72,7 @@ case class ModelEntity(id: Long,
     modelType
   }
 
-  def uri: String = ModelReference(id).uri
+  def uri: String = toReference.uri
+
+  def toReference: ModelReference = ModelReference(id)
 }

@@ -12,7 +12,7 @@ Introduction
 If you have a desire to use |IA| server through IPython you are at the right place.
 We will guide you through IPython setup needed to communicate with an |IA| service on a remote cluster.
 After reading and working through this guide you should be able to execute the |IA|
-python rest client from a remote host through IPyhon shell or notebook server. 
+Python rest client from a remote host through IPyhon shell or notebook server. 
 
 ------------
 Requirements
@@ -57,7 +57,7 @@ If you do have access to 'sudo' and 'yum' you will see a list of repositories.
 Cluster Requirements
 ====================
 
-You need a working |IA| cluster installation configured to run with the python2.7 executable.
+You need a working |IA| cluster installation configured to run with the Python2.7 executable.
 If you are unsure Ask your system administrator.
 If you installed |IA| on the cluster refer to the installation documentation to make the necessary changes.
 
@@ -212,9 +212,9 @@ Installing |IA| Python Rest Client
 ==================================
 
 Now that we have all the 'yum' repositories configured We can go ahead and install the |IA|
-python rest client for python 2.7.
-If you don't already have python 2.7 installed it will be installed automatically since python 2.7 is
-a dependency on |IA| python rest client.
+Python rest client for Python 2.7.
+If you don't already have Python 2.7 installed it will be installed automatically since Python 2.7 is
+a dependency on |IA| Python rest client.
 Run the following command to install the |IA| rest client and all it's dependent packages::
 
     sudo yum install intelanalytics-python-rest-client-python
@@ -222,7 +222,7 @@ Run the following command to install the |IA| rest client and all it's dependent
 Installing IPython
 ==================
 
-To install Ipython run::
+To install IPython run::
 
     $ sudo yum install python27-ipython
 
@@ -266,9 +266,9 @@ IP address of the node hosting the |IA| rest server.
 Running IPython
 ---------------
 
-You should now able to open an ipython shell or notebook server.
+You should now able to open an IPython shell or notebook server.
 Test the |IA| IPython install by importing the rest client libraries inside of a notebook or
-Ipython shell and trying to ping the rest server.
+IPython shell and trying to ping the rest server.
 ::
 
     # testing IPython/Intel Analytics

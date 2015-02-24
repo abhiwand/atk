@@ -74,8 +74,6 @@ class Rule(object):
     """
     Graph rule base class.
 
-    .. versionadded:: 0.8
-
     """
     # TODO - Docstrings
 
@@ -90,8 +88,6 @@ class Rule(object):
     def _validate(self):
         """
 
-        .. versionadded:: 0.8
-
         """
         # TODO - Docstrings
         raise NotImplementedError
@@ -100,8 +96,6 @@ class Rule(object):
     def _validate_source(source, frame):
         """
         Source: String or BigColumn.
-
-        .. versionadded:: 0.8
 
         """
         # TODO - Add examples
@@ -118,8 +112,6 @@ class Rule(object):
     def _validate_property(key, value, frame):
         """
 
-        .. versionadded:: 0.8
-
         """
         # TODO - Docstrings
         frame = Rule._validate_source(key, frame)
@@ -129,8 +121,6 @@ class Rule(object):
     @staticmethod
     def _validate_properties(properties):
         """
-
-        .. versionadded:: 0.8
 
         """
         # TODO - Docstrings
@@ -144,8 +134,6 @@ class Rule(object):
     def _validate_same_frame(*frames):
         """
         Assures all non-None frames provided are in fact the same frame.
-
-        .. versionadded:: 0.8
 
         """
         # TODO - Docstrings
@@ -191,8 +179,6 @@ class VertexRule(Rule):
         movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre'], 'vertex_type':'L'})
         user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1'], 'vertex_type':'R'})
 
-    .. versionadded:: 0.8
-
     """
     def __init__(self, id_key, id_value, properties=None):
         #raise_deprecation_warning("VertexRule", titan_rule_deprecation)
@@ -223,8 +209,6 @@ class VertexRule(Rule):
 
             my_graph = Graph(my_rule_a, my_rule_b, my_rule_1)
             validation = my_graph.validate()
-
-        .. versionadded:: 0.8
 
         """
 
@@ -265,8 +249,6 @@ class EdgeRule(Rule):
     ::
 
         rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
-
-    .. versionadded:: 0.8
 
     """
     def __init__(self, label, tail, head, properties=None, bidirectional=True, is_directed=None):
@@ -312,8 +294,6 @@ class EdgeRule(Rule):
         ::
 
             Example
-
-        .. versionadded:: 0.8
 
         """
         # TODO - Add docstring
@@ -479,7 +459,7 @@ class Graph(DocStubsGraph, _BaseGraph):
     """
     _entity_type = 'graph:'
 
-    def __init__(self, source=None, name='', _info=None):
+    def __init__(self, source=None, name=None, _info=None):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         from intelanalytics.rest.graph import GraphInfo
@@ -571,8 +551,6 @@ class Graph(DocStubsGraph, _BaseGraph):
 
             1194
 
-        .. versionadded:: 0.9
-
         """
         return self._backend.get_vertex_count(self)
 
@@ -589,8 +567,6 @@ class Graph(DocStubsGraph, _BaseGraph):
         The result given is::
 
             1194
-
-        .. versionadded:: 0.9
 
         """
         return self._backend.get_edge_count(self)
@@ -663,13 +639,11 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         # create graph
         graph = ia.TitanGraph([user, movie, rates])
 
-    .. versionadded:: 0.8
-
     """
 
     _entity_type = 'graph:titan'
 
-    def __init__(self, rules=None, name="", _info=None):
+    def __init__(self, rules=None, name=None, _info=None):
         try:
             check_api_is_loaded()
             self._id = 0
@@ -746,8 +720,6 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             movieFrame = ia.Frame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
             movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
-
-        .. versionadded:: 0.8
 
         """
         self._backend.append(self, rules)

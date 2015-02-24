@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,21 +21,23 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame
+package org.apache.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD, RowWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{ SparkContext, sql }
+import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
+import org.apache.spark.{ Partition, SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import SparkContext._
+import parquet.hadoop.ParquetInputSplit
 
 import scala.reflect.ClassTag
 
@@ -82,6 +84,41 @@ class FrameRDD(val frameSchema: Schema,
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
         new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
       })
+  }
+
+  /**
+   * overrides the default behavior so new partitions get created in the sorted order to maintain the data order for the
+   * user
+   *
+   * @return an array of partitions
+   */
+  override def getPartitions(): Array[org.apache.spark.Partition] = {
+    val partitions = super.getPartitions
+
+    if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
+      val sorted = partitions.toList.sortBy(partition => {
+        val split = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value
+        if (split.isInstanceOf[ParquetInputSplit]) {
+          val uri = split.asInstanceOf[ParquetInputSplit].getPath.toUri
+          val index = uri.getPath.lastIndexOf("/")
+          val filename = uri.getPath.substring(index)
+          val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
+          fileNumber.toLong
+        }
+        else {
+          partition.index
+        }
+      })
+      sorted.zipWithIndex.map {
+        case (p: Partition, i: Int) => {
+          val hp = p.asInstanceOf[NewHadoopPartition]
+          new NewHadoopPartition(id, i, hp.serializableHadoopSplit.value)
+        }
+      }.toArray
+    }
+    else {
+      partitions
+    }
   }
 
   /**
@@ -377,6 +414,11 @@ object FrameRDD {
   }
 
   /**
+   * Defines a VectorType "StructType" for SchemaRDDs
+   */
+  val VectorType = ArrayType(DoubleType, containsNull = false)
+
+  /**
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
@@ -389,6 +431,7 @@ object FrameRDD {
           case x if x.equals(DataTypes.float32) => FloatType
           case x if x.equals(DataTypes.float64) => DoubleType
           case x if x.equals(DataTypes.string) => StringType
+          case x if x.equals(DataTypes.vector) => VectorType
           case x if x.equals(DataTypes.ignore) => StringType
         }, nullable = true)
     }
