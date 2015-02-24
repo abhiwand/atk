@@ -8,10 +8,6 @@ Parameters
 folderName : string
     The HDFS folder path where the files will be created
 
-separator : string (optional)
-    The separator for separating the values.
-    Default is ",".
-
 count : int (optional)
     The number of records you want.
     Default, or value less than 1, is the whole frame.
