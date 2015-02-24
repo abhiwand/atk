@@ -149,5 +149,6 @@ def get_command_def(json_schema):
     parameters = get_parameters(json_schema['argument_schema'])
     return_type = get_return(json_schema['return_schema'])
     version = get_version(json_schema)
+    maturity = json_schema.get('maturity', None)
     doc = get_doc(json_schema)
-    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, version)
+    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, maturity, version)

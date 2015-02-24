@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -55,6 +55,8 @@ class SVMWithSGDPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEnti
    * e.g Python client via code generation.
    */
   override def name: String = "model:svm/new"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
     {

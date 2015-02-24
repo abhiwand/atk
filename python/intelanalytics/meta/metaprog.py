@@ -50,6 +50,7 @@ IA_URI = '_id'
 COMMAND_DEF = '_command_def'
 ENTITY_TYPE = '_entity_type'
 INTERMEDIATE_NAME = '_intermediate_name'
+INTERMEDIATE_CLASS = '_intermediate_class'
 LOADED_COMMANDS = '_loaded_commands'
 LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
 
@@ -465,6 +466,14 @@ def {name}(self):
 def mark_with_intermediate_name(obj, intermediate_name):
     setattr(obj, INTERMEDIATE_NAME, intermediate_name) # mark the getter in order to recognize name collisions
 
+def mark_with_intermediate_class(obj, intermediate_class):
+    setattr(obj, INTERMEDIATE_CLASS, intermediate_class) # mark the getter in order to recognize name collisions
+
+def get_intermediate_property_class(prop):
+    try:
+        return getattr(prop.fget, INTERMEDIATE_CLASS)
+    except:
+        return None
 
 def get_fget(intermediate_name):
     private_name = get_private_name(intermediate_name)
@@ -476,6 +485,7 @@ def get_fget(intermediate_name):
 def create_intermediate_property(intermediate_class, intermediate_name):
     fget = get_fget(intermediate_name)
     mark_with_intermediate_name(fget, intermediate_name)
+    mark_with_intermediate_class(fget, intermediate_class)
     doc = _get_property_doc(intermediate_class, intermediate_name)
     return property(fget=fget, doc=doc)
 
