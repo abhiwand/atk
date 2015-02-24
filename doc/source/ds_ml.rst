@@ -4,29 +4,12 @@ Machine Learning
 
 :term:`Machine learning` is the study of constructing algorithms that can learn from data.
 
-.. outdated::
-
-    When you enter a search phrase or question in an internet search tool, you get a list of websites ranked in order of relevance.
-    The search engine bases its list on the content of the site, the links in each sites' webpages, how often users visit these sites,
-    how often users follow the suggested links in a query, and examples of queries and manually ranked webpages.
-    More and more, :term:`machine learning` is being used to automate search engines.
-    (See `Introduction to Machine Learning`_ [#ML1]_ )
-
 When someone uses a search engine to perform a query, they are returned a
 ranked list of websites, ordered according to predicted relevance.
 Ranking these sites is typically done using page content, as well as the
 relevance of other sites that link to a particular page.
 Machine learning is used to automate this process, allowing search engine
 companies to scale this process up to billions of potential web pages.
-
-.. outdated::
-
-    Internet bookstores or video rental sites use collaborative filtering to encourage users to buy more books, or rent more movies.
-    The website needs to produce a list of suggestions, without having access to a specific query.
-    So the site needs to use the customer's past purchasing behavior to predict future behavior.
-    Additionally, the site might use the behavior of similar users to predict what this customer might find interesting.
-    The business goal here is to automate this logic, so that the application behind the website can make these predictions without
-    involving an analyst or other website personnel.
 
 Online retailers often use a machine learning algorithm called collaborative
 filtering to suggest products users might be interested in purchasing.
@@ -35,15 +18,6 @@ input query, so retailers use a customer's purchase and browsing history,
 along with those of customers with whom shared interests can be identified.
 Implementations of collaborative filtering enable these recommendations to
 be done automatically, without directly involving analysts.
-
-.. outdated::
-
-    There are many other problems that are amenable to :term:`machine learning` solutions.
-    Translation of text for example is a difficult issue.
-    It is possible to use examples of pre-translated to text to enable an algorithm to learn how to translate text from one language to another.
-    This requires many good examples of translations, but ultimately, the software learns how to translate, at least for specific languages.
-
-    To solve these and other problems, we need to be able to build software that can learn from data.
 
 There are many other problems that are amenable to :term:`machine learning`
 solutions.
@@ -59,23 +33,6 @@ Algorithm Types
     :maxdepth: 2
     
     ds_mlal_0
-
-.. outdated::
-
-    The algorithms that we use in the Analytics Toolkit are :term:`Unsupervised Learning` or :term:`Supervised Learning` algorithms,
-    where you either have definitive results (supervised) or where the results are determined by an estimation on the relationship
-    of the data to be examined and not a specific known result (unsupervised).
-
-    For more information `Wikipedia\: Machine Learning / Algorithm Types`_ has a longer discussion of algorithm types.
-
-    :term:`Supervised Learning` - These algorithms are designed to teach the software to generalize from specific data.
-    Then the generalized learning is applied to new problems.
-
-    :term:`Unsupervised Learning` - Here the algorithm learns from data where the outcome is unknown.
-
-    :term:`Semi-Supervised Learning` - In this case, some of the data given to the algorithm are known, as in supervised learning,
-    and some are unknown, as in unsupervised learning.
-    The idea here is that the software learns faster.
 
 Intel Analytics Toolkit incorporates supervised, unsupervised, and
 semi-supervised machine learning algorithms.

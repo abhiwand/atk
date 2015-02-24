@@ -42,12 +42,6 @@ etc.) that can be organized as a collection of rows and columns, with each
 row corresponding to the data associated with one observation, and each
 column corresponding to a variable being observed.
 
-.. outdated::
-    Your data is composed of different data types, conceptually laid out as a table with rows and columns.
-    It could be composed of strings, integers, floating point numbers, and other types.
-    Each row of data is probably a combination of these.
-    To maintain a database structure, each column of data can only hold one type of data.
-
 To see the data types currently supported by the |IAT| type::
 
     # Connect to the server
@@ -101,28 +95,6 @@ Some example rows from a |CSV| file could look like the below::
     "string",123,"again",25.125
     "next",5,"or not",1.0
     "fail",1,"again?",11.11
-
-.. outdated::
-
-    Lines of data, with individual pieces of data separated by a delimiter,
-    in this case the comma character.
-    You need to import your data into the database file in a way that the
-    |IAT| can understand and access it.
-    The first thing to do is to tell the |IAT| how your data is formatted.
-    A database file can be viewed as a table with rows and columns.
-    Each column has a unique name and holds a specific data type.
-    Each row holds a set of data.
-
-    To import |CSV| data you need a :term:`schema` defining the structure of
-    your data.
-    Schemas are constructed as a list of tuples, each defining a column in
-    the database, each tuple being composed of a string and a data type.
-    The string is the name of the column, and the data type must be valid
-    (see :ref:`Valid Data Types <valid_data_types>`).
-    Unicode in column names will likely cause the drop_frames() function
-    (and others) to fail, and it is not supported.
-    The order of the columns in the schema must match the order of columns
-    in the data.
 
 |CSV| files contain "\\n"-separated rows of information, within with each
 column field is separated by some character (in the above example, the
@@ -426,11 +398,6 @@ beginning at row 200.
 
 Clean The Data
 ==============
-
-.. outdated::
-    Cleaning data involves removing incomplete, incorrect, inaccurate, or corrupted information from the data set.
-    The Frame API should be used for this.
-    While these Python libraries do not support all Python functionality, they have been specifically designed to handle very large data sets, so when using some Python libraries, be aware that some of them are not designed to handle these very large data sets.
 
 The process of "data cleaning" encompasses the identification and removal of
 incomplete, incorrect, or mal-formed information in a data set.

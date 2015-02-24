@@ -685,7 +685,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
                                             ('vertexType', str),    \\
                                             ('movie', int32),       \\
                                             ('rating', str)])
-        frame = ia.BigFrame(csv)
+        my_frame = ia.BigFrame(csv)
 
     Define graph parsing rules::
 
@@ -695,7 +695,54 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     Create graph::
 
-        graph = ia.TitanGraph([user, movie, rates])
+        my_graph = ia.TitanGraph([user, movie, rates])
+
+    |
+    In another example, the vertex and edge rules can be sent to the function
+    simultaneously.
+
+    .. only:: html
+
+        Define the rules::
+
+            srcips = ia.VertexRule("srcip", f.srcip,{"vertex_type": "L"})
+            sports = ia.VertexRule("sport", f.sport,{"vertex_type": "R"})
+            dstips = ia.VertexRule("dstip", f.dstip,{"vertex_type": "R"})
+            dports = ia.VertexRule("dport", f.dport,{"vertex_type": "L"})
+            from_edges = ia.EdgeRule("from_port", srcips, sports, {"fs_srcbyte": f.fs_srcbyte,"tot_srcbyte": f.tot_srcbyte, "fs_srcpkt": f.fs_srcpkt},bidirectional=True)
+            to_edges = ia.EdgeRule("to_port", dstips, dports, {"fs_dstbyte": f.fs_dstbyte,"tot_dstbyte": f.tot_dstbyte, "fs_dstpkt": f.fs_dstpkt},bidirectional=True)
+
+     .. only:: latex
+
+        Define the rules::
+
+            srcips = ia.VertexRule("srcip", f.srcip,{"vertex_type": "L"})
+            sports = ia.VertexRule("sport", f.sport,{"vertex_type": "R"})
+            dstips = ia.VertexRule("dstip", f.dstip,{"vertex_type": "R"})
+            dports = ia.VertexRule("dport", f.dport,{"vertex_type": "L"})
+            from_edges = ia.EdgeRule("from_port", srcips, sports,           \\
+                {"fs_srcbyte": f.fs_srcbyte,"tot_srcbyte": f.tot_srcbyte,   \\
+                "fs_srcpkt": f.fs_srcpkt},bidirectional=True)
+            to_edges = ia.EdgeRule("to_port", dstips, dports,               \\
+                {"fs_dstbyte": f.fs_dstbyte,"tot_dstbyte": f.tot_dstbyte,   \\
+                "fs_dstpkt": f.fs_dstpkt},bidirectional=True)
+    
+    Define the graph name::
+
+        gname = 'vast_netflow_topic_9'
+
+    .. only:: html
+
+        Create the graph::
+
+            my_graph = ia.TitanGraph([srcips,sports,from_edges, dstips,dports,to_edges] ,gname)
+
+    .. only:: latex
+
+        Create the graph::
+
+            my_graph = ia.TitanGraph([srcips,sports,from_edges,     \\
+                dstips,dports,to_edges] ,gname)
 
     """
 
