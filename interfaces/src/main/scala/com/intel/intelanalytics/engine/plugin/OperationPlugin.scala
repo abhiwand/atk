@@ -40,6 +40,7 @@ import scala.util.control.NonFatal
 import scala.Some
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -95,6 +96,11 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
   def doc: Option[CommandDoc] = CommandDocLoader.getCommandDoc(name)
+
+  /**
+   * Optional Tag for the plugin API
+   */
+  def apiMaturityTag: Option[ApiMaturityTag] = None
 
   /**
    * Convert the given JsObject to an instance of the Argument type

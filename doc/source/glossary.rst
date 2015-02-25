@@ -30,10 +30,7 @@ Glossary
 
     Alpha
 
-        A function or feature which has been developed, but has not been
-        completely tested.
-        Use this function with utmost caution.
-        This function may be changed or eliminated in future releases.
+        See :doc:`Api Maturity Tags <maturity>`   |ALPHA|
 
     Aggregation Function
 
@@ -80,10 +77,7 @@ Glossary
 
     Beta
 
-        A function or feature which has been developed and preliminarily
-        tested, but has not been completely tested.
-        Use this function with caution.
-        This function may be changed in future releases.
+        See :doc:`Api Maturity Tags <maturity>`   |BETA|
 
     Bias-variance tradeoff
 
@@ -210,13 +204,9 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
-
     Deprecated
 
-        A function or feature which is no longer supported.
-        It is recommended that an alternate solution be found.
-        Use this function with caution.
-        This function may be removed in future releases.
+        See :doc:`Api Maturity Tags <maturity>`   |DEPRECATED|
 
     dict
 

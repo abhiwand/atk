@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -53,6 +53,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
    * e.g Python client via code generation.
    */
   override def name: String = "frame:/join"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   override def numberOfJobs(arguments: JoinArgs)(implicit invocation: Invocation): Int = 2
 

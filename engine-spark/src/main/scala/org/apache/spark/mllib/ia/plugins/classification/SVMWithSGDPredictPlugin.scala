@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -53,6 +53,8 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
    * e.g Python client via code generation.
    */
   override def name: String = "model:svm/predict"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
    * Number of Spark jobs that get created by running this command
