@@ -271,6 +271,7 @@ trait SparkEngineConfig extends EventLogging {
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+  val pythonUdfDependenciesDirectory: String = config.getString("intel.analytics.engine.spark.python-udf-deps-directory")
 
   // val's are not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
