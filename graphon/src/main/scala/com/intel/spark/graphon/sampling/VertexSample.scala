@@ -86,11 +86,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
-    // Titan Settings
-    val config = configuration
 
     // get the input graph object
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     // get SparkContext and add the graphon jar
     sc.addJar(SparkContextFactory.jarPath("graphon"))

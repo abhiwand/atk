@@ -60,7 +60,7 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
    * @return data frame which represent the edge of this type
    */
   override def execute(arguments: DefineEdgeArgs)(implicit invocation: Invocation): UnitReturn = {
-    graphStorage.defineEdgeType(arguments.graphRef.id, arguments.edgeSchema)
+    graphStorage.defineEdgeType(arguments.graphRef, arguments.edgeSchema)
     UnitReturn()
   }
 

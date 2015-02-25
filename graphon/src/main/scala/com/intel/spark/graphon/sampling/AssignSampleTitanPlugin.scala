@@ -63,10 +63,8 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AssignSampleTitanArgs)(implicit invocation: Invocation): UnitReturn = {
-    //Titan Settings
-    val config = configuration
 
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
     require(graph.isTitan, "assign sample is currently only implemented for Titan Graphs")
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 

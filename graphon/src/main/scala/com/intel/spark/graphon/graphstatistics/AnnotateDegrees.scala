@@ -107,7 +107,7 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, GraphEntit
     // Get the graph
     import scala.concurrent.duration._
 
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 

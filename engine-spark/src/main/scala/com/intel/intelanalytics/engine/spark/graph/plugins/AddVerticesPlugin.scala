@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.AddVerticesArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.VertexSchema
@@ -92,6 +93,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
     val graph = graphs.expectSeamless(vertexFrameMeta.graphId.get)
+    val graphRef = GraphReference(graph.id)
 
     val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
 
@@ -104,7 +106,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     verticesToAdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.updateIdCounter(graph.id, verticesToAdd.count())
+    graphs.updateIdCounter(graphRef, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
     val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)

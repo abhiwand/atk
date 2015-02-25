@@ -87,7 +87,8 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ExportGraph)(implicit invocation: Invocation): GraphEntity = {
-    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
+    val graphRef = arguments.graph
+    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(graphRef.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(
@@ -96,7 +97,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
           case None => Some(Naming.generateName(prefix = Some("titan_graph")))
         },
         StorageFormats.HBaseTitan))
-    val graph = graphs.expectGraph(seamlessGraph.id)
+    val graph = graphs.expectGraph(graphRef)
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))

@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Call
 import org.scalatest.{ FlatSpec, Matchers }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
@@ -37,10 +38,10 @@ class ExportToGraphPluginITest extends FlatSpec with Matchers with MockitoSugar 
 
   "createVertexFrames" should "vertex frame by label" in {
     val graphs = mock[SparkGraphStorage]
-    val graphId = 1
-    ExportToGraphPlugin.createVertexFrames(graphs, graphId, List("user", "movie"))
+    val graphRef = GraphReference(1)
+    ExportToGraphPlugin.createVertexFrames(graphs, graphRef, List("user", "movie"))
 
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "user", idColumnName = None))
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "movie", idColumnName = None))
+    verify(graphs).defineVertexType(graphRef, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "user", idColumnName = None))
+    verify(graphs).defineVertexType(graphRef, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "movie", idColumnName = None))
   }
 }

@@ -35,9 +35,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 trait GraphStorage {
 
   /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphId: Long)(implicit invocation: Invocation): GraphEntity
-
-  /** Lookup a Graph, throw an Exception if not found */
   def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity
 
   @deprecated("please use expectGraph() instead")

@@ -98,16 +98,12 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Titan Settings for input
-    val config = configuration
-
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
-      arguments.input_edge_labels)
+    val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property, arguments.input_edge_labels)
 
     // Call TriangleCountRunner to kick off Triangle Count computation on RDDs
     val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
