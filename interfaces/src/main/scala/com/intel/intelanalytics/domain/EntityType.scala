@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.graph.GraphReferenceManagement._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.reflect.runtime.{ universe => ru }
 import ru._

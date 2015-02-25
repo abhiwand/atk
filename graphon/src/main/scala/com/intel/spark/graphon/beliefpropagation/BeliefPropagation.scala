@@ -138,7 +138,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       ctx.addJar(SparkContextFactory.jarPath("graphon"))
 
       // Get the graph
-      val graph = engine.graphs.expectGraph(arguments.graph.id)
+      val graph = engine.graphs.expectGraph(arguments.graph)
       val (gbVertices, gbEdges) = engine.graphs.loadGbElements(ctx, graph)
 
       val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,

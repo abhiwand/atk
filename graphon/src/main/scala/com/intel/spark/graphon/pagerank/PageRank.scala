@@ -114,7 +114,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val config = configuration
 
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 

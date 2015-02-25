@@ -109,7 +109,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val config = configuration
 
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
     val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, arguments.cliqueSize, arguments.communityPropertyLabel)
 

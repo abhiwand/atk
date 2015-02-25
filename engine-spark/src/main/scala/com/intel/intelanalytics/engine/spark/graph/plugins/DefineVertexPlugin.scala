@@ -62,7 +62,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @return data frame which represent the vertex of this type
    */
   override def execute(arguments: DefineVertexArgs)(implicit invocation: Invocation): UnitReturn = {
-    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
+    graphStorage.defineVertexType(arguments.graphRef, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }
 

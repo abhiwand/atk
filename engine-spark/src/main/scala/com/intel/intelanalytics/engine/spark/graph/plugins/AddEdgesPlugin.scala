@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
@@ -85,6 +86,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val edgeFrameEntity = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
     var graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
+    var graphRef = GraphReference(graph.id)
     val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
     sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
 
@@ -96,7 +98,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // assign unique ids to source data
     val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds("_eid", startId = graph.nextId())
     edgeDataToAdd.cache()
-    graphs.updateIdCounter(graph.id, edgeDataToAdd.count())
+    graphs.updateIdCounter(graphRef, edgeDataToAdd.count())
 
     // convert to appropriate schema, adding edge system columns
     val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn("_src_vid", DataTypes.int64).addColumn("_dest_vid", DataTypes.int64))
@@ -118,13 +120,14 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     }
 
     // load src and dest vertex ids
-    val srcVertexIds = graphs.loadVertexRDD(sc, graph.id, srcLabel).idColumns.groupByKey()
+    graphRef = GraphReference(graph.id)
+    val srcVertexIds = graphs.loadVertexRDD(sc, graphRef, srcLabel).idColumns.groupByKey()
     srcVertexIds.cache()
     val destVertexIds = if (srcLabel == destLabel) {
       srcVertexIds
     }
     else {
-      graphs.loadVertexRDD(sc, graph.id, destLabel).idColumns.groupByKey()
+      graphs.loadVertexRDD(sc, graphRef, destLabel).idColumns.groupByKey()
     }
 
     // check that at least some source and destination vertices actually exist

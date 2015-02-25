@@ -98,7 +98,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val config = configuration
 
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     // Read the graph from Titan
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)

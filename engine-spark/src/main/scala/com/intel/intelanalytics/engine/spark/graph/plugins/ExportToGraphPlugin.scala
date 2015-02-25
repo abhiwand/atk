@@ -34,7 +34,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.graphbuilder.elements.Property
 import com.thinkaurelius.titan.core.TitanGraph
-import com.intel.intelanalytics.domain.graph.{ GraphMeta, GraphEntity, GraphNoArgs, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.VertexSchema
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
@@ -102,9 +102,10 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
     val edgeDefinitions = getEdgeDefinitions(titanIAGraph.meta)
 
     val graph = graphs.createGraph(GraphTemplate(None, "ia/frame"))
+    val graphRef = GraphReference(graph.id)
 
-    ExportToGraphPlugin.createVertexFrames(graphs, graph.id, labelToIdNameMapping.keySet.toList)
-    val titanDBGraph = graphs.getTitanGraph(titanIAGraph.id)
+    ExportToGraphPlugin.createVertexFrames(graphs, graphRef, labelToIdNameMapping.keySet.toList)
+    val titanDBGraph = graphs.getTitanGraph(arguments.graph)
     saveToVertexFrame(vertices, sc, labelToIdNameMapping, graph, titanDBGraph)
     vertices.unpersist()
 
@@ -112,11 +113,11 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
 
-    ExportToGraphPlugin.createEdgeFrames(graphs, graph.id, edgeDefinitions)
+    ExportToGraphPlugin.createEdgeFrames(graphs, graphRef, edgeDefinitions)
     saveToEdgeFrame(edges, sc, graph, titanDBGraph)
     edges.unpersist()
 
-    graphs.updateIdCounter(graph.id, Math.max(maxVertexId, maxEdgeId))
+    graphs.updateIdCounter(graphRef, Math.max(maxVertexId, maxEdgeId))
     graph
   }
 
@@ -228,24 +229,24 @@ object ExportToGraphPlugin {
   /**
    * Create vertex frames for all the vertex types in the input vertex rdd
    * @param graphs graph storage
-   * @param graphId destination graph id
+   * @param graphRef destination graph id
    * @param vertexLabels vertex labels
    */
-  def createVertexFrames(graphs: SparkGraphStorage, graphId: Long, vertexLabels: List[String])(implicit invocation: Invocation) {
+  def createVertexFrames(graphs: SparkGraphStorage, graphRef: GraphReference, vertexLabels: List[String])(implicit invocation: Invocation) {
     vertexLabels.foreach(label => {
-      graphs.defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = label, idColumnName = None))
+      graphs.defineVertexType(graphRef, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = label, idColumnName = None))
     })
   }
 
   /**
    * Create edge frames for all the edge types in the input edge rdd
    * @param graphs graph storage
-   * @param graphId destination graph id
+   * @param graphRef destination graph id
    * @param edgeDefinitions definitions for edge types
    */
-  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema])(implicit invocation: Invocation) {
+  def createEdgeFrames(graphs: SparkGraphStorage, graphRef: GraphReference, edgeDefinitions: List[EdgeSchema])(implicit invocation: Invocation) {
     edgeDefinitions.foreach(edgeDef => {
-      graphs.defineEdgeType(graphId, edgeDef)
+      graphs.defineEdgeType(graphRef, edgeDef)
     })
   }
 
