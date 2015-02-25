@@ -21,26 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.graph.plugins
+package com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan
 
-import com.intel.intelanalytics.engine.plugin.Call
-import org.scalatest.{ FlatSpec, Matchers }
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.graphbuilder.elements.{ Property, GBVertex }
+import org.scalatest.{ WordSpec, FunSuite }
 
-import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
-import com.intel.intelanalytics.domain.schema.{ Column, VertexSchema }
-import com.intel.intelanalytics.domain.schema.DataTypes.{ string, int64 }
+class VertexSchemaAggregatorTest extends WordSpec {
 
-class ExportToGraphPluginITest extends FlatSpec with Matchers with MockitoSugar {
-  implicit val call = Call(null)
+  val vertexSchemaAggregator = new VertexSchemaAggregator(List("movieId"))
 
-  "createVertexFrames" should "vertex frame by label" in {
-    val graphs = mock[SparkGraphStorage]
-    val graphId = 1
-    ExportToGraphPlugin.createVertexFrames(graphs, graphId, List("user", "movie"))
-
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "user", idColumnName = None))
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "movie", idColumnName = None))
+  "VertexSchemaAggregator" should {
+    "convert GBVertices to VertexSchemas" in {
+      val schema = vertexSchemaAggregator.toSchema(GBVertex(1L, Property("titanPhysicalId", 2L), Set(Property("_label", "movie"), Property("movieId", 23L))))
+      assert(schema.label == "movie")
+      assert(schema.columns.size == 3, "expected _vid, _label, and movieId")
+    }
   }
+
 }

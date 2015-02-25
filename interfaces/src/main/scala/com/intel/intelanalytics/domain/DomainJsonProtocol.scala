@@ -551,7 +551,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
 
   implicit object graphFormat extends JsonFormat[GraphEntity] {
-    implicit val graphFormatOriginal = jsonFormat13(GraphEntity)
+    implicit val graphFormatOriginal = jsonFormat12(GraphEntity)
 
     override def read(value: JsValue): GraphEntity = {
       graphFormatOriginal.read(value)
