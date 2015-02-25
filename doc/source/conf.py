@@ -18,15 +18,15 @@ import os
 rst_epilog = """
 
 .. |ALPHA|  image:: _static/alpha.*
-              :target: maturity.html#_Alpha
+              :target: glossary.html#term-api-maturity-tags
 .. |API|    replace:: abbr:`API (Application Programming Interface)`
 .. |BETA|   image:: _static/beta.*
-              :target: maturity.html#_Beta
+              :target: glossary.html#term-api-maturity-tags
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
 .. |DEPRECATED|   image:: _static/deprecated.*
-              :target: maturity.html#_Deprecated
+              :target: glossary.html#term-api-maturity-tags
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash
