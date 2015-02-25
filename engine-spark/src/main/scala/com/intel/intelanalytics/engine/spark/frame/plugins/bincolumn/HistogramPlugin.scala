@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
 import com.intel.intelanalytics.engine.Rows
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -45,6 +45,8 @@ import org.apache.spark.SparkContext._
 class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
   override def name: String = "frame/histogram"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * Compute histogram for a column in a frame.

@@ -43,7 +43,7 @@ Doc = namedtuple("Doc", ['one_line_summary', 'extended_summary'])
 class CommandDefinition(object):
     """Defines a Command"""
 
-    def __init__(self, json_schema, full_name, parameters, return_type, doc=None, version=None):
+    def __init__(self, json_schema, full_name, parameters, return_type, doc=None, maturity=None, version=None):
         self.json_schema = json_schema
         self.full_name = full_name
         parts = self.full_name.split('/')
@@ -54,6 +54,7 @@ class CommandDefinition(object):
         self.name = parts[-1]
         self.parameters = parameters
         self.return_type = return_type
+        self.maturity =maturity
         self.version = version
         # do doc last, so we can send populated self to create CommandNumpydoc
         self.doc = '' if doc is None else get_numpy_doc(self, doc.one_line_summary, doc.extended_summary)
