@@ -25,7 +25,7 @@ Operating System Requirements
 =============================
 
 These instructions will work on `Red Hat Enterprise Linux
-<http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.4
+<http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.6
 
 User Permission Requirements 
 ============================
@@ -77,7 +77,7 @@ If you do have access to 'sudo' and 'yum' you will see a list of repositories:
 Cluster Requirements
 ====================
 
-You need a Cloudera cluster 5.1.x with following services.
+You need a Cloudera cluster 5.3.x with following services.
 
 i.  HDFS
 #.  SPARK
@@ -86,7 +86,7 @@ i.  HDFS
 #.  Zookeeper
 
 You need Python to run the |IA| Python client.
-The |IA| Python client will run with Python 2.6 or 2.7.
+The |IA| Python client will run with Python 2.7.
 
 Yum Repository Requirements
 ===========================
@@ -141,7 +141,7 @@ it's already available on the machines you will be installing |IA| on.
 
         repo id                                    repo name
         cloudera-cdh5                              Cloudera Hadoop, Version 5                                           141
-        cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
+        cloudera-manager                           Cloudera Manager, Version 5.3.1                                        7
         epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
         rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
         rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
@@ -153,7 +153,7 @@ it's already available on the machines you will be installing |IA| on.
 
         repo id                           repo name
         cloudera-cdh5                     Cloudera Hadoop, Version 5            ...
-        cloudera-manager                  Cloudera Manager, Version 5.1.0       ...
+        cloudera-manager                  Cloudera Manager, Version 5.3.1       ...
         epel                              Extra Packages for Enterprise Linux 6 ...
         rhui-REGION-client-config-ser...  Red Hat Update Infrastructure 2.0 Clie...
         rhui-REGION-rhel-server-relea...  Red Hat Enterprise Linux Server 6 (RPM...
@@ -1055,10 +1055,8 @@ You want to uncomment all the postgres lines in the application.conf file.
             ${intel.analytics.metastore.connection-postgresql.port}"/"
             ${intel.analytics.metastore.connection-postgresql.database}
         metastore.connection = ${intel.analytics.metastore.connection-postgresql}
-
-Comment any h2 configuration lines with a # or //::
-
-     //metastore.connection = ${intel.analytics.metastore.connection-h2}
+        #comment any h2 configuration lines with a # or //::
+         //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
 When you are done updating the application.conf file with the postgres
 information restart the Intel Analytics service and insert the meta user into
@@ -1081,31 +1079,36 @@ Switch databases::
 
     postgres=# \c YOURDATABASE
     psql (8.4.18)
+    You are now connected to database "YOURDATABASE".
 
-You are now connected to database "YOURDATABASE".
 Then insert into the users table::
 
     postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
     INSERT 0 1
 
-After you get a confirmation of the insert you can send commands from the
-Python client.
-You can view the insertion by doing a select on the users table::
+After you get a confirmation of the insert you can send commands from the python client. you can view the insertion by doing a select on the users table
 
     postgres=# select * from users;
 
 You should only get a single row per api_key::
 
-      user_id | username  |    api_key     |         created_on         |        modified_on
-    /---------+-----------+----------------+----------------------------+----------------------------/
-            1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
-    (1 row)
+     user_id | username  |    api_key     |         created_on         |        modified_on
+    ---------+-----------+----------------+----------------------------+----------------------------
+           1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
+       (1 row)
 
-If you get more than one row for a single api key, remove one of them or create
-a new database.
-If you have duplicate api keys that will not get validated by the rest server
-which means a broken Python client. 
-         
+If you get more than one row for a single api key remove one of them or create a new database. 
+If you have duplicate api keys the server will not be able to validate request from the rest client. 
+You should only have a single row per api key.
+
+     user_id | username  |    api_key     |         created_on         |        modified_on
+    ---------+-----------+----------------+----------------------------+----------------------------
+           1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
+           2 | metastore | test_api_key_1 | 2014-11-20 12:38:01.535852 | 2014-11-20 12:38:01.535852
+
+    postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
+    INSERT 0 1
+
 
 Starting |IA| REST Server
 =========================
@@ -1143,7 +1146,7 @@ Remove the old Python 2.7 client on all your nodes::
     sudo yum remove intelanalytics-python-rest-client-python27
  
 Make sure your yum dependency repo is pointed to
-https://bda-public-repo.s3-us-west-2.amazonaws.com/yum
+https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
 Update/install intelanalytics on slave nodes::
 
     sudo yum install intelanalytics-python-rest-client intelanalytics-spark-deps
