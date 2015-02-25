@@ -176,8 +176,9 @@ class SparkGraphStorage(metaStore: MetaStore,
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
     val graphCopy = createGraph(GraphTemplate(name))
-    val storageName = {
-      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
+    val storageName = name.isDefined match {
+      case true => GraphBackendName.convertGraphUserNameToBackendName(name.get)
+      case false => SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graphCopy)
     }
     if (graph.isTitan) {
       backendStorage.copyUnderlyingTable(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph), storageName)
@@ -241,10 +242,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan && graph.name.isDefined) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          /* This needs to be done after inserting an enrty into metastore because if the a previous unnamed graph
+             exists with id, it needs to be dropped. However, the id does not get assigned till we insert into metastore
+           */
+          if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graphEntity), quiet = true)
           }
-          metaStore.graphRepo.insert(graph).get
+          graphEntity
         }
     }
   }
