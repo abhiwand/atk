@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ TallyPercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -49,6 +49,8 @@ class TallyPercentPlugin extends SparkCommandPlugin[TallyPercentArgs, FrameEntit
    * e.g Python client via code generation.
    */
   override def name: String = "frame/tally_percent"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * Computes a cumulative percent count

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ SortByColumnsArgs, FrameEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -49,6 +49,8 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumnsArgs, FrameEnt
    * e.g Python client via code generation.
    */
   override def name: String = "frame/sort"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * Number of Spark jobs that get created by running this command
