@@ -1,7 +1,6 @@
 import os
 import sys
 import intelanalytics.rest.spark
-import zipfile
 
 class Udf(object):
     """
