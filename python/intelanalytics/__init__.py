@@ -41,7 +41,7 @@ except Exception as e:
 
 from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile
 from intelanalytics.core.iapandas import Pandas
-from intelanalytics.rest.udfdepends import Udf
+from intelanalytics.rest.udfdepends import udf
 from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.core.model import _BaseModel
