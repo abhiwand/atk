@@ -12,7 +12,7 @@ separator : str (optional)
     The separator for separating the values.
     Default is comma (,)
 
-count :nt (optional) 
+count : int (optional)
     The number of records you want.
     Default, or a non-positive value, is the whole frame.
 

@@ -75,6 +75,11 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         val changed = result match {
           case Failure(ex) =>
             error(s"command completed with error, id: $id, name: ${command.name}, args: ${command.compactArgs} ", exception = ex)
+
+            // Please keep this here for now --Todd 2/24/2015
+            // Event logging isn't spitting out the full stacktrace, makes things really hard to debug
+            ex.printStackTrace()
+
             command.copy(complete = true,
               error = Some(throwableToError(ex)),
               correlationId = corId)
