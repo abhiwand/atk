@@ -534,14 +534,4 @@ class SparkGraphStorage(metaStore: MetaStore,
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
   }
 
-  def updateFrameSchemaList(graphEntity: GraphEntity, schemas: List[Schema])(implicit invocation: Invocation): GraphEntity = {
-    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
-      implicit session =>
-        {
-          val updatedGraph = graphEntity.copy(frameSchemaList = Some(new SchemaList(schemas)))
-          metaStore.graphRepo.update(updatedGraph).get
-        }
-    }
-  }
-
 }
