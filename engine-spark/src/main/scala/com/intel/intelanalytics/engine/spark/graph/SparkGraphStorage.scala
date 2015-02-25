@@ -161,7 +161,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+            backendStorage.deleteUnderlyingTable(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph), quiet = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -180,7 +180,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
     }
     if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
+      backendStorage.copyUnderlyingTable(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph), storageName)
       metaStore.withSession("spark.graphstorage.copyGraph") {
         implicit session =>
           {
@@ -258,7 +258,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
           if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
+            backendStorage.renameUnderlyingTable(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph), newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
@@ -442,7 +442,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -499,7 +499,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphId: Long)(implicit invocation: Invocation): TitanGraph = {
     val graph = lookup(graphId).get
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }
