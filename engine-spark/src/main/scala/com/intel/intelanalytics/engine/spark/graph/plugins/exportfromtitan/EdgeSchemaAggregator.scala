@@ -39,7 +39,7 @@ object EdgeSchemaAggregator extends Serializable {
     new EdgeSchema(allColumns.toList, edgeHolder.edge.label, edgeHolder.srcLabel, edgeHolder.destLabel, directed = true)
   }
 
-  val zeroOp = Map[String, EdgeSchema]()
+  val zeroValue = Map[String, EdgeSchema]()
 
   def seqOp(edgeSchemas: Map[String, EdgeSchema], edgeHolder: EdgeHolder): Map[String, EdgeSchema] = {
     val schema = toSchema(edgeHolder)
