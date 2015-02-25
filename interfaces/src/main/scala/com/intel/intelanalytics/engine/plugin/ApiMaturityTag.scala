@@ -20,17 +20,26 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.domain.command
-
-import com.intel.intelanalytics.schema.ObjectSchema
-import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
+package com.intel.intelanalytics.engine.plugin
 
 /**
- * A description of a command in the system, including sample arguments and results
+ * Enumeration of the API Tags with which operations may tagged
  */
-case class CommandDefinition(name: String,
-                             argument_schema: ObjectSchema,
-                             return_schema: ObjectSchema,
-                             doc: Option[CommandDoc] = None,
-                             maturity: Option[ApiMaturityTag] = None)
+object ApiMaturityTag extends Enumeration {
+  type ApiMaturityTag = Value
+
+  /**
+   * API item is new, has not gone through QA
+   */
+  val Alpha = Value
+
+  /**
+   * API item has passed QA, but may have performance or stability issues.  The signature is also still subject to change.
+   */
+  val Beta = Value
+
+  /**
+   * API item is no longer in favor and is going away.
+   */
+  val Deprecated = Value
+}

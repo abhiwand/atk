@@ -30,7 +30,7 @@ import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, Giraph
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Column, FrameSchema }
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation }
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._
@@ -48,6 +48,8 @@ class LdaTrainPlugin
    * e.g Python client via code generation.
    */
   override def name: String = "model:lda/train"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   override def execute(arguments: LdaTrainArgs)(implicit invocation: Invocation): LdaTrainResult = {
 
