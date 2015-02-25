@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
+
 //TODO: This should be replaced by a "storage" parameter on Graph and DataFrame that holds specifics like
 // Titan table name and HDFS uris, etc. for those that need them.
 
@@ -46,4 +47,5 @@ object GraphBackendName {
   def convertGraphBackendNameToUserName(backendName: String): String = {
     backendName.stripPrefix(iatGraphTablePrefix)
   }
+
 }

@@ -65,7 +65,7 @@ class VarianceAggregatorTest extends FlatSpec with Matchers {
 
     val varianceCounter1 = VarianceCounter(10, CompensatedSum(12d, 0.1), CompensatedSum(2d, 0.3))
     val varianceCounter2 = VarianceCounter(8, CompensatedSum(15d, 0.2), CompensatedSum(5d, 0.4))
-    val expectedResult = VarianceCounter(18, CompensatedSum(13d+(13d/30), 0d), CompensatedSum(47.7d, 0d))
+    val expectedResult = VarianceCounter(18, CompensatedSum(13d + (13d / 30), 0d), CompensatedSum(47.7d, 0d))
     aggregator.merge(varianceCounter1, varianceCounter2) should equalWithTolerance(expectedResult, epsilon)
   }
   "VarianceAggregator" should "return variance" in {

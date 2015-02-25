@@ -40,12 +40,12 @@ case class VarianceCounter(count: Long, mean: CompensatedSum, m2: CompensatedSum
 /**
  * Counter used to calculate sums using the Kahan summation algorithm
  *
- * The Kahan summation algorithm (also known as compensated summation) reduces the numerical errors that 
+ * The Kahan summation algorithm (also known as compensated summation) reduces the numerical errors that
  * occur when adding a sequence of finite precision floating point numbers. Numerical errors arise due to
  * truncation and rounding. These errors can lead to numerical instability when calculating variance.
  *
  * @see http://en.wikipedia.org/wiki/Kahan_summation_algorithm
- *      
+ *
  * @param value Numeric value being summed
  * @param delta Correction term for reducing numeric errors
  */
@@ -57,7 +57,7 @@ case class CompensatedSum(value: Double = 0d, delta: Double = 0d)
  * This class uses the Kahan summation algorithm to avoid numeric instability when computing variance.
  * The algorithm is described in: "Scalable and Numerically Stable Descriptive Statistics in SystemML",
  * Tian et al, International Conference on Data Engineering 2012
- * 
+ *
  * @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
  */
 abstract class AbstractVarianceAggregator extends GroupByAggregator {
@@ -109,9 +109,9 @@ abstract class AbstractVarianceAggregator extends GroupByAggregator {
   override def merge(counter1: VarianceCounter, counter2: VarianceCounter): VarianceCounter = {
     val count = counter1.count + counter2.count
     val deltaMean = counter2.mean.value - counter1.mean.value
-    val mean = incrementCompensatedSum(counter1.mean, CompensatedSum(deltaMean *counter2.count/count))
+    val mean = incrementCompensatedSum(counter1.mean, CompensatedSum(deltaMean * counter2.count / count))
     val m2_sum = incrementCompensatedSum(counter1.m2, counter2.m2)
-    val m2 = incrementCompensatedSum(m2_sum, CompensatedSum(deltaMean*deltaMean*counter1.count*counter2.count/count))
+    val m2 = incrementCompensatedSum(m2_sum, CompensatedSum(deltaMean * deltaMean * counter1.count * counter2.count / count))
     VarianceCounter(count, mean, m2)
   }
 

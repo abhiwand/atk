@@ -27,6 +27,7 @@ import java.io.OutputStream
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.apache.commons.io.IOUtils
@@ -155,4 +156,17 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     }
   }
 
+}
+
+object SparkGraphHBaseBackend {
+
+  def getHBaseTableNameFromGraphEntity(graph: GraphEntity): String = {
+    if (graph.isTitan) {
+      graph.name.isDefined match {
+        case false => GraphBackendName.convertGraphUserNameToBackendName(graph.id.toString)
+        case true => GraphBackendName.convertGraphUserNameToBackendName(graph.name.get)
+      }
+    }
+    else throw new Exception("Seamless graphs do not have a backend name.")
+  }
 }

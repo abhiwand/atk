@@ -25,7 +25,7 @@ package com.intel.intelanalytics.algorithm.util
 
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.intelanalytics.domain.graph.GraphEntity
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
@@ -72,7 +72,7 @@ object GiraphConfigurationUtil {
    */
   def initializeTitanConfig(hConf: Configuration, config: Config, graph: GraphEntity): Unit = {
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
     val storageBackend = titanConfig.getString("storage.backend")
 
     titanConfig.getKeys.foreach {
