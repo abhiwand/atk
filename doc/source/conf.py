@@ -29,12 +29,13 @@ rst_epilog = """
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |FLAG_ALPHA| image:: _static/flag_alpha.*
+                    :target: glossary.html#term-alpha
+
 .. |FLAG_BETA|  image:: _static/yellow_penguin.*
 .. |FLAG_DEPRECATED|    image:: _static/blue_penguin.*
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: :abbr:`IA (Intel Analytics)`
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
-.. |iPDF|   replace:: *PDF*
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
