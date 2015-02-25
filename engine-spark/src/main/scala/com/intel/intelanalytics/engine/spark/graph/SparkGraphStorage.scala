@@ -447,7 +447,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -504,7 +504,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphId: Long)(implicit invocation: Invocation): TitanGraph = {
     val graph = lookup(graphId).get
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }

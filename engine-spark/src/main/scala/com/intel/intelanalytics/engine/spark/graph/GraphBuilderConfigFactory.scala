@@ -55,7 +55,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
-      GraphBuilderConfigFactory.getTitanConfiguration(graph.name.getOrElse(graph.id.toString)),
+      GraphBuilderConfigFactory.getTitanConfiguration(graph.getNameOrElse()),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,
@@ -179,6 +179,17 @@ object GraphBuilderConfigFactory {
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
     titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
     titanConfiguration
+  }
+
+  /**
+   * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
+   * a graph entity
+   * @param graph Graph Entity
+   * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
+   */
+  def getTitanConfiguration(graph: GraphEntity): SerializableBaseConfiguration = {
+    val graphName = SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph)
+    getTitanConfiguration(graphName)
   }
 
   /**

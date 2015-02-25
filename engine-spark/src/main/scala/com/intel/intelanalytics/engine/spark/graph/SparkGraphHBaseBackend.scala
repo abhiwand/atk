@@ -160,13 +160,11 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
 
 object SparkGraphHBaseBackend {
 
+  /* We should store the backend name in metastore after graph creation - eliminating need of this method - TRIB- 4568 */
   def getHBaseTableNameFromGraphEntity(graph: GraphEntity): String = {
     if (graph.isTitan) {
-      graph.name.isDefined match {
-        case false => GraphBackendName.convertGraphUserNameToBackendName(graph.id.toString)
-        case true => GraphBackendName.convertGraphUserNameToBackendName(graph.name.get)
-      }
+      GraphBackendName.convertGraphUserNameToBackendName(graph.getNameOrElse())
     }
-    else throw new Exception("Seamless graphs do not have a backend name.")
+    else throw new Exception("Seamless graphs do not have a backend hbase name.")
   }
 }

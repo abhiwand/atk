@@ -158,7 +158,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
       // Create the GraphBuilder object
       // Setting true to append for updating existing graph
-      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
+      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
       // Build the graph using spark
       gb.buildGraphWithSpark(outVertices, dummyOutEdges)
