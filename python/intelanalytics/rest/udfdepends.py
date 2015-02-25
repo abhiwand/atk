@@ -3,7 +3,7 @@ import sys
 import intelanalytics.rest.spark
 
 
-class Udf(object):
+class udf(object):
     """
     An object for containing  and managing all the UDF dependencies.
 
