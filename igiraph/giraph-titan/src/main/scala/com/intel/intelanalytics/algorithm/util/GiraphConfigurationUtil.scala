@@ -72,7 +72,7 @@ object GiraphConfigurationUtil {
    */
   def initializeTitanConfig(hConf: Configuration, config: Config, graph: GraphEntity): Unit = {
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph))
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val storageBackend = titanConfig.getString("storage.backend")
 
     titanConfig.getKeys.foreach {

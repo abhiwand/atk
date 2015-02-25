@@ -92,4 +92,10 @@ case class GraphEntity(id: Long,
     GraphReference(id)
   }
 
+  /**
+   * Returns name if valid otherwise default value
+   * @param default user default value. Default is _${id}
+   * @return name or default value
+   */
+  def getNameOrElse(default: String = s"_${id}"): String = name.getOrElse(default)
 }
