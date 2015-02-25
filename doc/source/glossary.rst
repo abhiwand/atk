@@ -30,7 +30,7 @@ Glossary
 
     Alpha
 
-        See :doc:`Api Maturity Tags <maturity>`   |ALPHA|
+        See :term:`API Maturity Tags`   |ALPHA|
 
     Aggregation Function
 
@@ -58,6 +58,25 @@ Glossary
         See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
         in-depth discussion of this method.
 
+    API Maturity Tags
+
+        Functions in the API may be at different levels of software maturity.
+        Where a function is not mature, the documentation will note it with one
+        of the following tags.  The absence of a tag means the function is
+        standardized and fully tested. 
+        
+        |ALPHA| Indicates a function or feature which has been developed, but has
+        not been completely tested.  Use this function with caution.
+        This function may be changed or eliminated in future releases.
+
+        |BETA| Indicates a function or feature which has been developed and preliminarily
+        tested, but has not been completely tested.  Use this function with caution.
+        This function may be changed in future releases.
+
+        |DEPRECATED| Indicates a function or feature which is no longer supported.
+        It is recommended that an alternate solution be found.
+        This function may be removed in future releases.
+
     Average Path Length
 
         In network topology, the average number of steps along the shortest
@@ -77,7 +96,7 @@ Glossary
 
     Beta
 
-        See :doc:`Api Maturity Tags <maturity>`   |BETA|
+        See :term:`API Maturity Tags`   |BETA|
 
     Bias-variance tradeoff
 
@@ -206,7 +225,7 @@ Glossary
 
     Deprecated
 
-        See :doc:`Api Maturity Tags <maturity>`   |DEPRECATED|
+        See :term:`API Maturity Tags`.  |DEPRECATED|
 
     dict
 
