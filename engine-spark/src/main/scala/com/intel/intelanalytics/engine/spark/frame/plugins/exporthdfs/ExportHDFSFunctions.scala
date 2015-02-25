@@ -99,7 +99,7 @@ object FrameExportHdfs extends Serializable {
           val value = row.zip(headers).map {
             case (k, v) => new String("\"" + v.toString + "\":" + (if (k == null) "null"
             else if (k.isInstanceOf[String]) { "\"" + k.toString + "\"" }
-            else if (k.isInstanceOf[ArrayBuffer[Double]]) { k.asInstanceOf[ArrayBuffer[Double]].mkString("\"", ",", "\"") }
+            else if (k.isInstanceOf[ArrayBuffer[Double]]) { k.asInstanceOf[ArrayBuffer[Double]].mkString("[", ",", "]") }
             else k.toString)
             )
           }
