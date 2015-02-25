@@ -31,11 +31,6 @@ rst_epilog = """
 .. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
-.. |FLAG_ALPHA| image:: _static/flag_alpha.*
-                    :target: glossary.html#term-alpha
-
-.. |FLAG_BETA|  image:: _static/yellow_penguin.*
-.. |FLAG_DEPRECATED|    image:: _static/blue_penguin.*
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: :abbr:`IA (Intel Analytics)`
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
@@ -47,9 +42,6 @@ rst_epilog = """
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
-.. |TA|     replace:: [:term:`ALPHA`]
-.. |TB|     replace:: [:term:`BETA`]
-.. |TD|     replace:: [:term:`DEPRECATED`]
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
