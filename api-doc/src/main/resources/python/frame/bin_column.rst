@@ -12,8 +12,8 @@ cutoffs : array of values
     Array of values containing bin cutoff points.
     Array can be list or tuple.
     Array values must be progressively increasing.
-    All bin bountries must be included, therefore with N bins, you need N+1
-    values.
+    All bin boundaries must be included.
+    With N bins, you need N+1 values.
 
 include_lowest : bool (optional)
     Specify how the boundry conditions are handled.
@@ -42,7 +42,7 @@ Notes
 
 3)  The first and last cutoffs are always included in the bins.
     When include_lowest is ``True``, the last bin includes both cutoffs.
-    When include_lowest is ``False`` the first bin (bin 0) includes both
+    When include_lowest is ``False``, the first bin (bin 0) includes both
     cutoffs.
 
 
