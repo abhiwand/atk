@@ -110,7 +110,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
     val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-    val titanGraph = getTitanGraph(SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph), config)
+    val titanGraph = getTitanGraph(graph.storage, config)
 
     val resultIterator = Try({
       val bindings = gremlinExecutor.createBindings()

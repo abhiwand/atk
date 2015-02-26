@@ -50,7 +50,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    */
   override def copyUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
     //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    val tableName: String = graphName
     var outputStream: OutputStream = null
     try {
       info(s"Trying to copy the HBase Table: $tableName")
@@ -103,7 +103,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    */
   override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
     // TODO: To be deleted later. Workaround for TRIB: 4318.
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    val tableName: String = graphName
     var outputStream: OutputStream = null
     try {
       //create a new process
@@ -138,8 +138,8 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
   }
 
   override def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
-    val newTableName: String = GraphBackendName.convertGraphUserNameToBackendName(newName)
+    val tableName: String = graphName
+    val newTableName: String = newName
     val snapShotName: String = graphName.concat("_SnapShot")
 
     val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
@@ -156,15 +156,4 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     }
   }
 
-}
-
-object SparkGraphHBaseBackend {
-
-  /* We should store the backend name in metastore after graph creation - eliminating need of this method - TRIB- 4568 */
-  def getHBaseTableNameFromGraphEntity(graph: GraphEntity): String = {
-    if (graph.isTitan) {
-      GraphBackendName.convertGraphUserNameToBackendName(graph.getNameOrElse())
-    }
-    else throw new Exception("Seamless graphs do not have a backend hbase name.")
-  }
 }

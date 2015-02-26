@@ -55,7 +55,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
-      GraphBuilderConfigFactory.getTitanConfiguration(graph.getNameOrElse()),
+      GraphBuilderConfigFactory.getTitanConfiguration(graph.storage),
       append = graphLoad.append,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,
@@ -158,7 +158,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, graphName)
     titanConfiguration
   }
 
@@ -177,7 +177,7 @@ object GraphBuilderConfigFactory {
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, GraphBackendName.convertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty(titanGraphNameKey, graphName)
     titanConfiguration
   }
 
@@ -188,7 +188,7 @@ object GraphBuilderConfigFactory {
    * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
    */
   def getTitanConfiguration(graph: GraphEntity): SerializableBaseConfiguration = {
-    val graphName = SparkGraphHBaseBackend.getHBaseTableNameFromGraphEntity(graph)
+    val graphName = graph.storage
     getTitanConfiguration(graphName)
   }
 
