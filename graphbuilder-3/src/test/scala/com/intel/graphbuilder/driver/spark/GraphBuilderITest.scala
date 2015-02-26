@@ -150,7 +150,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val titanConnector = new TitanGraphConnector(titanConfig)
 
       // Build the Graph
-      val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, broadcastVertexIds=true)
+      val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, broadcastVertexIds = true)
       val gb = new GraphBuilder(config)
       gb.build(inputRdd)
 
@@ -172,7 +172,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val inputRdd2 = sparkContext.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
-      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false, broadcastVertexIds=true))
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false, broadcastVertexIds = true))
       gb2.build(inputRdd2)
 
       // Validate

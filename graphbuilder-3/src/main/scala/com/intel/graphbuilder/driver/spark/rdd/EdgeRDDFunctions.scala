@@ -108,7 +108,7 @@ class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
     // Range-partitioner helps alleviate the "com.esotericsoftware.kryo.KryoException: java.lang.NegativeArraySizeException"
     // which occurs when we spill blocks to disk larger than 2GB but does not completely fix the problem
     // TODO: Find a better way to handle supernodes: Look at skewed joins in Pig
-    implicit val propertyOrdering = PropertyOrdering  // Ordering is needed by Spark's range partitioner
+    implicit val propertyOrdering = PropertyOrdering // Ordering is needed by Spark's range partitioner
     val tailPartitioner = new RangePartitioner(edgesByTail.partitions.length, edgesByTail)
     val edgesWithTail = edgesByTail.join(idsByGbId, tailPartitioner).map {
       case (gbId, (edge, gbIdToPhysicalId)) =>

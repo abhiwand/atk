@@ -1,6 +1,5 @@
 package com.intel.graphbuilder.driver.spark.titan
 
-
 import com.intel.graphbuilder.elements.Property
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
@@ -22,7 +21,7 @@ class JoinBroadcastVariableTest extends TestingSparkContextFlatSpec with Matcher
 
     broadcastVariable.length() should equal(1)
     broadcastVariable.broadcastMaps(0).value.size should equal(5)
-    personIds.map{case (property, id) => broadcastVariable.get(property) should equal(Some(id))}
+    personIds.map { case (property, id) => broadcastVariable.get(property) should equal(Some(id)) }
     broadcastVariable.get(Property("not defined", new java.lang.Long(1))).isDefined should equal(false)
   }
   "JoinBroadcastVariable" should "create an empty broadcast variable" in {
