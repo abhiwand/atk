@@ -31,7 +31,7 @@ import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
@@ -116,7 +116,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     // Update back each vertex in the input Titan graph and the write the community property
     // as the set of communities to which it belongs
     val communityWriterInTitan = new CommunityWriterInTitan()
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     communityWriterInTitan.run(outVertices, outEdges, titanConfig)
 
     // Get the execution time and print it
