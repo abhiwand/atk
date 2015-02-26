@@ -16,8 +16,9 @@ Machine Learning Algorithms
     ds_mlal_lbp
     ds_mlal_glbp
     ds_mlal_lda
-    ds_mlal_apl
+    ds_mlal_clco
     ds_mlal_cc
+    ds_mlal_dc
     ds_mlal_k
 
 The graph machine learning algorithms currently supported fall into these categories:
@@ -28,8 +29,10 @@ The graph machine learning algorithms currently supported fall into these catego
     * :ref:`CGD`
 
 * :ref:`Graph_Analytics`
+    * :ref:`ClCo`
     * :ref:`CC`
     * :ref:`PR`
+    * :ref:`DC`
 
 .. TODO::
 
@@ -52,7 +55,6 @@ The graph machine learning algorithms currently supported fall into these catego
 .. _ALS:
 .. include:: ds_mlal_als.rst
 
-
 .. _CGD:
 .. include:: ds_mlal_cgd.rst
 
@@ -63,11 +65,16 @@ The graph machine learning algorithms currently supported fall into these catego
 Graph Analytics
 ---------------
 
-The algorithms we currently support in this category :ref:`CC` and :ref:`PR`.
+The algorithms we currently support in this category are :ref:`ClCo`, :ref:`CC`, :ref:`DC` and :ref:`PR`.
 
+.. _ClCo:
+.. include:: ds_mlal_clco.rst
 
 .. _CC:
 .. include:: ds_mlal_cc.rst
+
+.. _DC:
+.. include:: ds_mlal_dc.rst
 
 .. _PR:
 .. include:: ds_mlal_pr.rst
