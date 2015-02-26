@@ -7,7 +7,7 @@
 --
 
 --
--- element_id_names contains the list of all of the unique id columns for the ids in a graph.
+-- update storage to iat_graph_<id> for all hbase/titan backed graphs
 --
 
 UPDATE graph SET storage = 'iat_graph_' || graph.graph_id WHERE graph.storage_format = 'hbase/titan'
