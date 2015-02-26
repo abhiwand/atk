@@ -29,7 +29,6 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.SVMWithSGD
-import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTrainArgs
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
