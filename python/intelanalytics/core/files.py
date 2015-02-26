@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 from intelanalytics.core.iatypes import valid_data_types
 
 class DataFile(object):
@@ -489,4 +490,3 @@ class XmlFile(MultiLineFile):
 
     def __repr__(self):
         return repr(self.file_name)
-

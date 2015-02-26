@@ -54,6 +54,13 @@ intel.analytics {
             # Values should generally be in gigabytes, e.g. "64g"
             spark.executor.memory = "invalid executor memory"
         }
+
+        #Kerberos authentication configuration. if enabled is set to true will authenticate to kerberos
+        //hadoop.kerberos {
+        //  enabled = false
+        //  principal-name = "my-user@MY.REALM.COM"
+        //  keytab-file = "/path/to/keytab" #readable by iauser
+        //}
     }
 
 }

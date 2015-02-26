@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Spark-specific implementation on the client-side
 """
@@ -28,7 +29,7 @@ Spark-specific implementation on the client-side
 import base64
 import os
 import itertools
-import pstats
+from udfzip import UdfZip
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -51,15 +52,28 @@ import json
 
 UdfDependencies = []
 
-
 def get_file_content_as_str(filename):
-    with open(filename, 'rb') as f:
-        return f.read()
+    # If the filename is a directory, zip the contents first, else fileToSerialize is same as the python file
+    if os.path.isdir(filename):
+        UdfZip.zipdir(filename)
+        name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
+    elif not ('/' in filename) and filename.endswith('.py'):
+        name, fileToSerialize = (filename, filename)
+    else:
+        raise Exception('%s should be either local python script without any packaging structure \
+        or the absolute path to a valid python package/module which includes the intended python file to be included and all \
+                        its dependencies.' % filename)
+    # Serialize the file contents and send back along with the new serialized file names
+    with open(fileToSerialize, 'rb') as f:
+        return (name, base64.urlsafe_b64encode(f.read()))
 
 
 def _get_dependencies(filenames):
-    return [{'file_name': filename, 'file_content':get_file_content_as_str(filename)} for filename in filenames]
-
+    dependencies = []
+    for filename in filenames:
+        name, content = get_file_content_as_str(filename)
+        dependencies.append({'file_name': name, 'file_content': content})
+    return dependencies
 
 def ifiltermap(predicate, function, iterable):
     """creates a generator than combines filter and map"""

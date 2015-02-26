@@ -103,7 +103,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val admin = new HBaseAdmin(hBaseConfig)
     if (!admin.isTableAvailable(tableName)) {
       admin.close()
-      throw new RuntimeException("Table does not exist:" + tableName)
+      throw new RuntimeException("HBase table does not exist: " + tableName + " (graph may not have been loaded with any data)")
     }
     admin.close()
   }

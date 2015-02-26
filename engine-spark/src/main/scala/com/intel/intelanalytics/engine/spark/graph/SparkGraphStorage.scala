@@ -257,7 +257,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
-          if (graph.isTitan) {
+          if (graph.isTitan) { /* graph.name should always exist if Titan Graph (either user defined or auto-generated */
             backendStorage.renameUnderlyingTable(graph.name.get, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
@@ -532,16 +532,6 @@ class SparkGraphStorage(metaStore: MetaStore,
     val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
-  }
-
-  def updateFrameSchemaList(graphEntity: GraphEntity, schemas: List[Schema])(implicit invocation: Invocation): GraphEntity = {
-    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
-      implicit session =>
-        {
-          val updatedGraph = graphEntity.copy(frameSchemaList = Some(new SchemaList(schemas)))
-          metaStore.graphRepo.update(updatedGraph).get
-        }
-    }
   }
 
 }
