@@ -1,3 +1,26 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2015 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+
 # -*- coding: utf-8 -*-
 #
 # IntelAnalytics documentation build configuration file, created by
@@ -17,24 +40,23 @@ import os
 
 rst_epilog = """
 
-.. |ALPHA|  replace:: |FLAG_ALPHA| |TA|
+.. |ALPHA|  image:: _static/alpha.*
+              :target: glossary.html#term-api-maturity-tags
 .. |API|    replace:: abbr:`API (Application Programming Interface)`
-.. |BETA|   replace:: |FLAG_BETA| |TB|
+.. |BETA|   image:: _static/beta.*
+              :target: glossary.html#term-api-maturity-tags
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
-.. |DEPRECATED| replace:: |FLAG_DEPRECATED| |TD|
+.. |DEPRECATED|   image:: _static/deprecated.*
+              :target: glossary.html#term-api-maturity-tags
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
-.. |FLAG_ALPHA| image:: _static/flag_alpha.*
-.. |FLAG_BETA|  image:: _static/yellow_penguin.*
-.. |FLAG_DEPRECATED|    image:: _static/blue_penguin.*
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: :abbr:`IA (Intel Analytics)`
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
-.. |iPDF|   replace:: *PDF*
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
@@ -43,9 +65,6 @@ rst_epilog = """
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
-.. |TA|     replace:: [:term:`ALPHA`]
-.. |TB|     replace:: [:term:`BETA`]
-.. |TD|     replace:: [:term:`DEPRECATED`]
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`

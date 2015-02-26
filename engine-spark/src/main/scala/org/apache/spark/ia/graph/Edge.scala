@@ -120,6 +120,21 @@ trait AbstractEdge extends AbstractRow with Serializable {
   }
 
   /**
+   * Create the value of this edge from the supplied GBEdge
+   */
+  def create(edge: GBEdge): Row = {
+    create()
+    edge.properties.foreach(prop => setValue(prop.key, prop.value))
+    if (edge.eid.isDefined) {
+      setValue("_eid", edge.eid.get)
+    }
+    setSrcVertexId(edge.tailPhysicalId.asInstanceOf[Long])
+    setDestVertexId(edge.headPhysicalId.asInstanceOf[Long])
+    setLabel(edge.label)
+    row
+  }
+
+  /**
    * Convert this row to a GBEdge
    */
   def toGbEdge(): GBEdge = createGBEdge(reversed = false)

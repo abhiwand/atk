@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics
 
+import org.apache.commons.lang3.exception.ExceptionUtils
+
 package object domain {
 
   implicit def throwableToError(t: Throwable): Error = {
@@ -30,6 +32,6 @@ package object domain {
       case null | "" => t.getClass.getName
       case s => s
     }
-    Error(message, code = None, details = None, additional = None, stackTrace = Some(t.getStackTraceString))
+    Error(message, code = None, details = None, additional = None, stackTrace = Some(ExceptionUtils.getStackTrace(t)))
   }
 }

@@ -30,6 +30,7 @@ import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConversions._
 
@@ -53,6 +54,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     val tableName: String = graphName
     var outputStream: OutputStream = null
     try {
+      KerberosAuthenticator.loginWithKeyTabCLI()
       info(s"Trying to copy the HBase Table: $tableName")
       val p = Runtime.getRuntime.exec("hbase shell -n")
       outputStream = p.getOutputStream
@@ -107,6 +109,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
     var outputStream: OutputStream = null
     try {
       //create a new process
+      KerberosAuthenticator.loginWithKeyTabCLI()
       val p = Runtime.getRuntime.exec("hbase shell -n")
       outputStream = p.getOutputStream
 

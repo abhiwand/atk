@@ -20,27 +20,26 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.engine.plugin
 
-package com.intel.intelanalytics.engine.spark.graph.plugins
+/**
+ * Enumeration of the API Tags with which operations may tagged
+ */
+object ApiMaturityTag extends Enumeration {
+  type ApiMaturityTag = Value
 
-import com.intel.intelanalytics.engine.plugin.Call
-import org.scalatest.{ FlatSpec, Matchers }
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+  /**
+   * API item is new, has not gone through QA
+   */
+  val Alpha = Value
 
-import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
-import com.intel.intelanalytics.domain.schema.{ Column, VertexSchema }
-import com.intel.intelanalytics.domain.schema.DataTypes.{ string, int64 }
+  /**
+   * API item has passed QA, but may have performance or stability issues.  The signature is also still subject to change.
+   */
+  val Beta = Value
 
-class ExportToGraphPluginITest extends FlatSpec with Matchers with MockitoSugar {
-  implicit val call = Call(null)
-
-  "createVertexFrames" should "vertex frame by label" in {
-    val graphs = mock[SparkGraphStorage]
-    val graphId = 1
-    ExportToGraphPlugin.createVertexFrames(graphs, graphId, List("user", "movie"))
-
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "user", idColumnName = None))
-    verify(graphs).defineVertexType(graphId, VertexSchema(List(Column("_vid", int64), Column("_label", string)), label = "movie", idColumnName = None))
-  }
+  /**
+   * API item is no longer in favor and is going away.
+   */
+  val Deprecated = Value
 }

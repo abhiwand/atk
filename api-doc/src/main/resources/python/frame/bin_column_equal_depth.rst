@@ -1,9 +1,10 @@
-Classify column into discrete groups with same frequency.
+Classify column into discrete groups with the same frequency.
 
-Summarize rows of data based on the value in a single column using equal depth binning.
+Group rows of data based on the value in a single column and add a label
+to identify grouping.
 
-*   Equal depth binning attempts to place column values into bins such that
-    each bin contains the same number of elements.
+*   Equal depth binning attempts to label rows such that each bin contains the
+    same number of elements.
     For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin
     number is determined by:
 
@@ -23,16 +24,17 @@ column_name : str
 
 num_bins : int (optional)
     The maximum number of bins.
-    if omitted the system will use the Square-root choice `math.floor(math.sqrt(frame.row_count))`
+    Default is the Square-root choice:
+    ``math.floor(math.sqrt(frame.row_count))``.
 
 
 bin_column_name : str (optional)
     The name for the new binned column.
-    If unassigned, bin_column_name defaults to '<column_name>_binned'.
+    Default is '<column_name>_binned'.
 
 Notes
 -----
-1)  Unicode in column names is not supported and will likely cause the
+#)  Unicode in column names is not supported and will likely cause the
     drop_frames() function (and others) to fail!
 #)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
@@ -44,12 +46,12 @@ Notes
 
 Returns
 -------
-cutoffs: array of type float
-    a list containing the edges of each bin.
+array of floats | cutoffs
+    A list containing the edges of each bin.
 
 Examples
 --------
-For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*::
+Given a frame with column *a* accessed by a Frame object *my_frame*::
 
     my_frame.inspect( n=11 )
 
@@ -67,9 +69,10 @@ For this example, we will use a frame with column *a* accessed by a Frame object
        55
        89
 
-Modify the frame with a column showing what bin the data is in.
-The data should be separated into a maximum of five bins and the bins should
-be *equaldepth*::
+Modify the frame, adding a column showing what bin the data is in.
+The data should be grouped into a maximum of five bins.
+Note that each bin will have the same quantity of members (as much as
+possible)::
 
     cutoffs = my_frame.bin_equal_depth('a', 5, 'aEDBinned')
     my_frame.inspect( n=11 )

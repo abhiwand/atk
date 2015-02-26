@@ -26,6 +26,7 @@ package com.intel.intelanalytics.algorithm.util
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
@@ -55,6 +56,9 @@ object GiraphConfigurationUtil {
     require(config != null, "Config cannot be null")
     require(key != null, "Key cannot be null")
     val hConf = new Configuration()
+
+    KerberosAuthenticator.loginConfigurationWithKeyTab(hConf)
+
     val properties = flattenConfig(config.getConfig(key))
     properties.foreach { kv =>
       println(s"Setting ${kv._1} to ${kv._2}")
