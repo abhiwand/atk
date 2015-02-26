@@ -21,33 +21,26 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.mllib.ia.plugins.classification
+package com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan
 
-import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.SparkContext._
-import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.graphbuilder.elements.{ Property, GBEdge }
+import org.scalatest.WordSpec
 
-/**
- * Create a 'new' instance of this model
- */
-class LogisticRegressionWithSGDNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
-  /**
-   * The name of the command.
-   *
-   * The format of the name determines how the plugin gets "installed" in the client layer
-   * e.g Python client via code generation.
-   */
-  override def name: String = "model:logistic_regression/new"
+class EdgeSchemaAggregatorTest extends WordSpec {
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:logistic_regression")))
+  "EdgeSchemaAggregator" should {
+
+    "be able to get schema from edges" in {
+      val edge = GBEdge(Some(3L), 5L, 6L, Property("movieId", 8L), Property("userId", 9L), "rating", Set(Property("rating", 6)))
+      val edgeHolder = EdgeHolder(edge, "movies", "users")
+      val edgeSchema = EdgeSchemaAggregator.toSchema(edgeHolder)
+
+      assert(edgeSchema.label == "rating")
+      assert(edgeSchema.srcVertexLabel == "movies")
+      assert(edgeSchema.destVertexLabel == "users")
+      assert(edgeSchema.hasColumn("rating"))
+      assert(edgeSchema.columns.size == 5, "4 edge system columns plus one user defined column")
+
     }
+  }
 }
