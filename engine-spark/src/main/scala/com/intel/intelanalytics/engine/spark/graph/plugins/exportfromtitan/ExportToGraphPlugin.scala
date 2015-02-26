@@ -107,8 +107,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
     // Use Spark aggregation to figure out all of the Vertex and Edge schemas
     val vertexSchemaAggregator = new VertexSchemaAggregator(indexNames)
-    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroOp)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
-    val edgeSchemas = edgesWithCorrectedLabels.aggregate(EdgeSchemaAggregator.zeroOp)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
+    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroValue)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
+    val edgeSchemas = edgesWithCorrectedLabels.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
 
     // Create the target Graph
     val targetGraph = graphs.createGraph(GraphTemplate(None, "ia/frame"))

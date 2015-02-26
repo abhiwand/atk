@@ -23,18 +23,70 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
-import org.scalatest.{ WordSpec, FunSuite }
+import com.intel.graphbuilder.elements.{ GBVertex, Property }
+import org.scalatest.WordSpec
 
 class VertexSchemaAggregatorTest extends WordSpec {
 
-  val vertexSchemaAggregator = new VertexSchemaAggregator(List("movieId"))
+  val movieVertex = GBVertex(1L, Property("titanPhysicalId", 2L), Set(Property("_label", "movie"), Property("movieId", 23L)))
+  val userVertex = GBVertex(2L, Property("titanPhysicalId", 3L), Set(Property("_label", "user"), Property("userId", 52L)))
+  val vertexSchemaAggregator = new VertexSchemaAggregator(List("movieId", "userId"))
+
+  val zeroValue = vertexSchemaAggregator.zeroValue
 
   "VertexSchemaAggregator" should {
-    "convert GBVertices to VertexSchemas" in {
-      val schema = vertexSchemaAggregator.toSchema(GBVertex(1L, Property("titanPhysicalId", 2L), Set(Property("_label", "movie"), Property("movieId", 23L))))
+    "convert movie GBVertices to VertexSchemas" in {
+      val schema = vertexSchemaAggregator.toSchema(movieVertex)
       assert(schema.label == "movie")
+      assert(schema.hasColumns(Seq("_vid", "_label", "movieId")))
       assert(schema.columns.size == 3, "expected _vid, _label, and movieId")
+    }
+
+    "convert user GBVertices to VertexSchemas" in {
+      val schema = vertexSchemaAggregator.toSchema(userVertex)
+      assert(schema.label == "user")
+      assert(schema.hasColumns(Seq("_vid", "_label", "userId")))
+      assert(schema.columns.size == 3, "expected _vid, _label, and userId")
+    }
+
+    "combining zero values should still be a zero value" in {
+      assert(vertexSchemaAggregator.combOp(zeroValue, zeroValue) == zeroValue)
+    }
+
+    "aggregating one vertex more than once should not change the output" in {
+      val agg1 = vertexSchemaAggregator.seqOp(zeroValue, movieVertex)
+      val agg2 = vertexSchemaAggregator.seqOp(agg1, movieVertex)
+      assert(agg1 == agg2)
+
+      val agg3 = vertexSchemaAggregator.combOp(agg1, agg2)
+      assert(agg1 == agg3)
+    }
+
+    "aggregating two vertex types should give two schemas" in {
+      val agg1 = vertexSchemaAggregator.seqOp(zeroValue, movieVertex)
+      val agg2 = vertexSchemaAggregator.seqOp(agg1, userVertex)
+
+      assert(agg2.keySet.contains("user"))
+      assert(agg2.keySet.contains("movie"))
+      assert(agg2.size == 2)
+    }
+
+    "combing two vertex types multiple times should not change the aggregation" in {
+      val agg1 = vertexSchemaAggregator.seqOp(zeroValue, movieVertex)
+      val agg2 = vertexSchemaAggregator.seqOp(zeroValue, userVertex)
+
+      val agg3 = vertexSchemaAggregator.combOp(agg1, agg2)
+
+      // none of the following changes should make a difference
+      val agg4 = vertexSchemaAggregator.combOp(agg3, agg2)
+      val agg5 = vertexSchemaAggregator.combOp(agg1, agg4)
+      val agg6 = vertexSchemaAggregator.combOp(zeroValue, agg5)
+      val agg7 = vertexSchemaAggregator.combOp(agg3, agg3)
+
+      assert(agg3 == agg4)
+      assert(agg3 == agg5)
+      assert(agg3 == agg6)
+      assert(agg3 == agg7)
     }
   }
 

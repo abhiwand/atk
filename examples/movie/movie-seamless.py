@@ -66,7 +66,7 @@ print("frame row count " + str(frame.row_count))
 print("create graph")
 graph = ia.Graph()
 
-print("created graph " + graph.name)
+print("created graph ")
 
 print("define vertices and edges")
 graph.define_vertex_type('movies')
