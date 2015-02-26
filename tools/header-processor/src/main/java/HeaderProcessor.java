@@ -38,7 +38,10 @@ public class HeaderProcessor {
     private String configFilename = resourcePath + "headerProcessor.config";
     private String currentHeaderKey = "currentHeaderFilename";
     private String newHeaderKey = "newHeaderFilename";
+    private String currentHeaderPythonKey = "currentHeaderFilenamePython";
+    private String newHeaderPythonKey = "newHeaderFilenamePython";
     private String fileExtensionKey = "fileExtension";
+    private String pythonFileExtension = ".py";
     private String rootKey = "root";
     private String logKey = "log";
     private String fieldSeparator = "=";
@@ -79,15 +82,42 @@ public class HeaderProcessor {
         return configValues;
     }
 
+    File[] getFileHandles (String[] filenames)
+    {
+        File[] filesHandles = new File[filenames.length];
+        for (int i = 0; i < filesHandles.length; i++) {
+            filesHandles[i] = new File(resourcePath + filenames[i].trim());
+        }
+        return filesHandles;
+    }
+
+    boolean templatesAvailable (File[]currentHeaders, File[]currentHeadersPython, File newHeader, File newHeaderPython, File rootDirectory)
+    {
+        boolean templatesAvailable = true;
+        for (File file : currentHeaders)
+        {
+            templatesAvailable = templatesAvailable && file.exists();
+        }
+        for (File file : currentHeadersPython)
+        {
+            templatesAvailable = templatesAvailable && file.exists();
+        }
+        templatesAvailable = templatesAvailable && newHeader.exists();
+        templatesAvailable = templatesAvailable && newHeaderPython.exists();
+        templatesAvailable = templatesAvailable && rootDirectory.exists();
+
+        return templatesAvailable;
+    }
+
     void processFiles() {
         Dictionary<String, String> configValues = getConfigValues(configFilename);
         if (configValues != null) {
-            String[] currentHeaders = configValues.get(currentHeaderKey).split(valueSeparator);
-            File[] currentHeaderFiles = new File[currentHeaders.length];
-            for (int i = 0; i < currentHeaders.length; i++) {
-                currentHeaderFiles[i] = new File(resourcePath + currentHeaders[i].trim());
-            }
+            File[] currentHeaders = getFileHandles(configValues.get(currentHeaderKey).split(valueSeparator));
+            File[] currentHeadersPython = getFileHandles(configValues.get(currentHeaderPythonKey).split(valueSeparator));
+
             File newHeader = new File(resourcePath + configValues.get(newHeaderKey));
+            File newHeaderPython = new File(resourcePath + configValues.get(newHeaderPythonKey));
+
             File rootDirectory = new File(configValues.get(rootKey));
             try {
                 logFile = new File(configValues.get(logKey));
@@ -99,21 +129,28 @@ public class HeaderProcessor {
                 //
             }
 
-            boolean templatesAvailable = true;
-            for (File file : currentHeaderFiles)
-            {
-                templatesAvailable = templatesAvailable && file.exists();
-            }
-            templatesAvailable = templatesAvailable && newHeader.exists();
-            templatesAvailable = templatesAvailable && rootDirectory.exists();
-
+            boolean templatesAvailable = templatesAvailable (currentHeaders,
+                                                             currentHeadersPython,
+                                                             newHeader,
+                                                             newHeaderPython,
+                                                             rootDirectory);
             if (templatesAvailable) {
                 String[] fileExtensions = configValues.get(fileExtensionKey).split(valueSeparator);
                 if (fileExtensions != null && fileExtensions.length > 0) {
+                    File newHeaders;
+                    File[] oldHeaders;
                     for (String extension : fileExtensions) {
                         List<File> files = getFiles(configValues.get(rootKey), extension.trim());
+                        if (!extension.endsWith(pythonFileExtension)) {
+                            oldHeaders = currentHeaders;
+                            newHeaders = newHeader;
+                        }else
+                        {
+                            oldHeaders = currentHeadersPython;
+                            newHeaders = newHeaderPython;
+                        }
                         for (File file : files) {
-                            addOrReplaceHeader(file.getAbsolutePath(), currentHeaderFiles, newHeader);
+                            addOrReplaceHeader(file.getAbsolutePath(), oldHeaders, newHeaders);
                         }
                     }
                 }

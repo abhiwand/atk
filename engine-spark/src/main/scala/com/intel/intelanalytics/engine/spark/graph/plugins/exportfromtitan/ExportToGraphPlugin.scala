@@ -251,33 +251,4 @@ object ExportToGraphPlugin {
     result
   }
 
-  /**
-   * Create edge frames for all the edge types in the input edge rdd
-   * @param graphs graph storage
-   * @param graphId destination graph id
-   * @param edgeDefinitions definitions for edge types
-   */
-  def createEdgeFrames(graphs: SparkGraphStorage, graphId: Long, edgeDefinitions: List[EdgeSchema])(implicit invocation: Invocation) {
-    edgeDefinitions.foreach(edgeDef => {
-      graphs.defineEdgeType(graphId, edgeDef)
-    })
-  }
-
-  /**
-   * Return a list of columns where each contains column name and data type.
-   * @param columns column names
-   * @param titanGraph titan graph
-   * @return
-   */
-  def getSchemaFromProperties(columns: List[String], titanGraph: TitanGraph): List[Column] = {
-    val manager = titanGraph.getManagementSystem
-    val result = columns.map(c => {
-      val dataType = DataTypes.javaTypeToDataType(manager.getPropertyKey(c).getDataType)
-      Column(c, dataType)
-    }).toList
-
-    manager.commit()
-    result
-  }
-
 }
