@@ -84,7 +84,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = abcSchema.addColumn("str", string)
       added.columns.length shouldBe 4
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 3
     }
 
     "be able to validate a column has a given type" in {
@@ -199,14 +198,12 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename in one step" in {
       val schema = abcSchema.copySubsetWithRename(Map(("a", "a_renamed"), ("c", "c_renamed")))
       assert(schema.columns.length == 2)
-      assert(schema.column("a_renamed").index == 0)
       assert(schema.column(1).name == "c_renamed")
     }
 
     "be able to select a subset and rename to same names and preserve order" in {
       val schema = ajSchema.copySubsetWithRename(Map(("a", "a"), ("d", "d"), ("c", "c"), ("b", "b"), ("e", "e"), ("f", "f"), ("g", "g"), ("j", "j")))
       assert(schema.columns.length == 8)
-      assert(schema.column("a").index == 0)
       assert(schema.column(2).name == "c")
       assert(schema.column(6).name == "g")
       assert(schema.column(7).name == "j")
@@ -215,7 +212,6 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename to same names" in {
       val schema = abcSchema.copySubsetWithRename(Map(("a", "a"), ("c", "c")))
       assert(schema.columns.length == 2)
-      assert(schema.column("a").index == 0)
       assert(schema.column(1).name == "c")
     }
 
@@ -387,7 +383,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = vertexSchema.addColumn("str", string)
       added.columns.length shouldBe 5
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 4
       assert(added.isInstanceOf[VertexSchema])
     }
 
@@ -472,8 +467,6 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename" in {
       val schema = vertexSchema.copySubsetWithRename(Map(("_vid", "_vid"), ("_label", "_label"), ("movie_id", "m_id")))
       assert(schema.columns.length == 3)
-      assert(schema.column("_vid").index == 0)
-      assert(schema.column("_label").index == 1)
       assert(schema.column(2).name == "m_id")
       assert(schema.isInstanceOf[VertexSchema])
     }
@@ -556,7 +549,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = edgeSchema.addColumn("str", string)
       added.columns.length shouldBe 6
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 5
     }
 
     "be able to validate a column has a given type" in {
