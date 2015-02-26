@@ -928,115 +928,117 @@ This is the section you want to look at::
       }
     }
 
-.. _ad_inst_IA_configure_file_system_root:
+.. outdated::
 
-Configure File System Root
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. _ad_inst_IA_configure_file_system_root:
 
-In the following line the text "invalid-fsroot-host" should be replaced with
-the fully qualified domain of your HDFS Namenode::
+    Configure File System Root
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+    In the following line the text "invalid-fsroot-host" should be replaced with
+    the fully qualified domain of your HDFS Namenode::
 
-Example::
+        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+    
+    Example::
+    
+        fs.root = "hdfs://localhost.localdomain/user/iauser" 
+    
+    If your HDFS Name Node port does not use the standard port, you can specify it
+    after the host name with a colon::
+    
+        fs.root = "hdfs://localhost.localdomain:8020/user/iauser"
 
-    fs.root = "hdfs://localhost.localdomain/user/iauser" 
+    Configure Zookeeper Hosts
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your HDFS Name Node port does not use the standard port, you can specify it
-after the host name with a colon::
+    In the following line replace "invalid-titan-host" with the comma delimited
+    list of fully qualified domain names of all nodes running the zookeeper
+    service::
+    
+        titan.load.storage.hostname = "invalid-titan-host"
 
-    fs.root = "hdfs://localhost.localdomain:8020/user/iauser"
+    Example::
+    
+        titan.load.storage.hostname = "localhost.localdomain" 
+    
+    If your zookeeper client port is not 2181 un-comment the following line and
+    replace 2181 with your zookeeper client port::
+    
+        titan.load.storage.port = "2181"
+    
+    Configure Spark Master Host
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    Update "invalid-spark-master" with the fully qualified domain name of the
+    Spark master node::
+    
+        spark.master = "spark://invalid-spark-master:7077"
 
-Configure Zookeeper Hosts
-~~~~~~~~~~~~~~~~~~~~~~~~~
+    Example::
+    
+        spark.master = "spark://localhost.localdomain:7077" 
+    
+    Configure Spark Executor Memory
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    The Spark executor memory needs to be set equal to or less than what is
+    configured in Cloudera Manager.
+    The Cloudera Spark installation will, by default, set the Spark executor
+    memory to 8g, so 8g is usually a safe setting.
+    If have any doubts you can always verify the executor memory in Cloudera
+    Manager.
 
-In the following line replace "invalid-titan-host" with the comma delimited
-list of fully qualified domain names of all nodes running the zookeeper
-service::
+    ::
 
-    titan.load.storage.hostname = "invalid-titan-host"
+        spark.executor.memory = "invalid executor memory"
 
-Example::
+    Example::
+    
+        spark.executor.memory = "8g"
+    
+    Click on the Spark service then configuration in Cloudera Manager to get
+    executor memory.
+    
+    .. image:: ad_inst_ia_01.*
+        :align: center
+    
+    Set the Bind IP Address (Optional)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    If you would like the |IA| server to bind to all ip addresses and not just
+    localhost update the following lines and follow the commented instructions.
+    This configuration section is also near the top of the file.
 
-    titan.load.storage.hostname = "localhost.localdomain" 
+    ::
 
-If your zookeeper client port is not 2181 un-comment the following line and
-replace 2181 with your zookeeper client port::
+        #bind address - change to 0.0.0.0 to listen on all interfaces
+        //host = "127.0.0.1"
+    
+    Updating the Spark Class Path
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    If you did the automatic configuration the classpath will be updated
+    automatically in Cloudera Manager but if you have any problems you can update
+    the spark class path through Cloudera Manager.
+    If you log into Cloudera Manager under the spark configuration you can find
+    the Worker Environment Advanced Configuration Snippet.
+    If it isn't already set, add::
+    
+        SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
+    
+    .. image:: ad_inst_ia_02.*
+        :align: center
+    
+    .. _Skip section:
+    
+    **End of manual configuration**
 
-    titan.load.storage.port = "2181"
-
-Configure Spark Master Host
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Update "invalid-spark-master" with the fully qualified domain name of the
-Spark master node::
-
-    spark.master = "spark://invalid-spark-master:7077"
-
-Example::
-
-    spark.master = "spark://localhost.localdomain:7077" 
-
-Configure Spark Executor Memory
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Spark executor memory needs to be set equal to or less than what is
-configured in Cloudera Manager.
-The Cloudera Spark installation will, by default, set the Spark executor
-memory to 8g, so 8g is usually a safe setting.
-If have any doubts you can always verify the executor memory in Cloudera
-Manager.
-
-::
-
-    spark.executor.memory = "invalid executor memory"
-
-Example::
-
-    spark.executor.memory = "8g"
-
-Click on the Spark service then configuration in Cloudera Manager to get
-executor memory.
-
-.. image:: ad_inst_ia_01.*
-    :align: center
-
-Set the Bind IP Address (Optional)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you would like the |IA| server to bind to all ip addresses and not just
-localhost update the following lines and follow the commented instructions.
-This configuration section is also near the top of the file.
-
-::
-
-    #bind address - change to 0.0.0.0 to listen on all interfaces
-    //host = "127.0.0.1"
-
-Updating the Spark Class Path
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you did the automatic configuration the classpath will be updated
-automatically in Cloudera Manager but if you have any problems you can update
-the spark class path through Cloudera Manager.
-If you log into Cloudera Manager under the spark configuration you can find
-the Worker Environment Advanced Configuration Snippet.
-If it isn't already set, add::
-
-    SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
-
-.. image:: ad_inst_ia_02.*
-    :align: center
-
-.. _Skip section:
-
-**End of manual configuration**
-
-Now, restart the Spark service.
-
-.. image:: ad_inst_ia_03.*
-    :align: center
-
+    Now, restart the Spark service.
+    
+    .. image:: ad_inst_ia_03.*
+        :align: center
+    
 Database Configuration
 ----------------------
 
