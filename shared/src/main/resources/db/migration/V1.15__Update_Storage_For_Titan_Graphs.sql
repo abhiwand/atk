@@ -10,4 +10,4 @@
 -- update storage to iat_graph_<id> for all hbase/titan backed graphs
 --
 
-UPDATE graph SET storage = 'iat_graph_' || graph.graph_id WHERE graph.storage_format = 'hbase/titan'
+UPDATE graph SET storage = 'iat_graph_' || graph.name WHERE graph.storage_format = 'hbase/titan'
