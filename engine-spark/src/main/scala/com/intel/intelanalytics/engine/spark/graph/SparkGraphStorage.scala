@@ -161,7 +161,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -176,11 +176,10 @@ class SparkGraphStorage(metaStore: MetaStore,
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
     val graphCopy = createGraph(GraphTemplate(name))
-    val storageName = {
-      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
-    }
+    val storageName = graphCopy.storage
+
     if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
+      backendStorage.copyUnderlyingTable(graph.storage, storageName)
       metaStore.withSession("spark.graphstorage.copyGraph") {
         implicit session =>
           {
@@ -241,10 +240,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan && graph.name.isDefined) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          val graphBackendName: String = if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
+            GraphBackendName.getGraphBackendName(graphEntity)
           }
-          metaStore.graphRepo.insert(graph).get
+          else ""
+          metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
   }
@@ -256,9 +259,6 @@ class SparkGraphStorage(metaStore: MetaStore,
           val check = metaStore.graphRepo.lookupByName(Some(newName))
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
-          }
-          if (graph.isTitan) { /* graph.name should always exist if Titan Graph (either user defined or auto-generated */
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
@@ -442,7 +442,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -465,7 +465,7 @@ class SparkGraphStorage(metaStore: MetaStore,
                    append: Boolean = false)(implicit invocation: Invocation): GraphEntity = {
 
     val graph = if (append)
-      getGraphByName(Some(graphName)).get
+      expectGraph(GraphBackendName.getIdFromBackendName(graphName))
     else
       createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
@@ -499,7 +499,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphId: Long)(implicit invocation: Invocation): TitanGraph = {
     val graph = lookup(graphId).get
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }

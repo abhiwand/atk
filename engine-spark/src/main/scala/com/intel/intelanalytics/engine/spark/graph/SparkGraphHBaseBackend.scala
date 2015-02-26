@@ -27,6 +27,7 @@ import java.io.OutputStream
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
@@ -50,7 +51,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    */
   override def copyUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
     //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    val tableName: String = graphName
     var outputStream: OutputStream = null
     try {
       KerberosAuthenticator.loginWithKeyTabCLI()
@@ -104,7 +105,7 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    */
   override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
     // TODO: To be deleted later. Workaround for TRIB: 4318.
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
+    val tableName: String = graphName
     var outputStream: OutputStream = null
     try {
       //create a new process
@@ -140,8 +141,8 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
   }
 
   override def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
-    val tableName: String = GraphBackendName.convertGraphUserNameToBackendName(graphName)
-    val newTableName: String = GraphBackendName.convertGraphUserNameToBackendName(newName)
+    val tableName: String = graphName
+    val newTableName: String = newName
     val snapShotName: String = graphName.concat("_SnapShot")
 
     val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
