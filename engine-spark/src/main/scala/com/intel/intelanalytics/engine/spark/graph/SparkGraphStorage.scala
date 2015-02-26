@@ -246,7 +246,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
             GraphBackendName.getGraphBackendName(graphEntity)
           }
-          else null
+          else ""
           metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
