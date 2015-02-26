@@ -28,6 +28,7 @@ import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.{ SparkConf, SparkContext }
 
@@ -68,6 +69,8 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
       sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
     }
+
+    KerberosAuthenticator.loginWithKeyTab()
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 

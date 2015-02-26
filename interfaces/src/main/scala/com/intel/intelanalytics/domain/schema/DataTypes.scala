@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain.schema
 
 import com.google.common.primitives.Doubles
+import com.intel.event.EventLogging
 import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
@@ -35,7 +36,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Datatypes supported for frames, graphs, etc.
  */
-object DataTypes {
+object DataTypes extends EventLogging {
 
   /**
    * The datatype trait
@@ -436,7 +437,8 @@ object DataTypes {
       throw new IllegalArgumentException("No matching data type found for value: " + value)
     }
     else if (matches.length > 1) {
-      error("")
+      // this would happen with null
+      warn(s"$value matched more than one type: $matches")
     }
     matches.head._2
   }

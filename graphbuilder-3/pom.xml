@@ -45,6 +45,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>event</artifactId>
+        </dependency>
         <!-- END BDA dependencies to our modules -->
 
         <!-- START Titan dependencies -->

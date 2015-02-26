@@ -94,7 +94,8 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
     loadTitanGraph(createGraphBuilderConfig(Some(titanGraph.storage)),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))
-    graphs.updateFrameSchemaList(titanGraph, seamlessGraph.getFrameSchemaList)
+
+    graphs.expectGraph(titanGraph.id)
   }
 
   /**

@@ -646,6 +646,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Create summarized frame.
 
+        |BETA|
+
         Creates a new frame and returns a Frame object to access it.
         Takes a column or group of columns, finds the unique combination of
         values, and creates unique rows with these column values.
@@ -828,6 +830,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         New frame from current frame and another frame.
 
+        |BETA|
+
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
         The frame on the 'right' is another frame.
@@ -922,6 +926,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     def sort(self, columns, ascending=True):
         """
         Sort the data in a frame.
+
+        |BETA|
 
         Sort a frame by column values either ascending or descending.
 
@@ -1337,5 +1343,3 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
         except:
             error = IaError(logger)
             raise error
-
-

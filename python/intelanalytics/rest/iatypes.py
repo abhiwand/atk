@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Conversion functions for data type to/from REST strings
 """
@@ -36,6 +37,3 @@ def get_data_type_from_rest_str(rest_str):
     if rest_str == 'string':  # string is a supported REST type; if more aliases crop up, make a table in this module
         rest_str = 'unicode'
     return valid_data_types.get_from_string(rest_str)
-
-
-

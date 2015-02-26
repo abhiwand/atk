@@ -271,6 +271,7 @@ trait SparkEngineConfig extends EventLogging {
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+  val pythonUdfDependenciesDirectory: String = config.getString("intel.analytics.engine.spark.python-udf-deps-directory")
 
   // val's are not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
@@ -289,7 +290,11 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   //gc variables
-  val gcInterval = ConfigFactory.load().getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
-  val gcAgeToDeleteData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
-  val gcAgeToDeleteMetaData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
+  val gcInterval = config.getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteData = config.getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteMetaData = config.getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
+
+  val enableKerberos: Boolean = config.getBoolean("intel.analytics.engine.hadoop.kerberos.enabled")
+  val kerberosPrincipalName: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.principal-name")) else None
+  val kerberosKeyTabPath: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.keytab-file")) else None
 }

@@ -209,14 +209,24 @@ object Archive extends ClassLoaderAware {
                                           additionalArchives: Array[Archive] = Array.empty[Archive],
                                           additionalPaths: Array[String] = Array.empty[String]): ClassLoader = {
     val urls = Archive.getCodePathUrls(archive, sourceRoots, jarFolders) ++
-      additionalPaths.map {
-        case s if s.contains(":") => new URL(s)
-        case s => new URL("file://" + s)
-      }
+      additionalPaths.map(normalizeUrl)
     require(urls.length > 0, s"Could not locate archive $archive")
     val loader = new ArchiveClassLoader(archive, urls, parent, additionalArchives.map(_.classLoader))
     Archive.logger(s"Created class loader: $loader")
     loader
+  }
+
+  /**
+   * Needed to make sure URLs are presented in a form that URLClassLoader can use (e.g. for files, they
+   * need to start with file:// and, if they are directories, they need to end with a slash)
+   */
+  private def normalizeUrl(url: String): URL = {
+    val lead = if (url.contains(":")) { "" } else { "file://" }
+    val tail = if ((lead + url).startsWith("file:") && !url.endsWith("/") && !url.endsWith(".jar")) {
+      "/"
+    }
+    else { "" }
+    new URL(lead + url + tail)
   }
 
   var _system: SystemState = null
