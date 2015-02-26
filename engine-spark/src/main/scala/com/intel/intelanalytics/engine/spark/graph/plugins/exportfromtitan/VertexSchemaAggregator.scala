@@ -49,7 +49,7 @@ class VertexSchemaAggregator(indexNames: List[String]) extends Serializable {
     new VertexSchema(allColumns.toList, label, userDefinedColumn)
   }
 
-  val zeroOp = Map[String, VertexSchema]()
+  val zeroValue = Map[String, VertexSchema]()
 
   def seqOp(vertexSchemas: Map[String, VertexSchema], vertex: GBVertex): Map[String, VertexSchema] = {
     val schema = toSchema(vertex)

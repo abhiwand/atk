@@ -25,7 +25,6 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
-import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 
 /**
  * Command for loading model data into existing model in the model database.
