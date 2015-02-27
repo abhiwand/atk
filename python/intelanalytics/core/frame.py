@@ -625,11 +625,10 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @api
     def get_error_frame(self):
         """
-        Get the frame with error recordings.
+        Get a frame with error recordings.
 
-        When a frame is loaded, parse errors go into a separate data frame so
-        they can be inspected.
-        No error frame is created if there were no parse errors.
+        When a frame is created, another frame is transparently
+        created to capture parse errors.
 
         Returns
         -------
