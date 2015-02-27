@@ -592,8 +592,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @has_python_user_function_arg
     def filter(self, predicate):
         """
-        Save any rows that qualify, erase the others.
-
         Select all rows which satisfy a predicate.
 
         Parameters
@@ -627,7 +625,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     @api
     def get_error_frame(self):
         """
-        Create a frame with recording any errors.
+        Get the frame with error recordings.
 
         When a frame is loaded, parse errors go into a separate data frame so
         they can be inspected.

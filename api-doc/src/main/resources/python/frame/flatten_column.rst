@@ -1,4 +1,4 @@
-Convert single cell to multiple rows in current frame.
+Spread data to multiple rows based on cell data.
 
 Splits cells in the specified column into multiple rows according to a string
 delimiter.
