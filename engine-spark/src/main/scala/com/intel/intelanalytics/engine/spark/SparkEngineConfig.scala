@@ -99,8 +99,11 @@ trait SparkEngineConfig extends EventLogging {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
 
-  /** true to re-use a local SparkContext, this can be helpful for automated integration tests, not for customers. */
-  val reuseLocalSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-local-context")
+  /**
+   * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
+   * NOTE: true should break the progress bar.
+   */
+  val reuseSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-context")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
@@ -177,6 +180,8 @@ trait SparkEngineConfig extends EventLogging {
       }
       case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
     }
+
+    titanConfiguration.setProperty("auto-partitioner.broadcast-join-threshold", broadcastJoinThreshold)
 
     titanConfiguration
   }
