@@ -57,32 +57,3 @@ Remember to sync these changes to all servers in the cluster.
 Other recommendations include turning off automatic compactions and doing it
 manually: http://hbase.apache.org/book.html#managed.compactions.
 
-HBase Benchmarking
-==================
-
-The most commonly used HBase benchmark is the Yahoo Cloud Serving Benchmarking.
-|YCSB| has a number of core workloads that insert, read, update, and scan the
-generated HBase table. 
-
-Install and run |YCSB| as follows:
-
-1.  Install |YCSB|.
-    You need to ensure that versions of sl4j and the HBase client in |YCSB| and
-    HBase are the same to avoid compilation issues.
-    Instructions on compiling |YCSB| for HBase are available here:
-    http://fendertech.blogspot.com/2013/09/ycsb-on-hbase.html
-2.  Create an HBase table for benchmarking in |YCSB|.
-    For example::
-    
-        create 'usertable', { NAME => 'values', COMPRESSION => 'SNAPPY' }
-
-3.  Instructions for loading the table, and running workloads are available
-    here: https://github.com/brianfrankcooper/|YCSB|/wiki/Running-a-Workload
-    (See Steps 3 to 6).
-
-There are 6 different core workloads implemented in |YCSB| (for example,
-read-mostly, update-heavy, scan short ranges).
-The recommended sequence of instructions for running the workloads is available
-here: https://github.com/brianfrankcooper/|YCSB|/wiki/Core-Workloads
-
-.. _The HBase administration cookbook: https://www.safaribooksonline.com/library/view/hbase-administration-cookbook/9781849517140/
