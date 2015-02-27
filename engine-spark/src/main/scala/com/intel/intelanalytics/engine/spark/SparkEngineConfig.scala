@@ -178,6 +178,8 @@ trait SparkEngineConfig extends EventLogging {
       case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
     }
 
+    titanConfiguration.setProperty("auto-partitioner.broadcast-join-threshold", broadcastJoinThreshold)
+
     titanConfiguration
   }
 

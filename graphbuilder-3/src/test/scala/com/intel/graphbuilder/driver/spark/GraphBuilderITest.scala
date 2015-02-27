@@ -118,6 +118,69 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       TitanGraphConnector.getVertices(titanGraph).size shouldBe 7
 
     }
+    "support an end-to-end flow of the numbers example with append using broadcast variables" in {
+
+      // Input Data
+      val inputRows = List(
+        List("1", "{(1)}", "1", "Y", "1", "Y"),
+        List("2", "{(1)}", "10", "Y", "2", "Y"),
+        List("3", "{(1)}", "11", "Y", "3", "Y"),
+        List("4", "{(1),(2)}", "100", "N", "4", "Y"),
+        List("5", "{(1)}", "101", "Y", "5", "Y"))
+
+      // Input Schema
+      val inputSchema = new InputSchema(List(
+        new ColumnDef("cf:number", classOf[String]),
+        new ColumnDef("cf:factor", classOf[String]),
+        new ColumnDef("binary", classOf[String]),
+        new ColumnDef("isPrime", classOf[String]),
+        new ColumnDef("reverse", classOf[String]),
+        new ColumnDef("isPalindrome", classOf[String])))
+
+      // Parser Configuration
+      val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))), VertexRule(gbId("reverse")))
+      val edgeRules = List(EdgeRule(gbId("cf:number"), gbId("reverse"), constant("reverseOf")))
+
+      // Setup data in Spark
+      val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+
+      // Connect to the graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
+      val titanConnector = new TitanGraphConnector(titanConfig)
+
+      // Build the Graph
+      val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, broadcastVertexIds=true)
+      val gb = new GraphBuilder(config)
+      gb.build(inputRdd)
+
+      // Validate
+      titanGraph.getEdges.size shouldBe 5
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 5 //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
+
+      // need to shutdown because only one connection can be open at a time
+      titanGraph.shutdown()
+
+      // Now we'll append to the existing graph
+
+      // define more input
+      val additionalInputRows = List(
+        List("5", "{(1)}", "101", "Y", "5", "Y"), // this row overlaps with above
+        List("6", "{(1),(2),(3)}", "110", "N", "6", "Y"),
+        List("7", "{(1)}", "111", "Y", "7", "Y"))
+
+      val inputRdd2 = sparkContext.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+
+      // Append to the existing Graph
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false, broadcastVertexIds=true))
+      gb2.build(inputRdd2)
+
+      // Validate
+      titanGraph = titanConnector.connect()
+      titanGraph.getEdges.size shouldBe 7
+      TitanGraphConnector.getVertices(titanGraph).size shouldBe 7
+
+    }
 
     "support unusual cases of dynamic parsing, dangling edges" in {
 
