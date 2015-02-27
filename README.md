@@ -1,7 +1,7 @@
-source_code
-===========
+Intel Analytics Toolkit (ATK)
+=============================
 
-# Folders / modules overview
+# source_code folders / modules overview
 * api-doc/ - customer facing plugin docs
 * api-server/ - the rest server
 * bin/ - script for starting api server, gremlin shell
