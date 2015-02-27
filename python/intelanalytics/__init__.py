@@ -66,3 +66,15 @@ def _get_api_names():
     from intelanalytics.meta.api import get_api_names
     import sys
     return get_api_names(sys.modules[__name__])
+
+# Autoconnect if env says so.  This is NOT standard usage, but needed when
+# an 'import intelanalytics' really needs to get EVERYTHING, like
+# when generating documentation.  Requires that the server is already running
+import os
+autoconnect =  os.getenv('INTELANALYTICS_AUTOCONNECT')
+#print "autoconnect=" + str(autoconnect) + " of type %s" % type(autoconnect)
+if autoconnect is not None and autoconnect.lower() not in [None, '', '0', 'false']:
+    print "$INTELANALYTICS_AUTOCONNECT=%s, trying to connect to IntelAnalytics..." % autoconnect
+    connect()
+del os
+del autoconnect
