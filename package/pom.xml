@@ -38,7 +38,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.6-SNAPSHOT</version>
+        <version>master-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -50,7 +50,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
             <activation>
                 <property>
                     <name>env.BUILD_NUMBER</name>
-					<value>0</value>
+                    <value>0</value>
                 </property>
             </activation>
             <build>
