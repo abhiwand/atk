@@ -63,7 +63,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val frames = engine.frames
     val ctx = sc
 
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
     val samplePercentages = arguments.samplePercentages.toArray
 
     val outputColumnName = arguments.outputColumnName

@@ -109,12 +109,12 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     graphs.updateIdCounter(graphRef, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
-    val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
+    val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.toReference)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd)
+    graphs.saveVertexRDD(vertexFrameMeta.toReference, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)

@@ -65,8 +65,8 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
-    val frameEntity = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frameEntity = frames.expectFrame(frameRef)
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation

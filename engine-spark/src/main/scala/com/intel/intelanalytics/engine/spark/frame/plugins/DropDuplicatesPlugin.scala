@@ -72,8 +72,8 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
     val ctx = sc
 
     // validate arguments
-    val frame: FrameEntity = frames.expectFrame(arguments.frame.id)
-    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+    val frame: FrameEntity = frames.expectFrame(arguments.frame)
+    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame)
     val columnNames = arguments.unique_columns match {
       case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
       case None => frame.schema.columnNames

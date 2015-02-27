@@ -79,7 +79,7 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
     val frameRules = arguments.frameRules
     // TODO graphbuilder only supports one input frame at present
     require(frameRules.size == 1, "only one frame rule per call is supported in this version")
-    val theOnlySourceFrameID = frameRules.head.frame.id
+    val theOnlySourceFrameID = frameRules.head.frame
     val frameEntity = frames.expectFrame(theOnlySourceFrameID)
     val graphEntity = graphs.expectGraph(arguments.graph)
 

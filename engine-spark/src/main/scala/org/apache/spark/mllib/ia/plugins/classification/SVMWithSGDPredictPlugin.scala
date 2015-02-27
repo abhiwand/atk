@@ -73,10 +73,10 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
-      val modelMeta = models.expectModel(arguments.model.id)
+      val modelMeta = models.expectModel(arguments.model)
 
       val frames = engine.frames
-      val inputFrame = frames.expectFrame(arguments.frame.id)
+      val inputFrame = frames.expectFrame(arguments.frame)
 
       val frame: SparkFrameData = resolve(arguments.frame)
 

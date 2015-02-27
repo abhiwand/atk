@@ -64,11 +64,11 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeRetu
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frame = frames.expectFrame(frameRef)
 
     // run the operation and return results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {

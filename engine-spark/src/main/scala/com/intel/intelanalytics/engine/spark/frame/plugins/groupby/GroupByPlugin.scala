@@ -67,7 +67,7 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame.id))
+    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame))
     val frameSchema = originalFrame.frameSchema
     val groupByColumns = arguments.groupByColumns.map(columnName => frameSchema.column(columnName))
 

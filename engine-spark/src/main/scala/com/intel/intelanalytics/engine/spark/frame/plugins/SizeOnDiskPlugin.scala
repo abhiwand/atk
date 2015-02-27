@@ -69,7 +69,7 @@ class SizeOnDiskPlugin extends SparkCommandPlugin[FrameNoArgs, LongValue] {
     val frames = engine.frames
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
 
     frames.getSizeInBytes(frame) match {
       case Some(size) => LongValue(size)

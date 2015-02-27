@@ -69,7 +69,7 @@ class PartitionCountPlugin extends SparkCommandPlugin[FrameNoArgs, IntValue] {
     val frames = engine.frames
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
 
     // run the operation
     val frameRdd = frames.loadFrameData(sc, frame)

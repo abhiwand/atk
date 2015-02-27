@@ -71,7 +71,7 @@ class SparkModelStorage(metaStore: MetaStore)
       new SparkModel(meta.meta)
     }
 
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference.id))
+    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference))
 
     override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createModel(args)
 
@@ -93,26 +93,31 @@ class SparkModelStorage(metaStore: MetaStore)
      */
     override def delete(reference: SparkModelStorage.this.SparkModelManagement.Reference)(implicit invocation: Invocation): Unit = {
       val meta = getMetaData(reference)
-      drop(meta.meta.id)
+      drop(meta.meta.toReference)
     }
   }
 
   EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
-  override def expectModel(id: Long): ModelEntity = {
-    lookup(id).getOrElse(throw new NotFoundException("model", id.toString))
+  override def expectModel(modelRef: ModelReference): ModelEntity = {
+    metaStore.withSession("spark.modelstorage.lookup") {
+      implicit session =>
+        {
+          metaStore.modelRepo.lookup(modelRef.id)
+        }
+    }.getOrElse(throw new NotFoundException("model", modelRef.toString))
   }
 
   /**
    * Deletes a model from the metastore.
-   * @param id Model metadata object.
+   * @param modelRef Model metadata object.
    */
-  override def drop(id: Long): Unit = {
+  override def drop(modelRef: ModelReference): Unit = {
     metaStore.withSession("spark.modelstorage.drop") {
       implicit session =>
         {
-          metaStore.modelRepo.delete(id)
+          metaStore.modelRepo.delete(modelRef.id)
           Unit
         }
     }
@@ -141,11 +146,11 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Renames a model in the metastore.
-   * @param id The model being renamed
+   * @param modelRef The model being renamed
    * @param newName The name the model is being renamed to.
    * @return Model metadata
    */
-  override def renameModel(id: Long, newName: String): ModelEntity = {
+  override def renameModel(modelRef: ModelReference, newName: String): ModelEntity = {
     metaStore.withSession("spark.modelstorage.rename") {
       implicit session =>
         {
@@ -154,22 +159,8 @@ class SparkModelStorage(metaStore: MetaStore)
             throw new RuntimeException("Model with same name exists. Rename aborted.")
           }
 
-          val newModel = expectModel(id).copy(name = Some(newName))
+          val newModel = expectModel(modelRef).copy(name = Some(newName))
           metaStore.modelRepo.update(newModel).get
-        }
-    }
-  }
-
-  /**
-   * Get the metadata for a model from its unique ID.
-   * @param id ID being looked up.
-   * @return Future of Model metadata.
-   */
-  override def lookup(id: Long): Option[ModelEntity] = {
-    metaStore.withSession("spark.modelstorage.lookup") {
-      implicit session =>
-        {
-          metaStore.modelRepo.lookup(id)
         }
     }
   }
@@ -198,15 +189,15 @@ class SparkModelStorage(metaStore: MetaStore)
 
   /**
    * Store the result of running the train data on a model
-   * @param modelReference The model to update
+   * @param modelRef The model to update
    * @param newData JsObject storing the result of training.
    */
 
-  override def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
+  override def updateModel(modelRef: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity = {
     metaStore.withSession("spark.modelstorage.updateModel") {
       implicit session =>
         {
-          val currentModel = expectModel(modelReference.modelId)
+          val currentModel = expectModel(modelRef)
           val newModel = currentModel.copy(data = Option(newData))
 
           metaStore.modelRepo.update(newModel).get
