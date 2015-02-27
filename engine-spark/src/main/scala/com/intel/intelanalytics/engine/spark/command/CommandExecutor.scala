@@ -395,7 +395,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
   }
 
   private def stopContextIfNeeded(sc: SparkContext): Unit = {
-    if (SparkEngineConfig.reuseLocalSparkContext && sc.isLocal) {
+    if (SparkEngineConfig.reuseSparkContext) {
       info("not stopping local SparkContext so that it can be re-used")
     }
     else {
