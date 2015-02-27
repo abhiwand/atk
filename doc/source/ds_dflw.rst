@@ -42,30 +42,37 @@ etc.) that can be organized as a collection of rows and columns, with each
 row corresponding to the data associated with one observation, and each
 column corresponding to a variable being observed.
 
-To see the data types currently supported by the |IAT| type::
+.. TODO::
+
+    Make writeup for database connectivity.
 
 Connect to the server::
 
     import intelanalytics as ia
     ia.connect()
 
-Record error details (optional but always recommended)::
+Sometimes it is helpful to see the details of the python stack trace upon error.
+Setting the show_details to True causes the full python stack trace to be
+printed, rather than a friendlier digest. ::
 
     ia.errors.show_details = True
 
-Clean up any previous frames (optional)::
+.. TODO:: Move these to a new section discussing "clean up" or object life time
+    section
+
+    Clean up any previous frames (optional)::
 
     for name in ia.get_frame_names():
         print 'deleting frame: %s' %name
         ia.drop_frames(name)
 
-Clean up any previous graphs (optional)::
+    Clean up any previous graphs (optional)::
 
     for name in ia.get_graph_names():
         print 'deleting graph: %s' %name
         ia.drop_graphs(name)
 
-Get the data types::
+To see the data types supported by the |IAT|::
 
     print ia.valid_data_types
 
@@ -76,12 +83,12 @@ You should see a string of variable types similar to this::
 
 .. note::
 
-    The |IAT| utilizes the Numpy package.
-    Numpy values of positive infinity (np.inf), negative infinity (-np.inf)
-    or nan (np.nan) are treated as None.
+    Although the |IAT| utilizes the Numpy package, numpy values of positive
+    infinity (np.inf), negative infinity (-np.inf) or nan (np.nan) are treated
+    as None.
     Results of any user-defined functions which deal with such values are
-    automatically converted to None.
-    Any further usage of those data points should treat the values as None.
+    automatically converted to None, so any further usage of those data points
+    should treat the values as None.
 
 .. _Importing Data:
 
@@ -193,17 +200,20 @@ designed to work with data spread over multiple machines.
 Create A Frame
 ==============
 
-A new frame is created:
+There are several ways to create frames:
 
-    #. as "empty"", with no columns defined,
-    #. as defined by a schema and the source file, or
-    #. by copying (all or a part of) another frame.
+#.  as "empty", with no schema or data
+#.  with a schema and data
+#.  by copying (all or a part of) another frame
 
 Examples:
 ---------
-To create an empty frame and a Frame object, *my_frame*, to access it::
+Create an empty frame::
 
     my_frame = ia.Frame()
+
+The Frame *my_frame* is now a Python object which references an empty frame
+that has been created on the server.
 
 To create a frame defined by the schema *my_csv*, import the data, name the
 frame *myframe*, and create a Frame object, *my_frame*, to access it::
