@@ -66,7 +66,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     val frames = engine.frames
 
     // validate arguments
-    val frameEntity = frames.expectFrame(arguments.frame.id)
+    val frameEntity = frames.expectFrame(arguments.frame)
     var schema = frameEntity.schema
     var flattener: (Int, RDD[Row]) => RDD[Row] = null
     val columnIndex = frameEntity.schema.columnIndex(arguments.column)

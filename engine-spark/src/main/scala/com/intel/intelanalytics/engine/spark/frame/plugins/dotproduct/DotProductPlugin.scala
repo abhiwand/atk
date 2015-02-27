@@ -64,7 +64,7 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
   override def execute(arguments: DotProductArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
     val frameSchema = frame.schema
 
     // validate arguments    

@@ -80,14 +80,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       new SparkFrameData(meta.meta, storage.loadFrameData(sc, meta.meta))
     }
 
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference.id))
+    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference))
 
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference =
-      storage.create(args)
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.create(args).toReference
 
-    override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(id)
-
-    implicit def frameToRef(frame: FrameEntity)(implicit invocation: Invocation): Reference = FrameReference(frame.id)
+    override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(FrameReference(id)).toReference
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -95,8 +92,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
      * Save data of the given type, possibly creating a new object.
      */
     override def saveData(data: Data)(implicit invocation: Invocation): Data = {
-      val meta = saveFrameData(data.meta, data.data)
-      new SparkFrameData(meta, data.data)
+      val frameEntity = data.meta
+      val frameRDD = data.data
+      val meta = saveFrameData(frameEntity.toReference, frameRDD)
+      new SparkFrameData(meta, frameRDD)
     }
 
     /**
@@ -139,7 +138,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @return the copy
    */
   def copyFrame(frame: FrameReference, sc: SparkContext)(implicit invocation: Invocation): FrameEntity = {
-    val frameEntity = expectFrame(frame.id)
+    val frameEntity = expectFrame(frame)
     var child: FrameEntity = null
 
     metaStore.withTransaction("sfs.copyFrame") { implicit txn =>
@@ -171,20 +170,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     lookup(frameId).getOrElse(throw new NotFoundException("frame", frameId.toString))
   }
 
-  override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = expectFrame(frameRef.id)
-
-  /**
-   * Create an FrameRDD from a frame data file
-   *
-   * This is our preferred format for loading frames as RDDs.
-   *
-   * @param ctx spark context
-   * @param frameId the id for the frame
-   * @return the newly created FrameRDD
-   */
-  def loadFrameData(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): FrameRDD = {
-    val frame = expectFrame(frameId)
-    loadFrameData(ctx, frame)
+  override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = {
+    lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId.toString))
   }
 
   /**
@@ -222,13 +209,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
    *
    * @param ctx spark context
-   * @param frameId primary key of the frame record
+   * @param frameRef primary key of the frame record
    * @return the newly created RDD
    */
   @deprecated("use FrameRDD and related methods instead")
-  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): LegacyFrameRDD = {
-    val frame = lookup(frameId).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame: $frameId"))
+  def loadLegacyFrameRdd(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRDD = {
+    val frame = expectFrame(frameRef)
     loadLegacyFrameRdd(ctx, frame)
   }
 
@@ -323,7 +309,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def prepareForSave(frame: FrameReference)(implicit invocation: Invocation): FrameEntity = {
 
-    val frameEntity = expectFrame(frame.id)
+    val frameEntity = expectFrame(frame)
 
     // determine if this one has been materialized to disk or not
     val targetEntity = if (frameEntity.storageLocation.isDefined) {
@@ -359,7 +345,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     frameFileStorage.delete(targetEntity)
 
     // get latest frame from meta store
-    expectFrame(targetEntity.id)
+    expectFrame(targetEntity.toReference)
   }
 
   /**
@@ -377,7 +363,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.saveFrame") {
       implicit session =>
         {
-          val frameEntity = expectFrame(targetFrameRef.id)
+          val frameEntity = expectFrame(targetFrameRef)
 
           require(schema != null, "frame schema was null, we need developer to add logic to handle this - we used to have this, not sure if we still do --Todd 12/16/2014")
 
@@ -398,7 +384,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.withTransaction("sfs.switch-names-and-graphs") { implicit txn =>
         {
           // remove name from existing frame since it is on the child
-          val (f1, f2) = exchangeNames(expectFrame(originalFrameRef.get.id), expectFrame(targetFrameRef.id))
+          val (f1, f2) = exchangeNames(expectFrame(originalFrameRef.get), expectFrame(targetFrameRef))
           // TODO: shouldn't exchange graphs, should insert a new revision of a graph but this is complicated because there might be multiple frame modifications in one step for graphs
           exchangeGraphs(f1, f2)
         }
@@ -406,7 +392,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
 
     // look up the latest version from the DB
-    expectFrame(targetFrameRef.id)
+    expectFrame(targetFrameRef)
   }
 
   def updateFrameStatus(frame: FrameReference, statusId: Long)(implicit invocation: Invocation): Unit = {
@@ -414,7 +400,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.withSession("frame.updateFrameStatus") {
         implicit session =>
           {
-            val entity = expectFrame(frame.id)
+            val entity = expectFrame(frame)
             metaStore.frameRepo.update(entity.copy(status = statusId))
           }
       }
@@ -430,7 +416,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.id)
+        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.toReference)
         val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
         rows
       }

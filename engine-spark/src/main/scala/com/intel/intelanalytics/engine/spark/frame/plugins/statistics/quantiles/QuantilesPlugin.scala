@@ -75,7 +75,7 @@ class QuantilesPlugin extends SparkCommandPlugin[QuantilesArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
     val frameSchema = frame.schema
     val columnIndex = frameSchema.columnIndex(arguments.columnName)
     val columnDataType = frameSchema.columnDataType(arguments.columnName)

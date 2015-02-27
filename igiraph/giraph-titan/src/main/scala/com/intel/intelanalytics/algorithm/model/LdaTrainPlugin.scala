@@ -93,7 +93,7 @@ class LdaTrainPlugin
     frames.postSave(None, docOut.toReference, new FrameSchema(List(frame.schema.column(arguments.documentColumnName), resultsColumn)))
     frames.postSave(None, wordOut.toReference, new FrameSchema(List(frame.schema.column(arguments.wordColumnName), resultsColumn)))
 
-    LdaTrainResult(frames.expectFrame(docOut.id), frames.expectFrame(wordOut.id), report)
+    LdaTrainResult(frames.expectFrame(docOut.toReference), frames.expectFrame(wordOut.toReference), report)
   }
 
 }

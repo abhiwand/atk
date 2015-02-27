@@ -172,9 +172,9 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
       val schema = new EdgeSchema(ExportToGraphPlugin.getSchemaFromProperties(columns, titanDBGraph) ++ List(Column("_src_vid", int64), Column("_dest_vid", int64), Column("_label", string)), label, srcLabel, destLabel)
       val edgesToAdd = new LegacyFrameRDD(schema, edgeRdd).toFrameRDD()
 
-      val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.id)
+      val existingEdgeData = graphs.loadEdgeRDD(ctx, edgeFrame.toReference)
       val combinedRdd = existingEdgeData.append(edgesToAdd)
-      graphs.saveEdgeRdd(edgeFrame.id, combinedRdd)
+      graphs.saveEdgeRdd(edgeFrame.toReference, combinedRdd)
     })
   }
 
@@ -217,9 +217,9 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
       val idColumn = labelToIdNameMapping(label)
       val schema = new VertexSchema(ExportToGraphPlugin.getSchemaFromProperties(columns, titanDBGraph), label, Some(idColumn))
       val source = new LegacyFrameRDD(schema, sourceRdd).toFrameRDD()
-      val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.id)
+      val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrame.toReference)
       val combinedRdd = existingVertexData.setIdColumnName(idColumn).append(source)
-      graphs.saveVertexRDD(vertexFrame.id, combinedRdd)
+      graphs.saveVertexRDD(vertexFrame.toReference, combinedRdd)
     })
   }
 }

@@ -66,7 +66,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
   override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
     {
       val models = engine.models
-      val modelMeta = models.expectModel(arguments.model.id)
+      val modelMeta = models.expectModel(arguments.model)
 
       val frame: SparkFrameData = resolve(arguments.frame)
       // load frame as RDD

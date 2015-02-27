@@ -79,13 +79,13 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
-    val vertexFrame = frames.expectFrame(arguments.frame.id)
+    val vertexFrame = frames.expectFrame(arguments.frame)
 
     require(vertexFrame.isVertexFrame, "vertex frame is required")
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.graphId.get)
     val schema = vertexFrame.schema
-    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
+    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame)
     val columnNames = arguments.unique_columns match {
       case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
       case None =>

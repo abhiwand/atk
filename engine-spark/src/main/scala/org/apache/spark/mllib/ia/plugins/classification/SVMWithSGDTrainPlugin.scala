@@ -65,8 +65,8 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
   override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn =
     {
       val models = engine.models
-      val modelId = arguments.model.id
-      val modelMeta = models.expectModel(modelId)
+      val modelRef = arguments.model
+      val modelMeta = models.expectModel(modelRef)
 
       val frame: SparkFrameData = resolve(arguments.frame)
       // load frame as RDD

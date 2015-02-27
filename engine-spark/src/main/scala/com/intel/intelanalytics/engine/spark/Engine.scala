@@ -30,7 +30,7 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.engine.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -379,7 +379,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val inv = invocation
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
-      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
+      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, FrameReference(arguments.id)).rows
       val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }
@@ -495,7 +495,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    */
   def getModel(id: Identifier)(implicit invocation: Invocation): Future[ModelEntity] = {
     future {
-      models.lookup(id).get
+      models.expectModel(ModelReference(id))
     }
   }
 
@@ -524,7 +524,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
-        models.drop(model.id)
+        models.drop(model.toReference)
       }
     }
   }

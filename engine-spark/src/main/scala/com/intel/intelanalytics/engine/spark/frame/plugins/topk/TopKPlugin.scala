@@ -74,12 +74,12 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame
-    val frame = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frame = frames.expectFrame(frameRef)
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0

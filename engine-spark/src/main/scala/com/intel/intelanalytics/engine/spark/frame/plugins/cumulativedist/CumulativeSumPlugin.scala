@@ -65,12 +65,12 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
-    val frameEntity = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frameEntity = frames.expectFrame(frameRef)
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
     val frameSchema = frameEntity.schema
     val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)

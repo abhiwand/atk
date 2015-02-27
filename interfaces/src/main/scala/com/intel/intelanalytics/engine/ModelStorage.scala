@@ -31,15 +31,13 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 
 trait ModelStorage {
 
-  def expectModel(modelId: Long): ModelEntity
-
-  def lookup(modelId: Long): Option[ModelEntity]
+  def expectModel(modelRef: ModelReference): ModelEntity
 
   def createModel(model: CreateEntityArgs)(implicit invocation: Invocation): ModelEntity
 
-  def renameModel(modelId: Long, newName: String): ModelEntity
+  def renameModel(modelRef: ModelReference, newName: String): ModelEntity
 
-  def drop(modelId: Long)
+  def drop(modelRef: ModelReference)
 
   def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
 

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -64,8 +64,8 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     val ctx = sc
 
     // validate arguments
-    val frameId: Long = arguments.frame.id
-    val frame = frames.expectFrame(frameId)
+    val frameRef: FrameReference = arguments.frame
+    val frame = frames.expectFrame(frameRef)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
     val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
@@ -78,7 +78,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     }
 
     // run the operation and return the results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     ColumnStatistics.columnSummaryStatistics(columnIndex,
       valueDataType,
       weightsColumnIndexOption,

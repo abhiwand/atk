@@ -67,8 +67,8 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
       val models = engine.models
       val frames = engine.frames
 
-      val inputFrame = frames.expectFrame(arguments.frame.id)
-      val modelMeta = models.expectModel(arguments.model.id)
+      val inputFrame = frames.expectFrame(arguments.frame)
+      val modelMeta = models.expectModel(arguments.model)
 
       //create RDD from the frame
       val trainFrameRDD = frames.loadFrameData(sc, inputFrame)

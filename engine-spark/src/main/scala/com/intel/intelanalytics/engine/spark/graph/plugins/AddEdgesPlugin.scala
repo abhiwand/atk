@@ -167,9 +167,9 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
-    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.id)
+    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.toReference)
     val combinedRdd = existingEdgeData.append(edgesToAdd)
-    graphs.saveEdgeRdd(edgeFrameEntity.id, combinedRdd)
+    graphs.saveEdgeRdd(edgeFrameEntity.toReference, combinedRdd)
 
     // results
     new UnitReturn
