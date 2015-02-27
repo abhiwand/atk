@@ -10,7 +10,6 @@ Best Known Methods (Admin)
 
     ad_gitune
     ad_hbtune
-    ad_partit
     ad_how.rst
 
 -------------------------
@@ -19,23 +18,10 @@ Configuration information
 
 .. include:: ad_gitune.rst
 .. include:: ad_hbtune.rst
-.. include:: ad_partit.rst
 
 -----
 Spark
 -----
-
-Plug-in Spark Bug
-=================
-
-When implementing a plug-in, using Spark prior to version 1.1.0, avoid using
-the Spark *top* function.
-Instead, use the less efficient *sortByKey* function.
-The Spark *top* function has a bug filed against it when using Kryo serializer.
-This has been fixed in Spark 1.1.0.
-There is a known work-around, but there are issues implementing it in our
-plug-in architecture.
-See https://issues.apache.org/jira/browse/SPARK-2306.
 
 Resolving disk full issue while running Spark jobs
 ==================================================
@@ -106,5 +92,3 @@ References
 
 `Spark Docs <https://spark.apache.org/documentation.html>`__
 
-Nice thread on how Shuffle works in Spark:
-    http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html

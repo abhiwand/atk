@@ -107,7 +107,7 @@ Here are some guidelines to follow when writing a PUF:
 1.  Error handling:
     Include error handling.
     If the function execution raises an exception, it will cause the entire
-    command to fail and possible leave the Frame or TitanGraph in an incomplete
+    command to fail and possibly leave the frame or graph in an incomplete
     state.
     The best practice is to put all our PUF functionality in a ``try: except:``
     block, where the ``except:`` clause returns a default value or performs a
