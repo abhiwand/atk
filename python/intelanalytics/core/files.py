@@ -127,9 +127,8 @@ class CsvFile(DataFile):
     @property
     def field_names(self):
         """
-        |BETA| Schema field names from the CsvFile class.
+        Schema field names from the CsvFile class.
 
-        |TB|
 
         Returns
         -------
