@@ -1,7 +1,30 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnModeReturn, ColumnSummaryStatisticsReturn }
-import com.intel.intelanalytics.domain.schema.ColumnInfo
+import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics._
@@ -123,7 +146,7 @@ private[spark] object ColumnStatistics extends Serializable {
                               rowRDD: RDD[Row],
                               usePopulationVariance: Boolean): ColumnSummaryStatisticsReturn = {
 
-    val dataWeightPairs: RDD[(Double, Double)] =
+    val dataWeightPairs: RDD[(Option[Double], Option[Double])] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
     val stats = new NumericalStatistics(dataWeightPairs, usePopulationVariance)
@@ -143,55 +166,8 @@ private[spark] object ColumnStatistics extends Serializable {
       goodRowCount = stats.goodRowCount)
   }
 
-  /**
-   * Calculate full statistics of data column, possibly weighted by an optional weights column.
-   *
-   * It is assumed that the values in the data column are unique. If the data values are not unique,
-   * some statistics will be incorrect.
-   *
-   * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
-   * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
-   * number) or as "non positive weight" (when a row's weight entry is <= 0).
-   *
-   * @param dataColumnIndex Index of column providing the data. Must be numerical data.
-   * @param dataType The type of the data column.
-   * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
-   * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows.
-   * @return  Full statistics of the column.
-   */
-  def columnFullStatistics(dataColumnIndex: Int,
-                           dataType: DataType,
-                           weightsColumnIndexOption: Option[Int],
-                           weightsTypeOption: Option[DataType],
-                           rowRDD: RDD[Row]): ColumnFullStatisticsReturn = {
-
-    val dataWeightPairs: RDD[(Double, Double)] =
-      getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
-
-    // since we aren't offering full statistics right now, this just makes the project compile
-    // if we want to use population variance in full statistics, we'll have to plumb that down
-    val stats = new NumericalStatistics(dataWeightPairs, false)
-
-    ColumnFullStatisticsReturn(mean = stats.weightedMean,
-      geometricMean = stats.weightedGeometricMean,
-      variance = stats.weightedVariance,
-      standardDeviation = stats.weightedStandardDeviation,
-      skewness = stats.weightedSkewness,
-      kurtosis = stats.weightedKurtosis,
-      totalWeight = stats.totalWeight,
-      meanConfidenceLower = stats.meanConfidenceLower,
-      meanConfidenceUpper = stats.meanConfidenceUpper,
-      minimum = stats.min,
-      maximum = stats.max,
-      positiveWeightCount = stats.positiveWeightCount,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount,
-      badRowCount = stats.badRowCount,
-      goodRowCount = stats.goodRowCount)
-  }
-
   def getDataWeightPairs(dataColumnIndex: Int,
-                         weightsColumn: Option[ColumnInfo],
+                         weightsColumn: Option[Column],
                          rowRDD: RDD[Row]): RDD[(Any, Double)] = {
     weightsColumn match {
       case Some(column) => getDataWeightPairs(dataColumnIndex, Some(column.index), Some(column.dataType), rowRDD)
@@ -206,7 +182,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
@@ -224,22 +200,34 @@ private[spark] object ColumnStatistics extends Serializable {
                                    dataType: DataType,
                                    weightsColumnIndexOption: Option[Int],
                                    weightsTypeOption: Option[DataType],
-                                   rowRDD: RDD[Row]): RDD[(Double, Double)] = {
+                                   rowRDD: RDD[Row]): RDD[(Option[Double], Option[Double])] = {
 
-    val dataRDD: RDD[Double] = rowRDD.map(row => dataType.asDouble(row(dataColumnIndex)))
+    val dataRDD: RDD[Option[Double]] = rowRDD.map {
+      case row => extractColumnValueAsDoubleFromRow(row, dataColumnIndex, dataType)
+    }
 
-    val weighted = !weightsColumnIndexOption.isEmpty
+    val weighted = weightsColumnIndexOption.isDefined
 
     if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
       throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
     }
 
     val weightsRDD = if (weighted)
-      rowRDD.map(row => weightsTypeOption.get.asDouble(row(weightsColumnIndexOption.get)))
+      rowRDD.map {
+        case row => extractColumnValueAsDoubleFromRow(row, weightsColumnIndexOption.get, weightsTypeOption.get)
+      }
     else
       null
 
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
+    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, Some(1.toDouble)))
+  }
+
+  private def extractColumnValueAsDoubleFromRow(row: Row, columnIndex: Int, dataType: DataType): Option[Double] = {
+    val columnValue = row(columnIndex)
+    columnValue match {
+      case null => None
+      case value => Some(dataType.asDouble(value))
+    }
   }
 
 }

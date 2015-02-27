@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,7 +25,7 @@ package com.intel.graphbuilder.driver.local.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
@@ -88,10 +88,10 @@ object LocalTitanCassandraDriver {
 
     // Separate Vertices and Edges
     val vertices = elements.collect {
-      case v: Vertex => v
+      case v: GBVertex => v
     }
     val edges = elements.collect {
-      case e: Edge => e
+      case e: GBEdge => e
     }
 
     // Print out the parsed Info
@@ -115,7 +115,7 @@ object LocalTitanCassandraDriver {
     titanConfig.setProperty("storage.hostname", "127.0.0.1")
     titanConfig.setProperty("storage.keyspace", "titan")
     val titanConnector = new TitanGraphConnector(titanConfig)
-    var graph = titanConnector.connect()
+    val graph = titanConnector.connect()
 
     try {
 
@@ -139,8 +139,8 @@ object LocalTitanCassandraDriver {
       })
 
       // Results
-      println(graph.getEdges.iterator().toList.size)
-      println(graph.getVertices.iterator().toList.size)
+      println(graph.getEdges.toList.size)
+      println(TitanGraphConnector.getVertices(graph).toList.size) //Need wrapper due to ambiguous reference errors in Titan 0.5.1+
 
     }
     finally {
@@ -151,4 +151,3 @@ object LocalTitanCassandraDriver {
   }
 
 }
-

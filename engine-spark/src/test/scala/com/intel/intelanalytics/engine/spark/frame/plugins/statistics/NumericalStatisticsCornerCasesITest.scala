@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics
 
 import com.intel.testutils.TestingSparkContextFlatSpec
@@ -21,10 +44,11 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data = List(1, 2, 3, 4, 5, 6, 7, 8).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val dataFrequenciesWithNegs =
-      sparkContext.parallelize((data :+ 1000.toDouble :+ (-10000).toDouble).zip((frequencies :+ (-1).toDouble :+ 0.toDouble)))
+      sparkContext.parallelize((data :+ 1000.toDouble :+ (-10000).toDouble).zip((frequencies :+ (-1).toDouble :+ 0.toDouble))
+        .map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
     val numericalStatisticsWithNegs = new NumericalStatistics(dataFrequenciesWithNegs, false)
@@ -40,8 +64,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedVariance - numericalStatisticsWithNegs.weightedVariance) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation
       - numericalStatisticsWithNegs.weightedStandardDeviation) should be < epsilon
-    Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithNegs.weightedSkewness) should be < epsilon
-    Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithNegs.weightedKurtosis) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithNegs.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -60,10 +82,10 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val goodDataBadWeights = (1 to 3).map(x => x.toDouble).zip(List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity))
     val badDataGoodWeights = List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity).zip((1 to 3).map(x => x.toDouble))
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val dataFrequenciesWithBadGuys =
-      sparkContext.parallelize(data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights)
+      sparkContext.parallelize((data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
     val numericalStatisticsWithBadGuys = new NumericalStatistics(dataFrequenciesWithBadGuys, false)
@@ -85,8 +107,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedVariance - numericalStatisticsWithBadGuys.weightedVariance) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation
       - numericalStatisticsWithBadGuys.weightedStandardDeviation) should be < epsilon
-    Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithBadGuys.weightedSkewness) should be < epsilon
-    Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithBadGuys.weightedKurtosis) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithBadGuys.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -101,7 +121,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -114,7 +134,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data = List(1, 2, 3, 4, 5, 0, 7, 18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -127,7 +147,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data: List[Double] = List()
     val frequencies: List[Double] = List()
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -139,8 +159,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -150,7 +168,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(-3, -2, -3, -1, -9, -4, -3, -1).map(x => x.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -162,8 +180,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
 
@@ -174,7 +190,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data: List[Double] = List(1.toDouble)
     val frequencies: List[Double] = List(1.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -186,8 +202,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 1
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -197,7 +211,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data: List[Double] = List(1.toDouble, 2.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -209,8 +223,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 2
     Math.abs(numericalStatistics.weightedVariance - 0.5) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation - Math.sqrt(0.5)) should be < epsilon
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     Math.abs(numericalStatistics.meanConfidenceLower - (1.5 - 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (1.5 + 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
   }
@@ -220,7 +232,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val data: List[Double] = List(1.toDouble, 2.toDouble, 3.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
 
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies).map { case (k, v) => (Option(k), Option(v)) })
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
@@ -232,8 +244,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.max shouldBe 3
     Math.abs(numericalStatistics.weightedVariance - 1.0) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation - 1.0) should be < epsilon
-    (numericalStatistics.weightedSkewness - 1.7320508075688807) should be < epsilon
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     Math.abs(numericalStatistics.meanConfidenceLower - (2.0 - (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (2.0 + (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
   }

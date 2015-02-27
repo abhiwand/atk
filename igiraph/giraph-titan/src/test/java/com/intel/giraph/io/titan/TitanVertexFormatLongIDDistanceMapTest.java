@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,15 +20,15 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.intel.giraph.io.DistanceMapWritable;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull;
-import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
-import com.thinkaurelius.titan.core.TitanVertex;
+import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongDistanceMapNull;
+import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDistanceMap;
+import com.thinkaurelius.titan.core.*;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -46,17 +46,16 @@ import static org.junit.Assert.assertTrue;
  * <p/>
  * Each Vertex is with <code>Long</code> id,
  * and <code>DistanceMap</code> values.
- *
  */
-public class TitanVertexFormatLongIDDistanceMapTest 
-    extends TitanTestBase<LongWritable, DistanceMapWritable, NullWritable> {
+public class TitanVertexFormatLongIDDistanceMapTest
+        extends TitanTestBase<LongWritable, DistanceMapWritable, NullWritable> {
 
     @Override
     protected void configure() throws Exception {
         giraphConf.setComputationClass(AveragePathLengthComputation.class);
         giraphConf.setMasterComputeClass(AveragePathLengthComputation.AveragePathLengthMasterCompute.class);
         giraphConf.setAggregatorWriterClass(AveragePathLengthComputation.AveragePathLengthAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDistanceMapNull.class);
+        giraphConf.setVertexInputFormatClass(TitanVertexInputFormatLongDistanceMapNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDistanceMap.class);
 
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
@@ -81,25 +80,28 @@ public class TitanVertexFormatLongIDDistanceMapTest
         };
         */
 
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
+        TitanTransaction tx = graph.newTransaction();
         int numVertices = 5;
-        TitanVertex[] nodes = new TitanVertex[5];
-        for (int i = 0; i < 5; i++) {
+        TitanVertex[] nodes = new TitanVertex[numVertices];
+        for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
         }
 
         TitanEdge[] edges = new TitanEdge[10];
-        edges[0] = nodes[0].addEdge(edge, nodes[1]);
-        edges[1] = nodes[0].addEdge(edge, nodes[3]);
-        edges[2] = nodes[1].addEdge(edge, nodes[2]);
-        edges[3] = nodes[1].addEdge(edge, nodes[3]);
-        edges[4] = nodes[2].addEdge(edge, nodes[0]);
-        edges[5] = nodes[2].addEdge(edge, nodes[1]);
-        edges[6] = nodes[2].addEdge(edge, nodes[4]);
-        edges[7] = nodes[3].addEdge(edge, nodes[4]);
-        edges[8] = nodes[4].addEdge(edge, nodes[2]);
-        edges[9] = nodes[4].addEdge(edge, nodes[3]);
+        edges[0] = nodes[0].addEdge("edge", nodes[1]);
+        edges[1] = nodes[0].addEdge("edge", nodes[3]);
+        edges[2] = nodes[1].addEdge("edge", nodes[2]);
+        edges[3] = nodes[1].addEdge("edge", nodes[3]);
+        edges[4] = nodes[2].addEdge("edge", nodes[0]);
+        edges[5] = nodes[2].addEdge("edge", nodes[1]);
+        edges[6] = nodes[2].addEdge("edge", nodes[4]);
+        edges[7] = nodes[3].addEdge("edge", nodes[4]);
+        edges[8] = nodes[4].addEdge("edge", nodes[2]);
+        edges[9] = nodes[4].addEdge("edge", nodes[3]);
 
         tx.commit();
 
@@ -109,25 +111,25 @@ public class TitanVertexFormatLongIDDistanceMapTest
         Assert.assertNotNull(results);
 
         //verify data is written to Titan
-        startNewTransaction();
+        tx = graph.newTransaction();
         long[] nid;
-        TitanKey[] resultKey;
+        PropertyKey[] resultKey;
         String[] keyName;
         nid = new long[5];
-        resultKey = new TitanKey[2];
+        resultKey = new PropertyKey[2];
         keyName = new String[2];
         keyName[0] = "result_p0";
         keyName[1] = "result_p1";
         //check keys are generated for Titan
         for (int i = 0; i < 2; i++) {
-            assertTrue(tx.containsType(keyName[i]));
+            assertTrue(tx.containsRelationType(keyName[i]));
             resultKey[i] = tx.getPropertyKey(keyName[i]);
             assertEquals(resultKey[i].getName(), keyName[i]);
             assertEquals(resultKey[i].getDataType(), String.class);
         }
 
         for (int i = 0; i < 5; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 
@@ -135,6 +137,6 @@ public class TitanVertexFormatLongIDDistanceMapTest
                 assertEquals(EXPECT_OUTPUT[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j]).toString()), 0.01d);
             }
         }
+        tx.commit();
     }
 }
-

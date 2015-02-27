@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+
 /**
  * This manages the backend storage for graphs, underneath the graph database.
  *
@@ -31,6 +33,7 @@ package com.intel.intelanalytics.engine
  * Titan can not or will not.
  */
 trait GraphBackendStorage {
-  def deleteUnderlyingTable(graphName: String, quiet: Boolean)
-  def renameUnderlyingTable(graphName: String, newName: String)
+  def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation)
+  def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation)
+  def copyUnderlyingTable(graphName: String, name: String)(implicit invocation: Invocation)
 }

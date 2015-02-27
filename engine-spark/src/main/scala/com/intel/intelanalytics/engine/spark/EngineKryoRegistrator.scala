@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,23 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.RowParseResult
-import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
+import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAggregationFunctions, GroupByAggregateByKey }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRDDFunctions, RowParseResult }
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
+import org.apache.spark.frame.FrameRDD
+
+import org.apache.spark.serializer.KryoRegistrator
 
 /**
  * Register classes that are going to be serialized by Kryo.
@@ -39,9 +50,9 @@ import com.intel.intelanalytics.engine.spark.frame.FrameRDD
  * with graph building Kryo was 2 hours faster with 23GB of Netflix data.
  * </p>
  * <p>
- *  Usage:
- *   conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
- *   conf.set("spark.kryo.registrator", "com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
+ * Usage:
+ * conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+ * conf.set("spark.kryo.registrator", "com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
  * </p>
  */
 class EngineKryoRegistrator extends KryoRegistrator {
@@ -50,8 +61,22 @@ class EngineKryoRegistrator extends KryoRegistrator {
 
     // frame related classes
     kryo.register(classOf[Row])
+    kryo.register(classOf[Schema])
+    kryo.register(classOf[CsvRowParser])
     kryo.register(classOf[RowParseResult])
+    kryo.register(classOf[LegacyFrameRDD])
     kryo.register(classOf[FrameRDD])
+    kryo.register(ClassificationMetrics.getClass)
+    kryo.register(CumulativeDistFunctions.getClass)
+    kryo.register(MiscFrameFunctions.getClass)
+    kryo.register(LoadRDDFunctions.getClass)
+    kryo.register(FlattenColumnFunctions.getClass)
+    kryo.register(ColumnStatistics.getClass)
+    kryo.register(StatisticsRDDFunctions.getClass)
+    kryo.register(QuantilesFunctions.getClass)
+    kryo.register(TopKRDDFunctions.getClass)
+    kryo.register(EntropyRDDFunctions.getClass)
+    kryo.register(GroupByAggregationFunctions.getClass)
 
     // register GraphBuilder classes
     val gbRegistrator = new GraphBuilderKryoRegistrator()

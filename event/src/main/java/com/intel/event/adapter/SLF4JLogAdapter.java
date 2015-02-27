@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -38,7 +38,7 @@ public class SLF4JLogAdapter implements EventLog {
 
     private String join(String separator, String[] parts) {
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < parts.length; i++) {
+        for (int i = 0; i < parts.length; i++) {
             builder.append(parts[i]);
             if (i + 1 != parts.length) {
                 builder.append(separator);

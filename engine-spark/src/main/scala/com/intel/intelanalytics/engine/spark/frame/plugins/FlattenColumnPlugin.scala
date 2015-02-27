@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,21 +24,23 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 import scala.concurrent.ExecutionContext
-
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import java.util.regex.Pattern
 
 /**
  * Take a row with multiple values in a column and 'flatten' it into multiple rows.
  */
-class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
+class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -46,14 +48,9 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/flatten_column"
+  override def name: String = "frame/flatten_column"
 
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
+  override def numberOfJobs(arguments: FlattenColumnArgs)(implicit invocation: Invocation): Int = 2
 
   /**
    * Take a row with multiple values in a column and 'flatten' it into multiple rows.
@@ -62,27 +59,32 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments input specification for column flattening
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FlattenColumn)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: FlattenColumnArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val frames = engine.frames
 
     // validate arguments
-    val frameId: Long = arguments.frameId.id
-    val frameMeta = frames.expectFrame(frameId)
-    val columnIndex = frameMeta.schema.columnIndex(arguments.column)
+    val frameEntity = frames.expectFrame(arguments.frame.id)
+    var schema = frameEntity.schema
+    var flattener: (Int, RDD[Row]) => RDD[Row] = null
+    val columnIndex = frameEntity.schema.columnIndex(arguments.column)
+    val columnDataType = frameEntity.schema.columnDataType(arguments.column)
+    columnDataType match {
+      case DataTypes.string => flattener = FlattenColumnFunctions.flattenRddByStringColumnIndex(arguments.delimiter.getOrElse(","))
+      case DataTypes.vector =>
+        schema = schema.convertType(arguments.column, DataTypes.float64)
+        flattener = FlattenColumnFunctions.flattenRddByVectorColumnIndex
+      case _ => throw new IllegalArgumentException(s"Flatten column does not support type $columnDataType")
+    }
 
     // run the operation
-    val rdd = frames.loadFrameRdd(invocation.sparkContext, frameMeta)
-    val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
-    val rowCount = flattenedRDD.count()
+    val rdd = frames.loadLegacyFrameRdd(sc, frameEntity)
+    val flattenedRDD = flattener(columnIndex, rdd)
 
     // save results
-    val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    frames.saveFrame(newFrame, new FrameRDD(frameMeta.schema, flattenedRDD))
-    frames.updateRowCount(newFrame, rowCount)
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(schema, flattenedRDD))
   }
 
 }
@@ -99,24 +101,48 @@ object FlattenColumnFunctions extends Serializable {
   /**
    * Flatten RDD by the column with specified column index
    * @param index column index
+   * @param rdd RDD for flattening
+   * @return new RDD with column flattened
+   */
+  def flattenRddByVectorColumnIndex(index: Int, rdd: RDD[Row]): RDD[Row] = {
+    rdd.flatMap(row => flattenRowByVectorColumnIndex(index, row))
+  }
+
+  /**
+   * Flatten RDD by the column with specified column index
+   * @param index column index
    * @param separator separator for splitting
    * @param rdd RDD for flattening
    * @return new RDD with column flattened
    */
-  def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
-    rdd.flatMap(row => flattenColumnByIndex(index, row, separator))
+  def flattenRddByStringColumnIndex(separator: String)(index: Int, rdd: RDD[Row]): RDD[Row] = {
+    rdd.flatMap(row => flattenRowByStringColumnIndex(index, row, separator))
   }
 
   /**
-   * flatten a row by the column with specified column index
+   * flatten a row by the column with specified column index.  Column must be a vector
+   * @param index column index
+   * @param row row data
+   * @return flattened out row/rows
+   */
+  private[frame] def flattenRowByVectorColumnIndex(index: Int, row: Array[Any]): Array[Array[Any]] = {
+    DataTypes.toVector(row(index)).toArray.map(s => {
+      val r = row.clone()
+      r(index) = s
+      r
+    })
+  }
+
+  /**
+   * flatten a row by the column with specified column index.  Column must be a string
    * Eg. for row (1, "dog,cat"), flatten by second column will yield (1,"dog") and (1,"cat")
    * @param index column index
    * @param row row data
-   * @param separator separator for splitting
+   * @param delimiter separator for splitting
    * @return flattened out row/rows
    */
-  private[frame] def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
-    val splitted = row(index).asInstanceOf[String].split(separator)
+  private[frame] def flattenRowByStringColumnIndex(index: Int, row: Array[Any], delimiter: String): Array[Array[Any]] = {
+    val splitted = row(index).asInstanceOf[String].split(Pattern.quote(delimiter))
     splitted.map(s => {
       val r = row.clone()
       r(index) = s

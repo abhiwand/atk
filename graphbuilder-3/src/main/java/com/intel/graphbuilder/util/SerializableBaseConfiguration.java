@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -29,6 +52,9 @@ import org.apache.commons.configuration.AbstractConfiguration;
 /**
  * An implementation that implements Serializable that was
  * otherwise copied from Apache's BaseConfiguration.
+ *
+ * This implementation also overrides the hashcode and equality methods to enable
+ * comparison of configuration objects based on their key values.
  */
 public class SerializableBaseConfiguration extends AbstractConfiguration implements Serializable {
 
@@ -115,5 +141,58 @@ public class SerializableBaseConfiguration extends AbstractConfiguration impleme
     public Iterator getKeys() {
         return store.keySet().iterator();
     }
+
+    /**
+     * Compute the hashcode based on the property values.
+     *
+     * The hashcode allows us to compare two configuration objects with the same property entries.
+     *
+     * @return Hashcode based on property values
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+
+        for (Object property : store.keySet()) {
+            String value = store.get(property).toString();
+            if (value != null) {
+                result = prime * result + value.hashCode();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Configuration objects are considered equal if they contain the same property keys and values.
+     *
+     * @param obj Configuration object to compare
+     * @return True if the configuration objects have matching property keys and values
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        SerializableBaseConfiguration that = (SerializableBaseConfiguration) obj;
+        for (Object property : store.keySet()) {
+            String thisValue = this.store.get(property).toString();
+            String thatValue = that.store.get(property).toString();
+
+            if (thisValue == thatValue) {
+                continue;
+            }
+            if (thisValue == null || !thisValue.equals(thatValue)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json.JsObject
 import scala.util.Try
 
@@ -31,10 +32,9 @@ import scala.util.Try
  * Interface describing the management of Query database storage
  */
 trait QueryStorage {
-  def lookup(id: Long): Option[Query]
-  def create(frame: QueryTemplate): Query
-  def scan(offset: Int, count: Int): Seq[Query]
-  def start(id: Long): Unit
-  def complete(id: Long, result: Try[JsObject]): Unit
+  def lookup(id: Long)(implicit invocation: Invocation): Option[Query]
+  def create(frame: QueryTemplate)(implicit invocation: Invocation): Query
+  def scan(offset: Int, count: Int)(implicit invocation: Invocation): Seq[Query]
+  def start(id: Long)(implicit invocation: Invocation): Unit
+  def complete(id: Long, result: Try[JsObject])(implicit invocation: Invocation): Unit
 }
-

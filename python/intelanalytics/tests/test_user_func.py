@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,9 +20,9 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import sys
+
 import iatest
-from intelanalytics.core.userfunction import has_python_user_function_arg
+from intelanalytics.meta.udf import has_python_user_function_arg
 
 iatest.init()
 
@@ -95,10 +95,3 @@ class TestUserFunc(unittest.TestCase):
             self.assertTrue(ex.args[0].find(message) >= 0)
         else:
             self.fail()
-
-
-
-
-
-
-

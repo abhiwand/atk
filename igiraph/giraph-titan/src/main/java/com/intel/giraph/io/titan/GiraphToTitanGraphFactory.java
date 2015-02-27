@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.giraph.io.titan;
 
 import org.apache.commons.configuration.BaseConfiguration;
@@ -27,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BATCH_LOADING;
 
 /**
@@ -44,56 +46,36 @@ public class GiraphToTitanGraphFactory {
     /**
      * generateTitanConfiguration from Giraph configuration
      *
-     * @param config : Giraph configuration
+     * @param hadoopConfig : Giraph configuration
      * @param prefix : prefix to remove for Titan
      * @return BaseConfiguration
      */
-    public static BaseConfiguration generateTitanConfiguration(final Configuration config, final String prefix) {
+    public static BaseConfiguration createTitanBaseConfiguration(Configuration hadoopConfig, String prefix) {
 
-        final BaseConfiguration titanconfig = new BaseConfiguration();
-        final Iterator<Map.Entry<String, String>> itty = config.iterator();
+        BaseConfiguration titanConfig = new BaseConfiguration();
+        Iterator<Map.Entry<String, String>> itty = hadoopConfig.iterator();
+
         while (itty.hasNext()) {
-            final Map.Entry<String, String> entry = itty.next();
-            final String key = entry.getKey();
-            final String value = entry.getValue();
+            Map.Entry<String, String> entry = itty.next();
+            String key = entry.getKey();
+            String value = entry.getValue();
 
             if (key.startsWith(prefix)) {
-                titanconfig.setProperty(key.substring(prefix.length() + 1), value);
+                titanConfig.setProperty(key.substring(prefix.length() + 1), value);
             }
-
-            //make sure batch-loading is OFF for read
-            final String key1 = GIRAPH_TITAN_STORAGE_BATCH_LOADING.getKey();
-            titanconfig.setProperty(key1.substring(prefix.length() + 1), "false");
         }
-        return titanconfig;
+        return titanConfig;
     }
 
 
-    /**
-     * generateTitanWriteConfiguration from Giraph configuration
-     * enable batch-loading for write
-     *
-     * @param config : Giraph configuration
-     * @param prefix : prefix to remove for Titan
-     * @return BaseConfiguration
-     */
-    public static BaseConfiguration generateTitanWriteConfiguration(final Configuration config, final String prefix) {
-
-        final BaseConfiguration titanconfig = new BaseConfiguration();
-        final Iterator<Map.Entry<String, String>> itty = config.iterator();
-        while (itty.hasNext()) {
-            final Map.Entry<String, String> entry = itty.next();
-            final String key = entry.getKey();
-            final String value = entry.getValue();
-
-            if (key.startsWith(prefix)) {
-                titanconfig.setProperty(key.substring(prefix.length() + 1), value);
-            }
-            //make sure batch-loading is ON for write
-            final String key1 = GIRAPH_TITAN_STORAGE_BATCH_LOADING.getKey();
-            final String value1 =  GIRAPH_TITAN_STORAGE_BATCH_LOADING.getDefaultValue();
-            titanconfig.setProperty(key1.substring(prefix.length() + 1), value1);
+    public static void addFaunusInputConfiguration(Configuration hadoopConfig) {
+        BaseConfiguration titanConfig = createTitanBaseConfiguration(hadoopConfig, GIRAPH_TITAN.get(hadoopConfig));
+        Iterator keys = titanConfig.getKeys();
+        String prefix = "titan.hadoop.input.conf.";
+        while (keys.hasNext())
+        {
+            String key = (String) keys.next();
+            hadoopConfig.set(prefix + key, titanConfig.getString(key));
         }
-        return titanconfig;
     }
 }

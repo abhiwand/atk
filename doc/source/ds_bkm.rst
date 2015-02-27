@@ -5,35 +5,6 @@ Best Known Methods (User)
 .. contents:: Table of Contents
     :local:
 
--------------------------
-Configuration information
--------------------------
-
-Partitioning
-============
-
-Rules of thumb:
-    | Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
-    | Lower bound: at least 2x number of cores in your cluster
-    | Too few partitions results in:
-    |    Less concurrency
-    |    More susceptible to data skew
-    |    Increased memory pressure
-    | 
-    |   Upper bound: ensure your tasks take at least 100ms (if they are going faster,
-        then you are probably spending more time scheduling tasks than executing them)
-    |   Too many partitions results in:
-    |       Time wasted spent scheduling
-    |       If you choose a number way too high then more time will be spent scheduling than executing
-            10,000 would be way too big for a 4 node cluster
-
-.. ifconfig:: internal_docs
-
-    Notes:
-        |   Graph builder could not complete 1GB Netflix graph with less than 60 partitions - about 90 was optimal
-            (larger needed for large data)
-        |   Graph builder ran into issues with partition size larger than 2000 on 4 node cluster with larger data sizes
-
 ------
 Python
 ------
@@ -46,6 +17,7 @@ Ping the server::
     >>> import intelanalytics as ia
     >>> ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
+    >>> ia.connect()
 
 View and edit the server connection::
 
@@ -78,14 +50,26 @@ Reset configuration back to defaults::
 Errors
 ======
 
-By default the toolkit does not print the full stack trace when exceptions occur.  To see the full python stack trace of the last (i.e. most recent) exception::
+By default the toolkit does not print the full stack trace when exceptions occur.  To see the full Python stack trace of the last (i.e. most recent) exception::
 
-    >>> print ia.errors.last
+    ia.errors.last
 
-To enable always printing the full python stack trace, set the 'show_details' property::
+To enable always printing the full Python stack trace, set the 'show_details' property::
 
-    >>> ia.errors.show_details = True
+    import intelanalytics as ia
+     
+    # show full stack traces
+    ia.errors.show_details = True
+     
+    ia.connect()
+     
+    # … the rest of your script …
 
+If you enable this setting at the top of your script you get better error
+messages.
+The longer error messages are really helpful in bug reports, emails about
+issues, etc.
+ 
 Tab Completion
 ==============
 
@@ -138,31 +122,20 @@ Note:
 Spark
 -----
 
-Spark Bug
-=========
-
-When implementing a plugin, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
-Instead, use the less efficient *sortByKey* function.
-The Spark *top* function has a bug filed against it when using Kryo serializer.
-This has been fixed in Spark 1.1.0.
-There is a known work-around, but there are issues implementing it in our plugin architecture.
-See https://issues.apache.org/jira/browse/SPARK-2306.
-
-
 Resolving disk full issue while running Spark jobs
 ==================================================
 
 If you are using a Red Hat cluster or an old CentOS cluster, due to the way the /tmp file system is setup, 
 you might see that while running spark jobs, your /tmp drive becomes full and causes the jobs to fail.
 
-This is because Spark and other CDH services, by default use /tmp as the temporary location to store files required during 
+This is because Spark and other :abbr:`CDH (Cloudera Hadoop)` services, by default use /tmp as the temporary location to store files required during 
 run time including but not limited to shuffle data.
 
 In order to resolve this, follow these instructions:
 
 1)  Stop the Intelanalytics service
 
-#)  From CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
+#)  From :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
 
 #)  Now run the following steps on each node:
 
@@ -190,7 +163,7 @@ In order to resolve this, follow these instructions:
     #)  Reboot the machine
 
 
-#)  After all the nodes are rebooted, from CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
+#)  After all the nodes are rebooted, from :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
 
 Spark space concerns
 ====================
@@ -204,10 +177,6 @@ These can use up a bit of space eventually (over 140MB per command).
 References
 ----------
 
-Spark Docs
-    | http://spark.apache.org/docs/0.9.0/configuration.html
-    | http://spark.apache.org/docs/0.9.0/tuning.html
+`Spark Docs <https://spark.apache.org/documentation.html>`__
 
-Nice thread on how Shuffle works in Spark,
-    http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
 

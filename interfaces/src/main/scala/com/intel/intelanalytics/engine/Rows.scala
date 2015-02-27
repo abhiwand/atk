@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,6 +26,10 @@ package com.intel.intelanalytics.engine
 import com.intel.intelanalytics.domain.schema.Schema
 
 object Rows {
+
+  /**
+   * NOTE: we have both Row and Spark sql.Row in our codebase, it can be confusing.
+   */
   type Row = Array[Any]
 
   //TODO: Can we constrain this better?
@@ -36,4 +40,3 @@ object Rows {
   }
 
 }
-

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import org.mockito.Mockito._
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
@@ -32,8 +33,9 @@ import scala.concurrent.Future
 class CommandServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
+  implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("commands")).thenReturn(provide(userPrincipal))
+  when(commonDirectives.apply("commands")).thenReturn(provide(call))
 
   "CommandService" should "give an empty set when there are no results" in {
 

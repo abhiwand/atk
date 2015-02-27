@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,13 +25,15 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import spray.can.Http
+import spray.http._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{ Archive }
+import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await
@@ -42,7 +44,17 @@ import scala.reflect.ClassTag
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Archive with EventLogging {
+class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging {
+
+  EventLogging.raw = true
+  info("API server setting log adapter from configuration")
+
+  EventLogging.raw = configuration.getBoolean("intel.analytics.api.logging.raw")
+  info("API server set log adapter from configuration")
+
+  EventLogging.profiling = configuration.getBoolean("intel.analytics.api.logging.profile")
+  info(s"API server profiling: ${EventLogging.profiling}")
 
   //Direct subsequent archive messages to the normal log
   Archive.logger = s => info(s)
@@ -57,7 +69,7 @@ class ApiServiceApplication extends Archive with EventLogging {
    * Main entry point to start the API Service Application
    */
   override def start() = {
-    Archive.logger = (s: String) => debug(s)
+    implicit val call = Call(null)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -65,7 +77,7 @@ class ApiServiceApplication extends Archive with EventLogging {
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
-  private def initializeDependencies(): ApiService = {
+  private def initializeDependencies()(implicit invocation: Invocation): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
@@ -80,10 +92,11 @@ class ApiServiceApplication extends Archive with EventLogging {
 
     // setup V1 Services
     val commandService = new v1.CommandService(commonDirectives, engine)
-    val dataFrameService = new v1.DataFrameService(commonDirectives, engine)
+    val dataFrameService = new v1.FrameService(commonDirectives, engine)
     val graphService = new v1.GraphService(commonDirectives, engine)
+    val modelService = new v1.ModelService(commonDirectives, engine)
     val queryService = new v1.QueryService(commonDirectives, engine)
-    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, queryService)
+    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, modelService, queryService)
 
     // setup main entry point
     new ApiService(commonDirectives, apiV1Service)

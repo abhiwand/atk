@@ -54,7 +54,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -108,16 +108,20 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <buildtype>test</buildtype>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
-        <dep.gremlin.version>2.4.0</dep.gremlin.version>
-        <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
-        <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
-
+        <!-- START TITAN -->
+        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
+        <dep.reflections>0.9.9-RC1</dep.reflections>
+        <!-- END TITAN -->
+	<dep.cdh.version>cdh5.3.1</dep.cdh.version>
+	<dep.spark.version>1.2.0-${dep.cdh.version}</dep.spark.version>
+	<dep.spark.yarn.version>1.2.0-${dep.cdh.version}</dep.spark.yarn.version>
         <dep.mahout.version>0.9</dep.mahout.version>
-
-        <dep.spark.version>1.0.0-cdh5.1.2</dep.spark.version>
-
+        <dep.parquet.version>1.5.0-${dep.cdh.version}</dep.parquet.version>
+        <dep.hbase.version>0.98.6-${dep.cdh.version}</dep.hbase.version>
+        <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
+        <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -125,8 +129,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
-        <scala.long.version>2.10.3</scala.long.version>
+        <scala.long.version>2.10.4</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
+        <scalatest.version>2.1.6</scalatest.version>
 
         <akka.version>2.3.2</akka.version>
 
@@ -158,6 +163,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
+                <module>api-doc</module>
+                <module>event-api</module>
                 <module>event</module>
                 <module>ispark-deps</module>
                 <module>testutils</module>
@@ -170,8 +177,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine-spark</module>
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
-                <!--<module>imahout</module>
-                <module>imllib</module>-->
+                <!--<module>imahout</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -184,6 +190,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>event-api</module>
                 <module>event</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
@@ -203,6 +210,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <!--<module>ititan</module>-->
+                <module>api-doc</module>
+                <module>event-api</module>
                 <module>event</module>
                 <!--module>python</module-->
                 <module>ispark-deps</module>
@@ -220,7 +229,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
-                <module>imllib</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -234,6 +242,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <module>python</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>integration-tests</module>
             </modules>
         </profile>
 
@@ -329,6 +349,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <filereports>WDF TestSuite.txt</filereports>
                                 <parallel>false</parallel>
                                 <stdout>FTD</stdout>
+                                <argLine>-Xmx512m -XX:PermSize=256m</argLine>
                             </configuration>
                             <executions>
                                 <execution>
@@ -355,7 +376,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <dependency>
                         <groupId>org.scalatest</groupId>
                         <artifactId>scalatest_${scala.short.version}</artifactId>
-                        <version>2.1.6</version>
+                        <version>${scalatest.version}</version>
                         <scope>test</scope>
                     </dependency>
                 </dependencies>
@@ -363,7 +384,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependencies>
                 <dependency>
                     <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest_2.10</artifactId>
+                    <artifactId>scalatest_${scala.short.version}</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -620,10 +641,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scalariform-maven-plugin</artifactId>
             </plugin>
 
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -662,6 +683,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <dependencyManagement>
         <dependencies>
             <!--START bda dependencies-->
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>event-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>event</artifactId>
@@ -711,6 +737,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
+                <artifactId>api-doc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -744,17 +775,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>igiraph</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>imlib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <!--END bda dependencies-->
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>ititan-core</artifactId>
-                <version>${dep.aurelius.version}</version>
+                <version>${dep.ititan.version}</version>
+                <!--<exclusions>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions> -->
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -763,19 +795,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
-                <artifactId>ititan-core</artifactId>
+                <artifactId>titan-hadoop-2</artifactId>
                 <version>${dep.aurelius.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro</artifactId>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.thinkaurelius.faunus</groupId>
-                <artifactId>faunus</artifactId>
-                <version>${dep.aurelius.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -786,6 +813,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hbase</artifactId>
                 <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -801,34 +834,54 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.cassandra.deps</groupId>
                         <artifactId>avro</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.servicemix.bundles</groupId>
+                        <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
+                    </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${dep.reflections}</version>
             </dependency>
             <!--ENDititan-->
 
-            <!--STARTgremlin-groovy -->
+            <!--gremlin-groovy -->
             <dependency>
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
-                <version>${dep.gremlin.version}</version>
+                <version>${dep.tinkerpop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.fusesource.jansi</groupId>
+                        <artifactId>jansi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-            <!--ENDgremlin-groovy -->
             <!--org.scala-->
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
-                <version>2.10.3</version>
+                <version>${scala.long.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-reflect</artifactId>
-                <version>2.10.3</version>
+                <version>${scala.long.version}</version>
             </dependency>
 
             <!--org.apache.zookeeper-->
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
-                <version>3.3.3</version>
+                <version>${dep.zookeeper.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
@@ -840,11 +893,27 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-hdfs</artifactId>
                 <version>${dep.hadoop2.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet.jsp</groupId>
+                        <artifactId>jsp-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-mapreduce-client-app</artifactId>
                 <version>${dep.hadoop2.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--<dependency>
                 don't use hadoop-core you will break everything. We use yarn you shouldn't need the
@@ -911,10 +980,27 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.objenesis</groupId>
+                        <artifactId>objenesis</artifactId>
+                    </exclusion>
+
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-yarn_${scala.short.version}</artifactId>
+                <version>${dep.spark.yarn.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-mllib_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-graphx_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
             </dependency>
             <!--org.apache.mahout-->
@@ -984,6 +1070,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -995,12 +1085,55 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet.jsp</groupId>
+                        <artifactId>jsp-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-api-2.1</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-testing-util</artifactId>
+                <version>${dep.hbase.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--commons-->
@@ -1023,11 +1156,31 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
                 <version>1.6</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -1066,12 +1219,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.7.5</version>
             </dependency>
-
             <!--io.spray-->
             <dependency>
                 <groupId>io.spray</groupId>
                 <artifactId>spray-json_${scala.short.version}</artifactId>
-                <version>1.2.5</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>
@@ -1080,12 +1232,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>
-                <artifactId>spray-routing</artifactId>
+                <artifactId>spray-routing_${scala.short.version}</artifactId>
                 <version>1.3.1</version>
             </dependency>
             <dependency>
                 <groupId>io.spray</groupId>
-                <artifactId>spray-testkit</artifactId>
+                <artifactId>spray-testkit_${scala.short.version}</artifactId>
                 <version>1.3.1</version>
                 <scope>test</scope>
             </dependency>
@@ -1118,6 +1270,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <scope>test</scope>
             </dependency>
 
+            <!-- parquet -->
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-hadoop</artifactId>
+                <version>${dep.parquet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>parquet-column</artifactId>
+                <version>${dep.parquet.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
@@ -1143,12 +1306,26 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.tinkerpop.blueprints</groupId>
                 <artifactId>blueprints-core</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-json-org</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.tinkerpop</groupId>
                 <artifactId>frames</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>
@@ -1219,6 +1396,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>20090211</version>
+            </dependency>
+            <dependency>
+                <groupId>com.assembla.scala-incubator</groupId>
+                <artifactId>graph-core_${scala.short.version}</artifactId>
+                <version>1.9.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.chuusai</groupId>
+                <artifactId>shapeless_${scala.long.version}</artifactId>
+                <version>2.0.0</version>
             </dependency>
 
             <!--test scope-->

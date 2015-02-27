@@ -1,3 +1,26 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2015 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -68,13 +91,14 @@ import sys
 import cloudpickle
 
 
-__all__ = ["PickleSerializer", "MarshalSerializer"]
+__all__ = ["PickleSerializer", "MarshalSerializer", "UTF8Deserializer"]
 
 
 class SpecialLengths(object):
     END_OF_DATA_SECTION = -1
     PYTHON_EXCEPTION_THROWN = -2
     TIMING_DATA = -3
+    END_OF_STREAM = -4
 
 
 class Serializer(object):
@@ -107,6 +131,11 @@ class Serializer(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __repr__(self):
+        return "%s()" % self.__class__.__name__
+
+    def __hash__(self):
+        return hash(str(self))
 
 class FramedSerializer(Serializer):
     """
@@ -132,6 +161,8 @@ class FramedSerializer(Serializer):
 
     def _write_with_length(self, obj, stream):
         serialized = self.dumps(obj)
+        if len(serialized) > (1 << 31):
+            raise ValueError("can not serialize object larger than 2G")
         write_int(len(serialized), stream)
         if self._only_write_strings:
             stream.write(str(serialized))
@@ -140,6 +171,8 @@ class FramedSerializer(Serializer):
 
     def _read_with_length(self, stream):
         length = read_int(stream)
+        if length == SpecialLengths.END_OF_DATA_SECTION:
+            raise EOFError
         obj = stream.read(length)
         if obj == "":
             raise EOFError
@@ -166,6 +199,7 @@ class BatchedSerializer(Serializer):
     """
 
     UNLIMITED_BATCH_SIZE = -1
+    UNKNOWN_BATCH_SIZE = 0
 
     def __init__(self, serializer, batchSize=UNLIMITED_BATCH_SIZE):
         self.serializer = serializer
@@ -197,12 +231,15 @@ class BatchedSerializer(Serializer):
         return self.serializer.load_stream(stream)
 
     def __eq__(self, other):
-        return isinstance(other, BatchedSerializer) and \
-               other.serializer == self.serializer
+        return (isinstance(other, BatchedSerializer) and
+                other.serializer == self.serializer and other.batchSize == self.batchSize)
 
+    def __repr__(self):
+        return "BatchedSerializer(%s, %d)" % (str(self.serializer), self.batchSize)
+    """
     def __str__(self):
         return "BatchedSerializer<%s>" % str(self.serializer)
-
+    """
 
 class CartesianDeserializer(FramedSerializer):
     """
@@ -229,13 +266,17 @@ class CartesianDeserializer(FramedSerializer):
                 yield pair
 
     def __eq__(self, other):
-        return isinstance(other, CartesianDeserializer) and \
-               self.key_ser == other.key_ser and self.val_ser == other.val_ser
+        return (isinstance(other, CartesianDeserializer) and
+                self.key_ser == other.key_ser and self.val_ser == other.val_ser)
 
+    def __repr__(self):
+        return "CartesianDeserializer(%s, %s)" % \
+               (str(self.key_ser), str(self.val_ser))
+    """
     def __str__(self):
         return "CartesianDeserializer<%s, %s>" % \
                (str(self.key_ser), str(self.val_ser))
-
+    """
 
 class PairDeserializer(CartesianDeserializer):
     """
@@ -248,22 +289,27 @@ class PairDeserializer(CartesianDeserializer):
 
     def load_stream(self, stream):
         for (keys, vals) in self.prepare_keys_values(stream):
+            if len(keys) != len(vals):
+                raise ValueError("Can not deserialize RDD with different number of items"
+                                 " in pair: (%d, %d)" % (len(keys), len(vals)))
             for pair in izip(keys, vals):
                 yield pair
 
     def __eq__(self, other):
-        return isinstance(other, PairDeserializer) and \
-               self.key_ser == other.key_ser and self.val_ser == other.val_ser
+        return (isinstance(other, PairDeserializer) and
+                self.key_ser == other.key_ser and self.val_ser == other.val_ser)
 
-    def __str__(self):
-        return "PairDeserializer<%s, %s>" % \
-               (str(self.key_ser), str(self.val_ser))
+    def __repr__(self):
+        return "PairDeserializer(%s, %s)" % (str(self.key_ser), str(self.val_ser))
 
 
 class NoOpSerializer(FramedSerializer):
 
-    def loads(self, obj): return obj
-    def dumps(self, obj): return obj
+    def loads(self, obj):
+        return obj
+
+    def dumps(self, obj):
+        return obj
 
 
 class PickleSerializer(FramedSerializer):
@@ -275,13 +321,16 @@ class PickleSerializer(FramedSerializer):
     This serializer supports nearly any Python object, but may
     not be as fast as more specialized serializers.
     """
+    def dumps(self, obj):
+        return cPickle.dumps(obj, 2)
 
-    def dumps(self, obj): return cPickle.dumps(obj, 2)
-    loads = cPickle.loads
+    def loads(self, obj):
+        return cPickle.loads(obj)
 
 class CloudPickleSerializer(PickleSerializer):
 
-    def dumps(self, obj): return cloudpickle.dumps(obj, 2)
+    def dumps(self, obj):
+        return cloudpickle.dumps(obj, 2)
 
 
 class MarshalSerializer(FramedSerializer):
@@ -293,27 +342,37 @@ class MarshalSerializer(FramedSerializer):
     This serializer is faster than PickleSerializer but supports fewer datatypes.
     """
 
-    dumps = marshal.dumps
-    loads = marshal.loads
+    def dumps(self, obj):
+        return marshal.dumps(obj)
+
+    def loads(self, obj):
+        return marshal.loads(obj)
 
 
 class UTF8Deserializer(Serializer):
+
     """
     Deserializes streams written by String.getBytes.
     """
 
+    def __init__(self, use_unicode=False):
+        self.use_unicode = use_unicode
+
     def loads(self, stream):
         length = read_int(stream)
-        return stream.read(length).decode('utf8')
+        if length == SpecialLengths.END_OF_DATA_SECTION:
+            raise EOFError
+        s = stream.read(length)
+        return s.decode("utf-8") if self.use_unicode else s
 
     def load_stream(self, stream):
-        while True:
-            try:
+        try:
+            while True:
                 yield self.loads(stream)
-            except struct.error:
-                return
-            except EOFError:
-                return
+        except struct.error:
+            return
+        except EOFError:
+            return
 
 
 def read_long(stream):

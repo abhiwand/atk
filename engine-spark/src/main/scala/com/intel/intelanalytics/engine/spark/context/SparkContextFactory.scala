@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,30 +23,96 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import com.typesafe.config.Config
-import org.apache.spark.{ SparkConf, SparkContext }
-import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.event.EventLogging
+import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
+import org.apache.commons.lang3.StringUtils
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
- * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
+ * Class Factory for creating spark contexts
  */
-class SparkContextFactory extends EventLogging {
+trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
 
-  def createSparkContext(configuration: Config, appName: String): SparkContext = withContext("engine.sparkContextFactory") {
+  /**
+   * Creates a new sparkContext with the specified kryo classes
+   */
+  def getContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = withContext("engine.SparkContextFactory") {
+    if (SparkEngineConfig.reuseSparkContext) {
+      SparkContextFactory.sharedSparkContext()
+    }
+    else {
+      createContext(description, kryoRegistrator)
+    }
+  }
 
-    val jarPath = Boot.getJar("engine-spark")
+  /**
+   * Creates a new sparkContext
+   */
+  def context(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext =
+    getContext(description, kryoRegistrator)
+
+  private def createContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = {
+    val userName = user.user.apiKey.getOrElse(
+      throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated"))
     val sparkConf = new SparkConf()
       .setMaster(SparkEngineConfig.sparkMaster)
       .setSparkHome(SparkEngineConfig.sparkHome)
-      .setAppName(appName)
-      .setJars(Seq(jarPath.getPath))
+      .setAppName(s"intel-analytics:$userName:$description")
 
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
+    if (!SparkEngineConfig.disableKryo && kryoRegistrator.isDefined) {
+      sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
+    }
+
+    KerberosAuthenticator.loginWithKeyTab()
+
     info("SparkConf settings: " + sparkConf.toDebugString)
 
-    new SparkContext(sparkConf)
+    val sparkContext = new SparkContext(sparkConf)
+    sparkContext.addJar(jarPath("engine-spark"))
+    sparkContext
+  }
+
+  /**
+   * Path for jars adding local: prefix or not depending on configuration for use in SparkContext
+   *
+   * "local:/some/path" means the jar is installed on every worker node.
+   *
+   * @param archive e.g. "graphon"
+   * @return "local:/usr/lib/intelanalytics/lib/graphon.jar" or similar
+   */
+  def jarPath(archive: String): String = {
+    if (SparkEngineConfig.sparkAppJarsLocal) {
+      "local:" + StringUtils.removeStart(Archive.getJar(archive).getPath, "file:")
+    }
+    else {
+      Archive.getJar(archive).toString
+    }
+  }
+
+}
+
+object SparkContextFactory extends SparkContextFactory {
+
+  // for integration tests only
+  private var sc: SparkContext = null
+
+  /**
+   * This shared SparkContext is for integration tests and regression tests only
+   * NOTE: this should break the progress bar.
+   */
+  private def sharedSparkContext()(implicit invocation: Invocation): SparkContext = {
+    this.synchronized {
+      if (sc == null) {
+        sc = createContext("reused-spark-context", None)
+      }
+    }
+    sc
   }
 }

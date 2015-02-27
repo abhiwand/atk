@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,20 +20,21 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Connection to the Intel Analytics REST Server
 """
+import os
 import sys
 import json
-import requests
 import logging
+
+import requests
+
 logger = logging.getLogger(__name__)
 
-__all__ = ['Server', 'HttpMethods']
-
 import intelanalytics.rest.config as config
-
-_default = object()
+from intelanalytics.meta.api import error_if_api_already_loaded, _Api
 
 
 class Server(object):
@@ -42,6 +43,9 @@ class Server(object):
 
     Defaults from rest/config.py are used but they can be overridden by setting the values
     in this class.
+
+    If environment variable INTELANALYTICS_HOST is set, it will use for the host
+    If environment variable INTELANALYTICS_PORT is set, it will use for the port
 
     host : str
         host name
@@ -64,11 +68,61 @@ class Server(object):
     """
 
     def __init__(self):
-        self.host = config.server_defaults.host
-        self.port = config.server_defaults.port
-        self.scheme = config.server_defaults.scheme
-        self.version = config.server_defaults.version
-        self.headers = config.server_defaults.headers
+        self._host = os.getenv('INTELANALYTICS_HOST', config.server_defaults.host)
+        self._port = os.getenv('INTELANALYTICS_PORT', config.server_defaults.port)
+        self._scheme = config.server_defaults.scheme
+        self._version = config.server_defaults.version
+        self._headers = config.server_defaults.headers
+
+    @property
+    def host(self):
+        """server host name"""
+        return self._host
+
+    @host.setter
+    @error_if_api_already_loaded
+    def host(self, value):
+        self._host = value
+
+    @property
+    def port(self):
+        """server port number - can be None for no specification"""
+        return self._port
+
+    @port.setter
+    @error_if_api_already_loaded
+    def port(self, value):
+        self._port = value
+
+    @property
+    def scheme(self):
+        """connection scheme, like http or https"""
+        return self._scheme
+
+    @scheme.setter
+    @error_if_api_already_loaded
+    def scheme(self, value):
+        self._scheme = value
+
+    @property
+    def version(self):
+        """API version to connect to"""
+        return self._version
+
+    @version.setter
+    @error_if_api_already_loaded
+    def version(self, value):
+        self._version = value
+
+    @property
+    def headers(self):
+        """scheme headers"""
+        return self._headers
+
+    @headers.setter
+    @error_if_api_already_loaded
+    def headers(self, value):
+        self._headers = value
 
     def reset(self):
         """Restores the server configuration to defaults"""
@@ -79,11 +133,16 @@ class Server(object):
                % (self.host, self.port, self.scheme, self.version, self.headers)
 
     def __str__(self):
-        return """host:    %s
-port:    %s
-scheme:  %s
-version: %s
-headers: %s""" % (self.host, self.port, self.scheme, self.version, self.headers)
+        return """
+------------------------------------------------------------------------------
+             Configuration to reach IntelAnalytics Server
+
+host:     %s
+port:     %s
+scheme:   %s
+version:  %s
+------------------------------------------------------------------------------
+""" % (self.host, self.port, self.scheme, self.version)
 
     def _get_scheme_and_authority(self):
         uri = "%s://%s" % (self.scheme, self.host)
@@ -110,9 +169,26 @@ headers: %s""" % (self.host, self.port, self.scheme, self.version, self.headers)
                 raise Exception("Invalid response payload: " + r.text)
             print "Successful ping to Intel Analytics at " + uri
         except Exception as e:
-            message = "Failed to ping Intel Analytics at %s\n%s\n%s" % (uri, e, str(self))
+            message = "Failed to ping Intel Analytics at %s\n%s" % (uri, e)
             logger.error(message)
             raise IOError(message)
+
+    @staticmethod
+    def connect():
+        """
+        Connect to the intelanalytics server.
+
+        Calling this method is required before invoking any server activity.  After the client has
+        connected to the server, the server config cannot be changed or refreshed.  User must restart
+        Python in order to change connection info.
+
+        Subsequent calls to this method invoke no action.
+        """
+        if _Api.is_loaded():
+            print "Already connected to intelanalytics server."
+        else:
+            _Api.load_api()
+            print "Connected to intelanalytics server."
 
 
 class HttpMethods(object):
@@ -128,19 +204,19 @@ class HttpMethods(object):
     @staticmethod
     def _check_response(response, ignore=None):
 
-        HttpMethods._check_response_for_build_id(response)
-
-        try:
-            response.raise_for_status()
-        except Exception as e:
-            if not ignore or response.status_code not in ignore:
-                raise requests.exceptions.HTTPError(str(e) + " "+ response.text)
-            else:
-                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}". \
-                    format(ignore[response.status_code], e)
-                logger.warn(m)
-                sys.stderr.write(m)
-                sys.stderr.flush()
+        if not ignore or response.status_code not in ignore:
+            HttpMethods._check_response_for_build_id(response)
+            #Semantic errors (such as server validation errors) come back as 202,
+            #which the requests module doesn't consider an error. Indeed it is not
+            #an HTTP protocol error, but it is an error as far as the user is concerned.
+            if 400 <= response.status_code < 600 or response.status_code == 202:
+                raise RuntimeError(response.text)
+        else:
+            m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}". \
+                format(ignore[response.status_code], response.text)
+            logger.warn(m)
+            sys.stderr.write(m)
+            sys.stderr.flush()
 
     @staticmethod
     def _check_response_for_build_id(response):

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -37,7 +37,7 @@ class JsonSchemaTest extends FlatSpec with Matchers {
     "string" -> new StringSchema(),
     "array" -> ArraySchema(),
     "option" -> JsonSchema.int,
-    "frame" -> StringSchema(format = Some("ia/dataframe"), self = Some(true)),
+    "frame" -> StringSchema(format = Some("ia/frame"), self = Some(true)),
     "other_frame" -> StringSchema(format = Some("ia/graph"))
   )),
     required = Some(Array("int", "long", "string", "array", "frame", "other_frame")))

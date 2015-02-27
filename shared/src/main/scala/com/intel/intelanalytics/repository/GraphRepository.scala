@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,16 +23,27 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
 
 /**
  * Repository for graphs
  */
-trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, GraphEntity] with NameableRepository[Session, GraphEntity] with GarbageCollectableRepository[Session, GraphEntity] {
   /**
    * Return all the graphs
    * @param session current session
    * @return all the graphs
    */
-  def scanAll()(implicit session: Session): Seq[Graph]
+  def scanAll()(implicit session: Session): Seq[GraphEntity]
+
+  def updateIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit
+
+  /**
+   * Returns the liveness of the graph. If it is named or has named frames then it is a live graph.
+   * @param id id of graph in question
+   * @return true if graph is live, false if it is not
+   */
+  def isLive(id: GraphEntity)(implicit session: Session): Boolean
+
 }

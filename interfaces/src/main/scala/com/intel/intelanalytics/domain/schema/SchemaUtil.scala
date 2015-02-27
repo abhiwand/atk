@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,10 @@ package com.intel.intelanalytics.domain.schema
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
+/**
+ * TODO: we should move this implementation to Schema class or be using implementation that is already there
+ */
+@deprecated("use Schema instead")
 object SchemaUtil {
 
   // TODO: remove hard coded strings
@@ -32,38 +36,7 @@ object SchemaUtil {
   /**
    * Schema for Error Frames
    */
-  val ErrorFrameSchema = new Schema(List(("original_row", DataTypes.str), ("error_message", DataTypes.str)))
-
-  /**
-   * Resolve naming conflicts when both left and right side of join operation have same column names
-   * @param leftColumns columns for the left side of join operation
-   * @param rightColumns columns for the right side of join operation
-   * @return
-   */
-  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): List[(String, DataType)] = {
-
-    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
-
-      var leftColumnNames = left.map(r => r._1)
-
-      left.map(r =>
-        if (right.map(i => i._1).contains(r._1)) {
-          var name = r._1 + "_" + appendLetter
-          while (leftColumnNames.contains(name)) {
-            name = name + "_" + appendLetter
-          }
-          leftColumnNames = leftColumnNames ++ List(name)
-          (name, r._2)
-        }
-        else
-          r)
-    }
-
-    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")
-    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "R")
-
-    left ++ right
-  }
+  val ErrorFrameSchema = new FrameSchema(List(Column("original_row", DataTypes.str), Column("error_message", DataTypes.str)))
 
   /**
    * Convert a row of values from one schema to another while maintaining the order specified in newColumns.
@@ -76,8 +49,8 @@ object SchemaUtil {
    */
   def convertSchema(oldSchema: Schema, newSchema: Schema, row: Array[_ <: Any]): Array[Any] = {
 
-    val oldNames = oldSchema.columns.map(_._1).toArray
-    newSchema.columns.toArray.map {
+    val oldNames = oldSchema.columnTuples.map(_._1).toArray
+    newSchema.columnTuples.toArray.map {
       case ((name, columnType)) => {
         val index = oldNames.indexOf(name)
         if (index != -1) {
@@ -93,24 +66,28 @@ object SchemaUtil {
     }
   }
 
+  // TODO: use implementation in Schema
+
   /**
    * Merge schema for the purpose of appending two datasets.
    * @param originalSchema Schema of the original DataFrame
    * @return a single Schema with columns from both using the ordering of the originalSchema
    */
+  @deprecated("use union() implementation in Schema")
   def mergeSchema(originalSchema: Schema, appendedSchema: Schema): Schema = {
     if (originalSchema == appendedSchema)
       originalSchema
     else {
-      val appendedColumns = originalSchema.columns ++ appendedSchema.columns
+      val appendedColumns = originalSchema.columnTuples ++ appendedSchema.columnTuples
       val columnOrdering: List[String] = appendedColumns.map { case (name, dataTypes) => name }.distinct
       val groupedColumns = appendedColumns.groupBy { case (name, dataTypes) => name }
 
       val newColumns = columnOrdering.map(key => {
-        (key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
+        Column(key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
       })
 
-      Schema(newColumns)
+      originalSchema.copy(newColumns)
     }
   }
+
 }

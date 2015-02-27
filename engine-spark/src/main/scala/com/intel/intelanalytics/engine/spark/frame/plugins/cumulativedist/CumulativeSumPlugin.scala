@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,9 +24,10 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CumulativeSum, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -39,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Compute a cumulative sum
  */
-class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
+class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,68 +48,9 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/cumulative_sum"
+  override def name: String = "frame/cumulative_sum"
 
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Computes a cumulative sum.",
-    extendedSummary = Some("""
-        Compute a cumulative sum.
-
-        A cumulative sum is computed by sequentially stepping through the column values and keeping track of the current
-        cumulative sum for each value.
-
-        Parameters
-        ----------
-        sample_col : string
-            The name of the column from which to compute the cumulative sum
-
-        Returns
-        -------
-        BigFrame
-            A new object accessing a frame containing the original columns appended with a column containing the cumulative sums
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
-
-        Examples
-        --------
-        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
-
-             my_frame.inspect()
-
-             obs int32
-                             |---------|
-               0
-               1
-               2
-               0
-               1
-               2
-
-        The cumulative sum for column *obs* is obtained by::
-
-            cs_frame = my_frame.cumulative_sum('obs')
-
-        The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
-        *obsCumulativeSum* that contains the cumulative percent count::
-
-            cs_frame.inspect()
-
-             obs int32   obs_cumulative_sum int32
-                             |----------------------------------|
-               0                     0
-               1                     1
-               2                     3
-               0                     3
-               1                     4
-               2                     6
-
-        .. versionadded:: 0.8 """)))
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * Compute a cumulative sum
@@ -117,26 +59,25 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSum, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: CumulativeSum)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: CumulativeSumArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
     val frameId = arguments.frame.id
-    val frameMeta = frames.expectFrame(frameId)
-    val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
+    val frameEntity = frames.expectFrame(frameId)
+    val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
-    val frameSchema = frameMeta.schema
-    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+    val frameSchema = frameEntity.schema
+    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }

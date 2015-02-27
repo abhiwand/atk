@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -28,11 +28,12 @@ import spray.routing._
 /**
  * Single entry point for classes that implement the Intel Analytics V1 REST API
  */
-class ApiV1Service(val dataFrameService: DataFrameService,
+class ApiV1Service(val dataFrameService: FrameService,
                    val commandService: CommandService,
                    val graphService: GraphService,
+                   val modelService: ModelService,
                    val queryService: QueryService) extends Directives {
   def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes() ~ queryService.queryRoutes()
+    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes() ~ modelService.modelRoutes() ~ queryService.queryRoutes()
   }
 }

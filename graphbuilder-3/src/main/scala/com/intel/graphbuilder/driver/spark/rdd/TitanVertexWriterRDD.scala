@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.VertexWriter
 import com.intel.graphbuilder.write.dao.VertexDAO
@@ -43,12 +43,12 @@ import org.apache.spark.{ Partition, TaskContext }
  * @param maxVerticesPerCommit Titan performs poorly if you try to commit vertices in too large of batches.
  *                              10k seems to be a pretty we established number to use for Vertices.
  */
-class TitanVertexWriterRDD(prev: RDD[Vertex],
+class TitanVertexWriterRDD(prev: RDD[GBVertex],
                            titanConnector: TitanGraphConnector,
                            val append: Boolean = false,
                            val maxVerticesPerCommit: Long = 10000L) extends RDD[GbIdToPhysicalId](prev) {
 
-  override def getPartitions: Array[Partition] = firstParent[Vertex].partitions
+  override def getPartitions: Array[Partition] = firstParent[GBVertex].partitions
 
   /**
    * Write to Titan and produce a mapping of GbId's to Physical Id's
@@ -57,11 +57,11 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
 
     EnvironmentValidator.validateISparkDepsAvailable
 
-    val graph = titanConnector.connect()
+    val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L
-    val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v => {
+    val gbIdsToPhyiscalIds = firstParent[GBVertex].iterator(split, context).map(v => {
       val id = writer.write(v)
       count += 1
       if (count % maxVerticesPerCommit == 0) {
@@ -72,8 +72,10 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
 
     graph.commit()
 
-    context.addOnCompleteCallback(() => {
+    context.addTaskCompletionListener(context => {
       println("vertices written: " + count + " for split: " + split.index)
+      //Do not shut down graph when using cache since graph instances are automatically shutdown when
+      //no more references are held
       graph.shutdown()
     })
 

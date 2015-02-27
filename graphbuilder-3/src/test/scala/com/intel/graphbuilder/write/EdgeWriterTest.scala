@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,7 +25,7 @@ package com.intel.graphbuilder.write
 
 import org.scalatest.{ Matchers, WordSpec }
 import com.intel.graphbuilder.write.dao.EdgeDAO
-import com.intel.graphbuilder.elements.Edge
+import com.intel.graphbuilder.elements.GBEdge
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 
@@ -36,7 +36,7 @@ class EdgeWriterTest extends WordSpec with Matchers with MockitoSugar {
     "support append true" in {
       // setup mocks
       val edgeDAO = mock[EdgeDAO]
-      val edge = mock[Edge]
+      val edge = mock[GBEdge]
 
       // instantiated class under test
       val edgeWriter = new EdgeWriter(edgeDAO, append = true)
@@ -51,7 +51,7 @@ class EdgeWriterTest extends WordSpec with Matchers with MockitoSugar {
     "support append false" in {
       // setup mocks
       val edgeDAO = mock[EdgeDAO]
-      val edge = mock[Edge]
+      val edge = mock[GBEdge]
 
       // instantiate class under test
       val edgeWriter = new EdgeWriter(edgeDAO, append = false)

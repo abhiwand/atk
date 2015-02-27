@@ -1,3 +1,26 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2015 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+
 #!/usr/bin/env python
 #
 # Copyright (c) 2009-2013, Luke Maurits <luke@maurits.id.au>
@@ -887,7 +910,9 @@ class PrettyTable(object):
             value = self._unicode(("%%%sd" % self._int_format[field]) % value)
         elif isinstance(value, float) and field in self._float_format:
             value = self._unicode(("%%%sf" % self._float_format[field]) % value)
-        return self._unicode(value)
+        #This list indexing is to remove the quotes that wrap a represented unicode string
+        value = repr(self._unicode(value))[2:-1]
+        return value
 
     def _compute_widths(self, rows, options):
         if options["header"]:
@@ -1085,7 +1110,7 @@ class PrettyTable(object):
             # Enforce max widths
             lines = value.split("\n")
             new_lines = []
-            for line in lines: 
+            for line in lines:
                 if _str_block_width(line) > width:
                     line = textwrap.fill(line, width)
                 new_lines.append(line)

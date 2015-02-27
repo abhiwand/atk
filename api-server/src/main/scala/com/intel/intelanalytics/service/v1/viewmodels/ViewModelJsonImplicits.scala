@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -39,14 +39,16 @@ object ViewModelJsonImplicits extends IADefaultJsonProtocol with SprayJsonSuppor
 
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
-  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
-  implicit val getDataFrameFormat = jsonFormat7(GetDataFrame)
-  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
-  implicit val getGraphFormat = jsonFormat4(GetGraph)
+  implicit val getCommandFormat = jsonFormat9(GetCommand)
+  implicit val getDataFramesFormat = jsonFormat4(GetDataFrames)
+  implicit val getDataFrameFormat = jsonFormat8(GetDataFrame)
+  implicit val getGraphsFormat = jsonFormat4(GetGraphs)
+  implicit val getGraphFormat = jsonFormat5(GetGraph)
+  implicit val getModelFormat = jsonFormat5(GetModel)
+  implicit val getModelsFormat = jsonFormat4(GetModels)
   implicit val getQueryPageFormat = jsonFormat4(GetQueryPage)
   implicit val getQueryPagesFormat = jsonFormat2(GetQueryPages)
   implicit val getQueriesFormat = jsonFormat3(GetQueries)
-  implicit val getQueryFormat = jsonFormat7(GetQuery)
+  implicit val getQueryFormat = jsonFormat8(GetQuery)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
 }

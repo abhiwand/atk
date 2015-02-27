@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,30 @@
 
 package com.intel.intelanalytics.domain.graph
 
+import com.intel.intelanalytics.domain.StorageFormats
+import com.intel.intelanalytics.domain.frame.FrameName
+
 /**
  * Arguments for creating the metadata entry for a graph.
  * @param name The user's name for the graph.
  */
-case class GraphTemplate(name: String) {
+case class GraphTemplate(name: Option[String], storageFormat: String = StorageFormats.SeamlessGraph) {
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
 
+  if (name.isDefined) {
+    require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
+    FrameName.validate(name.get)
+  }
+
+  require(storageFormat != null, "storageFormat must not be null")
+  require(storageFormat.trim.length > 0, "storageFormat must not be empty or whitespace")
+  StorageFormats.validateGraphFormat(storageFormat)
+
+  def isSeamless: Boolean = {
+    StorageFormats.isSeamlessGraph(storageFormat)
+  }
+
+  def isTitan: Boolean = {
+    !StorageFormats.isSeamlessGraph(storageFormat)
+  }
 }

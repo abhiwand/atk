@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.schema
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 
 import scala.collection.mutable.Map
 
@@ -41,7 +41,7 @@ class InferSchemaFromData extends Serializable {
   /**
    * Add an Edge to the inferred schema.
    */
-  def add(edge: Edge): Unit = {
+  def add(edge: GBEdge): Unit = {
     addEdgeLabel(edge)
     addProperties(PropertyType.Edge, edge.properties)
   }
@@ -49,7 +49,7 @@ class InferSchemaFromData extends Serializable {
   /**
    * Add a label to the map, if it isn't already there.
    */
-  def addEdgeLabel(edge: Edge): Unit = {
+  def addEdgeLabel(edge: GBEdge): Unit = {
     if (edgeLabelDefsMap.get(edge.label).isEmpty) {
       edgeLabelDefsMap += (edge.label -> new EdgeLabelDef(edge.label))
     }
@@ -58,7 +58,7 @@ class InferSchemaFromData extends Serializable {
   /**
    * Add a Vertex to the inferred schema.
    */
-  def add(vertex: Vertex): Unit = {
+  def add(vertex: GBVertex): Unit = {
     addProperty(PropertyType.Vertex, vertex.gbId, isGbId = true)
     addProperties(PropertyType.Vertex, vertex.properties)
   }
@@ -73,7 +73,7 @@ class InferSchemaFromData extends Serializable {
   /**
    * Add a list of properties, if they aren't already present.
    */
-  private def addProperties(propertyType: PropertyType.Value, properties: Seq[Property]): Unit = {
+  private def addProperties(propertyType: PropertyType.Value, properties: Set[Property]): Unit = {
     properties.foreach(prop => addProperty(propertyType, prop, isGbId = false))
 
   }

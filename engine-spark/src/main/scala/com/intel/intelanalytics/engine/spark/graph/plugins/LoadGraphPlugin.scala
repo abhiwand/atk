@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,19 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
+import com.intel.intelanalytics.domain.graph.{ LoadGraphArgs, GraphEntity }
+import com.intel.intelanalytics.engine.Rows
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.Status
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -37,28 +44,21 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
  */
-class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
+class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/sampling/vertex_sample
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph/load"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
+  override def name: String = "graph:titan/load"
 
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: GraphLoad) = 2
+  override def numberOfJobs(arguments: LoadGraphArgs)(implicit invocation: Invocation) = 3
 
   /**
    * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
@@ -67,18 +67,33 @@ class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: GraphLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
+  override def execute(arguments: LoadGraphArgs)(implicit invocation: Invocation): GraphEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val graphs = invocation.engine.graphs
-    val frames = invocation.engine.frames
+    val graphs = engine.graphs
+    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
 
     // validate arguments
-    arguments.frame_rules.foreach(frule => frames.expectFrame(frule.frame))
+    arguments.frameRules.foreach(frule => frames.expectFrame(frule.frame))
+    val frameRules = arguments.frameRules
+    // TODO graphbuilder only supports one input frame at present
+    require(frameRules.size == 1, "only one frame rule per call is supported in this version")
+    val theOnlySourceFrameID = frameRules.head.frame.id
+    val frameEntity = frames.expectFrame(theOnlySourceFrameID)
+    val graphEntity = graphs.expectGraph(arguments.graph.id)
 
-    // run the operation and save results
-    graphs.loadGraph(arguments, invocation)(user)
+    // setup graph builder
+    val gbConfigFactory = new GraphBuilderConfigFactory(frameEntity.schema, arguments, graphEntity)
+    val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
+
+    // setup data in Spark
+    val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sc, theOnlySourceFrameID)
+    val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
+    graphBuilder.build(inputRdd)
+    graphs.updateStatus(graphEntity, Status.Active)
+
+    graphEntity
   }
+
 }

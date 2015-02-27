@@ -1,0 +1,77 @@
+{
+    "tmp": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0700"
+    },
+    "log": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0755"
+    },
+    "etc/intelanalytics/rest-server": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0755"
+    },
+    "etc/logrotate.d": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0744"
+    },
+    "usr/lib/intelanalytics/graphbuilder/lib": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/lib/python2.7": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/lib/python2.7/site-packages": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/cmps": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/python2.7": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/pip2.7": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/f2py2.7": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/python2.7-config": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    },
+    "usr/bin/python27pydoc": {
+        "user": "iauser",
+        "group": "iauser",
+        "permissions": "0775"
+    }
+}

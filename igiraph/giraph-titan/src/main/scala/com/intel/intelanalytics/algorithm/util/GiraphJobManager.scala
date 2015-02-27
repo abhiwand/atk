@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,12 +25,13 @@ package com.intel.intelanalytics.algorithm.util
 
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
+import org.apache.giraph.counters.GiraphTimers
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
-import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.{ CounterGroup, Job, Counters }
 import com.typesafe.config.Config
 import scala.collection.mutable.HashMap
 
@@ -56,7 +57,24 @@ class GiraphJobListener extends DefaultJobObserver {
     val commandId = getCommandId(submittedJob)
     val commandStorage = getCommandStorage(commandId)
     Stream.continually(submittedJob.isComplete).takeWhile(_ == false).foreach {
-      _ => commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+      _ =>
+        {
+          val conf = submittedJob.getConfiguration()
+          val str = conf.get("giraphjob.maxSteps")
+          var maxSteps: Float = 20
+          if (str != null) {
+            maxSteps = str.toInt + 4 //4 for init, input, step and shutdown
+          }
+          val group = submittedJob.getCounters().getGroup("Giraph Timers")
+          if (null != group) {
+            var progress = (group.size() - 1) / maxSteps
+            if (progress > 0.95) progress = 0.95f //each algorithm calculates steps differently and this sometimes cause it to be greater than 1. It is easier to fix it here
+            commandStorage.updateProgress(commandId, List(ProgressInfo(progress * 100, None)))
+          }
+          else {
+            commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
+          }
+        }
     }
   }
 
@@ -64,6 +82,20 @@ class GiraphJobListener extends DefaultJobObserver {
     val commandId = getCommandId(jobToSubmit)
     GiraphJobListener.commandIdMap.-(commandId)
     println(jobToSubmit.toString)
+    if (!jobToSubmit.isSuccessful) {
+      val taskCompletionEvents = jobToSubmit.getTaskCompletionEvents(0)
+      taskCompletionEvents.lastOption match {
+        case Some(e) =>
+          val diagnostics = jobToSubmit.getTaskDiagnostics(e.getTaskAttemptId)(0)
+          val errorMessage = diagnostics.lastIndexOf("Caused by:") match {
+            case index if index > 0 => diagnostics.substring(index)
+            case _ => diagnostics
+          }
+          throw new Exception(s"Execution was unsuccessful. $errorMessage")
+        case None => throw new Exception("Execution was unsuccessful, but no further information was provided. " +
+          "Consider checking server logs for further information.")
+      }
+    }
   }
 
   private def getCommandId(job: Job): Long = job.getConfiguration.getLong("giraph.ml.commandId", 0)
@@ -83,20 +115,22 @@ object GiraphJobManager {
   def run(jobName: String, computationClassCanonicalName: String,
           config: Config, giraphConf: GiraphConfiguration, invocation: Invocation, reportName: String): String = {
 
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
+    val giraphLoader = Boot.getArchive(config.getString("giraph.archive.name")).classLoader
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
-    GiraphJobListener.commandIdMap(invocation.commandId) = invocation.commandStorage
+    val commandInvocation = invocation.asInstanceOf[CommandInvocation]
+
+    GiraphJobListener.commandIdMap(commandInvocation.commandId) = commandInvocation.commandStorage
     giraphConf.setJobObserverClass(classOf[GiraphJobListener])
 
-    giraphConf.setLong("giraph.ml.commandId", invocation.commandId)
+    giraphConf.setLong("giraph.ml.commandId", commandInvocation.commandId)
 
     val job = new GiraphJob(giraphConf, jobName)
     val internalJob: Job = job.getInternalJob
 
     // Clear Giraph Report Directory
     val fs = FileSystem.get(new Configuration())
-    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
+    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + commandInvocation.commandId
     if (config.getBoolean("output.overwrite")) {
       fs.delete(getFullyQualifiedPath(output_dir_path, fs), true)
     }

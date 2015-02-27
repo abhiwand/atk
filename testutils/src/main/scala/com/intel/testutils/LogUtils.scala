@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -41,7 +41,8 @@ object LogUtils {
    * Turn down logging since Spark gives so much output otherwise.
    */
   def silenceSpark() {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
+    setLogLevels(Level.WARN, Seq("o.a.spark.scheduler.DAGScheduler",
+      "o.a.spark.scheduler.TaskSetManager", "org.eclipse.jetty", "akka"))
   }
 
   /**

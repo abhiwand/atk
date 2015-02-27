@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.Graph
 
@@ -79,7 +79,7 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @param vertex the description of the Vertex to create
    * @return the newly created Vertex
    */
-  def create(vertex: Vertex): blueprints.Vertex = {
+  def create(vertex: GBVertex): blueprints.Vertex = {
     val blueprintsVertex = graph.addVertex(null)
     update(vertex, blueprintsVertex)
   }
@@ -90,7 +90,7 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @param blueprintsVertex to
    * @return the blueprints.Vertex
    */
-  def update(vertex: Vertex, blueprintsVertex: blueprints.Vertex): blueprints.Vertex = {
+  def update(vertex: GBVertex, blueprintsVertex: blueprints.Vertex): blueprints.Vertex = {
     vertex.fullProperties.map(property => blueprintsVertex.setProperty(property.key, property.value))
     blueprintsVertex
   }
@@ -100,8 +100,9 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @param vertex the description of the Vertex to create
    * @return the newly created Vertex
    */
-  def updateOrCreate(vertex: Vertex): blueprints.Vertex = {
-    val blueprintsVertex = findByGbId(vertex.gbId)
+  def updateOrCreate(vertex: GBVertex): blueprints.Vertex = {
+    // val blueprintsVertex = findByGbId(vertex.gbId)
+    val blueprintsVertex = findById(vertex.physicalId, vertex.gbId)
     if (blueprintsVertex.isEmpty) {
       create(vertex)
     }

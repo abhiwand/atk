@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,9 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.intel.intelanalytics.domain.schema.DataTypes.{ float64, float32, int64, int32 }
 import org.scalatest.{ FlatSpec, Matchers }
+import scala.collection.mutable.ArrayBuffer
 
 class DataTypesTest extends FlatSpec with Matchers {
 
@@ -67,6 +69,72 @@ class DataTypesTest extends FlatSpec with Matchers {
     intercept[IllegalArgumentException] {
       DataTypes.toBigDecimal(value)
     }
+  }
+
+  "vector.asDouble" should "convert a Vector of size 1 to a double" in {
+    val v = Vector[Double](2.5)
+    DataTypes.vector.asDouble(v) shouldBe 2.5
+  }
+
+  "vector.asDouble" should "throw Exception when Vector size != 1" in {
+    val vFat = Vector[Double](2.5, 3.6, 4.7)
+    intercept[IllegalArgumentException] {
+      DataTypes.vector.asDouble(vFat)
+    }
+    val vThin = Vector[Double]()
+    intercept[IllegalArgumentException] {
+      DataTypes.vector.asDouble(vThin)
+    }
+  }
+  "vector.typeJson" should "produce good Json" in {
+    val v = Vector[Double](2.5, 3.6, 4.7)
+    DataTypes.vector.typedJson(v).toString shouldBe "[2.5,3.6,4.7]"
+  }
+  "vector" should "be a supported type" in {
+    DataTypes.supportedTypes.contains("vector") shouldBe true
+  }
+
+  "vector" should "compare with other vectors appropriately" in {
+    val v = Vector[Double](2.5, 3.6, 4.7)
+    val vGood = Vector[Double](2.5, 3.6, 4.7)
+    val vTooShort = Vector[Double](2.5, 3.6)
+    val vTooLong = Vector[Double](2.5, 3.6, 4.7, 5.8)
+    val vBad0 = Vector[Double](2.8, 3.6, 4.7)
+    val vBad1 = Vector[Double](2.5, 2.6, 4.7)
+    val vBad2 = Vector[Double](2.8, 3.6, 4.8)
+    DataTypes.compare(v, vGood) shouldBe 0
+    DataTypes.compare(v, vTooShort) shouldBe 1
+    DataTypes.compare(v, vTooLong) shouldBe -1
+    DataTypes.compare(v, vBad0) shouldBe -1
+    DataTypes.compare(v, vBad1) shouldBe 1
+    DataTypes.compare(v, vBad2) shouldBe -1
+  }
+
+  "toVector" should "produce vectors" in {
+    DataTypes.toVector(null) shouldBe null
+    DataTypes.toVector(25) shouldBe Vector[Double](25)
+    DataTypes.toVector(123456789L) shouldBe Vector[Double](123456789L)
+    DataTypes.toVector(3.14F) shouldBe Vector[Double](3.14F)
+    DataTypes.toVector(3.14159) shouldBe Vector[Double](3.14159)
+    DataTypes.toVector(BigDecimal(867.5309)) shouldBe Vector[Double](867.5309)
+    DataTypes.toVector("[1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
+    DataTypes.toVector("  [1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
+    DataTypes.toVector("1.2, 777") shouldBe Vector[Double](1.2, 777)
+    DataTypes.toVector("1.2,777") shouldBe Vector[Double](1.2, 777)
+    DataTypes.toVector(Vector[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector(ArrayBuffer[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector(List[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+  }
+
+  "asString" should "handle vectors" in {
+    DataTypes.vector.asString(Vector[Double](3.14, 99)) shouldBe "3.14,99.0"
+  }
+
+  "javaTypeToDataType" should "get type from java type object" in {
+    DataTypes.javaTypeToDataType(new java.lang.Integer(3).getClass) shouldBe int32
+    DataTypes.javaTypeToDataType(new java.lang.Long(3).getClass) shouldBe int64
+    DataTypes.javaTypeToDataType(new java.lang.Float(3.0).getClass) shouldBe float32
+    DataTypes.javaTypeToDataType(new java.lang.Double(3).getClass) shouldBe float64
   }
 
 }

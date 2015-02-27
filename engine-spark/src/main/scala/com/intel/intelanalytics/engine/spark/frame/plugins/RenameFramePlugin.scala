@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ RenameFrame, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ RenameFrameArgs, FrameEntity, FlattenColumnArgs }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -39,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename a frame
  */
-class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
+class RenameFramePlugin extends SparkCommandPlugin[RenameFrameArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,14 +48,7 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_frame"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
+  override def name: String = "frame/rename"
 
   /**
    * Rename a frame
@@ -63,12 +57,11 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: RenameFrame)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: RenameFrameArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val frames = engine.frames
 
     // validate arguments
     val frame = frames.expectFrame(arguments.frame)

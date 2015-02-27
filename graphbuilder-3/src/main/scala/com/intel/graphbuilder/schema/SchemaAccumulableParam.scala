@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.schema
 
 import org.apache.spark.AccumulableParam
-import com.intel.graphbuilder.elements.{ GraphElement, Vertex, Edge }
+import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 
 /**
  * Implements AccumulableParam to allow inferring graph schema from data.
@@ -40,8 +40,8 @@ class SchemaAccumulableParam extends AccumulableParam[InferSchemaFromData, Graph
    */
   override def addAccumulator(schema: InferSchemaFromData, element: GraphElement): InferSchemaFromData = {
     element match {
-      case v: Vertex => schema.add(v)
-      case e: Edge => schema.add(e)
+      case v: GBVertex => schema.add(v)
+      case e: GBEdge => schema.add(e)
     }
     schema
   }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,31 +23,29 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, CommandTemplate, Command }
-import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.event.EventContext
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, EntityType }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
 
 import scala.concurrent.Future
-import com.intel.intelanalytics.domain.schema.Schema
 
-//TODO: make these all use Try instead?
-//TODO: make as many of these as possible use id instead of dataframe as the first argument?
-//TODO: distinguish between DataFrame and DataFrameSpec,
-// where the latter has no ID, and is the argument passed to create?
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
+
   val pageSize: Int
 
   val frames: FrameStorage
 
   val graphs: GraphStorage
+
+  val models: ModelStorage
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -55,59 +53,79 @@ trait Engine {
    * Stores the results of the command execution back in the persistent command object.
    *
    * @param command the command to run, including name and arguments
-   * @param user the user running the command
    * @return an Execution that can be used to track the completion of the command
    */
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
+  def execute(command: CommandTemplate)(implicit invocation: Invocation): Execution
 
   /**
    * All the command definitions available
    */
-  def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
+  def getCommandDefinitions()(implicit invocation: Invocation): Iterable[CommandDefinition]
 
-  def getCommands(offset: Int, count: Int): Future[Seq[Command]]
+  def getCommands(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Command]]
 
-  def getCommand(id: Identifier): Future[Option[Command]]
+  def getCommand(id: Identifier)(implicit invocation: Invocation): Future[Option[Command]]
 
-  def getQueries(offset: Int, count: Int): Future[Seq[Query]]
+  def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]]
 
-  def getQuery(id: Identifier): Future[Option[Query]]
+  def getQuery(id: Identifier)(implicit invocation: Invocation): Future[Option[Query]]
 
-  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): QueryDataResult
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit invocation: Invocation): QueryDataResult
 
-  def getUserPrincipal(apiKey: String): UserPrincipal
+  //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
 
-  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
+  def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult
+  def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult
+  def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
-  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
-  def delete(frame: DataFrame): Future[Unit]
+  @deprecated("use engine.graphs.createFrame()")
+  def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]
 
-  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit]
 
-  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
+  def getFrames()(implicit invocation: Invocation): Future[Seq[FrameEntity]]
+
+  def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def shutdown(): Unit
 
-  def getGraph(id: Identifier): Future[Graph]
+  def getGraph(id: Identifier)(implicit invocation: Invocation): Future[GraphEntity]
 
-  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit invocation: Invocation): Future[Seq[GraphEntity]]
 
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
+  def getGraphByName(name: String)(implicit invocation: Invocation): Future[Option[GraphEntity]]
 
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
+  @deprecated("use engine.graphs.createGraph()")
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[GraphEntity]
 
-  def deleteGraph(graph: Graph): Future[Unit]
+  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
+
+  def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
+
+  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
+
+  def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
+
+  def deleteGraph(graph: GraphEntity)(implicit invocation: Invocation): Future[Unit]
+
+  def createModel(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[ModelEntity]
+
+  def getModel(id: Identifier)(implicit invocation: Invocation): Future[ModelEntity]
+
+  def getModels()(implicit invocation: Invocation): Future[Seq[ModelEntity]]
+
+  def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[ModelEntity]]
+
+  def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit]
 
   /**
    * Cancel a running command
    * @param id command id
-   * @param user current user
    * @return optional command instance
    */
-  def cancelCommand(id: Identifier)(implicit user: UserPrincipal): Future[Unit]
+  def cancelCommand(id: Identifier)(implicit invocation: Invocation): Future[Unit]
 }

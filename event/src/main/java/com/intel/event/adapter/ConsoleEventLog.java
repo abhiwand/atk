@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -38,6 +38,6 @@ public class ConsoleEventLog implements EventLog {
     @Override
     public void log(Event e) {
         PrintStream out = System.out;
-        out.println(e.toString());
+        out.println(JsonFormatter.toJson(e).toString());
     }
 }

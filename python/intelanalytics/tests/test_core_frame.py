@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 import iatest
 iatest.init()
 #iatest.set_logging("intelanalytics.core.backend", 20)
@@ -29,15 +30,13 @@ iatest.init()
 import unittest
 from mock import patch, Mock
 
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.column import BigColumn
+from intelanalytics.core.frame import Frame
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.config import get_frame_backend
 
 
 def get_simple_frame_abcde():
-    return BigFrame(CsvFile("dummy.csv", [('A', int32),
+    return Frame(CsvFile("dummy.csv", [('A', int32),
                                           ('B', int64),
                                           ('C', float32),
                                           ('D', float64),
@@ -45,13 +44,13 @@ def get_simple_frame_abcde():
 
 
 def get_simple_frame_abfgh():
-    return BigFrame(CsvFile("dummy.csv", [('A', int32),
+    return Frame(CsvFile("dummy.csv", [('A', int32),
                                           ('B', int64),
                                           ('F', float32),
                                           ('G', float64),
                                           ('H', str)]))
 
-@patch('intelanalytics.core.config.get_frame_backend')
+@patch('intelanalytics.meta.config.get_frame_backend')
 class FrameConstruction(unittest.TestCase):
 
     def validate_column_names(self, frame, column_names):
@@ -60,15 +59,16 @@ class FrameConstruction(unittest.TestCase):
             self.assertNotEqual(None,frame[i])
 
 
+    @patch("intelanalytics.core.frame.check_api_is_loaded", Mock())
     def test_create(self, get_frame_backend):
-        f = BigFrame()
+        f = Frame()
         self.assertEqual(0, f._id)
         self.assertEqual(None, f._error_frame_id)
 
     '''
 
     def test_create_from_csv(self, get_frame_backend):
-        f = BigFrame(CsvFile("dummy.csv", [('A', int32), ('B', int64)]))
+        f = Frame(CsvFile("dummy.csv", [('A', int32), ('B', int64)]))
         self.assertEqual(0, len(f))
         try:
             c = f['C']
@@ -106,7 +106,7 @@ class FrameConstruction(unittest.TestCase):
 
     def test_projection(self):
         f1 = get_simple_frame_abcde()
-        f2 = BigFrame(f1[['B', 'C']])
+        f2 = Frame(f1[['B', 'C']])
         self.validate_column_names(f2, ['B', 'C'])
 
     def test_rename(self):
@@ -124,7 +124,7 @@ class FrameConstruction(unittest.TestCase):
         self.validate_column_names(f1, names)
 '''
 
-#@patch('intelanalytics.core.config.get_frame_backend', new=FrameBackendSimplePrint)
+#@patch('intelanalytics.meta.config.get_frame_backend', new=FrameBackendSimplePrint)
 class Debug(unittest.TestCase):
     # container to isolate a test
     pass

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
+import com.intel.graphbuilder.driver.spark.titan.JoinBroadcastVariable
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.EdgeWriter
 import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import org.apache.spark.SparkContext._
-import org.apache.spark.TaskContext
+import org.apache.spark.{ RangePartitioner, TaskContext }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
@@ -44,14 +45,14 @@ import org.apache.spark.rdd.RDD
  *                          It is hard to tell what the right number is for this one.
  *                          I think somewhere larger than 400k is getting too big.
  */
-class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) extends Serializable {
+class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) extends Serializable {
 
   /**
    * Merge duplicate Edges, creating a new Edge that has a combined set of properties.
    *
    * @return an RDD without duplicates
    */
-  def mergeDuplicates(): RDD[Edge] = {
+  def mergeDuplicates(): RDD[GBEdge] = {
     self.groupBy(m => m.id).mapValues(dups => dups.reduce((m1, m2) => m1.merge(m2))).values
   }
 
@@ -63,7 +64,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * need to merge duplicates after.
    * </p>
    */
-  def biDirectional(): RDD[Edge] = {
+  def biDirectional(): RDD[GBEdge] = {
     self.flatMap(edge => List(edge, edge.reverse()))
   }
 
@@ -88,8 +89,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * This functionality was called "retain dangling edges" in GB version 2.
    * </p>
    */
-  def verticesFromEdges(): RDD[Vertex] = {
-    self.flatMap(edge => List(new Vertex(edge.tailVertexGbId, Nil), new Vertex(edge.headVertexGbId, Nil)))
+  def verticesFromEdges(): RDD[GBVertex] = {
+    self.flatMap(edge => List(new GBVertex(edge.tailVertexGbId, Set.empty[Property]), new GBVertex(edge.headVertexGbId, Set.empty[Property])))
   }
 
   /**
@@ -97,29 +98,31 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    *
    * This is an inner join.  Edges that can't be joined are dropped.
    */
-  def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[Edge] = {
+  def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[GBEdge] = {
 
-    val idsByGbId = ids.groupBy(idMap => idMap.gbId)
+    val idsByGbId = ids.map(idMap => (idMap.gbId, idMap))
 
-    // set physical ids for tail vertices
-    val edgesByTail = self.groupBy(edge => edge.tailVertexGbId)
-    val edgesWithTail = idsByGbId.join(edgesByTail).flatMapValues(value => {
-      val gbIdToPhysicalIds = value._1
-      //      val physicalId = gbIdToPhysicalIds(0).physicalId
-      val physicalId = gbIdToPhysicalIds.head.physicalId
-      val edges = value._2
-      edges.map(e => e.copy(tailPhysicalId = physicalId))
-    }).values
+    // set physical ids for tail (source) vertices
+    val edgesByTail = self.map(edge => (edge.tailVertexGbId, edge))
 
-    // set physical ids for head vertices
-    val edgesByHead = edgesWithTail.groupBy(e => e.headVertexGbId)
-    val edgesWithPhysicalIds: RDD[Edge] = idsByGbId.join(edgesByHead).flatMapValues(value => {
-      val gbIdToPhysicalIds = value._1
-      //      val physicalId = gbIdToPhysicalIds(0).physicalId
-      val physicalId = gbIdToPhysicalIds.head.physicalId
-      val edges = value._2
-      edges.map(e => e.copy(headPhysicalId = physicalId))
-    }).values
+    // Range-partitioner helps alleviate the "com.esotericsoftware.kryo.KryoException: java.lang.NegativeArraySizeException"
+    // which occurs when we spill blocks to disk larger than 2GB but does not completely fix the problem
+    // TODO: Find a better way to handle supernodes: Look at skewed joins in Pig
+    implicit val propertyOrdering = PropertyOrdering // Ordering is needed by Spark's range partitioner
+    val tailPartitioner = new RangePartitioner(edgesByTail.partitions.length, edgesByTail)
+    val edgesWithTail = edgesByTail.join(idsByGbId, tailPartitioner).map {
+      case (gbId, (edge, gbIdToPhysicalId)) =>
+        val physicalId = gbIdToPhysicalId.physicalId
+        (edge.headVertexGbId, edge.copy(tailPhysicalId = physicalId))
+    }
+
+    // set physical ids for head (destination) vertices
+    val edgesWithPhysicalIds = edgesWithTail.join(idsByGbId).map {
+      case (gbId, (edge, gbIdToPhysicalId)) => {
+        val physicalId = gbIdToPhysicalId.physicalId
+        edge.copy(headPhysicalId = physicalId)
+      }
+    }
 
     edgesWithPhysicalIds
   }
@@ -127,7 +130,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
   /**
    * Filter Edges that do NOT have physical ids
    */
-  def filterEdgesWithoutPhysicalIds(): RDD[Edge] = {
+  def filterEdgesWithoutPhysicalIds(): RDD[GBEdge] = {
     self.filter(edge => {
       if (edge.tailPhysicalId == null || edge.headPhysicalId == null) false
       else true
@@ -140,11 +143,11 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def write(titanConnector: TitanGraphConnector, append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
 
       EnvironmentValidator.validateISparkDepsAvailable
 
-      val graph = titanConnector.connect()
+      val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
 
@@ -163,6 +166,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
         graph.commit()
       }
       finally {
+        //Do not shut down graph when using cache since graph instances are automatically shutdown when
+        //no more references are held
         graph.shutdown()
       }
     })
@@ -173,10 +178,10 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * @param append true to append to an existing graph
    * @param gbIdToPhysicalIdMap see GraphBuilderConfig.broadcastVertexIds
    */
-  def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: Broadcast[Map[Property, AnyRef]], append: Boolean): Unit = {
+  def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: JoinBroadcastVariable[Property, AnyRef], append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
-      val graph = titanConnector.connect()
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
+      val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
 
@@ -184,8 +189,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
         var count = 0L
         while (iterator.hasNext) {
           val edge = iterator.next()
-          edge.tailPhysicalId = gbIdToPhysicalIdMap.value(edge.tailVertexGbId)
-          edge.headPhysicalId = gbIdToPhysicalIdMap.value(edge.headVertexGbId)
+          edge.tailPhysicalId = gbIdToPhysicalIdMap(edge.tailVertexGbId)
+          edge.headPhysicalId = gbIdToPhysicalIdMap(edge.headVertexGbId)
           writer.write(edge)
           count += 1
           if (count % maxEdgesPerCommit == 0) {
@@ -198,6 +203,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
         graph.commit()
       }
       finally {
+        //Do not shut down graph when using cache since graph instances are automatically shutdown when
+        //no more references are held
         graph.shutdown()
       }
     })

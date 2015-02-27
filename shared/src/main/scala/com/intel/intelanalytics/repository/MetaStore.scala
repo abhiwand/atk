@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,36 +23,8 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ User, UserTemplate, Status }
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.repository._
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.event.EventContext
+import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
 
 /**
  * The MetaStore gives access to Repositories. Repositories are how you
@@ -60,7 +32,9 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
  */
 trait MetaStore {
   type Session
-  def withSession[T](name: String)(f: Session => T): T
+  def withSession[T](name: String)(f: Session => T)(implicit evc: EventContext = EventContext.getCurrent()): T
+
+  def withTransaction[T](name: String)(f: Session => T)(implicit evc: EventContext = EventContext.getCurrent()): T
 
   /** Repository for CRUD on 'status' table */
   def statusRepo: Repository[Session, Status, Status]
@@ -75,11 +49,20 @@ trait MetaStore {
   /** Repository for CRUD on 'command' table */
   def commandRepo: CommandRepository[Session]
 
+  /** Repository for CRUD on 'model' table */
+  def modelRepo: ModelRepository[Session]
+
   /** Repository for CRUD on 'query' table */
   def queryRepo: QueryRepository[Session]
 
   /** Repository for CRUD on 'user' table */
   def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
+
+  /** Repository for CRUD on 'gc' table */
+  def gcRepo: GarbageCollectionRepository[Session]
+
+  /** Repository for CRUD on 'gc_entry' table */
+  def gcEntryRepo: GarbageCollectionEntryRepository[Session]
 
   /** Create the underlying tables */
   def initializeSchema(): Unit

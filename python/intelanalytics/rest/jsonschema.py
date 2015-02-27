@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Json-Schema definitions and interactions
 """
@@ -28,10 +29,10 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from intelanalytics.core.command import CommandDefinition, Parameter, Return, Doc, Version
+from intelanalytics.meta.command import CommandDefinition, Parameter, Return, Doc, Version
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.frame import BigFrame
-from intelanalytics.core.graph import BigGraph
+from intelanalytics.core.frame import Frame
+from intelanalytics.core.graph import Graph
 
 __all__ = ['get_command_def']
 
@@ -44,11 +45,12 @@ json_type_id_to_data_type  = {
     "ia:long": int64,
     "ia:float": float32,
     "ia:double": float64,
+    "ia:vector": vector,
 }
 
 json_str_formats_to_data_type = {
-    "uri/ia-frame": BigFrame,
-    "uri/ia-graph": BigGraph,
+    "uri/ia-frame": Frame,
+    "uri/ia-graph": Graph,
 }
 
 
@@ -109,14 +111,15 @@ def get_parameters(argument_schema):
     # Note - using the common convention that "parameters" are the variables in function definitions
     # and arguments are the values being passed in.  'argument_schema' is used in the rest API however.
     parameters = []
-    for name in argument_schema['order']:
-        properties = argument_schema['properties'][name]
-        data_type = get_data_type(properties)
-        use_self = properties.get('self', False)
-        optional = name not in argument_schema['required']
-        default = properties.get('default', None)
-        doc = get_doc(properties)
-        parameters.append(Parameter(name, data_type, use_self, optional, default, doc))
+    if 'order' in argument_schema:
+        for name in argument_schema['order']:
+            properties = argument_schema['properties'][name]
+            data_type = get_data_type(properties)
+            use_self = properties.get('self', False)
+            optional = name not in argument_schema['required']
+            default = properties.get('default', None)
+            doc = get_doc(properties)
+            parameters.append(Parameter(name, data_type, use_self, optional, default, doc))
     return parameters
 
 
@@ -129,8 +132,8 @@ def get_return(return_schema):
     # 4. return None  (no return value)
     data_type = get_data_type(return_schema)
     use_self = return_schema.get('self', False)
-    if use_self and data_type not in [BigFrame, BigGraph]:
-        raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
+    #if use_self and data_type not in [Frame, Graph]:
+    #    raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
     doc = get_doc(return_schema)
     return Return(data_type, use_self, doc)
 
@@ -147,5 +150,6 @@ def get_command_def(json_schema):
     parameters = get_parameters(json_schema['argument_schema'])
     return_type = get_return(json_schema['return_schema'])
     version = get_version(json_schema)
+    maturity = json_schema.get('maturity', None)
     doc = get_doc(json_schema)
-    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, version)
+    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, maturity, version)

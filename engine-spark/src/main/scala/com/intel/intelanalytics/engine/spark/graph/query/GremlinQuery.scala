@@ -1,22 +1,45 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.graph.query
 
 import javax.script.Bindings
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ Await, ExecutionContext, Lock }
-import scala.util.Try
+import scala.concurrent.Await
+import scala.util.{ Failure, Success, Try }
+import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
 
 /**
  * Arguments for Gremlin query.
@@ -64,102 +87,49 @@ import GremlinQueryFormat._
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
   val gremlinExecutor = new GremlinGroovyScriptEngine()
-  var titanGraphs = Map[String, TitanGraph]()
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/sampling/vertex_sample
    */
-  override def name: String = "graphs/query/gremlin"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc = Some(CommandDoc(oneLineSummary = "Executes a Gremlin query.",
-    extendedSummary = Some("""
-    Extended Summary
-    ----------------
-    Executes a Gremlin query on an existing graph.
-
-    The query returns a list of results in GraphSON format(for vertices or edges)
-    or JSON (for other results like counts). GraphSON is a JSON-based format for
-    property graphs which uses reserved keys that begin with underscores to
-    encode vertex and edge metadata.
-
-    Parameters
-    ----------
-    gremlin: String
-        The Gremlin script to execute.
-        At present, the query does not support pagination so the results of query
-        should be limited using the Gremlin range filter [i..j], e.g., g.V[0..9]
-        to return the first 10 vertices.
-
-    Raises
-    ------
-    RuntimeException
-      	If the Gremlin script could not be executed due to invalid syntax.
-
-    Returns
-    -------
-    Dictionary
-        Query results and runtime in seconds.
-
-
-    Examples
-    --------
-    Get the first two outgoing edges of the vertex whose source equals 5767244
-      	mygraph = BigGraph(...)
-      	results = mygraph.query.gremlin("g.V('source', 5767244).outE[0..1]")
-      	print results["results"]
-
-    The expected output is a list of edges in GraphSON format:
-    	  [{u'_label': u'edge', u'_type': u'edge', u'_inV': 1381202500, u'weight': 1, u'_outV': 1346400004, u'_id': u'fDEQC9-1t7m96-1U'},
-    	  {u'_label': u'edge', u'_type': u'edge', u'_inV': 1365600772, u'weight': 1, u'_outV': 1346400004, u'_id': u'frtzv9-1t7m96-1U'}]
-
-    Get the count of incoming edges for a vertex.
-    	results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
-    	print results["results"]
-
-    The expected output is:
-    	[4]
-""")))
+  override def name: String = "graph:titan/query/gremlin"
 
   /**
    * Executes a Gremlin query.
    *
    * @param invocation information about the user and the circumstances at the time of the call
    * @param arguments Gremlin script to execute
-   * @param user Principal representing an authenticated API user
-   * @param executionContext Execution context
    * @return Results of executing Gremlin query
    */
-  override def execute(invocation: Invocation, arguments: QueryArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): QueryResult = {
+  override def execute(arguments: QueryArgs)(implicit invocation: Invocation): QueryResult = {
     import scala.concurrent.duration._
 
+    invocation.updateProgress(5f)
     val start = System.currentTimeMillis()
     val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val titanGraph = getTitanGraph(graph.storage, config)
 
-    // TODO - graph should provide backend to retrieve the stored table name in hbase
-    val graphName = "iat_graph_" + graph.name
+    val resultIterator = Try({
+      val bindings = gremlinExecutor.createBindings()
+      bindings.put("g", titanGraph)
+      val results = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
+      results
+    })
+    invocation.updateProgress(100f)
 
-    // Create graph connection
-    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
+    titanGraph.shutdown()
 
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
-    val titanGraph = getTitanGraph(graphName, titanConfiguration)
-    val bindings = gremlinExecutor.createBindings()
-    bindings.put("g", titanGraph)
-
-    // Get results
-    val resultIterator = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    QueryResult(resultIterator, runtimeInSeconds)
+    val queryResult = resultIterator match {
+      case Success(iterator) => QueryResult(iterator, runtimeInSeconds)
+      case Failure(exception) => throw exception
+    }
+
+    queryResult
   }
 
   /**
@@ -193,36 +163,17 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   }
 
   /**
-   * Gets Titan graph, and caches graph connection to reduce overhead of future accesses.
+   * Connects to Titan graph.
    *
    * @param graphName Name of graph
-   * @param titanConfiguration Titan configuration for connecting to graph
+   * @param config Command configuration
    * @return Titan graph
    */
-  private def getTitanGraph(graphName: String, titanConfiguration: SerializableBaseConfiguration): TitanGraph = {
+  private def getTitanGraph(graphName: String, config: Config): TitanGraph = {
+    val titanConfiguration = GraphBuilderConfigFactory.getTitanConfiguration(config, "titan.query", graphName)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val titanGraph = titanGraphs.getOrElse(graphName, connectToTitanGraph(graphName, titanConnector))
-
-    titanGraph
-  }
-
-  /**
-   * Connects to a Titan Graph and caches it.
-   * @param graphName Name of graph
-   * @param titanConnector Titan graph connector
-   * @return Titan graph
-   */
-  private def connectToTitanGraph(graphName: String, titanConnector: TitanGraphConnector): TitanGraph = {
-    GremlinQuery.lock.acquire()
     val titanGraph = titanConnector.connect()
-    titanGraphs += graphName -> titanGraph
-    GremlinQuery.lock.release()
     titanGraph
   }
-}
 
-object GremlinQuery {
-  private val lock = new Lock()
 }
-

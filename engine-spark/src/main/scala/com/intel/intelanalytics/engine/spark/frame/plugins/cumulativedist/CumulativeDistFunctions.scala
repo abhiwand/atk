@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Column }
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkException
@@ -44,12 +44,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * Generate the empirical cumulative distribution for an input dataframe column
    *
    * @param frameRdd rdd for a BigFrame
-   * @param sampleIndex index of the column containing the sample data
-   * @param dataType the data type of the input column
+   * @param sampleColumn column containing the sample data
    * @return a new RDD of tuples containing each distinct sample value and its ecdf value
    */
-  def ecdf(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
+  def ecdf(frameRdd: RDD[Row], sampleColumn: Column): RDD[Row] = {
     // parse values
+    val sampleIndex = sampleColumn.index
     val pairedRdd = try {
       frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
     }
@@ -61,6 +61,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     val numValues = pairedRdd.count().toDouble
 
     // group identical values together
+    // TODO: can't this be a reduceByKey() --Todd 12/3/2014
     val groupedRdd = pairedRdd.groupByKey()
 
     // count number of each distinct value and sort by distinct value
@@ -84,11 +85,11 @@ private[spark] object CumulativeDistFunctions extends Serializable {
 
     sumsRdd.map {
       case (value, valueSum) => {
-        dataType match {
-          case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+        sampleColumn.dataType match {
+          case DataTypes.int32 => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case DataTypes.int64 => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case DataTypes.float32 => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case DataTypes.float64 => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
           case _ => Array(value.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
         }
       }

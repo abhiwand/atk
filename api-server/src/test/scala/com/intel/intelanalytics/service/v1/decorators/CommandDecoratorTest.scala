@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -33,7 +33,7 @@ class CommandDecoratorTest extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/commands"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val command = new Command(1, "name", None, None, List(ProgressInfo(20.00f, Some(TaskProgressInfo(0)))), false, None, new DateTime, new DateTime)
+  val command = new Command(1, "name", None, "", None, List(ProgressInfo(20.00f, Some(TaskProgressInfo(0)))), false, None, new DateTime, new DateTime)
 
   "CommandDecorator" should "be able to decorate a command" in {
     val decoratedCommand = CommandDecorator.decorateEntity(null, relLinks, command)

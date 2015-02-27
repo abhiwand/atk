@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
+import com.intel.event.EventContext
 import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 import scala.slick.driver.H2Driver
@@ -34,6 +35,8 @@ import scala.util.Random
  * Creates and drops all tables before and after each test.
  */
 trait SlickMetaStoreH2Testing extends FlatSpec with BeforeAndAfter {
+
+  implicit val rootEc = EventContext.enter("root")
 
   lazy val slickMetaStoreComponent: SlickMetaStoreComponent = new SlickMetaStoreComponent with DbProfileComponent {
     override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest" + Random.nextInt() + ";DB_CLOSE_DELAY=-1", driver = "org.h2.Driver")
