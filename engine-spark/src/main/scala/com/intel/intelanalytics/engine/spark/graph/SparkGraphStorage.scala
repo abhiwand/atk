@@ -175,19 +175,15 @@ class SparkGraphStorage(metaStore: MetaStore,
    */
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
-    val graphCopy = createGraph(GraphTemplate(name))
-    val storageName = graphCopy.storage
 
-    if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.storage, storageName)
-      metaStore.withSession("spark.graphstorage.copyGraph") {
-        implicit session =>
-          {
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
-          }
-      }
+    val copiedEntity = if (graph.isTitan) {
+      val graphCopy = createGraph(GraphTemplate(name, StorageFormats.HBaseTitan))
+      backendStorage.copyUnderlyingTable(graph.storage, graphCopy.storage)
+      graphCopy
     }
     else {
+      val graphCopy = createGraph(GraphTemplate(name))
+      val storageName = graphCopy.storage
       val graphMeta = expectSeamless(graph.id)
       val framesToCopy = graphMeta.frameEntities.map(_.toReference)
       val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
@@ -196,12 +192,12 @@ class SparkGraphStorage(metaStore: MetaStore,
         implicit session =>
           {
             copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame")).get
           }
       }
     }
     // refresh from DB
-    expectGraph(graphCopy.id)
+    expectGraph(copiedEntity.id)
   }
 
   /**
@@ -468,7 +464,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       expectGraph(GraphBackendName.getIdFromBackendName(graphName))
     else
       createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))

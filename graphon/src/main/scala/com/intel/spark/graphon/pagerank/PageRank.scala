@@ -131,7 +131,7 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph)
     writeToTitan(newTitanConfig, outVertices, outEdges)
 
     PageRankResult(newGraphName)

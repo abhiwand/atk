@@ -100,7 +100,7 @@ class GraphBackendRest(object):
         return self.rest_http.create_full_uri('graphs/%d' % graph._id)
 
     def append(self, graph, rules):
-        logger.info("REST Backend: append_frame graph: " + graph.name)
+        logger.info("REST Backend: append_frame graph: %s" % graph.name)
         frame_rules = JsonRules(rules)
         graph.load(frame_rules, append=True)
 
