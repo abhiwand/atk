@@ -92,17 +92,12 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference))
 
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(args.name))
-
-    def getReference(reference: Reference)(implicit invocation: Invocation): Reference = expectGraph(reference)
+    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createGraph(GraphTemplate(args.name)).toReference
 
     //
     // Do not use. Use getReference(reference: Reference) instead.
     //
-    override def getReference(id: Long)(implicit invocation: Invocation): Reference = getReference(GraphReference(id))
-
-    implicit def graphToRef(graph: GraphEntity): Reference = GraphReference(graph.id)
+    override def getReference(id: Long)(implicit invocation: Invocation): Reference = GraphReference(id)
 
     implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
@@ -198,7 +193,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       }
     }
     else {
-      val graphMeta = expectSeamless(SparkGraphManagement.graphToRef(graph))
+      val graphMeta = expectSeamless(graph.toReference)
       val framesToCopy = graphMeta.frameEntities.map(_.toReference)
       val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
 
@@ -211,7 +206,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       }
     }
     // refresh from DB
-    expectGraph(SparkGraphManagement.graphToRef(graphCopy))
+    expectGraph(graphCopy.toReference)
   }
 
   /**
@@ -406,10 +401,9 @@ class SparkGraphStorage(metaStore: MetaStore,
   //  }
 
   def loadGbVertices(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
-    val graphRef = SparkGraphManagement.graphToRef(graph)
-    val graphEntity = expectGraph(graphRef)
+    val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
-      val graphEntity = expectSeamless(graphRef)
+      val graphEntity = expectSeamless(graph.toReference)
       graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
@@ -422,10 +416,9 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def loadGbEdges(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBEdge] = {
-    val graphRef = SparkGraphManagement.graphToRef(graph)
-    val graphEntity = expectGraph(graphRef)
+    val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
-      val graphMeta = expectSeamless(graphRef)
+      val graphMeta = expectSeamless(graph.toReference)
       graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
@@ -438,7 +431,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def loadGbElements(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
-    val graphEntity = expectGraph(SparkGraphManagement.graphToRef(graph))
+    val graphEntity = expectGraph(graph.toReference)
 
     if (graphEntity.isSeamless) {
       val vertexRDD = loadGbVertices(ctx, graph)
