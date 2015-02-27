@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,8 +24,8 @@
 from intelanalytics.core.iatypes import valid_data_types
 
 
-class BigColumn(object):
-    """Column in a BigFrame"""
+class Column(object):
+    """Column in a Frame"""
     def __init__(self, frame, name, data_type):
         self.name = name
         self.data_type = valid_data_types.get_from_type(data_type)
@@ -42,4 +42,3 @@ class BigColumn(object):
     @property
     def frame(self):
         return self._frame
-

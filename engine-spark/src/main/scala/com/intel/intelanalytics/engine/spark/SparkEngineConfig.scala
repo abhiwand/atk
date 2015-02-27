@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,13 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.io.File
+import java.net.InetAddress
+import java.util.concurrent.TimeUnit
+
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.typesafe.config.{ ConfigFactory, Config }
+import com.typesafe.config.{ Config, ConfigFactory }
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import java.net.InetAddress
-import java.io.File
-import com.intel.event.EventLogging
+import scala.util.Try
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -44,6 +51,7 @@ object SparkEngineConfig extends SparkEngineConfig
  * This is our wrapper for Typesafe config.
  */
 trait SparkEngineConfig extends EventLogging {
+  implicit val eventContext: EventContext = null
 
   val config = ConfigFactory.load()
 
@@ -87,6 +95,16 @@ trait SparkEngineConfig extends EventLogging {
     }
   }
 
+  val isLocalMaster: Boolean = {
+    (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
+  }
+
+  /**
+   * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
+   * NOTE: true should break the progress bar.
+   */
+  val reuseSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-context")
+
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
@@ -95,11 +113,11 @@ trait SparkEngineConfig extends EventLogging {
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-sample-rows")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
   val frameLoadTestFailThresholdPercentage: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-fail-threshold-percentage")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
@@ -132,9 +150,39 @@ trait SparkEngineConfig extends EventLogging {
   def createTitanConfiguration(commandConfig: Config, titanPath: String): SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanDefaultConfig = commandConfig.getConfig(titanPath)
+
+    //Prevents errors in Titan/HBase reader when storage.hostname is converted to list
+    titanConfiguration.setDelimiterParsingDisabled(true)
     for (entry <- titanDefaultConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
+
+    setTitanAutoPartitions(titanConfiguration)
+  }
+
+  /**
+   * Update Titan configuration with auto-generated settings.
+   *
+   * At present, auto-partitioner for graph construction only sets HBase pre-splits.
+   *
+   * @param titanConfiguration
+   * @return Updated Titan configuration
+   */
+  def setTitanAutoPartitions(titanConfiguration: SerializableBaseConfiguration): SerializableBaseConfiguration = {
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfiguration)
+    val storageBackend = titanConfiguration.getString("storage.backend")
+
+    storageBackend.toLowerCase match {
+      case "hbase" => {
+        val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
+        titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
+        info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
+      }
+      case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
+    }
+
+    titanConfiguration.setProperty("auto-partitioner.broadcast-join-threshold", broadcastJoinThreshold)
+
     titanConfiguration
   }
 
@@ -158,6 +206,12 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   * Disable all kryo registration in plugins (this is mainly here for performance testing
+   * and debugging when someone suspects Kryo might be causing some kind of issue).
+   */
+  val disableKryo: Boolean = config.getBoolean("intel.analytics.engine.spark.disable-kryo")
+
+  /**
    * Sorted list of mappings for file size to partition size (larger file sizes first)
    */
   val autoPartitionerConfig: List[FileSizeToPartitionSize] = {
@@ -175,6 +229,31 @@ trait SparkEngineConfig extends EventLogging {
     unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
   }
 
+  /**
+   * Use broadcast join if file size is lower than threshold.
+   *
+   * A threshold of zero disables broadcast joins. This threshold should not exceed the maximum size of results
+   * that can be returned to the Spark driver (i.e., spark.driver.maxResultSize).
+   */
+  val broadcastJoinThreshold = {
+    val joinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
+    val maxResultSize = config.getBytes("intel.analytics.engine.spark.conf.properties.spark.driver.maxResultSize")
+    if (joinThreshold > maxResultSize) {
+      throw new RuntimeException(
+        s"Broadcast join threshold: ${joinThreshold} shouldn't be larger than spark.driver.maxResultSize: ${maxResultSize}")
+    }
+    joinThreshold
+  }
+
+  /**
+   * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
+   *
+   * True if engine-spark.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
+   * False is useful mainly for development on a cluster.  False results in many copies of the application jars
+   * being made and copied to all of the cluster nodes.
+   */
+  val sparkAppJarsLocal: Boolean = config.getBoolean("intel.analytics.engine.spark.app-jars-local")
+
   /** Fully qualified Hostname for current system */
   private def hostname: String = InetAddress.getLocalHost.getCanonicalHostName
 
@@ -183,13 +262,21 @@ trait SparkEngineConfig extends EventLogging {
     info("fsRoot: " + fsRoot)
     info("sparkHome: " + sparkHome)
     info("sparkMaster: " + sparkMaster)
+    info("disableKryo: " + disableKryo)
     for ((key: String, value: String) <- sparkConfProperties) {
       info(s"sparkConfProperties: $key = $value")
+    }
+    if (sparkAppJarsLocal) {
+      info("sparkAppJarsLocal: " + sparkAppJarsLocal + " (expecting application jars to be installed on all worker nodes)")
+    }
+    else {
+      info("sparkAppJarsLocal: " + sparkAppJarsLocal + " (application jars will be copied to worker nodes with every command)")
     }
   }
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+  val pythonUdfDependenciesDirectory: String = config.getString("intel.analytics.engine.spark.python-udf-deps-directory")
 
   // val's are not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
@@ -206,4 +293,13 @@ trait SparkEngineConfig extends EventLogging {
       case s: String => s
     }
   }
+
+  //gc variables
+  val gcInterval = config.getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteData = config.getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteMetaData = config.getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
+
+  val enableKerberos: Boolean = config.getBoolean("intel.analytics.engine.hadoop.kerberos.enabled")
+  val kerberosPrincipalName: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.principal-name")) else None
+  val kerberosKeyTabPath: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.keytab-file")) else None
 }

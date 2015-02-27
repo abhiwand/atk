@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.elements.{ Edge, Vertex, _ }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, _ }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 
@@ -36,10 +36,10 @@ class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Mat
     // is somewhat expensive to spin up a testing SparkContext
     "pass integration test" in {
 
-      val edge1 = new Edge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", List(Property("key", "value")))
-      val edge2 = new Edge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", List(Property("key", "value")))
+      val edge1 = new GBEdge(None, Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
+      val edge2 = new GBEdge(None, Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
 
-      val vertex = new Vertex(Property("gbId", 2L), Nil)
+      val vertex = new GBVertex(Property("gbId", 2L), Set.empty[Property])
 
       val graphElements = sparkContext.parallelize(List[GraphElement](edge1, edge2, vertex))
 
@@ -48,4 +48,3 @@ class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Mat
     }
   }
 }
-

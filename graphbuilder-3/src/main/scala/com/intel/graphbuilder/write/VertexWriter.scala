@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write
 
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.tinkerpop.blueprints
 
@@ -38,7 +38,7 @@ class VertexWriter(vertexDAO: VertexDAO, append: Boolean) extends Serializable {
   /**
    * Write a vertex to the Graph database
    */
-  def write(vertex: Vertex): blueprints.Vertex = {
+  def write(vertex: GBVertex): blueprints.Vertex = {
     if (append) {
       vertexDAO.updateOrCreate(vertex)
     }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,13 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import scala.collection.mutable
-
-import scala.Some
-import scala.reflect.ClassTag
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import org.apache.spark.engine.Spark
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
+import scala.reflect.ClassTag
+import scala.util.Try
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 /**
@@ -40,7 +43,7 @@ import org.apache.spark.SparkContext._
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object MiscFrameFunctions extends Serializable {
+object MiscFrameFunctions extends Serializable {
 
   /**
    * take an input RDD and return another RDD which contains the subset of the original contents
@@ -49,7 +52,7 @@ private[spark] object MiscFrameFunctions extends Serializable {
    * @param count total rows to be included in the new RDD
    * @param limit limit on number of rows to be included in the new RDD
    */
-  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
+  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Long, limit: Int): RDD[T] = {
 
     val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(rdd)
     val capped = limit match {
@@ -129,57 +132,19 @@ private[spark] object MiscFrameFunctions extends Serializable {
   }
 
   /**
-   * perform join operation
-   * @param left parameter regarding the first dataframe
-   * @param right parameter regarding the second dataframe
-   * @param how join method
-   */
-  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
-
-    val result = how match {
-      case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
-        val rightValues: Option[Array[Any]] = t._2._2
-        val leftValues: Array[Any] = t._2._1
-        rightValues match {
-          case s: Some[Array[Any]] => leftValues ++ s.get
-          case None => leftValues ++ (1 to right.columnCount).map(i => null)
-        }
-      })
-
-      case "right" => left.rdd.rightOuterJoin(right.rdd).map(t => {
-        val leftValues: Option[Array[Any]] = t._2._1
-        val rightValues: Array[Any] = t._2._2
-        leftValues match {
-          case s: Some[Array[Any]] => s.get ++ rightValues
-          case None => {
-            var array: Array[Any] = rightValues
-            (1 to left.columnCount).foreach(i => array = null +: array)
-            array
-          }
-        }
-      })
-
-      case _ => left.rdd.join(right.rdd).map(t => {
-        val leftValues: Array[Any] = t._2._1
-        val rightValues: mutable.ArrayOps[Any] = t._2._2
-        leftValues ++ rightValues
-      })
-    }
-
-    result.asInstanceOf[RDD[Array[Any]]]
-  }
-
-  /**
    * Remove duplicate rows identified by the key
    * @param pairRdd rdd which has (key, value) structure in each row
    */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
-    val grouped = pairRdd.groupByKey()
-    val duplicatesRemoved: RDD[Array[Any]] = grouped.map(bag => {
-      val firstEntry = bag._2.head
-      firstEntry
-    })
-    duplicatesRemoved
+    pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
+  def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
+    val columnIndices = schema.columnIndices(columnNames)
+
+    // run the operation
+    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
+
+    MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+  }
 }

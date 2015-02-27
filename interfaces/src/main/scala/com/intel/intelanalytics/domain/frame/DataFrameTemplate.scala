@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,9 +23,11 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
+case class DataFrameTemplate(name: Option[String], description: Option[String] = None) {
   require(name != null, "name must not be null")
-  require(name.trim.length > 0, "name must not be empty or whitespace")
+  if (name != None) {
+    require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
+    FrameName.validate(name.get)
+  }
   require(description != null, "description must not be null")
-
 }

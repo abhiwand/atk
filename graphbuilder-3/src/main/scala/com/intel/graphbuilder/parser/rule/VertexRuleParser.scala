@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,13 +23,13 @@
 
 package com.intel.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.graphbuilder.parser.{ InputRow, InputSchema, Parser }
 
 /**
  * Parse an InputRow into Vertices using VertexRules
  */
-case class VertexRuleParser(inputSchema: InputSchema, vertexRules: List[VertexRule]) extends Parser[Vertex](inputSchema) with Serializable {
+case class VertexRuleParser(inputSchema: InputSchema, vertexRules: List[VertexRule]) extends Parser[GBVertex](inputSchema) with Serializable {
 
   // each rule gets its own parser
   private val vertexParsers = vertexRules.map(rule => rule -> new SingleVertexRuleParser(rule)).toMap
@@ -37,9 +37,9 @@ case class VertexRuleParser(inputSchema: InputSchema, vertexRules: List[VertexRu
   /**
    * Parse the supplied InputRow into zero or more Vertices using all applicable rules
    */
-  def parse(row: InputRow): Seq[Vertex] = {
+  def parse(row: InputRow): Seq[GBVertex] = {
     for {
-      rule ← vertexRules
+      rule <- vertexRules
       if rule appliesTo row
     } yield vertexParsers(rule).parse(row)
   }
@@ -54,8 +54,7 @@ private[graphbuilder] case class SingleVertexRuleParser(rule: VertexRule) extend
   private val gbIdParser = new SinglePropertyRuleParser(rule.gbId)
   private val propertyParser = new PropertyRuleParser(rule.propertyRules)
 
-  def parse(row: InputRow): Vertex = {
-    new Vertex(gbIdParser.parse(row), propertyParser.parse(row))
+  def parse(row: InputRow): GBVertex = {
+    new GBVertex(gbIdParser.parse(row), propertyParser.parse(row))
   }
 }
-

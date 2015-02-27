@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,7 +26,7 @@ package com.intel.intelanalytics
 /**
  * Thrown when a requested resource does not exist.
  */
-class NotFoundException(resourceType: String, name: String)
-    extends RuntimeException(s"Requested resource of type $resourceType named $name could not be found") {
+class NotFoundException(resourceType: String, name: String, message: String = "")
+    extends RuntimeException(s"Requested resource of type '$resourceType' named '$name' could not be found.\n $message\n") {
 
 }

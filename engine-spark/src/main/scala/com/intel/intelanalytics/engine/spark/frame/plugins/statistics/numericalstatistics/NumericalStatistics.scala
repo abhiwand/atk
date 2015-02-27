@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics
 
 import org.apache.spark.AccumulatorParam
@@ -10,7 +33,7 @@ import com.intel.intelanalytics.domain.frame.ColumnFullStatisticsReturn
  *
  * @param dataWeightPairs RDD of pairs of  the form (data, weight)
  */
-class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationVariance: Boolean) extends Serializable {
+class NumericalStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])], usePopulationVariance: Boolean) extends Serializable {
 
   /*
    * Incoming weights and data are Doubles, but internal running sums are represented as BigDecimal to improve
@@ -22,17 +45,6 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationV
    */
 
   private lazy val singlePassStatistics: FirstPassStatistics = StatisticsRDDFunctions.generateFirstPassStatistics(dataWeightPairs)
-
-  /*
-   * Second pass statistics are used to calculate higher moments about the mean. We can probably get away with just
-   * one pass... but not till after 0.8
-   * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
-   *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
-   *  at the API level.)
-   */
-
-  private lazy val secondPassStatistics: SecondPassStatistics =
-    StatisticsRDDFunctions.generateSecondPassStatistics(dataWeightPairs, weightedMean, weightedStandardDeviation)
 
   /**
    * The weighted mean of the data.
@@ -136,35 +148,4 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationV
     else
       Double.NaN
 
-  /**
-   * The un-weighted skewness of the dataset.
-   * NaN when there are <= 2 data elements of nonzero weight.
-   */
-  lazy val weightedSkewness: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.positiveWeightCount)
-    val sumOfThirdWeighted: Option[BigDecimal] = secondPassStatistics.sumOfThirdWeighted
-    if ((n > 2) && sumOfThirdWeighted.nonEmpty)
-      ((n / ((n - 1) * (n - 2))) * sumOfThirdWeighted.get).toDouble
-    else Double.NaN
-  }
-
-  /**
-   * The un-weighted kurtosis of the dataset. NaN when there are <= 3 data elements of nonzero weight.
-   */
-  lazy val weightedKurtosis: Double = {
-    val n = BigDecimal(singlePassStatistics.positiveWeightCount)
-    val sumOfFourthWeighted: Option[BigDecimal] = secondPassStatistics.sumOfFourthWeighted
-    if ((n > 3) && sumOfFourthWeighted.nonEmpty) {
-      val leadingCoefficient: BigDecimal = (n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))
-
-      val subtrahend: BigDecimal = (3 * (n - 1) * (n - 1)) / ((n - 2) * (n - 3))
-
-      ((leadingCoefficient * secondPassStatistics.sumOfFourthWeighted.get) - subtrahend).toDouble
-    }
-    else {
-      Double.NaN
-    }
-  }
-
 }
-

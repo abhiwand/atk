@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics
 
 import org.apache.spark.rdd.RDD
@@ -14,20 +37,14 @@ import org.apache.spark.AccumulatorParam
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[numericalstatistics] object StatisticsRDDFunctions {
-
-  /*
-   * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
-   *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
-   *  at the API level.)
-   */
+object StatisticsRDDFunctions extends Serializable {
 
   /**
    * Generates the first-pass statistics for a given distribution.
    * @param dataWeightPairs The (data, weight) pairs of the distribution.
    * @return The first-pass statistics of the distribution.
    */
-  def generateFirstPassStatistics(dataWeightPairs: RDD[(Double, Double)]): FirstPassStatistics = {
+  def generateFirstPassStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])]): FirstPassStatistics = {
 
     val accumulatorParam = new FirstPassStatisticsAccumulatorParam()
 
@@ -50,36 +67,40 @@ private[numericalstatistics] object StatisticsRDDFunctions {
     accumulator.value
   }
 
-  private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
-    val dataAsDouble: Double = p._1
-    val weightAsDouble: Double = p._2
+  private def convertDataWeightPairToFirstPassStats(p: (Option[Double], Option[Double])): FirstPassStatistics = {
+    (p._1, p._2) match {
+      case (None, None) | (None, _) | (_, None) => firstPassStatsOfBadEntry
+      case (data, weight) =>
+        val dataAsDouble: Double = data.get
+        val weightAsDouble: Double = weight.get
 
-    if (!NumericValidationUtils.isFiniteNumber(dataAsDouble)
-      || !NumericValidationUtils.isFiniteNumber(weightAsDouble)) {
-      firstPassStatsOfBadEntry
-    }
-    else {
-      if (weightAsDouble <= 0) {
-        firstPassStatsOfGoodEntryNonPositiveWeight
-      }
-      else {
-        val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
-        val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
+        if (!NumericValidationUtils.isFiniteNumber(dataAsDouble)
+          || !NumericValidationUtils.isFiniteNumber(weightAsDouble)) {
+          firstPassStatsOfBadEntry
+        }
+        else {
+          if (weightAsDouble <= 0) {
+            firstPassStatsOfGoodEntryNonPositiveWeight
+          }
+          else {
+            val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
+            val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
 
-        val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
+            val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
 
-        FirstPassStatistics(mean = dataAsBigDecimal,
-          weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
-          weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
-          weightedSumOfLogs = weightedLog,
-          minimum = dataAsDouble,
-          maximum = dataAsDouble,
-          totalWeight = weightAsBigDecimal,
-          positiveWeightCount = 1,
-          nonPositiveWeightCount = 0,
-          badRowCount = 0,
-          goodRowCount = 1)
-      }
+            FirstPassStatistics(mean = dataAsBigDecimal,
+              weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
+              weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+              weightedSumOfLogs = weightedLog,
+              minimum = dataAsDouble,
+              maximum = dataAsDouble,
+              totalWeight = weightAsBigDecimal,
+              positiveWeightCount = 1,
+              nonPositiveWeightCount = 0,
+              badRowCount = 0,
+              goodRowCount = 1)
+          }
+        }
     }
   }
 
@@ -111,77 +132,5 @@ private[numericalstatistics] object StatisticsRDDFunctions {
     minimum = Double.PositiveInfinity,
     maximum = Double.NegativeInfinity,
     totalWeight = BigDecimal(0))
-
-  /**
-   * Calculate the second pass statistics for a distribution -- given its mean and standard deviation.
-   * @param dataWeightPairs The (data, weight) pairs of the distribution.
-   * @param mean The mean of the distribution.
-   * @param stddev The standard deviation of the distribution.
-   * @return Second-pass statistics.
-   */
-  def generateSecondPassStatistics(dataWeightPairs: RDD[(Double, Double)], mean: Double, stddev: Double): SecondPassStatistics = {
-
-    if (stddev != 0) {
-      val accumulatorParam = new SecondPassStatisticsAccumulatorParam()
-      val initialValue = new SecondPassStatistics(Some(BigDecimal(0)), Some(BigDecimal(0)))
-      val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
-
-      // for second pass statistics, there's no need to keep around the data elements with non-positive weight,
-      // since the first pass statistics track the count of those
-      dataWeightPairs.filter(NumericValidationUtils.isFiniteDoublePair).
-        filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) }).
-        map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
-
-      accumulator.value
-    }
-    else {
-      SecondPassStatistics(None, None)
-    }
-
-  }
-
-  private def convertDataWeightPairToSecondPassStats(p: (Double, Double), mean: Double, stddev: Double): SecondPassStatistics = {
-
-    val data: Double = p._1
-    val weight: Double = p._2
-
-    val thirdWeighted: Option[BigDecimal] =
-      if (stddev != 0 && !stddev.isNaN())
-        Some(BigDecimal(Math.pow(weight, 1.5) * Math.pow((data - mean) / stddev, 3)))
-      else
-        None
-
-    val fourthWeighted: Option[BigDecimal] =
-      if (stddev != 0 && !stddev.isNaN())
-        Some(BigDecimal(Math.pow(weight, 2) * Math.pow((data - mean) / stddev, 4)))
-      else
-        None
-
-    SecondPassStatistics(sumOfThirdWeighted = thirdWeighted, sumOfFourthWeighted = fourthWeighted)
-  }
-
-  private class SecondPassStatisticsAccumulatorParam() extends AccumulatorParam[SecondPassStatistics] with Serializable {
-
-    override def zero(initialValue: SecondPassStatistics) = SecondPassStatistics(Some(BigDecimal(0)), Some(BigDecimal(0)))
-
-    override def addInPlace(stats1: SecondPassStatistics, stats2: SecondPassStatistics): SecondPassStatistics = {
-
-      val sumOfThirdWeighted: Option[BigDecimal] = if (stats1.sumOfThirdWeighted.nonEmpty && stats2.sumOfThirdWeighted.nonEmpty) {
-        Some(stats1.sumOfThirdWeighted.get + stats2.sumOfThirdWeighted.get)
-      }
-      else {
-        None
-      }
-
-      val sumOfFourthWeighted: Option[BigDecimal] = if (stats1.sumOfFourthWeighted.nonEmpty && stats2.sumOfFourthWeighted.nonEmpty) {
-        Some(stats1.sumOfFourthWeighted.get + stats2.sumOfFourthWeighted.get)
-      }
-      else {
-        None
-      }
-
-      SecondPassStatistics(sumOfThirdWeighted = sumOfThirdWeighted, sumOfFourthWeighted = sumOfFourthWeighted)
-    }
-  }
 
 }

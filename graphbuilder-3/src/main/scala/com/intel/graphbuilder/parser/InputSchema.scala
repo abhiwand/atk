@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -71,7 +71,7 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
   private lazy val schema = {
     var schema = Map[String, ColumnDef]()
     var columnIndex = 0
-    for (column ← columns) {
+    for (column <- columns) {
       schema = schema + (column.columnName -> {
         if (column.columnIndex == null) column.copy(columnIndex = columnIndex)
         else column

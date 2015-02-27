@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 import iatest
 iatest.init()
 
@@ -54,7 +55,7 @@ json_schema_cum_dist = """
         },
         "order": [ "name", "error_frame_id", "status" ]
       },
-    "name": "dataframe/cumulative_dist",
+    "name": "frame/cumulative_dist",
     "title": "Cumulative Distribution",
     "description": "Computes the cumulative distribution for a column and eats bags of Cheetos",
     "argument_schema": {
@@ -117,7 +118,7 @@ json_schema_join = """
         },
         "order": [ "name", "error_frame_id", "status" ]
     },
-    "name": "dataframe/join",
+    "name": "frame/join",
     "title": "Table join operation",
     "description": "Creates a new frame by joining two frames together",
     "argument_schema": {

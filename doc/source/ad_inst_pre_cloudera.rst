@@ -22,9 +22,9 @@ Pre-Configuration
 Base Configuration
 ------------------
 
-1. Configure client-side DNS:
-=============================
-Insure all systems in cluster are DNS or /etc/hosts resolvable.
+1. Configure client-side :abbr:`DNS (Domain Name Service)`
+==========================================================
+Ensure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
 
 2. Disable Firewall
 ===================
@@ -69,29 +69,8 @@ If working behind a proxy, make sure system proxy settings are configured.
     yum clean all
     yum distro-sync
 
-.. ifconfig:: internal_docs
-
-    12. Install Basic Development Tools
-    ===================================
-
-    RedHat/CentOS/Oracle Linux:
-    ---------------------------
-    ::
-
-        yum --disableexcludes=all install kernel-headers kernel-devel
-        yum groupinstall "Development tools"
-
-    13. Install/Update Additional Software
-    ======================================
-
-    RedHat/CentOS:
-    ---------------------------
-    ::
-
-        yum install openssl openssh man curl nc nano screen vim-enhanced grep gawk awk service chkconfig ntp rpm python sudo rsync
-
-7. Determine primary CDH user
-=============================
+7. Determine primary :abbr:`CDH (Cloudera Hadoop)` user
+=======================================================
 
 Cloudera supports use of root or sudo user as administration user
 If using sudo insure user has full nopassword sudo privileges.
@@ -139,4 +118,4 @@ Make sure all systems in cluster are in time-sync with one-another.
 12. Reboot!
 ===========
 
-reboot all cluser systems to properly set all changes made.
+Reboot all cluster systems to properly set all changes made.

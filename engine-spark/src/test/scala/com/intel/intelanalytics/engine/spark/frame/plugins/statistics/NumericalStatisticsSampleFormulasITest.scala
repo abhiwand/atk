@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics
 
 import org.scalatest.Matchers
@@ -20,7 +43,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
-    require(data.length > 3, "Test Data in Error: Data should have at least four elements, lest the kurtosis be trivialized.")
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.reduce(_ + _)
 
@@ -28,10 +50,16 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val netIPWeights = inverseProbabilityWeights.reduce(_ + _)
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
-    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairs)
+    val dataFrequencyPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataFrequencyPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairsAsOptionValues)
 
     val dataIPWPairs: List[(Double, Double)] = data.zip(inverseProbabilityWeights)
-    val dataIPWRDD = sparkContext.parallelize(dataIPWPairs)
+    val dataIPWPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataIPWPairs.map {
+      case (k, v) => (Some(k), Some(v))
+    }
+    val dataIPWRDD = sparkContext.parallelize(dataIPWPairsAsOptionValues)
 
     val numericalStatisticsFrequencies = new NumericalStatistics(dataFrequencyRDD, false)
 
@@ -58,26 +86,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)
 
-    val expectedSkewnessFrequencies = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataFrequencyPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMeanFrequencies) / expectedStandardDeviationFrequencies), 3) })
-      .reduce(_ + _)
-
-    val expectedSkewnessWeights = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
-      dataIPWPairs.map(
-        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMeanIPW) / expectedStandardDeviationWeights), 3) })
-      .reduce(_ + _)
-
-    val kurtosisMultiplier = dataCount * (dataCount + 1) / ((dataCount - 1) * (dataCount - 2) * (dataCount - 3))
-    val kurtosisSubtrahend = 3 * (dataCount - 1) * (dataCount - 1) / ((dataCount - 2) * (dataCount - 3))
-
-    val expectedKurtosisFrequencies = kurtosisMultiplier * dataFrequencyPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMeanFrequencies) / expectedStandardDeviationFrequencies), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
-
-    val expectedKurtosisWeights = kurtosisMultiplier * dataIPWPairs.map(
-      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMeanIPW) / expectedStandardDeviationWeights), 4) })
-      .reduce(_ + _) - kurtosisSubtrahend
   }
 
   "mean" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
@@ -219,31 +227,4 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     Math.abs(testTotalWeight - netIPWeights) should be < epsilon
   }
 
-  "skewness" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
-
-    val testSkewness = numericalStatisticsFrequencies.weightedSkewness
-
-    Math.abs(testSkewness - expectedSkewnessFrequencies) should be < epsilon
-  }
-
-  "skewness" should "handle data with fractional weights" in new NumericalStatisticsTestSampleFormulas {
-
-    val testSkewness = numericalStatisticsWeights.weightedSkewness
-
-    Math.abs(testSkewness - expectedSkewnessWeights) should be < epsilon
-  }
-
-  "kurtosis" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
-
-    val testKurtosis = numericalStatisticsFrequencies.weightedKurtosis
-
-    Math.abs(testKurtosis - expectedKurtosisFrequencies) should be < epsilon
-  }
-
-  "kurtosis" should "handle data with fractional weights" in new NumericalStatisticsTestSampleFormulas {
-
-    val testKurtosis = numericalStatisticsWeights.weightedKurtosis
-
-    Math.abs(testKurtosis - expectedKurtosisWeights) should be < epsilon
-  }
 }

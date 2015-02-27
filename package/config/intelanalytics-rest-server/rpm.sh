@@ -13,18 +13,38 @@ version=$3
 log "package name: $packageName, tar file: $tarFile, version: $version, script path: $SCRIPTPATH"
 
 log "copy and rename: $tarFile"
+log "mkdir -p $SCRIPTPATH/rpm/SOURCES"
 mkdir -p $SCRIPTPATH/rpm/SOURCES
+log "cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 GROUP="Intel Analytics Server"
 LICENSE="Confidential"
 #SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
-DESCRIPTION="$SUMMARY 
-start the server with 'service intelanalytics status'
-config files are in /etc/intelanalytics/rest-server
-log files live in /var/log/intelanalytics/rest-server"
+DESCRIPTION="$SUMMARY \\n
+start the server with 'service intelanalytics status' \\n
+config files are in /etc/intelanalytics/rest-server \\n
+log files live in /var/log/intelanalytics/rest-server \\n
 
-REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, intelanalytics-python-rest-client-python27 >= ${version}-${BUILD_NUMBER}, intelanalytics-graphbuilder >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
+Intel ATK Release Notes - 2014-10-28 \\n
+
+The following changes have been made as part of the ATK 0.8.7 release.\\n
+
+- TRIB-1517 - Added support for Outer Joins \\n
+- TRIB-3190 - Tuned the HBase and Spark settings to improve performance \\n
+- TRIB-3809 - Added experimental implemenation of GraphX PageRank \\n
+- TRIB-2885 - Fixed shared jars \\n
+- TRIB-3846 - Move to support Python 2.7 \\n
+- TRIB-3771 - Fixed schema rollback issue on failed add_column \\n
+- TRIB-3741 - Improved error messages on index out of range for rows \\n
+- TRIB-3824 - Better handling of invalid column names \\n
+- TRIB-3834 - Added documenation to not use unicode characters in column names \\n
+- TRIB-3851 - Graphs should not be named with special charactes documentation \\n
+- TRIB-3858 - Documentation updated to ALS and CGD on how to specify L and R vertices \\n
+
+"
+
+REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
 
 PRE="
 restUser=iauser
@@ -73,9 +93,13 @@ FILES="
 "
 
 
+log "mkdir -p $SCRIPTPATH/rpm/SPECS"
 mkdir -p $SCRIPTPATH/rpm/SPECS
+log "rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec"
+env
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
+log "topdir "
 topDir="$SCRIPTPATH/rpm"
 #exit 1
 pushd $SCRIPTPATH/rpm

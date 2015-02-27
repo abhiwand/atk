@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,28 +23,38 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
+import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntity, LoadGraphArgs, GraphTemplate }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.security.UserPrincipal
 
 /**
  * Manages multiple graphs in the underlying graph database.
  */
 trait GraphStorage {
 
-  def lookup(id: Long): Option[Graph]
+  /** Lookup a Graph, throw an Exception if not found */
+  def expectGraph(graphId: Long)(implicit invocation: Invocation): GraphEntity
 
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+  /** Lookup a Graph, throw an Exception if not found */
+  def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity
 
-  def renameGraph(graph: Graph, newName: String): Graph
+  @deprecated("please use expectGraph() instead")
+  def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity]
 
-  def loadGraph(graph: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph
+  def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): GraphEntity
 
-  def drop(graph: Graph)
+  def renameGraph(graph: GraphEntity, newName: String)(implicit invocation: Invocation): GraphEntity
 
-  def getGraphs()(implicit user: UserPrincipal): Seq[Graph]
+  def drop(graph: GraphEntity)(implicit invocation: Invocation)
 
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph]
+  def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity
+
+  def updateStatus(graph: GraphEntity, newStatusId: Long)
+
+  def getGraphs()(implicit invocation: Invocation): Seq[GraphEntity]
+
+  def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[GraphEntity]
 
 }

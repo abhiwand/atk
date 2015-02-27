@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -32,6 +32,10 @@ trait CommandStorage {
   def create(frame: CommandTemplate): Command
   def scan(offset: Int, count: Int): Seq[Command]
   def start(id: Long): Unit
+
+  /**
+   * On complete - mark progress as 100% or failed
+   */
   def complete(id: Long, result: Try[JsObject]): Unit
 
   /**

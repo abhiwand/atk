@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
 import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnSummaryStatisticsReturn }
@@ -40,22 +63,6 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(3), Some(DataTypes.int32), None, rowRDD)
 
     testMode.modes shouldBe Set("E").toJson
-  }
-
-  "unweighted full statistics" should "work" in new ColumnStatisticsTest() {
-
-    val stats: ColumnFullStatisticsReturn =
-      ColumnStatistics.columnFullStatistics(2, DataTypes.float32, None, None, rowRDD)
-
-    Math.abs(stats.mean - 2.0) should be < epsilon
-  }
-
-  "weighted full statistics" should "work" in new ColumnStatisticsTest() {
-
-    val stats: ColumnFullStatisticsReturn =
-      ColumnStatistics.columnFullStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD)
-
-    Math.abs(stats.mean - 1.2) should be < epsilon
   }
 
   "unweighted summary statistics" should "work" in new ColumnStatisticsTest() {

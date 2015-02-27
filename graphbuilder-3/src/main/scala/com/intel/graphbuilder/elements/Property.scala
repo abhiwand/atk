@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,6 +24,9 @@
 package com.intel.graphbuilder.elements
 
 import com.intel.graphbuilder.util.StringUtils
+import com.intel.intelanalytics.domain.schema.DataTypes
+
+import scala.util.Try
 
 /**
  * A property on a Vertex or Edge.
@@ -44,14 +47,30 @@ case class Property(key: String, value: Any) {
 object Property {
 
   /**
-   * Merge two lists of properties so that keys appear once.
+   * Merge two set of properties so that keys appear once.
    *
    * Conflicts are handled arbitrarily.
    */
-  def merge(listA: Seq[Property], listB: Seq[Property]): Seq[Property] = {
-    val listWithDuplicates = listA ++ listB
-    val mapWithoutDuplicates = listWithDuplicates.map(p => (p.key, p)).toMap
-    mapWithoutDuplicates.valuesIterator.toList
+  def merge(setA: Set[Property], setB: Set[Property]): Set[Property] = {
+    val unionPotentialKeyConflicts = setA ++ setB
+    val mapWithoutDuplicates = unionPotentialKeyConflicts.map(p => (p.key, p)).toMap
+    mapWithoutDuplicates.valuesIterator.toSet
   }
 
+}
+
+/**
+ * An ordering of properties by key and value
+ *
+ * Can be used to enable Spark's sort-based shuffle which is more memory-efficient.
+ */
+object PropertyOrdering extends Ordering[Property] {
+  def compare(a: Property, b: Property) = {
+    val keyComparison = a.key compare b.key
+    if (keyComparison == 0) {
+      Try(DataTypes.compare(a.value, b.value))
+        .getOrElse(a.value.toString() compare b.value.toString)
+    }
+    else keyComparison
+  }
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
@@ -92,7 +93,7 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    */
   def decoratePages(uri: String, entity: Query): List[GetQueryPages] = {
     require(entity.complete)
-    val pages = new ListBuffer[GetQueryPages]();
+    val pages = new ListBuffer[GetQueryPages]()
     for (i <- 1 to entity.totalPages.get.toInt) {
       pages += new GetQueryPages(id = i, url = uri + "/" + i)
     }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,20 +25,21 @@ package com.intel.intelanalytics.service.v1.decorators
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import org.joda.time.DateTime
 
 class GraphDecoratorTest extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/graphs"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val graph = new Graph(1, "name", None, "storage", 1L, new DateTime, new DateTime)
+  val graph = new GraphEntity(1, Some("name"), None, "storage", 1L, "hbase/titan", new DateTime, new DateTime)
 
   "GraphDecorator" should "be able to decorate a graph" in {
     val decoratedGraph = GraphDecorator.decorateEntity(null, relLinks, graph)
     decoratedGraph.id should be(1)
-    decoratedGraph.name should be("name")
-    decoratedGraph.ia_uri should be("ia://graph/1")
+    decoratedGraph.name should be(Some("name"))
+    decoratedGraph.iaUri should be("ia://graph/1")
+    decoratedGraph.entityType should be("graph:titan")
     decoratedGraph.links.head.uri should be("http://www.example.com/graphs")
   }
 
@@ -46,5 +47,6 @@ class GraphDecoratorTest extends FlatSpec with Matchers {
     val graphHeaders = GraphDecorator.decorateForIndex(uri, Seq(graph))
     val graphHeader = graphHeaders.toList.head
     graphHeader.url should be("http://www.example.com/graphs/1")
+    graphHeader.entityType should be("graph:titan")
   }
 }

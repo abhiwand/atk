@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.intelanalytics.engine.plugin.{ QueryPlugin, Invocation }
+import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
@@ -36,23 +37,7 @@ import scala.concurrent.ExecutionContext
 trait SparkQueryPlugin[Argument <: Product]
     extends QueryPlugin[Argument] {
 
-  /**
-   * Operation plugins must implement this method to do the work requested by the user.
-   * @param invocation information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
-   */
-  final override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Any = {
-    execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
-  }
+  def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
 
-  /**
-   * Plugins must implement this method to do the work requested by the user.
-   * @param invocation information about the user and the circumstances at the time of the call,
-   *                   as well as a function that can be called to produce a SparkContext that
-   *                   can be used during this invocation.
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
-   */
-  def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Any
+  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
 }

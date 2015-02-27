@@ -1,0 +1,28 @@
+Make new frame with column for label prediction.
+
+Predict the labels for a test frame and create a new frame revision with existing columns and a new predicted label's column.
+
+Parameters
+----------
+predict_frame : Frame
+    frame whose labels are to be predicted.
+    By default, predict is run on the same columns over which the model is trained.
+    The user could specify column names too if needed.
+
+observation_column : list of str (Optional)
+    Column(s) containing the observations whose labels are to be predicted.
+    By default, we predict the labels over columns the LogisticRegressionModel was trained on.
+
+Returns
+-------
+Frame
+    Frame containing the original frame's columns and a column with the
+    predicted label
+
+Examples
+--------
+::
+
+    model = ia.LogisticRegressionModel(name='LogReg')
+    model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
+    model.predict(predict_frame, ['predict_for_observation_column'])

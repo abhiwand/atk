@@ -1,5 +1,4 @@
 scratch.py
-
 .ensime*
 TAGS
 dependency-reduced-pom.xml
@@ -30,6 +29,7 @@ git
 /python/nosetests.xml
 /python/intelanalytics/core/autoframe.py
 /python/intelanalytics/core/autograph.py
+/python/intelanalytics/core/docstubs.py*
 largegit.sh
 make.sh
 .metadata*
@@ -52,8 +52,8 @@ tags
 *.diff
 patches-*
 virtpy
-lib
 *.jar
 *.orig
-
 atlassian-ide-plugin.xml
+logback.xml
+*~

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,11 +24,12 @@
 package com.intel.intelanalytics.engine.spark
 
 import java.io.{ InputStream, OutputStream }
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
 
 /**
  * HDFS Access
@@ -38,8 +39,9 @@ import com.intel.event.EventLogging
  * @param fsRoot the root directory for IntelAnalytics e.g. "/user/iauser"
  */
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
+  implicit val eventContext = EventContext.enter("HDFSFileStorage")
 
-  val configuration = withContext("HDFSFileStorage.configuration") {
+  private val securedConfiguration = withContext("HDFSFileStorage.configuration") {
 
     info("fsRoot: " + fsRoot)
 
@@ -50,22 +52,43 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
     if (fsRoot.startsWith("hdfs")) {
       info("fsRoot starts with HDFS")
-      hadoopConfig.set("fs.defaultFS", fsRoot)
     }
+
+    hadoopConfig.set("fs.defaultFS", fsRoot)
 
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
       "Could not load local filesystem for Hadoop")
+
+    KerberosAuthenticator.loginConfigurationWithKeyTab(hadoopConfig)
     hadoopConfig
+  }(null)
+
+  def configuration: Configuration = {
+    if (SparkEngineConfig.enableKerberos) {
+      KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
+    }
+    securedConfiguration
   }
 
-  val fs = FileSystem.get(configuration)
+  private val fileSystem = FileSystem.get(configuration)
+
+  /**
+   * Verifies that the Kerberos Ticket is still valid and if not relogins before returning fileSystem object
+   * @return Hadoop FileSystem
+   */
+  def fs: FileSystem = {
+    if (SparkEngineConfig.enableKerberos) {
+      KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
+    }
+    fileSystem
+  }
 
   /**
    * Path from a path
    * @param path a path relative to the root or that includes the root
    */
   private[spark] def absolutePath(path: String): Path = {
-    // TODO: this seems to work but this could be revisted and perhaps done nicer
+    // TODO: this seems to work but this could be revisited and perhaps done nicer
     if (path.startsWith(fsRoot)) {
       new Path(path)
     }
@@ -137,7 +160,8 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    */
   def size(path: String): Long = {
     val abPath: Path = absolutePath(path)
-    val fileStatuses = fs.globStatus(abPath)
+    // globStatus() was returning zero if File was directory
+    val fileStatuses = if (fs.isDirectory(abPath)) fs.listStatus(abPath) else fs.globStatus(abPath)
     if (ArrayUtils.isEmpty(fileStatuses.asInstanceOf[Array[AnyRef]])) {
       throw new RuntimeException("No file found at path " + abPath)
     }
@@ -154,4 +178,3 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
   }
 
 }
-

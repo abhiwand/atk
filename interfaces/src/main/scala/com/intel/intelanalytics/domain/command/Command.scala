@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -48,20 +48,19 @@ import com.intel.intelanalytics.engine.ProgressInfo
  */
 case class Command(id: Long,
                    name: String,
-                   arguments: Option[JsObject],
+                   arguments: Option[JsObject] = None,
+                   correlationId: String = "",
                    error: Option[Error] = None,
                    progress: List[ProgressInfo] = List(),
                    complete: Boolean = false,
                    result: Option[JsObject] = None,
                    createdOn: DateTime,
                    modifiedOn: DateTime,
-                   createdById: Option[Long] = None) extends HasId
-//
-//case class CommandTemplate(name: String, arguments: Option[JsObject])
-//case class Definition(language: String, serialization: String, data: String)
-//case class Operation(name: String, definition: Option[Definition])
-//case class Partial[+Arguments](operation: Operation, arguments: Arguments)
-//
-//case class Error(message: String, stackTrace: Option[String], code: Option[Int],
-//                 details: Option[String], additional: Option[JsObject])
+                   createdById: Option[Long] = None) extends HasId {
 
+  /**
+   * Convenience method for getting the args as a String for logging/debugging
+   */
+  def compactArgs: String = arguments.map { _.compactPrint }.getOrElse("")
+
+}

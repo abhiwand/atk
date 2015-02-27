@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -30,6 +30,4 @@ import com.intel.intelanalytics.domain.User
  * @param user user DB entity representing the API user
  * @param roles roles of the authenticated user
  */
-case class UserPrincipal(user: User, roles: List[String]) {
-
-}
+case class UserPrincipal(user: User, roles: List[String])

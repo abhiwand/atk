@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,16 +20,17 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.service.v1.viewmodels.{ GetDataFrame, RelLink, GetGraph, GetGraphs }
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
  * for delivering via REST services
  */
-object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
+object GraphDecorator extends EntityDecorator[GraphEntity, GetGraphs, GetGraph] {
 
   /**
    * Decorate a single entity (like you would want in "GET /entities/id")
@@ -39,9 +40,9 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
    * @param entity the entity to decorate
    * @return the View/Model
    */
-  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Graph): GetGraph = {
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: GraphEntity): GetGraph = {
 
-    GetGraph(id = entity.id, ia_uri = entity.uri, name = entity.name, links = links.toList)
+    GetGraph(id = entity.id, iaUri = entity.uri, name = entity.name, links = links.toList, entity.entityType)
   }
 
   /**
@@ -51,10 +52,11 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
    * @param entities the list of entities to decorate
    * @return the View/Model
    */
-  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GetGraphs] = {
+  override def decorateForIndex(uri: String, entities: Seq[GraphEntity]): List[GetGraphs] = {
     entities.map(graph => new GetGraphs(id = graph.id,
       name = graph.name,
-      url = uri + "/" + graph.id)).toList
+      url = uri + "/" + graph.id,
+      entityType = graph.entityType)).toList
   }
 
 }

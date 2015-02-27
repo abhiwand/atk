@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -42,7 +42,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    *
    * @param vertexParser the parser to use
    */
-  def parseVertices(vertexParser: Parser[Vertex]): RDD[Vertex] = {
+  def parseVertices(vertexParser: Parser[GBVertex]): RDD[GBVertex] = {
     new VertexParserRDD(self, vertexParser)
   }
 
@@ -51,7 +51,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    *
    * @param edgeParser the parser to use
    */
-  def parseEdges(edgeParser: Parser[Edge]): RDD[Edge] = {
+  def parseEdges(edgeParser: Parser[GBEdge]): RDD[GBEdge] = {
     self.flatMap(row => edgeParser.parse(row))
   }
 

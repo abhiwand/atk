@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -35,6 +35,7 @@ import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Helper to allow access to spray-json utility so that we can ensure we're
@@ -118,6 +119,12 @@ private[intelanalytics] object JsonSchemaExtractor {
         else s
       case t if t =:= typeTag[GraphReference].tpe =>
         val s = JsonSchema.graph
+        if (order == 0) {
+          s.copy(self = Some(true))
+        }
+        else s
+      case t if t =:= typeTag[ModelReference].tpe =>
+        val s = JsonSchema.model
         if (order == 0) {
           s.copy(self = Some(true))
         }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write
 
-import com.intel.graphbuilder.elements.Edge
+import com.intel.graphbuilder.elements.GBEdge
 import com.intel.graphbuilder.write.dao.EdgeDAO
 import com.tinkerpop.blueprints
 
@@ -35,7 +35,7 @@ import com.tinkerpop.blueprints
  */
 class EdgeWriter(edgeDAO: EdgeDAO, append: Boolean) extends Serializable {
 
-  def write(edge: Edge): blueprints.Edge = {
+  def write(edge: GBEdge): blueprints.Edge = {
     if (append) {
       edgeDAO.updateOrCreate(edge)
     }

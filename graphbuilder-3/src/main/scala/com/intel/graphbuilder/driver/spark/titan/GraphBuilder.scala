@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,9 +26,9 @@ package com.intel.graphbuilder.driver.spark.titan
 import java.text.NumberFormat
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.graph.titan.{ TitanGraphCacheListener, TitanGraphConnector }
 import com.intel.graphbuilder.parser.rule._
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -81,7 +81,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
    * @param vertexRdd RDD of Vertex objects
    * @param edgeRdd RDD of Edge objects
    */
-  def buildGraphWithSpark(vertexRdd: RDD[Vertex], edgeRdd: RDD[Edge]) {
+  def buildGraphWithSpark(vertexRdd: RDD[GBVertex], edgeRdd: RDD[GBEdge]) {
 
     var vertices = vertexRdd
     var edges = edgeRdd
@@ -101,31 +101,28 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     idMap.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
-    val mergedEdges = edges.mergeDuplicates()
+    val broadcastJoinThreshold = titanConnector.config.getLong("auto-partitioner.broadcast-join-threshold", 0)
 
-    if (config.broadcastVertexIds) {
-
-      val ids = idMap.collect()
-      println("vertex ids size: " + ids.length)
-      val vertexMap = ids.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
+    if (config.broadcastVertexIds || JoinBroadcastVariable.useBroadcastVariable(idMap, broadcastJoinThreshold)) {
+      val vertexMap = idMap.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple)
 
       println("broadcasting vertex ids")
-      val gbIdToPhysicalIdMap = vertexRdd.sparkContext.broadcast(vertexMap)
+      val vertexMapSize = JoinBroadcastVariable
+      val gbIdToPhysicalIdMap = JoinBroadcastVariable(vertexMap)
 
       println("starting write of edges")
-      mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
-
+      edges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
     }
     else {
       println("join edges with physical ids")
-      val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
+      val edgesWithPhysicalIds = edges.joinWithPhysicalIds(idMap)
 
       println("starting write of edges")
       edgesWithPhysicalIds.write(titanConnector, config.append)
     }
 
     // Manually Unpersist RDDs to help with Memory usage
-    idMap.unpersist();
+    idMap.unpersist(blocking = false)
 
     println("done writing edges")
   }

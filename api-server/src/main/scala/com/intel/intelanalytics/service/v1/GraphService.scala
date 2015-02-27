@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,8 +24,9 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json._
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import scala.Some
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
@@ -33,11 +34,11 @@ import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetGraph
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
-import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
+import com.intel.intelanalytics.service.v1.decorators.{ FrameDecorator, GraphDecorator }
 
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
@@ -49,7 +50,9 @@ import com.intel.event.EventLogging
 import ExecutionContext.Implicits.global
 
 /**
- * REST API Graph Service
+ * REST API Graph Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -59,6 +62,8 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
   def graphRoutes() = {
     //import ViewModelJsonImplicits._
     val prefix = "graphs"
+    val verticesPrefix = "vertices"
+    val edgesPrefix = "edges"
 
     /**
      * Creates "decorated graph" for return on HTTP protocol
@@ -66,7 +71,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
      * @param graph graph metadata
      * @return Decorated graph for HTTP protocol return
      */
-    def decorate(uri: Uri, graph: Graph): GetGraph = {
+    def decorate(uri: Uri, graph: GraphEntity): GetGraph = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       GraphDecorator.decorateEntity(uri.toString, links, graph)
@@ -80,7 +85,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
     // from the metastore
 
     commonDirectives(prefix) {
-      implicit userProfile: UserPrincipal =>
+      implicit invocation: Invocation =>
         (path(prefix) & pathEnd) {
           requestUri {
             uri =>
@@ -95,7 +100,8 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           val links = List(Rel.self(uri.toString))
                           complete(GraphDecorator.decorateEntity(uri.toString(), links, graph))
                         }
-                        case _ => reject()
+                        case Success(None) => complete(StatusCodes.NotFound)
+                        case Failure(ex) => throw ex
                       }
                     }
                     case _ =>
@@ -128,36 +134,112 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
         } ~
           pathPrefix(prefix / LongNumber) {
             id =>
-              pathEnd {
-                requestUri {
-                  uri =>
-                    get {
-                      onComplete(engine.getGraph(id)) {
-                        case Success(graph) => {
-                          val decorated = decorate(uri, graph)
-                          complete {
-                            import spray.httpx.SprayJsonSupport._
-                            implicit val format = DomainJsonProtocol.graphTemplateFormat
-                            implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
-                            decorated
+              {
+                pathEnd {
+                  requestUri {
+                    uri =>
+                      get {
+                        onComplete(engine.getGraph(id)) {
+                          case Success(graph) => {
+                            val decorated = decorate(uri, graph)
+                            complete {
+                              import spray.httpx.SprayJsonSupport._
+                              implicit val format = DomainJsonProtocol.graphTemplateFormat
+                              implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
+                              decorated
+                            }
                           }
-                        }
-                        case _ => reject()
-                      }
-                    } ~
-                      delete {
-                        onComplete(for {
-                          graph <- engine.getGraph(id)
-                          res <- engine.deleteGraph(graph)
-                        } yield res) {
-                          case Success(ok) => complete("OK")
                           case Failure(ex) => throw ex
                         }
+                      } ~
+                        delete {
+                          onComplete(for {
+                            graph <- engine.getGraph(id)
+                            res <- engine.deleteGraph(graph)
+                          } yield res) {
+                            case Success(ok) => complete("OK")
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                  }
+                } ~
+                  pathPrefix(verticesPrefix) {
+                    pathEnd {
+                      requestUri {
+                        uri =>
+                          {
+                            get {
+                              import IADefaultJsonProtocol._
+                              parameters('label.?) {
+                                (label) =>
+                                  label match {
+                                    case Some(label) => {
+                                      onComplete(engine.getVertex(id, label)) {
+                                        case Success(Some(frame)) => {
+                                          import spray.httpx.SprayJsonSupport._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))
+                                        }
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                    case None => {
+                                      onComplete(engine.getVertices(id)) {
+                                        case Success(frames) =>
+                                          import spray.httpx.SprayJsonSupport._
+                                          import IADefaultJsonProtocol._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                  }
+                              }
+                            }
+                          }
                       }
-                }
+                    }
+                  } ~
+                  pathPrefix(edgesPrefix) {
+                    pathEnd {
+                      requestUri {
+                        uri =>
+                          {
+                            get {
+                              import IADefaultJsonProtocol._
+                              parameters('label.?) {
+                                (label) =>
+                                  label match {
+                                    case Some(label) => {
+                                      onComplete(engine.getEdge(id, label)) {
+                                        case Success(Some(frame)) => {
+                                          import spray.httpx.SprayJsonSupport._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))
+                                        }
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                    case None => {
+                                      onComplete(engine.getEdges(id)) {
+                                        case Success(frames) =>
+                                          import spray.httpx.SprayJsonSupport._
+                                          import IADefaultJsonProtocol._
+                                          import ViewModelJsonImplicits.getDataFrameFormat
+                                          complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
+                                        case Failure(ex) => throw ex
+                                      }
+                                    }
+                                  }
+                              }
+                            }
+                          }
+                      }
+                    }
+                  }
+
               }
           }
     }
-
   }
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,13 +24,15 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, MiscFrameFunctions }
+import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.schema.Schema
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -39,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Remove duplicate rows, keeping only one row per uniqueness criteria match
  */
-class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame] {
+class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,20 +49,13 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/drop_duplicates"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
+  override def name: String = "frame/drop_duplicates"
 
   /**
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: DropDuplicates) = 2
+  override def numberOfJobs(arguments: DropDuplicatesArgs)(implicit invocation: Invocation) = 2
 
   /**
    * Remove duplicate rows, keeping only one row per uniqueness criteria match
@@ -69,29 +64,23 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: DropDuplicates)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val ctx = invocation.sparkContext
+    val frames = engine.frames
+    val ctx = sc
 
     // validate arguments
-    val frameId: Long = arguments.frameId
-    val frameMeta: DataFrame = frames.expectFrame(frameId)
-    val frameSchema = frameMeta.schema
-
-    // run the operation
-    val rdd = frames.loadFrameRdd(ctx, frameId)
-
-    val columnIndices = frameSchema.columnIndex(arguments.unique_columns)
-    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
-
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    val rowCount = duplicatesRemoved.count()
+    val frame: FrameEntity = frames.expectFrame(arguments.frame.id)
+    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+    val columnNames = arguments.unique_columns match {
+      case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
+      case None => frame.schema.columnNames
+    }
+    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
 
     // save results
-    frames.saveFrame(frameMeta, new FrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
+    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(frame.schema, duplicatesRemoved))
   }
 }

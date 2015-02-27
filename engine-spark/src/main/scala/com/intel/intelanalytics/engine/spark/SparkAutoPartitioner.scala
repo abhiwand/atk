@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,7 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.event.EventLogging
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.security.UserPrincipal
 
 /**
  * Calculate a best guess for the number of partitions that should be used for loading this file into a Spark RDD.
@@ -37,7 +40,7 @@ import com.intel.event.EventLogging
  *   time scheduling tasks than executing them)
  * - Generally better to have slightly too many partitions than too few
  */
-class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging {
+class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging with EventLoggingImplicits {
 
   /**
    * Calculate a best guess for the number of partitions that should be used for loading this file into a Spark RDD.
@@ -47,7 +50,7 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging {
    * @param path relative path
    * @return number of partitions that should be used for loading this file into a Spark RDD
    */
-  def partitionsForFile(path: String): Int = withContext[Int]("spark-auto-partioning") {
+  def partitionsForFile(path: String)(implicit invocation: Invocation): Int = withContext[Int]("spark-auto-partioning") {
     val size = fileStorage.size(path)
     val partitions = partitionsFromFileSize(size)
     info("auto partitioning path:" + path + ", size:" + size + ", partitions:" + partitions)
@@ -80,3 +83,10 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging {
  * @param partitionCount number of partitions to use
  */
 case class FileSizeToPartitionSize(fileSizeUpperBound: Long, partitionCount: Int)
+
+object SparkAutoPartitioner {
+  /**
+   * Minimum number of default partitions
+   */
+  val minDefaultPartitions = 2
+}

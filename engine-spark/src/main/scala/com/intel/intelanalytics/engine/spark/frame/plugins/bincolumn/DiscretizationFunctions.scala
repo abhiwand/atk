@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,10 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.domain.frame.Histogram
+import com.intel.intelanalytics.domain.schema.DataTypes
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+
+import scala.math._
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 /**
@@ -38,7 +44,6 @@ import org.apache.spark.SparkContext._
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
 object DiscretizationFunctions extends Serializable {
-
   /**
    * Bin column at index using equal width binning.
    *
@@ -50,9 +55,111 @@ object DiscretizationFunctions extends Serializable {
    * @param rdd RDD that contains the column for binning
    * @return new RDD with binned column appended
    */
-  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
+  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RddWithCutoffs = {
+    val cutoffs: Array[Double] = getBinEqualWidthCutoffs(index, numBins, rdd)
 
+    // map each data element to its bin id, using cutoffs index as bin id
+    val binnedColumnRdd = binColumns(index, cutoffs.toList, lowerInclusive = true, strictBinning = false, rdd)
+    new RddWithCutoffs(cutoffs, binnedColumnRdd)
+  }
+
+  /**
+   * Bin column at index using list of cutoff values
+   * @param index column index
+   * @param cutoffs Array containing the cutoff for each bin must be monotonically increasing
+   * @param lowerInclusive if true the lowerbound of the bin will be inclusive while the upperbound is exclusive if false it is the opposite
+   * @param strictBinning if true values smaller than the first bin or larger than the last bin will not be given a bin.
+   *                      if false smaller vales will be in the first bin and larger values will be in the last
+   * @param rdd RDD that contains the column for binning
+   * @return new RDD with binned column appended
+   */
+  def binColumns(index: Int, cutoffs: List[Double], lowerInclusive: Boolean, strictBinning: Boolean, rdd: RDD[Row]): RDD[Row] = {
+    val min: Int = 0
+    val max: Int = cutoffs.length - 2
+    rdd.map { row: Row =>
+      {
+        val element = DataTypes.toDouble(row(index))
+        //if lower than first cutoff
+        val binIndex: Int =
+          // if lower than first cutoff
+          if (element < cutoffs(0))
+            if (strictBinning) -1 else min
+          // if larger than last cutoff
+          else if (cutoffs.last < element)
+            if (strictBinning) -1 else max
+          else if (lowerInclusive) {
+            if ((element - cutoffs.last).abs < 0.00001d)
+              max
+            else
+              bSearchRangeLowerInclusive(element, cutoffs, min, max)
+          }
+          else {
+            if ((element - cutoffs(0)).abs < 0.00001d)
+              min
+            else
+              bSearchRangeUpperInclusive(element, cutoffs, min, max)
+          }
+
+        new GenericRow(row.toArray :+ binIndex)
+      }
+    }
+  }
+
+  /**
+   * determine which bin the element should be grouped into if including the lower bound as part of the bin.
+   * The bin corresponds to the area between two values.
+   * For an element 5 with a cutoff list of [1,4,7,10] the bin would be 2, being between 4 and 7.
+   *
+   * @param element element to bin
+   * @param cutoffs list of cutoffs
+   * @param min lowest bin to search
+   * @param max highest bin to search
+   * @return -1 if item is out of bounds, bin number if found
+   */
+  def bSearchRangeLowerInclusive(element: Double, cutoffs: List[Double], min: Int, max: Int): Int = {
+    if (max < min) // number not in cutoffs
+      return -1
+    val mid = (max + min) / 2
+    if (cutoffs(mid + 1) <= element)
+      bSearchRangeLowerInclusive(element, cutoffs, mid + 1, max)
+    else if (element < cutoffs(mid))
+      bSearchRangeLowerInclusive(element, cutoffs, min, mid - 1)
+    else
+      mid
+  }
+
+  /**
+   * determine which bin the element should be grouped into if including the upper bound as part of the bin.
+   * The bin corresponds to the area between two values.
+   * For an element 5 with a cutoff list of [1,4,7,10] the bin would be 2, being between 4 and 7.
+   *
+   * @param element element to bin
+   * @param cutoffs list of cutoffs
+   * @param min lowest bin to search
+   * @param max highest bin to search
+   * @return -1 if item is out of bounds, bin number if found
+   */
+  def bSearchRangeUpperInclusive(element: Double, cutoffs: List[Double], min: Int, max: Int): Int = {
+    if (max < min) // number not in cutoffs
+      return -1
+    val mid = (max + min) / 2
+    if (cutoffs(mid + 1) < element)
+      bSearchRangeUpperInclusive(element, cutoffs, mid + 1, max)
+    else if (element <= cutoffs(mid))
+      bSearchRangeUpperInclusive(element, cutoffs, min, mid - 1)
+    else
+      mid
+  }
+
+  /**
+   * Determine the range cutoffs for a binned column by finding upper/lower bounds, then map each input
+   * rdd column value to a bin number based on the cutoff ranges.
+   * @param index index of the binned column
+   * @param numBins number of bins to divide the column into
+   * @param rdd rdd containing the column
+   * @return an array containing the cutoffs
+   */
+  def getBinEqualWidthCutoffs(index: Int, numBins: Int, rdd: RDD[Row]): Array[Double] = {
     // try parsing column as pairs of doubles
     val pairedRdd = try {
       rdd.map { row =>
@@ -66,39 +173,17 @@ object DiscretizationFunctions extends Serializable {
 
     // find the minimum and maximum values in the column RDD
     val min: Double = pairedRdd.sortByKey().first()._1
-    val max: Double = pairedRdd.sortByKey(false).first()._1
+    val max: Double = pairedRdd.sortByKey(ascending = false).first()._1
 
     // determine bin width and cutoffs
     val binWidth = (max - min) / numBins.toDouble
 
-    val cutoffs = if (binWidth != 0) {
+    if (binWidth != 0) {
       (min to max by binWidth).toArray
     }
     else {
       List(min, min).toArray
     }
-
-    // map each data element to its bin id, using cutoffs index as bin id
-    val binnedColumnRdd = rdd.map { row =>
-      var binIndex = 0
-      var working = true
-      val element = java.lang.Double.parseDouble(row(index).toString)
-      do {
-        for (i <- 0 to cutoffs.length - 2) {
-          // inclusive upper-bound on last cutoff range
-          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) {
-            binIndex = i
-            working = false
-          }
-          else if ((element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) < 0)) {
-            binIndex = i
-            working = false
-          }
-        }
-      } while (working)
-      row :+ binIndex.asInstanceOf[Any]
-    }
-    binnedColumnRdd
   }
 
   /**
@@ -111,67 +196,118 @@ object DiscretizationFunctions extends Serializable {
    *
    * @param index column index
    * @param numBins requested number of bins
+   * @param weightedIndex column index representing the weight of a value
    * @param rdd RDD for binning
    * @return new RDD with binned column appended
    */
-  def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    import scala.math.ceil
-
-    // try creating RDD[Double] from column
-    val columnRdd = try {
-      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
-    }
-    catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
-    }
-
-    val numElements = columnRdd.count()
-
-    // assign a rank to each distinct element
-    val pairedRdd = columnRdd.groupBy(element => element).map(pairs => (pairs._1, pairs._2.size)).sortByKey()
-
-    // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
-    // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
-    // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
-    // Option 3: convert RDD to Array for sequential operations and back to RDD otherwise (works fine but inefficient)
-    // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
-    val pairedArray = pairedRdd.collect()
-
-    // the following will fail for columns that contain more than Int.MaxValue of a specific value
-    var rank = 1
-    val rankedArray = try {
-      pairedArray.map { value =>
-        val avgRank = BigDecimal((BigInt(rank) to BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
-        rank += value._2
-        (value._1, avgRank.toDouble)
-      }
-    }
-    catch {
-      case iae: IllegalArgumentException => throw new IllegalArgumentException("More than Int.MaxValue of specific column value" + iae.toString)
-    }
-
-    val rankedRdd = rdd.sparkContext.parallelize(rankedArray)
-
-    // compute the bin number
-    val binnedRdd = rankedRdd.map { valueRank =>
-      val bin = ceil((numBins * valueRank._2) / numElements.asInstanceOf[Double]).asInstanceOf[Long]
-      (valueRank._1, bin)
-    }
-
-    // shift the bin numbers so that they are contiguous values
-    val sortedBinnedRdd = binnedRdd.groupBy(valueBin => valueBin._2).sortByKey()
-
-    val sortedBinnedArray = sortedBinnedRdd.collect()
-
-    rank = 1
-    val shiftedArray = sortedBinnedArray.flatMap { binMappings =>
-      val valuePairs = binMappings._2.map(valueBin => (valueBin._1, rank))
-      rank += 1
-      valuePairs
-    }
-
-    val binMap = shiftedArray.toMap
-    rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
+  def binEqualDepth(index: Int, numBins: Int, weightedIndex: Option[Int], rdd: RDD[Row]): RddWithCutoffs = {
+    val binNumberMap: Map[Double, Int] = getBinEqualDepthNumberMap(index, numBins, weightedIndex, rdd)
+    val sortedTuples: List[(Int, Map[Double, Int])] = binNumberMap.groupBy(_._2).toList.sortBy(_._1)
+    val cutoffs = sortedTuples.map(_._2.keys.min) :+ sortedTuples.last._2.keys.max
+    val binnedRdd = binUsingBroadcast(index, binNumberMap, rdd)
+    new RddWithCutoffs(cutoffs.toArray, binnedRdd)
   }
 
+  def binUsingBroadcast(index: Int, binNumberMap: Map[Double, Int], rdd: RDD[Row]): RDD[Row] = {
+    val broadcastBinMap = rdd.sparkContext.broadcast(binNumberMap)
+    rdd.map(row => new GenericRow(row.toArray :+ (broadcastBinMap.value.get(DataTypes.toDouble(row(index))).get - 1).asInstanceOf[Any]))
+  }
+
+  def getBinEqualDepthNumberMap(index: Int, numBins: Int, weightedIndex: Option[Int], rdd: RDD[Row]): Map[Double, Int] = {
+    // try creating RDD[Double] from column
+    val columnRdd = rdd.map(row => (DataTypes.toDouble(row(index)),
+      weightedIndex match {
+        case Some(i) => math.max(DataTypes.toDouble(row(i)), 1)
+        case None => 1.0
+      }))
+    columnRdd.cache()
+
+    // assign a rank to each distinct element
+    val numElements = columnRdd.values.sum
+    val rankedElementRdd = assignElementRanks(columnRdd)
+
+    // compute the bin number
+    val binNumberMap = assignBinNumbers(rankedElementRdd, numElements, numBins).collect().toMap
+    binNumberMap
+  }
+
+  /**
+   * Sort elements in column by ascending order and assign rank
+   *
+   * @param columnRdd RDD of column values with their weight
+   * @return RDD of column and rank
+   */
+  private def assignElementRanks(columnRdd: RDD[(Double, Double)]): RDD[(Double, Double)] = {
+    val elementFrequencyRdd = columnRdd.reduceByKey((a, b) => a + b).sortByKey()
+    elementFrequencyRdd.cache()
+
+    // Use broadcast variable to determine starting rank for each partition
+    val initialPartitionRank = getInitialPartitionRanks(elementFrequencyRdd)
+    val broadcastPartitionRanks = columnRdd.sparkContext.broadcast(initialPartitionRank)
+
+    val rankedRdd = elementFrequencyRdd.mapPartitionsWithIndex((i, iter) => {
+      var rank = broadcastPartitionRanks.value(i)
+      iter.map {
+        case (element, frequency) =>
+          // Using while loop instead of range because Scala ranges cannot cope with values that exceed Max.Int
+          var rankCounter = rank;
+          var rankSum = 0.0;
+          while (rankCounter < (rank + frequency)) {
+            rankSum = rankSum + rankCounter
+            rankCounter = rankCounter + 1
+          }
+          val avgRank = BigDecimal(rankSum) / BigDecimal(if (frequency > 0) frequency else 1)
+          rank += frequency
+          (element, avgRank.toDouble)
+      }
+    })
+    elementFrequencyRdd.unpersist()
+    rankedRdd
+  }
+
+  /**
+   * Assign ranked numbers to bins
+   *
+   * @param rankedElementRdd RDD of sorted elements ranked in ascending order
+   * @param numElements Total number of elements
+   * @param numBins Requested number of bins
+   * @return  RDD of elements and corresponding bin number
+   */
+  private def assignBinNumbers(rankedElementRdd: RDD[(Double, Double)], numElements: Double, numBins: Int): RDD[(Double, Int)] = {
+    val binnedElementRdd = rankedElementRdd.map {
+      case (element, rank) =>
+        val bin = ceil((numBins * rank) / numElements).toInt
+        (element, bin)
+    }
+    binnedElementRdd.cache()
+
+    // shift the bin numbers so that they are contiguous values
+    val sortedBinRanks = binnedElementRdd.map { case (element, bin) => bin }.distinct().sortBy(bin => bin).zipWithIndex().collect()
+    val broadcastSortedBins = rankedElementRdd.sparkContext.broadcast(sortedBinRanks.toMap)
+
+    val rankedBinRdd = binnedElementRdd.map {
+      case (element, bin) =>
+        val binNumber = broadcastSortedBins.value
+          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin${bin}"))
+        (element, (binNumber + 1).toInt)
+    }
+    binnedElementRdd.unpersist()
+    rankedBinRdd
+  }
+
+  /**
+   * Get initial ranks for each partition.
+   *
+   * The initial rank in each partition is the sum of elements in the preceding partitions
+   *
+   * @param elementFrequencyRdd RDD of elements and frequency
+   * @return Array of initial ranks for each partition in RDD
+   */
+  def getInitialPartitionRanks(elementFrequencyRdd: RDD[(Double, Double)]): Array[Double] = {
+    elementFrequencyRdd.mapPartitions(iter => {
+      var sum = 0.0
+      iter.foreach { case (element, frequency) => sum += frequency }
+      Seq(sum).toIterator
+    }).collect().scanLeft(1.0)(_ + _)
+  }
 }

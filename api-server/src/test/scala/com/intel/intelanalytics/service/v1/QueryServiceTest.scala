@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
 import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.{ CommonDirectives, ServiceTest }
 import org.joda.time.DateTime
@@ -35,8 +36,9 @@ import scala.concurrent.Future
 class QueryServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
+  implicit val call: Invocation = Call(userPrincipal)
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("queries")).thenReturn(provide(userPrincipal))
+  when(commonDirectives.apply("queries")).thenReturn(provide(call))
 
   "QueryService" should "give an empty set when there are no results" in {
 
@@ -56,13 +58,13 @@ class QueryServiceTest extends ServiceTest {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQueries(0, 20)).thenReturn(
-      Future.successful(Seq(Query(1, "dataframes/data", None, None, false, Some(5), Some(10), new DateTime(), new DateTime(), None))))
+      Future.successful(Seq(Query(1, "frames/data", None, None, false, Some(5), Some(10), new DateTime(), new DateTime(), None))))
 
     Get("/queries") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
       assert(r == """[{
                     |  "id": 1,
-                    |  "name": "dataframes/data",
+                    |  "name": "frames/data",
                     |  "url": "http://example.com/queries/1"
                     |}]""".stripMargin)
     }
@@ -74,19 +76,20 @@ class QueryServiceTest extends ServiceTest {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, false, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "frames/data", None, None, false, Some(5), None, new DateTime(), new DateTime(), None))))
 
     Get("/queries/1") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
       val expected = """{
                        |  "id": 1,
-                       |  "name": "dataframes/data",
+                       |  "name": "frames/data",
                        |  "complete": false,
                        |  "links": [{
                        |    "rel": "self",
                        |    "uri": "http://example.com/queries/1",
                        |    "method": "GET"
-                       |  }]
+                       |  }],
+                       |  "correlation_id": ""
                        |}""".stripMargin
       assert(r == expected)
     }
@@ -98,7 +101,7 @@ class QueryServiceTest extends ServiceTest {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "frames/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
 
     Get("/queries/1/data") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
@@ -127,7 +130,7 @@ class QueryServiceTest extends ServiceTest {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "frames/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
 
     when(engine.getQueryPage(1, 0)).thenReturn(
       QueryDataResult(List(), None)
@@ -137,7 +140,7 @@ class QueryServiceTest extends ServiceTest {
       val r = responseAs[String]
       assert(r == """{
                     |  "id": 1,
-                    |  "name": "dataframes/data",
+                    |  "name": "frames/data",
                     |  "complete": true,
                     |  "result": {
                     |    "data": [],
@@ -148,7 +151,8 @@ class QueryServiceTest extends ServiceTest {
                     |    "rel": "self",
                     |    "uri": "http://example.com/queries/1/data/1",
                     |    "method": "GET"
-                    |  }]
+                    |  }],
+                    |  "correlation_id": ""
                     |}""".stripMargin)
     }
   }

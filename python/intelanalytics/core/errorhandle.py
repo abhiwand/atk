@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -19,7 +19,8 @@
 # delivery of the Materials, either expressly, by implication, inducement,
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
-#############################################################################
+##############################################################################
+
 import sys
 import traceback
 import warnings
@@ -36,7 +37,7 @@ class Errors(object):
     def __repr__(self):
         return "show_details = %s\nlast = %s" % (self._show_details, self.last)
 
-    help_msg = """(For full stack trace of this error, use: errors.last
+    _help_msg = """(For full stack trace of this error, use: errors.last
  To always show full details, set errors.show_details = True)
 """
 
@@ -93,7 +94,7 @@ class IaError(Exception):
             raise
         else:
             # to hide the stack, we return the exception info w/o trace
-            #sys.stderr.write(Errors.help_msg)
+            #sys.stderr.write(errors._help_msg)
             #sys.stderr.flush()
             return exc_info[1], None, None
 

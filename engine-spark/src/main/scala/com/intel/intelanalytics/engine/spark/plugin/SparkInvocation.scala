@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
+import com.intel.event.EventContext
+import com.intel.intelanalytics.engine.plugin.CommandInvocation
+import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkEngine }
+import com.intel.intelanalytics.engine.{ CommandStorageProgressUpdater, CommandStorage, ReferenceResolver }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import spray.json.JsObject
@@ -41,7 +42,6 @@ import scala.concurrent.ExecutionContext
  * @param commandId the ID assigned to this command execution
  * @param executionContext the Scala execution context in use
  * @param arguments the original JSON arguments, unconverted
- * @param sparkContext a SparkContext that can be used to implement the plugin's functionality
  */
 case class SparkInvocation(engine: SparkEngine,
                            user: UserPrincipal,
@@ -49,4 +49,13 @@ case class SparkInvocation(engine: SparkEngine,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
                            sparkContext: SparkContext,
-                           commandStorage: SparkCommandStorage) extends Invocation
+                           commandStorage: CommandStorage,
+                           resolver: ReferenceResolver,
+                           eventContext: EventContext) extends CommandInvocation {
+  override val progressUpdater: CommandProgressUpdater = new CommandStorageProgressUpdater(commandStorage)
+}
+
+object SparkInvocation {
+  implicit def invocationToUser(inv: SparkInvocation): UserPrincipal = inv.user
+  implicit def invocationToEventContext(inv: SparkInvocation): EventContext = inv.eventContext
+}

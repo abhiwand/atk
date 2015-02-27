@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,18 +23,21 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.component.{ Boot, DefaultArchive }
-import com.intel.intelanalytics.repository.{ Profile, DbProfileComponent, SlickMetaStoreComponent }
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }
+import FileUtil.writeFile
+import com.intel.intelanalytics.engine.plugin.Call
+import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
-import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
+import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
+import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.Config
+import org.joda.time.DateTime
 import com.intel.intelanalytics.domain.{ User, DomainJsonProtocol }
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import spray.json._
 import DomainJsonProtocol.commandDefinitionFormat
-import com.intel.intelanalytics.security.UserPrincipal
-import org.joda.time.DateTime
-import com.intel.event.EventLogging
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 /**
  * Special archive for dumping the command and query information to a file
@@ -42,23 +45,30 @@ import com.intel.event.EventLogging
  *
  * This is used for generating the Python docs, it isn't part of the running system.
  */
-class CommandDumper extends DefaultArchive
+class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends DefaultArchive(archiveDefinition, classLoader, config)
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
-  override lazy val profile = withContext("command dumper connecting to metastore") {
-    // Initialize a Profile from settings in the config
-    val driver = CommandDumperConfig.metaStoreConnectionDriver
-    new Profile(Profile.jdbcProfileForDriver(driver),
-      connectionString = CommandDumperConfig.metaStoreConnectionUrl,
-      driver,
-      username = CommandDumperConfig.metaStoreConnectionUsername,
-      password = CommandDumperConfig.metaStoreConnectionPassword)
+  implicit val eventContext = EventContext.enter("CommandDumper")
+
+  override lazy val profile = withMyClassLoader {
+    withContext("command dumper connecting to metastore") {
+      // Initialize a Profile from settings in the config
+      val driver = CommandDumperConfig.metaStoreConnectionDriver
+      new Profile(Profile.jdbcProfileForDriver(driver),
+        connectionString = CommandDumperConfig.metaStoreConnectionUrl,
+        driver,
+        username = CommandDumperConfig.metaStoreConnectionUsername,
+        password = CommandDumperConfig.metaStoreConnectionPassword)
+    }
   }
 
   override def start() = {
     metaStore.initializeSchema()
+    val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
+    implicit val call = Call(impUser)
     val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
     val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], null)
     lazy val engine = new SparkEngine(
@@ -67,6 +77,7 @@ class CommandDumper extends DefaultArchive
       commands,
       /*frames*/ null,
       /*graphs*/ null,
+      /*models*/ null,
       /*users*/ null,
       queries,
       queryExecutor,
@@ -75,14 +86,15 @@ class CommandDumper extends DefaultArchive
     Await.ready(engine.getCommands(0, 1), 30 seconds) //make sure engine is initialized
     lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, null)
     lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, null)
-    implicit val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
     val commandDefs = engine.getCommandDefinitions()
     val commandDump = "{ \"commands\": [" + commandDefs.map(_.toJson).mkString(",\n") + "] }"
     val currentDir = System.getProperty("user.dir")
     val fileName = currentDir + "/target/command_dump.json"
-    Boot.writeFile(fileName, commandDump)
+    writeFile(fileName, commandDump)
     println("Command Dump written to " + fileName)
+    eventContext.close()
   }
+
 }
 
 /**

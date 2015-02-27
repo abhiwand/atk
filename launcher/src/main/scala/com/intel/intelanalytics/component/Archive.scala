@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,35 +23,27 @@
 
 package com.intel.intelanalytics.component
 
+import java.net.URL
+
+import com.typesafe.config.{ ConfigParseOptions, ConfigFactory, Config }
+
 import scala.reflect.ClassTag
+import scala.reflect.io.{ File, Directory, Path }
+import scala.util.Try
 
-trait Archive extends Component {
+import ExceptionUtil.attempt
 
-  private var _loader: Option[String => Any] = None
-  private var _definition: Option[ArchiveDefinition] = None
+abstract class Archive(val definition: ArchiveDefinition, val classLoader: ClassLoader, config: Config)
+    extends Component with ClassLoaderAware {
 
-  /**
-   * Configuration / definition of the archive, including name and other
-   * useful information
-   */
-  def definition: ArchiveDefinition = _definition.getOrElse(
-    throw new Exception("Archive has not been initialized"))
+  //Component initialization
+  init(definition.name, config)
 
   /**
-   * The archive's loader function for loading classes.
+   * Execute a code block using the `ClassLoader` defined in the {classLoader} member
+   * rather than the class loader that loaded this class or the current thread class loader.
    */
-  private def loader: String => Any = _loader.getOrElse(
-    throw new Exception("Archive has not been initialized")
-  )
-
-  /**
-   * Called on archive creation to initialize the archive
-   */
-  private[intelanalytics] def initializeArchive(definition: ArchiveDefinition,
-                                                loader: String => Any) = {
-    this._loader = Some(loader)
-    this._definition = Some(definition)
-  }
+  override def withMyClassLoader[T](expression: => T): T = withLoader(classLoader)(expression)
 
   /**
    * Load and initialize a `Component` based on configuration path.
@@ -62,14 +54,17 @@ trait Archive extends Component {
    * @return an initialized and started instance of the component
    */
   protected def loadComponent(path: String): Component = {
-    Archive.logger(s"Loading component $path")
+    Archive.logger(s"Loading component $path (set ${SystemConfig.debugConfigKey} to true to enable component config logging")
     val className = configuration.getString(path.replace("/", ".") + ".class")
     val component = load(className).asInstanceOf[Component]
     val restricted = configuration.getConfig(path + ".config").withFallback(configuration).resolve()
-    Archive.logger(s"Component config for $path follows:")
-    Archive.logger(restricted.root().render())
-    Archive.logger(s"End component config for $path")
-    Boot.writeFile("/tmp/iat/" + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+    if (Archive.system.systemConfig.debugConfig) {
+      Archive.logger(s"Component config for $path follows:")
+      Archive.logger(restricted.root().render())
+      Archive.logger(s"End component config for $path")
+      FileUtil.writeFile(Archive.system.systemConfig.debugConfigFolder + path.replace("/", "_") + ".effective-conf",
+        restricted.root().render())
+    }
     component.init(path, restricted)
     component.start()
     component
@@ -83,8 +78,10 @@ trait Archive extends Component {
    * @return the new instance
    */
   def load(className: String): Any = {
-    Archive.logger(s"Loading class $className")
-    loader(className)
+    Archive.logger(s"Archive ${definition.name} creating instance of class $className")
+    withMyClassLoader {
+      classLoader.loadClass(className).newInstance()
+    }
   }
 
   /**
@@ -115,6 +112,287 @@ trait Archive extends Component {
 /**
  * Companion object for Archives.
  */
-object Archive {
+object Archive extends ClassLoaderAware {
+
+  /**
+   * Can be set at runtime to use whatever logging framework is desired.
+   */
+  //TODO: load slf4j + logback in separate class loader (completely separate from this one) and use it.
   var logger: String => Unit = println
+
+  /**
+   * Returns the requested archive, loading it if needed.
+   * @param archiveName the name of the archive
+   * @param className the name of the class managing the archive
+   *
+   * @return the requested archive
+   */
+  def getArchive(archiveName: String, className: Option[String] = None): Archive = {
+    system.archive(archiveName).getOrElse(buildArchive(archiveName, className))
+  }
+
+  /**
+   * Return the jar file location for the specified archive
+   * @param archive archive to search
+   * @param f function for searching code paths that contain the archive
+   */
+  def getJar(archive: String, f: String => Array[URL] = a => getCodePathUrls(a)): URL = {
+    val codePaths = f(archive)
+    val jarPath = codePaths.find(u => u.getPath.endsWith(".jar"))
+    jarPath match {
+      case None => throw new Exception(s"Could not find jar file for $archive")
+      case _ => jarPath.get
+    }
+  }
+
+  /**
+   * Locations from which classes can be loaded.
+   */
+  sealed trait CodePath { def name: String; def path: Path }
+  case class JarPath(name: String, path: Path) extends CodePath
+  case class FolderPath(name: String, path: Path) extends CodePath
+
+  /**
+   * Search the paths to class folder or jar files for the specified archive
+   * @param archive archive to search
+   * @return Array of CodePaths to the found class folder and jar files
+   */
+  def getCodePaths(archive: String, sourceRoots: Array[String], jarFolders: Array[String]): Array[CodePath] = {
+    //TODO: Sometimes ${PWD} doesn't get replaced by Config library, figure out why
+    val paths = sourceRoots.map(s => s.replace("${PWD}", Directory.Current.get.toString()): Path).flatMap { root =>
+      Array(
+        FolderPath("development class files", root / archive / "target" / "classes"),
+        FolderPath("development resource files", root / archive / "src" / "main" / "resources"),
+        JarPath("development jar", root / archive / "target" / (archive + ".jar")),
+        FolderPath("giraph development class files", root / "igiraph" / archive.substring(1) / "target" / "classes"),
+        FolderPath("giraph development resource files", root / "igiraph" / archive.substring(1) / "src" / "main" / "resources"),
+        JarPath("giraph development jar", root / "igiraph" / archive.substring(1) / "target" / (archive + ".jar"))
+      )
+    } ++ jarFolders.map(s => JarPath("deployed jar",
+      (s.replace("${PWD}", Directory.Current.get.toString()): Path) / (archive + ".jar")))
+    paths.foreach { p =>
+      Archive.logger(s"Considering ${p.path}")
+    }
+    paths.filter {
+      case JarPath(n, p) => File(p).exists
+      case FolderPath(n, p) => Directory(p).exists
+    }.toArray
+  }
+
+  /**
+   * Search the paths to class folder or jar files for the specified archive
+   * @param archive archive to search
+   * @return Array of URLs to the found class folder and jar files
+   */
+  def getCodePathUrls(archive: String,
+                      sourceRoots: Array[String] = system.systemConfig.sourceRoots,
+                      jarFolders: Array[String] = system.systemConfig.jarFolders): Array[URL] = {
+    getCodePaths(archive, sourceRoots, jarFolders).map { codePath =>
+      Archive.logger(s"Found ${codePath.name} at ${codePath.path}")
+      codePath.path.toURL
+    }
+  }
+
+  /**
+   * Create a class loader for the given archive, with the given parent.
+   *
+   * As a side effect, updates the loaders map.
+   *
+   * @param archive the archive whose class loader we're constructing
+   * @param parent the parent for the new class loader
+   * @return a class loader
+   */
+  private[component] def buildClassLoader(archive: String,
+                                          parent: ClassLoader,
+                                          sourceRoots: Array[String],
+                                          jarFolders: Array[String],
+                                          additionalArchives: Array[Archive] = Array.empty[Archive],
+                                          additionalPaths: Array[String] = Array.empty[String]): ClassLoader = {
+    val urls = Archive.getCodePathUrls(archive, sourceRoots, jarFolders) ++
+      additionalPaths.map(normalizeUrl)
+    require(urls.length > 0, s"Could not locate archive $archive")
+    val loader = new ArchiveClassLoader(archive, urls, parent, additionalArchives.map(_.classLoader))
+    Archive.logger(s"Created class loader: $loader")
+    loader
+  }
+
+  /**
+   * Needed to make sure URLs are presented in a form that URLClassLoader can use (e.g. for files, they
+   * need to start with file:// and, if they are directories, they need to end with a slash)
+   */
+  private def normalizeUrl(url: String): URL = {
+    val lead = if (url.contains(":")) { "" } else { "file://" }
+    val tail = if ((lead + url).startsWith("file:") && !url.endsWith("/") && !url.endsWith(".jar")) {
+      "/"
+    }
+    else { "" }
+    new URL(lead + url + tail)
+  }
+
+  var _system: SystemState = null
+
+  def system: SystemState = {
+    if (_system == null) {
+      //Bootstrap process
+      //First, construct a bare-bones configuration based on nothing but commandline and the launcher
+      //We need this to know basic configs needed to load the first archive
+      val tempSystem = new SystemState()
+      val defaultParentArchiveName = tempSystem.systemConfig.defaultParentArchiveName
+      //Now we can construct a throwaway class loader we use to load the real configuration
+      val configDirectory = System.getProperty("launcher.configDirectory", (Directory.Current.get / "conf").toString)
+      val defaultParentArchiveClassLoader =
+        attempt(buildClassLoader(defaultParentArchiveName,
+          getClass.getClassLoader,
+          tempSystem.systemConfig.sourceRoots,
+          tempSystem.systemConfig.jarFolders,
+          Array.empty,
+          Array(configDirectory)),
+          s"Failed to build default parent class loader '$defaultParentArchiveName'")
+      //Install this system configuration that's really close to the final config
+      _system = attempt(new SystemState(
+        new SystemConfig(ConfigFactory.load(defaultParentArchiveClassLoader))),
+        s"Failed to load default configuration")
+      //Now we've got enough to actually load our first archive
+      //getArchive has the side effect of updating _system also, but it needs _system to work
+      buildArchive(_system.systemConfig.defaultParentArchiveName)
+      //At this point, the system config is fully initialized and new archives can be loaded.
+      logger(s"System configuration installed")
+    }
+    _system
+  }
+
+  /**
+   * Initializes an archive instance
+   *
+   * @param definition the definition (name, etc.)
+   * @param classLoader  a class loader for the archive
+   * @param augmentedConfig config that is specific to this archive
+   * @param instance the (un-initialized) archive instance
+   */
+  private def initializeArchive(definition: ArchiveDefinition,
+                                classLoader: ClassLoader,
+                                augmentedConfig: Config,
+                                instance: Archive) = {
+
+    instance.init(definition.name, augmentedConfig)
+
+    //Give each Archive a chance to clean up when the app shuts down
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = {
+        instance.stop()
+      }
+    })
+  }
+
+  private def getAugmentedConfig(archiveName: String, loader: ClassLoader) = {
+    val parseOptions = ConfigParseOptions.defaults()
+    parseOptions.setAllowMissing(true)
+
+    ConfigFactory.invalidateCaches()
+
+    val augmentedConfig = system.systemConfig.rootConfiguration.withFallback(
+      ConfigFactory.parseResources(loader, "reference.conf", parseOptions)
+        .withFallback(system.systemConfig.rootConfiguration)).resolve()
+
+    if (system.systemConfig.debugConfig)
+      FileUtil.writeFile(system.systemConfig.debugConfigFolder + archiveName + ".effective-conf",
+        augmentedConfig.root().render())
+
+    augmentedConfig
+  }
+
+  /**
+   * Main entry point for archive creation
+   *
+   * @param archiveName the archive to create
+   * @return the created, running, `Archive`
+   */
+  private def buildArchive(archiveName: String,
+                           className: Option[String] = None): Archive = {
+    try {
+      //We first create a standard plugin class loader, which we will use to query the config
+      //to see if this archive needs special treatment (i.e. a parent class loader other than the
+      //defaultParentArchive class loader)
+      val probe = Archive.buildClassLoader(archiveName,
+        system.archive(system.systemConfig.defaultParentArchiveName)
+          .map(a => a.classLoader)
+          .getOrElse(this.getClass.getClassLoader),
+        system.systemConfig.sourceRoots,
+        system.systemConfig.jarFolders
+      )
+
+      val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
+
+      val definition = {
+        val defaultDef = ArchiveDefinition(archiveName, augmentedConfigForProbe, system.systemConfig.defaultParentArchiveName)
+        className match {
+          case Some(n) => defaultDef.copy(className = n)
+          case _ => defaultDef
+        }
+      }
+
+      //Now that we know the real parent, obtain its class loader.
+      val parentLoader = system.loader(definition.parent).getOrElse {
+        if (definition.parent == definition.name) {
+          Archive.getClass.getClassLoader
+        }
+        else {
+          getArchive(definition.parent).classLoader
+        }
+      }
+
+      val probeConfig = new SystemConfig(augmentedConfigForProbe)
+
+      val additionalArchiveDependencies = probeConfig.extraArchives(definition.configPath).map(s => getArchive(s))
+
+      //And now we can build the class loader for this archive
+      val loader = Archive.buildClassLoader(archiveName,
+        parentLoader,
+        system.systemConfig.sourceRoots,
+        system.systemConfig.jarFolders,
+        additionalArchiveDependencies,
+        probeConfig.extraClassPath(definition.configPath))
+
+      val augmentedConfig = getAugmentedConfig(archiveName, loader)
+
+      val archiveClass = attempt(loader.loadClass(definition.className),
+        s"Archive class ${definition.className} not found")
+
+      val constructor = attempt(archiveClass.getConstructor(classOf[ArchiveDefinition],
+        classOf[ClassLoader],
+        classOf[Config]),
+        s"Class ${definition.className} does not have a constructor of the form (ArchiveDefinition, ClassLoader, Config)")
+      val instance = attempt(constructor.newInstance(definition, loader, augmentedConfig),
+        s"Loaded class ${definition.className} in archive ${definition.name}, but could not create an instance of it")
+
+      val archiveInstance = attempt(instance.asInstanceOf[Archive],
+        s"Loaded class ${definition.className} in archive ${definition.name}, but it is not an Archive")
+
+      val restrictedConfig = Try { augmentedConfig.getConfig(definition.configPath) }.getOrElse(ConfigFactory.empty())
+
+      withLoader(loader) {
+        initializeArchive(definition, loader, restrictedConfig, archiveInstance)
+        val currentSystem = system
+        try {
+          synchronized {
+            _system = system.addArchive(archiveInstance)
+          }
+          Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
+          archiveInstance.start()
+        }
+        catch {
+          case e: Exception => synchronized {
+            _system = currentSystem
+            throw e
+          }
+        }
+      }
+
+      archiveInstance
+    }
+    catch {
+      case e: Throwable => throw new ArchiveInitException("Exception while building archive: " + archiveName, e)
+    }
+  }
+
 }

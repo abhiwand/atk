@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,11 +23,13 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.engine.plugin.Invocation
+
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine
 import scala.concurrent._
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import spray.routing.{ ValidationRejection, Directives, Route }
 import scala.util.Failure
 import scala.util.Success
@@ -37,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.command.{ CommandPost, Execution, CommandTemplate, Command }
-import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives }
+import com.intel.intelanalytics.service.{ UrlParser, ApiServiceConfig, CommonDirectives }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import com.intel.event.EventLogging
@@ -47,6 +49,8 @@ import ExecutionContext.Implicits.global
 
 /**
  * REST API Command Service
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -67,7 +71,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * The spray routes defining the command service.
    */
   def commandRoutes() = {
-    commonDirectives("commands") { implicit principal: UserPrincipal =>
+    commonDirectives("commands") { implicit invocation: Invocation =>
       pathPrefix("commands" / LongNumber) {
         id =>
           pathEnd {
@@ -76,6 +80,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                 get {
                   onComplete(engine.getCommand(id)) {
                     case Success(Some(command)) => complete(decorate(uri, command))
+                    case Success(None) => complete(StatusCodes.NotFound)
+                    case Failure(ex) => throw ex
                     case _ => reject()
                   }
                 } ~
@@ -87,7 +93,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
                               case Success(command) => complete("Command cancelled by client")
-                              case _ => reject()
+                              case Failure(ex) => throw ex
                             }
                           }
                         }
@@ -102,7 +108,10 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             get {
               import IADefaultJsonProtocol.listFormat
               import DomainJsonProtocol.commandDefinitionFormat
-              complete(engine.getCommandDefinitions().toList)
+              onComplete(Future { engine.getCommandDefinitions().toList }) {
+                case Success(list) => complete(list)
+                case Failure(ex) => throw ex
+              }
             }
           } ~
             pathEnd {
@@ -112,9 +121,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     //TODO: cursor
                     import spray.json._
                     import ViewModelJsonImplicits._
-                    onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
-                      case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                      case Failure(ex) => throw ex
+                    parameters("offset" ? 0, "count" ? ApiServiceConfig.defaultCount) { (offset, count) =>
+                      onComplete(engine.getCommands(offset, count)) {
+                        case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.withQuery().toString(), commands))
+                        case Failure(ex) => throw ex
+                      }
                     }
                   } ~
                     post {
@@ -122,17 +133,13 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                         xform =>
                           val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
                           info(s"Received command template for execution: $template")
-                          try {
-                            engine.execute(template) match {
-                              case Execution(command, futureResult) =>
-                                complete(decorate(uri + "/" + command.id, command))
-                            }
-                          }
-                          catch {
-                            case e: DeserializationException =>
-                              reject(ValidationRejection(
-                                s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
-                                  s" ${e.getMessage}", Some(e)))
+                          onComplete(Future { engine.execute(template) }) {
+                            case Success(Execution(command, futureResult)) => complete(decorate(uri + "/" + command.id, command))
+                            case Failure(e: DeserializationException) =>
+                              val message = s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                s" ${e.getMessage}"
+                              failWith(new DeserializationException(message, e))
+                            case Failure(ex) => throw ex
                           }
                       }
                     }

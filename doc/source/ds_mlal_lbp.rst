@@ -3,24 +3,33 @@ Loopy Belief Propagation (LBP)
 
 See: http://en.wikipedia.org/wiki/Belief_propagation.
 
-Loopy Belief Propagation (LBP) is a message passing algorithm for inferring state probabilities given a graph and a set of noisy initial
-estimates of state probabilities.
-The Intel Analytics Toolkit provides two implementations of LBP, which differ in their assumptions about the joint distribution of the data.
-The standard LBP implementation assumes that the joint distribution of the data is given by a Boltzmann distribution, while Gaussian LBP
+Loopy Belief Propagation (LBP) is a message passing algorithm for inferring
+state probabilities, given a graph and a set of noisy initial estimates of
+state probabilities.
+The |IA| Toolkit provides two implementations of LBP, which differ in their
+assumptions about the joint distribution of the data.
+The standard LBP implementation assumes that the joint distribution of the
+data is given by a Boltzmann distribution, while Gaussian LBP
 assumes that the data is continuous and distributed according to a multivariate normal distribution.
 For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference:
 An Empirical Study, UAI 1999."
 
-LBP has a wide range of applications in structured prediction, such as low-level vision and influence spread in social networks,
-where we have prior noisy predictions for a large set of random variables and a graph encoding relationships between those variables.
+LBP has a wide range of applications in structured prediction, such as
+low-level vision and influence spread in social networks, where we have prior
+noisy predictions for a large set of random variables and a graph encoding
+relationships between those variables.
 
-The algorithm performs approximate inference on an :term:`undirected graph` of hidden variables, where each variable is represented as a node,
-and edges encode relations to its neighbors.
-Initially, a prior noisy estimate of state probabilities is given to each node, then the algorithm infers the posterior distribution of
-each node by propagating and collecting messages to and from its neighbors and updating the beliefs.
+The algorithm performs approximate inference on an :term:`undirected graph` of
+hidden variables, where each variable is represented as a node, and edges
+encode relations to its neighbors.
+Initially, a prior noisy estimate of state probabilities is given to each
+node, then the algorithm infers the posterior distribution of each node by
+propagating and collecting messages to and from its neighbors and updating
+the beliefs.
 
-In graphs containing loops, convergence is not guaranteed, though LBP has demonstrated empirical success in many areas and in practice
-often converges close to the true joint probability distribution.
+In graphs containing loops, convergence is not guaranteed, though LBP has
+demonstrated empirical success in many areas and in practice often converges
+close to the true joint probability distribution.
 
 Discrete Loopy Belief Propagation:
 ----------------------------------
@@ -67,7 +76,7 @@ Bidirectional edges can be enforced during graph building, but the LBP function 
 bidirectionality using the ``bidirectional_check=True`` option.
 If not all the edges of the graph are bidirectional, the algorithm will return an error.
 
-For example, in a two state case in which a node has prior probabilities 0.8 and 0.2 for states 0 and 1 respectively, uniform weights of 1,
+For example, in a two state case in which a node has prior probabilities 0.9 and 0.2 for states 0 and 1 respectively, uniform weights of 1,
 power of 1 and a smoothing parameter of 2, we would have a vector valued initial message equal to:
 :math:`\textstyle \left [ \ln \left ( 0.2 + 0.8 e ^{-2} \right ), \ln \left ( 0.8 + 0.2 e ^{-2} \right ) \right ]`,
 which gets sent to each of that node's neighbors.

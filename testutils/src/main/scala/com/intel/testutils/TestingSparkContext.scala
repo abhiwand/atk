@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -73,14 +73,16 @@ private[testutils] object TestingSparkContext {
     }
   }
 
-  private def createLocalSparkContext(): SparkContext = {
-    LogUtils.silenceSpark()
-
+  private def createLocalSparkContext(
+    serializer: String = "org.apache.spark.serializer.KryoSerializer",
+    registrator: String = "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator"): SparkContext = {
+    // LogUtils.silenceSpark()
+    System.setProperty("spark.driver.allowMultipleContexts", "true")
     val conf = new SparkConf()
       .setMaster("local")
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+    conf.set("spark.serializer", serializer)
+    conf.set("spark.kryo.registrator", registrator)
 
     new SparkContext(conf)
   }

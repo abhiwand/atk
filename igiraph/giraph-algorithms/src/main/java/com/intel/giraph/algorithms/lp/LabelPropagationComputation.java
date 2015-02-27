@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,7 @@
 package com.intel.giraph.algorithms.lp;
 
 import com.intel.giraph.io.VertexData4LPWritable;
-import com.intel.mahout.math.IdWithVectorWritable;
+import com.intel.mahout.math.IdWithVectorMessage;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -57,7 +57,7 @@ import java.util.Map.Entry;
     name = "Label Propagation on Gaussian Random Fields"
 )
 public class LabelPropagationComputation extends BasicComputation<LongWritable, VertexData4LPWritable,
-    DoubleWritable, IdWithVectorWritable> {
+    DoubleWritable, IdWithVectorMessage> {
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "lp.maxSupersteps";
     /**
@@ -131,13 +131,13 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         }
         vertexValue.setDegree(degree);
         // send out messages
-        IdWithVectorWritable newMessage = new IdWithVectorWritable(vertex.getId().get(), prior);
+        IdWithVectorMessage newMessage = new IdWithVectorMessage(vertex.getId().get(), prior);
         sendMessageToAllEdges(vertex, newMessage);
     }
 
     @Override
     public void compute(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex,
-        Iterable<IdWithVectorWritable> messages) throws IOException {
+        Iterable<IdWithVectorMessage> messages) throws IOException {
         long step = getSuperstep();
         if (step == 0) {
             initializeVertexEdges(vertex);
@@ -153,7 +153,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
 
             // collect messages sent to this vertex
             HashMap<Long, Vector> map = new HashMap<Long, Vector>();
-            for (IdWithVectorWritable message : messages) {
+            for (IdWithVectorMessage message : messages) {
                 map.put(message.getData(), message.getVector());
             }
             if (bidirectionalCheck) {
@@ -191,7 +191,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
 
             if (step != maxSupersteps) {
                 // Send out messages
-                IdWithVectorWritable newMessage = new IdWithVectorWritable(vertex.getId().get(),
+                IdWithVectorMessage newMessage = new IdWithVectorMessage(vertex.getId().get(),
                     vertexValue.getPosteriorVector());
                 sendMessageToAllEdges(vertex, newMessage);
             }

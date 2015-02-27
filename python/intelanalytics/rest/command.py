@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,16 +20,17 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
-Command objects
+Command objects.
 """
 import datetime
-
 import time
 import json
 import logging
 import sys
 import re
+
 from requests import HTTPError
 
 logger = logging.getLogger(__name__)
@@ -37,37 +38,37 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.rest.jsonschema import get_command_def
 from collections import namedtuple
 
 
-_commands_from_backend = []
 
 
-def get_commands():
-    if not _commands_from_backend:
-        logger.info("Requesting available commands from server")
-        response = http.get("commands/definitions")
-        commands_json_schema = response.json()
-        _commands_from_backend.extend([get_command_def(c) for c in commands_json_schema])
-    return _commands_from_backend
 
-
-def execute_command(command_name, **arguments):
-    """Executes command and returns the output"""
+def execute_command(command_name, selfish, **arguments):
+    """Executes command and returns the output."""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    from intelanalytics.core.results import get_postprocessor
+    from intelanalytics.meta.results import get_postprocessor
+    is_frame = command_info.result.has_key('schema')
+    parent = None
+    if is_frame:
+        parent = command_info.result.get('parent')
+        if parent and parent == getattr(selfish, '_id'):
+            #print "Changing ID for existing proxy"
+            selfish._id = command_info.result['id']
     postprocessor = get_postprocessor(command_name)
     if postprocessor:
-        result = postprocessor(command_info.result)
+        result = postprocessor(selfish, command_info.result)
     elif command_info.result.has_key('value') and len(command_info.result) == 1:
         result = command_info.result.get('value')
-    elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
+    elif is_frame:
         # TODO: remove this hack for plugins that return data frame
-        from intelanalytics.core.config import get_frame_backend
-        frame_backend = get_frame_backend()
-        result = frame_backend.get_frame(command_info.result['name'])
+        from intelanalytics.core.frame import get_frame
+        if parent:
+            result = selfish
+        else:
+            #print "Returning new proxy"
+            result = get_frame(command_info.result['id'])
     else:
         result = command_info.result
     return result
@@ -87,13 +88,14 @@ class ProgressPrinter(object):
 
     def print_progress(self, progress, finished):
         """
-        Print progress information on progress bar
+        Print progress information on progress bar.
 
         Parameters
         ----------
-        progress : List of dictionary
+        progress : list of dictionary
             The progresses of the jobs initiated by the command
-        finished : boolean
+
+        finished : bool
             Indicate whether the command is finished
         """
         if progress == False:
@@ -193,7 +195,7 @@ class CommandRequest(object):
 
     def to_json_obj(self):
         """
-        returns json for REST payload
+        Returns json for REST payload.
         """
         return self.__dict__
 
@@ -221,8 +223,12 @@ class CommandInfo(object):
         return self._payload['id']
 
     @property
+    def correlation_id(self):
+        return self._payload.get('correlation_id', None)
+
+    @property
     def name(self):
-        return self._payload['name']
+        return self._payload.get('name', None)
 
     @property
     def uri(self):
@@ -354,6 +360,7 @@ class CommandServerError(Exception):
             message = command_info.error['message']
         except KeyError:
             message = "(Server response insufficient to provide details)"
+        message = message + (" (command: %s, corId: %s)" % (command_info.id_number, command_info.correlation_id))
         Exception.__init__(self, message)
 
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])
@@ -491,74 +498,13 @@ class Executor(object):
             self.__commands = self.fetch()
         return self.__commands
 
-    def install_static_methods(self, clazz, functions):
-        for ((intermediates, name), v) in functions.items():
-            current = clazz
-            for inter in intermediates:
-                if not hasattr(current, inter):
-                    holder = object()
-                    setattr(current, inter, holder)
-                    current = holder
-            if not hasattr(current, name):
-                setattr(clazz, name, staticmethod(v))
-                logger.debug("Loaded class %s with static method %s", clazz, name)
-
-    def get_command_functions(self, prefixes, update_function, new_function):
-        functions = dict()
-        for cmd in executor.commands:
-            full_name = cmd['name']
-            parts = full_name.split('/')
-            if parts[0] not in prefixes:
-                continue
-            args = cmd['argument_schema']
-            intermediates = parts[1:-1]
-            command_name = parts[-1]
-            parameters = args.get('properties', {})
-            self_parameter_name = ([k for k, v in parameters.items()
-                                    if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-
-            return_props = cmd['return_schema'].setdefault('properties', {})
-            return_self_parameter = ([k for k, v in return_props.items()
-                                      if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            possible_args = args.get('order', [])[:]
-            if self_parameter_name:
-                possible_args.remove(self_parameter_name)
-
-            #Create a new function scope to bind variables properly
-            # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
-            #Need make and not just invoke so that invoke won't have
-            #kwargs that include command_name et. al.
-            def make(full_name = full_name,
-                     command_name = command_name,
-                     cmd = cmd,
-                     self_name = self_parameter_name,
-                     return_self = return_self_parameter,
-                     possible_args = possible_args,
-                     parameters = parameters):
-
-                def invoke(s, *args, **kwargs):
-                    try:
-                        if self_name:
-                            kwargs[self_name] = s._id
-                        for (k,v) in zip(possible_args, args):
-                            if k in kwargs:
-                                raise ValueError("Argument " + k +
-                                                 " supplied as a positional argument and as a keyword argument")
-                            kwargs[k] = v
-                        validated = CommandRequest.validate_arguments(parameters, kwargs)
-                        if return_self:
-                            return new_function(full_name, validated, s)
-                        else:
-                            return update_function(full_name, validated, s)
-                    except:
-                        raise IaError(logger)
-                invoke.command = cmd
-                invoke.parameters = parameters
-                invoke.func_name = str(command_name)
-                return invoke
-            f = make()
-            functions[(tuple(intermediates), command_name)] = f
-        return functions
+    def get_command_output(self, command_type, command_name, arguments):
+        """Executes command and returns the output."""
+        command_request = CommandRequest( "%s/%s" % (command_type, command_name), arguments)
+        command_info = executor.issue(command_request)
+        if command_info.result.has_key('value') and len(command_info.result) == 1:
+            return command_info.result.get('value')
+        return command_info.result
 
 
 

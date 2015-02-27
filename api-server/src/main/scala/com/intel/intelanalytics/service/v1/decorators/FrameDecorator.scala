@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,9 +20,10 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.service.v1.viewmodels.{ Rel, RelLink, GetDataFrame, GetDataFrames }
 import spray.http.Uri
 import org.apache.commons.lang.StringUtils
@@ -32,7 +33,7 @@ import spray.json.JsString
  * A decorator that takes an entity from the database and converts it to a View/Model
  * for delivering via REST services
  */
-object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataFrame] {
+object FrameDecorator extends EntityDecorator[FrameEntity, GetDataFrames, GetDataFrame] {
 
   /**
    * Decorate a single entity (like you would want in "GET /entities/id")
@@ -44,7 +45,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
    * @param entity the entity to decorate
    * @return the View/Model
    */
-  override def decorateEntity(uri: String, additionalLinks: Iterable[RelLink] = Nil, entity: DataFrame): GetDataFrame = {
+  override def decorateEntity(uri: String, additionalLinks: Iterable[RelLink] = Nil, entity: FrameEntity): GetDataFrame = {
 
     var links = List(Rel.self(uri.toString)) ++ additionalLinks
 
@@ -53,8 +54,18 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       links = RelLink("ia-error-frame", baseUri + "/" + entity.errorFrameId.get, "GET") :: links
     }
 
-    GetDataFrame(id = entity.id, name = entity.name, ia_uri = entity.uri, schema = entity.schema, rowCount = entity.rowCount, links, entity.errorFrameId)
+    GetDataFrame(id = entity.id,
+      name = entity.name,
+      ia_uri = entity.uri,
+      schema = entity.schema,
+      rowCount = entity.rowCount,
+      links,
+      entity.errorFrameId,
+      entity.entityType)
+  }
 
+  def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[FrameEntity]): List[GetDataFrame] = {
+    entities.map(frame => decorateEntity(uri, additionalLinks, frame)).toList
   }
 
   /**
@@ -64,10 +75,11 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
    * @param entities the list of entities to decorate
    * @return the View/Model
    */
-  override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[GetDataFrames] = {
+  override def decorateForIndex(uri: String, entities: Seq[FrameEntity]): List[GetDataFrames] = {
     entities.map(frame => new GetDataFrames(id = frame.id,
       name = frame.name,
-      url = uri + "/" + frame.id)).toList
+      url = uri + "/" + frame.id,
+      entityType = frame.entityType)).toList
   }
 
 }

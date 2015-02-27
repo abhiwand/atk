@@ -1,20 +1,37 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Edge, Vertex, GraphElement }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
-import spray.json._
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
-import spray.json.DefaultJsonProtocol._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
@@ -30,6 +47,8 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  *                     get recommendation on user, please input "L" because user is your left-side
  *                     vertex. Similarly, please input "R if you want to get recommendation for movie.
  *                     The default value is "L".
+ * @param left_vertex_id_property_key The property name for left side vertex id.
+ * @param right_vertex_id_property_key The property name for right side vertex id.
  * @param output_vertex_property_list The property name for ALS/CGD results.When bias is enabled,
  *                                    the last property name in the output_vertex_property_list is for bias.
  *                                    The default value is "als_result".
@@ -42,14 +61,14 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  *                The default value is "false"
  * @param train_str The label for training data. The default value is "TR".
  * @param num_output_results The number of recommendations to output. The default value is 10.
- * @param left_vertex_name The real name for left side vertex. The default value is "user".
- * @param right_vertex_name The real name for right side vertex. The default value is "movie".
- * @param left_vertex_id_property_key The property name for left side vertex id. The default value is "user_id".
- * @param right_vertex_id_property_key The property name for right side vertex id. The default value is "movie_id".
+ * @param left_vertex_name The real name for left side vertex.
+ * @param right_vertex_name The real name for right side vertex.
  */
 case class RecommendParams(graph: GraphReference,
-                           vertex_id: Long,
-                           vertex_type: Option[String],
+                           vertex_id: String,
+                           vertex_type: String,
+                           left_vertex_id_property_key: String,
+                           right_vertex_id_property_key: String,
                            output_vertex_property_list: Option[String],
                            vertex_type_property_key: Option[String],
                            edge_type_property_key: Option[String],
@@ -58,139 +77,47 @@ case class RecommendParams(graph: GraphReference,
                            train_str: Option[String],
                            num_output_results: Option[Int],
                            left_vertex_name: Option[String],
-                           right_vertex_name: Option[String],
-                           left_vertex_id_property_key: Option[String],
-                           right_vertex_id_property_key: Option[String]) {
+                           right_vertex_name: Option[String]) {
 }
 
 /**
  * Algorithm report comprising of recommended Ids and scores.
  *
- * @param recommendation multi-line string. Each line contains recommended vertex Id and score
+ * @param recommendation List of recommendations with rank, vertex ID, and rating.
  */
-case class RecommendResult(recommendation: String)
+case class RecommendResult(recommendation: List[RankedRating])
 
 /** Json conversion for arguments and return value case classes */
-object RecommendJsonFormat {
+object RecommendQueryFormat {
+  // Implicits needed for JSON conversion
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
+  implicit val rankedRatingFormat = jsonFormat3(RankedRating)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
 }
 
-import RecommendJsonFormat._
+import RecommendQueryFormat._
 
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
   /**
-   * The name of the command, e.g. graphs/query/recommend
+   * The name of the command, e.g. graph/sampling/vertex_sample
    */
-  override def name: String = "graphs/query/recommend"
+  override def name: String = "graph:titan/query/recommend"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   * Number of Spark jobs that get created by running this command
+   * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def doc = Some(CommandDoc(oneLineSummary = "Make recommendation based on trained model.",
-    extendedSummary = Some("""
-    Extended Summary
-    ----------------
-    Get recommendation to either left-side or right-side vertices.
+  override def numberOfJobs(arguments: RecommendParams)(implicit invocation: Invocation) = 2
 
-    The prerequisite is at least one of two algorithms (ALS or CGD) has been run before this query.
-
-
-    Parameters
-    ----------
-    vertex_id : int32
-        The vertex id to get recommendation for.
-
-    vertex_type : String (optional)
-        The vertex type to get recommendation for. The valid value is either "L" or "R".
-        "L" stands for left-side vertices of a bipartite graph.
-        "R" stands for right-side vertices of a bipartite graph.
-        For example, if your input data is "user,movie,rating" and you want to
-        get recommendation on user, please input "L" because user is your left-side
-        vertex. Similarly, please input "R if you want to get recommendation for movie.
-        The default value is "L".
-
-    output_vertex_property_list : Comma Separated String (optional)
-        The property name for ALS/CGD results.When bias is enabled,
-        the last property name in the output_vertex_property_list is for bias.
-        The default value is "als_result".
-
-    vertex_type_property_key : String (optional)
-        The property name for vertex type.
-        The default value is "vertex_type"
-
-    edge_type_property_key : String (optional)
-        The property name for edge type. We need this name to know data is in train,
-        validation or test splits.
-        The default value "splits".
-
-    vector_value : String (optional)
-        Whether ALS/CDG results are saved in a vector for each vertex.
-        The default value is "true"
-
-    bias_on : String (optional)
-        Whether bias turned on/off for ALS/CDG calculation.
-        When bias is enabled, the last property name in the output_vertex_property_list is for bias.
-        The default value is "false"
-
-    train_str : String (optional)
-        The label for training data.
-        The default value is "TR"
-
-    num_output_results : int (optional)
-        The number of recommendations to output.
-        The default value is 10.
-
-    left_vertex_name : String (optional)
-        The real name for left side vertex.
-        The default value is "user".
-
-    right_vertex_name : String (optional)
-        The real name for right side vertex.
-        The default value is "movie".
-
-    left_vertex_id_property_key : String (optional)
-        The property name for left side vertex id.
-        The default value is "user_id".
-
-    right_vertex_id_property_key : String (optional)
-        The property name for right side vertex id.
-        The default value is "movie_id".
-
-    Raises
-    ------
-    ValueError
-        When both bias_on and vector_value are true, we expect output_vertex_property_list contains
-        two keys, one for output results, one for bias.
-
-    Returns
-    -------
-    Multiple line string
-        Recommendations for the input vertex.
-
-    Examples
-    --------
-    For example, if your left-side vertices are users, and you want to get movie recommendation for user 1,
-    the commend to use are:
-
-    g.query.recommend(vertex_id = 1)::
-
-    The expected output is like this
-
-    {u'recommendation': u'Top 10 recommendation for user 1\nmovie\t-132\tscore\t5.617994036115665\nmovie\t-53\tscore\t5.311958055352947\nmovie\t-389\tscore\t5.098006034765436\nmovie\t-84\tscore\t4.695484062644423\nmovie\t-302\tscore\t4.693913046573323\nmovie\t-462\tscore\t4.648850870271126\nmovie\t-186\tscore\t4.495738316971479\nmovie\t-234\tscore\t4.432865786903878\nmovie\t-105\tscore\t4.418878980193627\nmovie\t-88\tscore\t4.415980762315559\n'}::
-""")))
-
-  override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
-    implicit user: UserPrincipal, executionContext: ExecutionContext): RecommendResult = {
+  override def execute(arguments: RecommendParams)(implicit invocation: Invocation): RecommendResult = {
     import scala.concurrent.duration._
 
     System.out.println("*********Start to execute Recommend query********")
     val config = configuration
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
     val pattern = "[\\s,\\t]+"
     val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
@@ -205,12 +132,10 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       "Please input one property name for bias and one property name for results when both vector_value " +
         "and bias_on are enabled")
 
-    val vertexId = arguments.vertex_id.toString
-    val vertexType = arguments.vertex_type.getOrElse(config.getString("vertex_type")).toLowerCase
-    val leftVertexIdPropertyKey = arguments.left_vertex_id_property_key.getOrElse(
-      config.getString("left_vertex_id_property_key"))
-    val rightVertexIdPropertyKey = arguments.right_vertex_id_property_key.getOrElse(
-      config.getString("right_vertex_id_property_key"))
+    val vertexId = arguments.vertex_id
+    val vertexType = arguments.vertex_type.toLowerCase
+    val leftVertexIdPropertyKey = arguments.left_vertex_id_property_key
+    val rightVertexIdPropertyKey = arguments.right_vertex_id_property_key
     val vertexTypePropertyKey = arguments.vertex_type_property_key.getOrElse(
       config.getString("vertex_type_property_key"))
     val edgeTypePropertyKey = arguments.edge_type_property_key.getOrElse(
@@ -228,29 +153,17 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
         ("l", rightVertexName, leftVertexName, rightVertexIdPropertyKey, leftVertexIdPropertyKey)
       }
 
-    // Create graph connection
-    val titanConfiguration = new SerializableBaseConfiguration()
-    val titanLoadConfig = config.getConfig("titan.load")
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
-    }
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
-    val titanConnector = new TitanGraphConnector(titanConfiguration)
-
-    val sc = invocation.sparkContext
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-    val vertexRDD = titanReaderRDD.filterVertices().distinct()
-    val edgeRDD = titanReaderRDD.filterEdges().distinct()
+    // Load vertices and edges
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
     //get the source vertex based on its id
-    val sourceVertexRDD = vertexRDD.filter(
+    val sourceVertexRDD = gbVertices.filter(
       vertex => vertex.getPropertyValueAsString(sourceIdPropertyKey) == vertexId &&
         vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == vertexType
     )
     sourceVertexRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
-    val sourceVertexArray = sourceVertexRDD.toArray()
+    val sourceVertexArray = sourceVertexRDD.collect()
 
     if (sourceVertexArray.length != 1) {
       for (i <- 0 until sourceVertexArray.length) {
@@ -267,7 +180,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // when there is "TR" data between source vertex and target vertex,
     // it means source vertex knew target vertex already.
     // The target vertex cannot shown up in recommendation results
-    val avoidTargetEdgeRDD = edgeRDD.filter(
+    val avoidTargetEdgeRDD = gbEdges.filter(
       edge => edge.headVertexGbId == sourceGbId &&
         edge.getPropertyValueAsString(edgeTypePropertyKey).toLowerCase == trainStr
     )
@@ -276,10 +189,10 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val avoidTargetGbIdsRDD = avoidTargetEdgeRDD.tailVerticesGbIds()
 
     //get unique list of vertices' gbIds to avoid
-    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray()
+    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().collect()
 
     //filter target vertex RDD
-    val targetVertexRDD = vertexRDD.filter {
+    val targetVertexRDD = gbVertices.filter {
       case vertex =>
         var keep = false
         if (vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == targetVertexType) {
@@ -307,21 +220,20 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val sourceVector = RecommendFeatureVector.parseResultArray(
       sourceVertex, resultPropertyList, vectorValue, biasOn)
 
-    val ratingResultRDD = RecommendFeatureVector
+    val ratingResult = RecommendFeatureVector
       .predict(sourceVector, targetVectorRDD, biasOn)
       .collect()
       .sortBy(-_.score)
       .take(numOutputResults)
 
-    var results = "================Top " + numOutputResults + " recommendations for " +
-      sourceVertexName + " " + vertexId + "==========\n"
-    ratingResultRDD.foreach { rating: Rating =>
-      results += targetVertexName + "\t" + rating.vertexId + "\tscore\t" + rating.score + "\n"
-    }
+    val results = for {
+      i <- 1 to ratingResult.size
+      rating = ratingResult(i - 1)
+    } yield RankedRating(i, rating.vertexId, rating.score)
 
     targetVectorRDD.unpersist()
     sourceVertexRDD.unpersist()
-    RecommendResult(results)
+    RecommendResult(results.toList)
   }
 
 }

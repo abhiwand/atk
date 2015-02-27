@@ -1,26 +1,43 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import java.lang.reflect.Method
-
-import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
+import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
-import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
-import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil }
-import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
+import com.intel.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
+import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
+import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.scheduler.{ SparkListenerApplicationEnd, SparkListener }
 
-/**
- * TitanHBaseReader constants.
- */
-object TitanHBaseReader {
-  val TITAN_STORAGE_HOSTNAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.HOSTNAME_KEY
-  val TITAN_STORAGE_TABLENAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + HBaseStoreManager.TABLE_NAME_KEY
-  val TITAN_STORAGE_PORT = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.PORT_KEY
-}
+import scala.collection.JavaConversions._
 
 /**
  * This is a TitanReader that runs on Spark, and reads a Titan graph from a HBase storage backend.
@@ -29,11 +46,8 @@ object TitanHBaseReader {
  * @param titanConnector Connector to Titan
  */
 class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends TitanReader(sparkContext, titanConnector) {
-
-  import com.intel.graphbuilder.driver.spark.titan.reader.TitanHBaseReader._
-
   require(titanConfig.containsKey(TITAN_STORAGE_HOSTNAME), "could not find key " + TITAN_STORAGE_HOSTNAME)
-  require(titanConfig.containsKey(TITAN_STORAGE_TABLENAME), "could not find key " + TITAN_STORAGE_TABLENAME)
+  require(titanConfig.containsKey(TITAN_STORAGE_HBASE_TABLE), "could not find key " + TITAN_STORAGE_HBASE_TABLE)
 
   /**
    * Read Titan graph from a HBase storage backend into a Spark RDD of graph elements.
@@ -45,15 +59,17 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
    */
   override def read(): RDD[GraphElement] = {
     val hBaseConfig = createHBaseConfiguration()
-    val tableName = hBaseConfig.get(TableInputFormat.INPUT_TABLE)
+    val tableName = titanConfig.getString(TITAN_STORAGE_HBASE_TABLE)
 
     checkTableExists(hBaseConfig, tableName)
 
-    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-      classOf[org.apache.hadoop.hbase.client.Result])
+    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[GBTitanHBaseInputFormat],
+      classOf[NullWritable],
+      classOf[FaunusVertex])
 
-    new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
+    sparkContext.addSparkListener(new TitanHadoopHBaseCacheListener())
+    new TitanReaderRDD(hBaseRDD, titanConnector)
+
   }
 
   /**
@@ -62,41 +78,19 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def createHBaseConfiguration(): org.apache.hadoop.conf.Configuration = {
     val hBaseConfig = HBaseConfiguration.create()
 
-    val hBaseZookeeperQuorum = titanConfig.getString(TITAN_STORAGE_HOSTNAME)
-    val tableName = titanConfig.getString(TITAN_STORAGE_TABLENAME)
-    val hBaseZookeeperClientPort = titanConfig.getString(TITAN_STORAGE_PORT, HConstants.DEFAULT_ZOOKEPER_CLIENT_PORT.toString)
+    // Add Titan configuratoin
+    titanConfig.getKeys.foreach {
+      case (titanKey: String) =>
+        val titanHadoopKey = TITAN_HADOOP_PREFIX + titanKey
+        hBaseConfig.set(titanHadoopKey, titanConfig.getProperty(titanKey).toString)
+    }
 
-    // Other options for configuring scan behavior are available. More information available at
-    // http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html
-    hBaseConfig.set(HConstants.ZOOKEEPER_QUORUM, hBaseZookeeperQuorum);
-    hBaseConfig.set(HConstants.ZOOKEEPER_CLIENT_PORT, hBaseZookeeperClientPort);
-    hBaseConfig.set(TableInputFormat.INPUT_TABLE, tableName)
-    configureHBaseScanner(hBaseConfig)
+    // Auto-configure number of input splits
+    val tableName = titanConfig.getString(TITAN_STORAGE_HBASE_TABLE)
+    val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
+    titanAutoPartitioner.setSparkHBaseInputSplits(sparkContext, hBaseConfig, tableName)
+
     hBaseConfig
-  }
-
-  /**
-   * Configure HBase scanner to filter for Titan's edge store column family.
-   *
-   * TODO:  consider adding support for scanner optimizations in http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html
-   * @param hBaseConfig HBase configuration
-   */
-  private def configureHBaseScanner(hBaseConfig: org.apache.hadoop.conf.Configuration) = {
-    val scanner: Scan = new Scan
-    val titanColumnFamilyName = com.thinkaurelius.titan.diskstorage.Backend.EDGESTORE_NAME.getBytes()
-    scanner.addFamily(titanColumnFamilyName)
-
-    var converter: Method = null
-    try {
-      converter = classOf[TableMapReduceUtil].getDeclaredMethod("convertScanToString", classOf[Scan])
-      converter.setAccessible(true)
-      hBaseConfig.set(TableInputFormat.SCAN, converter.invoke(null, scanner).asInstanceOf[String])
-    }
-    catch {
-      case e: Exception => {
-        throw new RuntimeException("Unable to create HBase filter for Titan's edge column family", e)
-      }
-    }
   }
 
   /**
@@ -108,7 +102,9 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
   private def checkTableExists(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: String) = {
     val admin = new HBaseAdmin(hBaseConfig)
     if (!admin.isTableAvailable(tableName)) {
-      throw new RuntimeException("Table does not exist:" + tableName)
+      admin.close()
+      throw new RuntimeException("HBase table does not exist: " + tableName + " (graph may not have been loaded with any data)")
     }
+    admin.close()
   }
 }

@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,14 +20,61 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
-iapy package init, public API
+intelanalytics package init, public API
 """
+import sys
+if not sys.version_info[:2] == (2, 7):
+    raise EnvironmentError("Python 2.7 is required for intelanalytics.  Detected version: %s.%s.%s" % tuple(sys.version_info[:3]))
+del sys
+
 from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.errorhandle import errors
-from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, drop_frames
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, VertexRule, EdgeRule
+
+try:
+    from intelanalytics.core.docstubs import *
+except Exception as e:
+    errors._doc_stubs = e
+    del e
+
+from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile
+from intelanalytics.core.iapandas import Pandas
+from intelanalytics.rest.udfdepends import udf
+from intelanalytics.core.frame import Frame, VertexFrame
+from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
+from intelanalytics.core.model import _BaseModel
+
 from intelanalytics.rest.connection import server
+connect = server.connect
+
+
+# do api_globals last because other imports may have added to the api_globals
+
+def _refresh_api_namespace():
+    from intelanalytics.meta.api import api_globals
+    for item in api_globals:
+        globals()[item.__name__] = item
+    del api_globals
+
+_refresh_api_namespace()
+
+
+def _get_api_names():
+    from intelanalytics.meta.api import get_api_names
+    import sys
+    return get_api_names(sys.modules[__name__])
+
+# Autoconnect if env says so.  This is NOT standard usage, but needed when
+# an 'import intelanalytics' really needs to get EVERYTHING, like
+# when generating documentation.  Requires that the server is already running
+import os
+autoconnect =  os.getenv('INTELANALYTICS_AUTOCONNECT')
+#print "autoconnect=" + str(autoconnect) + " of type %s" % type(autoconnect)
+if autoconnect is not None and autoconnect.lower() not in [None, '', '0', 'false']:
+    print "$INTELANALYTICS_AUTOCONNECT=%s, trying to connect to IntelAnalytics..." % autoconnect
+    connect()
+del os
+del autoconnect

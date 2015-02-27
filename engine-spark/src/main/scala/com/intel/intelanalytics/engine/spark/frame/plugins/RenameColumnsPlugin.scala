@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameRenameColumns, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ RenameColumnsArgs, FrameEntity, FlattenColumnArgs }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -39,7 +40,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename columns of a frame
  */
-class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFrame] {
+class RenameColumnsPlugin extends SparkCommandPlugin[RenameColumnsArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,14 +48,7 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_columns"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = None
+  override def name: String = "frame:/rename_columns"
 
   /**
    * Rename columns of a frame
@@ -63,33 +57,13 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFra
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.
    * @param arguments user supplied arguments to running this plugin
-   * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(arguments: RenameColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val frames = engine.frames
 
-    // validate arguments
-    val frameID = arguments.frame
-    val frameMeta = frames.expectFrame(frameID)
-    val newNames = arguments.new_names
-    val schema = frameMeta.schema
-    val originalNames = arguments.original_names
-
-    for {
-      i <- 0 until newNames.size
-    } {
-      val column_name = newNames(i)
-      val original_name = originalNames(i)
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
-        throw new IllegalArgumentException(s"Cannot rename because another column already exists with that name: $column_name")
-
-      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == original_name) < 0)
-        throw new IllegalArgumentException(s"Cannot rename because there is no column with that name: $original_name")
-    }
-
-    // run the operation and save results
-    frames.renameColumns(frameMeta, arguments.original_names.zip(arguments.new_names))
+    val frame = frames.expectFrame(arguments.frame)
+    frames.renameColumns(frame, arguments.names.toSeq)
   }
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -37,6 +37,8 @@ import parquet.schema.MessageType
 import scala.collection.JavaConverters._
 
 import scala.collection.mutable.{ ArrayBuffer, ListBuffer }
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.schema.DataTypes
 
 /**
  * A class that will read data from parquet files located at a specified path.
@@ -48,6 +50,21 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
   private[parquet] val utf8 = Charset.forName("UTF-8")
   private val decoder = utf8.newDecoder()
   private val ParquetFileOrderPattern = ".*part-r-(\\d*)\\.parquet".r
+
+  /**
+   * Row count for the frame stored at this path
+   */
+  def rowCount(): Long = {
+    val files: List[Footer] = getFiles()
+    var result = 0L
+    for {
+      file <- files
+      block <- file.getParquetMetadata.getBlocks.asScala
+    } {
+      result += block.getRowCount
+    }
+    result
+  }
 
   /**
    * take from this objects path data from parquet files as a list of arrays.
@@ -69,24 +86,39 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
       file <- files if currentCount < capped
     ) {
       val metaData = file.getParquetMetadata
-      val schema = metaData.getFileMetaData.getSchema;
+      val fileRowCount = getRowCountFromMetaData(metaData)
 
-      val reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
-      var store: PageReadStore = reader.readNextRowGroup()
-      while (store != null && currentCount < capped) {
-        if ((currentOffset + store.getRowCount) > offset) {
-          val start: Long = math.max(offset - currentOffset, 0)
-          val amountToTake: Long = math.min(store.getRowCount - start, capped - currentCount)
+      if ((currentOffset + fileRowCount) > offset) {
+        // Only process the file if it contains data that we need. 
+        // If it does not skip and increase the offset by the file row count (derived from summary file).
+        val schema = metaData.getFileMetaData.getSchema
+        var reader: ParquetFileReader = null
+        try {
+          reader = this.parquetApiFactory.newParquetFileReader(file.getFile, metaData.getBlocks, schema.getColumns)
+          var store: PageReadStore = reader.readNextRowGroup()
+          while (store != null && currentCount < capped) {
+            if ((currentOffset + store.getRowCount) > offset) {
+              val start: Long = math.max(offset - currentOffset, 0)
+              val amountToTake: Long = math.min(store.getRowCount - start, capped - currentCount)
 
-          val crstore = this.parquetApiFactory.newColumnReadStore(store, schema)
+              val crstore = this.parquetApiFactory.newColumnReadStore(store, schema)
 
-          val pageReadStoreResults = takeFromPageReadStore(schema, crstore, amountToTake.toInt, start.toInt)
-          result ++= pageReadStoreResults
-          currentCount = currentCount + pageReadStoreResults.size
+              val pageReadStoreResults = takeFromPageReadStore(schema, crstore, amountToTake.toInt, start.toInt)
+              result ++= pageReadStoreResults
+              currentCount = currentCount + pageReadStoreResults.size
+            }
+
+            currentOffset = currentOffset + store.getRowCount.toInt
+            store = reader.readNextRowGroup()
+          }
         }
-
-        currentOffset = currentOffset + store.getRowCount.toInt
-        store = reader.readNextRowGroup()
+        finally {
+          if (reader != null)
+            reader.close()
+        }
+      }
+      else {
+        currentOffset = currentOffset + fileRowCount
       }
     }
     result.toList
@@ -106,6 +138,12 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
 
     columns.zipWithIndex.foreach {
       case (col: ColumnDescriptor, columnIndex: Int) => {
+        // parquet uses nested types based on a definition level and a repetition level, as described by the
+        // "Dremel Paper".  For a good explanation, see https://blog.twitter.com/2013/dremel-made-simple-with-parquet
+
+        // Note: blbarker - the approach in this code is inadequate for general nesting solution, but it works
+        // for primitives and arrays.  More complex types will require work in here to become a true parquet reader.
+
         val dMax = col.getMaxDefinitionLevel
         val creader = store.getColumnReader(col)
 
@@ -117,21 +155,41 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
           })
         }
 
-        0.to(count - 1).foreach(i => {
-          val expectedSize = i
+        // go through each triplet (def level, rep level, values) in the column chunk
+        0.to(count - 1).foreach(chunkRelativeRowIndex => {
 
-          if (result.size <= expectedSize) {
+          if (result.size <= chunkRelativeRowIndex) {
             result += new Array[Any](columnslength)
           }
+
           val dlvl = creader.getCurrentDefinitionLevel
           val value = if (dlvl == dMax) {
-            getValue(creader, col.getType)
+            val v = getValue(creader, col.getType)
+            creader.consume()
+            if (col.getMaxRepetitionLevel > 0 && creader.getCurrentRepetitionLevel > 0) {
+              // indicates nested type, like an array
+              if (col.getType == PrimitiveTypeName.DOUBLE) {
+                val array = new ArrayBuffer[Double]()
+                array += DataTypes.toDouble(v)
+                while (creader.getCurrentRepetitionLevel > 0) { // rep level == 0 indicates start of another group
+                  array += creader.getDouble
+                  creader.consume()
+                }
+                array
+              }
+              // only support arrays of doubles for now
+              else {
+                throw new ClassCastException(s"intelanalytics parquet reader does not support repetition of type ${col.getType}")
+              }
+            }
+            else {
+              v // not nested, just use value
+            }
           }
           else {
             null
           }
-          result(expectedSize)(columnIndex) = value
-          creader.consume()
+          result(chunkRelativeRowIndex)(columnIndex) = value
         })
 
       }
@@ -140,12 +198,21 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
   }
 
   /**
+   * Compute the total number of rows in a file by summing the row counts of all blocks
+   * @param metaData ParquetMetaData object for the corresponding file (may come from a summary file)
+   * @return row count
+   */
+  private[parquet] def getRowCountFromMetaData(metaData: ParquetMetadata): Long = {
+    metaData.getBlocks.asScala.map(b => b.getRowCount).sum
+  }
+
+  /**
    * Returns a sequence of Paths that will be evaluated for finding the required rows
    * @return  List of FileStatus objects corresponding to grouped parquet files
    */
   private[parquet] def getFiles(): List[Footer] = {
     def fileHasRows(metaData: ParquetMetadata): Boolean = {
-      metaData.getBlocks.asScala.map(b => b.getRowCount).sum > 0
+      getRowCountFromMetaData(metaData) > 0
     }
     val fs: FileSystem = fileStorage.fs
     if (!fs.isDirectory(path)) {

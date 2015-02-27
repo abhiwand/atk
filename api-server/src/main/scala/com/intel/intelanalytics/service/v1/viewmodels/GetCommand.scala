@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -42,10 +42,18 @@ import com.intel.intelanalytics.engine.ProgressInfo
  * @param result result data for executing the command
  * @param links hyperlinks to related URIs
  */
-case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[ProgressInfo],
-                      complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+case class GetCommand(id: Long,
+                      name: String,
+                      correlationId: String,
+                      arguments: Option[JsObject],
+                      error: Option[Error],
+                      progress: List[ProgressInfo],
+                      complete: Boolean,
+                      result: Option[JsObject],
+                      links: List[RelLink]) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name may not be null")
+  require(correlationId != null, "correlationId may not be null")
   require(arguments != null, "arguments may not be null")
   require(links != null, "links may not be null")
   require(error != null, "links may not be null")
