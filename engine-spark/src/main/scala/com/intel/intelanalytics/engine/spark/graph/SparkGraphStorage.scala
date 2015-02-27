@@ -464,7 +464,7 @@ class SparkGraphStorage(metaStore: MetaStore,
       expectGraph(GraphBackendName.getIdFromBackendName(graphName))
     else
       createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
