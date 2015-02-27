@@ -187,6 +187,7 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
             }
           }
           else {
+            creader.consume()
             null
           }
           result(chunkRelativeRowIndex)(columnIndex) = value
