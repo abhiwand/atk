@@ -29,7 +29,7 @@ ia.connect();
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 
 
-csv = ia.CsvFile("/lda.csv", schema= [('doc_id', str),
+csv = ia.CsvFile("datasets/lda.csv", schema= [('doc_id', str),
                                         ('word_id', str),
                                         ('word_count', ia.int64)], skip_header_lines=1)
 
