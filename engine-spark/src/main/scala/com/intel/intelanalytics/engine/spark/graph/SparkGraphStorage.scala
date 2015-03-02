@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.{ FrameName, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameName, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -184,21 +184,16 @@ class SparkGraphStorage(metaStore: MetaStore,
    */
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
-    val graphCopy = createGraph(GraphTemplate(name))
-    val storageName = {
-      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
-    }
-    if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
-      metaStore.withSession("spark.graphstorage.copyGraph") {
-        implicit session =>
-          {
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
-          }
-      }
+
+    val copiedEntity = if (graph.isTitan) {
+      val graphCopy = createGraph(GraphTemplate(name, StorageFormats.HBaseTitan))
+      backendStorage.copyUnderlyingTable(graph.storage, graphCopy.storage)
+      graphCopy
     }
     else {
-      val graphMeta = expectSeamless(SparkGraphManagement.graphToRef(graph))
+      val graphCopy = createGraph(GraphTemplate(name))
+      val storageName = graphCopy.storage
+      val graphMeta = expectSeamless(graph.toReference)
       val framesToCopy = graphMeta.frameEntities.map(_.toReference)
       val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
 
@@ -206,12 +201,12 @@ class SparkGraphStorage(metaStore: MetaStore,
         implicit session =>
           {
             copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame")).get
           }
       }
     }
     // refresh from DB
-    expectGraph(SparkGraphManagement.graphToRef(graphCopy))
+    expectGraph(copiedEntity.toReference)
   }
 
   /**
@@ -384,15 +379,15 @@ class SparkGraphStorage(metaStore: MetaStore,
     new VertexFrameRDD(frameRdd)
   }
 
-  def loadVertexRDD(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): VertexFrameRDD = {
-    val frameEntity = frameStorage.expectFrame(frameId)
+  def loadVertexRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRDD = {
+    val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
     new VertexFrameRDD(frameRdd)
   }
 
-  def loadEdgeRDD(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): EdgeFrameRDD = {
-    val frameEntity = frameStorage.expectFrame(frameId)
+  def loadEdgeRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRDD = {
+    val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
     new EdgeFrameRDD(frameRdd)
@@ -409,7 +404,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
       val graphEntity = expectSeamless(graph.toReference)
-      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.id)).reduce(_.union(_))
+      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.toReference)).reduce(_.union(_))
     }
     else {
       // load from Titan
@@ -424,7 +419,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
       val graphMeta = expectSeamless(graph.toReference)
-      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.id)).reduce(_.union(_))
+      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.toReference)).reduce(_.union(_))
     }
     else {
       // load from Titan
@@ -513,16 +508,16 @@ class SparkGraphStorage(metaStore: MetaStore,
     titanConnector.connect()
   }
 
-  def loadGbVerticesForFrame(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): RDD[GBVertex] = {
-    loadVertexRDD(ctx, frameId).toGbVertexRDD
+  def loadGbVerticesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBVertex] = {
+    loadVertexRDD(ctx, frameRef).toGbVertexRDD
   }
 
-  def loadGbEdgesForFrame(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): RDD[GBEdge] = {
-    loadEdgeRDD(ctx, frameId).toGbEdgeRDD
+  def loadGbEdgesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBEdge] = {
+    loadEdgeRDD(ctx, frameRef).toGbEdgeRDD
   }
 
-  def saveVertexRDD(frameId: Long, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
-    val frameEntity = frameStorage.expectFrame(frameId)
+  def saveVertexRDD(frameRef: FrameReference, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
+    val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
     frameStorage.saveFrameData(frameEntity.toReference, vertexFrameRDD)
   }
@@ -537,20 +532,10 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    frames.saveFrame(frame, edgeFrameRdd, rowCount)
   //  }
 
-  def saveEdgeRdd(frameId: Long, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
-    val frameEntity = frameStorage.expectFrame(frameId)
+  def saveEdgeRdd(frameRef: FrameReference, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
+    val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
-  }
-
-  def updateFrameSchemaList(graphEntity: GraphEntity, schemas: List[Schema])(implicit invocation: Invocation): GraphEntity = {
-    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
-      implicit session =>
-        {
-          val updatedGraph = graphEntity.copy(frameSchemaList = Some(new SchemaList(schemas)))
-          metaStore.graphRepo.update(updatedGraph).get
-        }
-    }
   }
 
 }
