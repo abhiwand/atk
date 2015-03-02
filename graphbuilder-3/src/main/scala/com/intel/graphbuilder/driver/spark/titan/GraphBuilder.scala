@@ -101,18 +101,17 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     idMap.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
-    if (config.broadcastVertexIds) {
+    val broadcastJoinThreshold = titanConnector.config.getLong("auto-partitioner.broadcast-join-threshold", 0)
 
-      val ids = idMap.collect()
-      println("vertex ids size: " + ids.length)
-      val vertexMap = ids.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
+    if (config.broadcastVertexIds || JoinBroadcastVariable.useBroadcastVariable(idMap, broadcastJoinThreshold)) {
+      val vertexMap = idMap.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple)
 
       println("broadcasting vertex ids")
-      val gbIdToPhysicalIdMap = vertexRdd.sparkContext.broadcast(vertexMap)
+      val vertexMapSize = JoinBroadcastVariable
+      val gbIdToPhysicalIdMap = JoinBroadcastVariable(vertexMap)
 
       println("starting write of edges")
       edges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
-
     }
     else {
       println("join edges with physical ids")

@@ -1,3 +1,5 @@
+Calculate dot product for each row in current frame.
+
 Calculate the dot product for each row in a frame using values from two
 equal-length sequences of columns.
 

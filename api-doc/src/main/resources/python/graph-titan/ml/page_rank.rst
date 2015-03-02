@@ -1,4 +1,4 @@
-PageRank.
+Determining which vertices are the most important.
 
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
@@ -11,7 +11,7 @@ output_vertex_property_list : list of str
     Vertex properties to store output vertex values.
 
 max_supersteps : int (optional)
-    The maximum number of super steps that the algorithm will execute.
+    The maximum number of supersteps that the algorithm will execute.
     The valid range is all positive int.
     The default value is 20.
 
@@ -19,7 +19,7 @@ convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
     If the change is less than this threshold, the algorithm exits earlier,
-    before it reaches the maximum number of super steps.
+    before it reaches the maximum number of supersteps.
     The valid range is all float and zero.
     The default value is 0.001.
 
@@ -29,7 +29,7 @@ reset_probability : float (optional)
 convergence_output_interval : int (optional)
     The convergence progress output interval.
     The valid value range is [1, max_supersteps].
-    The default value is 1, which means output every super step.
+    The default value is 1, which means output every superstep.
 
 Returns
 -------

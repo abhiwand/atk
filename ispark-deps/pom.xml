@@ -19,7 +19,7 @@
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.6-SNAPSHOT</version>
+        <version>master-SNAPSHOT</version>
     </parent>
 
 
@@ -80,9 +80,9 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-protocol</artifactId>
         </dependency>
-				<dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-				</dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
     </dependencies>
 </project>

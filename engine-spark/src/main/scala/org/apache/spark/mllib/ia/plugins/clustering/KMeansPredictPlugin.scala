@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes._
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -52,6 +52,8 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
    * e.g Python client via code generation.
    */
   override def name: String = "model:k_means/predict"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * User documentation exposed in Python.

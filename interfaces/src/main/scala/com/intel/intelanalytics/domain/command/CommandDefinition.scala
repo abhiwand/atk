@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain.command
 
 import com.intel.intelanalytics.schema.ObjectSchema
+import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
  * A description of a command in the system, including sample arguments and results
@@ -31,4 +32,5 @@ import com.intel.intelanalytics.schema.ObjectSchema
 case class CommandDefinition(name: String,
                              argument_schema: ObjectSchema,
                              return_schema: ObjectSchema,
-                             doc: Option[CommandDoc] = None)
+                             doc: Option[CommandDoc] = None,
+                             maturity: Option[ApiMaturityTag] = None)

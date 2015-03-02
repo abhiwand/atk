@@ -1,7 +1,5 @@
 Calculate covariance matrix for two or more columns.
 
-Compute the covariance matrix for two or more columns.
-
 Parameters
 ----------
 columns : [ str | list of str ]

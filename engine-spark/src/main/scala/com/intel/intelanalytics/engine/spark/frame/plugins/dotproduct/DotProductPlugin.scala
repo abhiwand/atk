@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
@@ -51,6 +51,8 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/dot_product"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
    * Calculates the dot product for each row in a frame using values from two equal-length sequences of columns.

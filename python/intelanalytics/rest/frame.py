@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 REST backend for frames
 """
@@ -237,7 +238,7 @@ class FrameBackendRest(object):
             formatted_schema.append((name, formatted_data_type))
         return formatted_schema
 
-    def add_columns(self, frame, expression, schema):
+    def add_columns(self, frame, expression, schema, columns_accessed=None):
         if not schema or not hasattr(schema, "__iter__"):
             raise ValueError("add_columns requires a non-empty schema of (name, type)")
 
@@ -249,13 +250,25 @@ class FrameBackendRest(object):
         schema = self._format_schema(schema)
         names, data_types = zip(*schema)
 
+        optimized_frame_schema = []
+        if columns_accessed:
+            frame_schema = frame.schema
+            for i in columns_accessed:
+                for j in frame_schema:
+                    if i == j[0]:
+                        optimized_frame_schema.append(j)
+
+        # By default columns_accessed is an empty list and optimized frame schema is empty which implies frame.schema is considered to evaluate
+        columns_accessed, optimized_frame_schema = ([], None) if columns_accessed is None else (columns_accessed, optimized_frame_schema)
+
         add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
             else get_add_many_columns_function(expression, data_types)
         from itertools import imap
         arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
-                     'udf': get_udf_arg(frame, add_columns_function, imap)}
+                     'udf': get_udf_arg(frame, add_columns_function, imap, optimized_frame_schema),
+                     'columns_accessed': columns_accessed}
 
         execute_update_frame_command('add_columns', arguments, frame)
 
@@ -736,6 +749,3 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return Frame(_info=frame_info)
-
-
-

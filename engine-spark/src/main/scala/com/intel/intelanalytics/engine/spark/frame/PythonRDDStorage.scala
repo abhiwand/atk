@@ -45,6 +45,7 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import scala.collection.mutable.ArrayBuffer
+import com.google.common.io.Files
 
 import scala.reflect.io.{ Directory, Path }
 
@@ -61,7 +62,7 @@ object PythonRDDStorage {
     var includes = List[String]()
 
     if (filesToUpload != null) {
-      val path = new File("/tmp/intelanalytics/python_udf_deps/")
+      val path = new File(SparkEngineConfig.pythonUdfDependenciesDirectory)
       if (!path.exists()) {
         if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
       }
@@ -70,12 +71,10 @@ object PythonRDDStorage {
         i <- 0 until filesToUpload.size
       } {
         val fileToUpload = filesToUpload(i)
-        val data = fileData(i)
+        val data = decodePythonBase64EncodedStrToBytes(fileData(i))
         val fileName = fileToUpload.split("/").last
-        val writer = new PrintWriter(new File("/tmp/intelanalytics/python_udf_deps/" + fileName))
+        Files.write(data, new File(SparkEngineConfig.pythonUdfDependenciesDirectory + fileName))
         includes ::= fileName
-        writer.write(data)
-        writer.close()
       }
     }
     includes
@@ -95,7 +94,7 @@ object PythonRDDStorage {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
       for (k <- 0 until uploads.size) {
-        ctx.addFile("file:///tmp/intelanalytics/python_udf_deps/" + uploads(k))
+        ctx.addFile(s"file://${SparkEngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
         pythonIncludes.add(uploads(k))
       }
     }

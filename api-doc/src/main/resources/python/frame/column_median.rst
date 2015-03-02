@@ -1,6 +1,5 @@
-Column median (weighted).
-
 Calculate the (weighted) median of a column.
+
 The median is the least value X in the range of the distribution so that
 the cumulative weight of values strictly below X is strictly less than half
 of the total weight and the cumulative weight of values up to and including X

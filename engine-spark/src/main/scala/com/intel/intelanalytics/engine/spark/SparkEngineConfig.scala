@@ -23,18 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.io.File
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
+import com.intel.event.{ EventContext, EventLogging }
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.typesafe.config.{ ConfigFactory, Config }
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import java.net.InetAddress
-import java.io.File
-import com.intel.event.{ EventContext, EventLogging }
+import scala.util.Try
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -97,8 +99,11 @@ trait SparkEngineConfig extends EventLogging {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
 
-  /** true to re-use a local SparkContext, this can be helpful for automated integration tests, not for customers. */
-  val reuseLocalSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-local-context")
+  /**
+   * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
+   * NOTE: true should break the progress bar.
+   */
+  val reuseSparkContext: Boolean = config.getBoolean("intel.analytics.engine.spark.reuse-context")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
@@ -176,6 +181,8 @@ trait SparkEngineConfig extends EventLogging {
       case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
     }
 
+    titanConfiguration.setProperty("auto-partitioner.broadcast-join-threshold", broadcastJoinThreshold)
+
     titanConfiguration
   }
 
@@ -223,11 +230,20 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
-   *  Use broadcast join if file size is lower than threshold.
+   * Use broadcast join if file size is lower than threshold.
    *
-   *  A threshold of zero disables broadcast joins.
+   * A threshold of zero disables broadcast joins. This threshold should not exceed the maximum size of results
+   * that can be returned to the Spark driver (i.e., spark.driver.maxResultSize).
    */
-  val broadcastJoinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
+  val broadcastJoinThreshold = {
+    val joinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
+    val maxResultSize = config.getBytes("intel.analytics.engine.spark.conf.properties.spark.driver.maxResultSize")
+    if (joinThreshold > maxResultSize) {
+      throw new RuntimeException(
+        s"Broadcast join threshold: ${joinThreshold} shouldn't be larger than spark.driver.maxResultSize: ${maxResultSize}")
+    }
+    joinThreshold
+  }
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
@@ -260,6 +276,7 @@ trait SparkEngineConfig extends EventLogging {
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+  val pythonUdfDependenciesDirectory: String = config.getString("intel.analytics.engine.spark.python-udf-deps-directory")
 
   // val's are not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
@@ -278,7 +295,11 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   //gc variables
-  val gcInterval = ConfigFactory.load().getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
-  val gcAgeToDeleteData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
-  val gcAgeToDeleteMetaData = ConfigFactory.load().getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
+  val gcInterval = config.getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteData = config.getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
+  val gcAgeToDeleteMetaData = config.getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
+
+  val enableKerberos: Boolean = config.getBoolean("intel.analytics.engine.hadoop.kerberos.enabled")
+  val kerberosPrincipalName: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.principal-name")) else None
+  val kerberosKeyTabPath: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.keytab-file")) else None
 }

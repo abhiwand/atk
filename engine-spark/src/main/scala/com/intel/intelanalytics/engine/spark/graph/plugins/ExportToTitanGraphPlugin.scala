@@ -35,13 +35,12 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage, GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 
 import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion
@@ -101,7 +100,8 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))
-    graphs.updateFrameSchemaList(titanGraph, seamlessGraph.getFrameSchemaList)
+
+    graphs.expectGraph(titanGraph.toReference)
   }
 
   /**

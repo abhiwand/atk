@@ -39,8 +39,11 @@ import com.intel.intelanalytics.domain.frame.load._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
-import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, QueryPluginResults }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
 import com.intel.intelanalytics.schema._
+import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
+import com.intel.intelanalytics.engine.plugin.ApiMaturityTag
+
 //import org.apache.spark.mllib.ia.plugins.classification.{SVMTrainArgs, ClassificationWithSGDPredictArgs, ClassificationWithSGDArgs}
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
@@ -203,6 +206,15 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val udfDependenciesFormat = jsonFormat2(UdfDependency)
   implicit val udfFormat = jsonFormat2(Udf)
 
+  implicit object ApiMaturityTagFormat extends JsonFormat[ApiMaturityTag] {
+    override def read(json: JsValue): ApiMaturityTag = json match {
+      case JsString(value) => ApiMaturityTag.withName(value)
+      case x => deserializationError(s"Expected string, received $x")
+    }
+
+    override def write(obj: ApiMaturityTag): JsValue = JsString(obj.toString)
+  }
+
   /**
    * Convert Java collections to Json.
    */
@@ -311,7 +323,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val loadFormat = jsonFormat2(LoadFrameArgs)
   implicit val filterPredicateFormat = jsonFormat2(FilterArgs)
   implicit val removeColumnFormat = jsonFormat2(DropColumnsArgs)
-  implicit val addColumnFormat = jsonFormat4(AddColumnsArgs)
+  implicit val addColumnFormat = jsonFormat5(AddColumnsArgs)
   implicit val renameFrameFormat = jsonFormat2(RenameFrameArgs)
   implicit val renameColumnsFormat = jsonFormat2(RenameColumnsArgs)
   implicit val groupByAggregationsFormat = jsonFormat3(GroupByAggregationArgs)
@@ -522,7 +534,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
+  lazy implicit val commandDefinitionFormat = jsonFormat5(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[FrameEntity] {
     implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity)
@@ -539,7 +551,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   }
 
   implicit object graphFormat extends JsonFormat[GraphEntity] {
-    implicit val graphFormatOriginal = jsonFormat13(GraphEntity)
+    implicit val graphFormatOriginal = jsonFormat12(GraphEntity)
 
     override def read(value: JsValue): GraphEntity = {
       graphFormatOriginal.read(value)
