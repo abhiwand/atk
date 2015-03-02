@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,3 +20,26 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.engine.plugin
+
+/**
+ * Enumeration of the API Tags with which operations may tagged
+ */
+object ApiMaturityTag extends Enumeration {
+  type ApiMaturityTag = Value
+
+  /**
+   * API item is new, has not gone through QA
+   */
+  val Alpha = Value
+
+  /**
+   * API item has passed QA, but may have performance or stability issues.  The signature is also still subject to change.
+   */
+  val Beta = Value
+
+  /**
+   * API item is no longer in favor and is going away.
+   */
+  val Deprecated = Value
+}

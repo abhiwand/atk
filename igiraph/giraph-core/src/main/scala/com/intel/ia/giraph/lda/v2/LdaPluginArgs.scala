@@ -51,6 +51,7 @@ case class LdaTrainArgs(model: ModelReference,
   require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
   require(alpha.isEmpty || alpha.get > 0, "Alpha should be greater than 0")
   require(beta.isEmpty || beta.get > 0, "Beta should be greater than 0")
+  require(convergenceThreshold.isEmpty || convergenceThreshold.get >= 0, "Convergence threshold should be greater than or equal to 0")
   require(numTopics.isEmpty || numTopics.get > 0, "Number of topics (K) should be greater than 0")
 
   def columnNames: List[String] = {

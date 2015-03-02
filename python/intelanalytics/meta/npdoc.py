@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Formatting for numpydoc docstrings
 """
@@ -47,7 +48,7 @@ class CommandNumpyDoc(object):
     """
     def __init__(self, command_def, one_line_summary, extended_summary=''):
         self.command_def = command_def
-        self.doc = self._create_doc(one_line_summary, extended_summary)
+        self.doc = self._create_doc(one_line_summary, extended_summary, command_def.maturity)
 
     def __repr__(self):
         return self.doc
@@ -107,11 +108,13 @@ class CommandNumpyDoc(object):
             except:
                 return str(data_type)
 
-    def _create_doc(self, one_line_summary, extended_summary, ignore_parameters=True):
+    def _create_doc(self, one_line_summary, extended_summary, maturity, ignore_parameters=True):
         """Assembles the doc sections and creates a full doc string for this function"""
         sections = []
         if one_line_summary:
             sections.append(self._format_summary(one_line_summary))
+        if maturity:
+            sections.append("    |%s|" % maturity.upper())
         if extended_summary:
             sections.append(extended_summary)
         # TODO - get the parameter documentation in place and remove ignore_parameters arg

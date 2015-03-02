@@ -1,4 +1,4 @@
-Assign classes to vertices.
+Assign random classes to vertices.
 
 Randomly assign classes to vertices given a vector of percentages.
 Each vertex receives an additional property that contains a random label.

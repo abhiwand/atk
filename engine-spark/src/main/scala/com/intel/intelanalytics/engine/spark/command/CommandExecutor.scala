@@ -357,15 +357,20 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
     val commandId = cmd.id
     val commandName = cmd.name
     val context: SparkContext = contextFactory.context(s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
-    try {
-      val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
-      val progressPrinter = new ProgressPrinter(listener)
-      context.addSparkListener(listener)
-      context.addSparkListener(progressPrinter)
-    }
-    catch {
-      // exception only shows up here due to dev error, but it is hard to debug without this logging
-      case e: Exception => error("could not create progress listeners", exception = e)
+    if (!SparkEngineConfig.reuseSparkContext) {
+      try {
+        // If you reuse a SparkContext, you don't want to create a ton of listeners for that one SparkContext.
+        // Also, the progress bar has concurrency bugs if you re-use a SparkContext, so better if it is off.
+        // The listener is for normal execution where each command gets its own SparkContext.
+        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
+        val progressPrinter = new ProgressPrinter(listener)
+        context.addSparkListener(listener)
+        context.addSparkListener(progressPrinter)
+      }
+      catch {
+        // exception only shows up here due to dev error, but it is hard to debug without this logging
+        case e: Exception => error("could not create progress listeners", exception = e)
+      }
     }
     commandIdContextMapping += (commandId -> context)
     context
@@ -395,7 +400,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
   }
 
   private def stopContextIfNeeded(sc: SparkContext): Unit = {
-    if (SparkEngineConfig.reuseLocalSparkContext && sc.isLocal) {
+    if (SparkEngineConfig.reuseSparkContext) {
       info("not stopping local SparkContext so that it can be re-used")
     }
     else {

@@ -935,12 +935,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def idCounter = column[Option[Long]]("id_counter")
 
-    def frameSchemas = column[Option[SchemaList]]("frame_schemas")
-
     def lastReadDate = column[DateTime]("last_read_date")
 
     /** projection to/from the database */
-    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas, lastReadDate) <> (GraphEntity.tupled, GraphEntity.unapply)
+    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, lastReadDate) <> (GraphEntity.tupled, GraphEntity.unapply)
 
     // foreign key relationships
 

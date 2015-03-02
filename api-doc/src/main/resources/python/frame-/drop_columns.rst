@@ -1,6 +1,5 @@
-Remove columns.
-
 Remove columns from the frame.
+
 The data from the columns is lost.
 
 Parameters

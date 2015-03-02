@@ -1,15 +1,12 @@
-﻿-------------------------
-|version| Preview Release 
--------------------------
+﻿-----------------
+|version| Release
+-----------------
 
 .. contents:: Table of Contents
     :local:
 
 This section describes the capabilities of the |version| version of the |IAT| —
 in particular the graph analytics capabilities.
-Some of the other functionality referenced in the :doc:`ia_intro_1` section
-(like :ref:`Unified_Graph_and_Entity_Analytics`) will be added in a future
-release.
 
 Data Import, Data Cleaning, and Feature Engineering
 ===================================================
@@ -140,6 +137,8 @@ Topic Modeling
 *   :term:`Latent Dirichlet Allocation` (LDA): A :term:`topic modeling`
     algorithm used for topic and key word extraction.
 
+Graph Statistics
+----------------
 For graph statistics, algorithms provided include:
 
 *   :term:`Connected component`

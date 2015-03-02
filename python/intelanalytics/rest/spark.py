@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Spark-specific implementation on the client-side
 """
@@ -28,7 +29,7 @@ Spark-specific implementation on the client-side
 import base64
 import os
 import itertools
-import pstats
+from udfzip import UdfZip
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -51,15 +52,28 @@ import json
 
 UdfDependencies = []
 
-
 def get_file_content_as_str(filename):
-    with open(filename, 'rb') as f:
-        return f.read()
+    # If the filename is a directory, zip the contents first, else fileToSerialize is same as the python file
+    if os.path.isdir(filename):
+        UdfZip.zipdir(filename)
+        name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
+    elif not ('/' in filename) and filename.endswith('.py'):
+        name, fileToSerialize = (filename, filename)
+    else:
+        raise Exception('%s should be either local python script without any packaging structure \
+        or the absolute path to a valid python package/module which includes the intended python file to be included and all \
+                        its dependencies.' % filename)
+    # Serialize the file contents and send back along with the new serialized file names
+    with open(fileToSerialize, 'rb') as f:
+        return (name, base64.urlsafe_b64encode(f.read()))
 
 
 def _get_dependencies(filenames):
-    return [{'file_name': filename, 'file_content':get_file_content_as_str(filename)} for filename in filenames]
-
+    dependencies = []
+    for filename in filenames:
+        name, content = get_file_content_as_str(filename)
+        dependencies.append({'file_name': name, 'file_content': content})
+    return dependencies
 
 def ifiltermap(predicate, function, iterable):
     """creates a generator than combines filter and map"""
@@ -128,13 +142,13 @@ def encode_bytes_for_http(b):
     return base64.urlsafe_b64encode(b)
 
 
-def _wrap_row_function(frame, row_function):
+def _wrap_row_function(frame, row_function, optional_schema=None):
     """
     Wraps a python row function, like one used for a filter predicate, such
     that it will be evaluated with using the expected 'row' object rather than
     whatever raw form the engine is using.  Ideally, this belong in the engine
     """
-    schema = frame.schema  # must grab schema now so frame is not closed over
+    schema = optional_schema if optional_schema is not None else frame.schema  # must grab schema now so frame is not closed over
     def row_func(row):
         try:
             row_wrapper = RowWrapper(schema)
@@ -146,7 +160,7 @@ def _wrap_row_function(frame, row_function):
     return row_func
 
 
-def get_udf_arg(frame, subject_function, iteration_function):
+def get_udf_arg(frame, subject_function, iteration_function, optional_schema=None):
     """
     Prepares a python row function for server execution and http transmission
 
@@ -160,7 +174,7 @@ def get_udf_arg(frame, subject_function, iteration_function):
         the iteration function to apply for the frame.  In general, it is
         imap.  For filter however, it is ifilter
     """
-    row_ready_function = _wrap_row_function(frame, subject_function)
+    row_ready_function = _wrap_row_function(frame, subject_function, optional_schema)
     def iterator_function(iterator): return iteration_function(row_ready_function, iterator)
     def iteration_ready_function(s, iterator): return iterator_function(iterator)
     return make_http_ready(iteration_ready_function)

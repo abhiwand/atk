@@ -121,7 +121,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val newGraph = engine.graphs.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph)
     writeToTitan(newTitanConfig, outVertices, gbEdges)
 
     ConnectedComponentsResult(newGraphName.get)

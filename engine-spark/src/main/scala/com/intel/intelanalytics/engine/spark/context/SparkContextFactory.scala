@@ -28,6 +28,7 @@ import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.{ SparkConf, SparkContext }
 
@@ -40,8 +41,8 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
    * Creates a new sparkContext with the specified kryo classes
    */
   def getContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = withContext("engine.SparkContextFactory") {
-    if (SparkEngineConfig.isLocalMaster && SparkEngineConfig.reuseLocalSparkContext) {
-      SparkContextFactory.sharedLocalSparkContext()
+    if (SparkEngineConfig.reuseSparkContext) {
+      SparkContextFactory.sharedSparkContext()
     }
     else {
       createContext(description, kryoRegistrator)
@@ -68,6 +69,8 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
       sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
     }
+
+    KerberosAuthenticator.loginWithKeyTab()
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
@@ -100,11 +103,14 @@ object SparkContextFactory extends SparkContextFactory {
   // for integration tests only
   private var sc: SparkContext = null
 
-  /** this shared Local SparkContext is for integration tests only */
-  private def sharedLocalSparkContext()(implicit invocation: Invocation): SparkContext = {
+  /**
+   * This shared SparkContext is for integration tests and regression tests only
+   * NOTE: this should break the progress bar.
+   */
+  private def sharedSparkContext()(implicit invocation: Invocation): SparkContext = {
     this.synchronized {
       if (sc == null) {
-        sc = createContext("reused-local-spark-context", None)
+        sc = createContext("reused-spark-context", None)
       }
     }
     sc

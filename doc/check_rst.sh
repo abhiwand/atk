@@ -1,9 +1,9 @@
 #!/bin/bash - 
 #===============================================================================
 #
-#          FILE: check_rst.sh
+#          FILE: find_rst.sh
 # 
-#         USAGE: ./check_rst.sh 
+#         USAGE: ./find_rst.sh 
 # 
 #   DESCRIPTION: 
 # 
@@ -29,13 +29,14 @@ else
 fi
 CONTINUE=True
 START_AT=""
+USE_FIND=False
 if [ "$FLAG1" == "-resume" ]
 then
-    if [[ -f ~/check_rst_progress.txt ]]
+    if [[ -f ~/find_rst_progress.txt ]]
     then
-        START_AT=$(cat ~/check_rst_progress.txt)
+        START_AT=$(cat ~/find_rst_progress.txt)
     else
-        read -p "File ~/check_rst_progress.txt not found. Continue from begining? [Y|n]" USER_RESPONSE
+        read -p "File ~/find_rst_progress.txt not found. Continue from begining? [Y|n]" USER_RESPONSE
         if [ "$USER_RESPONSE" == "" ]
         then
             USER_RESPONSE='Y'
@@ -45,6 +46,7 @@ then
             CONTINUE=False
         fi
     fi
+    USE_FIND=True
 fi
 
 if [ "$CONTINUE" == "True" ]
@@ -64,7 +66,7 @@ then
                 then
                     CONTINUE=False
                     LAST_FILE=$FILE
-                    echo $FILE > ~/check_rst_progress.txt
+                    echo $FILE > ~/find_rst_progress.txt
                 fi
             fi
         fi

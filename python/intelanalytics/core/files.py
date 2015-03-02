@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 from intelanalytics.core.iatypes import valid_data_types
 
 class DataFile(object):
@@ -128,9 +129,10 @@ class CsvFile(DataFile):
         """
         Schema field names from the CsvFile class.
 
+
         Returns
         -------
-        list of str
+        list : list of str
             Field names
 
         Examples
@@ -156,7 +158,7 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list of types
+        list : list of types
             Field types
 
         Examples
@@ -487,4 +489,3 @@ class XmlFile(MultiLineFile):
 
     def __repr__(self):
         return repr(self.file_name)
-

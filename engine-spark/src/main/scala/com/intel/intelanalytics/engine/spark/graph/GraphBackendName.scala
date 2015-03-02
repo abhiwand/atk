@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.intelanalytics.domain.graph.GraphEntity
+
 //TODO: This should be replaced by a "storage" parameter on Graph and DataFrame that holds specifics like
 // Titan table name and HDFS uris, etc. for those that need them.
 
@@ -36,14 +38,10 @@ object GraphBackendName {
   /**
    * Converts the user's name for a graph into the name used by the underlying graph store.
    */
-  def convertGraphUserNameToBackendName(graphName: String): String = {
-    iatGraphTablePrefix + graphName
+  def getGraphBackendName(graph: GraphEntity): String = {
+    iatGraphTablePrefix + graph.id
   }
 
-  /**
-   * Converts the name for a graph used by the underlying graph store to the name seen by users.
-   */
-  def convertGraphBackendNameToUserName(backendName: String): String = {
-    backendName.stripPrefix(iatGraphTablePrefix)
-  }
+  def getIdFromBackendName(graphName: String): Long = graphName.stripPrefix(iatGraphTablePrefix).toLong
+
 }

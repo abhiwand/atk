@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark
 
 import java.io.{ InputStream, OutputStream }
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
@@ -40,7 +41,7 @@ import com.intel.event.{ EventContext, EventLogging }
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
   implicit val eventContext = EventContext.enter("HDFSFileStorage")
 
-  val configuration = withContext("HDFSFileStorage.configuration") {
+  private val securedConfiguration = withContext("HDFSFileStorage.configuration") {
 
     info("fsRoot: " + fsRoot)
 
@@ -57,10 +58,30 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
       "Could not load local filesystem for Hadoop")
+
+    KerberosAuthenticator.loginConfigurationWithKeyTab(hadoopConfig)
     hadoopConfig
   }(null)
 
-  val fs = FileSystem.get(configuration)
+  def configuration: Configuration = {
+    if (SparkEngineConfig.enableKerberos) {
+      KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
+    }
+    securedConfiguration
+  }
+
+  private val fileSystem = FileSystem.get(configuration)
+
+  /**
+   * Verifies that the Kerberos Ticket is still valid and if not relogins before returning fileSystem object
+   * @return Hadoop FileSystem
+   */
+  def fs: FileSystem = {
+    if (SparkEngineConfig.enableKerberos) {
+      KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
+    }
+    fileSystem
+  }
 
   /**
    * Path from a path

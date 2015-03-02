@@ -32,11 +32,11 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  * @param name the column name
  * @param dataType the type
  * @param index Columns can track their own indices once they are added to a schema, -1 if not defined
- *              Normally only the Schema would set the index (except in unit tests)
- *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
- *              everywhere so it seemed better to encapsulate it)
+ *              This field should go away - it is bad because Schemas and Columns are otherwise immutable,
+ *              so this can result in some surprising bugs.
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1) {
+case class Column(name: String, dataType: DataType,
+                  @deprecated("we should remove this field, please don't use") var index: Int = -1) {
   require(name != null, "column name is required")
   require(dataType != null, "column data type is required")
   require(name != "", "column name can't be empty")
@@ -180,7 +180,7 @@ trait Schema {
   require({
     val distinct = columns.map(_.name).distinct
     distinct.length == columns.length
-  }, "invalid schema, duplicate column names")
+  }, s"invalid schema, column names cannot be duplicated: $columns")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -448,7 +448,8 @@ trait Schema {
    */
   def convertType(columnName: String, updatedDataType: DataType): Schema = {
     val col = column(columnName)
-    copy(columns = columns.updated(col.index, col.copy(dataType = updatedDataType)))
+    val index = columnIndex(columnName)
+    copy(columns = columns.updated(index, col.copy(dataType = updatedDataType)))
   }
 
   /**
