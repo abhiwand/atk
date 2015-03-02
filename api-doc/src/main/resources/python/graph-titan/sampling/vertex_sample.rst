@@ -1,4 +1,4 @@
-Subgraph from vertex sampling.
+Make subgraph from vertex sampling.
 
 Create a vertex induced subgraph obtained by vertex sampling.
 Three types of vertex sampling are provided: 'uniform', 'degree', and

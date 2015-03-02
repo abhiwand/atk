@@ -106,6 +106,13 @@ trait AbstractVertex extends AbstractRow {
     setValue("_label", label)
   }
 
+  def create(vertex: GBVertex): Row = {
+    create()
+    vertex.properties.foreach(prop => setValue(prop.key, prop.value))
+    setVid(vertex.physicalId.asInstanceOf[Long])
+    row
+  }
+
   /**
    * Convert this row to a GbVertex
    */

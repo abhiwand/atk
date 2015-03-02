@@ -93,7 +93,7 @@ class GiraphJobListener extends DefaultJobObserver {
           }
           throw new Exception(s"Execution was unsuccessful. $errorMessage")
         case None => throw new Exception("Execution was unsuccessful, but no further information was provided. " +
-          "Consider server checking logs for further information.")
+          "Consider checking server logs for further information.")
       }
     }
   }

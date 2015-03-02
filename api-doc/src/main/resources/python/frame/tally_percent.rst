@@ -1,5 +1,3 @@
-Cumulative percent count.
-
 Compute a cumulative percent count.
 
 A cumulative percent count is computed by sequentially stepping through

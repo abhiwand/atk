@@ -165,7 +165,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -179,21 +179,16 @@ class SparkGraphStorage(metaStore: MetaStore,
    */
   override def copyGraph(graph: GraphEntity, name: Option[String])(implicit invocation: Invocation): GraphEntity = {
     info(s"copying graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
-    val graphCopy = createGraph(GraphTemplate(name))
-    val storageName = {
-      GraphBackendName.convertGraphUserNameToBackendName(name.getOrElse(Naming.generateName(prefix = Some("copy_graph_"))))
-    }
-    if (graph.isTitan) {
-      backendStorage.copyUnderlyingTable(graph.name.get, storageName)
-      metaStore.withSession("spark.graphstorage.copyGraph") {
-        implicit session =>
-          {
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "hbase/titan"))
-          }
-      }
+
+    val copiedEntity = if (graph.isTitan) {
+      val graphCopy = createGraph(GraphTemplate(name, StorageFormats.HBaseTitan))
+      backendStorage.copyUnderlyingTable(graph.storage, graphCopy.storage)
+      graphCopy
     }
     else {
-      val graphMeta = expectSeamless(graph.toReference)
+      val graphCopy = createGraph(GraphTemplate(name))
+      val storageName = graphCopy.storage
+      val graphMeta = expectSeamless(graph.id)
       val framesToCopy = graphMeta.frameEntities.map(_.toReference)
       val copiedFrames = frameStorage.copyFrames(framesToCopy, invocation.asInstanceOf[SparkInvocation].sparkContext)
 
@@ -201,12 +196,12 @@ class SparkGraphStorage(metaStore: MetaStore,
         implicit session =>
           {
             copiedFrames.foreach(frame => metaStore.frameRepo.update(frame.copy(graphId = Some(graphCopy.id), modifiedOn = new DateTime)))
-            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame"))
+            metaStore.graphRepo.update(graphCopy.copy(storage = storageName, storageFormat = "ia/frame")).get
           }
       }
     }
     // refresh from DB
-    expectGraph(graphCopy.toReference)
+    expectGraph(copiedEntity.toReference)
   }
 
   /**
@@ -245,10 +240,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          val graphBackendName: String = if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
+            GraphBackendName.getGraphBackendName(graphEntity)
           }
-          metaStore.graphRepo.insert(graph).get
+          else ""
+          metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
   }
@@ -260,9 +259,6 @@ class SparkGraphStorage(metaStore: MetaStore,
           val check = metaStore.graphRepo.lookupByName(Some(newName))
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
-          }
-          if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
@@ -446,7 +442,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -469,10 +465,10 @@ class SparkGraphStorage(metaStore: MetaStore,
                    append: Boolean = false)(implicit invocation: Invocation): GraphEntity = {
 
     val graph = if (append)
-      getGraphByName(Some(graphName)).get
+      expectGraph(GraphReference(GraphBackendName.getIdFromBackendName(graphName)))
     else
       createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
@@ -503,7 +499,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphReference: GraphReference)(implicit invocation: Invocation): TitanGraph = {
     val graph = expectGraph(graphReference)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }
@@ -536,16 +532,6 @@ class SparkGraphStorage(metaStore: MetaStore,
     val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
-  }
-
-  def updateFrameSchemaList(graphEntity: GraphEntity, schemas: List[Schema])(implicit invocation: Invocation): GraphEntity = {
-    metaStore.withSession("spark.graphstorage.updateElementIDNames") {
-      implicit session =>
-        {
-          val updatedGraph = graphEntity.copy(frameSchemaList = Some(new SchemaList(schemas)))
-          metaStore.graphRepo.update(updatedGraph).get
-        }
-    }
   }
 
 }

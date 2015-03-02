@@ -30,10 +30,7 @@ Glossary
 
     Alpha
 
-        A function or feature which has been developed, but has not been
-        completely tested.
-        Use this function with utmost caution.
-        This function may be changed or eliminated in future releases.
+        See :term:`API Maturity Tags`   |ALPHA|
 
     Aggregation Function
 
@@ -61,6 +58,25 @@ Glossary
         See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
         in-depth discussion of this method.
 
+    API Maturity Tags
+
+        Functions in the API may be at different levels of software maturity.
+        Where a function is not mature, the documentation will note it with one
+        of the following tags.  The absence of a tag means the function is
+        standardized and fully tested. 
+        
+        |ALPHA| Indicates a function or feature which has been developed, but has
+        not been completely tested.  Use this function with caution.
+        This function may be changed or eliminated in future releases.
+
+        |BETA| Indicates a function or feature which has been developed and preliminarily
+        tested, but has not been completely tested.  Use this function with caution.
+        This function may be changed in future releases.
+
+        |DEPRECATED| Indicates a function or feature which is no longer supported.
+        It is recommended that an alternate solution be found.
+        This function may be removed in future releases.
+
     Average Path Length
 
         In network topology, the average number of steps along the shortest
@@ -80,10 +96,7 @@ Glossary
 
     Beta
 
-        A function or feature which has been developed and preliminarily
-        tested, but has not been completely tested.
-        Use this function with caution.
-        This function may be changed in future releases.
+        See :term:`API Maturity Tags`   |BETA|
 
     Bias-variance tradeoff
 
@@ -210,13 +223,9 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
-
     Deprecated
 
-        A function or feature which is no longer supported.
-        It is recommended that an alternate solution be found.
-        Use this function with caution.
-        This function may be removed in future releases.
+        See :term:`API Maturity Tags`.  |DEPRECATED|
 
     dict
 
@@ -384,13 +393,14 @@ Glossary
         The broad category of methods used to examine the statistical and
         structural properties of a graph, including:
 
-            traversals
-                algorithmic walk throughs of the graph to determine optimal
-                paths and relationship between vertices
-            statistics
-                important attributes of the graph such as degrees of
+            #.  Traversals --
+                Algorithmic walk throughs of the graph to determine optimal
+                paths and relationship between vertices.
+
+            #.  Statistics --
+                Important attributes of the graph such as degrees of
                 separation, number of triangular counts, centralities (highly
-                influential nodes), and so on
+                influential nodes), and so on.
 
         Some are user-guided interactions, where the user navigates through
         the data connections, others are algorithmic, where a result is
@@ -402,6 +412,9 @@ Glossary
         graph to uncover patterns and relationships.
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
+
+        For more information, see :ref:`the article "Graph Analytics"
+        by Pak Chung Wong <vacommunity.org/article26>`.
 
     Graph Database Directions
 
@@ -588,6 +601,8 @@ Glossary
         data.
         The more iterations the software computes, the better it gets at making
         that calculation.
+        For more information, see `Wikipedia
+        <https://en.wikipedia.org/wiki/Machine_learning>`__.
 
     MapReduce
 

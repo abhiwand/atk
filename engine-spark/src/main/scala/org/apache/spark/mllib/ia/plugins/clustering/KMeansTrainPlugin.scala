@@ -28,7 +28,7 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
@@ -46,6 +46,8 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
    * e.g Python client via code generation.
    */
   override def name: String = "model:k_means/train"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * User documentation exposed in Python.

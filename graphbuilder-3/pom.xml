@@ -10,7 +10,7 @@
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.6-SNAPSHOT</version>
+        <version>master-SNAPSHOT</version>
     </parent>
 
     <build>
@@ -44,6 +44,10 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>event</artifactId>
         </dependency>
         <!-- END BDA dependencies to our modules -->
 

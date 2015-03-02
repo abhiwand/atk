@@ -1,5 +1,3 @@
-Define vertex type.
-
 Define a vertex type by label
 
 Parameters

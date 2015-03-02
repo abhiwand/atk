@@ -134,17 +134,29 @@ data to persist between restarts).
             insert into users (username, API_key, created_on, modified_on)
                 values( 'metastore', 'test_API_key_1', now(), now() )
 
--------------
-Related Pages
--------------
+-------------------
+Basic PSQL commands
+-------------------
 
-:doc:`ad_psql_cs`
+PSQL has a really nice command-line interface with full help and documentation build-in.
 
-.. toctree::
-    :hidden:
-    
-    ad_psql_cs
+*psql dbname* \- launch the psql prompt and connect to a database
 
+*\h* \- gives help on SQL, lists all of the possible commands
+
+*\h create user* \- gives help on "create user"
+
+*?* \- gives help on PSQL command line
+
+*\d* \- lists all of the objects in your database
+
+*\d tableName* \- describes a table
+
+*\dt* \- lists all tables
+
+*\q* \- quit
+
+*\c* dbname - connect to another DB
 
 .. _PostgreSQL: http://www.postgresql.org
 
