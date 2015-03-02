@@ -5,28 +5,6 @@ Best Known Methods (User)
 .. contents:: Table of Contents
     :local:
 
--------------------------
-Configuration information
--------------------------
-
-Partitioning
-============
-
-Rules of thumb:
-    | Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
-    | Lower bound: at least 2x number of cores in your cluster
-    | Too few partitions results in:
-    |    Less concurrency
-    |    More susceptible to data skew
-    |    Increased memory pressure
-    | 
-    |   Upper bound: ensure your tasks take at least 100ms (if they are going faster,
-        then you are probably spending more time scheduling tasks than executing them)
-    |   Too many partitions results in:
-    |       Time wasted spent scheduling
-    |       If you choose a number way too high then more time will be spent scheduling than executing
-            10,000 would be way too big for a 4 node cluster
-
 ------
 Python
 ------
@@ -144,17 +122,6 @@ Note:
 Spark
 -----
 
-Spark Bug
-=========
-
-When implementing a plugin, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
-Instead, use the less efficient *sortByKey* function.
-The Spark *top* function has a bug filed against it when using Kryo serializer.
-This has been fixed in Spark 1.1.0.
-There is a known work-around, but there are issues implementing it in our plugin architecture.
-See https://issues.apache.org/jira/browse/SPARK-2306.
-
-
 Resolving disk full issue while running Spark jobs
 ==================================================
 
@@ -212,6 +179,4 @@ References
 
 `Spark Docs <https://spark.apache.org/documentation.html>`__
 
-Nice thread on how Shuffle works in Spark,
-    http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
 

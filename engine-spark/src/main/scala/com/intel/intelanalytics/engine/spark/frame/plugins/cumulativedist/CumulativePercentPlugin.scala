@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -49,6 +49,8 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentArgs, 
    * e.g Python client via code generation.
    */
   override def name: String = "frame/cumulative_percent"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * Compute a cumulative percent sum.

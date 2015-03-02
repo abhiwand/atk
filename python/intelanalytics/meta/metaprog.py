@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Meta-programming - dynamically adding commands to api objects or building doc stub *.py
 """
@@ -50,6 +51,7 @@ IA_URI = '_id'
 COMMAND_DEF = '_command_def'
 ENTITY_TYPE = '_entity_type'
 INTERMEDIATE_NAME = '_intermediate_name'
+INTERMEDIATE_CLASS = '_intermediate_class'
 LOADED_COMMANDS = '_loaded_commands'
 LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
 
@@ -465,6 +467,14 @@ def {name}(self):
 def mark_with_intermediate_name(obj, intermediate_name):
     setattr(obj, INTERMEDIATE_NAME, intermediate_name) # mark the getter in order to recognize name collisions
 
+def mark_with_intermediate_class(obj, intermediate_class):
+    setattr(obj, INTERMEDIATE_CLASS, intermediate_class) # mark the getter in order to recognize name collisions
+
+def get_intermediate_property_class(prop):
+    try:
+        return getattr(prop.fget, INTERMEDIATE_CLASS)
+    except:
+        return None
 
 def get_fget(intermediate_name):
     private_name = get_private_name(intermediate_name)
@@ -476,6 +486,7 @@ def get_fget(intermediate_name):
 def create_intermediate_property(intermediate_class, intermediate_name):
     fget = get_fget(intermediate_name)
     mark_with_intermediate_name(fget, intermediate_name)
+    mark_with_intermediate_class(fget, intermediate_class)
     doc = _get_property_doc(intermediate_class, intermediate_name)
     return property(fget=fget, doc=doc)
 
@@ -619,29 +630,7 @@ def get_doc_stubs_module_text(command_defs, existing_loadables_dict, global_modu
 
 
 def get_file_header_text():
-    return """##############################################################################
-# INTEL CONFIDENTIAL
-#
-# Copyright 2014 Intel Corporation All Rights Reserved.
-#
-# The source code contained or described herein and all documents related to
-# the source code (Material) are owned by Intel Corporation or its suppliers
-# or licensors. Title to the Material remains with Intel Corporation or its
-# suppliers and licensors. The Material may contain trade secrets and
-# proprietary and confidential information of Intel Corporation and its
-# suppliers and licensors, and is protected by worldwide copyright and trade
-# secret laws and treaty provisions. No part of the Material may be used,
-# copied, reproduced, modified, published, uploaded, posted, transmitted,
-# distributed, or disclosed in any way without Intel's prior express written
-# permission.
-#
-# No license under any patent, copyright, trade secret or other intellectual
-# property right is granted to or conferred upon you by disclosure or
-# delivery of the Materials, either expressly, by implication, inducement,
-# estoppel or otherwise. Any license under such intellectual property rights
-# must be express and approved by Intel in writing.
-##############################################################################
-
+    return """
 # Auto-generated file for API static documentation stubs ({timestamp})
 #
 # **DO NOT EDIT**

@@ -26,9 +26,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
- * Aggregator for counting distinct column values using Spark's aggregateByKey().
+ * Aggregator for counting distinct column values.
  *
- * @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
+ * This aggregator assumes that the number of distinct values for a given key can fit within memory.
  */
 case class DistinctCountAggregator() extends GroupByAggregator {
 

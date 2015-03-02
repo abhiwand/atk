@@ -27,18 +27,36 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 /**
- * Counter used to compute variance incrementally.
+ * Counter used to compute sample variance incrementally.
  *
  * @param count Current count
  * @param mean Current mean
  * @param m2 Sum of squares of differences from the current mean
  */
-case class VarianceCounter(count: Long, mean: Double, m2: Double) {
+case class VarianceCounter(count: Long, mean: CompensatedSum, m2: CompensatedSum) {
   require(count >= 0, "Count should be greater than zero")
 }
 
 /**
- * Abstract class used to incrementally the compute variance and standard deviation using Spark's aggregateByKey().
+ * Counter used to calculate sums using the Kahan summation algorithm
+ *
+ * The Kahan summation algorithm (also known as compensated summation) reduces the numerical errors that
+ * occur when adding a sequence of finite precision floating point numbers. Numerical errors arise due to
+ * truncation and rounding. These errors can lead to numerical instability when calculating variance.
+ *
+ * @see http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ *
+ * @param value Numeric value being summed
+ * @param delta Correction term for reducing numeric errors
+ */
+case class CompensatedSum(value: Double = 0d, delta: Double = 0d)
+
+/**
+ * Abstract class used to incrementally the compute sample variance and standard deviation
+ *
+ * This class uses the Kahan summation algorithm to avoid numeric instability when computing variance.
+ * The algorithm is described in: "Scalable and Numerically Stable Descriptive Statistics in SystemML",
+ * Tian et al, International Conference on Data Engineering 2012
  *
  * @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
  */
@@ -51,7 +69,7 @@ abstract class AbstractVarianceAggregator extends GroupByAggregator {
   override type ValueType = Double
 
   /** The 'empty' or 'zero' or default value for the aggregator */
-  override def zero: VarianceCounter = VarianceCounter(0L, 0d, 0d)
+  override def zero: VarianceCounter = VarianceCounter(0L, CompensatedSum(), CompensatedSum())
 
   /**
    * Converts column value to Double
@@ -66,40 +84,53 @@ abstract class AbstractVarianceAggregator extends GroupByAggregator {
   /**
    * Adds map value to incremental variance
    */
-  override def add(variance: AggregateType, mapValue: ValueType): AggregateType = {
-    if (mapValue.isNaN) { // omit value from calculation
+  override def add(varianceCounter: AggregateType, mapValue: ValueType): AggregateType = {
+    if (mapValue.isNaN) {
+      // omit value from calculation
       //TODO: Log to IAT EventContext once we figure out how to pass it to Spark workers
       println(s"WARN: Omitting NaNs from variance calculation in group-by")
-      variance
+      varianceCounter
     }
     else {
-      val count = variance.count + 1L
-      val delta = mapValue - variance.mean
-      val mean = variance.mean + (delta / count)
-      val m2 = variance.m2 + (delta * (mapValue - mean))
-      VarianceCounter(count, mean, m2)
+      val count = varianceCounter.count + 1L
+      val delta = mapValue - varianceCounter.mean.value
+      val mean = varianceCounter.mean.value + (delta / count)
+      val m2 = varianceCounter.m2.value + (delta * (mapValue - mean))
+      VarianceCounter(count, CompensatedSum(mean), CompensatedSum(m2))
     }
   }
 
   /**
-   * Combines two VarianceCounter objects used to compute the variance incrementally.
+   * Combines two Variance counters from two Spark partitions to update the incremental variance
+   *
+   * Uses the Kahan summation algorithm described in: "Scalable and Numerically Stable Descriptive Statistics in SystemML",
+   * Tian et al, International Conference on Data Engineering 2012
    */
-  override def merge(variance1: VarianceCounter, variance2: VarianceCounter): VarianceCounter = {
-    val count = variance1.count + variance2.count
-    val mean = ((variance1.mean * variance1.count) + (variance2.mean * variance2.count)) / count
-    val deltaMean = variance1.mean - variance2.mean
-    val m2 = variance1.m2 + variance2.m2 + (deltaMean * deltaMean * count) / count
+  override def merge(counter1: VarianceCounter, counter2: VarianceCounter): VarianceCounter = {
+    val count = counter1.count + counter2.count
+    val deltaMean = counter2.mean.value - counter1.mean.value
+    val mean = incrementCompensatedSum(counter1.mean, CompensatedSum(deltaMean * counter2.count / count))
+    val m2_sum = incrementCompensatedSum(counter1.m2, counter2.m2)
+    val m2 = incrementCompensatedSum(m2_sum, CompensatedSum(deltaMean * deltaMean * counter1.count * counter2.count / count))
     VarianceCounter(count, mean, m2)
   }
 
   /**
    * Calculates the variance using the counts in VarianceCounter
    */
-  def calculateVariance(variance: VarianceCounter): Double = {
-    if (variance.count > 1) {
-      variance.m2 / (variance.count - 1)
+  def calculateVariance(counter: VarianceCounter): Double = {
+    if (counter.count > 1) {
+      counter.m2.value / (counter.count - 1)
     }
     else Double.NaN
+  }
+
+  // Increments the Kahan sum by adding two sums, and updating the correction term for reducing numeric errors
+  private def incrementCompensatedSum(sum1: CompensatedSum, sum2: CompensatedSum): CompensatedSum = {
+    val correctedSum2 = sum2.value + (sum1.delta + sum2.delta)
+    val sum = sum1.value + correctedSum2
+    val delta = correctedSum2 - (sum - sum1.value)
+    CompensatedSum(sum, delta)
   }
 }
 
@@ -110,8 +141,9 @@ case class VarianceAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the variance
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    super.calculateVariance(variance)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else variance //TODO: Revisit when data types support NaN
   }
 }
 
@@ -123,8 +155,8 @@ case class StandardDeviationAggregator() extends AbstractVarianceAggregator {
   /**
    * Returns the standard deviation
    */
-  override def getResult(variance: VarianceCounter): Any = {
-    val stddev = super.calculateVariance(variance)
-    Math.sqrt(stddev)
+  override def getResult(varianceCounter: VarianceCounter): Any = {
+    val variance = super.calculateVariance(varianceCounter)
+    if (variance.isNaN) null else Math.sqrt(variance) //TODO: Revisit when data types support NaN
   }
 }

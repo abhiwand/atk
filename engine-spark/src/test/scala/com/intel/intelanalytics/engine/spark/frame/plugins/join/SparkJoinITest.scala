@@ -111,9 +111,9 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     val countryCode = sparkContext.parallelize(idCountryCodes)
     val countryNames = sparkContext.parallelize(idCountryNames)
 
-    val broadcastJoinThreshold = 1000
-    val leftJoinParam = RDDJoinParam(countryCode, 2, Some(1500))
-    val rightJoinParam = RDDJoinParam(countryNames, 2, Some(100))
+    val broadcastJoinThreshold = 1000L + Int.MaxValue
+    val leftJoinParam = RDDJoinParam(countryCode, 2, Some(1500L))
+    val rightJoinParam = RDDJoinParam(countryNames, 2, Some(100L + Int.MaxValue))
 
     // Test join wrapper function
     val results = JoinRDDFunctions.joinRDDs(leftJoinParam, rightJoinParam, "left").collect()

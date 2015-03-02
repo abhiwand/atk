@@ -1,4 +1,4 @@
-Annotate Degrees.
+Calculates global clustering coefficient.
 
 Computes the :term `global clustering coefficient` of the graph and optionally
 creates a new graph which is the same as the input graph, with the addition

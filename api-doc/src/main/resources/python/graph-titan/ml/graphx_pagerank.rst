@@ -1,4 +1,4 @@
-Page Rank.
+Determining which vertices are the most important.
 
 ** Experimental Feature **
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.

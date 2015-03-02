@@ -136,13 +136,7 @@ object MiscFrameFunctions extends Serializable {
    * @param pairRdd rdd which has (key, value) structure in each row
    */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
-    // TODO: can't this be a reduceByKey() --Todd 12/3/2014
-    val grouped = pairRdd.groupByKey()
-    val duplicatesRemoved: RDD[Array[Any]] = grouped.map(bag => {
-      val firstEntry = bag._2.head
-      firstEntry
-    })
-    duplicatesRemoved
+    pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
   def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
@@ -151,7 +145,6 @@ object MiscFrameFunctions extends Serializable {
     // run the operation
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
 
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    duplicatesRemoved
+    MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
   }
 }

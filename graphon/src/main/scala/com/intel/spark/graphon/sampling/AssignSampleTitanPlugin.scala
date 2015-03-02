@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.graph.{ AssignSampleTitanArgs, GraphEntit
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 
@@ -78,7 +79,7 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
       arguments.getRandomSeed)
     //GB Edges are unchanged so we do not need to supply the edges
     val emptyRDD: RDD[GBEdge] = sc.parallelize(Nil)
-    engine.graphs.writeToTitan(graph.name.get, splitRDD, emptyRDD, append = true)
+    engine.graphs.writeToTitan(graph.storage, splitRDD, emptyRDD, append = true)
     new UnitReturn
   }
 

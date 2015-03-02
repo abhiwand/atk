@@ -1,4 +1,4 @@
-Alternating Least Squares
+Minimizing goodness-of-fit data measure in a series of steps.
 
 The Alternating Least Squares with Bias for collaborative filtering
 algorithms.

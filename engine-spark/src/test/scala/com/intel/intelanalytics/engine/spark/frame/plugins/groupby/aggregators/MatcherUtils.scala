@@ -44,7 +44,11 @@ object MatcherUtils extends Matchers {
    */
   def equalWithTolerance(right: VarianceCounter, tolerance: Double) = Matcher { (left: VarianceCounter) =>
     MatchResult(
-      left.count == right.count && left.mean === (right.mean +- tolerance) && left.m2 === (right.m2 +- tolerance),
+      left.count == right.count &&
+        left.mean.value === (right.mean.value +- tolerance) &&
+        left.mean.delta === (right.mean.delta +- tolerance) &&
+        left.m2.value === (right.m2.value +- tolerance) &&
+        left.m2.delta === (right.m2.delta +- tolerance),
       left + " did not equal " + right + " with tolerance " + tolerance,
       left + " equaled " + right + " with tolerance " + tolerance
     )

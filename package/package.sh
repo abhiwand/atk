@@ -94,6 +94,7 @@ if [ $makePackage == "yes" ]; then
         cleanBuild $PACKAGE_NAME
         #make build directory
         mkdir -p $BUILD_DIR/$PACKAGE_NAME
+        cp EULA.html $BUILD_DIR/$PACKAGE_NAME
         $configDir/package.sh ${PACKAGE_NAME}
         rm -rf $BUILD_DIR/$PACKAGE_NAME
     fi

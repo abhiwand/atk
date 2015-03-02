@@ -188,20 +188,21 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
   }
 
   "VAR" should "return the variance of values by key" in {
-    val rdd = sparkContext.parallelize(inputRows)
+    val rdd = sparkContext.parallelize(inputRows, 3)
     val frameRDD = new FrameRDD(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("VAR", "col_2", "col_var"))
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
     val results = resultRDD.collect().map(row => {
-      new GenericRow(Array[Any](row(0), Try(BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)).getOrElse("NaN")))
+      val variance = if (row(1) == null) null else BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)
+      new GenericRow(Array[Any](row(0), variance))
     })
 
     val expectedResults = List(
       new GenericRow(Array[Any]("a", BigDecimal(0.7d).setScale(9, RoundingMode.HALF_UP))),
       new GenericRow(Array[Any]("b", BigDecimal(1 / 3d).setScale(9, RoundingMode.HALF_UP))),
-      new GenericRow(Array[Any]("c", "NaN"))
+      new GenericRow(Array[Any]("c", null))
     )
 
     results should contain theSameElementsAs (expectedResults)

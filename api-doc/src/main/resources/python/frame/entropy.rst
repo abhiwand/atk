@@ -1,6 +1,5 @@
-Column Shannon entropy.
-
 Calculate the Shannon entropy of a column.
+
 The column can be weighted.
 All data elements of weight <= 0 are excluded from the calculation, as are
 all data elements whose weight is NaN or infinite.

@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.{ FrameRef, FrameReference, FrameName, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ FrameName, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -384,15 +384,15 @@ class SparkGraphStorage(metaStore: MetaStore,
     new VertexFrameRDD(frameRdd)
   }
 
-  def loadVertexRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRDD = {
-    val frameEntity = frameStorage.expectFrame(frameRef)
+  def loadVertexRDD(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): VertexFrameRDD = {
+    val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
     new VertexFrameRDD(frameRdd)
   }
 
-  def loadEdgeRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRDD = {
-    val frameEntity = frameStorage.expectFrame(frameRef)
+  def loadEdgeRDD(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): EdgeFrameRDD = {
+    val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
     new EdgeFrameRDD(frameRdd)
@@ -406,11 +406,10 @@ class SparkGraphStorage(metaStore: MetaStore,
   //  }
 
   def loadGbVertices(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
-    val graphRef = SparkGraphManagement.graphToRef(graph)
-    val graphEntity = expectGraph(graphRef)
+    val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
-      val graphEntity = expectSeamless(graphRef)
-      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.toReference)).reduce(_.union(_))
+      val graphEntity = expectSeamless(graph.toReference)
+      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
@@ -422,11 +421,10 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def loadGbEdges(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBEdge] = {
-    val graphRef = SparkGraphManagement.graphToRef(graph)
-    val graphEntity = expectGraph(graphRef)
+    val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
-      val graphMeta = expectSeamless(graphRef)
-      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.toReference)).reduce(_.union(_))
+      val graphMeta = expectSeamless(graph.toReference)
+      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.id)).reduce(_.union(_))
     }
     else {
       // load from Titan
@@ -515,16 +513,16 @@ class SparkGraphStorage(metaStore: MetaStore,
     titanConnector.connect()
   }
 
-  def loadGbVerticesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBVertex] = {
-    loadVertexRDD(ctx, frameRef).toGbVertexRDD
+  def loadGbVerticesForFrame(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): RDD[GBVertex] = {
+    loadVertexRDD(ctx, frameId).toGbVertexRDD
   }
 
-  def loadGbEdgesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBEdge] = {
-    loadEdgeRDD(ctx, frameRef).toGbEdgeRDD
+  def loadGbEdgesForFrame(ctx: SparkContext, frameId: Long)(implicit invocation: Invocation): RDD[GBEdge] = {
+    loadEdgeRDD(ctx, frameId).toGbEdgeRDD
   }
 
-  def saveVertexRDD(frameRef: FrameReference, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
-    val frameEntity = frameStorage.expectFrame(frameRef)
+  def saveVertexRDD(frameId: Long, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
+    val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
     frameStorage.saveFrameData(frameEntity.toReference, vertexFrameRDD)
   }
@@ -539,8 +537,8 @@ class SparkGraphStorage(metaStore: MetaStore,
   //    frames.saveFrame(frame, edgeFrameRdd, rowCount)
   //  }
 
-  def saveEdgeRdd(frameRef: FrameReference, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
-    val frameEntity = frameStorage.expectFrame(frameRef)
+  def saveEdgeRdd(frameId: Long, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
+    val frameEntity = frameStorage.expectFrame(frameId)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
   }
