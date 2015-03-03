@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -30,7 +30,7 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.engine.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -45,6 +45,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RDDJoinParam, JoinArgs, JoinPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
@@ -56,6 +57,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.ExportToGraphPlugin
 import com.intel.intelanalytics.engine.spark.model.plugins.RenameModelPlugin
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
@@ -77,13 +79,13 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import org.apache.spark.frame.FrameRDD
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.EntropyArgs
-import com.intel.intelanalytics.domain.frame.EntropyReturn
 import com.intel.intelanalytics.domain.frame.TopKArgs
 import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
@@ -106,7 +108,6 @@ import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DropColumnsArgs
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
@@ -129,7 +130,6 @@ import com.intel.intelanalytics.domain.frame.FlattenColumnArgs
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
-import com.intel.intelanalytics.domain.frame.JoinArgs
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
@@ -379,7 +379,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val inv = invocation
     if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
-      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, arguments.id).rows
+      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, FrameReference(arguments.id)).rows
       val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
       invocation.sparkContext.parallelize(takenRows)
     }
@@ -495,7 +495,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    */
   def getModel(id: Identifier)(implicit invocation: Invocation): Future[ModelEntity] = {
     future {
-      models.lookup(id).get
+      models.expectModel(ModelReference(id))
     }
   }
 
@@ -524,7 +524,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
-        models.drop(model)
+        models.drop(model.toReference)
       }
     }
   }

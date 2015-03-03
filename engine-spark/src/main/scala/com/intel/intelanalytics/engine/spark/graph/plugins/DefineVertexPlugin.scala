@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -62,7 +62,7 @@ class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPl
    * @return data frame which represent the vertex of this type
    */
   override def execute(arguments: DefineVertexArgs)(implicit invocation: Invocation): UnitReturn = {
-    graphStorage.defineVertexType(arguments.graphRef.id, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
+    graphStorage.defineVertexType(arguments.graphRef, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
     UnitReturn()
   }
 

@@ -1,7 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -19,7 +19,7 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 package com.intel.spark.graphon.trianglecount
 
@@ -98,16 +98,12 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Titan Settings for input
-    val config = configuration
-
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property,
-      arguments.input_edge_labels)
+    val tcRunnerArgs = TriangleCountRunnerArgs(arguments.output_property, arguments.input_edge_labels)
 
     // Call TriangleCountRunner to kick off Triangle Count computation on RDDs
     val (outVertices, outEdges) = TriangleCountRunner.run(gbVertices, gbEdges, tcRunnerArgs)
@@ -116,7 +112,7 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
     val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph)
     writeToTitan(newTitanConfig, outVertices, outEdges)
 
     TriangleCountResult(newGraphName)
@@ -129,4 +125,3 @@ class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountR
   }
 
 }
-

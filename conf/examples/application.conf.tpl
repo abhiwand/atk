@@ -54,6 +54,13 @@ intel.analytics {
             # Values should generally be in gigabytes, e.g. "64g"
             spark.executor.memory = "invalid executor memory"
         }
+
+        #Kerberos authentication configuration. if enabled is set to true will authenticate to kerberos
+        //hadoop.kerberos {
+        //  enabled = false
+        //  principal-name = "my-user@MY.REALM.COM"
+        //  keytab-file = "/path/to/keytab" #readable by iauser
+        //}
     }
 
 }
@@ -82,6 +89,11 @@ intel.analytics {
 
         # max-partitions is used if value is above the max upper-bound
         max-partitions = 10000
+
+        # use broadcast join if file size is lower than threshold. zero disables broadcast joins.
+        # this threshold should be less than the maximum size of results returned to Spark driver (i.e., spark.driver.maxResultSize).
+        # to increase Spark driver memory, edit java options (IA_JVM_OPT) in /etc/default/intelanalytics-rest-server
+        broadcast-join-threshold = "1GB"
     }
   }
 
@@ -130,9 +142,15 @@ intel.analytics {
           # (e.g., using collect() on large datasets)
           //spark.akka.frameSize=100
 
+          # Limit of total size of serialized results of all partitions for each Spark action (e.g. collect).
+          # Should be at least 1M, or 0 for unlimited. Jobs will be aborted if the total size is above this limit.
+          # Having a high limit may cause out-of-memory errors in driver (depends on spark.driver.memory and memory overhead of objects in JVM).
+          # Setting a proper limit can protect the driver from out-of-memory errors.
+          //spark.driver.maxResultSize="1g"
+
           //spark.akka.retry.wait=30000
-          //spark.akka.timeout=200
           //spark.akka.timeout=30000
+          //spark.core.connection.ack.wait.timeout=600
 
           //spark.shuffle.consolidateFiles=true
 
@@ -144,9 +162,8 @@ intel.analytics {
           //spark.storage.blockManagerHeartBeatMs=300000
           //spark.storage.blockManagerSlaveTimeoutMs=300000
 
-          //spark.worker.timeout=600
           //spark.worker.timeout=30000
-          
+
           # To enable event logging, set spark.eventLog.enabled to true
           # and spark.eventLog.dir to the directory to which your event logs are written
           spark.eventLog.enabled = true

@@ -1,5 +1,3 @@
-Define edge type.
-
 Define an edge type.
 
 Parameters

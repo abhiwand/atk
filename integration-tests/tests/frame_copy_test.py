@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -63,13 +63,6 @@ class FrameCopyTest(unittest.TestCase):
         self.assertEquals(top10_frame.row_count, 20, "copy should have same number of rows as original")
         self.assertNotEquals(frame._id, top10_frame._id, "copy should have a different id from the original")
 
-        # TODO: add verification that one Python UDF is working (not working yet)
-
-        #print "filter()"
-        #top10_frame.filter(lambda row: row.rank < 11)
-        #self.assertEquals(top10_frame.row_count, 10, "after filtering there should only be ten cities")
-        ##self.assertEqual(top10_frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
-        #self.assertEquals(frame.row_count, 20, "original frame should not have changed when we modified a copy")
 
 if __name__ == "__main__":
     unittest.main()

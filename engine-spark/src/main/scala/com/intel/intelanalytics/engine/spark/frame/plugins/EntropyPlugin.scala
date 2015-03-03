@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,10 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ EntropyReturn, EntropyArgs, FrameEntity }
+import com.intel.intelanalytics.domain.DoubleValue
+import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
@@ -38,7 +37,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
 import scala.concurrent.ExecutionContext
-import scala.math
 import scala.util.Try
 
 // Implicits needed for JSON conversion
@@ -50,7 +48,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  *
  * Entropy is a measure of the uncertainty in a random variable.
  */
-class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, EntropyReturn] {
+class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -71,7 +69,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, EntropyReturn] {
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: EntropyArgs)(implicit invocation: Invocation): EntropyReturn = {
+  override def execute(arguments: EntropyArgs)(implicit invocation: Invocation): DoubleValue = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc
@@ -82,10 +80,10 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, EntropyReturn] {
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
     // run the operation and return results
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef.id)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
     val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
-    EntropyReturn(entropy)
+    DoubleValue(entropy)
   }
 }
 

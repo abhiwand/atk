@@ -1,4 +1,4 @@
-Remove duplicate rows.
+Modify current frame, removing qualified duplicate rows.
 
 Remove duplicate rows, keeping only one row per uniqueness criteria match.
 

@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.domain
 
 import org.scalatest.{ WordSpec, Matchers, FlatSpec }
@@ -61,7 +84,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = abcSchema.addColumn("str", string)
       added.columns.length shouldBe 4
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 3
     }
 
     "be able to validate a column has a given type" in {
@@ -176,14 +198,12 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename in one step" in {
       val schema = abcSchema.copySubsetWithRename(Map(("a", "a_renamed"), ("c", "c_renamed")))
       assert(schema.columns.length == 2)
-      assert(schema.column("a_renamed").index == 0)
       assert(schema.column(1).name == "c_renamed")
     }
 
     "be able to select a subset and rename to same names and preserve order" in {
       val schema = ajSchema.copySubsetWithRename(Map(("a", "a"), ("d", "d"), ("c", "c"), ("b", "b"), ("e", "e"), ("f", "f"), ("g", "g"), ("j", "j")))
       assert(schema.columns.length == 8)
-      assert(schema.column("a").index == 0)
       assert(schema.column(2).name == "c")
       assert(schema.column(6).name == "g")
       assert(schema.column(7).name == "j")
@@ -192,7 +212,6 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename to same names" in {
       val schema = abcSchema.copySubsetWithRename(Map(("a", "a"), ("c", "c")))
       assert(schema.columns.length == 2)
-      assert(schema.column("a").index == 0)
       assert(schema.column(1).name == "c")
     }
 
@@ -250,7 +269,6 @@ class SchemaTest extends WordSpec with Matchers {
         abcSchema.requireColumnIsType("invalid", str)
       }
     }
-
     "preserve column order in columnNames" in {
       ajSchema.columnNames shouldBe List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
     }
@@ -258,6 +276,79 @@ class SchemaTest extends WordSpec with Matchers {
     "preserve column order during union" in {
       abcSchema.union(ajSchema) shouldBe FrameSchema(ajColumns)
     }
+  }
+
+  "Schema" should {
+    "resolve name conflicts when they exist" in {
+      val leftColumns = List(Column("same", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List(Column("same", DataTypes.int32), Column("foo", DataTypes.string))
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 4
+      result(0).name shouldBe "same_L"
+      result(1).name shouldBe "bar"
+      result(2).name shouldBe "same_R"
+      result(3).name shouldBe "foo"
+    }
+
+    "not do anything to resolve conflicts when they don't exist" in {
+      val leftColumns = List(Column("left", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List(Column("right", DataTypes.int32), Column("foo", DataTypes.string))
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 4
+      result(0).name shouldBe "left"
+      result(1).name shouldBe "bar"
+      result(2).name shouldBe "right"
+      result(3).name shouldBe "foo"
+    }
+
+    "handle empty column lists" in {
+      val leftColumns = List(Column("left", DataTypes.int32), Column("bar", DataTypes.int32))
+      val rightColumns = List.empty[Column]
+
+      val result = Schema.join(leftColumns, rightColumns)
+
+      result.length shouldBe 2
+      result(0).name shouldBe "left"
+      result(1).name shouldBe "bar"
+    }
+
+    "repeatedly appending L if L already exists in the left hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32), Column("data_L", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L_L"
+      result(1).name shouldBe "data_L"
+      result(2).name shouldBe "data_R"
+    }
+
+    "repeatedly appending L if L already exists in the right hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32), Column("data_L", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L_L"
+      result(1).name shouldBe "data_R"
+      result(2).name shouldBe "data_L"
+    }
+
+    "repeatedly appending R if R already exists in the left hand side" in {
+      val leftColumns = List(Column("data", DataTypes.int32), Column("data_R", DataTypes.int32))
+      val rightColumns = List(Column("data", DataTypes.int32))
+
+      val result = Schema.join(leftColumns, rightColumns)
+      result.length shouldBe 3
+      result(0).name shouldBe "data_L"
+      result(1).name shouldBe "data_R"
+      result(2).name shouldBe "data_R_R"
+    }
+
   }
 
   val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
@@ -292,7 +383,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = vertexSchema.addColumn("str", string)
       added.columns.length shouldBe 5
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 4
       assert(added.isInstanceOf[VertexSchema])
     }
 
@@ -377,8 +467,6 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to select a subset and rename" in {
       val schema = vertexSchema.copySubsetWithRename(Map(("_vid", "_vid"), ("_label", "_label"), ("movie_id", "m_id")))
       assert(schema.columns.length == 3)
-      assert(schema.column("_vid").index == 0)
-      assert(schema.column("_label").index == 1)
       assert(schema.column(2).name == "m_id")
       assert(schema.isInstanceOf[VertexSchema])
     }
@@ -461,7 +549,6 @@ class SchemaTest extends WordSpec with Matchers {
       val added = edgeSchema.addColumn("str", string)
       added.columns.length shouldBe 6
       added.column("str").dataType shouldBe string
-      added.column("str").index shouldBe 5
     }
 
     "be able to validate a column has a given type" in {

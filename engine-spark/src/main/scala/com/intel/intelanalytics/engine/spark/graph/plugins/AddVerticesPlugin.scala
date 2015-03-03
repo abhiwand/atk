@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,14 +25,15 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.AddVerticesArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
 import com.intel.intelanalytics.domain.schema.VertexSchema
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.storage.StorageLevel
 
 // Implicits needed for JSON conversion
@@ -92,6 +93,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
     val graph = graphs.expectSeamless(vertexFrameMeta.graphId.get)
+    val graphRef = GraphReference(graph.id)
 
     val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
 
@@ -104,15 +106,15 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     verticesToAdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.updateIdCounter(graph.id, verticesToAdd.count())
+    graphs.updateIdCounter(graphRef, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
-    val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.id)
+    val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.toReference)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.saveVertexRDD(vertexFrameMeta.id, combinedRdd)
+    graphs.saveVertexRDD(vertexFrameMeta.toReference, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)

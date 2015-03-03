@@ -1,7 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -19,7 +19,7 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 package com.intel.spark.graphon.connectedcomponents
 
@@ -98,7 +98,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val config = configuration
 
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     // Read the graph from Titan
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
@@ -121,7 +121,7 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
     val newGraph = engine.graphs.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan))
 
     // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph.name.get)
+    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph)
     writeToTitan(newTitanConfig, outVertices, gbEdges)
 
     ConnectedComponentsResult(newGraphName.get)
@@ -135,4 +135,3 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
   }
 
 }
-

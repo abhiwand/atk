@@ -1,16 +1,12 @@
-Write frame to HDFS in json format.
+Write current frame to HDFS in JSON format.
 
-Export the frame to a file in json format as a hadoop file.
+Export the frame to a file in JSON format as a Hadoop file.
 
 Parameters
 ----------
 
-folderName : string
+folderName : str
     The HDFS folder path where the files will be created
-
-separator : string (optional)
-    The separator for separating the values.
-    Default is ",".
 
 count : int (optional)
     The number of records you want.

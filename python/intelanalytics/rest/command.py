@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,8 +20,9 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
-Command objects
+Command objects.
 """
 import datetime
 import time
@@ -44,7 +45,7 @@ from collections import namedtuple
 
 
 def execute_command(command_name, selfish, **arguments):
-    """Executes command and returns the output"""
+    """Executes command and returns the output."""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     from intelanalytics.meta.results import get_postprocessor
@@ -87,13 +88,14 @@ class ProgressPrinter(object):
 
     def print_progress(self, progress, finished):
         """
-        Print progress information on progress bar
+        Print progress information on progress bar.
 
         Parameters
         ----------
-        progress : List of dictionary
+        progress : list of dictionary
             The progresses of the jobs initiated by the command
-        finished : boolean
+
+        finished : bool
             Indicate whether the command is finished
         """
         if progress == False:
@@ -193,7 +195,7 @@ class CommandRequest(object):
 
     def to_json_obj(self):
         """
-        returns json for REST payload
+        Returns json for REST payload.
         """
         return self.__dict__
 
@@ -496,77 +498,8 @@ class Executor(object):
             self.__commands = self.fetch()
         return self.__commands
 
-    def install_static_methods(self, clazz, functions):
-        for ((intermediates, name), v) in functions.items():
-            current = clazz
-            for inter in intermediates:
-                if not hasattr(current, inter):
-                    holder = object()
-                    setattr(current, inter, holder)
-                    current = holder
-            if not hasattr(current, name):
-                setattr(clazz, name, staticmethod(v))
-                logger.debug("Loaded class %s with static method %s", clazz, name)
-
-    def get_command_functions(self, entity_types, update_function, new_function):
-        functions = dict()
-        for cmd in executor.commands:
-            full_name = cmd['name']
-            parts = full_name.split('/')
-            if parts[0] not in entity_types:
-                continue
-            args = cmd['argument_schema']
-            intermediates = parts[1:-1]
-            command_name = parts[-1]
-            parameters = args.get('properties', {})
-            self_parameter_name = ([k for k, v in parameters.items()
-                                    if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-
-            return_props = cmd['return_schema'].setdefault('properties', {})
-            return_self_parameter = ([k for k, v in return_props.items()
-                                      if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            possible_args = args.get('order', [])[:]
-            if self_parameter_name:
-                possible_args.remove(self_parameter_name)
-
-            #Create a new function scope to bind variables properly
-            # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
-            #Need make and not just invoke so that invoke won't have
-            #kwargs that include command_name et. al.
-            def make(full_name = full_name,
-                     command_name = command_name,
-                     cmd = cmd,
-                     self_name = self_parameter_name,
-                     return_self = return_self_parameter,
-                     possible_args = possible_args,
-                     parameters = parameters):
-
-                def invoke(s, *args, **kwargs):
-                    try:
-                        if self_name:
-                            kwargs[self_name] = s._id
-                        for (k,v) in zip(possible_args, args):
-                            if k in kwargs:
-                                raise ValueError("Argument " + k +
-                                                 " supplied as a positional argument and as a keyword argument")
-                            kwargs[k] = v
-                        validated = CommandRequest.validate_arguments(parameters, kwargs)
-                        if return_self:
-                            return new_function(full_name, validated, s)
-                        else:
-                            return update_function(full_name, validated, s)
-                    except:
-                        raise IaError(logger)
-                invoke.command = cmd
-                invoke.parameters = parameters
-                invoke.func_name = str(command_name)
-                return invoke
-            f = make()
-            functions[(tuple(intermediates), command_name)] = f
-        return functions
-
     def get_command_output(self, command_type, command_name, arguments):
-        """Executes command and returns the output"""
+        """Executes command and returns the output."""
         command_request = CommandRequest( "%s/%s" % (command_type, command_name), arguments)
         command_info = executor.issue(command_request)
         if command_info.result.has_key('value') and len(command_info.result) == 1:

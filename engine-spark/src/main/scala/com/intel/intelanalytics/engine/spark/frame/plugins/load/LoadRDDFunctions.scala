@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments }
@@ -27,6 +28,7 @@ import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.hadoop.io.{ Text, LongWritable }
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SchemaRDD

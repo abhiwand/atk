@@ -6,35 +6,35 @@ Technical Report CMU-CALD-02-107, CMU, 2002.
 
 Parameters
 ----------
-vertex_value_property_list : list of string
-    The vertex properties which contain prior vertex values if you use more
-    than one vertex property.
+vertex_value_property_list : list of str
+    The vertex properties which contain prior vertex values when more than one
+    vertex property is used.
 
-edge_value_property_list : list of string
+edge_value_property_list : list of str
     The edge properties which contain the input edge values.
-    We expect comma-separated list of property names if you use more than
-    one edge property.
+    A comma-separated list of property names when more than one edge property
+    is used.
 
-input_edge_label_list : list of string
-    The name of edge label
+input_edge_label_list : list of str
+    The name of edge label.
 
-output_vertex_property_list : list of string
-    The list of vertex properties to store output vertex values
+output_vertex_property_list : list of str
+    The list of vertex properties to store output vertex values.
 
-vector_value : boolean
+vector_value : bool
     True means a vector as vertex value is supported,
-    False means a vector as vertex value is not supported
+    False means a vector as vertex value is not supported.
 
-max_supersteps : integer (optional)
-    The maximum number of super steps that the algorithm will execute.
-    The valid value range is all positive integer.
+max_supersteps : int (optional)
+    The maximum number of supersteps that the algorithm will execute.
+    The valid value range is all positive int.
     The default value is 10.
 
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
     If the change is less than this threshold, the algorithm exits earlier
-    before it reaches the maximum number of super steps.
+    before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
     The default value is 0.001.
 
@@ -44,14 +44,14 @@ anchor_threshold : float (optional)
     If a node's maximum initial prediction value is greater than this
     threshold, the node will be treated as anchor node, whose final
     prediction will inherit from prior without update.
-    This is for the case where we have confident initial predictions on some
-    nodes and don't want the algorithm updates those nodes.
+    This is for the case where there is confident initial predictions on some
+    nodes and it is desirable that the algorithm does not update those nodes.
     The valid value range is [0, 1].
-    The default value is 1.0
+    The default value is 1.0.
 
 lp_lambda : float (optional)
-    The tradeoff parameter that controls much influence of external
-    classifier's prediction contribution to the final prediction.
+    The tradeoff parameter that controls how much influence an external
+    classifier's prediction contributes to the final prediction.
     This is for the case where an external classifier is available that can
     produce initial probabilistic classification on unlabled examples, and
     the option allows incorporating external classifier's prediction into
@@ -59,18 +59,16 @@ lp_lambda : float (optional)
     The valid value range is [0.0,1.0].
     The default value is 0.
 
-validate_graph_structure : boolean (optional)
+validate_graph_structure : bool (optional)
     Checks if the graph meets certain structural requirements before starting
-    the algorithm.
-
-    At present, this checks that at every vertex, the in-degree equals the
-    out-degree. Because this algorithm is for undirected graphs, this is a
-    necessary but not sufficient, check for valid input.
+    the algorithm: at every vertex, the in-degree equals the out-degree.
+    This algorithm validation is for undirected graphs.
+    This is a necessary but insufficient, check for valid input.
 
 Returns
 -------
-Multiple line string
-    The configuration and learning curve report for Label Propagation
+Multiple line str
+    The configuration and learning curve report for Label Propagation.
 
 Examples
 --------
@@ -88,11 +86,17 @@ Examples
 
     ::
 
-        g.ml.label_propagation(vertex_value_property_list = "input_value", \\
-        edge_value_property_list  = "weight", input_edge_label_list = "edge", \\
-        output_vertex_property_list = "lp_posterior",   vector_value = "true", \\
-        max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, \\
-        lp_lambda = 0.5, bidirectional_check = False)
+        g.ml.label_propagation(
+            vertex_value_property_list = "input_value",     \\
+            edge_value_property_list  = "weight",           \\
+            input_edge_label_list = "edge",                 \\
+            output_vertex_property_list = "lp_posterior",   \\
+            vector_value = "true",                          \\
+            max_supersteps = 10,                            \\
+            convergence_threshold = 0.0,                    \\
+            anchor_threshold = 0.9,                         \\
+            lp_lambda = 0.5,                                \\
+            bidirectional_check = False)
 
     The expected output is like this::
 

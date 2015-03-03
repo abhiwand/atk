@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -58,7 +58,7 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
-  override def numberOfJobs(arguments: LoadGraphArgs)(implicit invocation: Invocation) = 2
+  override def numberOfJobs(arguments: LoadGraphArgs)(implicit invocation: Invocation) = 3
 
   /**
    * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
@@ -79,9 +79,9 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
     val frameRules = arguments.frameRules
     // TODO graphbuilder only supports one input frame at present
     require(frameRules.size == 1, "only one frame rule per call is supported in this version")
-    val theOnlySourceFrameID = frameRules.head.frame.id
+    val theOnlySourceFrameID = frameRules.head.frame
     val frameEntity = frames.expectFrame(theOnlySourceFrameID)
-    val graphEntity = graphs.expectGraph(arguments.graph.id)
+    val graphEntity = graphs.expectGraph(arguments.graph)
 
     // setup graph builder
     val gbConfigFactory = new GraphBuilderConfigFactory(frameEntity.schema, arguments, graphEntity)

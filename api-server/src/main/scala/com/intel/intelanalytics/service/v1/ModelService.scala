@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -47,7 +47,9 @@ import ExecutionContext.Implicits.global
 import com.intel.event.EventLogging
 
 /**
- * REST API Model Service
+ * REST API Model Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -152,4 +154,3 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
 
   }
 }
-

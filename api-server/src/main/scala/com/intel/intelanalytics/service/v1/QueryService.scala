@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -47,7 +47,9 @@ import ExecutionContext.Implicits.global
 import com.intel.event.EventLogging
 
 /**
- * REST API Query Service
+ * REST API Query Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -103,7 +105,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       get {
                         import ViewModelJsonImplicits._
                         onComplete(engine.getQuery(id)) {
-                          case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString, query))
+                          case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString(), query))
                           case Success(None) => complete(StatusCodes.NotFound)
                           case Failure(ex) => throw ex
                         }
@@ -117,13 +119,15 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           val links = List(Rel.self(uri.toString()))
                           onComplete(engine.getQuery(id)) {
                             case Success(Some(query)) =>
-                              complete(if (query.complete) {
-                                val result = engine.getQueryPage(query.id, page - 1)
-                                QueryDecorator.decoratePage(uri.toString, links, query, page, dataToJson(result.data), result.schema)
+                              if (query.complete) {
+                                onComplete(Future { engine.getQueryPage(query.id, page - 1) }) {
+                                  case Success(result) => complete(QueryDecorator.decoratePage(uri.toString(), links, query, page, dataToJson(result.data), result.schema))
+                                  case Failure(ex) => throw ex
+                                }
                               }
                               else {
-                                QueryDecorator.decorateEntity(uri.toString(), links, query)
-                              })
+                                complete(QueryDecorator.decorateEntity(uri.toString(), links, query))
+                              }
                             case Success(None) => complete(StatusCodes.NotFound)
                             case Failure(ex) => throw ex
                           }

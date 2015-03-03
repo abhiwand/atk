@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,16 +23,20 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import com.google.common.primitives.Doubles
+import com.intel.event.EventLogging
+import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
 
 import scala.collection.immutable.Set
 import scala.util.Try
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Datatypes supported for frames, graphs, etc.
  */
-object DataTypes {
+object DataTypes extends EventLogging {
 
   /**
    * The datatype trait
@@ -50,6 +54,10 @@ object DataTypes {
     def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
+
+    def asString(raw: Any): String = {
+      raw.toString
+    }
 
     def isNumerical: Boolean
 
@@ -215,6 +223,79 @@ object DataTypes {
   }
 
   /**
+   * Vectors
+   */
+  type VectorDataType = Vector[Double]
+
+  case object vector extends DataType {
+
+    override type ScalaType = VectorDataType
+
+    // TODO
+    override def parse(raw: Any) = Try {
+      toVector(raw)
+    }
+
+    override def isType(raw: Any): Boolean = {
+      // where null is allowed we accept null as this type
+      raw == null || raw.isInstanceOf[VectorDataType]
+    }
+
+    override def scalaType = classOf[VectorDataType]
+
+    override def typedJson(raw: Any): JsValue = {
+      raw.asInstanceOf[VectorDataType].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      try {
+        val vec = raw.asInstanceOf[VectorDataType] // we'll try to convert a Vector if it only has one item in
+        require(vec.size == 1, "Vector must be of size 1.")
+        vec(0)
+      }
+      catch {
+        case e: Exception => throw new IllegalArgumentException(s"Could not parse $raw as a Vector: ${e.getMessage}")
+      }
+    }
+
+    override def asString(raw: Any): String = {
+      try {
+        val v = raw.asInstanceOf[VectorDataType]
+        v.mkString(",")
+      }
+      catch {
+        case e: Exception => throw new IllegalArgumentException(s"Could not parse $raw as a Vector: ${e.getMessage}")
+      }
+    }
+
+    override def isNumerical = false
+
+    override def isIntegral = false
+
+    def compare(valueA: VectorDataType, valueB: VectorDataType): Int = {
+      if (valueB == null) {
+        if (valueA == null) {
+          0
+        }
+        else {
+          1
+        }
+      }
+      else {
+        var comparison: Int = valueA.size.compare(valueB.size)
+        if (comparison == 0) {
+          (0 until valueA.size).takeWhile(i => {
+            comparison = valueA(i).compare(valueB(i))
+            comparison == 0
+          })
+        }
+        comparison
+      }
+    }
+
+  }
+
+  /**
    * This is a special type for values that should be ignored while importing from CSV file.
    *
    * Any column with this type should be dropped.
@@ -267,7 +348,7 @@ object DataTypes {
    */
   val supportedTypes: Map[String, DataType] =
     Seq(int32, int64, float32,
-      float64, string, ignore)
+      float64, string, vector, ignore)
       .map(t => t.toString -> t)
       .toMap ++
       Map("str" -> string,
@@ -356,7 +437,8 @@ object DataTypes {
       throw new IllegalArgumentException("No matching data type found for value: " + value)
     }
     else if (matches.length > 1) {
-      error("")
+      // this would happen with null
+      warn(s"$value matched more than one type: $matches")
     }
     matches.head._2
   }
@@ -391,6 +473,7 @@ object DataTypes {
       case d: Double => d
       case bd: BigDecimal => bd.toDouble
       case s: String => s.trim().toDouble
+      case v: VectorDataType => vector.asDouble(v)
       case _ => throw new IllegalArgumentException(s"The following value is not a numeric data type: $value")
     }
   }
@@ -404,6 +487,7 @@ object DataTypes {
       case d: Double => BigDecimal(d)
       case bd: BigDecimal => bd
       case s: String => BigDecimal(s)
+      case v: VectorDataType => BigDecimal(vector.asDouble(v))
       case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
     }
   }
@@ -417,7 +501,8 @@ object DataTypes {
       case d: Double => d.toLong
       case bd: BigDecimal => bd.toLong
       case s: String => s.trim().toLong
-      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
+      case v: VectorDataType => vector.asDouble(v).toLong
+      case _ => throw new RuntimeException(s"${value.getClass.getName} toLong is not yet implemented")
     }
   }
 
@@ -430,7 +515,8 @@ object DataTypes {
       case d: Double => d.toInt
       case bd: BigDecimal => bd.toInt
       case s: String => s.trim().toInt
-      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
+      case v: VectorDataType => vector.asDouble(v).toInt
+      case _ => throw new RuntimeException(s"${value.getClass.getName} toInt is not yet implemented")
     }
   }
 
@@ -443,7 +529,8 @@ object DataTypes {
       case d: Double => d.toFloat
       case bd: BigDecimal => bd.toFloat
       case s: String => s.trim().toFloat
-      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
+      case v: VectorDataType => vector.asDouble(v).toFloat
+      case _ => throw new RuntimeException(s"${value.getClass.getName} toFloat is not yet implemented")
     }
   }
 
@@ -456,7 +543,41 @@ object DataTypes {
       case d: Double => d.toString
       case bd: BigDecimal => bd.toString()
       case s: String => s
-      case _ => throw new RuntimeException(s"${value.getClass.getName} is not yet implemented")
+      case v: VectorDataType => vector.asString(v)
+      case _ => throw new RuntimeException(s"${value.getClass.getName} toStr is not yet implemented")
+    }
+  }
+
+  def toVector(value: Any): VectorDataType = {
+    value match {
+      case null => null
+      case i: Int => toVector(i.toDouble)
+      case l: Long => toVector(l.toDouble)
+      case f: Float => toVector(f.toDouble)
+      case d: Double => Vector[Double](d)
+      case bd: BigDecimal => toVector(bd.toDouble)
+      case s: String => {
+        val jsonStr = if (s.trim.startsWith("[")) s else "[" + s + "]"
+        JsonParser(jsonStr).convertTo[List[Double]].toVector
+      }
+      case v: VectorDataType => v
+      case abd: ArrayBuffer[Double] => abd.toVector
+      case ld: List[Double] => ld.toVector
+      case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not yet implemented")
+    }
+  }
+
+  /**
+   * Convert de-limited string to array of big decimals
+   */
+  def toBigDecimalArray(value: Any, delimiter: String = ","): Array[BigDecimal] = {
+    //TODO: Re-visit once we support lists
+    value match {
+      case null => Array.empty[BigDecimal]
+      case s: String => s.split(delimiter).map(x => {
+        if (StringUtils.isBlank(x)) null.asInstanceOf[BigDecimal] else toBigDecimal(x)
+      })
+      case _ => throw new IllegalArgumentException(s"The following value is not an array of doubles: $value")
     }
   }
 
@@ -483,7 +604,8 @@ object DataTypes {
         case f: Float => f.compare(DataTypes.toFloat(valueB))
         case d: Double => d.compare(DataTypes.toDouble(valueB))
         case s: String => s.compareTo(valueB.toString)
-        case _ => throw new RuntimeException(s"${valueA.getClass.getName} is not yet implemented")
+        case v: VectorDataType => vector.compare(v, DataTypes.toVector(valueB))
+        case _ => throw new RuntimeException(s"${valueA.getClass.getName} comparison is not yet implemented")
       }
     }
 

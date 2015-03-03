@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Json-Schema definitions and interactions
 """
@@ -44,6 +45,7 @@ json_type_id_to_data_type  = {
     "ia:long": int64,
     "ia:float": float32,
     "ia:double": float64,
+    "ia:vector": vector,
 }
 
 json_str_formats_to_data_type = {
@@ -148,5 +150,6 @@ def get_command_def(json_schema):
     parameters = get_parameters(json_schema['argument_schema'])
     return_type = get_return(json_schema['return_schema'])
     version = get_version(json_schema)
+    maturity = json_schema.get('maturity', None)
     doc = get_doc(json_schema)
-    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, version)
+    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, maturity, version)

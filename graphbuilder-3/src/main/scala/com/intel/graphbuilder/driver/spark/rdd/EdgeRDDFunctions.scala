@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,12 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
+import com.intel.graphbuilder.driver.spark.titan.JoinBroadcastVariable
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.EdgeWriter
 import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import org.apache.spark.SparkContext._
-import org.apache.spark.TaskContext
+import org.apache.spark.{ RangePartitioner, TaskContext }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
@@ -101,21 +102,21 @@ class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
 
     val idsByGbId = ids.map(idMap => (idMap.gbId, idMap))
 
-    // set physical ids for tail vertices
+    // set physical ids for tail (source) vertices
     val edgesByTail = self.map(edge => (edge.tailVertexGbId, edge))
 
-    // TODO: Revisit partitioning after upgrade to Spark 1.2.0+.
-    // This current partitioning strategy works around several memory-related bugs in the shuffle in Spark 1.1.0
-    // Ordering is needed by Spark's range partitioner, and sort-based shuffle enabled by spark.shuffle.manager = "SORT"
-    implicit val propertyOrdering = PropertyOrdering
-
-    val edgesWithTail = edgesByTail.join(idsByGbId).map {
+    // Range-partitioner helps alleviate the "com.esotericsoftware.kryo.KryoException: java.lang.NegativeArraySizeException"
+    // which occurs when we spill blocks to disk larger than 2GB but does not completely fix the problem
+    // TODO: Find a better way to handle supernodes: Look at skewed joins in Pig
+    implicit val propertyOrdering = PropertyOrdering // Ordering is needed by Spark's range partitioner
+    val tailPartitioner = new RangePartitioner(edgesByTail.partitions.length, edgesByTail)
+    val edgesWithTail = edgesByTail.join(idsByGbId, tailPartitioner).map {
       case (gbId, (edge, gbIdToPhysicalId)) =>
         val physicalId = gbIdToPhysicalId.physicalId
         (edge.headVertexGbId, edge.copy(tailPhysicalId = physicalId))
     }
 
-    // set physical ids for head vertices
+    // set physical ids for head (destination) vertices
     val edgesWithPhysicalIds = edgesWithTail.join(idsByGbId).map {
       case (gbId, (edge, gbIdToPhysicalId)) => {
         val physicalId = gbIdToPhysicalId.physicalId
@@ -177,7 +178,7 @@ class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
    * @param append true to append to an existing graph
    * @param gbIdToPhysicalIdMap see GraphBuilderConfig.broadcastVertexIds
    */
-  def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: Broadcast[Map[Property, AnyRef]], append: Boolean): Unit = {
+  def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: JoinBroadcastVariable[Property, AnyRef], append: Boolean): Unit = {
 
     self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
       val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
@@ -188,8 +189,8 @@ class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
         var count = 0L
         while (iterator.hasNext) {
           val edge = iterator.next()
-          edge.tailPhysicalId = gbIdToPhysicalIdMap.value(edge.tailVertexGbId)
-          edge.headPhysicalId = gbIdToPhysicalIdMap.value(edge.headVertexGbId)
+          edge.tailPhysicalId = gbIdToPhysicalIdMap(edge.tailVertexGbId)
+          edge.headPhysicalId = gbIdToPhysicalIdMap(edge.headVertexGbId)
           writer.write(edge)
           count += 1
           if (count % maxEdgesPerCommit == 0) {

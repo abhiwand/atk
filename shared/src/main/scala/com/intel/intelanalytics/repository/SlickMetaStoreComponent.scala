@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -935,12 +935,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def idCounter = column[Option[Long]]("id_counter")
 
-    def frameSchemas = column[Option[SchemaList]]("frame_schemas")
-
     def lastReadDate = column[DateTime]("last_read_date")
 
     /** projection to/from the database */
-    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, frameSchemas, lastReadDate) <> (GraphEntity.tupled, GraphEntity.unapply)
+    override def * = (id, name, description, storage, statusId, storageFormat, createdOn, modifiedOn, createdByUserId, modifiedByUserId, idCounter, lastReadDate) <> (GraphEntity.tupled, GraphEntity.unapply)
 
     // foreign key relationships
 
@@ -1115,7 +1113,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def description = column[Option[String]]("description")
 
-      def statusId = column[Long]("status_id", O.Default(1))
+      def statusId = column[Long]("status_id", O.Default(Status.Active))
 
       def data = column[Option[JsObject]]("data")
 
@@ -1143,7 +1141,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def insert(model: ModelTemplate)(implicit session: Session): Try[ModelEntity] = Try {
       // TODO: table name
       // TODO: user name
-      val m = ModelEntity(1, model.name, model.modelType, None, 1L, None, new DateTime(), new DateTime(), None, None)
+      val m = ModelEntity(1, model.name, model.modelType, None, Status.Active, None, new DateTime(), new DateTime(), None, None)
       modelsAutoInc.insert(m)
     }
 

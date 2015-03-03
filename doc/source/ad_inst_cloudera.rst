@@ -32,7 +32,7 @@ proxy information.
 
     a.  Overwrite the field that says
         ``http://archive.cloudera.com/cdh5/parcels/latest/`` with
-        ``http//archive.cloudera.com/cdh5/parcels/5.1.2/``
+        ``http//archive.cloudera.com/cdh5/parcels/5.3.1/``
 
 #.  Hit the *Save Changes* button to the top right of the active menu
 #.  Hit the admin drop-down menu at the top right corner of the window and
@@ -86,7 +86,7 @@ Select |CDH| Parcel Repository
 
 The repository/proxy information should populate the parcel list in a minute.
 If not, click on *More Options* field to reconfigure.
-Make sure ``CDH-5.1.2-1.cdh5.1.2.p).3`` is selected under *Remote Parcel
+Make sure ``CDH-5.3.1-1.cdh5.3.1.p).3`` is selected under *Remote Parcel
 Repository* and then hit *Continue*.
 
 .. _ad_inst_cloudera_05:

@@ -1,8 +1,7 @@
-
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,7 +19,7 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 package com.intel.spark.graphon.trianglecount
 
@@ -68,7 +67,7 @@ object TriangleCountRunner extends Serializable {
     val graphXVertices: RDD[(Long, Null)] =
       inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
 
-    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge))
+    val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge, true)).distinct()
 
     // create graphx Graph instance from graphx vertices and edges
     val graph = Graph[Null, Long](graphXVertices, graphXEdges)

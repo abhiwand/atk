@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,15 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import scala.collection.mutable
-
-import scala.Some
-import scala.reflect.ClassTag
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.apache.spark.engine.Spark
-import com.intel.intelanalytics.domain.schema.Schema
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
+import scala.reflect.ClassTag
+import scala.util.Try
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 /**
@@ -131,76 +132,11 @@ object MiscFrameFunctions extends Serializable {
   }
 
   /**
-   * perform join operation
-   * @param left parameter regarding the first dataframe
-   * @param right parameter regarding the second dataframe
-   * @param how join method
-   */
-  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
-
-    val result = how match {
-      case "left" => left.rdd.leftOuterJoin(right.rdd).map {
-        case (_, (leftValues, rightValues)) => {
-          rightValues match {
-            case s: Some[Array[Any]] => leftValues ++ s.get
-            case None => leftValues ++ (1 to right.columnCount).map(i => null)
-          }
-        }
-      }
-
-      case "right" => left.rdd.rightOuterJoin(right.rdd).map {
-        case (_, (leftValues, rightValues)) => {
-          leftValues match {
-            case s: Some[Array[Any]] => s.get ++ rightValues
-            case None => {
-              var array: Array[Any] = rightValues
-              (1 to left.columnCount).foreach(i => array = null +: array)
-              array
-            }
-          }
-        }
-      }
-
-      case "outer" => Spark.fullOuterJoin(left.rdd, right.rdd).map {
-        case (_, outerJoinResult) => {
-          outerJoinResult match {
-            case (Some(leftValues), Some(rightValues)) => { leftValues ++ rightValues }
-            case (Some(leftValues), None) => {
-              leftValues ++ (1 to right.columnCount).map(i => null)
-            }
-            case (None, Some(rightValues)) => {
-              var array: Array[Any] = rightValues
-              (1 to left.columnCount).foreach(i => array = null +: array)
-              array
-            }
-          }
-        }
-      }
-
-      case "inner" => left.rdd.join(right.rdd).map {
-        case (key, (leftValues, rightValues)) => {
-          leftValues ++ rightValues
-        }
-      }
-
-      case other: String => throw new IllegalArgumentException(s"Method $other not supported. only support left, right, outer and inner.")
-    }
-
-    result.asInstanceOf[RDD[Array[Any]]]
-  }
-
-  /**
    * Remove duplicate rows identified by the key
    * @param pairRdd rdd which has (key, value) structure in each row
    */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
-    // TODO: can't this be a reduceByKey() --Todd 12/3/2014
-    val grouped = pairRdd.groupByKey()
-    val duplicatesRemoved: RDD[Array[Any]] = grouped.map(bag => {
-      val firstEntry = bag._2.head
-      firstEntry
-    })
-    duplicatesRemoved
+    pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
   def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
@@ -209,7 +145,6 @@ object MiscFrameFunctions extends Serializable {
     // run the operation
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
 
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    duplicatesRemoved
+    MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
   }
 }

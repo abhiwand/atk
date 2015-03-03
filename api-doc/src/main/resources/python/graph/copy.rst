@@ -1,6 +1,4 @@
-Copy graph.
-
-Makes a copy of the graph.
+Make a copy of the current graph.
 
 Parameters
 ----------
@@ -10,11 +8,6 @@ name : str (optional)
 Returns
 -------
 graph copy
-
-Notes
------
-Cannot delete all columns from a frame. At least one column needs to remain.
-If you want to delete all columns, then please delete the frame
 
 Examples
 --------

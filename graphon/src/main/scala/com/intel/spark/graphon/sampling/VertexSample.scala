@@ -1,7 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -19,7 +19,7 @@
 // delivery of the Materials, either expressly, by implication, inducement,
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 package com.intel.spark.graphon.sampling
 
@@ -86,11 +86,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
-    // Titan Settings
-    val config = configuration
 
     // get the input graph object
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
 
     // get SparkContext and add the graphon jar
     sc.addJar(SparkContextFactory.jarPath("graphon"))

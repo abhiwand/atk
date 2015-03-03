@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,8 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
+import org.apache.spark.frame.FrameRDD
 import org.apache.commons.csv.{ CSVPrinter, CSVFormat }
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Object for exporting frames to files
@@ -56,7 +59,14 @@ object FrameExportHdfs extends Serializable {
     val csvRdd = filterRdd.map(row => {
       val stringBuilder = new java.lang.StringBuilder
       val printer = new CSVPrinter(stringBuilder, csvFormat)
-      val array = row.map(col => if (col == null) "" else col.toString)
+      val array = row.map(col => if (col == null) "" else {
+        if (col.isInstanceOf[ArrayBuffer[Double]]) {
+          col.asInstanceOf[ArrayBuffer[Double]].mkString(",")
+        }
+        else {
+          col.toString
+        }
+      })
       for (i <- array) printer.print(i)
       stringBuilder.toString()
     })
@@ -86,11 +96,16 @@ object FrameExportHdfs extends Serializable {
     val jsonRDD = filterRdd.map {
       row =>
         {
-          val value = row.zip(headers).map { case (k, v) => new String("\"" + v.toString + "\":" + (if (k == null) "null" else k.toString)) }
+          val value = row.zip(headers).map {
+            case (k, v) => new String("\"" + v.toString + "\":" + (if (k == null) "null"
+            else if (k.isInstanceOf[String]) { "\"" + k.toString + "\"" }
+            else if (k.isInstanceOf[ArrayBuffer[Double]]) { k.asInstanceOf[ArrayBuffer[Double]].mkString("[", ",", "]") }
+            else k.toString)
+            )
+          }
           value.mkString("{", ",", "}")
         }
     }
     jsonRDD.saveAsTextFile(filename)
   }
 }
-

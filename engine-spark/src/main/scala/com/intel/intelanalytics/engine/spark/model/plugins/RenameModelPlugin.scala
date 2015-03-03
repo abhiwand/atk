@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -65,11 +65,10 @@ class RenameModelPlugin extends SparkCommandPlugin[RenameModelArgs, ModelEntity]
     val models = engine.models
 
     // validate arguments
-    val modelId = arguments.model.id
-    val model = models.lookup(modelId).getOrElse(throw new NotFoundException("model", modelId.toString))
+    val modelRef = arguments.model
     val newName = arguments.newName
 
     // run the operation and save results
-    models.renameModel(model, newName)
+    models.renameModel(modelRef, newName)
   }
 }

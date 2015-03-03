@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package org.apache.spark.mllib.ia.plugins.clustering
 
 import com.intel.intelanalytics.UnitReturn
@@ -29,8 +30,9 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes._
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
@@ -41,7 +43,7 @@ import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
 import scala.collection.mutable.ListBuffer
 
-class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitReturn] {
+class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
 
   /**
    * The name of the command.
@@ -50,6 +52,8 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
    * e.g Python client via code generation.
    */
   override def name: String = "model:k_means/predict"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   /**
    * User documentation exposed in Python.
@@ -73,13 +77,13 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val models = engine.models
     val frames = engine.frames
 
-    val inputFrame = frames.expectFrame(arguments.frame.id)
-    val modelMeta = models.expectModel(arguments.model.id)
+    val inputFrame = frames.expectFrame(arguments.frame)
+    val modelMeta = models.expectModel(arguments.model)
 
     //create RDD from the frame
     val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
@@ -88,14 +92,18 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val kmeansJsObject = modelMeta.data.get
     val kmeansData = kmeansJsObject.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
+    if (arguments.observationColumns.isDefined) {
+      require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+    }
+
     val kmeansColumns = arguments.observationColumns.getOrElse(kmeansData.observationColumns)
-    val columnWeights = kmeansData.columnWeights
+    val scalingValues = kmeansData.columnScalings
 
     //Predicting the cluster for each row
     val predictionsRDD = inputFrameRDD.mapRows(row => {
       val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
-      val columnWeightsArray = columnWeights.toArray
-      val doubles = columnsArray.zip(columnWeightsArray).map { case (x, y) => x * y }
+      val columnScalingsArray = scalingValues.toArray
+      val doubles = columnsArray.zip(columnScalingsArray).map { case (x, y) => x * y }
       val point = Vectors.dense(doubles)
 
       val clusterCenters = kmeansModel.clusterCenters
@@ -123,8 +131,10 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, UnitRetu
     val updatedSchema = inputFrameRDD.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
-    frames.saveFrameData(inputFrame.toReference, predictFrameRDD)
-    new UnitReturn
+    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
+      save(new SparkFrameData(
+        newPredictedFrame.meta, predictFrameRDD))
+    }.meta
   }
 
 }

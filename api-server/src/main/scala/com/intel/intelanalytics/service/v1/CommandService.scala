@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -49,6 +49,8 @@ import ExecutionContext.Implicits.global
 
 /**
  * REST API Command Service
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -80,10 +82,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     case Success(Some(command)) => complete(decorate(uri, command))
                     case Success(None) => complete(StatusCodes.NotFound)
                     case Failure(ex) => throw ex
-                    case Success(Some(command)) =>
-                      complete(decorate(uri, command))
-                    case _ =>
-                      reject()
+                    case _ => reject()
                   }
                 } ~
                   post {
@@ -109,7 +108,10 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             get {
               import IADefaultJsonProtocol.listFormat
               import DomainJsonProtocol.commandDefinitionFormat
-              complete(engine.getCommandDefinitions().toList)
+              onComplete(Future { engine.getCommandDefinitions().toList }) {
+                case Success(list) => complete(list)
+                case Failure(ex) => throw ex
+              }
             }
           } ~
             pathEnd {
@@ -131,18 +133,13 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                         xform =>
                           val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
                           info(s"Received command template for execution: $template")
-                          try {
-                            engine.execute(template) match {
-                              case Execution(command, futureResult) =>
-                                complete(decorate(uri + "/" + command.id, command))
-                            }
-                          }
-                          catch {
-                            case e: DeserializationException => {
+                          onComplete(Future { engine.execute(template) }) {
+                            case Success(Execution(command, futureResult)) => complete(decorate(uri + "/" + command.id, command))
+                            case Failure(e: DeserializationException) =>
                               val message = s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
                                 s" ${e.getMessage}"
                               failWith(new DeserializationException(message, e))
-                            }
+                            case Failure(ex) => throw ex
                           }
                       }
                     }

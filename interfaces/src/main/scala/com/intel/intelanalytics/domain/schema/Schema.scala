@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -32,11 +32,11 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  * @param name the column name
  * @param dataType the type
  * @param index Columns can track their own indices once they are added to a schema, -1 if not defined
- *              Normally only the Schema would set the index (except in unit tests)
- *              (Not sure if this is a good idea or not.  I saw some plugins passing a name and index
- *              everywhere so it seemed better to encapsulate it)
+ *              This field should go away - it is bad because Schemas and Columns are otherwise immutable,
+ *              so this can result in some surprising bugs.
  */
-case class Column(name: String, dataType: DataType, var index: Int = -1) {
+case class Column(name: String, dataType: DataType,
+                  @deprecated("we should remove this field, please don't use") var index: Int = -1) {
   require(name != null, "column name is required")
   require(dataType != null, "column data type is required")
   require(name != "", "column name can't be empty")
@@ -133,6 +133,40 @@ object Schema {
     new FrameSchema(columns)
   }
 
+  /**
+   * Join two lists of columns.
+   *
+   * Join resolves naming conflicts when both left and right columns have same column names
+   *
+   * @param leftColumns columns for the left side
+   * @param rightColumns columns for the right side
+   * @return Combined list of columns
+   */
+  def join(leftColumns: List[Column], rightColumns: List[Column]): List[Column] = {
+
+    val funcAppendLetterForConflictingNames = (left: List[Column], right: List[Column], appendLetter: String) => {
+
+      var leftColumnNames = left.map(column => column.name)
+      val rightColumnNames = right.map(column => column.name)
+
+      left.map(column =>
+        if (right.map(i => i.name).contains(column.name)) {
+          var name = column.name + "_" + appendLetter
+          while (leftColumnNames.contains(name) || rightColumnNames.contains(name)) {
+            name = name + "_" + appendLetter
+          }
+          leftColumnNames = leftColumnNames ++ List(name)
+          Column(name, column.dataType)
+        }
+        else
+          column)
+    }
+
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "R")
+
+    left ++ right
+  }
 }
 
 /**
@@ -146,7 +180,7 @@ trait Schema {
   require({
     val distinct = columns.map(_.name).distinct
     distinct.length == columns.length
-  }, "invalid schema, duplicate column names")
+  }, s"invalid schema, column names cannot be duplicated: $columns")
 
   // assign indices
   columns.zipWithIndex.foreach { case (column, index) => column.index = index }
@@ -414,7 +448,8 @@ trait Schema {
    */
   def convertType(columnName: String, updatedDataType: DataType): Schema = {
     val col = column(columnName)
-    copy(columns = columns.updated(col.index, col.copy(dataType = updatedDataType)))
+    val index = columnIndex(columnName)
+    copy(columns = columns.updated(index, col.copy(dataType = updatedDataType)))
   }
 
   /**
@@ -530,4 +565,3 @@ trait Schema {
   }
 
 }
-

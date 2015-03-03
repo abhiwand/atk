@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014-2015 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,8 +25,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.frame.GroupByAggregationArgs
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators._
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 
 /**
@@ -41,9 +42,11 @@ import org.apache.spark.rdd.RDD
 private[spark] object GroupByAggregationFunctions extends Serializable {
 
   /**
-   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, ...) using Spark's aggregateByKey()
+   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, ...).
    *
-   * New aggregations can be added by implementing GroupByAggregator.
+   * For example, grouping a frame by gender and age, and computing the average income.
+   *
+   * New aggregations can be added by implementing a GroupByAggregator.
    *
    * @see GroupByAggregator
    *
@@ -105,6 +108,9 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
 
   /**
    * Create a pair RDD using the group-by keys, and aggregation columns
+   *
+   * The group-by key is a sequence of column values, for example, group-by gender and age. The aggregation
+   * columns are the columns containing the values to be aggregated, for example, annual income.
    *
    * @param frameRDD Input frame
    * @param groupByColumns Group by columns

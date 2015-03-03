@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,14 +25,16 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ RowWrapper }
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
@@ -60,8 +62,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
    */
   override def numberOfJobs(arguments: AddEdgesArgs)(implicit invocation: Invocation): Int = {
     if (arguments.isCreateMissingVertices) {
-      // TODO: this this right?
-      10
+      15
     }
     else {
       8
@@ -84,7 +85,8 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // validate arguments
     val edgeFrameEntity = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
-    val graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
+    var graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
+    var graphRef = GraphReference(graph.id)
     val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
     sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
 
@@ -96,7 +98,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // assign unique ids to source data
     val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds("_eid", startId = graph.nextId())
     edgeDataToAdd.cache()
-    graphs.updateIdCounter(graph.id, edgeDataToAdd.count())
+    graphs.updateIdCounter(graphRef, edgeDataToAdd.count())
 
     // convert to appropriate schema, adding edge system columns
     val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn("_src_vid", DataTypes.int64).addColumn("_dest_vid", DataTypes.int64))
@@ -111,17 +113,21 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
       addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+
+      // refresh graph from DB for building self-to-self graph edge
+      graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
       addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
-    val srcVertexIds = graphs.loadVertexRDD(sc, graph.id, srcLabel).idColumns.groupByKey()
+    graphRef = GraphReference(graph.id)
+    val srcVertexIds = graphs.loadVertexRDD(sc, graphRef, srcLabel).idColumns.groupByKey()
     srcVertexIds.cache()
     val destVertexIds = if (srcLabel == destLabel) {
       srcVertexIds
     }
     else {
-      graphs.loadVertexRDD(sc, graph.id, destLabel).idColumns.groupByKey()
+      graphs.loadVertexRDD(sc, graphRef, destLabel).idColumns.groupByKey()
     }
 
     // check that at least some source and destination vertices actually exist
@@ -161,9 +167,9 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
-    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.id)
+    val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.toReference)
     val combinedRdd = existingEdgeData.append(edgesToAdd)
-    graphs.saveEdgeRdd(edgeFrameEntity.id, combinedRdd)
+    graphs.saveEdgeRdd(edgeFrameEntity.toReference, combinedRdd)
 
     // results
     new UnitReturn

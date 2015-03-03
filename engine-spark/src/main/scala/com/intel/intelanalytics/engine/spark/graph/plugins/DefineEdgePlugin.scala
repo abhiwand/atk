@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -60,7 +60,7 @@ class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlug
    * @return data frame which represent the edge of this type
    */
   override def execute(arguments: DefineEdgeArgs)(implicit invocation: Invocation): UnitReturn = {
-    graphStorage.defineEdgeType(arguments.graphRef.id, arguments.edgeSchema)
+    graphStorage.defineEdgeType(arguments.graphRef, arguments.edgeSchema)
     UnitReturn()
   }
 

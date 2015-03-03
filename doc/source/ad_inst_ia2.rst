@@ -24,18 +24,18 @@ i.  intelanalytics-python-client
 ==================
 Needs to be installed on every spark worker node as well as the gateway node
 or other node that is going to be the designated client.
-The IA python client submitting requests, the rest server and the rest client
+The IA Python client submitting requests, the rest server and the rest client
 package installed on the worker nodes must all be the same version.
 
 Package Name: intelanalytics-python-rest-client
 
 Dependencies
 
-i.  python 2.7
-#.  `python27-ordreddict <https://pypi.python.org/pypi/ordereddict>`_
-#.  `python27-numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.81
-#.  `python27-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
-#.  `python27-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
+i.  Python 2.7
+#.  `Python27-ordreddict <https://pypi.python.org/pypi/ordereddict>`_
+#.  `Python27-numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.81
+#.  `Python27-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
+#.  `Python27-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
 
 
 |IA| Graph Builder

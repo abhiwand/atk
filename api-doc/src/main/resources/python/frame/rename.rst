@@ -1,4 +1,4 @@
-Rename Frame.
+Change the name of the current frame.
 
 Set the name of this frame.
 

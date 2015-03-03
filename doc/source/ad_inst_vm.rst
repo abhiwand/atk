@@ -72,7 +72,7 @@ When prompted for the "Default output format" use "json".
 To download the VM run::
 
     aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics
-        -#.#.#-CDH-5.1.2.tar.gz
+        -#.#.#-CDH-5.3.1.tar.gz
     
 The preceding line was broken across multiple lines for improved viewing on various media.
 The line should be entered as one line with no gaps (spaces).
@@ -92,12 +92,12 @@ Extracting On Linux
 ===================
 After acquiring the VM, extract the archive. Replace ``#.#.#`` with the release number::
 
-    tar -xvf IntelAnalytics-#.#.#-CDH-5.1.2.tar.gz
+    tar -xvf IntelAnalytics-#.#.#-CDH-5.3.1.tar.gz
 
 You should have two files after extracting::
 
-    IntelAnalytics-#.#.#-CDH-5.1.2-disk1.vmdk
-    IntelAnalytics-#.#.#-CDH-5.1.2.ovf
+    IntelAnalytics-#.#.#-CDH-5.3.1-disk1.vmdk
+    IntelAnalytics-#.#.#-CDH-5.3.1.ovf
 
 ------------
 Import Image
@@ -166,9 +166,9 @@ The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/
     -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
 The datasets in '/home/cloudera/examples/datasets' are for reference,
-the actual data that is being used by the python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
+the actual data that is being used by the Python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
 
-To run any of the python example scripts, make sure you are in the examples directory and start python with the script name::
+To run any of the Python example scripts, make sure you are in the examples directory and start Python with the script name::
 
     python <SCRIPT_NAME>.py
 

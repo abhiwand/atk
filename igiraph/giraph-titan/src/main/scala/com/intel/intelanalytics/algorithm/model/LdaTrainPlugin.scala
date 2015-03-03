@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -30,7 +30,7 @@ import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, Giraph
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Column, FrameSchema }
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation }
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._
@@ -48,6 +48,8 @@ class LdaTrainPlugin
    * e.g Python client via code generation.
    */
   override def name: String = "model:lda/train"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
   override def execute(arguments: LdaTrainArgs)(implicit invocation: Invocation): LdaTrainResult = {
 
@@ -74,6 +76,7 @@ class LdaTrainPlugin
     val ldaConfig = new LdaConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setLdaConfig(ldaConfig)
+    GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
 
     //giraphConf.setVertexInputFormatClass(classOf[LdaParquetFrameVertexValueInputFormat])
     giraphConf.setEdgeInputFormatClass(classOf[LdaParquetFrameEdgeInputFormat])
@@ -92,7 +95,7 @@ class LdaTrainPlugin
     frames.postSave(None, docOut.toReference, new FrameSchema(List(frame.schema.column(arguments.documentColumnName), resultsColumn)))
     frames.postSave(None, wordOut.toReference, new FrameSchema(List(frame.schema.column(arguments.wordColumnName), resultsColumn)))
 
-    LdaTrainResult(frames.expectFrame(docOut.id), frames.expectFrame(wordOut.id), report)
+    LdaTrainResult(frames.expectFrame(docOut.toReference), frames.expectFrame(wordOut.toReference), report)
   }
 
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.graph.{ AssignSampleTitanArgs, GraphEntit
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 
@@ -63,10 +64,8 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AssignSampleTitanArgs)(implicit invocation: Invocation): UnitReturn = {
-    //Titan Settings
-    val config = configuration
 
-    val graph = engine.graphs.expectGraph(arguments.graph.id)
+    val graph = engine.graphs.expectGraph(arguments.graph)
     require(graph.isTitan, "assign sample is currently only implemented for Titan Graphs")
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
@@ -80,7 +79,7 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
       arguments.getRandomSeed)
     //GB Edges are unchanged so we do not need to supply the edges
     val emptyRDD: RDD[GBEdge] = sc.parallelize(Nil)
-    engine.graphs.writeToTitan(graph.name.get, splitRDD, emptyRDD, append = true)
+    engine.graphs.writeToTitan(graph.storage, splitRDD, emptyRDD, append = true)
     new UnitReturn
   }
 
