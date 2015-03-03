@@ -23,8 +23,8 @@
 
 package com.intel.spark.graphon.clusteringcoefficient
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
+import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -86,16 +86,17 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
 
     // Get the graph
 
-    val graph = engine.graphs.expectGraph(arguments.graph)
-
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
-
-    val ccOutput =
-      ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputPropertyName, arguments.inputEdgeSet)
+    val graphStorage = engine.graphs
+    val graph = graphStorage.expectGraph(arguments.graph)
+    val (gbVertices, gbEdges) = graphStorage.loadGbElements(sc, graph)
+    val ccOutput = ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputPropertyName, arguments.inputEdgeSet)
 
     val outGraph: GraphEntity = if (arguments.outputGraphName.nonEmpty) {
-      val newGraphName = arguments.outputGraphName.get
-      engine.graphs.writeToTitan(newGraphName, ccOutput.vertices, gbEdges)
+      val newGraphName = arguments.outputGraphName
+      val newGraph = graphStorage.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan))
+      graphStorage.writeToTitan(newGraph, ccOutput.vertices, gbEdges)
+
+      newGraph
     }
     else {
       graph
