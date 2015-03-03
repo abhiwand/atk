@@ -463,12 +463,12 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param append if true will attempt to append to an existing graph
    */
 
-  def writeToTitan(graphRef: GraphEntity,
+  def writeToTitan(graph: GraphEntity,
                    gbVertices: RDD[GBVertex],
                    gbEdges: RDD[GBEdge],
-                   append: Boolean = false)(implicit invocation: Invocation) = {
+                   append: Boolean = false)(implicit invocation: Invocation): Unit = {
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphRef)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
 
