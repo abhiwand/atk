@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 Intel Analytics API management
 """
@@ -117,7 +118,9 @@ def get_api_decorator(logger):
             return item
         else:
             # must be a function, wrap with logging, error handling, etc.
-            return decorator(_api, item)
+            d = decorator(_api, item)
+            d.is_api = True  # add 'is_api' attribute for meta query
+            return d
     return api
 
 
@@ -201,3 +204,34 @@ def _error_if_api_already_loaded(function, *args, **kwargs):
 
 def error_if_api_already_loaded(function):
     return decorator(_error_if_api_already_loaded, function)
+
+
+# methods to dump the names in the API (driven by QA coverage)
+def get_api_names(obj, prefix=''):
+    from intelanalytics.meta.metaprog import get_intermediate_property_class
+    found = []
+    for name in dir(obj):
+        if not name.startswith("_"):
+            a = getattr(obj, name)
+            suffix = _get_inheritance_suffix(obj, name)
+            if isinstance(a, property):
+                intermediate_class = get_intermediate_property_class(a)
+                if intermediate_class:
+                    found.extend(get_api_names(intermediate_class, prefix + name + "."))
+                a = a.fget
+            if hasattr(a, "is_api"):
+                found.append(prefix + name + suffix)
+            elif inspect.isclass(a):
+                found.extend(get_api_names(a, prefix + name + "."))
+    return found
+
+
+def _get_inheritance_suffix(obj, member):
+    if inspect.isclass(obj):
+        if member in obj.__dict__:
+            return ''
+        heritage = inspect.getmro(obj)[1:]
+        for base_class in heritage:
+            if member in base_class.__dict__:
+                return "   (inherited from %s)" % base_class.__name__
+    return ''

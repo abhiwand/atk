@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -33,9 +33,6 @@ import com.intel.intelanalytics.security.UserPrincipal
  * Manages multiple graphs in the underlying graph database.
  */
 trait GraphStorage {
-
-  /** Lookup a Graph, throw an Exception if not found */
-  def expectGraph(graphId: Long)(implicit invocation: Invocation): GraphEntity
 
   /** Lookup a Graph, throw an Exception if not found */
   def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -50,6 +50,8 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentArgs, 
    */
   override def name: String = "frame/cumulative_percent"
 
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
+
   /**
    * Compute a cumulative percent sum.
    *
@@ -65,12 +67,12 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentArgs, 
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
-    val frameEntity = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frameEntity = frames.expectFrame(frameRef)
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
     val frameSchema = frameEntity.schema
     val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)

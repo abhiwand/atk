@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -38,7 +38,7 @@ import org.apache.spark.SparkContext
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRDD
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -79,13 +79,13 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
-    val vertexFrame = frames.expectFrame(arguments.frame.id)
+    val vertexFrame = frames.expectFrame(arguments.frame)
 
     require(vertexFrame.isVertexFrame, "vertex frame is required")
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.graphId.get)
     val schema = vertexFrame.schema
-    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame.id)
+    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame)
     val columnNames = arguments.unique_columns match {
       case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
       case None =>

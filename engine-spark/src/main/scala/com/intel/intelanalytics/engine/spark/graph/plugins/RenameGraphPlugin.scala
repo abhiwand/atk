@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -66,8 +66,8 @@ class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, GraphEntity]
     val graphs = engine.graphs
 
     // validate arguments
-    val graphId = arguments.graph.id
-    val graph = graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+    val graphRef = arguments.graph
+    val graph = graphs.expectGraph(graphRef)
     val newName = arguments.newName
 
     // run the operation and save results

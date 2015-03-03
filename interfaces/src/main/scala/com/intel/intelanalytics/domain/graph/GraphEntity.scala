@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -39,7 +39,6 @@ import org.joda.time.DateTime
  * @param createdByUserId user who created this row
  * @param modifiedByUserId  user who last modified this row
  * @param idCounter idCounter counter for generating unique ids for vertices and edges with Seamless Graph.
- * @param frameSchemaList a list of schema objects corresponding to the frames. This is only required for graphs exported from a Seamless Graph.
  */
 case class GraphEntity(id: Long,
                        name: Option[String],
@@ -52,7 +51,6 @@ case class GraphEntity(id: Long,
                        createdByUserId: Option[Long] = None,
                        modifiedByUserId: Option[Long] = None,
                        idCounter: Option[Long] = None,
-                       frameSchemaList: Option[SchemaList] = None,
                        lastReadDate: DateTime = new DateTime) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
@@ -88,5 +86,7 @@ case class GraphEntity(id: Long,
     idCounter.getOrElse(0L) + 1L
   }
 
+  def toReference: GraphReference = {
+    GraphReference(id)
+  }
 }
-

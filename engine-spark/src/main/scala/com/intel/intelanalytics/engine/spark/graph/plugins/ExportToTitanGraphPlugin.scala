@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -35,13 +35,12 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage, GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 
 import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion
@@ -87,7 +86,8 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ExportGraph)(implicit invocation: Invocation): GraphEntity = {
-    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
+    val graphRef = arguments.graph
+    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(graphRef.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(
@@ -96,11 +96,12 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
           case None => Some(Naming.generateName(prefix = Some("titan_graph")))
         },
         StorageFormats.HBaseTitan))
-    val graph = graphs.expectGraph(seamlessGraph.id)
+    val graph = graphs.expectGraph(graphRef)
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))
-    graphs.updateFrameSchemaList(titanGraph, seamlessGraph.getFrameSchemaList)
+
+    graphs.expectGraph(titanGraph.toReference)
   }
 
   /**

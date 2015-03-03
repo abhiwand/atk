@@ -34,7 +34,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <groupId>com.intel.ia</groupId>
     <artifactId>IntelAnalytics</artifactId>
     <packaging>pom</packaging>
-    <version>0.8.6-SNAPSHOT</version>
+    <version>master-SNAPSHOT</version>
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
@@ -103,7 +103,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <maven>3.0</maven>
     </prerequisites>
     <properties>
-        <project.version>0.8.6-SNAPSHOT</project.version>
+        <project.version>master-SNAPSHOT</project.version>
         <top.dir>${project.basedir}</top.dir>
         <buildtype>test</buildtype>
 
@@ -114,9 +114,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections>0.9.9-RC1</dep.reflections>
         <!-- END TITAN -->
-	<dep.cdh.version>cdh5.3.1</dep.cdh.version>
-	<dep.spark.version>1.2.0-${dep.cdh.version}</dep.spark.version>
-	<dep.spark.yarn.version>1.2.0-${dep.cdh.version}</dep.spark.yarn.version>
+        <dep.cdh.version>cdh5.3.1</dep.cdh.version>
+        <dep.spark.version>1.2.0-${dep.cdh.version}</dep.spark.version>
+        <dep.spark.yarn.version>1.2.0-${dep.cdh.version}</dep.spark.yarn.version>
         <dep.mahout.version>0.9</dep.mahout.version>
         <dep.parquet.version>1.5.0-${dep.cdh.version}</dep.parquet.version>
         <dep.hbase.version>0.98.6-${dep.cdh.version}</dep.hbase.version>

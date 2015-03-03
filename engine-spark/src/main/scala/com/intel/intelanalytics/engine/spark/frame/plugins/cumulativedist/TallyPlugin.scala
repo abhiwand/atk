@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ TallyArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -50,6 +50,8 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
    */
   override def name: String = "frame/tally"
 
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
+
   /**
    * Computes a cumulative count
    *
@@ -65,8 +67,8 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
-    val frameEntity = frames.expectFrame(frameId)
+    val frameRef = arguments.frame
+    val frameEntity = frames.expectFrame(frameRef)
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
@@ -79,4 +81,3 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
   }
 }
-

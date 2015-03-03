@@ -35,6 +35,13 @@ This folder is for integration tests that are run at build time.
     /run_tests.sh - script for running tests (start server, run tests, stop server)
 
 -------------------
+  Prerequisites
+-------------------
+The following python packages are required:
+  sudo pip2.7 install nose             # version >= 1.3.4
+  sudo pip2.7 install nose_xunitmp     # version > 0.2
+
+
   Instructions
 -------------------
 - Please only add the absolutely smallest toy data sets!
@@ -42,4 +49,3 @@ This folder is for integration tests that are run at build time.
 - Avoid outside dependencies (Spark, HDFS, etc.), these tests should be self-contained so they can easily run on any build server
 - Tests should be short, isolated, and fast running.
 - Preferably we treat data sets as immutable
-

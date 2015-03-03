@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -27,8 +27,8 @@ import com.intel.intelanalytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 
@@ -63,7 +63,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val frames = engine.frames
     val ctx = sc
 
-    val frame = frames.expectFrame(arguments.frame.id)
+    val frame = frames.expectFrame(arguments.frame)
     val samplePercentages = arguments.samplePercentages.toArray
 
     val outputColumnName = arguments.outputColumnName

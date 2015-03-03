@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -79,7 +79,7 @@ object ExamplesUtils {
       System.getProperty("user.dir") + "/target/scala-2.10/gb.jar",
       System.getProperty("user.dir") + "/gb.jar",
       // Maven build not working yet
-      System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3-0.8.6-SNAPSHOT.jar",
+      System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3-master-SNAPSHOT.jar",
       System.getProperty("user.dir") + "/target/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/graphbuilder-3.jar")
     possiblePaths.foreach(path => {

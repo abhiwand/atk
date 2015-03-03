@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014-2015 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, GroupByArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -52,6 +52,8 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
    */
   override def name: String = "frame/group_by"
 
+  override def apiMaturityTag = Some(ApiMaturityTag.Beta)
+
   /**
    * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
    *
@@ -67,7 +69,7 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame.id))
+    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame))
     val frameSchema = originalFrame.frameSchema
     val groupByColumns = arguments.groupByColumns.map(columnName => frameSchema.column(columnName))
 

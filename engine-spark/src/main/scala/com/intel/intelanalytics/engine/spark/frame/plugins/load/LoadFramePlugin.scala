@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,14 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRDD
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -72,13 +72,13 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.destination.id
-    val destinationFrame = frames.expectFrame(frameId)
+    val frameRef = arguments.destination
+    val destinationFrame = frames.expectFrame(frameRef)
 
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(arguments.source.uri.toInt))
+      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {

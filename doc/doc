@@ -189,20 +189,20 @@ function main {
     fi
 
     # debug: Look for a virtual environment if needed
-    echo $ModifiedArguments | grep -i -e "/-f/" -e "/--force/" > /dev/null
-    if [ $? == 1 ]; then
+#    echo $ModifiedArguments | grep -i -e "/-f/" -e "/--force/" > /dev/null
+#    if [ $? == 1 ]; then
         # debug: about to check the environment
         USERNAME=$(check_environment)
-        if [ "$?" == "1" ]; then
-            echo "Virtual Environment is not installed."
-            echo "Please execute install_pyenv.sh to install."
-            echo "or use the -f/--force flag."
-            return 1
-        fi
-    else
-        # debug: setting USERNAME=$LOGNAME
-        USERNAME=$LOGNAME
-    fi
+#        if [ "$?" == "1" ]; then
+#            echo "Virtual Environment is not installed."
+#            echo "Please execute install_pyenv.sh to install."
+#            echo "or use the -f/--force flag."
+#            return 1
+#        fi
+#    else
+#        # debug: setting USERNAME=$LOGNAME
+#        USERNAME=$LOGNAME
+#    fi
 
     # debug: Look for packages if the individual is a techwriter
     echo $ModifiedArguments | grep -i "/packages/" > /dev/null
@@ -303,7 +303,11 @@ function main {
     if [ $? == 0 ]; then
         which pdflatex > /dev/null
         if [ "$?" == "0" ]; then
-            RunCommand="zip -q -9 -r intel_analytics_docs build/*"
+            if [[ -e intel_analytics_docs.zip ]]; then
+                rm intel_analytics_docs.zip
+            fi
+            
+            RunCommand="zip -q -9 -r intel_analytics_docs build"
             do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
         else
             echo "The zip utility does not seem to be present."
@@ -315,6 +319,9 @@ function main {
                 return 1
             fi
         fi
+    fi
+    if [ -e doc.log ]; then
+        rm doc.log
     fi
 }
 ############################################################################################################
@@ -448,25 +455,25 @@ function update_scala {
     # Update scala server
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
-        RunCommand="mvn compile"
-        log_step "$RunCommand" $2 $4
-        $RunCommand > $3
-        if [ "$?" != "0" ]; then
-            Err "$RunCommand" $1 $2 $3 $4
-            if [ "$?" == "1" ]; then return 1; fi
+#       RunCommand="mvn compile"
+#       log_step "$RunCommand" $2 $4
+#       $RunCommand > $3
+#       if [ "$?" != "0" ]; then
+#           Err "$RunCommand" $1 $2 $3 $4
+#           if [ "$?" == "1" ]; then return 1; fi
             RunCommand="mvn clean install -DskipTests"
-            read -p "Try \"$RunCommand\"? [y|N]" UserResponse
-            if [ -z $UserResponse ];then
-                UserResponse='y'
-            fi
-            if [ ${UserResponse:0:1} == 'N' -o ${UserResponse:0:1} == 'n' ]; then
-                return 1
-            fi
+#           read -p "Try \"$RunCommand\"? [y|N]" UserResponse
+#           if [ -z $UserResponse ];then
+#               UserResponse='y'
+#           fi
+#           if [ ${UserResponse:0:1} == 'N' -o ${UserResponse:0:1} == 'n' ]; then
+#               return 1
+#           fi
             do_this "$RunCommand" $1 $2 $3 $4
             return $?
-        else
-            rm $3 > /dev/null
-        fi
+#       else
+#           rm $3 > /dev/null
+#       fi
     else
         Err "Maven does not appear to be installed." $1 $2 $3 $4
         if [ "$?" == "1" ]; then return 1; fi

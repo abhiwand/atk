@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -72,8 +72,8 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
     val ctx = sc
 
     // validate arguments
-    val frame: FrameEntity = frames.expectFrame(arguments.frame.id)
-    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame.id)
+    val frame: FrameEntity = frames.expectFrame(arguments.frame)
+    val rdd = frames.loadLegacyFrameRdd(ctx, arguments.frame)
     val columnNames = arguments.unique_columns match {
       case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
       case None => frame.schema.columnNames
@@ -84,4 +84,3 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
     frames.saveLegacyFrame(frame.toReference, new LegacyFrameRDD(frame.schema, duplicatesRemoved))
   }
 }
-

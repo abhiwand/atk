@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.HasData
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
+import org.apache.spark.frame.FrameRDD
 
 /**
  * A FrameReference with metadata and a Spark RDD representing the data in the frame.

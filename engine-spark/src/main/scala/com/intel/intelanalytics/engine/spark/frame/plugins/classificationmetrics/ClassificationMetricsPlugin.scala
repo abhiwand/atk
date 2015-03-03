@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -71,10 +71,10 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     val ctx = sc
 
     // validate arguments
-    val frameId = arguments.frame.id
+    val frameRef = arguments.frame
     val frameEntity = frames.expectFrame(arguments.frame)
     val frameSchema = frameEntity.schema
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val betaValue = arguments.beta.getOrElse(1.0)
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)

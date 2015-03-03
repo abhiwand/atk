@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -53,7 +53,9 @@ import com.intel.event.EventLogging
 import ExecutionContext.Implicits.global
 
 /**
- * REST API Data Frame Service
+ * REST API Data Frame Service.
+ *
+ * Always use onComplete( Future { operationsGoHere() } ) to prevent "server disconnected" messages in client.
  */
 class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
@@ -143,20 +145,20 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                   {
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQuery[Long](id, offset, count)
-                    val results = engine.getRows(queryArgs)
-                    results match {
-                      case r: QueryDataResult => {
+                    onComplete(Future { engine.getRows(queryArgs) }) {
+                      case Success(r: QueryDataResult) => {
                         complete(GetQuery(id = None, error = None,
                           name = "getRows", arguments = None, complete = true,
                           result = Some(GetQueryPage(
                             Some(dataToJson(r.data)), None, None, r.schema)),
                           links = List(Rel.self(uri.toString))))
                       }
-                      case exec: PagedQueryResult => {
+                      case Success(exec: PagedQueryResult) => {
                         val pattern = new Regex(prefix + ".*")
                         val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
                         complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
                       }
+                      case Failure(ex) => throw ex
                     }
                   }
               }

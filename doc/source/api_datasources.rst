@@ -11,6 +11,12 @@ CsvFile
     :members:
     :inherited-members:
 
+JsonFile
+--------
+.. autoclass:: intelanalytics.JsonFile
+    :members:
+    :inherited-members:
+
 LineFile
 --------
 .. autoclass:: intelanalytics.LineFile

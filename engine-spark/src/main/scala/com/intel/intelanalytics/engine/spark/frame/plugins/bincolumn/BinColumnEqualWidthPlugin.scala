@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,8 +25,9 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
@@ -82,4 +83,3 @@ class BinColumnEqualWidthPlugin extends ComputedBinColumnPlugin {
     DiscretizationFunctions.binEqualWidth(columnIndex, numBins, rdd)
   }
 }
-

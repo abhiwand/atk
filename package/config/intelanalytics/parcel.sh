@@ -3,7 +3,7 @@ source common.sh
 log create parcel
 
 PACKAGE_NAME=INTELANALYTICS
-parcelDir=$PACKAGE_NAME-$VERSION-$BUILD_NUMBER.cdh5.2.0
+parcelDir=$PACKAGE_NAME-$VERSION-$BUILD_NUMBER.cdh5.3.0
 tarFile=$2
 
 rm -rf $SCRIPTPATH/$parcelDir

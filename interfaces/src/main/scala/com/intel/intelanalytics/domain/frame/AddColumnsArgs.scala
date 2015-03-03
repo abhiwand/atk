@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
 
-case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf) {
+case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf, columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {
@@ -36,4 +36,3 @@ case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], colu
   require(columnNames.size == columnTypes.size, "Equal number of column names and types is required")
   require(udf != null, "User defined expression is required")
 }
-

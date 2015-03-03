@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,19 +20,17 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.model.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import org.apache.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
-import org.apache.spark.mllib.classification.{ LogisticRegressionModel, SVMModel }
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
@@ -50,6 +48,8 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
    * e.g Python client via code generation.
    */
   override def name: String = "model:svm/predict"
+
+  override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
    * Number of Spark jobs that get created by running this command
@@ -70,26 +70,35 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
     {
       val models = engine.models
-      val modelMeta = models.expectModel(arguments.model.id)
+      val modelMeta = models.expectModel(arguments.model)
+
+      val frames = engine.frames
+      val inputFrame = frames.expectFrame(arguments.frame)
 
       val frame: SparkFrameData = resolve(arguments.frame)
+
       // load frame as RDD
       val inputFrameRDD = frame.data
 
       //Running MLLib
-      val logRegJsObject = modelMeta.data.get
-      val logRegModel = logRegJsObject.convertTo[SVMModel]
+      val svmJsObject = modelMeta.data.get
+      val svmData = svmJsObject.convertTo[SVMData]
+      val svmModel = svmData.svmModel
+      if (arguments.observationColumns.isDefined) {
+        require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+      }
+      val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
       //predicting a label for the observation columns
       val predictionsRDD = inputFrameRDD.mapRows(row => {
-        val array = row.valuesAsArray(arguments.observationColumns)
+        val array = row.valuesAsArray(svmColumns)
         val doubles = array.map(i => DataTypes.toDouble(i))
         val point = Vectors.dense(doubles)
-        val prediction = logRegModel.predict(point)
-        row.addValue(prediction)
+        val prediction = svmModel.predict(point)
+        row.addValue(prediction.toInt)
       })
 
-      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.float64)
+      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
 
       tryNew(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -40,7 +40,7 @@ case class LdaTrainArgs(model: ModelReference,
                         alpha: Option[Float] = None,
                         beta: Option[Float] = None,
                         convergenceThreshold: Option[Float] = None,
-                        evaluationCost: Option[Boolean] = None,
+                        evaluateCost: Option[Boolean] = None,
                         numTopics: Option[Int] = None) {
 
   require(model != null, "model is required")
@@ -51,6 +51,7 @@ case class LdaTrainArgs(model: ModelReference,
   require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
   require(alpha.isEmpty || alpha.get > 0, "Alpha should be greater than 0")
   require(beta.isEmpty || beta.get > 0, "Beta should be greater than 0")
+  require(convergenceThreshold.isEmpty || convergenceThreshold.get >= 0, "Convergence threshold should be greater than or equal to 0")
   require(numTopics.isEmpty || numTopics.get > 0, "Number of topics (K) should be greater than 0")
 
   def columnNames: List[String] = {
@@ -74,7 +75,7 @@ case class LdaTrainArgs(model: ModelReference,
   }
 
   def getEvaluateCost: Boolean = {
-    evaluationCost.getOrElse(false)
+    evaluateCost.getOrElse(false)
   }
 
   def getNumTopics: Int = {

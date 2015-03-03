@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2014 Intel Corporation All Rights Reserved.
+# Copyright 2015 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+
 """
 intelanalytics package init, public API
 """
@@ -41,7 +42,7 @@ except Exception as e:
 
 from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile
 from intelanalytics.core.iapandas import Pandas
-from intelanalytics.rest.udfdepends import Udf
+from intelanalytics.rest.udfdepends import udf
 from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.core.model import _BaseModel
@@ -60,3 +61,20 @@ def _refresh_api_namespace():
 
 _refresh_api_namespace()
 
+
+def _get_api_names():
+    from intelanalytics.meta.api import get_api_names
+    import sys
+    return get_api_names(sys.modules[__name__])
+
+# Autoconnect if env says so.  This is NOT standard usage, but needed when
+# an 'import intelanalytics' really needs to get EVERYTHING, like
+# when generating documentation.  Requires that the server is already running
+import os
+autoconnect =  os.getenv('INTELANALYTICS_AUTOCONNECT')
+#print "autoconnect=" + str(autoconnect) + " of type %s" % type(autoconnect)
+if autoconnect is not None and autoconnect.lower() not in [None, '', '0', 'false']:
+    print "$INTELANALYTICS_AUTOCONNECT=%s, trying to connect to IntelAnalytics..." % autoconnect
+    connect()
+del os
+del autoconnect

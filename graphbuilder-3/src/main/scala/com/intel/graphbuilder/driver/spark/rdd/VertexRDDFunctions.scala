@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,8 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
+import com.intel.graphbuilder.elements.{ Property, GbIdToPhysicalId, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.StringUtils
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
@@ -44,6 +45,31 @@ class VertexRDDFunctions(self: RDD[GBVertex]) {
    */
   def mergeDuplicates(): RDD[GBVertex] = {
     self.groupBy(m => m.id).mapValues(dups => dups.reduce((m1, m2) => m1.merge(m2))).values
+  }
+
+  /**
+   * Convert "Vertices with or without _label property" into "Vertices with _label property"
+   * @param indexNames Vertex properties that have been indexed (fallback for labels)
+   * @return Vertices with _label property
+   */
+  def labelVertices(indexNames: List[String]): RDD[GBVertex] = {
+    self.map(vertex => {
+      val columnNames = vertex.fullProperties.map(_.key)
+      val indexedProperties = indexNames.intersect(columnNames.toSeq)
+      val userDefinedColumn = if (indexedProperties.isEmpty) None else Some(indexedProperties.head)
+
+      val label = if (vertex.getProperty("_label").isDefined && vertex.getProperty("_label").get.value != null) {
+        vertex.getProperty("_label").get.value
+      }
+      else if (userDefinedColumn.isDefined) {
+        userDefinedColumn.get
+      }
+      else {
+        "unlabeled"
+      }
+      val props = vertex.properties.filter(_.key != "_label") + Property("_label", label)
+      new GBVertex(vertex.physicalId, vertex.gbId, props)
+    })
   }
 
   /**

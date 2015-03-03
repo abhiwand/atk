@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,6 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -54,7 +55,7 @@ class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
   override def execute(arguments: CountWhereArgs)(implicit invocation: Invocation): LongValue = {
     val sourceFrame = engine.frames.expectFrame(arguments.frame)
     val pythonRDDStorage = new PythonRDDStorage(engine.frames)
-    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.id, arguments.udf.function, sc)
+    val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.toReference, arguments.udf.function, sc)
     LongValue(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
   }
 }
