@@ -86,7 +86,6 @@ import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.EntropyArgs
-import com.intel.intelanalytics.domain.frame.EntropyReturn
 import com.intel.intelanalytics.domain.frame.TopKArgs
 import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs

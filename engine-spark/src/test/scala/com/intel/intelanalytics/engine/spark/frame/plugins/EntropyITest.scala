@@ -33,7 +33,7 @@ import org.scalatest.Matchers
  * The expected values for the tests were computed using the R entropy package.
  * @see http://cran.r-project.org/web/packages/entropy/index.html
  */
-class EntropyArgsITest extends TestingSparkContextFlatSpec with Matchers {
+class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
   val unweightedInput = List(
     Array[Any](-1, "a", 0),
     Array[Any](0, "a", 0),
