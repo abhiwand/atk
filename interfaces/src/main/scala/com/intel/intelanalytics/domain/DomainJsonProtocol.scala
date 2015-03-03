@@ -368,7 +368,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val calculateCorrelation = jsonFormat2(CorrelationArgs)
 
   implicit val entropyFormat = jsonFormat3(EntropyArgs)
-  implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopKArgs)
   implicit val exportHdfsCsvPlugin = jsonFormat5(ExportHdfsCsvArgs)

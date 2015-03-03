@@ -34,10 +34,3 @@ case class EntropyArgs(frame: FrameReference, dataColumn: String, weightsColumn:
   require(frame != null, "frame is required")
   require(dataColumn != null, "column name is required")
 }
-
-/**
- * Return value for Shannon entropy command.
- *
- * @param entropy Shannon entropy
- */
-case class EntropyReturn(entropy: Double)
