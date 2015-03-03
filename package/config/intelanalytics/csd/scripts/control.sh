@@ -1,7 +1,5 @@
 #!/bin/bash
 
-env
-
 echo "" > $ATK_TEMP/application.conf
 
 function log {
@@ -45,6 +43,9 @@ case "$1" in
     log "fs root host-${fs_root_host}"
 
     fs_root_port=$(getConfig "HDFS" "hdfs-NAMENODE-BASE" "namenode_port" )
+    if [ "$fs_root_port" == "None"  ]; then
+	fs_root_port=8020
+    fi
     log "fs root port-${fs_root_port}"
 
     echo "intel.analytics.engine.fs.root=\"hdfs://${fs_root_host}:${fs_root_port}/user/${ATK_USER}\"" >> $ATK_TEMP/application.conf
