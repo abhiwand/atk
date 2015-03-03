@@ -24,8 +24,8 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property }
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference }
+import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -131,8 +131,10 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
         properties = v.properties + Property(arguments.outputPropertyName, wd))
     })
 
-    engine.graphs.writeToTitan(arguments.outputGraphName, outVertices, gbEdges)
+    val newGraphName = arguments.outputGraphName
+    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
+    engine.graphs.writeToTitan(newGraph, outVertices, gbEdges)
 
-    engine.graphs.getGraphByName(Some(arguments.outputGraphName)).get
+    newGraph
   }
 }
