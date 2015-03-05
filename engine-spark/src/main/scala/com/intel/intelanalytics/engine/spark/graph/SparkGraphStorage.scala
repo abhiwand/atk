@@ -170,7 +170,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -245,10 +245,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          val graphBackendName: String = if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
+            GraphBackendName.getGraphBackendName(graphEntity)
           }
-          metaStore.graphRepo.insert(graph).get
+          else ""
+          metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
   }
@@ -262,7 +266,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
           if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
+            backendStorage.renameUnderlyingTable(graph.storage, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
@@ -463,22 +467,16 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param append if true will attempt to append to an existing graph
    */
 
-  def writeToTitan(graphName: String,
+  def writeToTitan(graph: GraphEntity,
                    gbVertices: RDD[GBVertex],
                    gbEdges: RDD[GBEdge],
-                   append: Boolean = false)(implicit invocation: Invocation): GraphEntity = {
+                   append: Boolean = false)(implicit invocation: Invocation): Unit = {
 
-    val graph = if (append)
-      getGraphByName(Some(graphName)).get
-    else
-      createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
-
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
 
     gb.buildGraphWithSpark(gbVertices, gbEdges)
-    graph
   }
 
   /**

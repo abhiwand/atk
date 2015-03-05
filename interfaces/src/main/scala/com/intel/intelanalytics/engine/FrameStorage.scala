@@ -37,7 +37,6 @@ trait FrameStorage {
   type Context
   type Data
 
-  def expectFrame(frameId: Long)(implicit invocation: Invocation): FrameEntity
   def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity
 
   @deprecated("please use expectFrame() instead")
