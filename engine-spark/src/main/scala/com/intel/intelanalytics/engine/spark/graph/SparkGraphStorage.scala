@@ -245,10 +245,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          val graphBackendName: String = if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
+            GraphBackendName.getGraphBackendName(graphEntity)
           }
-          metaStore.graphRepo.insert(graph).get
+          else ""
+          metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
   }
@@ -262,7 +266,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
           if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
+            backendStorage.renameUnderlyingTable(graph.storage, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
