@@ -31,6 +31,7 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.intelanalytics.engine.GraphBackendStorage
+import com.intel.intelanalytics.engine.plugin.BackendInvocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.repository.{ GarbageCollectableRepository, MetaStore, MetaStoreComponent }
@@ -160,6 +161,9 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         info(description)
         metaStore.frameRepo.lookupByGraphId(graph.id).foreach(frame => deleteFrameData(gc, frame))
         metaStore.graphRepo.updateDataDeleted(graph)
+        if (graph.isTitan) {
+          graphBackendStorage.deleteUnderlyingTable(graph.storage, quiet = true)(invocation = new BackendInvocation())
+        }
         gcEntryRepo.updateEndTime(gcEntry)
       }
       catch {

@@ -91,10 +91,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(
-        arguments.newGraphName match {
-          case Some(name) => arguments.newGraphName
-          case None => Some(Naming.generateName(prefix = Some("titan_graph")))
-        },
+        arguments.newGraphName,
         StorageFormats.HBaseTitan))
     val graph = graphs.expectGraph(graphRef)
     loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
