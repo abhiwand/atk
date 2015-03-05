@@ -129,9 +129,10 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, GraphEntit
         properties = v.properties + Property(arguments.outputPropertyName, d))
     })
 
-    engine.graphs.writeToTitan(arguments.outputGraphName, outVertices, gbEdges)
+    val newGraphName = arguments.outputGraphName
+    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
+    engine.graphs.writeToTitan(newGraph, outVertices, gbEdges)
 
-    engine.graphs.getGraphByName(Some(arguments.outputGraphName)).get
+    newGraph
   }
-
 }

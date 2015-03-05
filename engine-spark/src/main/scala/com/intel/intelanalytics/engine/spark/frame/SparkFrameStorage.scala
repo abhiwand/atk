@@ -166,10 +166,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   import com.intel.intelanalytics.engine.Rows.Row
 
-  override def expectFrame(frameId: Long)(implicit invocation: Invocation): FrameEntity = {
-    lookup(frameId).getOrElse(throw new NotFoundException("frame", frameId.toString))
-  }
-
   override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = {
     lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId.toString))
   }
@@ -614,16 +610,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   override def lookupErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): Option[FrameEntity] = {
     if (frame.errorFrameId.isDefined) {
-      val errorFrame = lookup(frame.errorFrameId.get)
-      if (!errorFrame.isDefined) {
-        error("Frame referenced an error frame that does NOT exist: " + frame.errorFrameId.get)
-      }
-      errorFrame
+      Some(expectFrame(frame.toReference))
     }
     else {
       None
     }
-
   }
 
   /**

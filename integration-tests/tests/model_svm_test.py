@@ -47,6 +47,11 @@ class ModelSvmTest(unittest.TestCase):
         print "Training the model on the Frame"
         k.train(frame,'label', ['data'])
 
+        print "Predicting on the Frame"
+        m = k.predict(frame)
+
+        self.assertEqual(m.column_names, ['data', 'label', 'predicted_label'])
+
 
 if __name__ == "__main__":
     unittest.main()
