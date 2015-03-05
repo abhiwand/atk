@@ -75,7 +75,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: ExportGraph)(implicit invocation: Invocation): Int = 4
+  override def numberOfJobs(arguments: ExportGraph)(implicit invocation: Invocation): Int = 5
 
   /**
    * Plugins must implement this method to do the work requested by the user.
@@ -86,15 +86,12 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ExportGraph)(implicit invocation: Invocation): GraphEntity = {
-    val graphRef = arguments.graph
-    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(graphRef.id)
+    val seamlessGraph: SeamlessGraphMeta = graphs.expectSeamless(arguments.graph.id)
     validateLabelNames(seamlessGraph.edgeFrames, seamlessGraph.edgeLabels)
     val titanGraph: GraphEntity = graphs.createGraph(
-      new GraphTemplate(
-        arguments.newGraphName,
-        StorageFormats.HBaseTitan))
-    val graph = graphs.expectGraph(graphRef)
-    loadTitanGraph(createGraphBuilderConfig(titanGraph.name),
+      new GraphTemplate(arguments.newGraphName, StorageFormats.HBaseTitan))
+    val graph = graphs.expectGraph(seamlessGraph.graphReference)
+    loadTitanGraph(createGraphBuilderConfig(Some(titanGraph.storage)),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))
 
