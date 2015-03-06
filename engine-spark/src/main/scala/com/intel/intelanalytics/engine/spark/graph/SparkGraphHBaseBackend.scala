@@ -86,10 +86,10 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
 
         throw ex
       }
-      case _ => {
-        info(s"Unable to copy the requested HBase table: $tableName.")
-        throw new Exception(
-          s"Unable to copy the requested HBase table $tableName.")
+      case ex: Exception => {
+
+        info(s"Unable to copy the requested HBase table: $tableName.", exception = ex)
+        throw new Exception(s"Unable to copy the requested HBase table $tableName.", ex)
       }
     }
     finally {
