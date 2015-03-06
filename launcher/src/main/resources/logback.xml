@@ -9,6 +9,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
+            <!-- please keep full stack traces in here, the logs are worthless without them, thanks. -->
             <pattern>%logger{15} - %mdc{corId:-?} - %message %n %ex{full}%n</pattern>
         </encoder>
     </appender>
