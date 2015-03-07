@@ -29,7 +29,7 @@ str : graph name
 Examples
 --------
 ::
-    g.ml.graphx_triangle_count(output_property = "triangle_count",  \\
+    g.graphx_triangle_count(output_property = "triangle_count",
                                output_graph_name = "tc_graph")
 
 The expected output is like this::
