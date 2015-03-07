@@ -89,7 +89,7 @@ import TriangleCountJsonFormat._
  */
 class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
-  override def name: String = "graph:titan/ml/graphx_triangle_count"
+  override def name: String = "graph:titan/graphx_triangle_count"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

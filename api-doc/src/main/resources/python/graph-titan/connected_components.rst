@@ -34,7 +34,7 @@ Examples
 --------
 ::
 
-    g.ml.conncted_components(input_edge_label = "edge", output_vertex_property = "component_id")
+    g.connected_components(input_edge_label = "edge", output_vertex_property = "component_id")
 
 
 
