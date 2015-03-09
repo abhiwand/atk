@@ -16,7 +16,7 @@ PSQL has a really nice command-line interface with full help and documentation b
 
 *?* \- gives help on PSQL command line
 
-*\d* \- lists all of the objects in your database
+*\d* \- lists all of the objects in the database
 
 *\d tableName* \- describes a table
 
