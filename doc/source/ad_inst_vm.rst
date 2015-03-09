@@ -9,11 +9,12 @@ Virtual Machines
 Introduction
 ------------
 
-Thank you for your interest in the |IA| Toolkit |version| beta.
-This guide will walk you through the download and import of the |IA| beta.
-Currently the |IA| toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
-We will not cover the installation of Virtual Box.
-Virtual Box supports many platforms and can be `downloaded for free <https://www.virtualbox.org/wiki/Downloads>`_.
+This guide will go through the download and import of the |IAT| beta.
+Currently the |IAT| VM only supports
+`Virtual Box <https://www.virtualbox.org/>`_.
+These instructions do not cover the installation of Virtual Box.
+Virtual Box supports many platforms and can be `downloaded for free
+<https://www.virtualbox.org/wiki/Downloads>`_.
 The installation documentation is also
 `available online <https://www.virtualbox.org/manual/UserManual.html>`_.
 
@@ -21,45 +22,46 @@ The installation documentation is also
 Requirements
 ------------
 
-A)  12GB of memory needs to be allocated to the VM
-
-#)  45GB of free hard drive space
-
-#)  Working Virtual Box 4.3 installation
+#.  12GB of memory needs to be allocated to the VM
+#.  45GB of free hard drive space
+#.  Working Virtual Box 4.3 installation
 
 -----------------
 Download VM Image
 -----------------
 
 Note:
-    Open a Linux shell (or for Windows user a command prompt) to run the various commands.
+    Open a Linux shell (or for Windows user a command prompt) to run the
+    various commands.
 
 The VM image is downloaded from AWS.
-The download will require that you have the AWS Command Line Interface (CLI) client on your system.
-Instructions for downloading and installing can be found at `Amazon cli documentation <http://docs.aws.amazon.com/cli/latest/userguide/installing.html>`_.
+The download will require the AWS Command Line Interface (CLI) client.
+Instructions for downloading and installing CLI can be found at `Amazon cli
+documentation <http://docs.aws.amazon.com/cli/latest/userguide/installing.html>`_.
 
-After installing the interface you can verify the installation by running::
+After installing the interface it is possible to verify the installation by
+running::
 
     aws --version
 
-You should see this kind of response::
+The result is similar to this::
 
     aws-cli/1.2.9 Python/2.7.6 Linux/3.8.0-35-generic
 
-Take note of the aws-cli version.
-Make sure the version is greater or equal to 1.2.9.
+Take note of the aws-cli version, as it must be greater or equal to 1.2.9.
 Older versions of the aws-cli client won't work with the restricted permissions.
 
-If you happen to have the aws-cli client you can update the client with pip.
+If the aws-cli client is already installed, it can be updated with pip or
+download the new windows MSI.
 ::
 
-    expand source
+    sudo pip install -U awscli
  
 After aws installation, run::
 
     aws configure
 
-You will be prompted to enter the access and secret keys you were given.
+The program will prompt for the access and secret tokens given at registration.
 When Prompted for the "Default region name" use "us-west-2".
 When prompted for the "Default output format" use "json".
 ::
@@ -69,15 +71,26 @@ When prompted for the "Default output format" use "json".
     Default region name [None]: us-west-2
     Default output format [None]: json
 
-To download the VM run::
+.. only:: html
 
-    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics
-        -#.#.#-CDH-5.3.1.tar.gz
-    
-The preceding line was broken across multiple lines for improved viewing on various media.
-The line should be entered as one line with no gaps (spaces).
-You must change ``#.#.#`` to the release you wish to download.
-If the version of :abbr:`CDH (Cloudera Hadoop)` has changed, you need to change that as well.
+    To download the VM run::
+
+        aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics-#.#.#-CDH-5.3.1.tar.gz
+ 
+.. only:: latex
+
+    To download the VM run::
+
+        aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics
+            -#.#.#-CDH-5.3.1.tar.gz
+      
+    The preceding line was broken across multiple lines for improved viewing on
+    various media.
+    The line should be entered as one line with no gaps (spaces).
+
+The part ``#.#.#`` must be changed to the desired release to download.
+If the version of :abbr:`CDH (Cloudera Hadoop)` has changed, it is
+necessary to change that as well.
 
 ---------------
 Extract Archive
@@ -86,15 +99,16 @@ Extract Archive
 Extracting On Windows
 =====================
 Extracting on Windows is relatively easy.
-Use the following tool (or your equivalent) to extract the archive: `7zip <http://7-zip.org/>`_.
+Use `7zip <http://7-zip.org/>`_ (or equivalent tool) to extract the archive.
 
 Extracting On Linux
 ===================
-After acquiring the VM, extract the archive. Replace ``#.#.#`` with the release number::
+After acquiring the VM, extract the archive.
+Replace ``#.#.#`` with the release number::
 
     tar -xvf IntelAnalytics-#.#.#-CDH-5.3.1.tar.gz
 
-You should have two files after extracting::
+After extracting there should be two (2) files::
 
     IntelAnalytics-#.#.#-CDH-5.3.1-disk1.vmdk
     IntelAnalytics-#.#.#-CDH-5.3.1.ovf
@@ -108,11 +122,11 @@ File -> Import Appliance
 
 .. figure:: ad_inst_vm_01.*
 
-Select your .ovf file extracted from the vm image earlier
+Select the .ovf file extracted from the vm image earlier
 
 .. figure:: ad_inst_vm_02.*
  
-Import |IA| VM
+Import |IAT| VM
 
 .. figure:: ad_inst_vm_03.*
  
@@ -120,7 +134,8 @@ After clicking 'Import' wait for the VM to be imported
 
 .. figure:: ad_inst_vm_04.*
  
-Once the VM is imported go ahead and boot the VM by selecting the VM and clicking start
+Once the VM is imported go ahead and boot the VM by selecting the VM and
+clicking *start*
 
 .. figure:: ad_inst_vm_05.*
  
@@ -128,25 +143,27 @@ Once the VM is imported go ahead and boot the VM by selecting the VM and clickin
 Running |IA| VM image
 ---------------------
 
-Before you start
-================
+Before starting
+===============
 
-After every reboot of the VM you must restart the |IA| server.
+After every reboot of the VM, the |IAT| server must also be restarted.
 ::
 
     sudo service intelanalytics restart
 
-If you restart service and you see the following output you can ignore it.
-All it means is that the service wasn't running before it was told to stop.
-::
+Upon restart, if the service wasn't running before it was told to stop,
+the system will report::
     
     initctl: Unknown instance:
+
+This message can be safely ignored.
+
 
 Using Sample Scripts
 ====================
 
-The VM is pre-configured and installed with the |IA| toolkit.
-It has several examples and datasets to get you started as soon as the VM is booted.
+The VM is pre-configured and installed with the |IAT|.
+It has several examples and datasets to get started as soon as the VM is booted.
 
 The examples are located in '/home/cloudera/examples'.
 ::
@@ -156,7 +173,8 @@ The examples are located in '/home/cloudera/examples'.
     -rw-r--r-- 1 cloudera cloudera  707 Aug  1 00:53 lda.py
     -rw-r--r-- 1 cloudera cloudera  930 Aug  1 00:53 lp.py
 
-The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/iauser/datasets/'.
+The datasets are located in '/home/cloudera/examples/datasets' and
+'hdfs://user/iauser/datasets/'.
 ::
 
     -rw-r--r--   1 iauser iauser        122 2014-08-01 /user/iauser/datasets/README
@@ -165,16 +183,16 @@ The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/
     -rw-r--r--   1 iauser iauser     188470 2014-08-01 /user/iauser/datasets/lp_edge.csv
     -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
-The datasets in '/home/cloudera/examples/datasets' are for reference,
-the actual data that is being used by the Python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
+The datasets in '/home/cloudera/examples/datasets' are for reference.
+The actual data that is being used by the Python examples and the |IAT| server
+is in 'hdfs://user/iauser/datasets'.
 
-To run any of the Python example scripts, make sure you are in the examples directory and start Python with the script name::
+To run any of the Python example scripts, start in the examples directory and
+start Python with the script name::
 
     python <SCRIPT_NAME>.py
 
 where ``<SCRIPT_NAME>`` is any of the scripts in '/home/cloudera/example'.
-
-Make sure you are in the examples directory first, then run the desired script:
 
 Example::
 
@@ -184,8 +202,10 @@ Example::
 Logs
 ====
 
-If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
-To show the log information as it gets appended to the the log file run "tail -f"::
+To debug changes to the scripts (or peak behind the curtain) the log files are
+located at '/var/log/intelanalytics/rest-server/output.log'.
+To show the log information as it gets appended to the the log file run ``tail
+-f``::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
     
@@ -199,8 +219,10 @@ More details about the logs can be found here: :doc:`ad_log`.
 Updating
 ========
 
-If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
-Afterwards you will be able to run ``yum`` commands to check for and do updates.
+Upon receipt of access and secret tokens, edit '/etc/yum.repos.d/ia.repo' and
+replace *myKey* and *mySecret*.
+Afterwards, it is recommended to run ``yum`` commands to check for and perform
+updates.
 
 .. only:: html
 
@@ -236,7 +258,8 @@ Afterwards you will be able to run ``yum`` commands to check for and do updates.
         secret_key=mySecret
 
 Replace the ``#.#.#`` with the correct release number.
-To check for new updates and see the difference between the new and installed version::
+To check for new updates and see the difference between the new and installed
+version::
 
     sudo yum info intelanalytics-rest-server
 

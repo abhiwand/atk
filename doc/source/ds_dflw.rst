@@ -17,9 +17,11 @@ Python Path Setup
 
 .. _pythonpath:
 
-It is recommended that you add the location of the *intelanalytics*
-directory to the PYTHONPATH environmental variable prior to starting Python.
-This can be done from a shell script, similar to::
+It is recommended that the location of the 'intelanalytics' directory be added
+to the PYTHONPATH environmental variable prior to starting Python.
+This can be done from a shell script, like this:
+
+.. code::
 
     PYTHONPATH=$PYTHONPATH:/usr/lib/
     export PYTHONPATH
@@ -37,10 +39,10 @@ Data Sources
 
 .. _valid_data_types:
 
-Data is made up of variables of heterogeneous type (e.g., strings, integers,
-etc.) that can be organized as a collection of rows and columns, with each
-row corresponding to the data associated with one observation, and each
-column corresponding to a variable being observed.
+Data is made up of variables of heterogeneous type (for example, strings,
+integers, and floats) that can be organized as a collection of rows and columns.
+Each row corresponds to the data associated with one observation, and each
+column corresponds to a variable being observed.
 
 .. TODO::
 
@@ -928,198 +930,7 @@ Now check again and the result is::
         2          duo
         2          double
 
-----------
-TitanGraph
-----------
-
-For the examples below, we will use a Frame *my_frame*, which accesses an
-arbitrary frame of data consisting of the following columns:
-
-    +----------+---------+-------------------+-------+
-    | Employee | Manager | Title             | Years |
-    +==========+=========+===================+=======+
-    | Bob      | Steve   | Associate         | 1     |
-    +----------+---------+-------------------+-------+
-    | Jane     | Steve   | Sn Associate      | 3     |
-    +----------+---------+-------------------+-------+
-    | Anup     | Steve   | Associate         | 3     |
-    +----------+---------+-------------------+-------+
-    | Sue      | Steve   | Market Analyst    | 1     |
-    +----------+---------+-------------------+-------+
-    | Mohit    | Steve   | Associate         | 2     |
-    +----------+---------+-------------------+-------+
-    | Steve    | David   | Marketing Manager | 5     |
-    +----------+---------+-------------------+-------+
-    | Larry    | David   | Product Manager   | 3     |
-    +----------+---------+-------------------+-------+
-    | David    | Rob     | VP of Sales       | 7     |
-    +----------+---------+-------------------+-------+
-
-    download :download:`here <_downloads/employees.csv>`
-
-.. _ds_dflw_building_rules:
-
-Fill the Frame
-==============
-.. only:: html
-
-    We need to bring the data into a frame::
-
-        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", schema = [('Employee', str),
-            ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
-        employees_frame.inspect()
-
-.. only:: latex
-
-    We need to bring the data into a frame::
-
-        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", \\
-        schema = [('Employee', str), ('Manager', str), ('Title', str), \\
-        ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
-        employees_frame.inspect()
-
-Building Rules
-==============
-
-First we make rule objects. These are the criteria for transforming the table
-data to graph data.
-
-Vertex Rule:
-------------
-
-To create a rule for :term:`vertices`, one needs to define:
-
-#.  The label for the vertices, for example, the string "Employee_Name".
-#.  The identification value of each vertex, for example, the column
-    "Employee" of our frame.
-#.  The properties of the vertex.
-
-Note:
-    The properties of a vertex:
-
-    #.  Consist of a label and its value. For example, the property *name*
-            with its value taken from column *name* of our frame.
-    #.  Are optional, which means a vertex might have zero or more properties.
-
-Vertex Rule Example:
-~~~~~~~~~~~~~~~~~~~~
-
-.. only:: html
-
-    Create a vertex rule called “employees_vertices” from the above frame::
-
-        employees_vertices = ia.VertexRule("Employee_Name", employees_frame['Employee'], {'Title':employees_frame.Title})
-
-.. only:: latex
-
-    Create a vertex rule called “employees_vertices” from the above frame::
-
-        employees_vertices = ia.VertexRule("Employee_Name", \\
-        employees_frame['Employee'], {'Title':employees_frame.Title})
-
-The created vertices will be grouped under the label “Employee_Name”,
-will have an identification based on the values from the column *Employee*,
-and will have a property *Title* with its value from the specified frame
-column *Title*.
-
-Create another vertex rule called “managers_vertices”::
-
-    managers_vertices = ia.VertexRule("Manager_Name", employees_frame.Manager)
-
-The identification values for these vertices will be taken from column
-*Manager* of the frame.
-This vertex rule will be grouped under label *Manager_Name*. 
-
-Edge Rule:
-----------
- 
-An edge is a link that connects two vertices, in our case, they are *tail*
-and *head*.
-An edge can have properties similar to a vertex.
-
-To create a rule for an edge, one needs to define:
-
-#.  The label or identification for the edge, for example, the string
-    “worksUnder”
-#.  The tail vertex specified in the previously defined vertex rule.
-#.  The head vertex specified in the previously defined vertex rule.
-#.  The properties of the edge:
-
-    #.  consist of a label and its value, for example, the property *name*
-            with value taken from column *name* of a frame
-
-    #.  are optional, which means an edge might have zero or more properties
-
-Edge Rule Example:
-~~~~~~~~~~~~~~~~~~
-
-.. only:: html
-
-    Create an edge called “reports” from the same frame (accessed by Frame
-    *employee_frame*) as above, using previously defined *employee_vertices*
-    and *manager_vertices* rules, and link them together::
-
-        reports = ia.EdgeRule("worksunder", employees_vertices, managers_vertices, {'Years': employees_frame.Years}, bidirectional = True)
-
-.. only:: latex
-
-    Create an edge called “reports” from the same frame (accessed by Frame
-    *employee_frame*) as above, using previously defined *employee_vertices*
-    and *manager_vertices* rules, and link them together::
-
-        reports = ia.EdgeRule("worksunder", employees_vertices, \\
-        managers_vertices, {'Years': employees_frame.Years}, \\
-        bidirectional = True)
-
-This rule ties the vertices together, and also defines the property *Years*,
-so the edges created will have this property with the value from the frame
-column *Years*.
-
-Use of bidirectional:
-~~~~~~~~~~~~~~~~~~~~~
-
-In the edge rule, the user can specify whether or not the edge is
-:term:`directed <Undirected Graph>`.
-
-In the example above, using the vertex rules *employee_vertices* and
-*manager_vertices*, there is an edge rule *reports* created to link both of
-them with label “worksunder”.
-This edge is considered “bidirectional”.
-The bidirectional flag will create an extra edge going in the opposite
-direction for every edge.
-
 .. _ds_dflw_building_a_graph:
-
-Building a Graph From a Set of Rules
-====================================
-
-.. only:: html
-
-    Now that you have built some rules, let us put them to use and create a 
-    graph by calling TitanGraph.
-    We will give the graph the name “employee_graph”::
-
-        my_graph = ia.TitanGraph([employees_vertices, managers_vertices, reports], "employee_graph")
-
-.. only:: latex
-
-    Now that you have built some rules, let us put them to use and create a 
-    graph by calling TitanGraph.
-    We will give the graph the name “employee_graph”::
-
-    my_graph = ia.TitanGraph([employees_vertices, managers_vertices, \\
-    reports], "employee_graph")
-
-The graph is then created in the underlying graph database structure and
-the access control information is saved into the TitanGraph object
-*my_graph*.
-The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the
-TitanGraph API.
-
-Similar to what was discussed for Frame, what gets returned is not all the
-data, but a proxy (descriptive pointer) for the data.
-Commands such as ``g4 = my_graph`` will only give you a copy of the proxy,
-pointing to the same graph.
 
 --------------
 Seamless Graph
@@ -1150,8 +961,6 @@ arbitrary frame of data consisting of the following columns:
 
     download :download:`here <_downloads/employees.csv>`
 
-.. _ds_dflw_building_rules:
-
 Fill the Frame
 ==============
 .. only:: html
@@ -1166,13 +975,13 @@ Fill the Frame
 
     We need to bring the data into a frame::
 
-        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", \\
-        schema = [('Employee', str), ('Manager', str), ('Title', str), \\
-        ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+        employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv",     \\
+          schema = [('Employee', str), ('Manager', str), ('Title', str),    \\
+          ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
         employees_frame.inspect()
 
-Build an Empty Graph
-====================
+Build a Graph
+=============
 
 Make an empty graph and give it a name::
 
@@ -1202,7 +1011,18 @@ Inspect the graph::
     my_graph.vertices['Employee'].inspect(20)
     my_graph.edges['worksunder'].inspect(20)
 
+Other Graph Options
+===================
+
 Export the graph to a TitanGraph::
 
     my_titan_graph = my_graph.export_to_titan("titan_graph")
+
+Make a VertexFrame::
+
+    my_vertex_frame = my_graph.vertices("employee")
+
+Make a EdgeFrame::
+
+    my_edge_frame = my_graph.edges("worksunder")
 
