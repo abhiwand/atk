@@ -1,6 +1,6 @@
-============
-|IA| Logging
-============
+=============
+|IAT| Logging
+=============
 
 .. contents:: Table of Contents
     :local:
@@ -9,32 +9,34 @@
 Introduction
 ------------
 
-Logging, in |IA| service, is done with the help of LOGback.
-The full documentation for LOGback can be found on their site.
-For a deep dive into LOGback please refer to their documentation, as we will only cover the basics.
+Logging, in |IAT| service, is done with the help of LOGback.
+Full documentation for LOGback can be found at http://logback.qos.ch/.
 
 ---------
 Log Files
 ---------
 
-The |IA| service writes two log files to the system, both of which are located in ``/var/log/intelanalytics/rest-server/``.
+The |IAT| service writes two log files to the system, both of which are located
+in 'var/log/intelanalytics/rest-server/'.
 
 output.log
 ==========
 
 Contains all log messages sent to the console.
-This will contain messages from many of the services |IA| uses like spark, yarn, hdfs, etc. as well as the |IA| service.
+This will contain messages from many of the services |IAT| uses, like spark,
+yarn, and hdfs, as well as the |IAT| service.
 
 application.log
 ===============
 
-Contains log messages from the |IA| service only.
+Contains log messages from the |IAT| service only.
 
 ----------
 Log Levels
 ----------
 
-The possible log levels for |IA| are the same as those that are available for LOGback.
+The possible log levels for |IAT| are the same as those that are available for
+LOGback.
 
 *   TRACE
 *   DEBUG
@@ -45,15 +47,15 @@ The possible log levels for |IA| are the same as those that are available for LO
 Updating The Log Level
 ======================
 
-Changing the log level for the |IA| service is easy.
+Changing the log level for the |IAT| service is easy.
 
 Open The Configuration File
 ---------------------------
 First, open the configuration file::
 
-    sudo vim /etc/intelanalytics/rest-server/logback.xml
+    $ sudo vim /etc/intelanalytics/rest-server/logback.xml
 
-You should see somethings like this::
+The file should be something like this::
 
     <configuration scan="true">
         <appender name="FILE" class="ch.qos.logback.core.FileAppender">
@@ -92,16 +94,18 @@ Update the "level" attribute for the "root" xml tag::
 
     ...
     #update the level attribute to any valid logging level
-    <root level="UPDATE ME">
-                     <appender-ref ref="FILE" />
-                     <appender-ref ref="STDOUT" />
-    </root>
+        <root level="UPDATE ME">
+            <appender-ref ref="FILE" />
+            <appender-ref ref="STDOUT" />
+        </root>
     ...
 
-After updating the level attribute, save the file and either restart the |IA| service or wait one minute for the configuration to be reloaded.
+After updating the level attribute, save the file and either restart the |IAT|
+service or wait one minute for the configuration to be reloaded.
 
 .. warning::
 
     Be careful while changing the LOGback configuration.
-    You might cause undue strain on the server or the Intel Analytics service by setting DEBUG logging level in a production environment.
+    It is possible to cause undue strain on the server or the |IAT| service by
+    setting the DEBUG logging level in a production environment.
 
