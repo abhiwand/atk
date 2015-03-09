@@ -55,7 +55,7 @@ rst_epilog = """
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
-.. |IA|     replace:: :abbr:`IA (Intel Analytics)`
+.. |IA|     replace:: Intel Analytics
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`

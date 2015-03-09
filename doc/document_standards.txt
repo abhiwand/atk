@@ -1,58 +1,81 @@
-When an exact file is called, it is surrounded by single quotes.
-
-When exact strings are to be entered into the command line, they are surrounded by a gray box with no border using `double quotes`_.
-
-When a value is expected to be entered by user, a short description is used inside the <> characters such as <this>.
-
-When emphasizing word strings, which are not file names, they are surrounded by double quotes.
-
-When refering to something by name such as a column name or frame name, use *name*.
+Lines
+-----
+Lines are broken at spaces so they could be read on a 80 column screen.
+123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789.
+The last character visible on the line should be blank space or a period.
+Do not end a line with a space character.
+Use four spaces instead of a tab character.
+When there are multiple lines in a paragraph, each line starts on it's own line.
+Use **bold** when words or a line needs to be particularly noted.
+Use ".. note::" when a paragraph needs to be particularly noted.
+Quotes
+------
+When an exact file is called, it is surrounded by 'single quotes'.
+When exact strings are to be entered into the command line, they are surrounded
+by a gray box with no border using ``double back-quotes``.
+When a value is expected to be entered by user, a short description is used
+inside the <> characters such as <this>.
+When emphasizing word strings, which are not file names, they are surrounded by
+"double quotes".
+When refering to something by name such as a column name or frame name, use
+*italics*.
+Strings used as examples are surrounded with double back quotes like ``this``.
 
 Code
 ====
-Each function is entered beginning with >>>.
-If code functions extend more than one line, following lines begin with ...
-If a comment starts the code section, the >>> will be alone on the preceding line.
-Comments within code blocks are not separated from the code blocks they apply to so they appear inside the code shading but do not have >>> or ... at the beginning.
+Use ".. code::" to highlight sections with code.
+Lines entered at the command prompt should be prefixed with the appropriate
+prompt symbol $, >, or #.
+Each Python function is entered beginning with >>>.
+If Python functions extend more than one line, following lines begin with ...
+Comments between code blocks are separated from the code blocks they apply to
+so they appear outside the code shading.
 
+Tables
+======
 Tables with exact strings to be entered into the command line can be entered as:
-+---------------------------------------+---------------------------------------+
-| RedHat/CentOS                         | Ubuntu                                |
-+=======================================+=======================================+
-| ::                                    | ::                                    |
-|                                       |                                       |
-|     yum info postgresql               |     TBD                               |
-+---------------------------------------+---------------------------------------+
++--------------------------------------+---------------------------------------+
+| RedHat/CentOS                        | Ubuntu                                |
++======================================+=======================================+
+| ::                                   | ::                                    |
+|                                      |                                       |
+|     yum info postgresql              |     TBD                               |
++--------------------------------------+---------------------------------------+
 
-Line/font weights:
+Headings
+========
 
     =====
-    Words
+1.  Words
     =====
 
     -----
-    Words
+2.  Words
     -----
 
-    Words
+3.  Words
     =====
 
-    Words
+4.  Words
     -----
 
-    Words
+5.  Words
     ~~~~~
 
-    Words
+6.  Words
     #####
 
-Strings used as examples are surrounded with double back quotes like ``this``.
-
-Abbreviations are substituted from the conf.py file. They are not used until
-they are spelled out, at least once, in the major document division (Technical
-Summary, Administration, User Manual, or Python API) in which they are used.
+conf.py
+=======
+Abbreviations are substituted from the conf.py file.
+They are not used until they are spelled out, at least once, in the major
+document division (Technical Summary, Administration, User Manual, or Python
+API) in which they are used.
 
 Substitutions are organized in the conf.py file.
+
+Examples
+========
 
      my_frame.inspect()
 

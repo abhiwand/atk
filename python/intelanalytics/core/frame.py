@@ -1169,6 +1169,18 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     -   "Columns" on a VertexFrame can also be thought of as "properties" on
         vertices
 
+    Parameters
+    ----------
+    source : ? (optional)
+    graph : ? (optional)
+    label : ? (optional)
+    _info : ? (optional)
+
+    Returns
+    -------
+    class | VertexFrame object
+        An object with access to the frame.
+
     Examples
     --------
     Given a data file, create a frame, move the data to graph and then define a
@@ -1282,47 +1294,62 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     -   "Columns" on an EdgeFrame can also be thought of as "properties" on
         Edges
 
+    Parameters
+    ----------
+    source : ? (optional)
+    graph : ? (optional)
+    label : ? (optional)
+    src_vertex_label : ? (optional)
+    dest_vertex_label : ? (optional)
+    directed : ? (optional)
+    _info : ? (optional)
+
+    Returns
+    -------
+    class | VertexFrame object
+        An object with access to the frame.
+
     Examples
     --------
-    Given a data file, create a frame, move the data to the graph, define a
-    couple of vertex types, then define an edge type
-    ``ratings`` as directed edges from ``user`` vertices to ``movie`` vertices::
+    Given a data file */movie.csv*, create a frame to match this data and move
+    the data to the frame.
+    Create an empty graph and define some vertex and edge types.
 
-        csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
                                             ('user_name', str),
                                             ('movie_id', int32),
                                             ('movie_title', str),
                                             ('rating', str)])
-        my_frame = ia.Frame(csv)
+        my_frame = ia.Frame(my_csv)
         my_graph = ia.Graph()
         my_graph.define_vertex_type('users')
         my_graph.define_vertex_type('movies')
         my_graph.define_edge_type('ratings','users','movies',directed=True)
 
-    Add data to the graph::
+    Add data to the graph from the frame::
 
-        graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
-        graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+        my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+        my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+
+    Create an edge frame from the graph, and add edge data from the frame.
+
         my_edge_frame = graph.edges['ratings']
         my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
 
     Retrieve a previously defined graph and retrieve an EdgeFrame from it::
 
-        g = ia.get_graph("your_graph")
-        f = g.edges["your_label"]
+        my_old_graph = ia.get_graph("your_graph")
+        my_new_edge_frame = my_old_graph.edges["your_label"]
 
     Calling methods on an EdgeFrame::
 
-        g.edges["your_label"].inspect(20)
+        my_new_edge_frame.inspect(20)
 
-    Convert an EdgeFrame to a Frame using the copy method::
+    Copy an EdgeFrame to a frame using the copy method::
 
-        f = g.edges["label"].copy()
+        my_new_frame = my_new_edge_frame.copy()
 
     """
-    # For other examples, see :ref:`example_frame.bigframe`.
-
-    # TODO - Review Parameters, Examples
 
     _entity_type = 'frame:edge'
 

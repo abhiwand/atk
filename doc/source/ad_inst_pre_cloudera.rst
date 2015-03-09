@@ -5,10 +5,12 @@ Physical Machine Configuration
 .. contents:: Table of Contents
     :local:
 
-The following instructional will walk you through configuring a brand new physical machine from scratch.
-The first section called "Pre-Configuration" and will be a little vague because the configurations here
-can change from machine to machine.
-The second section called "Base Configuration" should be pretty identical for all machines.
+The following instructional will go through configuring a new physical machine
+from scratch.
+The first section called "Pre-Configuration" and will be a little vague because
+the configurations here can change from machine to machine.
+The second section called "Base Configuration" should be pretty identical for
+all machines.
 
 -----------------
 Pre-Configuration
@@ -24,7 +26,8 @@ Base Configuration
 
 1. Configure client-side :abbr:`DNS (Domain Name Service)`
 ==========================================================
-Ensure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
+Ensure all systems in cluster are :abbr:`DNS (Domain Name Service)` or
+/etc/hosts resolvable.
 
 2. Disable Firewall
 ===================
@@ -77,7 +80,8 @@ If using sudo insure user has full nopassword sudo privileges.
 
 8. Insure proper SSH connections
 ================================
-Insure that all systems in cluster can SSH between one-another using the administrative user previously determined.
+Insure that all systems in cluster can SSH between one-another using the
+administrative user previously determined.
 
 9. Set desired hostname of system
 =================================
