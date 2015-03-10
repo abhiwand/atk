@@ -296,7 +296,12 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
-        ctx.stop()
+        if (SparkEngineConfig.reuseSparkContext) {
+          info("not stopping local SparkContext so that it can be re-used")
+        }
+        else {
+          ctx.stop()
+        }
       }
     }
   }
