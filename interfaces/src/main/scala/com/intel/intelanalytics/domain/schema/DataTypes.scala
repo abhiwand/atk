@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.domain.schema
 
-import com.google.common.primitives.Doubles
 import com.intel.event.EventLogging
 import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
@@ -32,6 +31,7 @@ import spray.json.{ JsValue, _ }
 import scala.collection.immutable.Set
 import scala.util.Try
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConversions._
 
 /**
  * Datatypes supported for frames, graphs, etc.
@@ -561,8 +561,10 @@ object DataTypes extends EventLogging {
         JsonParser(jsonStr).convertTo[List[Double]].toVector
       }
       case v: VectorDataType => v
-      case abd: ArrayBuffer[Double] => abd.toVector
-      case ld: List[Double] => ld.toVector
+      case ab: ArrayBuffer[_] => ab.map(value => toDouble(value)).toVector
+      case l: List[Any] => l.map(value => toDouble(value)).toVector
+      case i: Iterator[Any] => i.map(value => toDouble(value)).toVector
+      case i: java.util.Iterator[Any] => i.map(value => toDouble(value)).toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not yet implemented")
     }
   }

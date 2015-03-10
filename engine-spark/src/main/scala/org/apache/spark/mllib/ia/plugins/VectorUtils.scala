@@ -23,8 +23,8 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-import org.apache.mahout.math._
 import org.apache.spark.mllib.linalg.Vector
+import scala.collection.JavaConversions._
 
 object VectorUtils {
 
@@ -32,6 +32,14 @@ object VectorUtils {
     val mllibArray = mllibVector.toArray
     new org.apache.mahout.math.DenseVector(mllibArray)
 
+  }
+
+  def toScalaVector(mahoutVector: org.apache.mahout.math.Vector): scala.collection.immutable.Vector[Double] = {
+    mahoutVector.all().iterator().map(element => element.get()).toVector
+  }
+
+  def toDoubleArray(mahoutVector: org.apache.mahout.math.Vector): Array[Double] = {
+    toScalaVector(mahoutVector).toArray
   }
 
 }

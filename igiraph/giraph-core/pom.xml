@@ -101,6 +101,10 @@
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>engine-spark</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.giraph</groupId>
             <artifactId>giraph-core</artifactId>
             <type>test-jar</type>

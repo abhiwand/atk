@@ -30,7 +30,7 @@ import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce._
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
-import org.apache.spark.sql.parquet.{ MutableRowWriteSupport, RowWriteSupport }
+import org.apache.spark.sql.parquet.RowWriteSupport
 import parquet.hadoop.ParquetOutputFormat
 
 /**
@@ -38,8 +38,8 @@ import parquet.hadoop.ParquetOutputFormat
  */
 class LdaParquetFrameVertexOutputFormat extends VertexOutputFormat[LdaVertexId, LdaVertexData, Nothing] {
 
-  private val docResultsOutputFormat = new ParquetOutputFormat[Row](new MutableRowWriteSupport)
-  private val wordResultsOutputFormat = new ParquetOutputFormat[Row](new MutableRowWriteSupport)
+  private val docResultsOutputFormat = new ParquetOutputFormat[Row](new RowWriteSupport)
+  private val wordResultsOutputFormat = new ParquetOutputFormat[Row](new RowWriteSupport)
 
   override def createVertexWriter(context: TaskAttemptContext): LdaParquetFrameVertexWriter = {
     new LdaParquetFrameVertexWriter(new LdaConfiguration(context.getConfiguration), docResultsOutputFormat, wordResultsOutputFormat)
@@ -64,6 +64,10 @@ class LdaParquetFrameVertexOutputFormat extends VertexOutputFormat[LdaVertexId, 
   }
 }
 
+object LdaOutputFormat {
+  val OutputRowSchema = "StructType(row(StructField(id,StringType,false),StructField(result,ArrayType(DoubleType,true),true)))"
+}
+
 class LdaParquetFrameVertexWriter(conf: LdaConfiguration, docResultsOutputFormat: ParquetOutputFormat[Row], wordResultsOutputFormat: ParquetOutputFormat[Row]) extends VertexWriter[LdaVertexId, LdaVertexData, Nothing] {
 
   private val outputFormatConfig = conf.ldaConfig.outputFormatConfig
@@ -74,7 +78,7 @@ class LdaParquetFrameVertexWriter(conf: LdaConfiguration, docResultsOutputFormat
   override def initialize(context: TaskAttemptContext): Unit = {
     // TODO: this looks like it will be needed in future version
     //context.getConfiguration.setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, true)
-    context.getConfiguration.set(RowWriteSupport.SPARK_ROW_SCHEMA, "StructType(row(StructField(id,StringType,false),StructField(result,StringType,true)))")
+    context.getConfiguration.set(RowWriteSupport.SPARK_ROW_SCHEMA, LdaOutputFormat.OutputRowSchema)
 
     val fileName = s"/part-${context.getTaskAttemptID.getTaskID.getId}.parquet"
     documentResultsWriter = docResultsOutputFormat.getRecordWriter(context, new Path(outputFormatConfig.documentResultsFileLocation + fileName))
@@ -99,7 +103,7 @@ class LdaParquetFrameVertexWriter(conf: LdaConfiguration, docResultsOutputFormat
   private def giraphVertexToRow(vertex: Vertex[LdaVertexId, LdaVertexData, Nothing]): Row = {
     val content = new Array[Any](2)
     content(0) = vertex.getId.getValue
-    content(1) = vertex.getValue.getLdaResultAsString
+    content(1) = vertex.getValue.getLdaResultAsDoubleArray.toSeq
     new GenericRow(content)
   }
 }
