@@ -139,10 +139,12 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       }
                     } ~
                       delete {
-                        onComplete(for {
-                          model <- engine.getModel(id)
-                          res <- engine.deleteModel(model)
-                        } yield res) {
+                        onComplete(Future {
+                          for {
+                            model <- engine.getModel(id)
+                            res <- engine.deleteModel(model)
+                          } yield res
+                        }) {
                           case Success(ok) => complete("OK")
                           case Failure(ex) => throw ex
                         }
