@@ -39,7 +39,9 @@ import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
  * Helper to allow access to spray-json utility so that we can ensure we're
- * accessing case class vals in exactly the same way that it will
+ * accessing case class vals in exactly the same way that it will.
+ *
+ * This class seems like it is not thread-safe -- Todd 3/9/2015
  */
 private[intelanalytics] class ProductFormatsAccessor extends CustomProductFormats
     with StandardFormats
@@ -53,8 +55,6 @@ private[intelanalytics] class ProductFormatsAccessor extends CustomProductFormat
  */
 private[intelanalytics] object JsonSchemaExtractor {
 
-  val fieldHelper = new ProductFormatsAccessor()
-
   /**
    * Entry point for generating schema information for a case class
    * @param tag extended type information for the given type
@@ -63,6 +63,8 @@ private[intelanalytics] object JsonSchemaExtractor {
   def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
     // double check that Spray serialization will work
     val manifest: ClassManifest[T] = tag
+
+    val fieldHelper = new ProductFormatsAccessor()
     fieldHelper.extractFieldNames(manifest)
 
     val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
