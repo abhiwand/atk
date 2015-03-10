@@ -21,48 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.giraph.io;
+package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import org.apache.hadoop.io.Writable;
-import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.VectorWritable;
-import org.apache.spark.mllib.ia.plugins.VectorUtils;
+import org.apache.spark.sql.parquet.ParquetTypesConverter
+import org.scalatest.WordSpec
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+class LdaOutputFormatTest extends WordSpec {
 
-/**
- * Writable to handle serialization of the fields associated with vertex data of LDA
- */
-public class LdaVertexData implements Writable {
-
-    /** The vector value at this vertex */
-    private final VectorWritable ldaResult = new VectorWritable(new DenseVector());
-
-    public LdaVertexData() {
+  "LdaOutputFormat" should {
+    "have a parse-able row schema" in {
+      ParquetTypesConverter.convertFromString(LdaOutputFormat.OutputRowSchema)
     }
+  }
 
-    public void setLdaResult(Vector vector) {
-        ldaResult.set(vector);
-    }
-
-    public Vector getLdaResult() {
-        return ldaResult.get();
-    }
-
-    public double[] getLdaResultAsDoubleArray() {
-        return VectorUtils.toDoubleArray(getLdaResult());
-    }
-
-    @Override
-    public void readFields(DataInput in) throws IOException {
-        ldaResult.readFields(in);
-    }
-
-    @Override
-    public void write(DataOutput out) throws IOException {
-        ldaResult.write(out);
-    }
 }
