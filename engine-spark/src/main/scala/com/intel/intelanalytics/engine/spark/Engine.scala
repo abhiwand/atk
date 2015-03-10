@@ -327,7 +327,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    */
   override def getCommandDefinitions()(implicit invocation: Invocation): Iterable[CommandDefinition] =
     withContext("se.getCommandDefinitions") {
-      commandPluginRegistry.getCommandDefinitions()
+      commandPluginRegistry.commandDefinitions
     }
 
   @deprecated("use engine.graphs.createFrame()")

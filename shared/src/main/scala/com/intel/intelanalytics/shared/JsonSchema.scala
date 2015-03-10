@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.model.ModelReference
  * Helper to allow access to spray-json utility so that we can ensure we're
  * accessing case class vals in exactly the same way that it will.
  *
- * This class seems like it is not thread-safe -- Todd 3/9/2015
+ * It seems that the underlying operations are not thread-safe -- Todd 3/10/2015
  */
 private[intelanalytics] class ProductFormatsAccessor extends CustomProductFormats
     with StandardFormats

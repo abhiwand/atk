@@ -107,7 +107,7 @@ class CommandPluginRegistry(loader: CommandLoader) {
   /**
    * Returns all the command definitions registered with this command executor.
    */
-  def getCommandDefinitions(): Iterable[CommandDefinition] =
+  lazy val commandDefinitions: Iterable[CommandDefinition] =
     commandPlugins.values.map(p => {
       val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
       CommandDefinition(p.name, argSchema, resSchema, p.doc, p.apiMaturityTag)
@@ -116,6 +116,7 @@ class CommandPluginRegistry(loader: CommandLoader) {
   private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {
     val arg = plugin.argumentManifest
     val ret = plugin.returnManifest
+    // It seems that the underlying operations are not thread-safe -- Todd 3/10/2015
     (JsonSchemaExtractor.getProductSchema(arg), JsonSchemaExtractor.getProductSchema(ret))
   }
 
