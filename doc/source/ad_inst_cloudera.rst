@@ -11,7 +11,10 @@ on a physical or virtual cluster.
 ------------------------
 Install Cloudera Manager
 ------------------------
-Download and install the `Cloudera Manager`_.
+The `Cloudera Manager`_ must be downloaded and installed.
+See the Cloudera website
+(http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html)
+for instructions.
 
 ---------------------------------------------
 Set Proxy and Parcel Info in Cloudera Manager
@@ -61,7 +64,8 @@ the ``/etc/hosts`` file or by |DNS| lookup.
 
 Hit *Continue* through the "Thank you for choosing Cloudera Manager and |CDH|"
 window.
-In the text field, enter the hostnames of each node in the following syntax::
+In the text field presented, enter the hostnames of each node in the following
+syntax::
 
     master.clustername.cluster
     node[01-03].clustername.cluster
@@ -78,7 +82,11 @@ Otherwise, click *New Search*.
 
 .. _ad_inst_cloudera_04:
 
-|ad_inst_cloudera_04|
+.. figure:: ad_inst_cloudera_04.*
+    :width: 60%
+    :align: center
+
+    Figure 1
 
 ------------------------------
 Select |CDH| Parcel Repository
@@ -91,7 +99,11 @@ Repository* and then hit *Continue*.
 
 .. _ad_inst_cloudera_05:
 
-|ad_inst_cloudera_05|
+.. figure:: ad_inst_cloudera_05.*
+    :width: 60%
+    :align: center
+
+    Figure 2
 
 -----------------------
 Java Encryption Setting
@@ -116,7 +128,11 @@ Wait and hit *Continue* when they finish too.
 
 .. _ad_inst_cloudera_07:
 
-|ad_inst_cloudera_07|
+.. figure:: ad_inst_cloudera_07.*
+    :width: 60%
+    :align: center
+
+    Figure 3
 
 --------------------------------------
 Inspect Hosts For Proper Configuration
@@ -129,7 +145,11 @@ Click *Finish*
 
 .. _ad_inst_cloudera_08:
 
-|ad_inst_cloudera_08|
+.. figure:: ad_inst_cloudera_08.*
+    :width: 60%
+    :align: center
+
+    Figure 4
 
 ------------------------------------------------------
 Choose the |CDH| 5 Services to Install On Your Cluster
@@ -151,9 +171,13 @@ In the drop-down menu, mark the following boxes:
 
 Click *Continue*.                
 
-.. _ad_inst_cloudera_08:
+.. _ad_inst_cloudera_09:
 
-|ad_inst_cloudera_08|
+.. figure:: ad_inst_cloudera_09.*
+    :width: 60%
+    :align: center
+
+    Figure 5
 
 --------------------------
 Customize Role Assignments
