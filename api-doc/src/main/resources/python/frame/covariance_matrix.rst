@@ -4,6 +4,7 @@ Parameters
 ----------
 columns : [ str | list of str ]
     The names of the column from which to compute the matrix
+    Names should refer to a single column of type vector, or two or more columns of numeric scalars.
 
 Returns
 -------
@@ -15,9 +16,29 @@ This function applies only to columns containing numerical data.
 
 Examples
 --------
-Consider Frame *my_frame*, which accesses a frame that contains a single
-column named *obs*::
+Consider Frame *my_frame1*, which computes the covariance matrix for three numeric columns::
 
-    cov_matirx = my_frame.covariance_matrix(['col_0', 'col_1', 'col_2'])
+    my_frame1.inspect()
+      col_0:int64    col_1:int64   col_3:float64
+    \-------------------------------------------------------\
+        1            4             33.4
+        2            5             43.7
+        3            6             20.1
 
+    cov_matrix = my_frame1.covariance_matrix(['col_0', 'col_1', 'col_2'])
     cov_matrix.inspect()
+
+Consider Frame *my_frame2*, which computes the covariance matrix for a single vector column::
+
+    my_frame2.inspect()
+
+     State:unicode               Population_HISTOGRAM:vector
+    \-------------------------------------------------------\
+    Louisiana                       [0.0, 1.0, 0.0, 0.0]
+    Georgia                         [0.0, 1.0, 0.0, 0.0]
+    Texas                           [0.0, 0.54, 0.46, 0.0]
+    Florida                         [0.0, 0.83, 0.17, 0.0]
+
+    cov_matrix = my_frame2.covariance_matrix(['Population_HISTOGRAM'])
+    cov_matrix.inspect()
+

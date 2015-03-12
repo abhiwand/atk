@@ -562,6 +562,7 @@ object DataTypes extends EventLogging {
       }
       case v: VectorDataType => v
       case ab: ArrayBuffer[_] => ab.map(value => toDouble(value)).toVector
+      case a: Array[_] => a.map(value => toDouble(value)).toVector
       case l: List[Any] => l.map(value => toDouble(value)).toVector
       case i: Iterator[Any] => i.map(value => toDouble(value)).toVector
       case i: java.util.Iterator[Any] => i.map(value => toDouble(value)).toVector
