@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema._
 import org.apache.hadoop.io._
@@ -335,5 +336,11 @@ trait AbstractRow {
   def create(content: Array[Any]): Row = {
     create()
     setValues(content)
+  }
+
+  def create(vertex: GBVertex): Row = {
+    create()
+    vertex.properties.foreach(prop => setValue(prop.key, prop.value))
+    row
   }
 }
