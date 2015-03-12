@@ -32,9 +32,10 @@ import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.Rows._
 
 class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
-  "Covariance matrix calculations" should "return the correct values" in {
+  val inputArray: Array[Array[Double]] = Array(Array(90.0, 60.0, 90.0), Array(90.0, 90.0, 30.0),
+    Array(60.0, 60.0, 60.0), Array(60.0, 60.0, 90.0), Array(30.0, 30.0, 30.0))
 
-    val inputArray: Array[Array[Double]] = Array(Array(90.0, 60.0, 90.0), Array(90.0, 90.0, 30.0), Array(60.0, 60.0, 60.0), Array(60.0, 60.0, 90.0), Array(30.0, 30.0, 30.0))
+  "Covariance matrix calculations" should "return the correct values" in {
 
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
       val temp: Array[Any] = row.map(x => x)
@@ -47,6 +48,38 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     val frameRDD = new FrameRDD(schema, rdd)
     val result = Covariance.covarianceMatrix(frameRDD, columnsList).collect()
+    result.size shouldBe 3
+    result(0) shouldBe Array(630.0, 450.0, 225.0)
+    result(1) shouldBe Array(450.0, 450.0, 0.0)
+    result(2) shouldBe Array(225.0, 0.0, 900.0)
+  }
+  "Covariance matrix calculations" should "return the correct values for vector data types" in {
+    val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
+      val temp: Array[Any] = Array(DataTypes.toVector(row))
+      new GenericRow(temp)
+    })
+
+    val rdd = sparkContext.parallelize(arrGenericRow)
+    val schema = FrameSchema(List(Column("col_0", DataTypes.vector)))
+    val frameRDD = new FrameRDD(schema, rdd)
+    val result = Covariance.covarianceMatrix(frameRDD, List("col_0")).collect()
+
+    result.size shouldBe 3
+    result(0) shouldBe Array(630.0, 450.0, 225.0)
+    result(1) shouldBe Array(450.0, 450.0, 0.0)
+    result(2) shouldBe Array(225.0, 0.0, 900.0)
+  }
+  "Covariance matrix calculations" should "return the correct values for mixed vector and numeric data types" in {
+    val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
+      val temp: Array[Any] = Array(DataTypes.toVector(row.slice(0, 2)), row(2))
+      new GenericRow(temp)
+    })
+
+    val rdd = sparkContext.parallelize(arrGenericRow)
+    val schema = FrameSchema(List(Column("col_0", DataTypes.vector), Column("col_1", DataTypes.float64)))
+    val frameRDD = new FrameRDD(schema, rdd)
+    val result = Covariance.covarianceMatrix(frameRDD, List("col_0", "col_1")).collect()
+
     result.size shouldBe 3
     result(0) shouldBe Array(630.0, 450.0, 225.0)
     result(1) shouldBe Array(450.0, 450.0, 0.0)

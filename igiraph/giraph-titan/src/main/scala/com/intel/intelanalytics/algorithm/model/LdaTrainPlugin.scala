@@ -89,7 +89,7 @@ class LdaTrainPlugin
       classOf[CVB0LDAComputation].getCanonicalName,
       config, giraphConf, invocation, "lda-learning-report_0")
 
-    val resultsColumn = Column("lda_results", DataTypes.str)
+    val resultsColumn = Column("lda_results", DataTypes.vector)
 
     // After saving update timestamps, status, row count, etc.
     frames.postSave(None, docOut.toReference, new FrameSchema(List(frame.schema.column(arguments.documentColumnName), resultsColumn)))
