@@ -397,6 +397,21 @@ trait Schema {
   }
 
   /**
+   * Add a column if it doesn't already exist.
+   *
+   * Throws error if column name exists with different data type
+   */
+  def addColumnIfNotExists(columnName: String, dataType: DataType): Schema = {
+    if (hasColumn(columnName)) {
+      requireColumnIsType(columnName, DataTypes.float64)
+      this
+    }
+    else {
+      addColumn(columnName, dataType)
+    }
+  }
+
+  /**
    * Returns a new schema with the given columns appended.
    */
   def addColumns(newColumns: Seq[Column]): Schema = {

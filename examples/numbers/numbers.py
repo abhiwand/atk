@@ -38,39 +38,41 @@
 #       execfile('/path/to/numbers.py')
 #
 
-from intelanalytics import *
+import intelanalytics as ia
+
+# show full stack traces
+ia.errors.show_details = True
+
+ia.connect()
 
 #loggers.set_http()
 
-print("server ping")
-server.ping()
-
 print("define csv file")
 schema =  [("number", str), ("factor", str), ("binary", str), ("isPrime", str), ("reverse", str), ("isPalindrome", str)]
-csv = CsvFile("/numbers.csv", schema, delimiter=":", skip_header_lines=1)
+csv = ia.CsvFile("/numbers.csv", schema, delimiter=":", skip_header_lines=1)
 
 print("create big frame")
-frame = BigFrame(csv)
+frame = ia.Frame(csv)
 
 print("inspect frame")
 print frame.inspect(10)
 print("frame row count " + str(frame.row_count))
 
 print("flatten factor column")
-frame = frame.flatten_column("factor")
+frame.flatten_column("factor")
 print frame.inspect(10)
 print("frame row count " + str(frame.row_count))
 
 print("define graph parsing rules")
-number = VertexRule("number", frame["number"],{ "isPrime": frame["isPrime"], "isPalindrome": frame["isPalindrome"]})
-factor = VertexRule("number", frame["factor"])
-binary = VertexRule("number", frame["binary"])
-reverse = VertexRule("number", frame["reverse"])
+number = ia.VertexRule("number", frame["number"],{ "isPrime": frame["isPrime"], "isPalindrome": frame["isPalindrome"]})
+factor = ia.VertexRule("number", frame["factor"])
+binary = ia.VertexRule("number", frame["binary"])
+reverse = ia.VertexRule("number", frame["reverse"])
 
-hasFactor = EdgeRule("hasFactor", number, factor, bidirectional=False)
-hasBinary = EdgeRule("hasBinary", number, binary, bidirectional=False)
-hasReverse = EdgeRule("hasReverse", number, reverse, bidirectional=True)
+hasFactor = ia.EdgeRule("hasFactor", number, factor, bidirectional=False)
+hasBinary = ia.EdgeRule("hasBinary", number, binary, bidirectional=False)
+hasReverse = ia.EdgeRule("hasReverse", number, reverse, bidirectional=True)
 
 print("create graph")
-graph = BigGraph([number, factor, binary, reverse, hasFactor, hasBinary, hasReverse])
-print("created graph " + graph.name)
+graph = ia.TitanGraph([number, factor, binary, reverse, hasFactor, hasBinary, hasReverse])
+
