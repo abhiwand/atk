@@ -25,7 +25,6 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.frame.GroupByAggregationArgs
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
-
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators._
 import org.apache.spark.frame.FrameRDD
 import org.apache.spark.rdd.RDD
@@ -66,9 +65,7 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
 
     val aggregationRDD = GroupByAggregateByKey(pairedRowRDD, columnAggregators).aggregateByKey()
 
-    //using copy to prevent column indices from changing if spark re-orders operations and FrameSchema gets called
-    //column indices are var's so omitting this step causes index-out-of-bound exceptions
-    val newColumns = groupByColumns ++ columnAggregators.map(_.column.copy(index = -1))
+    val newColumns = groupByColumns ++ columnAggregators.map(_.column)
     val newSchema = FrameSchema(newColumns)
 
     FrameRDD.toFrameRDD(newSchema, aggregationRDD)
@@ -88,19 +85,36 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
         val column = frameSchema.column(arg.columnName)
 
         arg.function match {
-          case "COUNT" => ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), CountAggregator())
-          case "COUNT_DISTINCT" => ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), DistinctCountAggregator())
-          case "MIN" => ColumnAggregator(Column(arg.newColumnName, column.dataType, i), MinAggregator())
-          case "MAX" => ColumnAggregator(Column(arg.newColumnName, column.dataType, i), MaxAggregator())
-          case "SUM" if column.dataType.isNumerical => {
-            if (column.dataType.isIntegral)
-              ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), new SumAggregator[Long]())
-            else
-              ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), new SumAggregator[Double]())
+          case "COUNT" => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, CountAggregator())
           }
-          case "AVG" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), MeanAggregator())
-          case "VAR" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), VarianceAggregator())
-          case "STDEV" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), StandardDeviationAggregator())
+          case "COUNT_DISTINCT" => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, DistinctCountAggregator())
+          }
+          case "MIN" => {
+            ColumnAggregator(Column(arg.newColumnName, column.dataType), i, MinAggregator())
+          }
+          case "MAX" => {
+            ColumnAggregator(Column(arg.newColumnName, column.dataType), i, MaxAggregator())
+          }
+          case "SUM" if column.dataType.isNumerical => {
+            if (column.dataType.isInteger)
+              ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, new SumAggregator[Long]())
+            else
+              ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, new SumAggregator[Double]())
+          }
+          case "AVG" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, MeanAggregator())
+          }
+          case "VAR" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, VarianceAggregator())
+          }
+          case "STDEV" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, StandardDeviationAggregator())
+          }
+          case function if function.matches("""HISTOGRAM.*""") && column.dataType.isNumerical => {
+            ColumnAggregator.getHistogramColumnAggregator(arg, i)
+          }
           case _ => throw new IllegalArgumentException(s"Unsupported aggregation function: ${arg.function} for data type: ${column.dataType}")
         }
     }
