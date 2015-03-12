@@ -28,6 +28,19 @@ intelanalytics frame aggregation functions
 
 class AggregationFunctions(object):
     """
+    Class for histogram aggregation function that uses cutoffs to compute histograms
+    """
+    class GroupByHistogram:
+        def __init__(self, cutoffs):
+            for c in cutoffs:
+                if not isinstance(c, (int, long, float, complex)):
+                    raise ValueError("Bad value %s in cutoffs, expected a number")
+            self.cutoffs = cutoffs
+
+        def __repr__(self):
+            return 'HISTOGRAM={ "cutoffs" : [%s] }' % ", ".join([str(c) for c in self.cutoffs])
+
+    """
     Defines supported aggregation functions, maps them to keyword strings
     """
     avg = 'AVG'
@@ -38,6 +51,9 @@ class AggregationFunctions(object):
     sum = 'SUM'
     var = 'VAR'
     stdev = 'STDEV'
+
+    def histogram(self, cutoffs):
+        return repr(self.GroupByHistogram(cutoffs))
 
     def __repr__(self):
         return ", ".join([k for k in AggregationFunctions.__dict__.keys()

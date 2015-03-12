@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
-import com.intel.intelanalytics.domain.frame.Histogram
 import com.intel.intelanalytics.domain.schema.DataTypes
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -77,32 +76,47 @@ object DiscretizationFunctions extends Serializable {
     val min: Int = 0
     val max: Int = cutoffs.length - 2
     rdd.map { row: Row =>
-      {
-        val element = DataTypes.toDouble(row(index))
-        //if lower than first cutoff
-        val binIndex: Int =
-          // if lower than first cutoff
-          if (element < cutoffs(0))
-            if (strictBinning) -1 else min
-          // if larger than last cutoff
-          else if (cutoffs.last < element)
-            if (strictBinning) -1 else max
-          else if (lowerInclusive) {
-            if ((element - cutoffs.last).abs < 0.00001d)
-              max
-            else
-              bSearchRangeLowerInclusive(element, cutoffs, min, max)
-          }
-          else {
-            if ((element - cutoffs(0)).abs < 0.00001d)
-              min
-            else
-              bSearchRangeUpperInclusive(element, cutoffs, min, max)
-          }
-
-        new GenericRow(row.toArray :+ binIndex)
-      }
+      val element = DataTypes.toDouble(row(index))
+      //if lower than first cutoff
+      val binIndex = binElement(element, cutoffs, lowerInclusive, strictBinning)
+      new GenericRow(row.toArray :+ binIndex)
     }
+  }
+
+  /**
+   * Bin element using list of cutoff values
+   * @param element Element to bin
+   * @param cutoffs Array containing the cutoff for each bin must be monotonically increasing
+   * @param lowerInclusive if true the lowerbound of the bin will be inclusive while the upperbound is exclusive if false it is the opposite
+   * @param strictBinning if true values smaller than the first bin or larger than the last bin will not be given a bin.
+   *                      if false smaller vales will be in the first bin and larger values will be in the last
+   * @return bin index
+   */
+  def binElement(element: Double, cutoffs: List[Double], lowerInclusive: Boolean, strictBinning: Boolean): Int = {
+    val min: Int = 0
+    val max: Int = cutoffs.length - 2
+    //if lower than first cutoff
+    val binIndex: Int =
+      // if lower than first cutoff
+      if (element < cutoffs(0))
+        if (strictBinning) -1 else min
+      // if larger than last cutoff
+      else if (cutoffs.last < element)
+        if (strictBinning) -1 else max
+      else if (lowerInclusive) {
+        if ((element - cutoffs.last).abs < 0.00001d)
+          max
+        else
+          bSearchRangeLowerInclusive(element, cutoffs, min, max)
+      }
+      else {
+        if ((element - cutoffs(0)).abs < 0.00001d)
+          min
+        else
+          bSearchRangeUpperInclusive(element, cutoffs, min, max)
+      }
+
+    binIndex
   }
 
   /**

@@ -25,47 +25,58 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators
 
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.DiscretizationFunctions
 
 /**
- *  Aggregator for computing the sum of column values using Spark's aggregateByKey()
+ * Aggregator for computing histograms using a list of cutoffs.
  *
- *  @see org.apache.spark.rdd.PairRDDFunctions#aggregateByKey
+ * The histogram is a vector containing the percentage of observations found in each bin
  */
-class SumAggregator[T: Numeric] extends GroupByAggregator {
+case class HistogramAggregator(cutoffs: List[Double]) extends GroupByAggregator {
+  require(cutoffs.length > 1, "Length of cutoffs should be greater than 1")
 
-  val num = implicitly[Numeric[T]]
+  /** An array that aggregates the number of elements in each bin */
+  override type AggregateType = Array[Double]
 
-  /** Type for aggregate values that corresponds to type U in Spark's aggregateByKey() */
-  override type AggregateType = T
-
-  /** Output type of the map function that corresponds to type V in Spark's aggregateByKey() */
-  override type ValueType = T
+  /** The bin number for a column value */
+  override type ValueType = Int
 
   /** The 'empty' or 'zero' or default value for the aggregator */
-  override def zero: T = num.zero
+  override def zero = Array.ofDim[Double](cutoffs.size - 1)
 
   /**
-   * Converts column value to a Numeric
+   * Get the bin index for the column value based on the cutoffs
+   *
+   * Strict binning is disabled so values smaller than the first bin are assigned to the first bin,
+   * and values larger than the last bin are assigned to the last bin.
    */
   override def mapFunction(columnValue: Any, columnDataType: DataType): ValueType = {
-    if (columnValue == null) {
-      num.zero
+    if (columnValue != null) {
+      DiscretizationFunctions.binElement(DataTypes.toDouble(columnValue), cutoffs, lowerInclusive = true, strictBinning = false)
     }
-    else if (columnDataType.isInteger) {
-      DataTypes.toLong(columnValue).asInstanceOf[ValueType]
-    }
-    else {
-      DataTypes.toDouble(columnValue).asInstanceOf[ValueType]
-    }
+    else -1
   }
 
   /**
-   * Adds map value to sum
+   * Increment the count for the bin corresponding to the bin index
    */
-  override def add(sum: AggregateType, mapValue: ValueType): T = num.plus(sum, mapValue)
+  override def add(binArray: AggregateType, binIndex: ValueType): AggregateType = {
+    if (binIndex >= 0) binArray(binIndex) += 1
+    binArray
+  }
 
   /**
-   * Adds two sums
+   * Sum two binned lists.
    */
-  override def merge(sum1: AggregateType, sum2: AggregateType) = num.plus(sum1, sum2)
+  override def merge(binArray1: AggregateType, binArray2: AggregateType) = {
+    (binArray1, binArray2).zipped.map(_ + _)
+  }
+
+  /**
+   * Return the vector containing the percentage of observations found in each bin
+   */
+  override def getResult(binArray: AggregateType): Any = {
+    val total = binArray.sum
+    if (total > 0) DataTypes.toVector(binArray.map(_ / total)) else binArray
+  }
 }

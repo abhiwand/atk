@@ -30,11 +30,12 @@ import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
+import com.intel.testutils.MatcherUtils._
 
 import scala.math.BigDecimal.RoundingMode
-import scala.util.Try
 
 class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with Matchers {
+  val epsilon = 0.000001
 
   val inputRows: Array[sql.Row] = Array(
     new GenericRow(Array[Any]("a", 1, 1d, "w")),
@@ -207,6 +208,19 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
     results should contain theSameElementsAs (expectedResults)
 
+  }
+  "HISTOGRAM" should "return the histogram of values by key" in {
+    val rdd = sparkContext.parallelize(inputRows, 3)
+    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val groupByColumns = List(inputSchema.column(0))
+    val groupByArguments = List(GroupByAggregationArgs("HISTOGRAM={\"cutoffs\": [0,2,4] }", "col_2", "col_histogram"))
+
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val results = resultRDD.map(row => (row(0), row(1).asInstanceOf[Vector[Double]].toArray)).collect().toMap
+
+    results("a") should equalWithTolerance(Array(0.4d, 0.6d), epsilon)
+    results("b") should equalWithTolerance(Array(2 / 3d, 1 / 3d), epsilon)
+    results("c") should equalWithTolerance(Array(1d, 0d), epsilon)
   }
 
 }
