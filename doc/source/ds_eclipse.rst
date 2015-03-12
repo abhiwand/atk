@@ -9,81 +9,86 @@ Eclipse Setup Instructions
 Prerequisites
 -------------
 
-These instructions assume you have already installed
+These instructions assume you have already installed:
 
-- :ref:`Python 2.7 <windows_python_setup>`
-- |IA| :ref:`Python Rest Client <installing_IA_packages>` and required dependencies
-- Eclipse Standard
+-   :ref:`Python 2.7 <windows_python_setup>`.
+-   |IAT| :ref:`Python Rest Client <installing_IA_packages>` and required
+    dependencies.
+-   Eclipse Standard.
 
-The |IA| Toolkit should work with any version of Eclipse but these instructions were tested with Eclipse Standard Version 4.4 Luna.
+The |IAT| should work with any version of Eclipse, but these instructions were
+tested with Eclipse Standard Version 4.4 Luna.
 
-If you are on a corporate network, you may need to configure proxy settings in Eclipse before beginning (see `Eclipse Help <http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftips_and_tricks.htm>`__ ).
+If you are on a corporate network, you may need to configure proxy settings in
+Eclipse before beginning (see `Eclipse Help
+<http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftips_and_tricks.htm>`__ ).
 
 -----
 Setup
 -----
 
-#)  Download, install, and start the
-    `Eclipse IDE <http://www.eclipse.org/>`__
-#)  Choose :menuselection:`Help --> Eclipse Marketplace`
+1)  Download, install, and start the
+    `Eclipse IDE <http://www.eclipse.org/>`__.
+#)  Choose :menuselection:`Help --> Eclipse Marketplace`.
 
     .. image:: ds_eclipse_01.*
         :width: 40%
         :align: center
 
-    If the marketplace screen does not come up you may need to configure
-    proxy settings (see `Eclipse Help <http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftips_and_tricks.htm>`__ )
-#)  Search for "PyDev" and choose "PyDev - Python IDE for Eclipse 3.6.0" or
-    newer version
+    If the marketplace screen does not come up, you may need to configure
+    proxy settings (see `Eclipse Help
+    <http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.jpt.doc.user%2Ftips_and_tricks.htm>`__ ).
+#)  Search for "PyDev" and choose *PyDev - Python IDE for Eclipse 3.6.0* or
+    newer version.
 
-    a)  Choose "Confirm" button"
-    #)  Choose "Accept" when prompted for license agreement
-    #)  If prompted, "Do you trust these certificates?" Choose "Brainwy
-        Software; PyDev; Brainwy" and choose the "OK" button
-    #)  When prompted to restart Eclipse choose the "Yes" button
+    a)  Choose *Confirm* button.
+    #)  Choose *Accept* when prompted for license agreement.
+    #)  If prompted "Do you trust these certificates?".
+        Select "Brainwy Software; PyDev; Brainwy" and choose the *OK* button.
+    #)  When prompted to restart Eclipse, choose the *Yes* button.
 
-#)  Choose the default Workspace
-#)  Choose :menuselection:`File --> New --> Project...`
+#)  Choose the default Workspace.
+#)  Choose :menuselection:`File --> New --> Project...`.
 
-    a)  Choose the "PyDev" folder and "PyDev Project" and choose the "Next"
-        button
-    #)  Give your project a name, e.g. "myproject"
-    #)  Choose version 2.7
-    #)  Choose "Please configure an interpreter before proceeding"
+    a)  Choose the *PyDev* folder and *PyDev Project* and choose the *Next*
+        button.
+    #)  Give your project a name, for example "myproject".
+    #)  Choose version 2.7.
+    #)  Choose *Please configure an interpreter before proceeding*.
 
-        i)  Choose "Manual Configure"
-        #)  Choose the "New" button
+        i)  Choose *Manual Configure*.
+        #)  Choose the *New* button.
         #)  Browse for Python 2.7.  On RedHat and Centos this is probably
-            /usr/bin/python
-        #)  Choose the "Ok" button
-        #)  Choose the "Ok" button
+            /usr/bin/python.
+        #)  Choose the *Ok* button.
+        #)  Choose the *Ok* button.
 
-    #)  Select the interpreter you just setup from the Interpreter drop-down
-    #)  Choose the "Finish" button
+    #)  Select the interpreter you just setup from the Interpreter drop-down.
+    #)  Choose the *Finish* button.
     #)  When prompted "This kind of project is associated with the PyDev
-        perspective. Do you want to open this perspective now?" choose "Yes"
+        perspective. Do you want to open this perspective now?" choose *Yes*.
 
-#)  Right click your project folder, e.g. "myproject"
+#)  Right click your project folder, for example, "myproject".
 
-    a)  Choose "Properties"
-    #)  Choose "PyDev - PYTHONPATH" in the left hand pane
-    #)  Choose the "External Libraries" tab
-    #)  Choose "Add source folder" button
-    #)  Browse for the |IA| Python Rest Client libraries.
+    a)  Choose *Properties*.
+    #)  Choose *PyDev - PYTHONPATH* in the left hand pane.
+    #)  Choose the *External Libraries* tab.
+    #)  Choose *Add source folder* button.
+    #)  Browse for the |IAT| Python Rest Client libraries.
         On RedHat and Centos these are found under
-        "/usr/lib/intelanalytics/rest-client/python".
-    #)  Choose the "OK" button
+        '/usr/lib/intelanalytics/rest-client/python'.
+    #)  Choose the *OK* button.
 
-#)  Right click your project folder, e.g. "myproject"
+#)  Right click your project folder, for example, "myproject".
 
-    a)  Choose :menuselection:`New --> Source Folder`
-    #)  Give it the name "src" and choose the "Finish" button
+    a)  Choose :menuselection:`New --> Source Folder`.
+    #)  Give it the name "src" and choose the *Finish* button.
 
-#)  Right click "src" folder and choose :menuselection:`New --> File`
+#)  Right click *src* folder and choose :menuselection:`New --> File`.
 
-    a)  Give the file name "test.py"
-    #)  If prompted, confirm the default settings for PyDev by choosing "OK"
-    #)  Close the "Help keeping PyDev alive" dialog, if it appears.
+    a)  Give the file name 'test.py'.
+    #)  If prompted, confirm the default settings for PyDev by choosing *OK*.
+    #)  Close the *Help keeping PyDev alive* dialog, if it appears.
     #)  Type the following code into test.py::
     
             import intelanalytics as ia
@@ -91,11 +96,12 @@ Setup
             ia.connect()
             ia.server.ping()
 
-#)  Choose :menuselection:`Run --> Run`
+#)  Choose :menuselection:`Run --> Run`.
 
-    #)  Choose "Python Run" and choose the "OK" button, you should see the output::
+    #)  Choose *Python Run* and choose the *OK* button, you should see the
+        output::
     
             Successful ping to Intel Analytics at http://localhost:9099/info
 
-#)  Next take a look at the included examples
+#)  Next take a look at the included examples.
 

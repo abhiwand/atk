@@ -4,15 +4,22 @@
 Windows Python Setup
 --------------------
 
-1. Download Anaconda with Python 2.7.
+1.  Download Anaconda with Python 2.7.
 
-#. Install
+#.  Install
 
-   - By default, Anaconda installs to the user's AppData hidden folder. It's better to put this in a more accessible location, like ``c:\anaconda``. This is the only change from the default installation necessary.
+    -   By default, Anaconda installs to the user's AppData hidden folder.
+        It's better to put this in a more accessible location, like
+        ``c:\anaconda``.
+        This is the only change from the default installation necessary.
 
-#. Open a command prompt.
+#.  Open a command prompt.
 
-#. Run the command: ``conda create -n intelanalytics-python python=2.7 numpy=1.8 requests=2.3 ordereddict=1.1``. This creates a virtual Python environment that mimics the cluster's configuration.
+#.  Run the command:
+    ``conda create -n intelanalytics-python python=2.7 numpy=1.8 requests=2.3
+    ordereddict=1.1``.
+    This creates a virtual Python environment that mimics the cluster's
+    configuration.
 
 
 -----------------------------------

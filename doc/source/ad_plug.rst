@@ -9,7 +9,7 @@ Plugin Authoring Guide
 Introduction
 ------------
 
-The |IA| Toolkit provides an extensibility framework that allows new commands
+The |IAT| provides an extensibility framework that allows new commands
 and algorithms to be added to the system at runtime, without requiring |IAT|
 source code, nor recompiling the application.
 
