@@ -30,7 +30,7 @@ import org.apache.hadoop.io._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * This class wraps raw row data adding schema information - this allows for a richer easier to use API.
@@ -272,11 +272,20 @@ trait AbstractRow {
   /**
    * Select several property values from their names
    * @param names the names of the properties to put into an array
+   * @param flatten If true, flatten vector data types
    * @return values for the supplied properties
    */
-  def valuesAsArray(names: Seq[String] = schema.columnNames): Array[Any] = {
-    val indices = schema.columnIndices(names)
-    indices.map(i => row(i)).toArray
+  def valuesAsArray(names: Seq[String] = schema.columnNames, flatten: Boolean = false): Array[Any] = {
+    val arrayBuf = new ArrayBuffer[Any]()
+
+    schema.columnIndices(names).map(i => {
+      schema.column(i).dataType match {
+        case DataTypes.vector => if (flatten) arrayBuf ++= DataTypes.toVector(row(i)) else arrayBuf += row(i)
+        case _ => arrayBuf += row(i)
+      }
+    })
+
+    arrayBuf.toArray
   }
 
   def valueAsWritable(name: String): Writable = {
