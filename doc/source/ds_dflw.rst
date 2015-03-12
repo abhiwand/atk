@@ -338,7 +338,7 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-|IA| provides several functions that allow you to inspect your data,
+|IAT| provides several functions that allow you to inspect your data,
 including inspect(), and .take().
 The Frame structure also contains frame information like .row_count.
 

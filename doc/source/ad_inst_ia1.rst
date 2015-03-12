@@ -38,12 +38,6 @@ Cloudera cluster 5.3.x with following services:
 
 The |IAT| Python client supports Python 2.7.
 
-----------------------------------
-|IAT| Packages Support Information
-----------------------------------
-
-For more details on package details see :doc:`ad_inst_ia2`.
-
 ---------------------------
 |IAT| Packages Installation
 ---------------------------
@@ -751,17 +745,11 @@ or::
     $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
 
-More details about the logs can be found here: :doc:`ad_log`.
+More details can be found in the :doc:`section on log files <ad_log>`.
 
 Upgrading
 =========
 
 Unless specified otherwise in the release notes, upgrading requires removal of
 old software prior to installation of new software.
-
-.. toctree::
-    :hidden:
-    
-    ad_inst_ia2
-    ad_log
 

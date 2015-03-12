@@ -66,6 +66,7 @@ rst_epilog = """
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
+.. |VM|     replace:: :abbr:`VM (Virtual Machine)`
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
 """
