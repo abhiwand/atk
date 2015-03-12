@@ -226,9 +226,22 @@ trait Schema {
     columnNames
   }
 
+  /**
+   * Validate that all columns are of numeric data type
+   */
+  def requireNumericColumns(columnNames: Iterable[String]) = {
+    columnNames.map(columnName => {
+      require(hasColumn(columnName), "column $columnName was not found")
+      require(columnDataType(columnName).isNumerical, "column $columnName should be of type numeric")
+    })
+  }
+
+  /**
+   * Validate that a column exists, and has the expected data type
+   */
   def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
     require(hasColumn(columnName), "column $columnName was not found")
-    require(columnDataType(columnName) == dataType, "column $columnName is required to be of type $dataType")
+    require(columnDataType(columnName) == dataType, "column $columnName should be of type $dataType")
   }
 
   /**
