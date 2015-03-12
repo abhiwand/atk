@@ -170,7 +170,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true, inBackground = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }

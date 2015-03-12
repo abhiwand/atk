@@ -23,19 +23,20 @@
 
 package com.intel.spark.graphon.clusteringcoefficient
 
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 case class ClusteringCoefficientArgs(graph: GraphReference,
-                                     outputGraphName: Option[String],
                                      outputPropertyName: Option[String],
                                      inputEdgeLabels: Option[List[String]] = None) {
-  require((outputGraphName.isEmpty && outputPropertyName.isEmpty) ||
-    (outputGraphName.nonEmpty && outputPropertyName.nonEmpty),
-    "Either both output_graph_name and output_property_name must be empty or both output_graph_name and output_property_name must be nonempty.")
+
+  require(graph != null, "graph is required")
+  require(outputPropertyName != null, "output property name should not be null")
+  require(inputEdgeLabels != null, "list of edge labels should not be null")
 
   def inputEdgeSet: Option[Set[String]] =
     if (inputEdgeLabels.isEmpty) {
@@ -49,16 +50,15 @@ case class ClusteringCoefficientArgs(graph: GraphReference,
 /**
  * Result of clustering coefficient calculation.
  * @param globalClusteringCoefficient The global clustering coefficient of the graph.
- * @param graph If local clustering coefficients are requested, a reference to the new graph with local clustering
- *              coefficients stored at properties at each vertex. If local clustering coefficient is not requested,
- *              a reference to the input graph.
+ * @param frame If local clustering coefficients are requested, a reference to the frame with local clustering
+ *              coefficients stored at properties at each vertex.
  */
-case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, graph: GraphEntity)
+case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, frame: Option[FrameEntity] = None)
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
-  implicit val CCFormat = jsonFormat4(ClusteringCoefficientArgs)
+  implicit val CCFormat = jsonFormat3(ClusteringCoefficientArgs)
   implicit val CCResultFormat = jsonFormat2(ClusteringCoefficientResult)
 }
 import ClusteringCoefficientJsonFormat._
@@ -71,7 +71,7 @@ import ClusteringCoefficientJsonFormat._
  *
  * Right now it uses only Titan for graph storage. Other backends will be supported later.
  */
-class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs, ClusteringCoefficientResult] {
+class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficientArgs, ClusteringCoefficientResult] {
 
   override def name: String = "graph:titan/clustering_coefficient"
 
@@ -84,25 +84,24 @@ class ClusteringCoefficient extends SparkCommandPlugin[ClusteringCoefficientArgs
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // Get the graph
+    val frames = engine.frames
+    val graphs = engine.graphs
 
-    val graphStorage = engine.graphs
-    val graph = graphStorage.expectGraph(arguments.graph)
-    val (gbVertices, gbEdges) = graphStorage.loadGbElements(sc, graph)
+    // Get the graph
+    val graph = graphs.expectGraph(arguments.graph)
+    val (gbVertices, gbEdges) = graphs.loadGbElements(sc, graph)
     val ccOutput = ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputPropertyName, arguments.inputEdgeSet)
 
-    val outGraph: GraphEntity = if (arguments.outputGraphName.nonEmpty) {
-      val newGraphName = arguments.outputGraphName
-      val newGraph = graphStorage.createGraph(GraphTemplate(newGraphName, StorageFormats.HBaseTitan))
-      graphStorage.writeToTitan(newGraph, ccOutput.vertices, gbEdges)
-
-      newGraph
+    if (ccOutput.vertexOutput.isDefined) {
+      val newFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("clustering coefficient results"))) {
+        newFrame => frames.saveFrameData(newFrame.toReference, ccOutput.vertexOutput.get)
+      }
+      ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, Some(newFrame))
     }
     else {
-      graph
+      ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient)
     }
 
-    ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, outGraph)
   }
 
 }

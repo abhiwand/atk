@@ -34,7 +34,7 @@ import org.scalatest.{ FlatSpec, Matchers }
  * terminate. Terminate! TERMINATE!!!
  *
  */
-class ClusteringCoefficientTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+class ClusteringCoefficientPluginTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   val floatingPointEqualityThreshold: Double = 0.000000001d
   val defaultParallelism = 3 // > 1 to catch stupid parallelization bugs
