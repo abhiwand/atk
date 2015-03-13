@@ -23,36 +23,28 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements._
-import org.apache.spark.rdd.RDD
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, _ }
+import com.intel.testutils.TestingSparkContextWordSpec
+import org.scalatest.Matchers
 
-/**
- * Functions applicable to RDD's of GraphElements
- * <p>
- * This is best used by importing GraphBuilderRDDImplicits._
- * </p>
- *
- * @param self input that these functions are applicable to
- */
-class GraphElementRDDFunctions(self: RDD[GraphElement]) {
+class GraphElementRddFunctionsITest extends TestingSparkContextWordSpec with Matchers {
 
-  /**
-   * Get all of the Edges from an RDD made up of both Edges and Vertices.
-   */
-  def filterEdges(): RDD[GBEdge] = {
-    self.flatMap {
-      case e: GBEdge => Some(e)
-      case _ => None
-    }
-  }
+  "GraphElementRDDFunctions" should {
 
-  /**
-   * Get all of the Vertices from an RDD made up of both Edges and Vertices.
-   */
-  def filterVertices(): RDD[GBVertex] = {
-    self.flatMap {
-      case v: GBVertex => Some(v)
-      case _ => None
+    // A lot of tests are being grouped together here because it
+    // is somewhat expensive to spin up a testing SparkContext
+    "pass integration test" in {
+
+      val edge1 = new GBEdge(None, Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
+      val edge2 = new GBEdge(None, Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
+
+      val vertex = new GBVertex(Property("gbId", 2L), Set.empty[Property])
+
+      val graphElements = sparkContext.parallelize(List[GraphElement](edge1, edge2, vertex))
+
+      graphElements.filterEdges().count() shouldBe 2
+      graphElements.filterVertices().count() shouldBe 1
     }
   }
 }

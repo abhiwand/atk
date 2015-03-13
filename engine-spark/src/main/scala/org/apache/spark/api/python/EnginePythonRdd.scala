@@ -38,7 +38,7 @@ import java.io.{ BufferedOutputStream, DataOutputStream }
 /**
  * Wrapper to enable access to private Spark class PythonRDD
  */
-class EnginePythonRDD[T: ClassTag](
+class EnginePythonRdd[T: ClassTag](
   parent: RDD[T],
   command: Array[Byte],
   envVars: JMap[String, String],

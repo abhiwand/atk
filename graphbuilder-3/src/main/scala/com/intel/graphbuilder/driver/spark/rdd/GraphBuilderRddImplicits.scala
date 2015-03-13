@@ -24,47 +24,31 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.parser.Parser
 import org.apache.spark.rdd.RDD
 
 /**
- * Functions for RDD's that can act as input to GraphBuilder.
- * <p>
- * This is best used by importing GraphBuilderRDDImplicits._
- * </p>
- * @param self input that these functions are applicable to
+ * These implicits can be imported to add GraphBuilder related functions to RDD's
  */
-
-class ParserRDDFunctions(self: RDD[Seq[_]]) {
-
-  /**
-   * Parse the raw rows of input into Vertices
-   *
-   * @param vertexParser the parser to use
-   */
-  def parseVertices(vertexParser: Parser[GBVertex]): RDD[GBVertex] = {
-    new VertexParserRDD(self, vertexParser)
-  }
+object GraphBuilderRddImplicits {
 
   /**
-   * Parse the raw rows of input into Edges
-   *
-   * @param edgeParser the parser to use
+   * Functions applicable to RDD's that can be input to GraphBuilder Parsers
    */
-  def parseEdges(edgeParser: Parser[GBEdge]): RDD[GBEdge] = {
-    self.flatMap(row => edgeParser.parse(row))
-  }
+  implicit def inputRDDToParserRDDFunctions(rdd: RDD[Seq[_]]) = new ParserRddFunctions(rdd)
 
   /**
-   * Parse the raw rows of input into GraphElements.
-   * <p>
-   * This method is useful if you want to make a single pass over the input
-   * to parse both Edges and Vertices..
-   * </p>
-   * @param parser the parser to use
+   * Functions applicable to Vertex RDD's
    */
-  def parse(parser: Parser[GraphElement]): RDD[GraphElement] = {
-    self.flatMap(row => parser.parse(row))
-  }
+  implicit def vertexRDDToVertexRDDFunctions(rdd: RDD[GBVertex]) = new VertexRddFunctions(rdd)
+
+  /**
+   * Functions applicable to Edge RDD's
+   */
+  implicit def edgeRDDToEdgeRDDFunctions(rdd: RDD[GBEdge]) = new EdgeRddFunctions(rdd)
+
+  /**
+   * Functions applicable to GraphElement RDD's
+   */
+  implicit def graphElementRDDToGraphElementRDDFunctions(rdd: RDD[GraphElement]) = new GraphElementRddFunctions(rdd)
 
 }

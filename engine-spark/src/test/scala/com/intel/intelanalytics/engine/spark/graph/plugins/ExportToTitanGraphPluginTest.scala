@@ -30,11 +30,11 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
-import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
+import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.joda.time.DateTime
@@ -69,23 +69,23 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val employees = List(
         new GenericRow(Array(1L, "employee", "Bob", 100L)),
         new GenericRow(Array(2L, "employee", "Joe", 101L)))
-      val employeeRDD = sparkContext.parallelize[sql.Row](employees)
+      val employeeRdd = sparkContext.parallelize[sql.Row](employees)
 
-      val employeeFrameRDD = new VertexFrameRDD(employeeSchema, employeeRDD)
+      val employeeFrameRdd = new VertexFrameRdd(employeeSchema, employeeRdd)
 
       val divisions = List(new GenericRow(Array(3L, "division", "development", 200L)))
-      val divisionRDD = sparkContext.parallelize[sql.Row](divisions)
-      val divisionFrameRDD = new VertexFrameRDD(employeeSchema, divisionRDD)
+      val divisionRdd = sparkContext.parallelize[sql.Row](divisions)
+      val divisionFrameRdd = new VertexFrameRdd(employeeSchema, divisionRdd)
 
-      val vertexFrame = employeeFrameRDD.toGbVertexRDD union divisionFrameRDD.toGbVertexRDD
+      val vertexFrame = employeeFrameRdd.toGbVertexRDD union divisionFrameRdd.toGbVertexRDD
       val works = List(
         new GenericRow(Array(4L, 1L, 3L, "worksIn", "10/15/2012")),
         new GenericRow(Array(5L, 2L, 3L, "worksIn", "9/01/2014")))
 
       val edgeRDD = sparkContext.parallelize[sql.Row](works)
-      val edgeFrameRDD = new EdgeFrameRDD(edgeSchema, edgeRDD)
+      val edgeFrameRdd = new EdgeFrameRdd(edgeSchema, edgeRDD)
 
-      val edgeFrame = edgeFrameRDD.toGbEdgeRDD
+      val edgeFrame = edgeFrameRdd.toGbEdgeRdd
       val edgeTaken = edgeFrame.take(10)
 
       val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])

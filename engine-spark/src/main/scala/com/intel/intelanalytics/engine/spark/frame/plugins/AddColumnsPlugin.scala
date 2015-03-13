@@ -29,8 +29,8 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ PythonRDDStorage, SparkFrameData }
-import org.apache.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.{ PythonRddStorage, SparkFrameData }
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.sql
 
@@ -69,12 +69,12 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
     val finalSchema = frame.meta.schema.addColumns(columnList)
 
     // Update the data
-    // What we pass to PythonRDDStorage is a stripped down version of FrameRDD if columnsAccessed is defined
+    // What we pass to PythonRddStorage is a stripped down version of FrameRdd if columnsAccessed is defined
     val rdd = arguments.columnsAccessed.isEmpty match {
-      case true => PythonRDDStorage.mapWith(frame.data, arguments.udf, newSchema, sc)
-      case false => PythonRDDStorage.mapWith(frame.data.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
+      case true => PythonRddStorage.mapWith(frame.data, arguments.udf, newSchema, sc)
+      case false => PythonRddStorage.mapWith(frame.data.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
     }
 
-    save(new SparkFrameData(frame.meta.withSchema(finalSchema), frame.data.zipFrameRDD(rdd))).meta
+    save(new SparkFrameData(frame.meta.withSchema(finalSchema), frame.data.zipFrameRdd(rdd))).meta
   }
 }

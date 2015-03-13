@@ -36,7 +36,7 @@ import org.apache.spark.rdd.RDD
  * </p>
  * @param self input that these functions are applicable to
  */
-class VertexRDDFunctions(self: RDD[GBVertex]) {
+class VertexRddFunctions(self: RDD[GBVertex]) {
 
   /**
    * Merge duplicate Vertices, creating a new Vertex that has a combined set of properties.
@@ -81,6 +81,6 @@ class VertexRDDFunctions(self: RDD[GBVertex]) {
    * @param append true to append to an existing graph
    */
   def write(titanConnector: TitanGraphConnector, append: Boolean): RDD[GbIdToPhysicalId] =
-    new TitanVertexWriterRDD(self, titanConnector, append)
+    new TitanVertexWriterRdd(self, titanConnector, append)
 
 }

@@ -31,14 +31,14 @@ import org.apache.spark.sql.Row
  * Additional functions for RDD's of type Vertex
  * @param parent the RDD to wrap
  */
-class VertexRDDFunctions(parent: RDD[Vertex]) {
+class VertexRddFunctions(parent: RDD[Vertex]) {
 
   /**
    * Vertex frames from parent based on the labels provided
    * @param schemas by providing the list of schemas you can prevent an extra map/reduce to collect them
-   * @return the VertexFrameRDD - one vertex type per RDD
+   * @return the VertexFrameRdd - one vertex type per RDD
    */
-  def splitByLabel(schemas: List[VertexSchema]): List[VertexFrameRDD] = {
+  def splitByLabel(schemas: List[VertexSchema]): List[VertexFrameRdd] = {
     parent.cache()
 
     val split = schemas.map(_.label).map(label => parent.filter(vertex => vertex.label == label))
@@ -46,7 +46,7 @@ class VertexRDDFunctions(parent: RDD[Vertex]) {
 
     val rowRdds = split.map(rdd => rdd.map(vertex => vertex.row))
 
-    val results = schemas.zip(rowRdds).map { case (schema: Schema, rows: RDD[Row]) => new VertexFrameRDD(schema, rows) }
+    val results = schemas.zip(rowRdds).map { case (schema: Schema, rows: RDD[Row]) => new VertexFrameRdd(schema, rows) }
 
     parent.unpersist(blocking = false)
     split.foreach(_.unpersist(blocking = false))
@@ -58,7 +58,7 @@ class VertexRDDFunctions(parent: RDD[Vertex]) {
    *
    * IMPORTANT! does not perform as well as splitByLabel(schemas) - extra map() and distinct()
    */
-  def splitByLabel(): List[VertexFrameRDD] = {
+  def splitByLabel(): List[VertexFrameRdd] = {
     parent.cache()
     val schemas = parent.map(vertex => vertex.schema.asInstanceOf[VertexSchema]).distinct().collect().toList
     splitByLabel(schemas)

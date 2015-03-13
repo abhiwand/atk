@@ -23,14 +23,14 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, _ }
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.graphbuilder.elements.{ GBEdge, GbIdToPhysicalId, Property }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 
-class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Matchers {
+class EdgeRddFunctionsITest extends TestingSparkContextWordSpec with Matchers {
 
-  "GraphElementRDDFunctions" should {
+  "EdgeRDDFunctions" should {
 
     // A lot of tests are being grouped together here because it
     // is somewhat expensive to spin up a testing SparkContext
@@ -38,13 +38,35 @@ class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Mat
 
       val edge1 = new GBEdge(None, Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key", "value")))
       val edge2 = new GBEdge(None, Property("gbId", 2L), Property("gbId", 3L), "myLabel", Set(Property("key", "value")))
+      val edge3 = new GBEdge(None, Property("gbId", 1L), Property("gbId", 2L), "myLabel", Set(Property("key2", "value2")))
 
-      val vertex = new GBVertex(Property("gbId", 2L), Set.empty[Property])
+      val gbIdToPhysicalId1 = new GbIdToPhysicalId(Property("gbId", 1L), new java.lang.Long(1001L))
+      val gbIdToPhysicalId2 = new GbIdToPhysicalId(Property("gbId", 2L), new java.lang.Long(1002L))
 
-      val graphElements = sparkContext.parallelize(List[GraphElement](edge1, edge2, vertex))
+      val edges = sparkContext.parallelize(List(edge1, edge2, edge3))
+      val gbIdToPhysicalIds = sparkContext.parallelize(List(gbIdToPhysicalId1, gbIdToPhysicalId2))
 
-      graphElements.filterEdges().count() shouldBe 2
-      graphElements.filterVertices().count() shouldBe 1
+      val merged = edges.mergeDuplicates()
+      merged.count() shouldBe 2
+
+      val biDirectional = edges.biDirectional()
+      biDirectional.count() shouldBe 6
+
+      val mergedBiDirectional = biDirectional.mergeDuplicates()
+      mergedBiDirectional.count() shouldBe 4
+
+      val filtered = biDirectional.filterEdgesWithoutPhysicalIds()
+      filtered.count() shouldBe 0
+
+      val joined = biDirectional.joinWithPhysicalIds(gbIdToPhysicalIds)
+      joined.count() shouldBe 4
+      joined.filterEdgesWithoutPhysicalIds().count() shouldBe 4
+
+      val vertices = edges.verticesFromEdges()
+      vertices.count() shouldBe 6
+      vertices.mergeDuplicates().count() shouldBe 3
+
     }
   }
+
 }

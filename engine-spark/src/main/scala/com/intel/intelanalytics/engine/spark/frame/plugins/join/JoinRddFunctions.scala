@@ -45,7 +45,7 @@ import scala.collection.mutable.{ HashMap, MultiMap, Set }
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-object JoinRDDFunctions extends Serializable {
+object JoinRddFunctions extends Serializable {
 
   /**
    * Perform join operation
@@ -58,7 +58,7 @@ object JoinRDDFunctions extends Serializable {
    * @param how join method
    * @return Joined RDD
    */
-  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String, broadcastJoinThreshold: Long = Long.MaxValue): RDD[Row] = {
+  def joinRDDs(left: RddJoinParam, right: RddJoinParam, how: String, broadcastJoinThreshold: Long = Long.MaxValue): RDD[Row] = {
 
     //Ordering of Any is needed to enable Spark's memory-efficient sort-based shuffle.
     //TODO: Test partitioning in Spark 1.2.0+ once memory bugs in Spark's shuffle are fixed
@@ -89,7 +89,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def innerJoin(left: RDDJoinParam, right: RDDJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def innerJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
     // Estimated size in bytes used to determine whether or not to use a broadcast join
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
@@ -118,7 +118,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def fullOuterJoin(left: RDDJoinParam, right: RDDJoinParam): RDD[Row] = {
+  def fullOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[Row] = {
     Spark.fullOuterJoin(left.rdd, right.rdd).map {
       case (_, outerJoinResult) => {
         outerJoinResult match {
@@ -147,7 +147,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def rightOuterJoin(left: RDDJoinParam, right: RDDJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def rightOuterJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
     // Estimated size in bytes used to determine whether or not to use a broadcast join
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
@@ -178,7 +178,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def leftOuterJoin(left: RDDJoinParam, right: RDDJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def leftOuterJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val leftJoinedRDD = if (rightSizeInBytes < broadcastJoinThreshold) {
       broadcastLeftOuterJoin(left, right)
@@ -204,7 +204,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return key-value RDD whose values are results of left-outer join
    */
-  def broadcastLeftOuterJoin(left: RDDJoinParam, right: RDDJoinParam): RDD[(Any, (Row, Option[Row]))] = {
+  def broadcastLeftOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[(Any, (Row, Option[Row]))] = {
     val sparkContext = left.rdd.sparkContext
     //Use multi-map to handle duplicate keys
     val rightBroadcastVariable = JoinBroadcastVariable(right)
@@ -227,7 +227,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return key-value RDD whose values are results of right-outer join
    */
-  def broadcastRightOuterJoin(left: RDDJoinParam, right: RDDJoinParam): RDD[(Any, (Option[Row], Row))] = {
+  def broadcastRightOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[(Any, (Option[Row], Row))] = {
     val sparkContext = left.rdd.sparkContext
     //Use multi-map to handle duplicate keys
     val leftBroadcastVariable = JoinBroadcastVariable(left)
@@ -250,7 +250,7 @@ object JoinRDDFunctions extends Serializable {
    *
    * @return key-value RDD whose values are results of inner-outer join
    */
-  def broadcastInnerJoin(left: RDDJoinParam, right: RDDJoinParam, broadcastJoinThreshold: Long): RDD[(Any, (Row, Row))] = {
+  def broadcastInnerJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[(Any, (Row, Row))] = {
     val sparkContext = left.rdd.sparkContext
 
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)

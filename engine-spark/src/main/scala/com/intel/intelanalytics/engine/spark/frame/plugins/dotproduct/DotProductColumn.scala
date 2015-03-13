@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 /**
  * Columns and expected size of column.
@@ -43,7 +43,7 @@ object DotProductColumn extends Serializable {
    * @param columnName Column name
    * @return Dot-product plugin
    */
-  def createDotProductColumn(frameRdd: FrameRDD, columnName: String): DotProductColumn = {
+  def createDotProductColumn(frameRdd: FrameRdd, columnName: String): DotProductColumn = {
     val column = frameRdd.frameSchema.column(columnName)
     val columnSize = column.dataType match {
       case DataTypes.string => {

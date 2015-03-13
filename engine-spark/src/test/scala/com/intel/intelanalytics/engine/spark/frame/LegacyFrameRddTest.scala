@@ -28,7 +28,7 @@ import com.intel.testutils.{ TestingSparkContextWordSpec, TestingSparkContextFla
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
 import org.scalatest.Matchers
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 /**
  * Sample Class used for a test case below
@@ -38,32 +38,32 @@ import org.apache.spark.frame.FrameRDD
 case class TestCase(num: Int, name: String)
 
 /**
- * Unit Tests for the FrameRDD class
+ * Unit Tests for the FrameRdd class
  */
-class LegacyFrameRDDTest extends TestingSparkContextWordSpec with Matchers {
-  "LegacyFrameRDD" should {
+class LegacyFrameRddTest extends TestingSparkContextWordSpec with Matchers {
+  "LegacyFrameRdd" should {
 
-    "be convertible into a FrameRDD" in {
+    "be convertible into a FrameRdd" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-      val rdd = new LegacyFrameRDD(schema, rows)
-      val frameRDD = rdd.toFrameRDD()
+      val rdd = new LegacyFrameRdd(schema, rows)
+      val frameRdd = rdd.toFrameRdd()
 
-      frameRDD.getClass should be(classOf[FrameRDD])
-      frameRDD.frameSchema should be(schema)
-      frameRDD.first should equal(rdd.first)
+      frameRdd.getClass should be(classOf[FrameRdd])
+      frameRdd.frameSchema should be(schema)
+      frameRdd.first should equal(rdd.first)
     }
 
     // ignoring because of OutOfMemory errors, these weren't showing up in engine-spark until most of shared was merged in
     "allow a SchemaRDD in its constructor" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
       val sqlContext = new SQLContext(sparkContext)
-      val schemaRDD = sqlContext.createSchemaRDD(rows)
+      val schemaRdd = sqlContext.createSchemaRDD(rows)
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
 
-      val legacyFrameRDD = new LegacyFrameRDD(schema, schemaRDD)
+      val legacyFrameRdd = new LegacyFrameRdd(schema, schemaRdd)
 
-      legacyFrameRDD.take(1) should be(Array(Array(1, "1")))
+      legacyFrameRdd.take(1) should be(Array(Array(1, "1")))
     }
   }
 }

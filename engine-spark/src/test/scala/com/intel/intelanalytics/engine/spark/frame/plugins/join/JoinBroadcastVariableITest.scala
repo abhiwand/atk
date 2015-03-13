@@ -41,7 +41,7 @@ class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matche
   "JoinBroadcastVariable" should "create a single broadcast variable when RDD size is less than 2GB" in {
     val countryNames = sparkContext.parallelize(idCountryNames)
 
-    val joinParam = RDDJoinParam(countryNames, 2, Some(150))
+    val joinParam = RddJoinParam(countryNames, 2, Some(150))
 
     val broadcastVariable = JoinBroadcastVariable(joinParam)
 
@@ -58,7 +58,7 @@ class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matche
   "JoinBroadcastVariable" should "create a two broadcast variables when RDD size is equals 3GB" in {
     val countryNames = sparkContext.parallelize(idCountryNames)
 
-    val joinParam = RDDJoinParam(countryNames, 2, Some(3L * 1024 * 1024 * 1024))
+    val joinParam = RddJoinParam(countryNames, 2, Some(3L * 1024 * 1024 * 1024))
 
     val broadcastVariable = JoinBroadcastVariable(joinParam)
 
@@ -74,7 +74,7 @@ class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matche
   "JoinBroadcastVariable" should "create an empty broadcast variable" in {
     val countryNames = sparkContext.parallelize(List.empty[(Any, sql.Row)])
 
-    val joinParam = RDDJoinParam(countryNames, 2, Some(3L * 1024 * 1024 * 1024))
+    val joinParam = RddJoinParam(countryNames, 2, Some(3L * 1024 * 1024 * 1024))
 
     val broadcastVariable = JoinBroadcastVariable(joinParam)
 

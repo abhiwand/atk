@@ -35,7 +35,7 @@ import scala.collection.mutable.Map
  *
  * @param vertexParser the parser to use
  */
-class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[GBVertex]) extends RDD[GBVertex](prev) {
+class VertexParserRdd(prev: RDD[Seq[_]], vertexParser: Parser[GBVertex]) extends RDD[GBVertex](prev) {
 
   override def getPartitions: Array[Partition] = firstParent[GBVertex].partitions
 

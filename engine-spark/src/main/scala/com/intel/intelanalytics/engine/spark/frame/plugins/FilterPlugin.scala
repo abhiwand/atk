@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRDDStorage }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRddStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -69,7 +69,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
   override def execute(arguments: FilterArgs)(implicit invocation: Invocation): FrameEntity = {
     val frame: SparkFrameData = resolve(arguments.frame)
 
-    val updatedRdd = PythonRDDStorage.mapWith(frame.data, arguments.udf, ctx = sc)
+    val updatedRdd = PythonRddStorage.mapWith(frame.data, arguments.udf, ctx = sc)
     engine.frames.saveFrameData(frame.meta.toReference, updatedRdd)
   }
 }
