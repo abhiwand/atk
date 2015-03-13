@@ -199,8 +199,14 @@ public class TitanVertexBuilder {
     public Edge<LongWritable, EdgeData4CFWritable> getCFGiraphEdge(FaunusVertex faunusVertex, TitanEdge titanEdge,
                                                                     EdgeData4CFWritable.EdgeType edgeType,
                                                                     String propertyKey) {
+
         Object edgeValueObject = titanEdge.getProperty(propertyKey);
         double edgeValue = 1.0d;
+
+        if (edgeValueObject == null) {
+            // TODO: not sure if this is the right behavior but it is better than throwing the NullPointerException that this code was throwing
+            throw new IllegalArgumentException("Edge did not have property named '" + propertyKey + "'");
+        }
 
         try {
             edgeValue = Double.parseDouble(edgeValueObject.toString());
