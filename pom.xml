@@ -229,6 +229,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
+                <module>deploy</module>
                 <module>package</module>
             </modules>
         </profile>
