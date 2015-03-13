@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
+import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
@@ -68,7 +68,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       classOf[FaunusVertex])
 
     sparkContext.addSparkListener(new TitanHadoopHBaseCacheListener())
-    new TitanReaderRDD(hBaseRDD, titanConnector)
+    new TitanReaderRdd(hBaseRDD, titanConnector)
 
   }
 

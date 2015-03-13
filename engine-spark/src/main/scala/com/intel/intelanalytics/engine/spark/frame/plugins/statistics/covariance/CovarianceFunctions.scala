@@ -27,7 +27,7 @@ import breeze.linalg.DenseVector
 import breeze.numerics.abs
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.rdd.RDD
@@ -43,15 +43,15 @@ object Covariance extends Serializable {
   /**
    * Compute covariance for exactly two columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance
    * @return covariance wrapped in CovarianceReturn
    */
-  def covariance(frameRDD: FrameRDD,
+  def covariance(frameRdd: FrameRdd,
                  dataColumnNames: List[String]): DoubleValue = {
 
     // compute and return covariance
-    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
+    def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
 
@@ -63,14 +63,14 @@ object Covariance extends Serializable {
   /**
    * Compute covariance for two or more columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance matrix
    * @return the covariance matrix in a RDD[Rows]
    */
-  def covarianceMatrix(frameRDD: FrameRDD,
+  def covarianceMatrix(frameRdd: FrameRdd,
                        dataColumnNames: List[String]): RDD[sql.Row] = {
 
-    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
+    def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
@@ -79,6 +79,6 @@ object Covariance extends Serializable {
       new GenericRow(temp)
     })
 
-    frameRDD.sparkContext.parallelize(arrGenericRow)
+    frameRdd.sparkContext.parallelize(arrGenericRow)
   }
 }

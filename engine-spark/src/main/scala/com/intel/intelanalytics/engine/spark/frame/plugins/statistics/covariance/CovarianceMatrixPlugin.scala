@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, 
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
@@ -78,20 +78,20 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
     val frame: SparkFrameData = resolve(arguments.frame)
 
     // load frame as RDD
-    val frameRDD = frame.data
-    val frameSchema = frameRDD.frameSchema
+    val frameRdd = frame.data
+    val frameSchema = frameRdd.frameSchema
     validateCovarianceArgs(frameSchema, arguments)
 
     // compute covariance
     val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
-    val covarianceRDD = Covariance.covarianceMatrix(frameRDD, arguments.dataColumnNames)
+    val covarianceRDD = Covariance.covarianceMatrix(frameRdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
       if (arguments.matrixName.isDefined) {
         engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, covarianceRDD)))
+      save(new SparkFrameData(newFrame.meta, new FrameRdd(schema, covarianceRDD)))
     }.meta
   }
 

@@ -39,7 +39,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, Spa
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
+import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext

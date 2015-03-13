@@ -21,16 +21,50 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins.join
+package com.intel.graphbuilder.driver.spark.rdd
 
+import com.intel.graphbuilder.elements._
+import com.intel.graphbuilder.parser.Parser
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
 
 /**
- * Join parameters for RDD
- *
- * @param rdd RDD of (key, value) pairs used for join
- * @param columnCount Number of columns in value array
- * @param estimatedSizeInBytes Optional estimated size of RDD in bytes used to determine whether to use a broadcast join
+ * Functions for RDD's that can act as input to GraphBuilder.
+ * <p>
+ * This is best used by importing GraphBuilderRDDImplicits._
+ * </p>
+ * @param self input that these functions are applicable to
  */
-case class RDDJoinParam(rdd: RDD[(Any, sql.Row)], columnCount: Int, estimatedSizeInBytes: Option[Long] = None)
+
+class ParserRddFunctions(self: RDD[Seq[_]]) {
+
+  /**
+   * Parse the raw rows of input into Vertices
+   *
+   * @param vertexParser the parser to use
+   */
+  def parseVertices(vertexParser: Parser[GBVertex]): RDD[GBVertex] = {
+    new VertexParserRdd(self, vertexParser)
+  }
+
+  /**
+   * Parse the raw rows of input into Edges
+   *
+   * @param edgeParser the parser to use
+   */
+  def parseEdges(edgeParser: Parser[GBEdge]): RDD[GBEdge] = {
+    self.flatMap(row => edgeParser.parse(row))
+  }
+
+  /**
+   * Parse the raw rows of input into GraphElements.
+   * <p>
+   * This method is useful if you want to make a single pass over the input
+   * to parse both Edges and Vertices..
+   * </p>
+   * @param parser the parser to use
+   */
+  def parse(parser: Parser[GraphElement]): RDD[GraphElement] = {
+    self.flatMap(row => parser.parse(row))
+  }
+
+}

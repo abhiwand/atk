@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
 import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.commons.csv.{ CSVPrinter, CSVFormat }
 
 import scala.collection.mutable.ArrayBuffer
@@ -38,12 +38,12 @@ object FrameExportHdfs extends Serializable {
   /**
    * Export to a file in CSV format
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param filename file path where to store the file
    * @return Long true or false
    */
   def exportToHdfsCsv(
-    frameRDD: FrameRDD,
+    frameRdd: FrameRdd,
     filename: String,
     separator: String,
     count: Option[Int] = None,
@@ -52,8 +52,8 @@ object FrameExportHdfs extends Serializable {
     val recCount = count.getOrElse(-1)
     val recOffset = offset.getOrElse(0)
 
-    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
-    val headers = frameRDD.frameSchema.columnNames.mkString(separator)
+    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRdd, recOffset, recCount, -1) else frameRdd
+    val headers = frameRdd.frameSchema.columnNames.mkString(separator)
     val csvFormat = CSVFormat.RFC4180.withDelimiter(separator.trim().charAt(0))
 
     val csvRdd = filterRdd.map(row => {
@@ -71,19 +71,19 @@ object FrameExportHdfs extends Serializable {
       stringBuilder.toString()
     })
 
-    val addHeaders = frameRDD.sparkContext.parallelize(List(headers)) ++ csvRdd
+    val addHeaders = frameRdd.sparkContext.parallelize(List(headers)) ++ csvRdd
     addHeaders.saveAsTextFile(filename)
   }
 
   /**
    * Export to a file in JSON format
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param filename file path where to store the file
    * @return Long true or false
    */
   def exportToHdfsJson(
-    frameRDD: FrameRDD,
+    frameRdd: FrameRdd,
     filename: String,
     count: Option[Int],
     offset: Option[Int]) {
@@ -91,8 +91,8 @@ object FrameExportHdfs extends Serializable {
     val recCount = count.getOrElse(-1)
     val recOffset = offset.getOrElse(0)
 
-    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRDD, recOffset, recCount, -1) else frameRDD
-    val headers = frameRDD.frameSchema.columnNames
+    val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRdd, recOffset, recCount, -1) else frameRdd
+    val headers = frameRdd.frameSchema.columnNames
     val jsonRDD = filterRdd.map {
       row =>
         {

@@ -43,7 +43,7 @@ import org.apache.spark.{ Partition, TaskContext }
  * @param maxVerticesPerCommit Titan performs poorly if you try to commit vertices in too large of batches.
  *                              10k seems to be a pretty we established number to use for Vertices.
  */
-class TitanVertexWriterRDD(prev: RDD[GBVertex],
+class TitanVertexWriterRdd(prev: RDD[GBVertex],
                            titanConnector: TitanGraphConnector,
                            val append: Boolean = false,
                            val maxVerticesPerCommit: Long = 10000L) extends RDD[GbIdToPhysicalId](prev) {

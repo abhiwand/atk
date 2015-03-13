@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.hadoop.io.{ Text, LongWritable }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SchemaRDD
@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
 /**
  * Helper functions for loading an RDD
  */
-object LoadRDDFunctions extends Serializable {
+object LoadRddFunctions extends Serializable {
 
   /**
    * Load each line from CSV file into an RDD of Row objects.
@@ -81,7 +81,7 @@ object LoadRDDFunctions extends Serializable {
     else {
       val listColumn = List(Column("data_lines", DataTypes.str))
       val rows = fileContentRdd.map(s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
-      ParseResultRddWrapper(new FrameRDD(new FrameSchema(listColumn), rows), null)
+      ParseResultRddWrapper(new FrameRdd(new FrameSchema(listColumn), rows), null)
     }
 
   }
@@ -173,7 +173,7 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(FrameRDD.toFrameRDD(schema.schema, successesRdd), FrameRDD.toFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(FrameRdd.toFrameRdd(schema.schema, successesRdd), FrameRdd.toFrameRdd(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)

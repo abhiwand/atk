@@ -34,7 +34,7 @@ import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
  * @param gbVertices graph builder vertices list of the input graph
  * @param vertexCommunitySet pair of vertex Id and set of communities
  */
-class GBVertexRDDBuilder(gbVertices: RDD[GBVertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
+class GBVertexRddBuilder(gbVertices: RDD[GBVertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
 
   /**
    * Set the vertex as required by graph builder with new community property

@@ -40,7 +40,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration

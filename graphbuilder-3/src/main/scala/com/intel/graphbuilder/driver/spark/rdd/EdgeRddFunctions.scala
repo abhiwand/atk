@@ -45,7 +45,7 @@ import org.apache.spark.rdd.RDD
  *                          It is hard to tell what the right number is for this one.
  *                          I think somewhere larger than 400k is getting too big.
  */
-class EdgeRDDFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) extends Serializable {
+class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) extends Serializable {
 
   /**
    * Merge duplicate Edges, creating a new Edge that has a combined set of properties.

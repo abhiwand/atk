@@ -27,7 +27,7 @@ import java.io.Serializable
 
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -51,7 +51,7 @@ object DotProductFunctions extends Serializable {
    * @param defaultRightValues Optional default values used to substitute null values in the right columns
    * @return Data frame with an additional column containing the dot product
    */
-  def dotProduct(frameRdd: FrameRDD, leftColumnsNames: List[String], rightColumnsNames: List[String],
+  def dotProduct(frameRdd: FrameRdd, leftColumnsNames: List[String], rightColumnsNames: List[String],
                  defaultLeftValues: Option[List[Double]] = None,
                  defaultRightValues: Option[List[Double]] = None): RDD[sql.Row] = {
 
