@@ -85,7 +85,6 @@
     </build>
 
     <dependencies>
-        <!--START BDA dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine</artifactId>
@@ -93,10 +92,6 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>api-server</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -110,6 +105,5 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>graphon</artifactId>
         </dependency>
-        <!-- END BDA dependencies to our modules -->
     </dependencies>
 </project>
