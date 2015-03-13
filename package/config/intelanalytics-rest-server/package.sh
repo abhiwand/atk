@@ -43,7 +43,7 @@ pushd $SCRIPTPATH
 popd
 
 
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar"
+jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar deploy.jar"
 
 pushd ..
 for jar in $jars
