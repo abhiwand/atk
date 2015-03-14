@@ -27,10 +27,14 @@ import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.component.Boot
 
+trait CommandLoaderTrait {
+  def loadFromConfig(): Map[String, CommandPlugin[_, _]]
+}
+
 /**
  * Load command plugin
  */
-class CommandLoader {
+class CommandLoader extends CommandLoaderTrait {
   /**
    * Load plugins from the config
    * @return mapping between name and plugin
@@ -41,4 +45,9 @@ class CommandLoader {
         .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
         .map(p => (p.name, p))
   }.toMap
+}
+
+class EmptyCommandLoader extends CommandLoaderTrait {
+  def loadFromConfig(): Map[String, CommandPlugin[_, _]] = Map()
+
 }

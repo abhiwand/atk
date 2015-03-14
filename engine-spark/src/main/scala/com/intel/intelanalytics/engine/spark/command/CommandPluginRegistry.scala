@@ -34,7 +34,7 @@ import ru._
 /**
  * Register and store command plugin
  */
-class CommandPluginRegistry(loader: CommandLoader) {
+class CommandPluginRegistry(loader: CommandLoaderTrait) {
 
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = loader.loadFromConfig()
 

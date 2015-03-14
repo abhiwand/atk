@@ -354,43 +354,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
   }
 
-  //  /**
-  //   * Execute getRows Query plugin
-  //   * @param arguments RowQuery object describing id, offset, and count
-  //   * @return the QueryExecution
-  //   */
-  //  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult = {
-  //    val queryExecution = queries.execute(getRowsQuery, arguments)
-  //    val frame = frames.lookup(arguments.id).get
-  //    frames.updateLastReadDate(frame)
-  //    val schema = frame.schema
-  //    PagedQueryResult(queryExecution, Some(schema))
-  //  }
-  //
-  //  val getRowsQuery = queries.registerQuery("frames/data", getRowsSimple)
-  //
-  //  /**
-  //   * Create an intermediate RDD containing the results of a getRows call.
-  //   * This will be used for pagination after completion of the query
-  //   *
-  //   * @param arguments RowQuery object describing id, offset, and count
-  //   * @param user current user
-  //   * @return RDD consisting of the requested number of rows
-  //   */
-  //  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
-  //    implicit val inv = invocation
-  //    if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
-  //      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, FrameReference(arguments.id)).rows
-  //      val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
-  //      invocation.sparkContext.parallelize(takenRows)
-  //    }
-  //    else {
-  //      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-  //      val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
-  //      rows
-  //    }
-  //  }
-
   /**
    * Return a sequence of Rows from an RDD starting from a supplied offset
    *

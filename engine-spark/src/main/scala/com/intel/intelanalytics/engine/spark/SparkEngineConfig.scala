@@ -33,7 +33,6 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.Try
