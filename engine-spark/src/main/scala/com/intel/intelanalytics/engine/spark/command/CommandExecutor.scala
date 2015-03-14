@@ -165,6 +165,24 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       createExecution(context)(plugin.argumentTag, plugin.returnTag, invocation)
     }
 
+  def executeCommand[A <: Product, R <: Product](cmd: Command,
+                                                 commandPluginRegistry: CommandPluginRegistry,
+                                                 referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Unit =
+    withContext(s"ce.executeCommand.${cmd.name}") {
+      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
+      val context = CommandContext(cmd,
+        action = isAction(plugin),
+        executionContext,
+        user,
+        commandPluginRegistry,
+        referenceResolver,
+        eventContext,
+        mutable.Map.empty,
+        mutable.Map.empty)
+
+      executeCommandContext(context, true)
+    }
+
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
@@ -208,9 +226,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
 
     val serializedReturn = Try {
-      //      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK-SUBMIT")) {
-      executePluginOnYarn()
-      if (false) {
+      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.sparkMaster == "yarn-cluster") {
+        executeCommandOnYarn(commandContext.command)
         /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
         val updatedCommand = commands.lookup(commandContext.command.id).get
         if (updatedCommand.error.isDefined)
@@ -238,8 +255,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     commands.complete(commandContext.command.id, serializedReturn)
   }
 
-  private def executePluginOnYarn()(implicit invocation: Invocation): Unit = withMyClassLoader {
-    withContext("executePluginOnYarn") {
+  private def executeCommandOnYarn(command: Command)(implicit invocation: Invocation): Unit = withMyClassLoader {
+    withContext("executeCommandOnYarn") {
       import scala.collection.JavaConversions._
       import java.nio.file.{ Paths, Files }
       import java.nio.charset.StandardCharsets
@@ -251,19 +268,23 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       Files.write(Paths.get("/tmp/application.conf"), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
 
       import org.apache.spark.deploy.SparkSubmit
+      //      val inputArgs = Array[String](
+      //        "--class", "org.apache.spark.examples.SparkPi",
+      //        "--master", "yarn-cluster",
+      //        "--conf", "config.resource=/tmp/application.conf",
+      //        "/opt/cloudera/parcels/CDH/lib/spark/lib/spark-examples-1.2.0-cdh5.3.1-hadoop2.5.0-cdh5.3.1.jar",
+      //        "1000")
       val inputArgs = Array[String](
-        "--class", "org.apache.spark.examples.SparkPi",
-        "--master", "yarn-cluster",
+        s"--master", s"${SparkEngineConfig.sparkMaster}}",
+        "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
+        "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
+        "--files", "/tmp/application.conf",
         "--conf", "config.resource=/tmp/application.conf",
-        "/opt/cloudera/parcels/CDH/lib/spark/lib/spark-examples-1.2.0-cdh5.3.1-hadoop2.5.0-cdh5.3.1.jar",
-        "1000")
-      //    val inputArgs = Array[String](
-      //      s"--master", s"${SparkEngineConfig.sparkMaster}}",
-      //      "--class", "<Ryan'sDriverClass>",
-      //      "--files", "/tmp/application.conf",
-      //      "--conf", "config.resource=/tmp/application.conf",
-      //      "--jars", "<AnyExtraJars>",
-      //      "myJar.jar")
+        "--verbose",
+        s"${SparkContextFactory.jarPath("engine-spark")}",
+        s"${command.id}")
+
+      info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
       SparkSubmit.main(inputArgs) /* Blocks */
     }
   }
