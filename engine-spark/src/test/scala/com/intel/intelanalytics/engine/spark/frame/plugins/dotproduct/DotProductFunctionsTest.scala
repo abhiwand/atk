@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.testutils.MatcherUtils._
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
@@ -54,7 +54,7 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
 
   "dotProduct" should "compute the dot product for sequences of columns" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRdd = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
 
     val results = DotProductFunctions.dotProduct(frameRdd, List("col_0", "col_1"), List("col_2", "col_3")).collect()
     val dotProducts = results.map(row => row(6).asInstanceOf[Double])
@@ -64,7 +64,7 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
   }
   "dotProduct" should "compute the dot product for sequences of columns using defaults for nulls" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRdd = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
 
     val results = DotProductFunctions.dotProduct(frameRdd, List("col_0", "col_1"), List("col_2", "col_3"),
       Some(List(0.1, 0.2)), Some(List(0.3, 0.4))).collect()
@@ -75,7 +75,7 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
   }
   "dotProduct" should "compute the dot product for lists of doubles" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRdd = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
 
     val results = DotProductFunctions.dotProduct(frameRdd, List("col_4"), List("col_5")).collect()
     val dotProducts = results.map(row => row(6).asInstanceOf[Double])
@@ -85,7 +85,7 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
   }
   "dotProduct" should "compute the dot product for lists of doubles using defaults for nulls" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRdd = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
 
     val results = DotProductFunctions.dotProduct(frameRdd, List("col_4"), List("col_5"),
       Some(List(0.1, 0.2)), Some(List(0.3, 0.4))).collect()

@@ -5,25 +5,22 @@ Cloudera Hadoop 5 Configuration
 .. contents:: Table of Contents
     :local:
 
-This guide will walk through the process of configuring Cloudera Hadoop 5
+This guide discusses the process of configuring Cloudera Hadoop 5
 on a physical or virtual cluster.
 
 ------------------------
 Install Cloudera Manager
 ------------------------
 The `Cloudera Manager`_ must be downloaded and installed.
-See the Cloudera website
-(http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html)
-for instructions.
+For instructions, see the Cloudera website
+(http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html).
 
----------------------------------------------
-Set Proxy and Parcel Info in Cloudera Manager
----------------------------------------------
+-----------------------------------------
+Proxy and Parcel Info in Cloudera Manager
+-----------------------------------------
 
-The first step to take in the Cloudera Manager web interface is to add the
-proxy information.
-
-1.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of
+1.  On a web browser, go to the Cloudera Manager.
+#.  Click the *Cloudera Manager* hyperlink graphic on the top left portion of
     the window
 #.  Click the *Administration* drop-down along the top of the window, then
     select *Settings*
@@ -46,9 +43,8 @@ proxy information.
 Submit License File
 -------------------
 
-To complete this step, first acquire the Cloudera license file.
-
-1.  Under the *Cloudera Enterprise* column, click on the empty text field to
+1.  Acquire the Cloudera license file.
+#.  Under the *Cloudera Enterprise* column, click on the empty text field to
     the left of the Upload button
 #.  Select the license file
 #.  Hit the *Upload* button
@@ -74,8 +70,8 @@ Where ``clustername`` is the name of the cluster, and ``[01-03]`` is the range
 of slave nodes in the cluster (``[01-07]`` for an 8 node cluster,
 ``[01-15]`` for a 16 node cluster).
 
-Hit *Search* and make sure that the computer detects as many hosts as there are
-nodes in the cluster.
+Hit *Search*, and make sure that the computer detects as many hosts as there
+are nodes in the cluster.
 See :ref:`ad_inst_cloudera_04` for examples.
 If all correct hosts are selected, hit *Continue*.
 Otherwise, click *New Search*. 
@@ -88,14 +84,14 @@ Otherwise, click *New Search*.
 
     Figure 1
 
-------------------------------
-Select |CDH| Parcel Repository
-------------------------------
+-----------------------
+|CDH| Parcel Repository
+-----------------------
 
 The repository/proxy information should populate the parcel list in a minute.
 If not, click on *More Options* field to reconfigure.
 Make sure ``CDH-5.3.1-1.cdh5.3.1.p).3`` is selected under *Remote Parcel
-Repository* and then hit *Continue*.
+Repository* :ref:`ad_inst_cloudera_05` and then hit *Continue*.
 
 .. _ad_inst_cloudera_05:
 
@@ -105,9 +101,9 @@ Repository* and then hit *Continue*.
 
     Figure 2
 
------------------------
-Java Encryption Setting
------------------------
+---------------
+Java Encryption
+---------------
 Java encryption is not currently supported.
 
 ---------------------
@@ -115,12 +111,12 @@ SSH Login Credentials
 ---------------------
 Fill out appropriate login information for |CDH| administrator user.
 
---------------------------------------
-Wait Through Installation on All Nodes
---------------------------------------
+--------------------
+Cluster Installation
+--------------------
 The next couple of windows are just progress bars.
 If any of them fail and turn red, sometimes just hitting *Retry* will fix the
-problem nodes.
+problem nodes. See :ref:`ad_inst_cloudera_07`.
 
 Hit *Continue* button when it lights up after the progress bar fills.
 You will be greeted by more progress bars.
@@ -134,12 +130,12 @@ Wait and hit *Continue* when they finish too.
 
     Figure 3
 
---------------------------------------
-Inspect Hosts For Proper Configuration
---------------------------------------
-Check that the host inspector doesn't throw any critical errors.
-Take note of anything else that doesn't have a green check mark next to it and
-resolve issue.
+------------------
+Host Configuration
+------------------
+When the cluster installation finishes, look for any critical errors.
+Take note of anything that doesn't have a green check mark next to it and
+resolve the issue. See :ref:`ad_inst_cloudera_08`.
 
 Click *Finish*
 
@@ -151,10 +147,11 @@ Click *Finish*
 
     Figure 4
 
-------------------------------------------------------
-Choose the |CDH| 5 Services to Install On Your Cluster
-------------------------------------------------------
+-------------------------
+|CDH| Services to Install
+-------------------------
 
+Choose the |CDH| 5 services to install on your cluster.
 The following windows will show the process of installing services
 and roles on each node in the cluster.
 This is the |IAT| default setup.
@@ -169,6 +166,7 @@ In the drop-down menu, mark the following boxes:
 * YARN (MR2 Included)
 * ZooKeeper
 
+See :ref:`ad_inst_cloudera_09`.
 Click *Continue*.                
 
 .. _ad_inst_cloudera_09:
@@ -209,7 +207,7 @@ Changes to make near the top:
 Changes to make near the bottom:
 
 .. figure:: ad_inst_cloudera_10b.*
-    :width: 60%
+    :width: 40%
     :align: center
 
     Figure 7
@@ -223,7 +221,10 @@ system on which Cloudera Manager is installed.
 If not, fill that in.
 
 Click *Test Connection*.
+See :ref:`ad_inst_cloudera_11`.
 If successful, click *Continue*.
+
+.. _ad_inst_cloudera_11:
 
 .. figure:: ad_inst_cloudera_11.*
     :width: 60%
@@ -235,33 +236,37 @@ If successful, click *Continue*.
 Review Changes
 -------------- 
 
-In this window, all fields should remain their default values.
+In the "Review Changes" window, all fields should remain their default values.
 
 Click *Continue*.
 
 --------------------------------
-Finishing Up in Cloudera Manager
+Finishing Up In Cloudera Manager
 --------------------------------
 
 The next page requires no interaction. Just more loading bars.
 
-#.  Wait for all services to start up, then hit *Continue*
-#.  In the *Congratulations!* window, click *Finish*
+#.  Wait for all services to start up, then hit *Continue*.
+#.  In the *Congratulations!* window, click *Finish*.
 #.  Some of the health indicators may be orange or red in the first few moments
     of the cluster's life.
     Wait a minute for them to all turn green.
 #.  In the Cloudera Manager page, change the name of the cluster by hitting the
     drop down arrow to the right of the *Cluster 1* heading then clicking
-    *Rename Cluster*
+    *Rename Cluster*.
+    See :ref:`ad_inst_cloudera_13`.
 #.  In the Cloudera Manager, hit the admin drop-down at the top right corner of
     the screen and select *Change Password*.
-    Change the password as desired
-#.  Select the Spark service from the homescreen
-    #.  Select *Configuration* along the top Spark menu
-    #.  Select *Worker Default Group* along the left side menu pane
+    Change the password as desired.
+#.  Select the Spark service from the homescreen.
+
+    #.  Select *Configuration* along the top Spark menu.
+    #.  Select *Worker Default Group* along the left side menu pane.
     #.  Select the *Work Directory* field and change the value to a directory
         with the capacity to store lots of temporaty data (the /mnt directory
-        for virtual clusers)
+        for virtual clusers).
+
+.. _ad_inst_cloudera_13:
 
 .. figure:: ad_inst_cloudera_13.*
     :width: 40%
@@ -282,7 +287,7 @@ The graph machine learning algorithms in the |IAT| use the Giraph
 graph-processing framework.
 Giraph is designed to run the whole graph computation in memory, and requires
 large amounts of memory to process big graphs.
-We recommend at least 4GB of memory per map task to cater for graphs with
+There should be at least 4GB of memory per map task to cater for graphs with
 supernodes.
 Giraph jobs are scheduled using YARN.
 If a Giraph job requests twice the amount of memory configured in YARN, then
@@ -334,36 +339,4 @@ application.conf using one of the following approaches:
         ``yarn.nodemanager.resource.memory-mb`` /
         ``yarn.nodemanager.resource.memory-mb``)-1).
 
-.. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html
-
-
-.. figure:: ad_inst_cloudera_04.*
-    :width: 60%
-    :align: center
-
-    Figure 1
-
-.. figure:: ad_inst_cloudera_05.*
-    :width: 60%
-    :align: center
-
-    Figure 2
-
-.. figure:: ad_inst_cloudera_07.*
-    :width: 60%
-    :align: center
-
-    Figure 3
-
-.. figure:: ad_inst_cloudera_08.*
-    :width: 60%
-    :align: center
-
-    Figure 4
-
-.. figure:: ad_inst_cloudera_09.*
-    :width: 60%
-    :align: center
-
-    Figure 5
 

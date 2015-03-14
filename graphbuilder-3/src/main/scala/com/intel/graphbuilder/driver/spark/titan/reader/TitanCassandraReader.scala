@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
+import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.{ TitanHadoopCassandraCacheListener, TitanGraphConnector }
@@ -64,7 +64,7 @@ class TitanCassandraReader(sparkContext: SparkContext, titanConnector: TitanGrap
       classOf[FaunusVertex])
 
     sparkContext.addSparkListener(new TitanHadoopCassandraCacheListener())
-    new TitanReaderRDD(cassandraRDD, titanConnector)
+    new TitanReaderRdd(cassandraRDD, titanConnector)
   }
 
   /**

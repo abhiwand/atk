@@ -32,15 +32,16 @@ class ClusteringCoefficient:
      --------
      global_clustering_coefficient : Double
         cutoff points of each bin. There are n-1 bins in the result
-     graph : Graph
-        a copy of the input graph with the local clustering coefficients annotated to each vertex
-        will not be present when only global clustering coefficient is requested
+     frame : Frame
+        A Frame is only returned if ``output_property_name`` is provided.
+        The frame contains data from every vertex of the graph with its
+        local clustering coefficient stored in the user-specified property.
     """
-    def __init__(self, global_clustering_coefficient, graph):
+    def __init__(self, global_clustering_coefficient, frame):
         self.global_clustering_coefficient = global_clustering_coefficient
-        self.graph = graph
+        self.frame = frame
 
     def __repr__(self):
         return """ClusteringCoefficient:
 global_clustering_coefficient: %s,
-graph: %s""" % (self.global_clustering_coefficient, self.graph)
+frame: %s""" % (self.global_clustering_coefficient, self.frame)

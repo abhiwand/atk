@@ -28,7 +28,7 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration

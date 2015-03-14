@@ -131,12 +131,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 }
               } ~
                 delete {
-                  onComplete(Future {
-                    for {
-                      fopt <- engine.getFrame(id)
-                      res <- fopt.map(f => engine.delete(f)).getOrElse(Future.successful(()))
-                    } yield res
-                  }) {
+                  onComplete(engine.deleteFrame(id)) {
                     case Success(_) => complete("OK")
                     case Failure(ex) => throw ex
                   }

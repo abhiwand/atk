@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2015 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -79,7 +79,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
+            <url>http://10.54.8.251:8081/nexus/content/repositories/releases</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -89,7 +89,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven-snapshots</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
+            <url>http://10.54.8.251:8081/nexus/content/repositories/snapshots</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

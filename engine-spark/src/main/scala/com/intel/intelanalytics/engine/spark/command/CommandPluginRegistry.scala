@@ -106,6 +106,8 @@ class CommandPluginRegistry(loader: CommandLoader) {
 
   /**
    * Returns all the command definitions registered with this command executor.
+   *
+   * NOTE: this is a val because the underlying operations are not thread-safe -- Todd 3/10/2015
    */
   lazy val commandDefinitions: Iterable[CommandDefinition] =
     commandPlugins.values.map(p => {
