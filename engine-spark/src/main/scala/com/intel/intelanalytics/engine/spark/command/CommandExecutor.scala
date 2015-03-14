@@ -102,12 +102,11 @@ case class CommandContext(
  * @param commands a command storage that the executor can use for audit logging command execution
  * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
+//class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
+class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     extends EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
-
-  val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
   /**
    * Create all the necessary empty metadata objects needed to generate a valid Return object without actually
@@ -187,11 +186,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
       withContext(commandContext.command.name) {
         // run the command in a future so that we don't make the client wait for initial response
         val cmdFuture = future {
-          // mark progress as 100% or failed
-          commands.complete(commandContext.command.id, Try {
-            // execute the actual command
-            executeCommandContext(commandContext, firstExecution)
-          })
+          executeCommandContext(commandContext, firstExecution)
           // get the latest command progress from DB when command is done executing
           commands.lookup(commandContext.command.id).get
         }
@@ -206,27 +201,71 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * @tparam A plugin arguments
    * @return plugin return value as JSON
    */
-  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): Unit = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}")
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
 
-    val returnValue = if (commandContext.action) {
-      val res = if (firstExecution) {
-        this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
+    val serializedReturn = Try {
+      //      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK-SUBMIT")) {
+      executePluginOnYarn()
+      if (false) {
+        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+        val updatedCommand = commands.lookup(commandContext.command.id).get
+        if (updatedCommand.error.isDefined)
+          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+        updatedCommand.result.get
       }
-      else commandContext.resolver
-      val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
-      result
+      else {
+        val returnValue = if (commandContext.action) {
+          val res = if (firstExecution) {
+            this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
+          }
+          else commandContext.resolver
+          val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
+          result
+        }
+        else {
+          createSuspendedReferences(commandContext.command, plugin, arguments)
+        }
+        if (firstExecution) {
+          commandContext.clean()
+        }
+        plugin.serializeReturn(returnValue)
+      }
     }
-    else {
-      createSuspendedReferences(commandContext.command, plugin, arguments)
+    commands.complete(commandContext.command.id, serializedReturn)
+  }
+
+  private def executePluginOnYarn()(implicit invocation: Invocation): Unit = withMyClassLoader {
+    withContext("executePluginOnYarn") {
+      import scala.collection.JavaConversions._
+      import java.nio.file.{ Paths, Files }
+      import java.nio.charset.StandardCharsets
+      val currentConfig = SparkEngineConfig.config.entrySet()
+      /* Do we need to filter only entries pertaining to intelanalytics? */
+      val allEntries = for {
+        i <- currentConfig
+      } yield s"${i.getKey}=${i.getValue.render}"
+      Files.write(Paths.get("/tmp/application.conf"), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+
+      import org.apache.spark.deploy.SparkSubmit
+      val inputArgs = Array[String](
+        "--class", "org.apache.spark.examples.SparkPi",
+        "--master", "yarn-cluster",
+        "--conf", "config.resource=/tmp/application.conf",
+        "/opt/cloudera/parcels/CDH/lib/spark/lib/spark-examples-1.2.0-cdh5.3.1-hadoop2.5.0-cdh5.3.1.jar",
+        "1000")
+      //    val inputArgs = Array[String](
+      //      s"--master", s"${SparkEngineConfig.sparkMaster}}",
+      //      "--class", "<Ryan'sDriverClass>",
+      //      "--files", "/tmp/application.conf",
+      //      "--conf", "config.resource=/tmp/application.conf",
+      //      "--jars", "<AnyExtraJars>",
+      //      "myJar.jar")
+      SparkSubmit.main(inputArgs) /* Blocks */
     }
-    if (firstExecution) {
-      commandContext.clean()
-    }
-    plugin.serializeReturn(returnValue)
   }
 
   /**
@@ -293,41 +332,52 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
   private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
                                                                           arguments: A,
                                                                           commandContext: CommandContext)(implicit invocation: Invocation): Invocation with Product with Serializable = {
-    val cmd = commandContext.command
-    command match {
 
-      // TODO: there is a bug here where SparkCommandPlugins aren't recognized from external jars loaded via config --Todd 1/28/2015
+    SimpleInvocation(engine,
+      commandStorage = commands,
+      commandId = commandContext.command.id,
+      arguments = commandContext.command.arguments,
+      user = commandContext.user,
+      executionContext = commandContext.executionContext,
+      resolver = commandContext.resolver,
+      eventContext = commandContext.eventContext
+    )
 
-      case c: SparkCommandPlugin[A, R] =>
-        val context: SparkContext = commandContext("sparkContext") match {
-          case None =>
-            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.command)
-            commandContext.put("sparkContext", sc, () => stopContextIfNeeded(sc))
-            sc
-          case Some(sc) => sc
-        }
-
-        SparkInvocation(engine,
-          commandId = cmd.id,
-          arguments = cmd.arguments,
-          user = commandContext.user,
-          executionContext = commandContext.executionContext,
-          sparkContext = context,
-          commandStorage = commands,
-          resolver = commandContext.resolver,
-          eventContext = commandContext.eventContext)
-
-      case c: CommandPlugin[A, R] =>
-        SimpleInvocation(engine,
-          commandStorage = commands,
-          commandId = cmd.id,
-          arguments = cmd.arguments,
-          user = commandContext.user,
-          executionContext = commandContext.executionContext,
-          resolver = commandContext.resolver,
-          eventContext = commandContext.eventContext
-        )
-    }
+    //    val cmd = commandContext.command
+    //    command match {
+    //
+    //      // TODO: there is a bug here where SparkCommandPlugins aren't recognized from external jars loaded via config --Todd 1/28/2015
+    //
+    //      case c: SparkCommandPlugin[A, R] =>
+    //        val context: SparkContext = commandContext("sparkContext") match {
+    //          case None =>
+    //            val sc: SparkContext = createSparkContextForCommand(command, arguments, commandContext.command)
+    //            commandContext.put("sparkContext", sc, () => stopContextIfNeeded(sc))
+    //            sc
+    //          case Some(sc) => sc
+    //        }
+    //
+    //        SparkInvocation(engine,
+    //          commandId = cmd.id,
+    //          arguments = cmd.arguments,
+    //          user = commandContext.user,
+    //          executionContext = commandContext.executionContext,
+    //          sparkContext = context,
+    //          commandStorage = commands,
+    //          resolver = commandContext.resolver,
+    //          eventContext = commandContext.eventContext)
+    //
+    //      case c: CommandPlugin[A, R] =>
+    //        SimpleInvocation(engine,
+    //          commandStorage = commands,
+    //          commandId = cmd.id,
+    //          arguments = cmd.arguments,
+    //          user = commandContext.user,
+    //          executionContext = commandContext.executionContext,
+    //          resolver = commandContext.resolver,
+    //          eventContext = commandContext.eventContext
+    //        )
+    //    }
   }
 
   /**
@@ -351,30 +401,30 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
     }
   }
 
-  def createSparkContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R],
-                                                               arguments: A,
-                                                               cmd: Command)(implicit invocation: Invocation): SparkContext = withMyClassLoader {
-    val commandId = cmd.id
-    val commandName = cmd.name
-    val context: SparkContext = contextFactory.context(s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
-    if (!SparkEngineConfig.reuseSparkContext) {
-      try {
-        // If you reuse a SparkContext, you don't want to create a ton of listeners for that one SparkContext.
-        // Also, the progress bar has concurrency bugs if you re-use a SparkContext, so better if it is off.
-        // The listener is for normal execution where each command gets its own SparkContext.
-        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
-        val progressPrinter = new ProgressPrinter(listener)
-        context.addSparkListener(listener)
-        context.addSparkListener(progressPrinter)
-      }
-      catch {
-        // exception only shows up here due to dev error, but it is hard to debug without this logging
-        case e: Exception => error("could not create progress listeners", exception = e)
-      }
-    }
-    commandIdContextMapping += (commandId -> context)
-    context
-  }
+  //  def createSparkContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R],
+  //                                                               arguments: A,
+  //                                                               cmd: Command)(implicit invocation: Invocation): SparkContext = withMyClassLoader {
+  //    val commandId = cmd.id
+  //    val commandName = cmd.name
+  //    val context: SparkContext = contextFactory.context(s"(id:$commandId,name:$commandName)", command.kryoRegistrator)
+  //    if (!SparkEngineConfig.reuseSparkContext) {
+  //      try {
+  //        // If you reuse a SparkContext, you don't want to create a ton of listeners for that one SparkContext.
+  //        // Also, the progress bar has concurrency bugs if you re-use a SparkContext, so better if it is off.
+  //        // The listener is for normal execution where each command gets its own SparkContext.
+  //        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, command.numberOfJobs(arguments))
+  //        val progressPrinter = new ProgressPrinter(listener)
+  //        context.addSparkListener(listener)
+  //        context.addSparkListener(progressPrinter)
+  //      }
+  //      catch {
+  //        // exception only shows up here due to dev error, but it is hard to debug without this logging
+  //        case e: Exception => error("could not create progress listeners", exception = e)
+  //      }
+  //    }
+  //    commandIdContextMapping += (commandId -> context)
+  //    context
+  //  }
 
   /**
    * Lookup the plugin from the registry
@@ -395,16 +445,24 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextF
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => stopContextIfNeeded(context) }
-    commandIdContextMapping -= commandId
+    /* This should be killing any yarn jobs running */
   }
 
-  private def stopContextIfNeeded(sc: SparkContext): Unit = {
-    if (SparkEngineConfig.reuseSparkContext) {
-      info("not stopping local SparkContext so that it can be re-used")
-    }
-    else {
-      sc.stop()
-    }
-  }
+  //  /**
+  //   * Stop a command
+  //   * @param commandId command id
+  //   */
+  //  def stopCommand(commandId: Long): Unit = {
+  //    commandIdContextMapping.get(commandId).foreach { case (context) => stopContextIfNeeded(context) }
+  //    commandIdContextMapping -= commandId
+  //  }
+  //
+  //  private def stopContextIfNeeded(sc: SparkContext): Unit = {
+  //    if (SparkEngineConfig.reuseSparkContext) {
+  //      info("not stopping local SparkContext so that it can be re-used")
+  //    }
+  //    else {
+  //      sc.stop()
+  //    }
+  //  }
 }
