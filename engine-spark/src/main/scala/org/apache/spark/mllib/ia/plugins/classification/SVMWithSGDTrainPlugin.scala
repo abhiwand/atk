@@ -71,9 +71,9 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
 
       val frame: SparkFrameData = resolve(arguments.frame)
       // load frame as RDD
-      val trainFrameRDD = frame.data
+      val trainFrameRdd = frame.data
 
-      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
       val svm = initializeSVMModel(arguments)

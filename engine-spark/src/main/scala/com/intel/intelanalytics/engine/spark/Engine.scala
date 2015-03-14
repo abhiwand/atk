@@ -29,7 +29,7 @@ import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.engine.gc.GarbageCollector
@@ -45,8 +45,8 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
-import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RDDJoinParam, JoinArgs, JoinPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RddJoinParam, JoinArgs, JoinPlugin }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRddFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation.{ CorrelationPlugin, CorrelationMatrixPlugin }
@@ -63,7 +63,7 @@ import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.rdd.RDD
@@ -79,7 +79,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -89,11 +89,8 @@ import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.frame.TopKArgs
 import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
-import com.intel.intelanalytics.domain.graph.RenameGraphArgs
-import com.intel.intelanalytics.domain.graph.LoadGraphArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
@@ -108,7 +105,6 @@ import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DropColumnsArgs
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
 import com.intel.intelanalytics.domain.frame.ColumnMedianArgs
@@ -153,7 +149,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     with EventLoggingImplicits
     with ClassLoaderAware {
 
-  type Data = FrameRDD
+  type Data = FrameRdd
   type Context = SparkContext
 
   val fsRoot = SparkEngineConfig.fsRoot
@@ -335,8 +331,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       frames.create(arguments)
     }
 
-  def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
+  override def deleteFrame(id: Identifier)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
     future {
+      val frame = frames.expectFrame(FrameReference(id))
       frames.drop(frame)
     }
   }
@@ -464,12 +461,13 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   /**
    * Delete a graph from the graph database.
-   * @param graph The graph to be deleted.
+   * @param graphId The graph to be deleted.
    * @return A future of unit.
    */
-  def deleteGraph(graph: GraphEntity)(implicit invocation: Invocation): Future[Unit] = {
+  override def deleteGraph(graphId: Identifier)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletegraph") {
       future {
+        val graph = graphs.expectGraph(GraphReference(graphId))
         graphs.drop(graph)
       }
     }
@@ -518,11 +516,12 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   /**
    * Delete a model from the metastore.
-   * @param model Model
+   * @param id Model id
    */
-  def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit] = {
+  override def deleteModel(id: Identifier)(implicit invocation: Invocation): Future[Unit] = {
     withContext("se.deletemodel") {
       future {
+        val model = models.expectModel(ModelReference(id))
         models.drop(model.toReference)
       }
     }

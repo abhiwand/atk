@@ -5,11 +5,14 @@ Tracking Metadata
 .. contents:: Table of Contents
     :local:
 
-By default, the |IA| Toolkit uses H2, an in-memory database that is lost on
+By default, the |IAT| uses H2, an in-memory database that is lost on
 application restart.
 This is convenient for testing.
 H2 setup is completely automatic.
 No steps below are needed for H2.
+
+The configuration script, used during normal installation (see
+:ref:`Rest Server Configuration`), changes this behavior to use PostgreSQL.
 
 ----------------
 Using PostgreSQL

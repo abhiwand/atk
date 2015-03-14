@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
@@ -84,7 +84,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     val flattenedRDD = flattener(columnIndex, rdd)
 
     // save results
-    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(schema, flattenedRDD))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(schema, flattenedRDD))
   }
 
 }

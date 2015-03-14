@@ -29,7 +29,7 @@ import org.scalatest.mock.MockitoSugar
 import com.esotericsoftware.kryo.Kryo
 import org.mockito.Mockito._
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 
 class EngineKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar {
 
@@ -44,7 +44,7 @@ class EngineKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar
 
       verify(kryo).register(classOf[Row])
       verify(kryo).register(classOf[RowParseResult])
-      verify(kryo).register(classOf[LegacyFrameRDD])
+      verify(kryo).register(classOf[LegacyFrameRdd])
     }
 
   }

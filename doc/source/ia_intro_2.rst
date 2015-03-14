@@ -64,7 +64,7 @@ For further details about building graphs, see :ref:`ds_dflw_building_a_graph`.
 In this process, duplicate edges are removed if data is incorrectly replicated,
 and the graph is checked for correct form, to eliminate presence of
 mal-connected edges that can prevent analytic algorithms from operating.
-The final graph is bulk-loaded into the |IA| Toolkit’s graph database.
+The final graph is bulk-loaded into the |IAT| graph database.
 Additionally, existing graphs can be updated using the graph construction
 routines.   
 

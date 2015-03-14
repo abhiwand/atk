@@ -41,7 +41,7 @@ easily manipulate data in either of these data formats.
 Script Examples
 ---------------
 
-|IA| ships with example scripts and data sets that exercise the various
+The |IAT| ships with example scripts and data sets that exercise the various
 features of the platform.
 The default location for the example scripts is *iauser*'s home directory
 '/home/iauser'.
@@ -88,4 +88,4 @@ where "<SCRIPT_NAME>" is any of the scripts.
 Logs
 ====
 
-See :doc:`ad_log`.
+Details about logs can be found in the :doc:`section on log files <ad_log>`.

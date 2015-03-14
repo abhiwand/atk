@@ -25,23 +25,23 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.HasData
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 /**
  * A FrameReference with metadata and a Spark RDD representing the data in the frame.
  *
  * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
-class SparkFrameData(frame: FrameEntity, rdd: FrameRDD)
+class SparkFrameData(frame: FrameEntity, rdd: FrameRdd)
     extends FrameMeta(frame.withSchema(rdd.frameSchema))
     with HasData {
 
   /**
    * Returns a copy with the given data instead of the current data
    */
-  def withData(newData: FrameRDD): SparkFrameData = new SparkFrameData(this.meta, newData)
+  def withData(newData: FrameRdd): SparkFrameData = new SparkFrameData(this.meta, newData)
 
-  type Data = FrameRDD
+  type Data = FrameRdd
 
   val data = rdd
 

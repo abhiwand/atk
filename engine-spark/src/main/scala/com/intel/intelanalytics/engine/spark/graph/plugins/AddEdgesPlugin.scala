@@ -34,7 +34,7 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.{ RowWrapper }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
@@ -147,7 +147,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       edgeRows.map(e => edgesWithoutVids.rowWrapper(e).setValue("_dest_vid", vid))
     }.values
 
-    val edgesByHead = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithTail).groupByRows(row => row.value(arguments.columnNameForSourceVertexId))
+    val edgesByHead = new FrameRdd(edgesWithoutVids.frameSchema, edgesWithTail).groupByRows(row => row.value(arguments.columnNameForSourceVertexId))
     val edgesWithVids = srcVertexIds.join(edgesByHead).flatMapValues(value => {
       val idMap = value._1
       val vid = idMap.head
@@ -164,7 +164,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       //.convertType("_src_vid", DataTypes.int64)
       //.convertType("_dest_vid", DataTypes.int64)
       .dropColumns(List(arguments.columnNameForSourceVertexId, arguments.columnNameForDestVertexId))
-    val edgesToAdd = new FrameRDD(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
+    val edgesToAdd = new FrameRdd(edgesWithoutVids.frameSchema, edgesWithVids).convertToNewSchema(correctedSchema)
 
     // append to existing data
     val existingEdgeData = graphs.loadEdgeRDD(sc, edgeFrameEntity.toReference)

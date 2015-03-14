@@ -42,8 +42,8 @@ import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
-import org.apache.spark.frame.FrameRDD
-//import org.apache.spark.frame.FrameRDD.OrderedParquetInputFormat
+import org.apache.spark.frame.FrameRdd
+//import org.apache.spark.frame.FrameRdd.OrderedParquetInputFormat
 import org.apache.spark.sql
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -63,7 +63,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   storage =>
 
   override type Context = SparkContext
-  override type Data = FrameRDD
+  override type Data = FrameRdd
 
   object SparkFrameManagement extends EntityManager[FrameEntityType.type] {
 
@@ -92,9 +92,9 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
      */
     override def saveData(data: Data)(implicit invocation: Invocation): Data = {
       val frameEntity = data.meta
-      val frameRDD = data.data
-      val meta = saveFrameData(frameEntity.toReference, frameRDD)
-      new SparkFrameData(meta, frameRDD)
+      val frameRdd = data.data
+      val meta = saveFrameData(frameEntity.toReference, frameRdd)
+      new SparkFrameData(meta, frameRdd)
     }
 
     /**
@@ -170,63 +170,63 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Create an FrameRDD from a frame data file.
+   * Create an FrameRdd from a frame data file.
    *
    * This is our preferred format for loading frames as RDDs.
    *
    * @param ctx spark context
    * @param frame the model for the frame
-   * @return the newly created FrameRDD
+   * @return the newly created FrameRdd
    */
-  def loadFrameData(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): FrameRDD = withContext("loadFrameRDD") {
+  def loadFrameData(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): FrameRdd = withContext("loadFrameRdd") {
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
-        new FrameRDD(frame.schema, ctx.parallelize[sql.Row](Nil, SparkAutoPartitioner.minDefaultPartitions))
+        new FrameRdd(frame.schema, ctx.parallelize[sql.Row](Nil, SparkAutoPartitioner.minDefaultPartitions))
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
         //ctx.hadoopFile[OrderedParquetInputFormat](absPath.toString)
-        //val partitions = new FrameRDD(frame.schema, rows).getPartitions()
-        new FrameRDD(frame.schema, rows)
+        //val partitions = new FrameRdd(frame.schema, rows).getPartitions()
+        new FrameRdd(frame.schema, rows)
       case (Some("file/sequence"), Some(absPath)) =>
         val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-        new LegacyFrameRDD(frame.schema, rows).toFrameRDD()
+        new LegacyFrameRdd(frame.schema, rows).toFrameRdd()
       case (Some(s), _) => illegalArg(s"Cannot load frame with storage '$s'")
     }
   }
 
   /**
-   * Create a LegacyFrameRDD or throw an exception if bad frameId is given.
+   * Create a LegacyFrameRdd or throw an exception if bad frameId is given.
    *
    * Please don't write new code against this legacy format:
    * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
    *
    * @param ctx spark context
    * @param frameRef primary key of the frame record
    * @return the newly created RDD
    */
-  @deprecated("use FrameRDD and related methods instead")
-  def loadLegacyFrameRdd(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRDD = {
+  @deprecated("use FrameRdd and related methods instead")
+  def loadLegacyFrameRdd(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRdd = {
     val frame = expectFrame(frameRef)
     loadLegacyFrameRdd(ctx, frame)
   }
 
   /**
-   * Create an LegacyFrameRDD from a frame data file
+   * Create an LegacyFrameRdd from a frame data file
    *
    * Please don't write new code against this legacy format:
    * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
    *
    * @param ctx spark context
    * @param frame the model for the frame
-   * @return the newly created FrameRDD
+   * @return the newly created FrameRdd
    */
-  @deprecated("use FrameRDD and related methods instead")
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): LegacyFrameRDD =
-    loadFrameData(ctx, frame).toLegacyFrameRDD
+  @deprecated("use FrameRdd and related methods instead")
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): LegacyFrameRdd =
+    loadFrameData(ctx, frame).toLegacyFrameRdd
 
   /**
    * Determine if a dataFrame is saved as parquet
@@ -238,40 +238,40 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Save a LegacyFrameRDD to HDFS - this is the only save path that should be used for legacy Frames.
+   * Save a LegacyFrameRdd to HDFS - this is the only save path that should be used for legacy Frames.
    *
    * Please don't write new code against this legacy format:
    * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
    *
    * @param frame reference to a frame
-   * @param legacyFrameRdd the RDD
+   * @param legacyFrameRdd the Rdd
    */
-  @deprecated("use FrameRDD and related methods instead")
-  def saveLegacyFrame(frame: FrameReference, legacyFrameRdd: LegacyFrameRDD)(implicit invocation: Invocation): FrameEntity = {
-    saveFrameData(frame, legacyFrameRdd.toFrameRDD())
+  @deprecated("use FrameRdd and related methods instead")
+  def saveLegacyFrame(frame: FrameReference, legacyFrameRdd: LegacyFrameRdd)(implicit invocation: Invocation): FrameEntity = {
+    saveFrameData(frame, legacyFrameRdd.toFrameRdd())
   }
 
   /**
-   * Save a FrameRDD to HDFS.
+   * Save a FrameRdd to HDFS.
    *
    * This is our preferred path for saving RDDs as data frames.
    *
    * If the current frame is already materialized, a new entry will be created in the meta data repository, otherwise the existing entry will be updated.
    *
    * @param frame reference to a data frame
-   * @param frameRDD the RDD containing the actual data
+   * @param frameRdd the RDD containing the actual data
    */
-  override def saveFrameData(frame: FrameReference, frameRDD: FrameRDD)(implicit invocation: Invocation): FrameEntity =
+  override def saveFrameData(frame: FrameReference, frameRdd: FrameRdd)(implicit invocation: Invocation): FrameEntity =
     withContext("SFS.saveFrame") {
 
       val targetEntity = prepareForSave(frame)
       info(s"saving frame ${targetEntity.toDebugString}")
       try {
         // save the actual data
-        frameRDD.save(targetEntity.storageLocation.get, targetEntity.storageFormat.get)
+        frameRdd.save(targetEntity.storageLocation.get, targetEntity.storageFormat.get)
 
-        postSave(Some(frame), targetEntity.toReference, frameRDD.frameSchema)
+        postSave(Some(frame), targetEntity.toReference, frameRdd.frameSchema)
       }
       catch {
         case NonFatal(e) =>
@@ -524,7 +524,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Get the pair of LegacyFrameRDD's that were the result of a parse
+   * Get the pair of LegacyFrameRdd's that were the result of a parse
    * @param ctx spark context
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors

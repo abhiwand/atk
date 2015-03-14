@@ -97,7 +97,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-				<dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
@@ -162,9 +162,9 @@
                     <groupId>com.esotericsoftware.reflectasm</groupId>
                     <artifactId>reflectasm</artifactId>
                 </exclusion>
-								<exclusion>
+                <exclusion>
                     <groupId>com.google.guava</groupId>
-										<artifactId>guava</artifactId>
+                    <artifactId>guava</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
