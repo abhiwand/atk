@@ -39,7 +39,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ HBaseAdminFactory, SparkGra
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
-import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
+import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.util.{ DiskSpaceReporter, JvmVersionReporter }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
@@ -70,7 +70,7 @@ class SparkEngineComponent extends EngineComponent
   SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextFactory,
-    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries, queryExecutor,
+    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries,
     sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
@@ -105,11 +105,9 @@ class SparkEngineComponent extends EngineComponent
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextFactory)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
-
-  lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextFactory)
 
   JvmVersionReporter.check()
 

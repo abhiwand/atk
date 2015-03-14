@@ -104,8 +104,6 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     implicit def graphToRef(graph: GraphEntity): Reference = GraphReference(graph.id)
 
-    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
-
     implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
     //TODO: implement!
