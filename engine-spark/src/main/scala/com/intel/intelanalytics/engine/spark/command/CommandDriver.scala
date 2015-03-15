@@ -15,6 +15,7 @@ import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 
 import scala.collection.mutable
+import scala.reflect.io.Directory
 
 class CommandDriver extends EngineComponent
     with FrameComponent
@@ -69,6 +70,7 @@ class CommandDriver extends EngineComponent
     sparkAutoPartitioner, commandPluginRegistry) {}
 
   def execute(commandId: Long): Unit = {
+
     commands.lookup(commandId) match {
       case None => info(s"Command $commandId not found")
       case Some(command) => {
@@ -103,6 +105,8 @@ object CommandDriver {
       usage()
     }
     else {
+      println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
+      println(s"Current PWD is ${Directory.Current.get.toString()}")
       val commandId = args(0).toLong
       executeCommand(commandId)
     }
