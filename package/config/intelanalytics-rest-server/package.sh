@@ -42,8 +42,9 @@ pushd $SCRIPTPATH
     cp -Rv assets/* ${BUILD_DIR}
 popd
 
-
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar deploy.jar"
+#excluded jars are now combined in deploy.jar
+#engine-spark.jar igiraph-titan.jar graphon.jar
+jars=" api-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 pushd ..
 for jar in $jars

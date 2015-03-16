@@ -64,6 +64,19 @@ fi
 
 POST="
 restUser=iauser
+deployJar=deploy.jar
+
+jars=\"engine-spark.jar igiraph-titan.jar graphon.jar\"
+
+for jar in $jars
+do
+if [ -d /usr/lib/intelanalytics/rest-server/lib/\$jar ]; then
+   rm /usr/lib/intelanalytics/rest-server/lib/\$jar
+ fi
+
+ ln -s /usr/lib/intelanalytics/rest-server/lib/\$deployJar  /usr/lib/intelanalytics/rest-server/lib/\$jar
+done
+
 if [ \$1 -eq 2 ]; then
   echo start intelanalytics
   service intelanalytics restart
