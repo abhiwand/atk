@@ -55,6 +55,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    */
   override protected def customizeInvocation(invocation: Invocation, arguments: Argument): Invocation = {
     require(invocation.isInstanceOf[CommandInvocation], "Cannot invoke a CommandPlugin without a CommandInvocation")
+    println("In SparkCommandPlugin customizeInvocation")
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]
     val sparkEngine: SparkEngine = commandInvocation.engine.asInstanceOf[SparkEngine]
     val sparkInvocation = new SparkInvocation(sparkEngine,
@@ -71,6 +72,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   }
 
   def createSparkContextForCommand(arguments: Argument, sparkContextFactory: SparkContextFactory)(implicit invocation: SparkInvocation): SparkContext = {
+    println(s"Creating SparkContext for Command ${invocation.commandId}")
     val cmd = invocation.commandStorage.lookup(invocation.commandId)
       .getOrElse(throw new IllegalArgumentException(s"Command ${invocation.commandId} does not exist"))
     val commandId = cmd.id
@@ -91,6 +93,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   }
 
   override def cleanup(invocation: Invocation) = {
+    println("Calling to cleanup spark Invocation")
     val sparkInvocation = invocation.asInstanceOf[SparkInvocation]
     SparkCommandPlugin.stop(sparkInvocation.commandId)
   }

@@ -237,7 +237,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <id>python-unittests</id>
             <activation>
                 <property>
-                    <name>!skipTests</name>
+                    <name>skipTests</name>
+                    <value>false</value>
                 </property>
             </activation>
             <modules>
@@ -249,7 +250,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <id>integration-tests</id>
             <activation>
                 <property>
-                    <name>!skipTests</name>
+                    <name>skipTests</name>
+                    <value>false</value>
                 </property>
             </activation>
             <modules>
