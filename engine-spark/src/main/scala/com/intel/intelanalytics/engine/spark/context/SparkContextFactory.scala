@@ -56,13 +56,16 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     getContext(description, kryoRegistrator)
 
   private def createContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = {
-    val userName = user.user.apiKey.getOrElse(
-      throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated"))
+    println(s"Creating Spark Configuration with ${SparkEngineConfig.sparkMaster} ${SparkEngineConfig.sparkHome}")
+    //    val userName = user.user.apiKey.getOrElse(
+    //      throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated"))
     val sparkConf = new SparkConf()
       .setMaster(SparkEngineConfig.sparkMaster)
       .setSparkHome(SparkEngineConfig.sparkHome)
-      .setAppName(s"intel-analytics:$userName:$description")
+    //      .setAppName(s"intel-analytics:$userName:$description")
 
+    println(s"Setting All config properties")
+    SparkEngineConfig.sparkConfProperties.foreach { case (k, v) => println(s"$k->$v") }
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
     if (!SparkEngineConfig.disableKryo && kryoRegistrator.isDefined) {
@@ -74,6 +77,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
 
     info("SparkConf settings: " + sparkConf.toDebugString)
 
+    println(s"Staring Spark Context with ${sparkConf.toDebugString}")
     val sparkContext = new SparkContext(sparkConf)
     if (SparkEngineConfig.sparkMaster != "yarn-cluster")
       sparkContext.addJar(jarPath("engine-spark"))
