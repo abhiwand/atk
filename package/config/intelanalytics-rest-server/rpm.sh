@@ -68,7 +68,7 @@ deployJar=deploy.jar
 
 jars=\"engine-spark.jar igiraph-titan.jar graphon.jar\"
 
-for jar in $jars
+for jar in \$jars
 do
 if [ -d /usr/lib/intelanalytics/rest-server/lib/\$jar ]; then
    rm /usr/lib/intelanalytics/rest-server/lib/\$jar

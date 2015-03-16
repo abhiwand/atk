@@ -32,8 +32,13 @@ do
 done
 
 
+#excluded jars are now combined in deploy.jar
+#engine-spark.jar igiraph-titan.jar graphon.jar
+
+
 mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
-jars="engine-spark.jar graphon.jar"
+#jars="engine-spark.jar graphon.jar"
+jars="deploy.jar"
 for jar in $jars
 do
 	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
