@@ -56,6 +56,7 @@
                                     <exclude>org.apache.maven:*</exclude>
                                     <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
+                                    <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
