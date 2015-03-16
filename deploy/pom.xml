@@ -55,6 +55,7 @@
                                 <excludes>
                                     <exclude>org.apache.maven:*</exclude>
                                     <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
+                                    <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -76,6 +77,16 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+														<!--<relocations>
+															<relocation>
+																<pattern>org.codehaus.plexus.util</pattern>
+																<shadedPattern>org.shaded.plexus.util</shadedPattern>
+																<excludes>
+																	<exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>
+																	<exclude>org.codehaus.plexus.util.xml.pull.*</exclude>
+																</excludes>
+															</relocation>
+														</relocations>-->
                         </configuration>
                     </execution>
                 </executions>
@@ -85,18 +96,18 @@
     </build>
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>igiraph-titan</artifactId>
@@ -105,5 +116,18 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>graphon</artifactId>
         </dependency>
+				
+				<dependency>
+					<groupId>com.typesafe.akka</groupId>
+					<artifactId>akka-remote_${scala.short.version}</artifactId>
+					<version>2.2.3</version>
+					<exclusions>
+						<exclusion>
+							<groupId>*</groupId>
+							<artifactId>*</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+
     </dependencies>
 </project>
