@@ -63,8 +63,6 @@ class CommandDriver extends EngineComponent
       password = SparkEngineConfig.metaStoreConnectionPassword)
   }(startupCall.eventContext)
 
-  metaStore.initializeSchema()
-
   val engine = new SparkEngine(sparkContextFactory,
     commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, null,
     sparkAutoPartitioner, commandPluginRegistry) {}
