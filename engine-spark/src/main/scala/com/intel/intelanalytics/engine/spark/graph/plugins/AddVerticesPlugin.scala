@@ -33,7 +33,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, RowWrapp
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 
 // Implicits needed for JSON conversion
@@ -88,7 +88,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(ctx: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRDD, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
+  def addVertices(ctx: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
@@ -114,7 +114,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.saveVertexRDD(vertexFrameMeta.toReference, combinedRdd)
+    graphs.saveVertexRdd(vertexFrameMeta.toReference, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)

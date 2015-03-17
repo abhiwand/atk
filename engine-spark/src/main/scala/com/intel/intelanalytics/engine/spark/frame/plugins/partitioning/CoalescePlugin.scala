@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.CoalesceArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.ExecutionContext
 
@@ -77,6 +77,6 @@ class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
     val coalescedRdd = frameRdd.coalesce(arguments.numberPartitions, arguments.shuffle.get)
 
     // save results
-    frames.saveFrameData(frame.toReference, new FrameRDD(frameRdd.frameSchema, coalescedRdd))
+    frames.saveFrameData(frame.toReference, new FrameRdd(frameRdd.frameSchema, coalescedRdd))
   }
 }

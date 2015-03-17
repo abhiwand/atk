@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.{ UnionRDD, RDD }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil, Schema }
@@ -39,12 +39,12 @@ import org.apache.spark.{ SparkContext, Partition, TaskContext }
  *
  * Please don't write new code against this legacy format:
  * - This format requires extra maps to read/write Parquet files.
- * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+ * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
  *
  * @param schema the schema describing the columns of this frame
  */
-@deprecated("use FrameRDD instead")
-class LegacyFrameRDD(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](rows) {
+@deprecated("use FrameRdd instead")
+class LegacyFrameRdd(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](rows) {
 
   def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.map(row => row.toArray))
 
@@ -57,22 +57,22 @@ class LegacyFrameRDD(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](ro
    *
    * @param other the other LegacyFrame
    */
-  def union(other: LegacyFrameRDD): LegacyFrameRDD = {
+  def union(other: LegacyFrameRdd): LegacyFrameRdd = {
     if (schema == other.schema)
-      new LegacyFrameRDD(schema, rows.union(other.rows))
+      new LegacyFrameRdd(schema, rows.union(other.rows))
     else {
       val mergedSchema: Schema = SchemaUtil.mergeSchema(schema, other.schema)
       val leftData = rows.map(SchemaUtil.convertSchema(schema, mergedSchema, _))
       val rightData = other.rows.map(SchemaUtil.convertSchema(other.schema, mergedSchema, _))
-      new LegacyFrameRDD(mergedSchema, leftData.union(rightData))
+      new LegacyFrameRdd(mergedSchema, leftData.union(rightData))
     }
   }
 
   /**
    * Converts the rows object from an RDD[Array[Any]] to a Frame RDD
-   * @return A FrameRDD made of this schema and the rows RDD converted to a SchemaRDD
+   * @return A FrameRdd made of this schema and the rows RDD converted to a SchemaRDD
    */
-  def toFrameRDD(): FrameRDD = {
-    FrameRDD.toFrameRDD(this.schema, this.rows)
+  def toFrameRdd(): FrameRdd = {
+    FrameRdd.toFrameRdd(this.schema, this.rows)
   }
 }

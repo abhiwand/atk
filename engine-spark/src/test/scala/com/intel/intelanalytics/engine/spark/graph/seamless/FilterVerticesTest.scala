@@ -27,7 +27,7 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContext }
 import com.intel.intelanalytics.engine.spark.graph.plugins.FilterVerticesFunctions
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema, DataTypes, Column }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.schema.EdgeSchema
@@ -43,7 +43,7 @@ class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
 
     val columns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("distance", DataTypes.int32))
     val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
-    val edgeLegacyRdd = new LegacyFrameRDD(schema, edgeRdd)
+    val edgeLegacyRdd = new LegacyFrameRdd(schema, edgeRdd)
 
     val vertexArray = Array(5, 13)
 

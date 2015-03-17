@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, 
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -93,7 +93,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
       if (arguments.matrixName.isDefined) {
         engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, correlationRDD)))
+      save(new SparkFrameData(newFrame.meta, new FrameRdd(schema, correlationRDD)))
     }.meta
   }
 }

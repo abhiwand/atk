@@ -21,28 +21,38 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.intelanalytics.domain.HasData
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
-import org.apache.spark.frame.FrameRdd
+import com.intel.graphbuilder.elements._
+import org.apache.spark.rdd.RDD
 
 /**
- * A FrameReference with metadata and a Spark RDD representing the data in the frame.
+ * Functions applicable to RDD's of GraphElements
+ * <p>
+ * This is best used by importing GraphBuilderRDDImplicits._
+ * </p>
  *
- * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
+ * @param self input that these functions are applicable to
  */
-class SparkFrameData(frame: FrameEntity, rdd: FrameRdd)
-    extends FrameMeta(frame.withSchema(rdd.frameSchema))
-    with HasData {
+class GraphElementRddFunctions(self: RDD[GraphElement]) {
 
   /**
-   * Returns a copy with the given data instead of the current data
+   * Get all of the Edges from an RDD made up of both Edges and Vertices.
    */
-  def withData(newData: FrameRdd): SparkFrameData = new SparkFrameData(this.meta, newData)
+  def filterEdges(): RDD[GBEdge] = {
+    self.flatMap {
+      case e: GBEdge => Some(e)
+      case _ => None
+    }
+  }
 
-  type Data = FrameRdd
-
-  val data = rdd
-
+  /**
+   * Get all of the Vertices from an RDD made up of both Edges and Vertices.
+   */
+  def filterVertices(): RDD[GBVertex] = {
+    self.flatMap {
+      case v: GBVertex => Some(v)
+      case _ => None
+    }
+  }
 }

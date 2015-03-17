@@ -35,12 +35,12 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRDD, PythonBroadcast }
+import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd, PythonBroadcast }
 import org.apache.commons.codec.binary.Base64.decodeBase64
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -49,7 +49,7 @@ import com.google.common.io.Files
 
 import scala.reflect.io.{ Directory, Path }
 
-object PythonRDDStorage {
+object PythonRddStorage {
 
   private def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     decodeBase64(byteStr)
@@ -80,13 +80,13 @@ object PythonRDDStorage {
     includes
   }
 
-  def mapWith(data: FrameRDD, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRDD = {
+  def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRdd = {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRDD, ctx)
+    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRdd, ctx)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
-    FrameRDD.toFrameRDD(newSchema, frameRdd)
+    FrameRdd.toFrameRdd(newSchema, frameRdd)
   }
 
   //TODO: fix hardcoded paths
@@ -101,7 +101,7 @@ object PythonRDDStorage {
     pythonIncludes
   }
 
-  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRDD, ctx: SparkContext): EnginePythonRDD[String] = {
+  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, ctx: SparkContext): EnginePythonRdd[String] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
     val baseRdd: RDD[String] = rdd
@@ -139,7 +139,7 @@ object PythonRDDStorage {
       pyIncludes = uploadFilesToSpark(includes, ctx)
     }
 
-    val pyRdd = new EnginePythonRDD[String](
+    val pyRdd = new EnginePythonRdd[String](
       baseRdd, predicateInBytes, environment,
       pyIncludes, preservePartitioning = true,
       pythonExec = pythonExec,
@@ -147,7 +147,7 @@ object PythonRDDStorage {
     pyRdd
   }
 
-  def getRddFromPythonRdd(pyRdd: EnginePythonRDD[String], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
+  def getRddFromPythonRdd(pyRdd: EnginePythonRdd[String], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
     val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
       case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
       case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value
@@ -164,7 +164,7 @@ object PythonRDDStorage {
 /**
  * Loading and saving Python RDD's
  */
-class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
+class PythonRddStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
 
   /**
    * Create a Python RDD
@@ -172,12 +172,12 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
    * @return the RDD
    */
-  def createPythonRDD(frameRef: FrameReference, py_expression: String, ctx: SparkContext)(implicit invocation: Invocation): EnginePythonRDD[String] = {
+  def createPythonRDD(frameRef: FrameReference, py_expression: String, ctx: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[String] = {
     withMyClassLoader {
 
-      val rdd: LegacyFrameRDD = frames.loadLegacyFrameRdd(ctx, frameRef)
+      val rdd: LegacyFrameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
 
-      PythonRDDStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, ctx)
+      PythonRddStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, ctx)
     }
   }
 }

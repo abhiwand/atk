@@ -25,7 +25,7 @@ package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql._
@@ -40,13 +40,13 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class EdgeFrameRDD(schema: EdgeSchema,
+class EdgeFrameRdd(schema: EdgeSchema,
                    sqlContext: SQLContext,
-                   logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
+                   logicalPlan: LogicalPlan) extends FrameRdd(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.frameSchema.asInstanceOf[EdgeSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[EdgeSchema], frameRdd.sqlContext, frameRdd.logicalPlan)
 
-  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema.asInstanceOf[EdgeSchema], new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
+  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema.asInstanceOf[EdgeSchema], new SQLContext(rowRDD.context), FrameRdd.createLogicalPlanFromSql(schema, rowRDD))
 
   /** Edge wrapper provides richer API for working with Vertices */
   val edge = new EdgeWrapper(schema)
@@ -67,22 +67,22 @@ class EdgeFrameRDD(schema: EdgeSchema,
    * @param updatedSchema the new schema to take effect
    * @return the new RDD
    */
-  override def convertToNewSchema(updatedSchema: Schema): EdgeFrameRDD = {
+  override def convertToNewSchema(updatedSchema: Schema): EdgeFrameRdd = {
     if (schema == updatedSchema) {
       // no changes needed
       this
     }
     else {
       // map to new schema
-      new EdgeFrameRDD(super.convertToNewSchema(updatedSchema))
+      new EdgeFrameRdd(super.convertToNewSchema(updatedSchema))
     }
   }
 
   /**
    * Map over all edges and assign the label from the schema
    */
-  def assignLabelToRows(): EdgeFrameRDD = {
-    new EdgeFrameRDD(schema, mapEdges(edge => edge.setLabel(schema.label)))
+  def assignLabelToRows(): EdgeFrameRdd = {
+    new EdgeFrameRdd(schema, mapEdges(edge => edge.setLabel(schema.label)))
   }
 
   /**
@@ -90,28 +90,28 @@ class EdgeFrameRDD(schema: EdgeSchema,
    * - union the schemas to match, if needed
    * - no overwrite
    */
-  def append(other: FrameRDD): EdgeFrameRDD = {
+  def append(other: FrameRdd): EdgeFrameRdd = {
     val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.edgeSystemColumnNames)
 
     // TODO: better way to check for empty?
     if (take(1).length > 0) {
       val part1 = convertToNewSchema(unionedSchema)
-      val part2 = new EdgeFrameRDD(other.convertToNewSchema(unionedSchema))
-      new EdgeFrameRDD(part1.union(part2)).assignLabelToRows()
+      val part2 = new EdgeFrameRdd(other.convertToNewSchema(unionedSchema))
+      new EdgeFrameRdd(part1.union(part2)).assignLabelToRows()
     }
     else {
-      new EdgeFrameRDD(other.convertToNewSchema(unionedSchema)).assignLabelToRows()
+      new EdgeFrameRdd(other.convertToNewSchema(unionedSchema)).assignLabelToRows()
     }
   }
 
-  def toEdgeRDD: RDD[Edge] = {
+  def toEdgeRdd: RDD[Edge] = {
     this.mapEdges(_.toEdge)
   }
 
   /**
-   * Convert this EdgeFrameRDD to a GB Edge RDD
+   * Convert this EdgeFrameRdd to a GB Edge RDD
    */
-  def toGbEdgeRDD: RDD[GBEdge] = {
+  def toGbEdgeRdd: RDD[GBEdge] = {
     if (schema.directed)
       this.mapEdges(_.toGbEdge)
     else

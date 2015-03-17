@@ -40,7 +40,7 @@ import scala.util.Random
  *
  * @param joinParam Join parameter for data frame
  */
-case class JoinBroadcastVariable(joinParam: RDDJoinParam) {
+case class JoinBroadcastVariable(joinParam: RddJoinParam) {
   require(joinParam != null, "Join parameter should not be null")
 
   // Represented as a sequence of multi-maps to support broadcast variables larger than 2GB
@@ -74,7 +74,7 @@ case class JoinBroadcastVariable(joinParam: RDDJoinParam) {
   def length(): Int = broadcastMultiMaps.size
 
   // Create the broadcast variable for the join
-  private def createBroadcastMultiMaps(joinParam: RDDJoinParam): Seq[Broadcast[MultiMap[Any, Row]]] = {
+  private def createBroadcastMultiMaps(joinParam: RddJoinParam): Seq[Broadcast[MultiMap[Any, Row]]] = {
     //Grouping by key to ensure that duplicate keys are not split across different broadcast variables
     val broadcastList = joinParam.rdd.groupByKey().collect().toList
 

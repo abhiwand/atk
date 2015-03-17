@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.CreateEntityArgs
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -87,7 +87,7 @@ class QuantilesPlugin extends SparkCommandPlugin[QuantilesArgs, FrameEntity] {
       val rdd = frames.loadFrameData(ctx, frame)
       //frames should have their row count set unless it is an empty frame
       val quantileValuesRdd = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, frame.rowCount.getOrElse(0))
-      frames.saveFrameData(quantilesFrame.toReference, new FrameRDD(schema, quantileValuesRdd))
+      frames.saveFrameData(quantilesFrame.toReference, new FrameRdd(schema, quantileValuesRdd))
     }
   }
 }
