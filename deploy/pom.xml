@@ -57,6 +57,8 @@
                                     <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                     <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
+                                    <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+																		<exclude>com.google.common.guava14:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -98,12 +100,12 @@
 
     <dependencies>
 
-        <!--<dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>engine</artifactId>
-        </dependency>-->
         <dependency>
-
+            <groupId>com.intel.ia</groupId>
+            <artifactId>graphbuilder-3</artifactId>
+        </dependency>
+				
+        <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
         </dependency>
@@ -145,6 +147,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+				
+				<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+				
+				<!--<dependency>
+					<groupId>org.apache.spark</groupId>
+					<artifactId>spark-core_${scala.short.version}</artifactId>
+					<version>${dep.spark.version}</version>
+					<exclusions>
+						<exclusion>
+								<groupId>*</groupId>
+								<artifactId>*</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>-->
     </dependencies>
 </project>
