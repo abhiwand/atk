@@ -50,3 +50,13 @@ report = results['report']
 doc_results.inspect()
 word_results.inspect()
 print report
+
+print("compute lda score")
+doc_results.rename_columns({'lda_results' : 'lda_results_doc'})
+word_results.rename_columns({'lda_results' : 'lda_results_word'})
+
+frame= frame.join(doc_results, left_on="doc_id", right_on="doc_id", how="left")
+frame= frame.join(word_results, left_on="word_id", right_on="word_id", how="left")
+
+frame.dot_product(['lda_results_doc'], ['lda_results_word'], 'lda_score')
+frame.inspect()
