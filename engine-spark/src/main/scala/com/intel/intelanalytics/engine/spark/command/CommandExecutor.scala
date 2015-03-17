@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
@@ -149,7 +150,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
                                           commandPluginRegistry: CommandPluginRegistry,
                                           referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
     withContext("ce.execute(ct)") {
-      val cmd = commands.create(commandTemplate)
+      val cmd = commands.create(commandTemplate.copy(createdBy = if (invocation.user != null) Some(invocation.user.user.id) else None))
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         action = isAction(plugin),
@@ -267,6 +268,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         i <- currentConfig
       } yield s"${i.getKey}=${i.getValue.render}"
       Files.write(Paths.get("/tmp/application.conf"), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+
+      //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
+      KerberosAuthenticator.loginWithKeyTabCLI()
 
       import org.apache.spark.deploy.SparkSubmit
       val inputArgs = Array[String](
