@@ -9,6 +9,10 @@ Process Flow Examples
     :hidden:
 
     ds_apir
+    ds_gaal_clco
+    ds_gaal_cc
+    ds_gaal_pr
+    ds_gaal_dc
 
 
 -----------------
@@ -74,11 +78,11 @@ printed, rather than a friendlier digest. ::
         print 'deleting graph: %s' %name
         ia.drop_graphs(name)
 
-To see the data types supported by the |IAT|::
+To see the data types supported by |IAT|::
 
     print ia.valid_data_types
 
-You should see a string of variable types similar to this::
+You should see a list of variable types similar to this::
 
     float32, float64, int32, int64, unicode
     (and aliases: float->float64, int->int32, long->int64, str->unicode)
@@ -97,14 +101,14 @@ You should see a string of variable types similar to this::
 Types Of Raw Data
 =================
 
-The currently supported raw data formats are |CSV| and LineFile.
+The currently supported raw data formats are |CSV|, |JSON| and LineFile.
 
 .. _example_files.csvfile:
 
 Importing a |CSV| file.
 -----------------------
 
-Some example rows from a |CSV| file could look like the below::
+These are some rows from a |CSV| file::
 
     "string",123,"again",25.125
     "next",5,"or not",1.0
@@ -114,6 +118,7 @@ Some example rows from a |CSV| file could look like the below::
 Within each row, the data fields are separated from each other by some standard
 character(s).
 In the above example, the separating character is a comma (,).
+
 To import data into the |IAT|, you must tell the system how the input file
 is formatted.
 This is done by defining a schema.
@@ -127,7 +132,7 @@ Given a file *datasets/small_songs.csv* whose contents look like this::
     1,"Easy on My Mind"
     2,"No Rest For The Wicked"
     3,"Does Your Chewing Gum"
-    4,"Gypsies, Tramps, and Theives"
+    4,"Gypsies, Tramps, and Thieves"
     5,"Symphony No. 5"
 
 For easier reuse, create a variable to hold the file name::
@@ -144,15 +149,20 @@ format::
 
     my_csv_description = ia.CsvFile(my_data_file, my_schema)
     
-The default delimiter to separate column data is a comma, but it can be
-declared using the key word ``delimiter``::
+The data fields are separated by a character delimiter.
+The default delimiter to separate column data is a comma.
+It can be changed with the parameter ``delimiter``::
 
     my_csv_description = ia.CsvFile(my_data_file, my_schema, delimiter = ",")
 
 This can be helpful if the delimiter is something other than a comma, for
 example, ``\t`` for tab-delimited records.
-If there are lines at the beginning of the file that should be skipped, the
-number of lines to skip can be passed in with the ``skip_header_lines``
+
+Occasionally, there are header lines in the data file.
+For example, these lines may describe the source or format of the data.
+If there are lines at the beginning of the file, they should be skipped by
+the import mechanism.
+The number of lines to skip is specified by the ``skip_header_lines``
 parameter::
 
     csv_description = ia.CsvFile(my_data_file, my_schema, skip_header_lines = 5)
@@ -188,6 +198,8 @@ parameter::
 
 .. _example_frame.frame:
 
+.. TODO:: Add example for JsonFile.
+
 ------
 Frames
 ------
@@ -202,7 +214,7 @@ designed to work with data spread over multiple machines.
 Create A Frame
 ==============
 
-There are several ways to create frames:
+There are several ways to create frames\:
 
 #.  as "empty", with no schema or data
 #.  with a schema and data
@@ -217,29 +229,29 @@ Create an empty frame::
 The Frame *my_frame* is now a Python object which references an empty frame
 that has been created on the server.
 
-To create a frame defined by the schema *my_csv*, import the data, name the
-frame *myframe*, and create a Frame object, *my_frame*, to access it::
+For an example, to create a frame defined by the schema *my_csv* (see
+:ref:`example_files.csvfile`), import the data, give the frame the name
+*myframe*, and create a Frame object, *my_frame*, to access it::
 
-    my_frame = ia.Frame(source=my_csv4, name='myframe')
+    my_frame = ia.Frame(source=my_csv, name='myframe')
 
-To create a new frame, identical to the frame named *myframe* (except for
-the name, because the name must always be unique), and create a Frame object
-*f2* to access it::
+To copy the frame *myframe*, create a Frame *my_frame2* to access it, and give
+it a new name, because the name must always be unique::
 
-    f2 = my_frame.copy()
-    f2.name = "copy_of_myframe"
+    my_frame2 = my_frame.copy()
+    my_frame2.name = "copy_of_myframe"
 
-To create a new frame with only columns *a* and *c* from the original frame
-*myframe*, and save the Frame object as *f3*::
+To create a new frame with only columns *x* and *z* from the original frame
+*myframe*, and save the Frame object as *my_frame3*::
 
-    f3 = my_frame.copy(['x', 'z'])
-    f3.name = "copy_of_myframe2"
+    my_frame3 = my_frame.copy(['x', 'z'])
+    my_frame3.name = "copy2_of_myframe"
 
 To create a frame copy of the original columns *x* and *z*, but only those
 rows where *z* is TRUE::
 
-    f4 = my_frame.copy(['x', 'z'], where = (lambda row: "TRUE" in row.z))
-    f4.name = "copy_of_myframe_true"
+    my_frame4 = my_frame.copy(['x', 'z'], where = (lambda row: "TRUE" in row.z))
+    my_frame4.name = "copy_of_myframe_true"
 
 Frames (capital 'F') are not the same thing as frames (lower case 'f').
 Frames (lower case 'f') contain data, viewed similarly to a table, while
@@ -264,11 +276,11 @@ Columns and rows are added to the database structure, and data is imported
 as appropriate.
 
 As an example, let's start with a frame containing two columns *a* and *b*.
-The frame can be accessed by Frame *my_frame*.
+The frame can be accessed by Frame *my_frame1*.
 We can look at the data and structure of the database by using the
 ``inspect`` function::
 
-    BF1.inspect()
+    my_frame1.inspect()
 
       a:str   b:ia.int64
     /--------------------/
@@ -276,10 +288,9 @@ We can look at the data and structure of the database by using the
       bear            71
       car           2048
 
-To this frame we combine another frame with one column *c*.
-This frame can be accessed by Frame *BF2*::
+Given another frame, accessed by Frame *my_frame2* with one column *c*::
 
-    BF2.inspect()
+    my_frame2.inspect()
 
       c:str
     /-------/
@@ -288,12 +299,12 @@ This frame can be accessed by Frame *BF2*::
 
 With *append*::
 
-    BF1.append(BF2)
+    my_frame1.append(my_frame2)
 
 The result is that the first frame would have the data from both frames.
-It would still be accessed by Frame *BF1*::
+It would still be accessed by Frame *my_frame1*::
 
-    BF1.inspect()
+    my_frame1.inspect()
 
       a:str     b:ia.int64     c:str
     /--------------------------------/
@@ -338,9 +349,9 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-|IAT| provides several functions that allow you to inspect your data,
-including inspect(), and .take().
-The Frame structure also contains frame information like .row_count.
+|IAT| provides several methods that allow you to inspect your data,
+including *inspect()* and *take()*.
+The Frame class also contains frame information like *row_count*.
 
 Examples
 --------
@@ -358,7 +369,7 @@ To see all the Frame data::
 
 To see two rows of data::
 
-    print objects1.inspect(2)
+    objects1.inspect(2)
 
     # Gives you something like this:
       a:ia.float64  b:ia.int64   
@@ -366,7 +377,10 @@ To see two rows of data::
         12.3000            500    
        195.1230         183954    
 
-To see a subsection of data from the existing frame::
+Here, we see a list of lists of data from *myframe*, containing 3 lists.
+Each list has the data from a row in the frame accessed by *my_frame*,
+beginning at row 2.
+
 
     subset_of_objects1 = objects1.take(3, offset=2)
     print subset_of_objects1
@@ -374,15 +388,9 @@ To see a subsection of data from the existing frame::
     # Gives you something like this:
     [[12.3, 500], [195.123, 183954], [12.3, 500]]
 
-Here, we see a list of lists of data from *myframe*, containing 10 lists.
-Each list has the data from a row in the frame accessed by *my_frame*,
-beginning at row 200.
-
 .. note::
-    The sequence of the data is NOT guaranteed to match the sequence of the
+    The row sequence of the data is NOT guaranteed to match the sequence of the
     input file.
-    This command might or might not return the same data you would see in
-    lines 201 through 210 of the input file.
 
 .. only:: html
 
@@ -425,7 +433,7 @@ Clean The Data
 
 The process of "data cleaning" encompasses the identification and removal of
 incomplete, incorrect, or mal-formed information in a data set.
-While IAT's Frame API provides much of the functionality necessary for these
+While |IAT|'s Frame API provides much of the functionality necessary for these
 tasks, it's important to keep in mind that it was designed with scalability
 in mind.
 Thus, using external Python packages for these tasks, while possible, may
@@ -434,13 +442,13 @@ not provide the same level of efficiency.
 .. warning::
 
     Unless stated otherwise, cleaning functions use the Frame proxy to
-    operate directly on the data, so it changes the data in the frame,
+    operate directly on the data, so they change the data in the frame,
     rather than return a new frame with the changed data.
     It is recommended that you copy the data to a new frame on a regular
     basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected::
 
-        next_frame = ia.Frame(last_frame)
+        next_frame = last_frame.copy()
 
 In general, the following functions select rows of data based upon the data
 in the row.
@@ -1025,4 +1033,47 @@ Make a VertexFrame::
 Make a EdgeFrame::
 
     my_edge_frame = my_graph.edges("worksunder")
+
+Graph Analytics Routines
+========================
+* :ref:`Graph_Analytics`
+    * :ref:`ClCo`
+    * :ref:`CC`
+    * :ref:`PR`
+    * :ref:`DC`
+
+.. TODO::
+
+    * ref:`APL`
+    
+    Add these to the toctree above.
+
+
+.. _Graph_Analytics:
+
+---------------
+Graph Analytics
+---------------
+
+The |IAT| supports these algorithms :ref:`ClCo`, :ref:`CC`, :ref:`DC` and :ref:`PR`.
+
+.. _ClCo:
+.. include:: ds_mlal_clco.rst
+
+.. _CC:
+.. include:: ds_mlal_cc.rst
+
+.. _DC:
+.. include:: ds_mlal_dc.rst
+
+.. _PR:
+.. include:: ds_mlal_pr.rst
+
+.. TODO::
+
+    We support three algorithms in this category, ref:`APL`, ref:`CC`, and :ref:`PR`
+
+    .. _APL:
+    .. include:: ds_mlal_apl.rst
+
 

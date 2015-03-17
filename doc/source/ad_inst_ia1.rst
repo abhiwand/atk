@@ -217,8 +217,8 @@ Troubleshooting Private Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *   The most common errors when using the private repository:
 
-    *   Incorrect access token
-    *   Incorect secret token
+    *   Incorrect access token/key
+    *   Incorect secret token/key
     *   The server time is out of sync with the world
 
 *   Double check the access and secret keys in the ia.repo file.
@@ -245,7 +245,7 @@ Installing |IAT| Packages
 Installing On The Master Node
 -----------------------------
 
-Install the |IAT| rest server and dependencies.
+Install the |IAT| Python rest server and its dependencies.
 Only one instance of the rest server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
@@ -271,7 +271,7 @@ running the spark worker role.
     ::
 
         $ sudo yum -y install intelanalytics-spark-deps
-            intelanalytics-python-rest-client
+        $ sudo yum -y install intelanalytics-python-rest-client
 
 -------------------------
 Rest Server Configuration
@@ -290,7 +290,7 @@ create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
 work with the |IAT| server.
 
-To configure the spark service and the |IAT| installation, do this::
+To configure the |IAT| installation, do this::
 
     $ cd /etc/intelanalytics/rest-server/
     $ sudo ./config
@@ -303,9 +303,9 @@ service running.
 The script can be run multiple times but there is a danger that configuring the
 database multiple times can wipe out a users data frames and graphs. 
 
-Command line arguments can also be supplied for every single prompt.
-If a command line argument is given no prompt will be presented.
-To get a list of all the command line arguments for the configuration script
+Command line arguments can also be supplied for every prompt.
+If a command line argument is given, no prompt will be presented.
+To get a list of all the command line arguments for the configuration script,
 run the same command with --help::
 
     $ sudo ./config --help
@@ -332,8 +332,7 @@ Open the file with a text editor::
     $ sudo vi application.conf
 
 All of the changes that need to be made are located at the top of the file.
-See :doc:`appendix_application_conf` for an example
-'application.conf' file.
+See :doc:`appendix_application_conf` for an example 'application.conf' file.
 
 .. _ad_inst_IA_configure_file_system_root:
 
@@ -427,9 +426,14 @@ Becomes:
 
 Click on the Spark service then configuration in Cloudera Manager to get
 executor memory.
+See :ref:`ad_inst_ia_01`.
 
-.. image:: ad_inst_ia_01.*
+.. _ad_inst_ia_01:
+
+.. figure:: ad_inst_ia_01.*
     :align: center
+
+    Figure 1
 
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -449,23 +453,33 @@ Updating the Spark Class Path
 The automatic configuration script updates the classpath in Cloudera Manager.
 The spark class path can also be configured through Cloudera Manager under the
 spark configuration / Worker Environment Advanced Configuration Snippet.
+See :ref:`ad_inst_ia_02`.
 If it isn't already set, add:
 
 .. code::
 
     SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-.. image:: ad_inst_ia_02.*
+.. _ad_inst_ia_02:
+
+.. figure:: ad_inst_ia_02.*
     :align: center
+
+    Figure 2
 
 .. _skip_manual_section:
 
 **End of manual configuration**
 
 Restart the Spark service.
+See :ref:`ad_inst_ia_03`.
 
-.. image:: ad_inst_ia_03.*
+.. _ad_inst_ia_03:
+
+.. figure:: ad_inst_ia_03.*
     :align: center
+
+    Figure 3
 
 Database Configuration
 ======================
@@ -601,7 +615,7 @@ After creating the database exit the postgres command line by hitting
 Once the database and user are created, open '/var/lib/pgsql/data/pg_hba.conf'
 and add this line
 ``host    all         YOURUSER     127.0.0.1/32            md5``
-to the top of the file::
+to very the top of the file::
 
     $ vi /var/lib/pgsql/data/pg_hba.conf
 
