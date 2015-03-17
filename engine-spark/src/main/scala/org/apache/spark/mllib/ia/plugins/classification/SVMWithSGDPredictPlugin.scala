@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
@@ -78,7 +78,7 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
       val frame: SparkFrameData = resolve(arguments.frame)
 
       // load frame as RDD
-      val inputFrameRDD = frame.data
+      val inputFrameRdd = frame.data
 
       //Running MLLib
       val svmJsObject = modelMeta.data.get
@@ -90,7 +90,7 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
       val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
       //predicting a label for the observation columns
-      val predictionsRDD = inputFrameRDD.mapRows(row => {
+      val predictionsRDD = inputFrameRdd.mapRows(row => {
         val array = row.valuesAsArray(svmColumns)
         val doubles = array.map(i => DataTypes.toDouble(i))
         val point = Vectors.dense(doubles)
@@ -98,12 +98,12 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
         row.addValue(prediction.toInt)
       })
 
-      val updatedSchema = inputFrameRDD.frameSchema.addColumn("predicted_label", DataTypes.int32)
-      val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
+      val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
+      val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
       tryNew(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {
         newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRDD))
+          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
       }.meta
     }
 

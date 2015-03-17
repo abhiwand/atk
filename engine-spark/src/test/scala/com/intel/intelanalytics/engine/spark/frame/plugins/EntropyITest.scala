@@ -55,9 +55,9 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
   val epsilon = 0.000001
   "shannonEntropy" should "compute the correct shannon entropy for unweighted data" in {
     val rowRDD = sparkContext.parallelize(unweightedInput, 2)
-    val entropy1 = EntropyRDDFunctions.shannonEntropy(rowRDD, 0)
-    val entropy2 = EntropyRDDFunctions.shannonEntropy(rowRDD, 1)
-    val entropy3 = EntropyRDDFunctions.shannonEntropy(rowRDD, 2)
+    val entropy1 = EntropyRddFunctions.shannonEntropy(rowRDD, 0)
+    val entropy2 = EntropyRddFunctions.shannonEntropy(rowRDD, 1)
+    val entropy3 = EntropyRddFunctions.shannonEntropy(rowRDD, 2)
 
     // Expected values were computed using the entropy.empirical method in the R entropy package
     // Input to entropy.empirical is an array of counts of distinct values
@@ -69,7 +69,7 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
     val rowRDD = sparkContext.parallelize(weightedInput, 2)
     val column = Column("columnName", DataTypes.float64)
     column.index = 1
-    val entropy = EntropyRDDFunctions.shannonEntropy(rowRDD, 0, Some(column))
+    val entropy = EntropyRddFunctions.shannonEntropy(rowRDD, 0, Some(column))
 
     // Expected values were computed using the entropy.empirical method in the R entropy package
     // Input to entropy.empirical is an array of sums of weights of distinct values
@@ -77,7 +77,7 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
   }
   "shannonEntropy" should "should return zero if frame is empty" in {
     val frameRdd = sparkContext.parallelize(emptyList, 2)
-    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, 0)
+    val entropy = EntropyRddFunctions.shannonEntropy(frameRdd, 0)
     entropy should equal(0)
   }
 }

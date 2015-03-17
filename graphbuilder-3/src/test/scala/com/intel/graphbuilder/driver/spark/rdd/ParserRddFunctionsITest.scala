@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
 import com.intel.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
@@ -32,7 +32,7 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 
-class ParserRDDFunctionsITest extends TestingSparkContextWordSpec with Matchers with MockitoSugar {
+class ParserRddFunctionsITest extends TestingSparkContextWordSpec with Matchers with MockitoSugar {
 
   "ParserRDDFunctions" should {
 

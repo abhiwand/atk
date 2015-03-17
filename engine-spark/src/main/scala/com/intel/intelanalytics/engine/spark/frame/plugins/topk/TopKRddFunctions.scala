@@ -40,7 +40,7 @@ import scala.collection.mutable.PriorityQueue
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object TopKRDDFunctions extends Serializable {
+private[spark] object TopKRddFunctions extends Serializable {
 
   case class CountPair(key: Any, value: Double) extends Ordered[CountPair] {
     def compare(that: CountPair) = this.value compare that.value
@@ -49,7 +49,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
   /**
    * Returns the top (or bottom) K distinct values by count for specified data column.
    *
-   * @param frameRDD RDD for data frame
+   * @param frameRdd RDD for data frame
    * @param dataColumnIndex Index of data column
    * @param k Number of entries to return
    * @param useBottomK Return bottom K entries if true, else return top K
@@ -57,13 +57,13 @@ private[spark] object TopKRDDFunctions extends Serializable {
    * @param weightsTypeOption Option for the datatype of the weights.
    * @return Top (or bottom) K distinct values by count for specified column
    */
-  def topK(frameRDD: RDD[Row], dataColumnIndex: Int, k: Int, useBottomK: Boolean = false,
+  def topK(frameRdd: RDD[Row], dataColumnIndex: Int, k: Int, useBottomK: Boolean = false,
            weightsColumnIndexOption: Option[Int] = None,
            weightsTypeOption: Option[DataType] = None): RDD[Row] = {
     require(dataColumnIndex >= 0, "label column index must be greater than or equal to zero")
 
     val dataWeightPairs =
-      ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, frameRDD)
+      ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, frameRdd)
         .filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
     val distinctCountRDD = dataWeightPairs.reduceByKey((a, b) => a + b)
@@ -83,7 +83,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
     // Get the overall top (or bottom) K entries from partitions
     // Works when K*num_partitions fits in memory of single machine.
     val topRows = topKByPartition.map(f => Array(f.key, f.value))
-    frameRDD.sparkContext.parallelize(topRows)
+    frameRdd.sparkContext.parallelize(topRows)
   }
 
   /**

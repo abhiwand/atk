@@ -26,7 +26,7 @@ package org.apache.spark.ia.graph
 import com.intel.graphbuilder.elements.{ GBVertex }
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, GraphSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
@@ -42,15 +42,15 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class VertexFrameRDD(schema: VertexSchema,
+class VertexFrameRdd(schema: VertexSchema,
                      sqlContext: SQLContext,
-                     logicalPlan: LogicalPlan) extends FrameRDD(schema, sqlContext, logicalPlan) {
+                     logicalPlan: LogicalPlan) extends FrameRdd(schema, sqlContext, logicalPlan) {
 
-  def this(frameRDD: FrameRDD) = this(frameRDD.frameSchema.asInstanceOf[VertexSchema], frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[VertexSchema], frameRdd.sqlContext, frameRdd.logicalPlan)
 
-  def this(schema: VertexSchema, frameRDD: FrameRDD) = this(schema, frameRDD.sqlContext, frameRDD.logicalPlan)
+  def this(schema: VertexSchema, frameRdd: FrameRdd) = this(schema, frameRdd.sqlContext, frameRdd.logicalPlan)
 
-  def this(schema: VertexSchema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
+  def this(schema: VertexSchema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlanFromSql(schema, rowRDD))
 
   /** Vertex wrapper provides richer API for working with Vertices */
   val vertexWrapper = new VertexWrapper(schema)
@@ -61,17 +61,17 @@ class VertexFrameRDD(schema: VertexSchema,
    * @return an RDD without duplicates
    */
   // TODO: implement or delete
-  //  def mergeDuplicates(): VertexFrameRDD = {
-  //    new VertexFrameRDD(schema, groupVerticesById().mapValues(dups => dups.reduce((m1, m2) => vertex(m1).merge(m2))).values)
+  //  def mergeDuplicates(): VertexFrameRdd = {
+  //    new VertexFrameRdd(schema, groupVerticesById().mapValues(dups => dups.reduce((m1, m2) => vertex(m1).merge(m2))).values)
   //  }
 
   /**
    * Drop duplicates based on user defined id
    */
-  def dropDuplicates(): VertexFrameRDD = {
+  def dropDuplicates(): VertexFrameRdd = {
     val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row.toArray, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    new VertexFrameRDD(FrameRDD.toFrameRDD(schema, duplicatesRemoved))
+    new VertexFrameRdd(FrameRdd.toFrameRdd(schema, duplicatesRemoved))
   }
 
   def groupVerticesById() = {
@@ -101,19 +101,19 @@ class VertexFrameRDD(schema: VertexSchema,
    * @param updatedSchema the new schema to take effect
    * @return the new RDD
    */
-  override def convertToNewSchema(updatedSchema: Schema): VertexFrameRDD = {
+  override def convertToNewSchema(updatedSchema: Schema): VertexFrameRdd = {
     if (schema == updatedSchema) {
       // no changes needed
       this
     }
     else {
       // map to new schema
-      new VertexFrameRDD(super.convertToNewSchema(updatedSchema))
+      new VertexFrameRdd(super.convertToNewSchema(updatedSchema))
     }
   }
 
-  def assignLabelToRows(): VertexFrameRDD = {
-    new VertexFrameRDD(schema, mapVertices(vertex => vertex.setLabel(schema.label)))
+  def assignLabelToRows(): VertexFrameRdd = {
+    new VertexFrameRdd(schema, mapVertices(vertex => vertex.setLabel(schema.label)))
   }
 
   /**
@@ -123,10 +123,10 @@ class VertexFrameRDD(schema: VertexSchema,
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge.
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def append(other: FrameRDD, preferNewVertexData: Boolean = true): VertexFrameRDD = {
+  def append(other: FrameRdd, preferNewVertexData: Boolean = true): VertexFrameRdd = {
     val unionedSchema = schema.union(other.frameSchema).reorderColumns(GraphSchema.vertexSystemColumnNames).asInstanceOf[VertexSchema]
 
-    val part2 = new VertexFrameRDD(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue, (vertex.data, preferNewVertexData)))
+    val part2 = new VertexFrameRdd(other.convertToNewSchema(unionedSchema)).mapVertices(vertex => (vertex.idValue, (vertex.data, preferNewVertexData)))
 
     // TODO: better way to check for empty?
     val appended = if (take(1).length > 0) {
@@ -136,7 +136,7 @@ class VertexFrameRDD(schema: VertexSchema,
     else {
       dropDuplicates(part2)
     }
-    new VertexFrameRDD(unionedSchema, appended).assignLabelToRows()
+    new VertexFrameRdd(unionedSchema, appended).assignLabelToRows()
   }
 
   /**
@@ -163,9 +163,9 @@ class VertexFrameRDD(schema: VertexSchema,
   /**
    * Define the ID column name
    */
-  def setIdColumnName(name: String): VertexFrameRDD = {
+  def setIdColumnName(name: String): VertexFrameRdd = {
     val updatedVertexSchema = schema.copy(idColumnName = Some(name))
-    new VertexFrameRDD(updatedVertexSchema, this)
+    new VertexFrameRdd(updatedVertexSchema, this)
   }
 
   def toVertexRDD: RDD[Vertex] = {
@@ -173,7 +173,7 @@ class VertexFrameRDD(schema: VertexSchema,
   }
 
   /**
-   * Convert this VertexFrameRDD to a GB Vertex RDD
+   * Convert this VertexFrameRdd to a GB Vertex RDD
    */
   def toGbVertexRDD: RDD[GBVertex] = {
     this.mapVertices(_.toGbVertex)

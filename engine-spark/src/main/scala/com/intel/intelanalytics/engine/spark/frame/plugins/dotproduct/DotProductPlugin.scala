@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 /** Json conversion for arguments and return value case classes */
@@ -81,6 +81,6 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
 
     // save results
     val updatedSchema = frameSchema.addColumn(arguments.dotProductColumnName, DataTypes.float64)
-    frames.saveFrameData(frame.toReference, new FrameRDD(updatedSchema, dotProductRdd))
+    frames.saveFrameData(frame.toReference, new FrameRdd(updatedSchema, dotProductRdd))
   }
 }

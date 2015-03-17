@@ -44,7 +44,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])]
    * values over many, many entries.
    */
 
-  private lazy val singlePassStatistics: FirstPassStatistics = StatisticsRDDFunctions.generateFirstPassStatistics(dataWeightPairs)
+  private lazy val singlePassStatistics: FirstPassStatistics = StatisticsRddFunctions.generateFirstPassStatistics(dataWeightPairs)
 
   /**
    * The weighted mean of the data.

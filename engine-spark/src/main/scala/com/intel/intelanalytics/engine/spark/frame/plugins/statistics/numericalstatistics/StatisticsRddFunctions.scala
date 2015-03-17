@@ -37,7 +37,7 @@ import org.apache.spark.AccumulatorParam
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-object StatisticsRDDFunctions extends Serializable {
+object StatisticsRddFunctions extends Serializable {
 
   /**
    * Generates the first-pass statistics for a given distribution.
@@ -62,7 +62,7 @@ object StatisticsRDDFunctions extends Serializable {
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.map(StatisticsRDDFunctions.convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
+    dataWeightPairs.map(StatisticsRddFunctions.convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
 
     accumulator.value
   }

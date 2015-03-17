@@ -16,7 +16,7 @@ cutoffs : array of values
     With N bins, you need N+1 values.
 
 include_lowest : bool (optional)
-    Specify how the boundry conditions are handled.
+    Specify how the boundary conditions are handled.
     True indicates that the lower bound of the bin is inclusive.
     False indicates that the upper bound is inclusive.
     Default is True.

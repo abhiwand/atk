@@ -68,20 +68,20 @@ Note that there may be bins with no members::
 
       a:int32     aEWBinned:int32
     /-----------------------------/
-       1                   1
-       1                   1
-       2                   1
-       3                   1
-       5                   1
-       8                   1
-      13                   1
-      21                   2
-      34                   2
-      55                   4
-      89                   5
+        1                 0
+        1                 0
+        2                 0
+        3                 0
+        5                 0
+        8                 0
+       13                 0
+       21                 1
+       34                 1
+       55                 3
+       89                 4
 
 The function returns a list of 6 cutoff values that define the edges of each
 bin. Note that difference between the cutoff values is constant::
 
     print cutoffs
-    [1.0, 18.0, 35.0, 52.0, 69.0, 86.0]
+    [1.0, 18.6, 36.2, 53.8, 71.4, 89.0]

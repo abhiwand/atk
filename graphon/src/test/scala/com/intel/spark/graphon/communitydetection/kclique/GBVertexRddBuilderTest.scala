@@ -29,7 +29,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
 
-class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+class GBVertexRddBuilderTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait GBVertexSetTest {
 
@@ -66,7 +66,7 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
       val rddOfGbVerticesList: RDD[GBVertex] = sparkContext.parallelize(gbVerticesList)
       val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
 
-      val gbVertexSetter: GBVertexRDDBuilder = new GBVertexRDDBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
+      val gbVertexSetter: GBVertexRddBuilder = new GBVertexRddBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
       val newGBVerticesAsGBVertexSetterOutput: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
       newGBVerticesAsGBVertexSetterOutput.count() shouldEqual rddOfGbVerticesList.count()
@@ -79,7 +79,7 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
       val rddOfGbVerticesList: RDD[GBVertex] = sparkContext.parallelize(gbVerticesList)
       val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
 
-      val gbVertexSetter: GBVertexRDDBuilder = new GBVertexRDDBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
+      val gbVertexSetter: GBVertexRddBuilder = new GBVertexRddBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
       val newGBVerticesAsGBVertexSetterOutput: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
       val rddOfNewGBVertexList: RDD[GBVertex] = sparkContext.parallelize(newGBVertexList)

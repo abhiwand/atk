@@ -29,13 +29,13 @@ import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema.{ Column, VertexSchema, _ }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.ia.graph.{ VertexWrapper, EdgeWrapper }
 import org.apache.spark.rdd.RDD
 
@@ -49,7 +49,7 @@ import scala.collection.JavaConversions._
 
 import org.apache.spark.SparkContext._
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 /**
  * Holds an edge plus src and dest vertex labels.
@@ -178,8 +178,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
       val edgeWrapper = new EdgeWrapper(schema)
       val rows = filteredEdges.map(gbEdge => edgeWrapper.create(gbEdge))
-      val edgeFrameRDD = new FrameRDD(schema, rows)
-      frames.saveFrameData(edgeFrame.toReference, edgeFrameRDD)
+      val edgeFrameRdd = new FrameRdd(schema, rows)
+      frames.saveFrameData(edgeFrame.toReference, edgeFrameRdd)
     })
   }
 
@@ -201,7 +201,7 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
 
       val vertexWrapper = new VertexWrapper(schema)
       val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
-      val vertexFrameRdd = new FrameRDD(schema, rows)
+      val vertexFrameRdd = new FrameRdd(schema, rows)
       frames.saveFrameData(vertexFrame.toReference, vertexFrameRdd)
     })
   }

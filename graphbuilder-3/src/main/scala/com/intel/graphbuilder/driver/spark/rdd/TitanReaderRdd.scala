@@ -34,11 +34,11 @@ import org.apache.spark.{ InterruptibleIterator, Partition, TaskContext }
 /**
  * RDD that loads Titan graph from HBase.
  *
- * @param faunusRDD Input RDD
+ * @param faunusRdd Input RDD
  * @param titanConnector connector to Titan
  */
 
-class TitanReaderRDD(faunusRDD: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](faunusRDD) {
+class TitanReaderRdd(faunusRdd: RDD[(NullWritable, FaunusVertex)], titanConnector: TitanGraphConnector) extends RDD[GraphElement](faunusRdd) {
 
   override def getPartitions: Array[Partition] = firstParent[(NullWritable, FaunusVertex)].partitions
 

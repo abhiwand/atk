@@ -26,7 +26,7 @@ package org.apache.spark.frame
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
@@ -50,18 +50,18 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class FrameRDD(val frameSchema: Schema,
+class FrameRdd(val frameSchema: Schema,
                sqlContext: SQLContext,
                logicalPlan: LogicalPlan)
     extends SchemaRDD(sqlContext, logicalPlan) {
 
-  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlanFromSql(schema, rowRDD))
+  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlanFromSql(schema, rowRDD))
 
   /**
    * A Frame RDD is a SchemaRDD with our version of the associated schema
    *
    * @param schema  the schema describing the columns of this frame
-   * @param schemaRDD an existing schemaRDD that this FrameRDD will represent
+   * @param schemaRDD an existing schemaRDD that this FrameRdd will represent
    */
   def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.sqlContext, schemaRDD.queryExecution.logical)
 
@@ -69,14 +69,14 @@ class FrameRDD(val frameSchema: Schema,
   val rowWrapper = new RowWrapper(frameSchema)
 
   /**
-   * Convert this FrameRDD into a LegacyFrameRDD of type RDD[Array[Any]]
+   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
    */
-  def toLegacyFrameRDD: LegacyFrameRDD = {
-    new LegacyFrameRDD(this.frameSchema, this.baseSchemaRDD)
+  def toLegacyFrameRdd: LegacyFrameRdd = {
+    new LegacyFrameRdd(this.frameSchema, this.baseSchemaRDD)
   }
 
   /**
-   * Convert FrameRDD into RDD[LabeledPoint] format required by MLLib
+   * Convert FrameRdd into RDD[LabeledPoint] format required by MLLib
    */
   def toLabeledPointRDD(labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
     this.mapRows(row =>
@@ -122,7 +122,7 @@ class FrameRDD(val frameSchema: Schema,
   }
 
   /**
-   * Convert FrameRDD into RDD[Vector] format required by MLLib
+   * Convert FrameRdd into RDD[Vector] format required by MLLib
    */
   def toVectorDenseRDD(featureColumnNames: List[String]): RDD[Vector] = {
     this.mapRows(row => {
@@ -169,7 +169,7 @@ class FrameRDD(val frameSchema: Schema,
     })
   }
 
-  def selectColumn(columnName: String): FrameRDD = {
+  def selectColumn(columnName: String): FrameRdd = {
     selectColumns(List(columnName))
   }
 
@@ -183,40 +183,40 @@ class FrameRDD(val frameSchema: Schema,
   }
 
   /**
-   * Create a new FrameRDD that is only a subset of the columns of this FrameRDD
+   * Create a new FrameRdd that is only a subset of the columns of this FrameRdd
    * @param columnNames names to include
-   * @return the FrameRDD with only some columns
+   * @return the FrameRdd with only some columns
    */
-  def selectColumns(columnNames: List[String]): FrameRDD = {
+  def selectColumns(columnNames: List[String]): FrameRdd = {
     if (columnNames.isEmpty) {
       throw new IllegalArgumentException("list of column names can't be empty")
     }
-    new FrameRDD(frameSchema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
+    new FrameRdd(frameSchema.copySubset(columnNames), mapRows(row => row.valuesAsRow(columnNames)))
   }
 
   /**
    * Select a subset of columns while renaming them
    * @param columnNamesWithRename map of old names to new names
-   * @return the new FrameRDD
+   * @return the new FrameRdd
    */
-  def selectColumnsWithRename(columnNamesWithRename: Map[String, String]): FrameRDD = {
+  def selectColumnsWithRename(columnNamesWithRename: Map[String, String]): FrameRdd = {
     if (columnNamesWithRename.isEmpty) {
       throw new IllegalArgumentException("map of column names can't be empty")
     }
     val preservedOrderColumnNames = frameSchema.columnNames.filter(name => columnNamesWithRename.contains(name))
-    new FrameRDD(frameSchema.copySubsetWithRename(columnNamesWithRename), mapRows(row => row.valuesAsRow(preservedOrderColumnNames)))
+    new FrameRdd(frameSchema.copySubsetWithRename(columnNamesWithRename), mapRows(row => row.valuesAsRow(preservedOrderColumnNames)))
   }
 
   /* Please see documentation. Zip works if 2 SchemaRDDs have the same number of partitions
      and same number of elements in  each partition */
-  def zipFrameRDD(frameRdd: FrameRDD): FrameRDD = {
-    new FrameRDD(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.fromSeq(a ++ b) })
+  def zipFrameRdd(frameRdd: FrameRdd): FrameRdd = {
+    new FrameRdd(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.fromSeq(a ++ b) })
   }
 
   /**
-   * Drop columns - create a new FrameRDD with the columns specified removed
+   * Drop columns - create a new FrameRdd with the columns specified removed
    */
-  def dropColumns(columnNames: List[String]): FrameRDD = {
+  def dropColumns(columnNames: List[String]): FrameRdd = {
     convertToNewSchema(frameSchema.dropColumns(columnNames))
   }
 
@@ -225,23 +225,23 @@ class FrameRDD(val frameSchema: Schema,
    *
    * The ignore data type is a slight hack for ignoring some columns on import.
    */
-  def dropIgnoreColumns(): FrameRDD = {
+  def dropIgnoreColumns(): FrameRdd = {
     convertToNewSchema(frameSchema.dropIgnoreColumns())
   }
 
   /**
    * Union two Frame's, merging schemas if needed
    */
-  def union(other: FrameRDD): FrameRDD = {
+  def union(other: FrameRdd): FrameRdd = {
     val unionedSchema = frameSchema.union(other.frameSchema)
     val part1 = convertToNewSchema(unionedSchema)
     val part2 = other.convertToNewSchema(unionedSchema)
     val unionedRdd = part1.toSchemaRDD.union(part2)
-    new FrameRDD(unionedSchema, unionedRdd)
+    new FrameRdd(unionedSchema, unionedRdd)
   }
 
-  def renameColumn(oldName: String, newName: String): FrameRDD = {
-    new FrameRDD(frameSchema.renameColumn(oldName, newName), this)
+  def renameColumn(oldName: String, newName: String): FrameRdd = {
+    new FrameRdd(frameSchema.renameColumn(oldName, newName), this)
   }
 
   /**
@@ -250,14 +250,14 @@ class FrameRDD(val frameSchema: Schema,
    * @param updatedSchema the new schema to take effect
    * @return the new RDD
    */
-  def convertToNewSchema(updatedSchema: Schema): FrameRDD = {
+  def convertToNewSchema(updatedSchema: Schema): FrameRdd = {
     if (frameSchema == updatedSchema) {
       // no changes needed
       this
     }
     else {
       // map to new schema
-      new FrameRDD(updatedSchema, mapRows(row => row.valuesForSchema(updatedSchema)))
+      new FrameRdd(updatedSchema, mapRows(row => row.valuesForSchema(updatedSchema)))
     }
   }
 
@@ -266,7 +266,7 @@ class FrameRDD(val frameSchema: Schema,
    * @param columnNamesAndAscending column names to sort by, true for ascending, false for descending
    * @return the sorted Frame
    */
-  def sortByColumns(columnNamesAndAscending: List[(String, Boolean)]): FrameRDD = {
+  def sortByColumns(columnNamesAndAscending: List[(String, Boolean)]): FrameRdd = {
     require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
 
     val columnNames = columnNamesAndAscending.map(_._1)
@@ -296,7 +296,7 @@ class FrameRDD(val frameSchema: Schema,
 
     // ascending is always true here because we control in the ordering
     val sortedRows = pairRdd.sortByKey(ascending = true).values
-    new FrameRDD(frameSchema, sortedRows)
+    new FrameRdd(frameSchema, sortedRows)
   }
 
   /**
@@ -309,7 +309,7 @@ class FrameRDD(val frameSchema: Schema,
    * @param columnName column to insert ids into (adding if needed)
    * @param startId  the first id to add (defaults to 0), incrementing from there
    */
-  def assignUniqueIds(columnName: String, startId: Long = 0): FrameRDD = {
+  def assignUniqueIds(columnName: String, startId: Long = 0): FrameRdd = {
     val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
 
     val newRows: RDD[sql.Row] = this.mapPartitionsWithIndex((i, rows) => {
@@ -330,14 +330,14 @@ class FrameRDD(val frameSchema: Schema,
     else
       frameSchema
 
-    new FrameRDD(newSchema, this.sqlContext, FrameRDD.createLogicalPlanFromSql(newSchema, newRows))
+    new FrameRdd(newSchema, this.sqlContext, FrameRdd.createLogicalPlanFromSql(newSchema, newRows))
   }
 
   /**
    * Convert Vertex or Edge Frames to plain data frames
    */
-  def toPlainFrame(): FrameRDD = {
-    new FrameRDD(frameSchema.toFrameSchema, this.toSchemaRDD)
+  def toPlainFrame(): FrameRdd = {
+    new FrameRdd(frameSchema.toFrameSchema, this.toSchemaRDD)
   }
 
   /**
@@ -356,12 +356,12 @@ class FrameRDD(val frameSchema: Schema,
 }
 
 /**
- * Static Methods for FrameRDD mostly deals with
+ * Static Methods for FrameRdd mostly deals with
  */
-object FrameRDD {
+object FrameRdd {
 
-  def toFrameRDD(schema: Schema, rowRDD: RDD[Row]) = {
-    new FrameRDD(schema, new SQLContext(rowRDD.context), FrameRDD.createLogicalPlan(schema, rowRDD))
+  def toFrameRdd(schema: Schema, rowRDD: RDD[Row]) = {
+    new FrameRdd(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlan(schema, rowRDD))
   }
 
   /**
@@ -371,7 +371,7 @@ object FrameRDD {
    * @return A SchemaRDD with a schema corresponding to the schema object
    */
   def createLogicalPlan(schema: Schema, rows: RDD[Array[Any]]): LogicalPlan = {
-    val rdd = FrameRDD.toRowRDD(schema, rows)
+    val rdd = FrameRdd.toRowRDD(schema, rows)
     createLogicalPlanFromSql(schema, rdd)
   }
 

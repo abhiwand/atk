@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.frame.GroupByAggregationArgs
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -59,14 +59,14 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "Multi" should "count and sum the number of values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(
       GroupByAggregationArgs("COUNT", "col_1", "col1_count"),
       GroupByAggregationArgs("SUM", "col_2", "col2_sum"),
       GroupByAggregationArgs("SUM", "col_1", "col1_sum"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -79,11 +79,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
   }
   "COUNT" should "count the number of values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("COUNT", "col_1", "col_count"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -98,11 +98,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "COUNT_DISTINCT" should "count the number of distinct values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("COUNT_DISTINCT", "col_2", "col_distinct_count"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -116,11 +116,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "MIN" should "return the minimum values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("MIN", "col_1", "col_min"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -134,11 +134,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "MAX" should "return the maximum values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("MAX", "col_1", "col_max"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -152,11 +152,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "SUM" should "return the sum of values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("SUM", "col_1", "col_sum"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect()
 
     val expectedResults = List(
@@ -170,11 +170,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "AVG" should "return the arithmetic mean of values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("AVG", "col_2", "col_mean"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect().map(row => {
       new GenericRow(Array[Any](row(0), BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)))
     })
@@ -190,11 +190,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
   "VAR" should "return the variance of values by key" in {
     val rdd = sparkContext.parallelize(inputRows, 3)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("VAR", "col_2", "col_var"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect().map(row => {
       val variance = if (row(1) == null) null else BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)
       new GenericRow(Array[Any](row(0), variance))
@@ -211,11 +211,11 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
   }
   "HISTOGRAM" should "return the histogram of values by key" in {
     val rdd = sparkContext.parallelize(inputRows, 3)
-    val frameRDD = new FrameRDD(inputSchema, rdd)
+    val frameRdd = new FrameRdd(inputSchema, rdd)
     val groupByColumns = List(inputSchema.column(0))
     val groupByArguments = List(GroupByAggregationArgs("HISTOGRAM={\"cutoffs\": [0,2,4] }", "col_2", "col_histogram"))
 
-    val resultRDD = GroupByAggregationFunctions.aggregation(frameRDD, groupByColumns, groupByArguments)
+    val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.map(row => (row(0), row(1).asInstanceOf[Vector[Double]].toArray)).collect().toMap
 
     results("a") should equalWithTolerance(Array(0.4d, 0.6d), epsilon)
