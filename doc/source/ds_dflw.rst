@@ -9,10 +9,6 @@ Process Flow Examples
     :hidden:
 
     ds_apir
-    ds_gaal_clco
-    ds_gaal_cc
-    ds_gaal_pr
-    ds_gaal_dc
 
 
 -----------------
@@ -1034,13 +1030,16 @@ Make a EdgeFrame::
 
     my_edge_frame = my_graph.edges("worksunder")
 
-Graph Analytics Routines
-========================
-* :ref:`Graph_Analytics`
-    * :ref:`ClCo`
-    * :ref:`CC`
-    * :ref:`PR`
-    * :ref:`DC`
+.. _Graph_Analytics:
+
+---------------
+Graph Analytics
+---------------
+
+* :ref:`ClCo`
+* :ref:`CC`
+* :ref:`DC`
+* :ref:`PR`
 
 .. TODO::
 
@@ -1048,32 +1047,21 @@ Graph Analytics Routines
     
     Add these to the toctree above.
 
-
-.. _Graph_Analytics:
-
----------------
-Graph Analytics
----------------
-
-The |IAT| supports these algorithms :ref:`ClCo`, :ref:`CC`, :ref:`DC` and :ref:`PR`.
-
 .. _ClCo:
-.. include:: ds_mlal_clco.rst
+.. include:: ds_gaal_clco.rst
 
 .. _CC:
-.. include:: ds_mlal_cc.rst
+.. include:: ds_gaal_cc.rst
 
 .. _DC:
-.. include:: ds_mlal_dc.rst
+.. include:: ds_gaal_dc.rst
 
 .. _PR:
-.. include:: ds_mlal_pr.rst
+.. include:: ds_gaal_pr.rst
 
 .. TODO::
 
-    We support three algorithms in this category, ref:`APL`, ref:`CC`, and :ref:`PR`
-
     .. _APL:
-    .. include:: ds_mlal_apl.rst
+    .. include:: ds_gaal_apl.rst
 
 
