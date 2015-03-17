@@ -272,15 +272,15 @@ trait AbstractRow {
   /**
    * Select several property values from their names
    * @param names the names of the properties to put into an array
-   * @param flatten If true, flatten vector data types
+   * @param flattenInputs If true, flatten vector data types
    * @return values for the supplied properties
    */
-  def valuesAsArray(names: Seq[String] = schema.columnNames, flatten: Boolean = false): Array[Any] = {
+  def valuesAsArray(names: Seq[String] = schema.columnNames, flattenInputs: Boolean = false): Array[Any] = {
     val arrayBuf = new ArrayBuffer[Any]()
 
     schema.columnIndices(names).map(i => {
       schema.column(i).dataType match {
-        case DataTypes.vector => if (flatten) arrayBuf ++= DataTypes.toVector(row(i)) else arrayBuf += row(i)
+        case DataTypes.vector => if (flattenInputs) arrayBuf ++= DataTypes.toVector(row(i)) else arrayBuf += row(i)
         case _ => arrayBuf += row(i)
       }
     })
