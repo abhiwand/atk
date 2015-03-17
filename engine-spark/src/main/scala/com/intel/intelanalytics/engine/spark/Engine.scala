@@ -492,7 +492,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {
-      commands.stopCommand(id)
+      commands.cancelCommand(id, commandPluginRegistry)
     }
   }
 

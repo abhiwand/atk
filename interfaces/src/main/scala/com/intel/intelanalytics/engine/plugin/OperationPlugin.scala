@@ -137,13 +137,17 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     //after the plugin code, we can.
     withMyClassLoader {
       implicit val invocation = customizeInvocation(simpleInvocation, arguments)
-      debug("Invoking execute method with arguments:\n" + arguments)
-      val result = execute(arguments)(invocation)
+      val result = try {
+        debug("Invoking execute method with arguments:\n" + arguments)
+        execute(arguments)(invocation)
+      }
+      finally {
+        cleanup(invocation)
+      }
       if (result == null) {
         throw new Exception(s"Plugin ${this.getClass.getName} returned null")
       }
       debug("Result was:\n" + result)
-      cleanup(invocation)
       result
     }
   })(simpleInvocation)
