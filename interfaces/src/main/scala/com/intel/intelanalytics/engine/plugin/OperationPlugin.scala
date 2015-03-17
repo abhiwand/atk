@@ -131,24 +131,19 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
   final override def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
     require(simpleInvocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
-    println("In Operation Plugin apply method")
 
     //We call execute rather than letting plugin authors directly implement
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      println("Calling customizeInvocation")
       implicit val invocation = customizeInvocation(simpleInvocation, arguments)
       debug("Invoking execute method with arguments:\n" + arguments)
       val result = execute(arguments)(invocation)
-      println("In Operation Plugin. Returned from execute method")
       if (result == null) {
-        println("Throwind an exception as result was null")
         throw new Exception(s"Plugin ${this.getClass.getName} returned null")
       }
       debug("Result was:\n" + result)
       cleanup(invocation)
-      println("Returning result")
       result
     }
   })(simpleInvocation)

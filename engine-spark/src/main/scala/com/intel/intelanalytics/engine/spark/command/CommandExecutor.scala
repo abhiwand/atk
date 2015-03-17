@@ -100,7 +100,6 @@ case class CommandContext(
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
- * @param contextFactory a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
 //class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
 class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
@@ -204,7 +203,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       withContext(commandContext.command.name) {
         // run the command in a future so that we don't make the client wait for initial response
         val cmdFuture = future {
-          sys.props += Tuple2("ATK_SPARK_SUBMIT", "true")
           executeCommandContext(commandContext, firstExecution)
           // get the latest command progress from DB when command is done executing
           commands.lookup(commandContext.command.id).get
@@ -228,9 +226,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     val serializedReturn = Try {
-      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && sys.props.contains("ATK_SPARK_SUBMIT")) {
+      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
         executeCommandOnYarn(commandContext.command)
-        sys.props -= "ATK_SPARK_SUBMIT"
+        sys.props -= "SPARK_SUBMIT"
         /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
         val updatedCommand = commands.lookup(commandContext.command.id).get
         if (updatedCommand.error.isDefined)
@@ -238,7 +236,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         updatedCommand.result.get
       }
       else {
-        println("Calling invokeCommandFunction path")
         val returnValue = if (commandContext.action) {
           val res = if (firstExecution) {
             this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
@@ -272,12 +269,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       Files.write(Paths.get("/tmp/application.conf"), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
 
       import org.apache.spark.deploy.SparkSubmit
-      //      val inputArgs = Array[String](
-      //        "--class", "org.apache.spark.examples.SparkPi",
-      //        "--master", "yarn-cluster",
-      //        "--conf", "config.resource=/tmp/application.conf",
-      //        "/opt/cloudera/parcels/CDH/lib/spark/lib/spark-examples-1.2.0-cdh5.3.1-hadoop2.5.0-cdh5.3.1.jar",
-      //        "1000")
       val inputArgs = Array[String](
         s"--master", s"${SparkEngineConfig.sparkMaster}",
         "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
@@ -285,9 +276,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         "--files", "/tmp/application.conf",
         "--conf", "config.resource=tmp/application.conf",
         "--properties-file", "/tmp/application.conf",
+        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m",
         "--verbose",
         "spark-internal",
-        //        s"${SparkContextFactory.jarPath("engine-spark")}",
         s"${command.id}")
 
       info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
