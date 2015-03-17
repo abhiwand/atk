@@ -65,18 +65,21 @@ object Covariance extends Serializable {
    *
    * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance matrix
+   * @param useVectorOutput If true, output results as a column of type 'vector'
    * @return the covariance matrix in a RDD[Rows]
    */
   def covarianceMatrix(frameRdd: FrameRdd,
-                       dataColumnNames: List[String]): RDD[sql.Row] = {
+                       dataColumnNames: List[String],
+                       useVectorOutput: Boolean = false): RDD[sql.Row] = {
 
     def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
-      val temp: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
-      new GenericRow(temp)
+      val results: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
+      val tempRow: Array[Any] = if (useVectorOutput) Array(DataTypes.toVector(results)) else results
+      new GenericRow(tempRow)
     })
 
     frameRdd.sparkContext.parallelize(arrGenericRow)
