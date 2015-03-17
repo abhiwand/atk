@@ -32,7 +32,7 @@ only rows with scores greater than zero::
     my_frame = Frame(my_csv)
     my_frame.filter(my_custom_row_func)
 
-In this example, the filter command iterates over every row in the frame and
+The filter command iterates over every row in the frame and
 evaluates the user-defined function on each one and keeps only those rows which
 evaluate to True.
 
@@ -60,8 +60,6 @@ characters and the underscore character).
 Columns whose names do not meet this criteria must be referenced using square
 brackets with strings.
 
-A *row* object instance may not be written to.
-Assigning a value to a cell (existing or a new one) will cause an error.
 New values must be added to a frame using the Frame’s add_columns method.
 
 The *row* object supports a few dictionary-like methods:
@@ -109,7 +107,7 @@ Here are some guidelines to follow when writing a PUF:
     If the function execution raises an exception, it will cause the entire
     command to fail and possibly leave the frame or graph in an incomplete
     state.
-    The best practice is to put all our PUF functionality in a ``try: except:``
+    The best practice is to put all PUF functionality in a ``try: except:``
     block, where the ``except:`` clause returns a default value or performs a
     benign side effect.
     See the ``row_sum`` function example above, where we used a ``try: except:``
@@ -129,9 +127,9 @@ Here are some guidelines to follow when writing a PUF:
     (which will fail due to permissions).
 #.  Performance:
     Be mindful of performance.
-    These functions execute on each row of data, in other words, several times.
+    These functions execute on every row of data, in other words, several times.
 #.  Printing:
-    Printing (to stdout, stderr, …) within our PUF will not show up in the
+    Printing (to stdout, stderr, …) within the PUF will not show up in the
     client REPL.
     Such messages will usually end up in the server logs.
     In general, avoid printing.

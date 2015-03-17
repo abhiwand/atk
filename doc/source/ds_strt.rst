@@ -81,7 +81,7 @@ directory::
 
 To run any of the Python example scripts type::
 
-    $ python <SCRIPT_NAME>.py
+    $ python <SCRIPT_NAME>
 
 where "<SCRIPT_NAME>" is any of the scripts.
 

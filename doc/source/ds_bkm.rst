@@ -50,18 +50,21 @@ Reset configuration back to defaults::
 Errors
 ======
 
-By default the toolkit does not print the full stack trace when exceptions occur.  To see the full Python stack trace of the last (i.e. most recent) exception::
+By default, the toolkit does not print the full stack trace when exceptions
+occur.
+To see the full Python stack trace of the last (i.e. most recent) exception::
 
-    ia.errors.last
+    >>> ia.errors.last
 
-To enable always printing the full Python stack trace, set the 'show_details' property::
+To enable always printing the full Python stack trace, set the *show_details*
+property::
 
-    import intelanalytics as ia
+    >>> import intelanalytics as ia
      
     # show full stack traces
-    ia.errors.show_details = True
+    >>> ia.errors.show_details = True
      
-    ia.connect()
+    >>> ia.connect()
      
     # … the rest of your script …
 
@@ -75,9 +78,12 @@ Tab Completion
 
 Allows you to use the tab key to complete your typing for you.
 
-If you are running with a standard Python REPL (not iPython, bPython, or the like) you will have to set up the tab completion manually:
+If you are running with a standard Python REPL (not iPython, bPython, or the
+like) you will have to set up the tab completion manually:
 
-Create a .pythonrc file in your home directory with the following contents::
+Create a .pythonrc file in your home directory with the following contents:
+
+.. code::
 
     import rlcompleter, readline
     readline.parse_and_bind('tab:complete')
@@ -85,7 +91,10 @@ Create a .pythonrc file in your home directory with the following contents::
 
 Or you can just run the two lines in your REPL session.
 
-This will let you do the tab completion, but will also remember your history over multiple sessions::
+This will let you do the tab completion, but will also remember your history
+over multiple sessions:
+
+.. code::
 
     # Add auto-completion and a stored history file of commands to your Python
     # interactive interpreter. Requires Python 2.0+, readline.
@@ -114,7 +123,10 @@ This will let you do the tab completion, but will also remember your history ove
     del atexit, readline, rlcompleter, save_history, historyPath
 
 Note:
-    If the .pythonrc does not take effect, add PYTHONSTARTUP in your .bashrc file::
+    If the .pythonrc does not take effect, add PYTHONSTARTUP in your .bashrc
+    file:
+
+    .. code::
 
         export PYTHONSTARTUP=~/.pythonrc
 
@@ -125,49 +137,47 @@ Spark
 Resolving disk full issue while running Spark jobs
 ==================================================
 
-If you are using a Red Hat cluster or an old CentOS cluster, due to the way the /tmp file system is setup, 
-you might see that while running spark jobs, your /tmp drive becomes full and causes the jobs to fail.
+Using a Red Hat cluster, or an old CentOS cluster,
+the /tmp drive may become full while running spark jobs.
+This causes the jobs to fail, and it is caused by the way the /tmp file system
+is setup, 
+Spark and other |CDH| services, by default, use /tmp as the temporary location
+to store files required during run time, including, but not limited to, shuffle
+data.
 
-This is because Spark and other :abbr:`CDH (Cloudera Hadoop)` services, by default use /tmp as the temporary location to store files required during 
-run time including but not limited to shuffle data.
+Steps to resolve this issue:
 
-In order to resolve this, follow these instructions:
+1)  Stop the Intelanalytics service.
+#)  From |CDH| Web UI:
 
-1)  Stop the Intelanalytics service
-
-#)  From :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
+    a)  Stop the Cloudera Management Service.
+    #)  Stop the |CDH|.
 
 #)  Now run the following steps on each node:
 
+    a)  Find the largest partition by running the command::
 
-    a)  Find your largest partition by running the command::
+            $ df -h
 
-            df -h
+    #)  Assuming /mnt is your largest partition, create the folder
+        "/mnt/.bda/tmp", if it isn't already present::
 
-
-    #)  Assuming /mnt is your largest partition, create the folder "/mnt/.bda/tmp", if it isn't already present::
-
-            sudo mkdir -p /mnt/.bda/tmp
-
+            $ sudo mkdir -p /mnt/.bda/tmp
 
     #)  Set the permissions on this directory so that it's wide open::
 
-            sudo chmod 1777 /mnt/.bda/tmp
+            $ sudo chmod 1777 /mnt/.bda/tmp
 
-
-    #)  Add the following line to your /etc/fstab file and save it::
+    #)  Add the following line to your '/etc/fstab' file and save it::
 
             /mnt/.bda/tmp    /tmp    none   bind   0   0
     
-
-    #)  Reboot the machine
-
-
-#)  After all the nodes are rebooted, from :abbr:`CDH (Cloudera Hadoop)` Web UI: first stop "Cloudera Management Service", and then stop the :abbr:`CDH (Cloudera Hadoop)`.
+    #)  Reboot the machine.
 
 Spark space concerns
 ====================
-Whenever you run a Spark application, jars and logs go to /va/run/spark/work (or other location if configured in Cloudera Manager).
+Whenever you run a Spark application, jars and logs go to /va/run/spark/work
+(or other location configured in Cloudera Manager).
 These can use up a bit of space eventually (over 140MB per command).
 
 * Short-term workaround: periodically delete these files
