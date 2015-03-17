@@ -126,7 +126,7 @@ class FrameRdd(val frameSchema: Schema,
    */
   def toVectorDenseRDD(featureColumnNames: List[String]): RDD[Vector] = {
     this.mapRows(row => {
-      val array = row.valuesAsArray(featureColumnNames, flatten = true)
+      val array = row.valuesAsArray(featureColumnNames, flattenInputs = true)
       val b = array.map(i => DataTypes.toDouble(i))
       Vectors.dense(b)
     })

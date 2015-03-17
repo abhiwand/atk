@@ -62,12 +62,12 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(arrGenericRow)
     val schema = FrameSchema(List(Column("col_0", DataTypes.vector)))
     val frameRdd = new FrameRdd(schema, rdd)
-    val result = Covariance.covarianceMatrix(frameRdd, List("col_0")).collect()
+    val result = Covariance.covarianceMatrix(frameRdd, List("col_0"), useVectorOutput = true).collect()
 
     result.size shouldBe 3
-    result(0) shouldBe Array(630.0, 450.0, 225.0)
-    result(1) shouldBe Array(450.0, 450.0, 0.0)
-    result(2) shouldBe Array(225.0, 0.0, 900.0)
+    result(0)(0) shouldBe Vector(630.0, 450.0, 225.0)
+    result(1)(0) shouldBe Vector(450.0, 450.0, 0.0)
+    result(2)(0) shouldBe Vector(225.0, 0.0, 900.0)
   }
   "Covariance matrix calculations" should "return the correct values for mixed vector and numeric data types" in {
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
@@ -85,4 +85,5 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     result(1) shouldBe Array(450.0, 450.0, 0.0)
     result(2) shouldBe Array(225.0, 0.0, 900.0)
   }
+
 }
