@@ -32,7 +32,7 @@ cp -Rv config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/*
 cp -v  config/intelanalytics-rest-server-tar/api-server.sh tarballs/$package/bin/
 
 
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar"
+jars="api-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 #popd
 
