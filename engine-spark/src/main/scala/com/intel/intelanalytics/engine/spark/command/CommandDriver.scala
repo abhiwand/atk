@@ -85,7 +85,6 @@ class CommandDriver extends EngineComponent
           case Some(u) => userStorage.createUserPrincipalFromUser(u)
           case _ => null
         })
-        println(s"Calling CommandExecutor executeCommand")
         commandExecutor.executeCommand(command, commandPluginRegistry)(invocation)
       }
     }
@@ -97,9 +96,7 @@ object CommandDriver {
   def usage() = println("Usage: java -cp launcher.jar com.intel.intelanalytics.component.CommandDriver <command_id>")
 
   def executeCommand(commandId: Long): Unit = {
-    println(s"In ExecuteCommand in CommandDriver")
     val driver = new CommandDriver
-    println(s"Calling driver.execute with commandId $commandId")
     driver.execute(commandId)
   }
 
@@ -110,8 +107,16 @@ object CommandDriver {
     else {
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")
-      val commandId = args(0).toLong
-      executeCommand(commandId)
+      /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */
+      try {
+        sys.props += Tuple2("SPARK_SUBMIT", "true")
+        val commandId = args(0).toLong
+        executeCommand(commandId)
+      }
+      finally {
+        sys.props -= "SPARK_SUBMIT"
+      }
+
     }
 
   }
