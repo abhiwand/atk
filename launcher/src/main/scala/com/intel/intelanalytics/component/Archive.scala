@@ -167,7 +167,8 @@ object Archive extends ClassLoaderAware {
         FolderPath("giraph development class files", root / "igiraph" / archive.substring(1) / "target" / "classes"),
         FolderPath("giraph development resource files", root / "igiraph" / archive.substring(1) / "src" / "main" / "resources"),
         JarPath("giraph development jar", root / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")),
-        JarPath("yarn cluster mode", root / (archive + ".jar"))
+        JarPath("yarn cluster mode", root / (archive + ".jar")), /* In yarn container mode, all jars are copied to root */
+        JarPath("launcher", root / ".." / (archive + ".jar"))
       )
     } ++ jarFolders.map(s => JarPath("deployed jar",
       (s.replace("${PWD}", Directory.Current.get.toString()): Path) / (archive + ".jar")))
