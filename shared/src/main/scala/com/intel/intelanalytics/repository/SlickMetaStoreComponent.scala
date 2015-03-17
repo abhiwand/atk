@@ -747,7 +747,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, "", None, List(), complete = false, None, new DateTime(), new DateTime(), Some(1))
+      val c = Command(0, command.name, command.arguments, "", None, List(), complete = false, None, new DateTime(), new DateTime(), command.createdBy)
       commandsAutoInc.insert(c)
     }
 
