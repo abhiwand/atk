@@ -101,9 +101,11 @@ Examples
 --------
 Consider the following sample data set in *frame* with actual data
 labels specified in the *labels* column and the predicted labels in the
-*predictions* column::
+*predictions* column:
 
-    frame.inspect()
+.. code::
+
+    >>> frame.inspect()
 
       a:unicode   b:int32   labels:int32  predictions:int32
     /-------------------------------------------------------/
@@ -112,25 +114,25 @@ labels specified in the *labels* column and the predicted labels in the
         blue        1              0                  0
         green       0              1                  1
 
-    cm = frame.classification_metrics('labels', 'predictions', 1, 1)
+    >>> cm = frame.classification_metrics('labels', 'predictions', 1, 1)
 
-    cm.f_measure
+    >>> cm.f_measure
 
     0.66666666666666663
 
-    cm.recall
+    >>> cm.recall
 
     0.5
 
-    cm.accuracy
+    >>> cm.accuracy
 
     0.75
 
-    cm.precision
+    >>> cm.precision
 
     1.0
 
-    cm.confusion_matrix
+    >>> cm.confusion_matrix
 
                   Predicted
                  _pos_ _neg__

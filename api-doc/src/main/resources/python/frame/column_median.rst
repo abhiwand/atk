@@ -33,8 +33,9 @@ median : The median of the values
 
 Examples
 --------
-::
 
-    median = frame.column_median('middling column')
+.. code::
+
+    >>> median = frame.column_median('middling column')
 
 

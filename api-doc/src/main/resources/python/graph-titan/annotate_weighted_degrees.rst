@@ -59,9 +59,9 @@ Given a directed graph with three nodes and two edges like this:
 
 .. only:: html
 
-    ::
+    .. code::
 
-        g.query.gremlin('g.V')
+        >>> g.query.gremlin('g.V')
             Out[23]:
             {u'results': [{u'_id': 28304,
              u'_label': u'vertex',
@@ -80,7 +80,7 @@ Given a directed graph with three nodes and two edges like this:
              u'source': 3}],
              u'run_time_seconds': 1.245}
  
-        g.query.gremlin('g.E')
+        >>> g.query.gremlin('g.E')
             Out[24]:
             {u'results': [{u'_eid': 3,
              u'_id': u'34k-gbk-bth-lnk',
@@ -98,9 +98,9 @@ Given a directed graph with three nodes and two edges like this:
              u'weight': 0.1}],
              u'run_time_seconds': 1.359}
  
-        h = g.annotate_weighted_degrees('new_graph', 'weight',  edge_weight_property = 'weight')
+        >>> h = g.annotate_weighted_degrees('new_graph', 'weight',  edge_weight_property = 'weight')
  
-        h.query.gremlin('g.V')
+        >>> h.query.gremlin('g.V')
             Out[26]:
             {u'results': [{u'_id': 24112,
              u'_label': u'vertex',
@@ -127,9 +127,9 @@ Given a directed graph with three nodes and two edges like this:
 
 .. only:: latex
 
-    ::
+    .. code::
 
-        g.query.gremlin('g.V')
+        >>> g.query.gremlin('g.V')
             Out[23]:
             {u'results': [{u'_id': 28304,
              u'_label': u'vertex',
@@ -148,7 +148,7 @@ Given a directed graph with three nodes and two edges like this:
              u'source': 3}],
              u'run_time_seconds': 1.245}
  
-        g.query.gremlin('g.E')
+        >>> g.query.gremlin('g.E')
             Out[24]:
             {u'results': [{u'_eid': 3,
              u'_id': u'34k-gbk-bth-lnk',
@@ -166,12 +166,12 @@ Given a directed graph with three nodes and two edges like this:
              u'weight': 0.1}],
              u'run_time_seconds': 1.359}
  
-        h = g.annotate_weighted_degrees(            \\
-                'new_graph',                        \\
-                'weight',                           \\
-                edge_weight_property = 'weight')
+        >>> h = g.annotate_weighted_degrees(            \\
+        ...        'new_graph',                        \\
+        ...        'weight',                           \\
+        ...        edge_weight_property = 'weight')
  
-        h.query.gremlin('g.V')
+        >>> h.query.gremlin('g.V')
             Out[26]:
             {u'results': [{u'_id': 24112,
              u'_label': u'vertex',

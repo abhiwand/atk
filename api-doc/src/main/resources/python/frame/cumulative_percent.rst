@@ -23,9 +23,11 @@ negative percentages).
 Examples
 --------
 Consider Frame *my_frame* accessing a frame that contains a single
-column named *obs*::
+column named *obs*:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32
     /-----------/
@@ -36,16 +38,20 @@ column named *obs*::
          1
          2
 
-The cumulative percent sum for column *obs* is obtained by::
+The cumulative percent sum for column *obs* is obtained by:
 
-    my_frame.cumulative_percent('obs')
+.. code::
+
+    >>> my_frame.cumulative_percent('obs')
 
 The Frame *my_frame* now contains two columns *obs* and
 *obsCumulativePercentSum*.
 They contain the original data and the cumulative percent sum,
-respectively::
+respectively:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32   obs_cumulative_percent:float64
     /--------------------------------------------/
