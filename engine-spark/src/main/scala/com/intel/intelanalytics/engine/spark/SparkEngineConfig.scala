@@ -245,6 +245,12 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   * spark driver max size should be minimum of 128M for Spark Submit to work. We are currently loading multiple
+   * class loaders and Spark Submit driver throws OOM if default value of 64M is kept for PermGen space
+   */
+  val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
+
+  /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
    *
    * True if engine-spark.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
