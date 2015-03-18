@@ -1,6 +1,6 @@
-====================================================
-Intel Analytics Toolkit (|IAT|) Package Installation
-====================================================
+====================
+Package Installation
+====================
 
 .. contents::
     :local:

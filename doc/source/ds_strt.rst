@@ -23,26 +23,27 @@ language from TinkerPop.
 Features
 --------
 
-*   Import data from several different formats
-*   Data cleaning tools to prepare the data by removing erroneous values,
+*   Import routines read and convert data from several different formats
+*   Data cleaning tools prepare the data by removing erroneous values,
     transforming values to a normalized state and constructing
     new features through manipulating existing values
-*   Powerful algorithms for gaining deeper insight into the data.
+*   Analysis and machine learning algorithms give deeper insight into the data
 
 ------------------
 Built-in Databases
 ------------------
 
-The |IAT| stores data as either traditional table-based format,
-or in a graph database, and it provides the tools to allow to
-easily manipulate data in either of these data formats.
+The |IAT| stores data in either a traditional table-based format,
+or in a graph format.
+It provides the tools to allow to easily manipulate data in either of these
+data formats.
 
 ---------------
 Script Examples
 ---------------
 
-The |IAT| ships with example scripts and data sets that exercise the various
-features of the platform.
+The |IAT| ships with example Python scripts and data sets that exercise the
+various features of the platform.
 The default location for the example scripts is *iauser*'s home directory
 '/home/iauser'.
 
@@ -88,4 +89,4 @@ where "<SCRIPT_NAME>" is any of the scripts.
 Logs
 ====
 
-Details about logs can be found in the :doc:`section on log files <ad_log>`.
+Details about logs can be found in the section on :doc:`log files <ad_log>`.

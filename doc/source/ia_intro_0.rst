@@ -1,5 +1,10 @@
+=========
+The |IAT|
+=========
+
+--------
 Overview
-========
+--------
 The |IAT| is a platform that simplifies applying :term:`graph analytics` and
 :term:`machine learning` to big data for superior knowledge discovery and
 predictive modeling across a wide variety of use cases and solutions.
@@ -18,8 +23,9 @@ need in a unified workflow that frees the researchers from the overhead of
 understanding, integrating, and inefficiently iterating across a diversity of
 formats and interfaces.
 
-Python and Data Frame User Interface
-====================================
+--------------------------------------------
+Python and Data Frame User Interface Summary
+--------------------------------------------
 The |IAT| utilizes Python data science abstractions to make programming fully
 scalable big data analytic workflows using Spark/Hadoop clusters as familiar
 and accessible as using popular desktop machine learning solutions such as
@@ -30,16 +36,17 @@ The |IAT| provides an extensive library to manipulate the data frames for
 feature engineering and exploration, such as joins and aggregations.
 User-defined transformations and filters can be written in Python and applied
 to terabytes (and more) of data using distributed processing.
-Machine learning algorithms are also invoked as higher-level data science APIs
+Machine learning algorithms are also invoked as higher-level data science API
 (Application Programming Interface) abstractions, making model development
 (such as creating parallel recommender systems or training classifier and
 clustering models) accessible to a broad population of researchers possessing
 mainstream data science programming skills.
-For more information, see the sections on :doc:`process flow <ds_dflw>`
+For more information, see the section on :doc:`process flow <ds_dflw>`
 and the `Python website <http://www.python.org>`__.
 
-Graph Pipeline
-==============
+----------------------
+Graph Pipeline Summary
+----------------------
 In addition to enabling use of entity-based data representations and
 algorithms, the toolkit provides a full graph pipeline to enable application of
 graph methods to big data.
@@ -59,16 +66,18 @@ frame representations (for example, applying a clustering algorithm to a vertex
 list with features developed using graph analytics), the |IAT| provides the
 seamless ability to move between both data representations.
 
-Graph Analytics
-===============
+-----------------------
+Graph Analytics Summary
+-----------------------
 Fully-scalable graph analytic algorithms are provided for uncovering central
 influences and communities in the data set.
 This ability is useful for exploring the data, as well as for incorporating as
 machine learning features that incorporate the context of an entity in the
 graph, thus creating better, more predictive, machine learning results.
 
-Machine Learning
-================
+------------------------
+Machine Learning Summary
+------------------------
 The toolkit provides algorithms for supervised, unsupervised, and
 semi-supervised machine learning using both entity and graphical machine
 learning tools.
@@ -80,10 +89,11 @@ systems using alternating least squares and conjugate gradient descent, topic
 modeling using Latent Dirchelet Allocation, clustering using K-means, and
 classification using logistic regression.
 See the section on :doc:`machine learning <ds_ml>` and the
-:ref:`API <api_graphs.html#titangraphml>` for further information.
+:doc:`API <ds_apic>` for further information.
 
-Plugins
-=======
+---------------
+Plugins Summary
+---------------
 In addition to the extensive set of capabilities provided, the platform is
 fully extensible using a plugin architecture.
 This allows developers to incorporate graph analytical tools into the existing
@@ -91,19 +101,20 @@ range of machine learning abilities, expanding the capabilities of the |IAT|
 for new problem solutions.
 Plugins are developed using a thin Scala wrapper, and the |IAT| framework
 automatically generates a Python presentation for those added functions.
-Plug-ins can be used for a range of purposes, from developing custom algorithms
-for specialized data types, building custom transformations for commonly used
-functions for higher performance than a |PUF|, or integrating
+Plug-ins can be used for a range of purposes, such as developing custom
+algorithms for specialized data types, building custom transformations for
+commonly used functions to get higher performance than a |PUF|, or integrating
 other tools to further unify the workflow.
-See the section on :doc:`Plugin Authoring Guide <ad_plug>` for more information.
+See the :doc:`Plugin Authoring Guide <ad_plug>` for more information.
 
-Installation
-============
+--------------------
+Installation Summary
+--------------------
 The |IAT| installs as an edge node on a Hadoop/Spark cluster and makes use of a
-number of engines provided by the distribution.
+number of engines provided with the distribution.
 This version of the |IAT| supports installation onto the Cloudera distribution
 to ensure compatibility with the underlying Spark and Hadoop engines.
 This also allows the use of the Cloudera Manager to install the necessary
 parcels and to provide the metadata store.
-See the section on :doc:`installation <ad_inst_ia1>` for more information.
+See the section on :doc:`ad_inst_ia1` for more information.
 
