@@ -180,7 +180,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         mutable.Map.empty,
         mutable.Map.empty)
 
-      executeCommandContext(context, true)
+      commands.complete(context.command.id, Try { executeCommandContext(context, true) })
     }
 
   /**
@@ -204,7 +204,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       withContext(commandContext.command.name) {
         // run the command in a future so that we don't make the client wait for initial response
         val cmdFuture = future {
-          executeCommandContext(commandContext, firstExecution)
+          commands.complete(commandContext.command.id, Try {
+            executeCommandContext(commandContext, firstExecution)
+          })
           // get the latest command progress from DB when command is done executing
           commands.lookup(commandContext.command.id).get
         }
@@ -219,42 +221,39 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
    * @tparam A plugin arguments
    * @return plugin return value as JSON
    */
-  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): Unit = withContext("cmdExcector") {
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}")
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
-    val serializedReturn = Try {
-      if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
-        executeCommandOnYarn(commandContext.command)
-        sys.props -= "SPARK_SUBMIT"
-        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
-        val updatedCommand = commands.lookup(commandContext.command.id).get
-        if (updatedCommand.error.isDefined)
-          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-        updatedCommand.result.get
+    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
+      executeCommandOnYarn(commandContext.command)
+      sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
+      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+      val updatedCommand = commands.lookup(commandContext.command.id).get
+      if (updatedCommand.error.isDefined)
+        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+      updatedCommand.result.get
+    }
+    else {
+      val returnValue = if (commandContext.action) {
+        val res = if (firstExecution) {
+          this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
+        }
+        else commandContext.resolver
+        val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
+        result
       }
       else {
-        val returnValue = if (commandContext.action) {
-          val res = if (firstExecution) {
-            this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
-          }
-          else commandContext.resolver
-          val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
-          result
-        }
-        else {
-          createSuspendedReferences(commandContext.command, plugin, arguments)
-        }
-        if (firstExecution) {
-          commandContext.clean()
-        }
-        plugin.serializeReturn(returnValue)
+        createSuspendedReferences(commandContext.command, plugin, arguments)
       }
+      if (firstExecution) {
+        commandContext.clean()
+      }
+      plugin.serializeReturn(returnValue)
     }
-    commands.complete(commandContext.command.id, serializedReturn)
   }
 
   private def executeCommandOnYarn(command: Command)(implicit invocation: Invocation): Unit = withMyClassLoader {
