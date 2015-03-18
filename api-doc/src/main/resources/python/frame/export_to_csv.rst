@@ -27,7 +27,9 @@ None
 
 Examples
 --------
-Consider Frame *my_frame*
+Consider Frame *my_frame*:
 
-    my_frame.export_to_csv('covarianceresults')
+.. code::
+
+    >>> my_frame.export_to_csv('covarianceresults')
 

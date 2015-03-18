@@ -48,9 +48,11 @@ histogram : Histogram
 
 Examples
 --------
-Consider the following sample data set::
+Consider the following sample data set:
 
-    frame.inspect()
+.. code::
+
+    >>> frame.inspect()
 
       a:unicode   b:int32
     /-----------------------/
@@ -60,8 +62,8 @@ Consider the following sample data set::
         d           9
         e           1
 
-    hist = frame.histogram("b")
-    print hist
+    >>> hist = frame.histogram("b")
+    >>> print hist
 
     Histogram:
         cutoffs: [1, 3, 6, 9],
@@ -69,8 +71,10 @@ Consider the following sample data set::
         density: [0.4, 0.2, 0.4]
 
 
-Plot hist as a bar chart using matplotlib::
+Plot hist as a bar chart using matplotlib:
 
-    import matplotlib.pyplot as plt
+.. code::
 
-    plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+    >>> import matplotlib.pyplot as plt
+
+    >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])

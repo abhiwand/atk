@@ -22,8 +22,11 @@ Frame
 
 Examples
 --------
-    model = ia.KMeansModel(name='MyKmeansModel')
-    model.train(frame, ['name_of_observation_column1', 'name_of_observation_column2'],[2.0, 5.0] 3, 10, 0.0002, "random")
-    new_frame = model.predict(frame)
+
+.. code::
+
+    >>> model = ia.KMeansModel(name='MyKmeansModel')
+    >>> model.train(frame, ['name_of_observation_column1', 'name_of_observation_column2'],[2.0, 5.0] 3, 10, 0.0002, "random")
+    >>> new_frame = model.predict(frame)
 
 

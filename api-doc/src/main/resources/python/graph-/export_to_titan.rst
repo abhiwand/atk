@@ -13,8 +13,9 @@ new_graph_name : str
 
 Examples
 --------
-::
 
-    graph = ia.get_graph("my_graph")
-    titan_graph = graph.export_to_titan("titan_graph")
+.. code::
+
+    >>> graph = ia.get_graph("my_graph")
+    >>> titan_graph = graph.export_to_titan("titan_graph")
 

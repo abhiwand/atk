@@ -41,5 +41,8 @@ results: dict
 
 Example
 --------
-    model = ia.KMeansModel(name='MyKMeansModel')
-    model.train(train_frame, ['name_of_observation_column1', 'name_of_observation_column2'],[1.0,2.0] 3, 10, 0.0002, "random")
+
+.. code::
+
+    >>> model = ia.KMeansModel(name='MyKMeansModel')
+    >>> model.train(train_frame, ['name_of_observation_column1', 'name_of_observation_column2'],[1.0,2.0] 3, 10, 0.0002, "random")

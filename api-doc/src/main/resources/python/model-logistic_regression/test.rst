@@ -32,25 +32,26 @@ An object with binary classification metrics.
 
 Examples
 --------
-::
 
-    model = ia.LogisticRegressionModel(name='LogReg')
-    model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
-    metrics = model.test(test_frame, 'name_of_label_column','name_of_observation_column')
+.. code::
 
-    metrics.f_measure
+    >>> model = ia.LogisticRegressionModel(name='LogReg')
+    >>> model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
+    >>> metrics = model.test(test_frame, 'name_of_label_column','name_of_observation_column')
+
+    >>> metrics.f_measure
     0.66666666666666663
 
-    metrics.recall
+    >>> metrics.recall
     0.5
 
-    metrics.accuracy
+    >>> metrics.accuracy
     0.75
 
-    metrics.precision
+    >>> metrics.precision
     1.0
 
-    metrics.confusion_matrix
+    >>> metrics.confusion_matrix
 
                   Predicted
                 _pos_ _neg__

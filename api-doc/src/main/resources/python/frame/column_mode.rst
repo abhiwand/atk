@@ -60,8 +60,9 @@ mode_count : The number of distinct modes in the data.
 
 Examples
 --------
-::
 
-    mode = frame.column_mode('modum columpne')
+.. code::
+
+    >>> mode = frame.column_mode('modum columpne')
 
 

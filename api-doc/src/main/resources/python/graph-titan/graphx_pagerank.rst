@@ -43,29 +43,36 @@ str : Name of graph
 
 Examples
 --------
-::
 
-    g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+.. code::
 
-The expected output is like this::
+    >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+
+The expected output is like this:
+
+.. code::
 
     {u'graph': u'pr_graph'}
 
 .. only:: html
 
-    To query::
+    To query:
+    
+    .. code::
 
-        pr_graph = get_graph('pr_graph')
-        pr_graph.query.gremlin("g.V [0..4]")
+        >>> pr_graph = get_graph('pr_graph')
+        >>> pr_graph.query.gremlin("g.V [0..4]")
 
         {u'results':[{u'_id':4,u'_type':u'vertex',u'pr_result':0.787226,u'titanPhysicalId':133200148,u'user_id':7665,u'vertex_type':u'L'},{u'_id':8,u'_type':u'vertex',u'pr_result':1.284043,u'movie_id':7080,u'titanPhysicalId':85200356,u'vertex_type':u'R'},{u'_id':12,u'_type':u'vertex',u'pr_result':0.186911,u'movie_id':8904,u'titanPhysicalId':15600404,u'vertex_type':u'R'},{u'_id':16,u'_type':u'vertex',u'pr_result':0.384138,u'movie_id':6836,u'titanPhysicalId':105600396,u'vertex_type': u'R'},{u'_id':20,u'_type':u'vertex',u'pr_result':0.822977,u'titanPhysicalId':68400136,u'user_id':3223,u'vertex_type':u'L'}],u'run_time_seconds':1.489}
 
 .. only:: latex
 
-    To query::
+    To query:
+    
+    .. code::
 
-        pr_graph = get_graph('pr_graph')
-        pr_graph.query.gremlin("g.V [0..4]")
+        >>> pr_graph = get_graph('pr_graph')
+        >>> pr_graph.query.gremlin("g.V [0..4]")
 
         {u'results':[
            {u'_id':4,

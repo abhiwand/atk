@@ -130,7 +130,8 @@ Equations
 
 Examples
 --------
-::
 
-    stats = frame.column_summary_statistics('data column', 'weight column')
+.. code::
+
+    >>> stats = frame.column_summary_statistics('data column', 'weight column')
 
