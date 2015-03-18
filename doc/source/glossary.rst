@@ -88,7 +88,7 @@ Glossary
         dependencies amongst a set of random variables with a directed acyclic
         graph.
 
-        Contrast with :term:`Markov Random Field`
+        Contrast with :term:`Markov Random Fields`
 
     Belief Propagation
 
@@ -341,7 +341,7 @@ Glossary
     Frame (capital F)
 
         A class object with the functionality to manipulate the data in a
-        :term:`frame`.
+        :term:`frame (lower case f)`.
 
     GaBP
 
@@ -413,8 +413,8 @@ Glossary
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
 
-        For more information, see :ref:`the article "Graph Analytics"
-        by Pak Chung Wong <vacommunity.org/article26>`.
+        For more information, see the article ":ref:`Graph Analytics <vacommunity.org/article26>`"
+        by Pak Chung Wong.
 
     Graph Database Directions
 
@@ -883,8 +883,6 @@ Glossary
     Transactional Functionality
 
         See :term:`Transaction Processing`.
-
-    Triangle Count
 
     Undirected Graph
 
