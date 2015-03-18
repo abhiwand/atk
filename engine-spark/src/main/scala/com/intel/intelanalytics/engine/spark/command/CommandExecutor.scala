@@ -277,9 +277,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         case None => ("","")
       }
 
-
-
-
       import org.apache.spark.deploy.SparkSubmit
       val inputArgs = Array[String](
         s"--master", s"${SparkEngineConfig.sparkMaster}",
