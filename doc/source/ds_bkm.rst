@@ -12,14 +12,18 @@ Python
 Server Connection
 =================
 
-Ping the server::
+Ping the server:
+
+.. code::
 
     >>> import intelanalytics as ia
     >>> ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
     >>> ia.connect()
 
-View and edit the server connection::
+View and edit the server connection:
+
+.. code::
 
     >>> print ia.server
     host:    localhost
@@ -38,7 +42,9 @@ View and edit the server connection::
     scheme:  http
     version: v1
 
-Reset configuration back to defaults::
+Reset configuration back to defaults:
+
+.. code::
 
     >>> ia.server.reset()
     >>> print ia.server
@@ -52,12 +58,16 @@ Errors
 
 By default, the toolkit does not print the full stack trace when exceptions
 occur.
-To see the full Python stack trace of the last (i.e. most recent) exception::
+To see the full Python stack trace of the last (i.e. most recent) exception:
+
+.. code::
 
     >>> ia.errors.last
 
 To enable always printing the full Python stack trace, set the *show_details*
-property::
+property:
+
+.. code::
 
     >>> import intelanalytics as ia
      
@@ -85,8 +95,8 @@ Create a .pythonrc file in your home directory with the following contents:
 
 .. code::
 
-    import rlcompleter, readline
-    readline.parse_and_bind('tab:complete')
+    >>> import rlcompleter, readline
+    >>> readline.parse_and_bind('tab:complete')
 
 
 Or you can just run the two lines in your REPL session.
@@ -99,28 +109,28 @@ over multiple sessions:
     # Add auto-completion and a stored history file of commands to your Python
     # interactive interpreter. Requires Python 2.0+, readline.
 
-    import atexit
-    import os
-    import readline
-    import rlcompleter
-    import sys
+    >>> import atexit
+    >>> import os
+    >>> import readline
+    >>> import rlcompleter
+    >>> import sys
 
     # Autocomplete is bound to the Esc key by default, so change it to tab.
-    readline.parse_and_bind("tab: complete")
+    >>> readline.parse_and_bind("tab: complete")
 
-    historyPath = os.path.expanduser("~/.pyhistory")
+    >>> historyPath = os.path.expanduser("~/.pyhistory")
 
-    def save_history(historyPath=historyPath):
-        import readline
-        readline.write_history_file(historyPath)
+    >>> def save_history(historyPath=historyPath):
+    ...     import readline
+    ...     readline.write_history_file(historyPath)
 
-    if os.path.exists(historyPath):
-        readline.read_history_file(historyPath)
+    >>> if os.path.exists(historyPath):
+    ...     readline.read_history_file(historyPath)
 
-    atexit.register(save_history)
+    >>> atexit.register(save_history)
 
     # anything not deleted (sys and os) will remain in the interpreter session
-    del atexit, readline, rlcompleter, save_history, historyPath
+    >>> del atexit, readline, rlcompleter, save_history, historyPath
 
 Note:
     If the .pythonrc does not take effect, add PYTHONSTARTUP in your .bashrc
@@ -176,7 +186,7 @@ Steps to resolve this issue:
 
 Spark space concerns
 ====================
-Whenever you run a Spark application, jars and logs go to /va/run/spark/work
+Whenever you run a Spark application, jars and logs go to '/va/run/spark/work'
 (or other location configured in Cloudera Manager).
 These can use up a bit of space eventually (over 140MB per command).
 
@@ -188,5 +198,4 @@ References
 ----------
 
 `Spark Docs <https://spark.apache.org/documentation.html>`__
-
 
