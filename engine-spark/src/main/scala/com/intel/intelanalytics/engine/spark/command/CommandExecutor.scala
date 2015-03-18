@@ -258,32 +258,37 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
   private def executeCommandOnYarn(command: Command)(implicit invocation: Invocation): Unit = withMyClassLoader {
     withContext("executeCommandOnYarn") {
+
+      /* Serialize current config so as to pass to Spark Submit */
       import scala.collection.JavaConversions._
       import java.nio.file.{ Paths, Files }
       import java.nio.charset.StandardCharsets
       val currentConfig = SparkEngineConfig.config.entrySet()
-      /* Do we need to filter only entries pertaining to intelanalytics? */
+      val tempConfFileName = s"/tmp/application.conf"
       val allEntries = for {
         i <- currentConfig
       } yield s"${i.getKey}=${i.getValue.render}"
-      Files.write(Paths.get("/tmp/application.conf"), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+      Files.write(Paths.get(tempConfFileName), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
 
       //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
       KerberosAuthenticator.loginWithKeyTabCLI()
 
+      /* Prepare input arguments for Spark Submit */
       import org.apache.spark.deploy.SparkSubmit
       val inputArgs = Array[String](
         s"--master", s"${SparkEngineConfig.sparkMaster}",
         "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
         "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
-        "--files", "/tmp/application.conf",
-        "--conf", "config.resource=tmp/application.conf",
-        "--properties-file", "/tmp/application.conf",
-        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m",
+        "--files", s"$tempConfFileName",
+        "--conf", s"config.resource=tmp/application.conf",
+        "--properties-file", s"$tempConfFileName",
+        //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
+        "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize}",
         "--verbose",
-        "spark-internal",
+        "spark-internal", /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
         s"${command.id}")
 
+      /* Launch Spark Submit */
       info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
       SparkSubmit.main(inputArgs) /* Blocks */
     }

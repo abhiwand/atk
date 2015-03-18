@@ -29,13 +29,14 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.deploy.SparkHadoopUtil
+import com.intel.intelanalytics.component.ClassLoaderAware
 
 import scala.util.control.NonFatal
 
 /**
  * Static methods for accessing a Kerberos secured hadoop cluster.
  */
-object KerberosAuthenticator extends EventLogging with EventLoggingImplicits {
+object KerberosAuthenticator extends EventLogging with EventLoggingImplicits with ClassLoaderAware {
   // TODO: Allow support for multiple keytabs once namespaces is implemented
 
   /**
@@ -57,9 +58,9 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits {
    * @param configuration HadoopConfiguration
    * @return UserGroupInformation for Kerberos TGT ticket
    */
-  def loginConfigurationWithKeyTab(configuration: Configuration): Unit = {
+  def loginConfigurationWithKeyTab(configuration: Configuration): Unit = withMyClassLoader {
     if (SparkEngineConfig.enableKerberos) {
-      UserGroupInformation.setConfiguration(configuration);
+      UserGroupInformation.setConfiguration(configuration)
       KerberosAuthenticator.loginWithKeyTab()
     }
   }
