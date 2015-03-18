@@ -64,15 +64,15 @@ Connect to the server:
 
     Clean up any previous frames (optional)::
 
-    for name in ia.get_frame_names():
-        print 'deleting frame: %s' %name
-        ia.drop_frames(name)
+        for name in ia.get_frame_names():
+            print 'deleting frame: %s' %name
+            ia.drop_frames(name)
 
     Clean up any previous graphs (optional)::
 
-    for name in ia.get_graph_names():
-        print 'deleting graph: %s' %name
-        ia.drop_graphs(name)
+        for name in ia.get_graph_names():
+            print 'deleting graph: %s' %name
+            ia.drop_graphs(name)
 
 To see the data types supported:
 
@@ -120,7 +120,7 @@ character(s).
 In the above example, the separating character is a comma (,).
 
 To import data, you must tell the system how the input file is formatted.
-This is done by defining a :type:`schema`.
+This is done by defining a :term:`schema`.
 Schemas are constructed as a list of tuples, each of which contains pairs of
 ASCII-character names and data types (see :ref:`Valid Data Types
 <valid_data_types>`), ordered according to the order of columns in the input
@@ -1188,15 +1188,11 @@ Graph Analytics
 .. _PR:
 .. include:: ds_gaal_pr.rst
 
-.. TODO::
-
-    .. _APL:
-    .. include:: ds_gaal_apl.rst
-
-
 .. toctree::
     :hidden:
 
     ds_apir
-
-
+    ds_gaal_clco
+    ds_gaal_cc
+    ds_gaal_dc
+    ds_gaal_pr
