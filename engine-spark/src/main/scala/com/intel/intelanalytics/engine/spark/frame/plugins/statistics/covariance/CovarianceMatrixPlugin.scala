@@ -93,7 +93,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
     }
     else {
       require(dataColumnNames.size >= 2, "single vector column, or two or more numeric columns required")
-      frameSchema.requireNumericColumns(dataColumnNames)
+      frameSchema.requireColumnsOfNumericPrimitives(dataColumnNames)
     }
   }
 
