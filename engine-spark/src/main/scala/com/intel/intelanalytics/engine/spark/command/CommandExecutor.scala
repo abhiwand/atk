@@ -273,17 +273,23 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
       KerberosAuthenticator.loginWithKeyTabCLI()
 
+      val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
+        case Some(path) => (s",${path}",
+          s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
+        case None => ("","")
+      }
+
       /* Prepare input arguments for Spark Submit */
       import org.apache.spark.deploy.SparkSubmit
       val inputArgs = Array[String](
         s"--master", s"${SparkEngineConfig.sparkMaster}",
         "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
         "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
-        "--files", s"$tempConfFileName",
+        "--files", s"$tempConfFileName$kerbFile",
         "--conf", s"config.resource=tmp/application.conf",
         "--properties-file", s"$tempConfFileName",
         //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
-        "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize}",
+        "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions",
         "--verbose",
         "spark-internal", /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
         s"${command.id}")
