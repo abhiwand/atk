@@ -1,6 +1,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.event.EventLogging
+import com.intel.event.adapter.ConsoleEventLog
+import com.intel.event.{ EventLogger, EventLogging }
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.domain.User
@@ -13,6 +14,7 @@ import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
+import com.typesafe.config.ConfigFactory
 
 import scala.collection.mutable
 import scala.reflect.io.Directory
@@ -91,7 +93,7 @@ class CommandDriver extends EngineComponent
 
 object CommandDriver {
 
-  def usage() = println("Usage: java -cp launcher.jar com.intel.intelanalytics.component.CommandDriver <command_id>")
+  def usage() = println("Usage: java -cp engine-spark.jar com.intel.intelanalytics.component.CommandDriver <command_id>")
 
   def executeCommand(commandId: Long): Unit = {
     val driver = new CommandDriver
@@ -103,6 +105,11 @@ object CommandDriver {
       usage()
     }
     else {
+      if (EventLogging.raw) {
+        val config = ConfigFactory.load()
+        EventLogging.raw = if (config.hasPath("intel.analytics.engine.logging.raw")) config.getBoolean("intel.analytics.engine.logging.raw") else true
+      } // else api-server already installed an SLF4j adapter
+
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")
       /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */
