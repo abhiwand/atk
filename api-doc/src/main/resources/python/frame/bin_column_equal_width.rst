@@ -24,7 +24,7 @@ bin_column_name : str (optional)
 Notes
 -----
 #)  Unicode in column names is not supported and will likely cause the
-    drop_frames() function (and others) to fail!
+    drop_frames() method (and others) to fail!
 #)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
@@ -84,7 +84,7 @@ Note that there may be bins with no members:
        55                 3
        89                 4
 
-The function returns a list of 6 cutoff values that define the edges of each
+The method returns a list of 6 cutoff values that define the edges of each
 bin. Note that difference between the cutoff values is constant:
 
 .. code::

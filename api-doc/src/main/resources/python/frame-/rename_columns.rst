@@ -8,7 +8,7 @@ column_names : dictionary of str pairs
 Notes
 -----
 Unicode in column names is not supported and will likely cause the
-drop_frames() function (and others) to fail!
+drop_frames() method (and others) to fail!
 
 Examples
 --------

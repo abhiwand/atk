@@ -1,35 +1,10 @@
 #!/bin/bash
 
-## The primary purpose of this script file is to allow the Sphinx-Build program
-# to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
-# version 2.6 to run properly, so we create a virtual environment with
-# python 2.7 in the PYTHONPATH when we create the documents.
+# The primary purpose of this script file is to allow the Sphinx-Build program
+# to build in python 2.7 on a RedHat distribution of Linux.
 
 # Subroutines:
 
-############################################################################################################
-function check_environment {
-# debug: Running on Ubuntu, we do not need virtpy because Ubuntu is awesome!
-    UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
-
-    if [ "$UBUNTU_OS" == "" ]; then
-        
-        # This is not Ubuntu, so look for a virtual environment
-        if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
-            ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
-        else
-            ACTIVATE_FILE=/usr/local/virtpy/bin/activate
-        fi
-        
-        if [[ -f $ACTIVATE_FILE ]]; then
-            source $ACTIVATE_FILE > /dev/null
-        else
-            return 1
-        fi
-    fi
-    echo $LOGNAME
-    return 0
-}
 ############################################################################################################
 function delete_previous {
     # $1 = Directory
@@ -79,9 +54,6 @@ function doc_help {
     echo "-h, --help: Print this and return"
     echo "-e:         Do not erase previous compilation"
     echo "+e:         Erase doctrees"
-    if [ "$UBUNTU_OS" == "" ]; then
-        echo "-f, --force:Attempt compile without virtual environment"
-    fi
     echo "-q, -qq:    Quiet mode, use default values for prompts"
     echo "-s:         Do not compile Scala code"
     echo
@@ -90,6 +62,7 @@ function doc_help {
     echo "pdf:        Compile to pdf"
     echo "text:       Compile to text"
     echo "zip:        Do a zip of build directory"
+    echo "doctest:    Test the code examples"
     echo "packages:   Check for installed packages"
     echo
     echo "By default, file builds will erase previous files first. For example,"
@@ -188,29 +161,13 @@ function main {
         return 0
     fi
 
-    # debug: Look for a virtual environment if needed
-#    echo $ModifiedArguments | grep -i -e "/-f/" -e "/--force/" > /dev/null
-#    if [ $? == 1 ]; then
-        # debug: about to check the environment
-        USERNAME=$(check_environment)
-#        if [ "$?" == "1" ]; then
-#            echo "Virtual Environment is not installed."
-#            echo "Please execute install_pyenv.sh to install."
-#            echo "or use the -f/--force flag."
-#            return 1
-#        fi
-#    else
-#        # debug: setting USERNAME=$LOGNAME
-#        USERNAME=$LOGNAME
-#    fi
-
     # debug: Look for packages if the individual is a techwriter
     echo $ModifiedArguments | grep -i "/packages/" > /dev/null
     if [[ "$?" == "0" && "$USERNAME" != "" ]]; then
         packages $USERNAME $ScriptPath
     fi
 
-    # debug: Look for buildable
+    # debug: Add latex to the argument list if pdf is called for
     echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
     if [ "$?" == "0" ]; then
         echo $ModifiedArguments | grep -i -e "/latex/" > /dev/null
@@ -218,6 +175,8 @@ function main {
             ModifiedArguments="$ModifiedArguments+/latex/"
         fi
     fi
+
+    # debug: Look for buildable
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
@@ -298,10 +257,21 @@ function main {
         fi
     fi
 
+    # debug: Test the examples
+    echo $ModifiedArguments | grep -i -e "/test/" > /dev/null
+    if [ $? == 0 ]; then
+        PYTHONPATH="$PYTHONPATH;../python"
+        export PYTHONPATH
+        for FILE in $(ls -1a source/*.rst)
+        do
+            echo $FILE
+        done
+    fi
+
     # debug: Compress the results into a single file
     echo $ModifiedArguments | grep -i -e "/zip/" > /dev/null
     if [ $? == 0 ]; then
-        which pdflatex > /dev/null
+        which zip > /dev/null
         if [ "$?" == "0" ]; then
             if [[ -e intel_analytics_docs.zip ]]; then
                 rm intel_analytics_docs.zip

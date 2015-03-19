@@ -15,8 +15,8 @@ None
 
 Notes
 -----
-This function applies only to columns containing numerical data.
-Although this function will execute for columns containing negative
+This method applies only to columns containing numerical data.
+Although this method will execute for columns containing negative
 values, the interpretation of the result will change (for example,
 negative percentages).
 

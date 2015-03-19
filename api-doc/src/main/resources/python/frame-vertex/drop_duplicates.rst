@@ -8,7 +8,7 @@ Parameters
 ----------
 columns : [str | list of str]
     Column name(s) to identify duplicates.
-    If empty, the function will remove duplicates that have the whole row of
+    If empty, the method will remove duplicates that have the whole row of
     data identical (not including the _vid column that is already unique per
     row).
 
