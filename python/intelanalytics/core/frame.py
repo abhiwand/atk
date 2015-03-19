@@ -338,7 +338,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             value, or collection of values, for the new cell(s).
 
         schema : [ tuple | list of tuples ]
-            The schema for the results of the function, indicating the new
+            The schema for the results of the |PUF|, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type, and is of the form (str, type).
 
@@ -351,11 +351,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Notes
         -----
-        1)  The row function ('func') must return a value in the same format as
+        1)  The row |PUF| ('func') must return a value in the same format as
             specified by the schema.
             See :doc:`ds_apir`.
         #)  Unicode in column names is not supported and will likely cause the
-            drop_frames() function (and others) to fail!
+            drop_frames() method (and others) to fail!
 
         Examples
         --------
@@ -406,7 +406,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         appropriate contents.
 
         Given a frame of data and Frame *my_frame* points to it.
-        In addition we have defined a function *func*.
+        In addition we have defined a |PUF| *func*.
         Run *func* on each row of the frame and put the result in a new int
         column *calculated_a*:
         
@@ -415,13 +415,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             >>> my_frame.add_columns( func, ("calculated_a", int))
 
         Now the frame has a column *calculated_a* which has been filled with
-        the results of the function *func*.
+        the results of the |PUF| *func*.
 
-        Functions must return their value in the same format as the column is
+        |PUF|s must return their value in the same format as the column is
         defined.
         In most cases this is automatically the case, but sometimes it is less
         obvious.
-        Given a function *function_b* which returns a value in a list, store
+        Given a |PUF| *function_b* which returns a value in a list, store
         the result in a new column *calculated_b*:
         
         .. code::
@@ -437,7 +437,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.add_columns(function_b, [("calculated_b", float32)])
 
-        More information on row functions can be found at :doc:`ds_apir`
+        More information on row |PUF|s can be found at :doc:`ds_apir`
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
@@ -459,7 +459,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             renaming, {source_column_name: destination_column_name}.
             Default is None.
 
-        where : row function (optional)
+        where : |PUF| (optional)
             If not None, only those rows which evaluate to True will be copied.
             Default is None.
 
@@ -530,14 +530,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        where : function
-            Function or :term:`lambda` which takes a row argument and evaluates
+        where : |PUF|
+            |PUF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
         Returns
         -------
         int : count
-            number of rows for which the where function evaluated to True.
+            number of rows for which the where |PUF| evaluated to True.
         """
         return self._backend.get_row_count(self, where)
 
@@ -580,7 +580,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         We now have a new frame accessed by a pandas DataFrame *pandas_frame*
         with a copy of the first 500 rows of the original frame.
 
-        If we use the function with an offset like:
+        If we use the method with an offset like:
         
         .. code::
 
@@ -612,8 +612,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        predicate : function
-            Function or :term:`lambda` which takes a row argument and
+        predicate : |PUF|
+            |PUF| or :term:`lambda` which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -629,7 +629,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Now the frame only has information about ``ligers``.
 
-        More information on row functions can be found at :doc:`ds_apir`.
+        More information on |PUF|s can be found at :doc:`ds_apir`.
 
 
         """
@@ -644,8 +644,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        predicate : function
-            Function definition or lambda which takes a row argument and
+        predicate : |PUF|
+            |PUF| definition or lambda which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -664,7 +664,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         The frame now only has data about ``lizards`` and ``frogs``.
 
-        More information on row functions can be found at :doc:`ds_apir`.
+        More information on |PUF|s can be found at :doc:`ds_apir`.
 
 
 
@@ -883,7 +883,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
         The frame on the 'right' is another frame.
-        This function takes a column in the left frame and matches it's values
+        This method takes a column in the left frame and matches it's values
         with a column in the right frame.
         Using the default 'how' option ['inner'] will only allow data in the
         resultant frame if both the left and right frames have the same value
@@ -935,7 +935,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         It is recommended that you rename the columns to meaningful terms prior
         to using the ``join`` method.
         Keep in mind that unicode in column names will likely cause the
-        drop_frames() function (and others) to fail!
+        drop_frames() method (and others) to fail!
 
         Examples
         --------
@@ -1093,7 +1093,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
              [ 3, "weave", .001 ]
              ...]
 
-        If we use the function with an offset like:
+        If we use the method with an offset like:
         
         .. code::
 
@@ -1327,8 +1327,8 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
         Parameters
         ----------
-        predicate : function
-            Function or :term:`lambda` which takes a row argument and evaluates
+        predicate : |PUF|
+            |PUF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
         Examples
@@ -1353,7 +1353,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
         Now the frame only has information about ``ligers``.
 
-        More information on row functions can be found at :doc:`ds_apir`
+        More information on |PUF| can be found at :doc:`ds_apir`
 
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)

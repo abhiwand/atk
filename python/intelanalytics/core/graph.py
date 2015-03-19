@@ -65,7 +65,7 @@ def _get_backend():
 
 
 class RuleWithDifferentFramesError(ValueError):
-    # TODO - Add docstring if this is really a user-desired function
+    # TODO - Add docstring if this is really a |PUF|
     def __init__(self):
         ValueError.__init__(self, "Rule contains columns from different frames")
 
@@ -746,7 +746,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         >>> my_graph = ia.TitanGraph([user, movie, rates])
 
     |
-    In another example, the vertex and edge rules can be sent to the function
+    In another example, the vertex and edge rules can be sent to the method
     simultaneously.
 
     .. only:: html

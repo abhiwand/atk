@@ -14,7 +14,7 @@ None
 
 Notes
 -----
-This function applies only to columns containing numerical data.
+This method applies only to columns containing numerical data.
 
 Examples
 --------

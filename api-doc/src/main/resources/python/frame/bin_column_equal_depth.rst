@@ -35,7 +35,7 @@ bin_column_name : str (optional)
 Notes
 -----
 #)  Unicode in column names is not supported and will likely cause the
-    drop_frames() function (and others) to fail!
+    drop_frames() method (and others) to fail!
 #)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
