@@ -22,7 +22,7 @@ weights_column : str (optional)
 
 Returns
 -------
-BigFrame : An object with access to the frame
+Frame : An object with access to the frame
 
 Examples
 --------

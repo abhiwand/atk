@@ -46,7 +46,7 @@ In particular:
 
 Examples
 --------
-For this example, *my_frame* is a BigFrame object accessing a frame with data.
+For this example, *my_frame* is a Frame object accessing a frame with data.
 Append a new column *sample_bin* to the frame;
 Assign the value in the new column to "train", "test", or "validate":
 
@@ -54,7 +54,7 @@ Assign the value in the new column to "train", "test", or "validate":
 
     >>> my_frame.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
 
-Now *my_frame*, the frame accessed by BigFrame, has a new column named
+Now *my_frame*, the frame accessed by Frame, has a new column named
 "sample_bin" and each row contains one of the values "train", "test", or
 "validate".
 Values in the other columns are unaffected.
