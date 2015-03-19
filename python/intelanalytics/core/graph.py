@@ -96,7 +96,7 @@ class Rule(object):
     @staticmethod
     def _validate_source(source, frame):
         """
-        Source: String or BigColumn.
+        Source: String or Column.
 
         """
         # TODO - Add examples
@@ -152,17 +152,17 @@ class VertexRule(Rule):
     """
     Specifies a vertex and vertex properties.
 
-    Dynamically pulling property names from a BigColumn can have a negative
+    Dynamically pulling property names from a column can have a negative
     performance impact if there are many distinct values (hundreds of
     values are okay, thousands of values may take a long time).
 
     Parameters
     ----------
     id_key : string
-        Static string or pulled from BigColumn source; the key for the uniquely
+        Static string or pulled from column source; the key for the uniquely
         identifying property for the vertex.
 
-    id_value : BigColumn source
+    id_value : Column source
         Vertex value.
         The unique value to identify this vertex.
 
@@ -171,7 +171,7 @@ class VertexRule(Rule):
 
         Vertex properties of the form property_name:property_value.
         The property_name (the key) is a string, and property_value is a
-        literal value or a BigColumn source, which must be from the same Frame
+        literal value or a column source, which must be from the same Frame
         as the id_key and id_value arguments.
 
     Notes
@@ -244,14 +244,14 @@ class EdgeRule(Rule):
     """
     Specifies an edge and edge properties.
 
-    Dynamically pulling labels or property names from a BigColumn can
+    Dynamically pulling labels or property names from a column can
     have a negative performance impact if there are many distinct values
     (hundreds of values are okay, thousands of values may take a long time).
 
     Parameters
     ----------
-    label : str or BigColumn source
-        Edge label, can be constant string or pulled from BigColumn.
+    label : str or column source
+        Edge label, can be constant string or pulled from column.
 
     tail : VertexRule
         Tail vertex ('from' vertex); must be from same Frame as head,
@@ -264,7 +264,7 @@ class EdgeRule(Rule):
     properties : dict
         Edge properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
-        or a BigColumn source, which must be from same Frame as head,
+        or a column source, which must be from same Frame as head,
         tail and label.
 
     bidirectional : bool (optional)
@@ -729,7 +729,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         ...                                     ('vertexType', str),    \\
         ...                                     ('movie', int32),       \\
         ...                                     ('rating', str)])
-        >>> my_frame = ia.BigFrame(csv)
+        >>> my_frame = ia.Frame(csv)
 
     Define graph parsing rules:
     

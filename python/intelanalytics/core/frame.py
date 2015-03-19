@@ -140,7 +140,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
     class _FrameIter(object):
         """
         (Private)
-        Iterator for Frame - frame iteration works on the columns, returns BigColumn objects
+        Iterator for Frame - frame iteration works on the columns, returns Column objects
         (see Frame.__iter__)
 
         Parameters
@@ -1300,7 +1300,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
         >>> new_Frame = my_vertex_frame.vertices["label"].copy()
 
     """
-    # For other examples, see :ref:`example_frame.bigframe`.
+    # For other examples, see :ref:`example_frame.frame`.
 
     # TODO - Review Parameters, Examples
 
