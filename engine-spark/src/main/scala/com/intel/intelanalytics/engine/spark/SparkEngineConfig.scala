@@ -250,6 +250,8 @@ trait SparkEngineConfig extends EventLogging {
    */
   val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
 
+  val sparkOnYarnNumExecutors = config.getString("intel.analytics.engine.spark.conf.properties.spark.yarnNumExecutors")
+
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
    *
