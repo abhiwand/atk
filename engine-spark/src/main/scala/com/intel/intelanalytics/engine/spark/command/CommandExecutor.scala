@@ -276,7 +276,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
         case Some(path) => (s",${path}",
           s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
-        case None => ("","")
+        case None => ("", "")
       }
 
       /* Prepare input arguments for Spark Submit */
@@ -286,8 +286,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
         "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
         "--files", s"$tempConfFileName$kerbFile",
-        "--conf", s"config.resource=tmp/application.conf",
-        "--properties-file", s"$tempConfFileName",
+        "--conf", s"config.resource=application.conf",
+        "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
         //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
         "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions",
         "--verbose",
