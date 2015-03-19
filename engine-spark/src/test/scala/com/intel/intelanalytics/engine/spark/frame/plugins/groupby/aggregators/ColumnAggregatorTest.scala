@@ -54,25 +54,25 @@ class ColumnAggregatorTest extends FlatSpec with Matchers {
   }
 
   "parseHistogramCutoffs" should "return the cutoffs" in {
-    val cutoffs = ColumnAggregator.parseHistogramCutoffs("{\"cutoffs\": [4,5,6] }")
-    cutoffs should equal(List(4d, 5d, 6d))
+    val histogramAggregator = ColumnAggregator.getHistogramAggregator("{\"cutoffs\": [4,5,6] }")
+    histogramAggregator.cutoffs should equal(List(4d, 5d, 6d))
   }
 
   "parseHistogramCutoffs" should "throw an IllegalArgumentException if cutoffs are not numeric" in {
     intercept[IllegalArgumentException] {
-      ColumnAggregator.parseHistogramCutoffs("{\"cutoffs\": [\"a\",\"b\"] }")
+      ColumnAggregator.getHistogramAggregator("{\"cutoffs\": [\"a\",\"b\"] }")
     }
   }
 
   "parseHistogramCutoffs" should "throw an IllegalArgumentException if cutoffs are missing" in {
     intercept[IllegalArgumentException] {
-      ColumnAggregator.parseHistogramCutoffs("{\"missing\": [4,5,6] }")
+      ColumnAggregator.getHistogramAggregator("{\"missing\": [4,5,6] }")
     }
   }
 
   "parseHistogramCutoffs" should "throw an IllegalArgumentException if cutoffs are not valid json" in {
     intercept[IllegalArgumentException] {
-      ColumnAggregator.parseHistogramCutoffs("=={\"missing\": [4,5,6] }")
+      ColumnAggregator.getHistogramAggregator("=={\"missing\": [4,5,6] }")
     }
   }
 }
