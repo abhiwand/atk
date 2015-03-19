@@ -850,6 +850,8 @@ Example process of using aggregation based on row:
         >>> grouped_animals2 = animals.group_by(['animals', 'int1'], \
         ... ia.agg.count)
 
+.. _aggregation_functions:
+
 .. note::
 
     :code:`agg.count` is the only full row aggregation function supported at

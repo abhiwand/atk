@@ -225,7 +225,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Create a frame and give it the name "Flavor Recipes"; read the name back to check it:
+        Create a frame and give it the name "Flavor Recipes"; read the name
+        back to check it:
         
         .. code::
 
@@ -268,7 +269,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Returns
         -------
         int : quantity
-            The number of rows in the frame
+            The number of rows in the frame.
 
         Examples
         --------
@@ -333,19 +334,20 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Parameters
         ----------
         func : row function
-            Function which takes the values in the row and produces a value
-            or collection of values for the new cell(s).
+            Function (|PUF|) which takes the values in the row and produces a
+            value, or collection of values, for the new cell(s).
 
         schema : [ tuple | list of tuples ]
-            The schema for the results of the functions, indicating the new
+            The schema for the results of the function, indicating the new
             column(s) to add.  Each tuple provides the column name and data
-            type and is of the form (str, type).
+            type, and is of the form (str, type).
 
         columns_accessed : list of str (optional)
-            List of columns which the udf function will access. This adds
-            significant performance benefit if we know which columns will be
-            needed to execute the udf especially when the frames have several
-            columns out of which only a handful are used to evaluate the function
+            List of columns which the |PUF| will access.
+            This adds significant performance benefit if we know which
+            column(s) will be needed to execute the |PUF|, especially when the
+            frame has significantly more columns than those being used to
+            evaluate the |PUF|.
 
         Notes
         -----
@@ -370,7 +372,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         The type of *column3* is an int32, and the value is the product of
         *column1* and *column2*.
 
-        Add a str column *column4* that is empty:
+        Add a string column *column4* that is empty:
         
         .. code::
 
@@ -379,7 +381,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         The Frame object *my_frame* now has four columns *column1*, *column2*,
         *column3*, and *column4*.
         The first three columns are int32 and the fourth column is str.
-        Column *column4* has an empty str ('') in every row.
+        Column *column4* has an empty string ('') in every row.
 
         Multiple columns can be added at the same time.
         Add a column *a_times_b* and fill it with the contents of column *a*
@@ -453,7 +455,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         ----------
         columns : [ str | list of str | dict ] (optional)
             If not None, the copy will only include the columns specified.
-            If a dictionary is used, the str pairs represent a column
+            If a dictionary is used, the string pairs represent a column
             renaming, {source_column_name: destination_column_name}.
             Default is None.
 
@@ -535,7 +537,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Returns
         -------
         int : count
-            number of rows for which the where function evaluated to True
+            number of rows for which the where function evaluated to True.
         """
         return self._backend.get_row_count(self, where)
 
@@ -627,7 +629,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Now the frame only has information about ``ligers``.
 
-        More information on row functions can be found at :doc:`ds_apir`
+        More information on row functions can be found at :doc:`ds_apir`.
 
 
         """
@@ -682,7 +684,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         -------
         Frame : error frame object
             A new object accessing a frame that contains the parse errors of
-            the currently active Frame or None if no error frame exists
+            the currently active Frame or None if no error frame exists.
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
 
@@ -723,21 +725,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         *   An aggregation argument of 'count' results in a column named
             'count'.
 
-        Supported aggregation functions:
-
-        ..  hlist::
-            :columns: 5
-
-            * avg
-            * count
-            * max
-            * mean
-            * min
-            * stdev
-            * sum
-            * :term:`variance <Bias-variance tradeoff>`
-            * distinct
-
+        See :ref:`Supported aggregation functions <aggregation_functions>`.
 
         Examples
         --------
@@ -801,8 +789,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
              1       bravo     5.0
              2       bravo    10.0
 
-        For this example, we use *my_frame* with columns *a*, *c*, *d*, and *e*:
-        
+        For this example, we use *my_frame* with columns *a*, *c*, *d*,
+        and *e*:
+
         .. code::
 
             >>> my_frame.inspect()
@@ -926,7 +915,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             Default is 'inner'.
 
         name : str (optional)
-            Name for the resulting new joined frame
+            Name for the resulting new joined frame.
             Default is None.
 
         Returns
@@ -939,9 +928,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         When a column is named the same in both frames, it will result in two
         columns in the new frame.
         The column from the *left* frame (originally the current frame) will be
-        copied and the column name will have the str "_L" added to it.
+        copied and the column name will have the string "_L" added to it.
         The same thing will happen with the column from the *right* frame,
-        except its name has the str "_R" appended.
+        except its name has the string "_R" appended.
 
         It is recommended that you rename the columns to meaningful terms prior
         to using the ``join`` method.
@@ -998,10 +987,10 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         ----------
         columns : [ str | list of str | list of tuples ]
             Either a column name, a list of column names, or a list of tuples
-            where each tuple is a name and an ascending bool value
+            where each tuple is a name and an ascending bool value.
 
         ascending: bool (optional)
-            True for ascending, False for descending
+            True for ascending, False for descending.
             Default is True.
 
         Examples
@@ -1146,13 +1135,13 @@ class Frame(DocStubsFrame, _BaseFrame):
     -----
     A frame with no name is subject to garbage collection.
 
-    If a str in the CSV file starts and ends with a double-quote (")
+    If a string in the CSV file starts and ends with a double-quote (")
     character, the character is stripped off of the data before it is put into
     the field.
     Anything, including delimiters, between the double-quote characters is
     considered part of the str.
     If the first character after the delimiter is anything other than a
-    double-quote character, the str will be composed of all the characters
+    double-quote character, the string will be composed of all the characters
     between the delimiters, including double-quotes.
     If the first field type is str, leading spaces on each row are
     considered part of the str.
@@ -1385,9 +1374,9 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     -   Each row of an EdgeFrame represents an edge in a graph
     -   EdgeFrames have many of the same methods as Frames but not all
     -   EdgeFrames have extra methods not found on Frames (e.g. add_edges())
-    -   EdgeFrames have a dependency on one or two VertexFrames.
-        Adding an edge to an EdgeFrame requires either vertices to be present
-        or for the user to specify create_missing_vertices=True.
+    -   EdgeFrames have a dependency on one or two VertexFrames
+        (adding an edge to an EdgeFrame requires either vertices to be present
+        or for the user to specify create_missing_vertices=True)
     -   EdgeFrames have special system columns (_eid, _label, _src_vid,
         _dest_vid) that are maintained automatically by the system and cannot
         be modified by the user
