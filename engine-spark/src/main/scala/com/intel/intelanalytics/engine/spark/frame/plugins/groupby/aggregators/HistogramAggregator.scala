@@ -32,7 +32,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.Discretizat
  *
  * The histogram is a vector containing the percentage of observations found in each bin
  */
-case class HistogramAggregator(cutoffs: List[Double]) extends GroupByAggregator {
+case class HistogramAggregator(cutoffs: List[Double], includeLowest: Option[Boolean] = None, strictBinning: Option[Boolean] = None) extends GroupByAggregator {
   require(cutoffs.length > 1, "Length of cutoffs should be greater than 1")
 
   /** An array that aggregates the number of elements in each bin */
@@ -52,7 +52,10 @@ case class HistogramAggregator(cutoffs: List[Double]) extends GroupByAggregator 
    */
   override def mapFunction(columnValue: Any, columnDataType: DataType): ValueType = {
     if (columnValue != null) {
-      DiscretizationFunctions.binElement(DataTypes.toDouble(columnValue), cutoffs, lowerInclusive = true, strictBinning = false)
+      DiscretizationFunctions.binElement(DataTypes.toDouble(columnValue),
+        cutoffs,
+        lowerInclusive = includeLowest.getOrElse(true),
+        strictBinning = strictBinning.getOrElse(false))
     }
     else -1
   }

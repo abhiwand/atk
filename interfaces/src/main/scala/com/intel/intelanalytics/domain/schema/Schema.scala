@@ -229,10 +229,10 @@ trait Schema {
   /**
    * Validate that all columns are of numeric data type
    */
-  def requireNumericColumns(columnNames: Iterable[String]) = {
+  def requireColumnsOfNumericPrimitives(columnNames: Iterable[String]) = {
     columnNames.map(columnName => {
-      require(hasColumn(columnName), "column $columnName was not found")
-      require(columnDataType(columnName).isNumerical, "column $columnName should be of type numeric")
+      require(hasColumn(columnName), s"column ${columnName} was not found")
+      require(columnDataType(columnName).isNumerical, s"column ${columnName} should be of type numeric")
     })
   }
 
@@ -240,8 +240,8 @@ trait Schema {
    * Validate that a column exists, and has the expected data type
    */
   def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
-    require(hasColumn(columnName), "column $columnName was not found")
-    require(columnDataType(columnName) == dataType, "column $columnName should be of type $dataType")
+    require(hasColumn(columnName), s"column ${columnName} was not found")
+    require(columnDataType(columnName) == dataType, s"column ${columnName} should be of type ${dataType}")
   }
 
   /**

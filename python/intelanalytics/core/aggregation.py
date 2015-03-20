@@ -24,21 +24,10 @@
 """
 intelanalytics frame aggregation functions
 """
+import json
 
 
 class AggregationFunctions(object):
-    """
-    Class for histogram aggregation function that uses cutoffs to compute histograms
-    """
-    class GroupByHistogram:
-        def __init__(self, cutoffs):
-            for c in cutoffs:
-                if not isinstance(c, (int, long, float, complex)):
-                    raise ValueError("Bad value %s in cutoffs, expected a number")
-            self.cutoffs = cutoffs
-
-        def __repr__(self):
-            return 'HISTOGRAM={ "cutoffs" : [%s] }' % ", ".join([str(c) for c in self.cutoffs])
 
     """
     Defines supported aggregation functions, maps them to keyword strings
@@ -52,8 +41,8 @@ class AggregationFunctions(object):
     var = 'VAR'
     stdev = 'STDEV'
 
-    def histogram(self, cutoffs):
-        return repr(self.GroupByHistogram(cutoffs))
+    def histogram(self, cutoffs, include_lowest=None, strict_binning=None):
+        return repr(GroupByHistogram(cutoffs, include_lowest, strict_binning))
 
     def __repr__(self):
         return ", ".join([k for k in AggregationFunctions.__dict__.keys()
@@ -63,3 +52,20 @@ class AggregationFunctions(object):
         return item in AggregationFunctions.__dict__.values()
 
 agg = AggregationFunctions()
+
+
+class GroupByHistogram:
+    """
+    Class for histogram aggregation function that uses cutoffs to compute histograms
+    """
+    def __init__(self, cutoffs, include_lowest=None, strict_binning=None):
+        for c in cutoffs:
+            if not isinstance(c, (int, long, float, complex)):
+                raise ValueError("Bad value %s in cutoffs, expected a number")
+        self.cutoffs = cutoffs
+        self.include_lowest = include_lowest
+        self.strict_binning = strict_binning
+
+    def __repr__(self):
+        return 'HISTOGRAM=' + json.dumps(self.__dict__)
+

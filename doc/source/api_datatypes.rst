@@ -1,14 +1,15 @@
 Data Types
 ==========
 
-All data manipulated and stored using frames and graphs must fit into one of the supported Python data types.
+All data manipulated and stored using frames and graphs must fit into one of
+the supported Python data types.
 
-::
+.. code::
     
-  >>> ia.valid_data_types
-  
-  float32, float64, ignore, int32, int64, unicode, vector
-  (and aliases: float->float64, int->int32, list->vector, long->int64, str->unicode)
+    >>> ia.valid_data_types
+    
+    float32, float64, ignore, int32, int64, unicode, vector
+    (and aliases: float->float64, int->int32, list->vector, long->int64, str->unicode)
 
 |
 
