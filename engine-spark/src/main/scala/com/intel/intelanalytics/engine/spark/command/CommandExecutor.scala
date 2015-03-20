@@ -229,13 +229,17 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
-      executeCommandOnYarn(commandContext.command)
-      sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
-      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
-      val updatedCommand = commands.lookup(commandContext.command.id).get
-      if (updatedCommand.error.isDefined)
-        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-      updatedCommand.result.get
+      try {
+        executeCommandOnYarn(commandContext.command)
+        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+        val updatedCommand = commands.lookup(commandContext.command.id).get
+        if (updatedCommand.error.isDefined)
+          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+        updatedCommand.result.get
+      }
+      finally {
+        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
+      }
     }
     else {
       val returnValue = if (commandContext.action) {

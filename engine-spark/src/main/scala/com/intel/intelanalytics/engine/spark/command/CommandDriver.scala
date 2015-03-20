@@ -15,6 +15,7 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 import com.typesafe.config.ConfigFactory
+import org.apache.commons.lang.exception.ExceptionUtils
 
 import scala.collection.mutable
 import scala.reflect.io.Directory
@@ -117,6 +118,10 @@ object CommandDriver {
         sys.props += Tuple2("SPARK_SUBMIT", "true")
         val commandId = args(0).toLong
         executeCommand(commandId)
+      }
+      catch {
+        case t: Throwable => error(s"Error captured in CommandDriver to prevent percolating up to ApplicationMaster + ${ExceptionUtils.getStackTrace(t)}")
+        case _ => error(s"A Non Throwable exception called!!")
       }
       finally {
         sys.props -= "SPARK_SUBMIT"
