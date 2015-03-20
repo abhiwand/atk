@@ -62,40 +62,48 @@ class CsvFile(DataFile):
 
     Examples
     --------
-    Given a raw data file named "raw_data.csv", located at
-    ``hdfs://localhost.localdomain/user/iauser/data/``.
+    Given a raw data file named 'raw_data.csv', located at
+    'hdfs://localhost.localdomain/user/iauser/data/'.
     It consists of three columns, *a*, *b*, and *c*.
     The columns have the data types *int32*, *int32*, and *str* respectively.
     The fields of data are separated by commas.
     There is no header to the file.
 
-    Import the |IAT|::
+    Import the |IAT|:
+    
+    .. code::
 
-        import intelanalytics as ia
+        >>> import intelanalytics as ia
 
-    Define the data::
+    Define the data:
+    
+    .. code::
 
-        csv_schema = [("a", int32),
-                      ("b", int32),
-                      ("c", str)]
+        >>> csv_schema = [("a", int32), ("b", int32), ("c", str)]
 
-    Create a CsvFile object with this schema::
+    Create a CsvFile object with this schema:
+    
+    .. code::
 
-        csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
+        >>> csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
 
     The default delimiter, a comma, was used to separate fields in the file, so
     it was not specified.
     If the columns of data were separated by a character other than comma, the
     appropriate delimiter would be specified.
     For example if the data columns were separated by the colon character, the
-    instruction would be::
+    instruction would be:
+    
+    .. code::
 
-        ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
+        >>> ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
 
     If the data had some lines of header at the beginning of the file, the
-    lines should be skipped::
+    lines should be skipped:
+    
+    .. code::
 
-        csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
+        >>> csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
 
     For other examples see :ref:`Importing a CSV File <example_files.csvfile>`.
 
@@ -137,13 +145,17 @@ class CsvFile(DataFile):
 
         Examples
         --------
-        Given a raw data file ``raw_data.csv`` with columns *col1* (*int32*)
-        and *col2* (*float32*)::
+        Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
+        and *col2* (*float32*):
+        
+        .. code::
 
-            csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            print(csv_class.field_names())
+            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+            >>> print(csv_class.field_names())
 
-        Results::
+        Results:
+        
+        .. code::
 
             ["col1", "col2"]
 
@@ -163,13 +175,17 @@ class CsvFile(DataFile):
 
         Examples
         --------
-        Given a raw data file ``raw_data.csv`` with columns *col1* (*int32*)
-        and *col2* (*float32*)::
+        Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
+        and *col2* (*float32*):
+        
+        .. code::
 
-            csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            print(csv_class.field_types())
+            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+            >>> print(csv_class.field_types())
 
-        Results::
+        Results:
+        
+        .. code::
 
             [numpy.int32, numpy.float32]
 
@@ -214,18 +230,22 @@ class LineFile(DataFile):
 
     Examples
     --------
-    Given a raw data file ``rawline_data.txt`` located at
-    ``hdfs://localhost.localdomain/user/iauser/data/``.
+    Given a raw data file 'rawline_data.txt' located at
+    'hdfs://localhost.localdomain/user/iauser/data/'.
     It consists of multiple lines separated by new line character.
 
-    Import the |IAT|::
+    Import the |IAT|:
+    
+    .. code::
 
-        import intelanalytics as ia
-        ia.connect()
+        >>> import intelanalytics as ia
+        >>> ia.connect()
 
-    Define the data::
+    Define the data:
+    
+    .. code::
 
-        linefile_class = ia.LineFile("data/rawline_data.txt")
+        >>> linefile_class = ia.LineFile("data/rawline_data.txt")
 
     """
 
@@ -281,12 +301,13 @@ class JsonFile(MultiLineFile):
 
     Examples
     --------
-    Give a raw data file named "raw_data.json" located at
-    hdfs://localhost.localdomain/user/iauser/data/.
+    Give a raw data file named 'raw_data.json' located at
+    'hdfs://localhost.localdomain/user/iauser/data/'.
     It consists of a 3 top level json objects with a single value each called
     obj. Each object contains the attributes color, size, and shape.
 
     The example JSON file::
+
         { "obj": {
             "color": "blue",
             "size": 3,
@@ -303,23 +324,31 @@ class JsonFile(MultiLineFile):
             "shape": "square" }
         }
 
-    Import the |IAT|::
+    Import the |IAT|:
+    
+    .. code::
 
-        import intelanalytics as ia
-        ia.connect()
+        >>> import intelanalytics as ia
+        >>> ia.connect()
 
-    Define the data::
+    Define the data:
+    
+    .. code::
 
-        json_file = ia.JsonFile("data/raw_data.json")
+        >>> json_file = ia.JsonFile("data/raw_data.json")
 
-    Create a frame using this JsonFile::
+    Create a frame using this JsonFile:
+    
+    .. code::
 
-        f = ia.Frame(json_file)
+        >>> my_frame = ia.Frame(json_file)
 
-    The frame looks like::
+    The frame looks like:
+    
+    .. code::
 
          data_lines
-         ------------------------
+        /------------------------/
         '{ "obj": {
             "color": "blue",
             "size": 3,
@@ -336,23 +365,29 @@ class JsonFile(MultiLineFile):
             "shape": "square" }
         }'
 
-    Parse values out of the XML column using the add_columns method::
+    Parse values out of the XML column using the add_columns method:
+    
+    .. code::
 
-        def parse_my_json(row):
-            import json
-            my_json = json.loads(row[0])
-            obj = my_json['obj']
-            return (obj['color'], obj['size'], obj['shape'])
+        >>> def parse_my_json(row):
+        ...     import json
+        ...     my_json = json.loads(row[0])
+        ...     obj = my_json['obj']
+        ...     return (obj['color'], obj['size'], obj['shape'])
 
-        f.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
+        >>> my_frame.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
 
-    Original XML column is no longer necessary::
+    Original XML column is no longer necessary:
+    
+    .. code::
 
-        f.drop_columns(['data_lines'])
+        >>> my_frame.drop_columns(['data_lines'])
 
-    Result::
+    Result:
+    
+    .. code::
 
-        f.inspect()
+        >>> my_frame.inspect()
 
           color:str   size:str    shape:str
         /-----------------------------------/
@@ -402,13 +437,15 @@ class XmlFile(MultiLineFile):
 
     Examples
     --------
-    Given a raw data file named "raw_data.xml" located at
-    ``hdfs://localhost.localdomain/user/iauser/data/``.
-    It consists of a root element called shapes with 2 sub elements with the
-    tag name square.
-    Each of these subelements has two subelements called name and size.
-    One of the elements has an attribute called color.
-    Additionally there is one triangle element that is not needed.
+    Given a raw data file named 'raw_data.xml' located at
+    'hdfs://localhost.localdomain/user/iauser/data/'.
+    It consists of a root element called *shapes* with subelements with the
+    tag names *square* and *triangle*.
+    Each of these subelements has two potential subelements called *name* and
+    *size*.
+    One of the elements has an attribute called *color*.
+    Additionally, the subelement *triangle* is not needed so we can skip it
+    during the import.
 
     The example XML file::
 
@@ -427,23 +464,31 @@ class XmlFile(MultiLineFile):
             </square>
         </shapes>
 
-    Import the |IAT|::
+    Import the |IAT|:
+    
+    .. code::
 
-        import intelanalytics as ia
-        ia.connect()
+        >>> import intelanalytics as ia
+        >>> ia.connect()
 
-    Define the data::
+    Define the data:
+    
+    .. code::
 
-        xml_file = ia.XmlFile("data/raw_data.xml", "square")
+        >>> xml_file = ia.XmlFile("data/raw_data.xml", "square")
 
-    Create a frame using this XmlFile::
+    Create a frame using this XmlFile:
+    
+    .. code::
 
-        f = ia.Frame(xml_file)
+        >>> my_frame = ia.Frame(xml_file)
 
-    The frame looks like::
+    The frame looks like:
+    
+    .. code::
 
          data_lines
-         ------------------------
+        /------------------------/
          '<square>
                 <name>left</name>
                 <size>3</size>
@@ -453,22 +498,28 @@ class XmlFile(MultiLineFile):
                 <size>5</size>
             </square>'
 
-    Parse values out of the XML column using the add_columns method::
+    Parse values out of the XML column using the add_columns method:
+    
+    .. code::
 
-        def parse_my_xml(row):
-            import xml.etree.ElementTree as ET
-            ele = ET.fromstring(row[0])
-            return (ele.get("color"), ele.find("name").text, ele.find("size").text)
+        >>> def parse_my_xml(row):
+        ...    import xml.etree.ElementTree as ET
+        ...    ele = ET.fromstring(row[0])
+        ...    return (ele.get("color"), ele.find("name").text, ele.find("size").text)
 
-        f.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
+        >>> my_frame.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
-    Original XML column is no longer necessary::
+    Original XML column is no longer necessary:
+    
+    .. code::
 
-        f.drop_columns(['data_lines'])
+        >>> my_frame.drop_columns(['data_lines'])
 
-    Result::
+    Result:
+    
+    .. code::
 
-        f.inspect()
+        >>> my_frame.inspect()
 
           color:str   name:str    size:str
         /----------------------------------/
