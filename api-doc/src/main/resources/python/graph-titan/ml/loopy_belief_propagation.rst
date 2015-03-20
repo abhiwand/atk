@@ -106,20 +106,20 @@ Examples
 
     .. code::
 
-        >>> g.ml.loopy_belief_propagation(                      \
-        ...     vertex_value_property_list = "value",           \
-        ...     edge_value_property_list  = "weight",           \
-        ...     input_edge_label_list = "edge",                 \
-        ...     output_vertex_property_list = "lbp_posterior",  \
-        ...     vertex_type_property_key = "vertex_type",       \
-        ...     vector_value = "true",                          \
-        ...     max_supersteps = 10,                            \
-        ...     convergence_threshold = 0.0,                    \
-        ...     chor_threshold = 0.9,                           \
-        ...     oothing = 2.0,                                  \
-        ...     directional_check = False,                      \
-        ...     gnore_vertex_type = False,                      \
-        ...     x_product= False,                               \
+        >>> g.ml.loopy_belief_propagation(
+        ...     vertex_value_property_list = "value",
+        ...     edge_value_property_list  = "weight",
+        ...     input_edge_label_list = "edge",
+        ...     output_vertex_property_list = "lbp_posterior",
+        ...     vertex_type_property_key = "vertex_type",
+        ...     vector_value = "true",
+        ...     max_supersteps = 10,
+        ...     convergence_threshold = 0.0,
+        ...     chor_threshold = 0.9,
+        ...     oothing = 2.0,
+        ...     directional_check = False,
+        ...     gnore_vertex_type = False,
+        ...     x_product= False,
         ...     wer = 0)
 
     The expected output is like this:

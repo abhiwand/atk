@@ -134,16 +134,16 @@ a movie recommendation for user 1, the command to use is:
 
     .. code::
 
-        >>> g.ml.alternating_least_squares(                 \
-        ...     edge_value_property_list = "rating",        \
-        ...     vertex_type_property_key = "vertex_type",   \
-        ...     input_edge_label_list = "edge",             \
-        ...     output_vertex_property_list = "als_result", \
-        ...     edge_type_property_key = "splits",          \
-        ...     vector_value = "true",                      \
-        ...     als_lambda = 0.065,                         \
-        ...     bias_on = False,                            \
-        ...     min_value = 1,                              \
+        >>> g.ml.alternating_least_squares(
+        ...     edge_value_property_list = "rating",
+        ...     vertex_type_property_key = "vertex_type",
+        ...     input_edge_label_list = "edge",
+        ...     output_vertex_property_list = "als_result",
+        ...     edge_type_property_key = "splits",
+        ...     vector_value = "true",
+        ...     als_lambda = 0.065,
+        ...     bias_on = False,
+        ...     min_value = 1,
         ...     max_value = 5)
 
     The expected output is like this:

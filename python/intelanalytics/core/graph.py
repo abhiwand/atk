@@ -193,9 +193,9 @@ class VertexRule(Rule):
 
         .. code::
 
-            >>> movie_vertex = ia.VertexRule('movie', my_frame['movie'],    \\
+            >>> movie_vertex = ia.VertexRule('movie', my_frame['movie'],
             ...     {'genre': my_frame['genre'], 'vertex_type':'L'})
-            >>> user_vertex = ia.VertexRule('user', my_frame['user'],       \\
+            >>> user_vertex = ia.VertexRule('user', my_frame['user'],
             ...     {'age': my_frame['age_1'], 'vertex_type':'R'})
 
     """
@@ -414,10 +414,10 @@ class Graph(DocStubsGraph, _BaseGraph):
     
     .. code::
 
-        >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), \\
-        ...                                     ('user_name', str),     \\
-        ...                                     ('movie_id', int32),    \\
-        ...                                     ('movie_title', str),   \\
+        >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        ...                                     ('user_name', str),
+        ...                                     ('movie_id', int32),
+        ...                                     ('movie_title', str),
         ...                                     ('rating', str)])
         >>> frame = ia.Frame(csv)
 
@@ -466,18 +466,18 @@ class Graph(DocStubsGraph, _BaseGraph):
     .. code::
 
         >>> userFrame = ia.Frame(ia.CsvFile("/users.csv",
-        ...                                 schema= [('user_id', int32),    \\
-        ...                                         ('user_name', str),     \\
+        ...                                 schema= [('user_id', int32),
+        ...                                         ('user_name', str),
         ...                                         ('age', int32)]))
 
         >>> movieFrame = ia.Frame(ia.CsvFile("/movie.csv",
-        ...                                 schema= [('movie_id', int32),   \\
-        ...                                         ('movie_title', str),   \\
+        ...                                 schema= [('movie_id', int32),
+        ...                                         ('movie_title', str),
         ...                                         ('year', str)]))
 
         >>> ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv",
-        ...                                 schema= [('user_id', int32),    \\
-        ...                                         ('movie_id', int32),    \\
+        ...                                 schema= [('user_id', int32),
+        ...                                         ('movie_id', int32),
         ...                                         ('rating', str)]))
 
     Create a graph:
@@ -725,9 +725,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     
     .. code::
 
-        >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),    \\
-        ...                                     ('vertexType', str),    \\
-        ...                                     ('movie', int32),       \\
+        >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
+        ...                                     ('vertexType', str),
+        ...                                     ('movie', int32),
         ...                                     ('rating', str)])
         >>> my_frame = ia.Frame(csv)
 
@@ -772,11 +772,11 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             >>> sports = ia.VertexRule("sport", f.sport,{"vertex_type": "R"})
             >>> dstips = ia.VertexRule("dstip", f.dstip,{"vertex_type": "R"})
             >>> dports = ia.VertexRule("dport", f.dport,{"vertex_type": "L"})
-            >>> from_edges = ia.EdgeRule("from_port", srcips, sports,           \\
-            ...     {"fs_srcbyte": f.fs_srcbyte,"tot_srcbyte": f.tot_srcbyte,   \\
+            >>> from_edges = ia.EdgeRule("from_port", srcips, sports,
+            ...     {"fs_srcbyte": f.fs_srcbyte,"tot_srcbyte": f.tot_srcbyte,
             ...     "fs_srcpkt": f.fs_srcpkt},bidirectional=True)
-            >>> to_edges = ia.EdgeRule("to_port", dstips, dports,               \\
-            ...     {"fs_dstbyte": f.fs_dstbyte,"tot_dstbyte": f.tot_dstbyte,   \\
+            >>> to_edges = ia.EdgeRule("to_port", dstips, dports,
+            ...     {"fs_dstbyte": f.fs_dstbyte,"tot_dstbyte": f.tot_dstbyte,
             ...     "fs_dstpkt": f.fs_dstpkt},bidirectional=True)
     
     Define the graph name:
@@ -799,7 +799,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         
         .. code::
 
-            >>> my_graph = ia.TitanGraph([srcips,sports,from_edges,     \\
+            >>> my_graph = ia.TitanGraph([srcips,sports,from_edges,
             ...     dstips,dports,to_edges] ,gname)
 
     """
@@ -851,9 +851,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         
         .. code::
 
-            >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),    \\
-            ...                                     ('vertexType', str),    \\
-            ...                                     ('movie', int32),       \\
+            >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
+            ...                                     ('vertexType', str),
+            ...                                     ('movie', int32),
             ...                                     ('rating', str)])
 
             >>> frame = ia.Frame(csv)
@@ -880,9 +880,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         
         .. code::
 
-            >>> ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv",      \\
-            ...                         schema = [('userId', int32),    \\
-            ...                                   ('movieId', int32),   \\
+            >>> ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv",
+            ...                         schema = [('userId', int32),
+            ...                                   ('movieId', int32),
             ...                                   ('rating', str)]))
 
         Define graph parsing rules:

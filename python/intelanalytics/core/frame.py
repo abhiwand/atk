@@ -399,7 +399,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             .. code::
 
-                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b],    \
+                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b],
                 ...     [("a_times_b", float32), ("a_plus_b", float32))
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the
@@ -624,7 +624,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            >>> my_frame.drop_rows(lambda row: row.animal_type == "lion" or \
+            >>> my_frame.drop_rows(lambda row: row.animal_type == "lion" or
             ...    row.animal_type == "tiger")
 
         Now the frame only has information about ``ligers``.
@@ -812,7 +812,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d':  \
+            >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d':
             ...     [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
              a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
@@ -963,7 +963,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            >>> joined_frame = your_frame.join(your_frame, left_on='b', \
+            >>> joined_frame = your_frame.join(your_frame, left_on='b',
             ...     right_on='book', how='inner')
 
         We end up with a new Frame *joined_frame* accessing a new frame with
@@ -1269,10 +1269,10 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     
     .. code::
 
-        >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), \
-        ...                                     ('user_name', str),     \
-        ...                                     ('movie_id', int32),    \
-        ...                                     ('movie_title', str),   \
+        >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        ...                                     ('user_name', str),
+        ...                                     ('movie_id', int32),
+        ...                                     ('movie_title', str),
         ...                                     ('rating', str)])
         >>> my_frame = ia.Frame(csv)
         >>> my_graph = ia.Graph()
@@ -1347,8 +1347,8 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
             .. code::
 
-                >>> my_vertex_frame.drop_vertices(lambda row:   \
-                ...     row.animal_type == "lion" or            \
+                >>> my_vertex_frame.drop_vertices(lambda row:
+                ...     row.animal_type == "lion" or
                 ...     row.animal_type == "tiger")
 
         Now the frame only has information about ``ligers``.

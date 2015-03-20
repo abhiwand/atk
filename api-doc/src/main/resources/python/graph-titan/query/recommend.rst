@@ -99,10 +99,10 @@ Examples
     
     .. code::
 
-        >>> g.query.recommend(                              \
-        ...     right_vertex_id_property_key='user',        \
-        ...     left_vertex_id_property_key='movie_name',   \
-        ...     vertex_type="R", \\
+        >>> g.query.recommend(
+        ...     right_vertex_id_property_key='user',
+        ...     left_vertex_id_property_key='movie_name',
+        ...     vertex_type="R",
         ...     vertex_id = "8941")
 
     The expected output of recommended movies looks like this:

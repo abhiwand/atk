@@ -43,7 +43,7 @@ The "original_data"::
     
     .. code::
 
-        >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32), \\
+        >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),
         ...    ('b', str)], delimiter='-')
         >>> my_frame = Frame(source=my_csv)
 
