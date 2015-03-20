@@ -57,7 +57,7 @@ Examples
 
     .. code::
 
-        >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True, \
+        >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True,
         ...    state_space_size = 5, max_iterations = 6)
 
         {u'log': u'Vertex Count: 80000\n

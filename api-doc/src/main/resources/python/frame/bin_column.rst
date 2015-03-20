@@ -73,7 +73,7 @@ The data values should use strict_binning:
 
 .. code::
 
-    >>> my_frame.bin_column('a', [5,12,25,60], include_lowest=True, strict_binning=True,\
+    >>> my_frame.bin_column('a', [5,12,25,60], include_lowest=True, strict_binning=True,
     ...     bin_column_name='binned')
     >>> my_frame.inspect( n=11 )
 
@@ -96,7 +96,7 @@ The data value should not use strict_binning:
 
 .. code::
 
-    >>> my_frame.bin_column('a', [5,12,25,60], include_lowest=True, strict_binning=False,\
+    >>> my_frame.bin_column('a', [5,12,25,60], include_lowest=True, strict_binning=False,
     ...     bin_column_name='binned')
     >>> my_frame.inspect( n=11 )
 
@@ -120,7 +120,7 @@ The bins should be lower inclusive:
 
 .. code::
 
-    >>> my_frame.bin_column('a', [1,5,34,55,89], include_lowest=True, strict_binning=False,\
+    >>> my_frame.bin_column('a', [1,5,34,55,89], include_lowest=True, strict_binning=False,
     ...     bin_column_name='binned')
     >>> my_frame.inspect( n=11 )
 
@@ -143,7 +143,7 @@ The bins should be upper inclusive:
 
 .. code::
 
-    >>> my_frame.bin_column('a', [1,5,34,55,89], include_lowest=False, strict_binning=True,\
+    >>> my_frame.bin_column('a', [1,5,34,55,89], include_lowest=False, strict_binning=True,
     ...     bin_column_name='binned')
     >>> my_frame.inspect( n=11 )
 

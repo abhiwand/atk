@@ -127,14 +127,14 @@ Examples
 
     .. code::
 
-        >>> g.ml.conjugate_gradient_descent(                \
-        ...     edge_value_property_list = "rating",        \
-        ...     vertex_type_property_key = "vertex_type",   \
-        ...     input_edge_label_list = "edge",             \
-        ...     output_vertex_property_list = "cgd_result", \
-        ...     edge_type_property_key = "splits",          \
-        ...     vector_value = "true",                      \
-        ...     cgd_lambda = 0.065,                         \
+        >>> g.ml.conjugate_gradient_descent(
+        ...     edge_value_property_list = "rating",
+        ...     vertex_type_property_key = "vertex_type",
+        ...     input_edge_label_list = "edge",
+        ...     output_vertex_property_list = "cgd_result",
+        ...     edge_type_property_key = "splits",
+        ...     vector_value = "true",
+        ...     cgd_lambda = 0.065,
         ...     num_iters = 3)
 
     The expected output is like this:

@@ -166,9 +166,9 @@ Given a directed graph with three nodes and two edges like this:
              u'weight': 0.1}],
              u'run_time_seconds': 1.359}
  
-        >>> h = g.annotate_weighted_degrees(            \\
-        ...        'new_graph',                        \\
-        ...        'weight',                           \\
+        >>> h = g.annotate_weighted_degrees(
+        ...        'new_graph',
+        ...        'weight',
         ...        edge_weight_property = 'weight')
  
         >>> h.query.gremlin('g.V')
