@@ -25,12 +25,8 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
-import java.nio.CharBuffer
-
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
-import org.apache.commons.codec.binary.Base64
-import org.bouncycastle.operator.bc.BcRSAContentVerifierProviderBuilder
 import org.springframework.security.jwt._
 import org.springframework.security.jwt.crypto.sign.RsaVerifier
 import spray.http.HttpHeader
@@ -39,12 +35,10 @@ import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
-import scala.Some
 import spray.routing._
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.Engine
 import com.intel.event.EventLogging
-import java.security._
 
 import scala.util.parsing.json.JSON
 
@@ -96,9 +90,9 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
     println()
 
     val decodedKey = JwtHelper.decode(apiKey)
-    println("decodedkey: " + decodedKey.toString()) \
-      //val json = JSON // decodedKey.getClaims()
-      println("claims: " + decodedKey.getClaims())
+    println("decodedkey: " + decodedKey.toString())
+    //val json = JSON // decodedKey.getClaims()
+    println("claims: " + decodedKey.getClaims())
     println()
 
     val rsa = new RsaVerifier("-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d\nKVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX\nqHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug\nspULZVNRxq7veq/fzwIDAQAB\n-----END PUBLIC KEY-----\n")
