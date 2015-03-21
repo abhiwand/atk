@@ -45,6 +45,17 @@ export SPARK_LOCAL_IP=$SPARK_DRIVER_HOST
 export PATH=$PWD/.java-buildpack/open_jdk_jre/bin:$PATH
 export JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre
 
+jars="engine-spark.jar igiraph-titan.jar graphon.jar"
+
+for jar in $jars
+do
+if [ -f $DIR/../lib/$jar ]; then
+   rm $DIR/../lib/$jar
+ fi
+
+ ln -s $DIR/../lib/deploy.jar $DIR/../lib/$jar
+done
+
 echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
 java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
 
