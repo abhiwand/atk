@@ -12,7 +12,8 @@ H2 setup is completely automatic.
 No steps below are needed for H2.
 
 The configuration script, used during normal installation (see
-:ref:`Rest Server Configuration`), changes this behavior to use PostgreSQL.
+:ref:`Rest Server Configuration <rest_server_configuration>`), changes this
+behavior to use PostgreSQL.
 
 ----------------
 Using PostgreSQL
