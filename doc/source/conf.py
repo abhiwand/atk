@@ -101,9 +101,12 @@ extensions = [
 #    'sphinx.ext.viewcode',
     'numpydoc',
 ]
-# This is to eliminate the worning that appears saying there is a reference
+# This is to eliminate the warning that appears saying there is a reference
 # to a class but looking for a rst.
-numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
+
+# This will eliminate the methods and attributes tables
+# numpydoc_show_class_members = False
 
 # This is a flag to print out To-Do items
 todo_include_todos = False

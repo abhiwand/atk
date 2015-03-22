@@ -273,6 +273,8 @@ running the spark worker role.
         $ sudo yum -y install intelanalytics-spark-deps
         $ sudo yum -y install intelanalytics-python-rest-client
 
+.. _rest_server_configuration:
+
 -------------------------
 Rest Server Configuration
 -------------------------
