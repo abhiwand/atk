@@ -3,9 +3,9 @@ Classify a particular column into same-width groups.
 Group rows of data based on the value in a single column and add a label
 to identify grouping.
 
-*   Equal width binning places column values into groups such that the values
-    in each group fall within the same interval and the interval width for each
-    group is equal.
+Equal width binning places column values into groups such that the values
+in each group fall within the same interval and the interval width for each
+group is equal.
 
 Parameters
 ----------

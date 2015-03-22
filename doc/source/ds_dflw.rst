@@ -291,7 +291,7 @@ Let's create a Frame and check it out:
 
 Append:
 -------
-The :code:`append` function adds rows and columns of data to a frame.
+The :code:`append` method adds rows and columns of data to a frame.
 Columns and rows are added to the database structure, and data is imported
 as appropriate.
 If columns are the same in both name and data type, the appended data will
@@ -300,7 +300,7 @@ go into the existing column.
 As an example, let's start with a frame containing two columns *a* and *b*.
 The frame can be accessed by Frame *my_frame1*.
 We can look at the data and structure of the database by using the
-:code:`inspect` function:
+:code:`inspect` method:
 
 .. code::
 
@@ -418,9 +418,9 @@ Gives you something like this:
         12.3000            500    
        195.1230         183954    
 
-Here, we see a list of lists of data from *myframe*, containing 3 lists.
-Each list has the data from a row in the frame accessed by *my_frame*,
-beginning at row 2.
+Using the take() method, makes a list of lists of frame data.
+Each list has the data from a row in the frame accessed by the Frame,
+in this case, 3 rows beginning from row 2.
 
 .. code::
 
@@ -437,6 +437,8 @@ Gives you something like this:
 
     The row sequence of the data is NOT guaranteed to match the sequence of the
     input file.
+    When the data is spread out over multiple clusters, the original sequence
+    of rows from the raw data is lost.
 
 .. only:: html
 
@@ -459,7 +461,7 @@ Gives you something like this:
 
     Some more examples to try:
     
-    ..code::
+    .. code::
 
         >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv",
         ... schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64),
@@ -479,11 +481,11 @@ Gives you something like this:
 Clean The Data
 ==============
 
-The process of "data cleaning" encompasses the identification and removal of
-incomplete, incorrect, or mal-formed information in a data set.
-While |IAT|'s Frame API provides much of the functionality necessary for these
-tasks, it's important to keep in mind that it was designed with scalability
-in mind.
+The process of "data cleaning" encompasses the identification and removal or
+repair of incomplete, incorrect, or malformed information in a data set.
+The |IAT|'s Python API provides much of the functionality necessary for these
+tasks.
+It is important to keep in mind that it was designed for data scalability.
 Thus, using external Python packages for these tasks, while possible, may
 not provide the same level of efficiency.
 
@@ -512,7 +514,7 @@ Example of data cleaning:
     ...     if 'basset hound' in row.animals:
     ...         return 'dog'
     ...     elif 'ginea pig' in row.animals:
-    ...         return 'guinea pig'
+    ...         return 'cavy'
     ...     else:
     ...         return row.animals
 
@@ -525,7 +527,7 @@ Example of data cleaning:
 Drop Rows:
 ----------
 
-The :code:`drop` function takes a predicate function and removes all rows for
+The :code:`drop` method takes a predicate function and removes all rows for
 which the predicate evaluates to ``True``.
 
 Examples:
@@ -554,13 +556,13 @@ To drop any rows where any column is empty:
 Filter Rows:
 ------------
 
-The :code:`filter` function is like :code:`drop`, except it removes all rows
+The :code:`filter` method is like :code:`drop`, except it removes all rows
 for which the predicate evaluates to False.
 
 Examples:
 ~~~~~~~~~
 
-To keep only those rows where field *b* is in the range 0 to 10:
+To delete those rows where field *b* is outside the range of 0 to 10:
 
 .. code::
 
@@ -571,7 +573,7 @@ To keep only those rows where field *b* is in the range 0 to 10:
 Drop Duplicates:
 ----------------
 
-The :code:`drop_duplicates` function performs a row uniqueness comparison
+The :code:`drop_duplicates` method performs a row uniqueness comparison
 across the whole table.
 
 Examples:
