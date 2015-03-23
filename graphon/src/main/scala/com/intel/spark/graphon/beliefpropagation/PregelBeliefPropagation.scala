@@ -99,7 +99,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
 
     val posterior = VectorMath.l1Normalize(productOfPriorAndMessages)
 
-    val delta = posterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
+    val delta = posterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).sum
 
     VertexState(vertexState.gbVertex, messages, prior, posterior, delta)
   }
@@ -156,7 +156,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
     val unnormalizedMessage = stateRange.map(i => statesUNPosteriors.map({
       case (j, x: Double) =>
         x * Math.exp(edgePotential(i, j, edgeWeight))
-    }).reduce(_ + _))
+    }).sum)
 
     val message = VectorMath.l1Normalize(unnormalizedMessage)
 
