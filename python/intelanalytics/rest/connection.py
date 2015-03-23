@@ -117,6 +117,8 @@ class Server(object):
     @property
     def headers(self):
         """scheme headers"""
+        if config.oauth_token is not None:
+            self._headers['Authorization'] = config.oauth_token
         return self._headers
 
     @headers.setter
@@ -189,6 +191,24 @@ version:  %s
         else:
             _Api.load_api()
             print "Connected to intelanalytics server."
+
+    @staticmethod
+    def oauth():
+        """
+        Connect to the cloudfoundry uaa server.
+
+        Calling this method is required before invoking any ATK operations. This method connects to UAA server
+        and validates the user and the client and returns an token that will be passed in the rest server header
+
+        """
+
+        r = requests.post(url= config.oauth_defaults.url, data={"grant_type":"password","password":config.oauth_defaults.user_password,"username":config.oauth_defaults.user_name},
+                headers= config.oauth_defaults.headers, auth=(config.oauth_defaults.client_name, config.oauth_defaults.client_password))
+        logger.info("access token %s", r.text)
+        HttpMethods._check_response(r)
+        config.oauth_token = r.json()['access_token']
+        print config.oauth_token
+        config.server_defaults.headers['Authorization'] = config.oauth_token
 
 
 class HttpMethods(object):
