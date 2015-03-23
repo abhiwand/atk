@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
+import com.intel.intelanalytics.domain.frame.Udf
 import com.intel.intelanalytics.domain.frame.FrameReference
 
 /**

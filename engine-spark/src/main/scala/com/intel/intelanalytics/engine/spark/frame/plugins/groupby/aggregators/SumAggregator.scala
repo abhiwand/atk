@@ -51,7 +51,7 @@ class SumAggregator[T: Numeric] extends GroupByAggregator {
     if (columnValue == null) {
       num.zero
     }
-    else if (columnDataType.isIntegral) {
+    else if (columnDataType.isInteger) {
       DataTypes.toLong(columnValue).asInstanceOf[ValueType]
     }
     else {

@@ -11,35 +11,17 @@ Machine Learning Algorithms
     ds_mlal_cf
     ds_mlal_als
     ds_mlal_cgd
-    ds_mlal_pr
     ds_mlal_lp
     ds_mlal_lbp
-    ds_mlal_glbp
     ds_mlal_lda
-    ds_mlal_clco
-    ds_mlal_cc
-    ds_mlal_dc
     ds_mlal_k
 
 The graph machine learning algorithms currently supported fall into these categories:
-*Collaborative Filtering*, *Graph Analytics*, *Graphical Models*, and *Topic Modeling*.
+*Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
 
 * :ref:`Collaborative_Filtering`
     * :ref:`ALS`
     * :ref:`CGD`
-
-* :ref:`Graph_Analytics`
-    * :ref:`ClCo`
-    * :ref:`CC`
-    * :ref:`PR`
-    * :ref:`DC`
-
-.. TODO::
-
-    * ref:`APL`
-    
-    Add these to the toctree above.
-
 
 * :ref:`Graphical_Models`
     * :ref:`LP`
@@ -59,33 +41,6 @@ The graph machine learning algorithms currently supported fall into these catego
 .. include:: ds_mlal_cgd.rst
 
 
-.. _Graph_Analytics:
-
----------------
-Graph Analytics
----------------
-
-The algorithms we currently support in this category are :ref:`ClCo`, :ref:`CC`, :ref:`DC` and :ref:`PR`.
-
-.. _ClCo:
-.. include:: ds_mlal_clco.rst
-
-.. _CC:
-.. include:: ds_mlal_cc.rst
-
-.. _DC:
-.. include:: ds_mlal_dc.rst
-
-.. _PR:
-.. include:: ds_mlal_pr.rst
-
-.. TODO::
-
-    We support three algorithms in this category, ref:`APL`, ref:`CC`, and :ref:`PR`
-
-    .. _APL:
-    .. include:: ds_mlal_apl.rst
-
 .. _Graphical_Models:
 
 ----------------
@@ -102,10 +57,6 @@ We currently support :ref:`LP` and :ref:`LBP`
 
 .. _LBP:
 .. include:: ds_mlal_lbp.rst
-
-
-.. _GLBP:
-.. include:: ds_mlal_glbp.rst
 
 
 .. _Topic_Modeling:

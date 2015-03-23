@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, SparkFrameStorage, LegacyFrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, SparkFrameStorage, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -76,10 +76,10 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       if (arguments.resultFrameName.isDefined) {
         engine.frames.renameFrame(ecdfFrame.meta, FrameName.validate(arguments.resultFrameName.get))
       }
-      val rdd = frame.data.toLegacyFrameRDD
+      val rdd = frame.data.toLegacyFrameRdd
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
       save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),
-        new LegacyFrameRDD(ecdfSchema, ecdfRdd).toFrameRDD()))
+        new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd()))
     }.meta
   }
 }

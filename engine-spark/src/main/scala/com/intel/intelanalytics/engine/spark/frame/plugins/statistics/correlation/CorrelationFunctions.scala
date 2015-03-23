@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.rdd.RDD
@@ -46,15 +46,15 @@ object Correlation extends Serializable {
   /**
    * Compute correlation for exactly two columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the correlation
    * @return correlation wrapped in DoubleValue
    */
-  def correlation(frameRDD: FrameRDD,
+  def correlation(frameRdd: FrameRdd,
                   dataColumnNames: List[String]): DoubleValue = {
     // compute correlation
 
-    val correlation: Matrix = Statistics.corr(frameRDD.toVectorDenseRDD(dataColumnNames))
+    val correlation: Matrix = Statistics.corr(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val dblVal: Double = correlation.toArray(1)
 
@@ -64,20 +64,20 @@ object Correlation extends Serializable {
   /**
    * Compute correlation for two or more columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the correlation matrix
    * @return the correlation matrix in a RDD[Rows]
    */
-  def correlationMatrix(frameRDD: FrameRDD,
+  def correlationMatrix(frameRdd: FrameRdd,
                         dataColumnNames: List[String]): RDD[sql.Row] = {
 
-    val correlation: Matrix = Statistics.corr(frameRDD.toVectorDenseRDD(dataColumnNames))
+    val correlation: Matrix = Statistics.corr(frameRdd.toVectorDenseRDD(dataColumnNames))
     val vecArray = correlation.toArray.grouped(correlation.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
       val temp: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
       new GenericRow(temp)
     })
 
-    frameRDD.sparkContext.parallelize(arrGenericRow)
+    frameRdd.sparkContext.parallelize(arrGenericRow)
   }
 }

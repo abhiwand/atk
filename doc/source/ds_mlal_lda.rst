@@ -126,10 +126,11 @@ The results of this evaluation allow the user to confidently speak about the
 generalizability of the trained model.
 When speaking in these terms, be cautious that you only discuss
 generalizability to the broader population from which your data was originally
-obtain, however.
-If I were to train a topic model on neuroscience-related publications,
+obtained.
+If a topic model is trained on neuroscience-related publications,
 for example, evaluating the model on other neuroscience-related publications
-would not allow me to discuss my model's ability to work on documents from
+is valid.
+It would not be valid to discuss the model's ability to work on documents from
 other domains.
 
 There are various schools of thought for how to assign a data set to training
@@ -138,8 +139,8 @@ Where analysts disagree is in the ratio of data to be assigned to each.
 In most situations, the bulk of data will be assigned to the training
 collection, because the more data that can be used to train the algorithm,
 the better the resultant model will typically be.
-It's also important that the testing collection has sufficiently many documents that
-the distribution of data is able to reflect the characteristics of the larger
+It's also important that the testing collection have sufficient data to
+be able to reflect the characteristics of the larger
 population from which it was drawn (this becomes an important issue when
 working with data sets with rare topics, for example).
 As a starting point, many people will use a 90%/10% training/test collection
@@ -155,9 +156,8 @@ the training collection, while the right-hand column contains unique ids
 corresponding to each word in the entire training set, following any
 pre-processing steps that were used.
 Connections between these columns, or edges, denote the number of times a
-particular word appears in a document,
-with the we get on the edge in question denoting the number of times the word
-was found there.
+particular word appears in a document, with the weight on the edge in question
+denoting the number of times the word was found there.
 After graph construction, many analysts choose to normalize the weights using
 one of a variety of normalization schemes.
 One approach is to normalize the weights to sum to 1, while another is to use
@@ -169,26 +169,21 @@ and will likely depend on the characteristics of the text being analyzed.
 Typical text analytics experiments will try a variety of approaches on a small
 subset of the data to determine what works best.
 
-Figure 1 depicts an example layout of a bipartite graph used for topic modeling
-with |LDA|.
-The left-hand column contains one vertex for each document in the input corpus,
-while the right-hand column contains vertices for each unique word found in
-them.
-Edges connecting left- and right-hand columns denote the number of times the
-word was found in the document the edge connects.
-The weights of the edges used in this example were not normalized.
+See :ref:`figure_1`.
 
-
+.. _Figure_1:
 
 .. figure:: ds_mlal_lda_1.*
     :align: center
 
     Figure 1 - Example layout of a bipartite graph for LDA.
+
     The left-hand column contains one vertex for each document in the input
     corpus, while the right-hand column contains vertices for each unique word
     found in them.
     Edges connecting left- and right-hand columns denote the number of times
     the word was found in the document the edge connects.
+    The weights of the edges used in this example were not normalized.
 
 Training |LDA|
 --------------
@@ -218,7 +213,7 @@ and the observed word :math:`w_{d,n}` depends on topic assignment
 Although there are no analytical solutions to learning the |LDA| model, there
 are a variety of approximate solutions that are used, most of which are based
 on Gibbs Sampling (for example, Porteous et al., 2008 [#LDA5]_ ).
-The IAT uses an implementation related to this.
+The |IAT| uses an implementation related to this.
 We refer the interested reader to the primary source on this approach to learn
 more (Teh et al., 2006 [#LDA6]_ ).
 
@@ -265,7 +260,7 @@ regarding topic membership, using this information.
 
     Command Line Options
     - ------------------
-    |LDA| can be invoked in the IAT using the function ``latent_dirichlet_allocation``.
+    |LDA| can be invoked in the |IAT| using the function ``latent_dirichlet_allocation``.
     It can take several parameters, each of which are explained below.
     ::
 
@@ -318,7 +313,7 @@ regarding topic membership, using this information.
     max_supersteps:
         Integer (optional)
 
-        The maximum number of super steps (iterations) that will be executed.
+        The maximum number of :term:`supersteps` (iterations) that will be executed.
         Defaults to 20, but any positive integer is accepted.
      
     alpha:

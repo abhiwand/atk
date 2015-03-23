@@ -8,11 +8,11 @@ System Requirements
     ad_inst_pre_cloudera
     ad_inst_cloudera
  
-The hardware requirements for the |IA| package server are
+The hardware requirements for the |IAT| package server are
 insignificant with comparison to the requirements for a Cloudera server.
 See `Cloudera Requirements <http://blog.cloudera.com/blog/2013/08/how-to-select-the-right-hardware-for-your-new-hadoop-cluster/>`__.
 
-Requirements specifically for the |IA| packages can be found in
+Requirements specifically for the |IAT| packages can be found in
 :doc:`ad_inst_ia1`.
 
 

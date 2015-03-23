@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Invocation

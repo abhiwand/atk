@@ -8,6 +8,7 @@ Use four spaces instead of a tab character.
 When there are multiple lines in a paragraph, each line starts on it's own line.
 Use **bold** when words or a line needs to be particularly noted.
 Use ".. note::" when a paragraph needs to be particularly noted.
+
 Quotes
 ------
 When an exact file is called, it is surrounded by 'single quotes'.
@@ -30,6 +31,13 @@ Each Python function is entered beginning with >>>.
 If Python functions extend more than one line, following lines begin with ...
 Comments between code blocks are separated from the code blocks they apply to
 so they appear outside the code shading.
+
+Menus
+=====
+For single selections italicize the word.
+For example, "Click on the *OK* button. Select *Open*.
+For multiple selections with no interruptions, use :menuselect:`xxx --> xxx`.
+For example, "Select :menuselect:`File --> New --> Text Document`
 
 Tables
 ======

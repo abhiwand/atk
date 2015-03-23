@@ -23,8 +23,8 @@
 
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRDD
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, GraphElement }
 import com.intel.testutils.TestingSparkContextWordSpec
@@ -46,7 +46,7 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
   "Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
       val hBaseRDD = sparkContext.parallelize(Seq.empty[(NullWritable, FaunusVertex)])
-      val titanReaderRDD = new TitanReaderRDD(hBaseRDD, titanConnector)
+      val titanReaderRDD = new TitanReaderRdd(hBaseRDD, titanConnector)
       val graphElements = titanReaderRDD.collect()
       graphElements.length shouldBe 0
     }
@@ -56,7 +56,7 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
           (NullWritable.get(), plutoFaunusVertex),
           (NullWritable.get(), seaFaunusVertex)))
 
-      val titanReaderRDD = new TitanReaderRDD(hBaseRDD, titanConnector)
+      val titanReaderRDD = new TitanReaderRdd(hBaseRDD, titanConnector)
       val vertexRDD = titanReaderRDD.filterVertices()
       val edgeRDD = titanReaderRDD.filterEdges()
 

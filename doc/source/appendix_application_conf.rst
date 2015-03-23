@@ -98,7 +98,7 @@ Appendix A
           //request-timeout = 29s
         }
         
-          #Configuration for the IAT processing engine
+          #Configuration for the processing engine
           engine {
               //default-timeout = 30s
              //page-size = 1000
