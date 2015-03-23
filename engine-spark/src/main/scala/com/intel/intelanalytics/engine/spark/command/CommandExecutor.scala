@@ -34,6 +34,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import spray.json._
 
@@ -232,13 +233,17 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
-      executeCommandOnYarn(commandContext.command)
-      sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
-      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
-      val updatedCommand = commands.lookup(commandContext.command.id).get
-      if (updatedCommand.error.isDefined)
-        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-      updatedCommand.result.get
+      try {
+        executeCommandOnYarn(commandContext.command, plugin)
+        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+        val updatedCommand = commands.lookup(commandContext.command.id).get
+        if (updatedCommand.error.isDefined)
+          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+        updatedCommand.result.get
+      }
+      finally {
+        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
+      }
     }
     else {
       val returnValue = if (commandContext.action) {
@@ -259,47 +264,73 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     }
   }
 
-  private def executeCommandOnYarn(command: Command)(implicit invocation: Invocation): Unit = withMyClassLoader {
+  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R])(implicit invocation: Invocation): Unit = {
     withContext("executeCommandOnYarn") {
 
-      /* Serialize current config so as to pass to Spark Submit */
-      import scala.collection.JavaConversions._
-      import java.nio.file.{ Paths, Files }
-      import java.nio.charset.StandardCharsets
-      val currentConfig = SparkEngineConfig.config.entrySet()
       val tempConfFileName = s"/tmp/application.conf"
-      val allEntries = for {
-        i <- currentConfig
-      } yield s"${i.getKey}=${i.getValue.render}"
-      Files.write(Paths.get(tempConfFileName), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+      /* Serialize current config for the plugin so as to pass to Spark Submit */
+      val sparkCommandPlugin = plugin.asInstanceOf[SparkCommandPlugin[A, R]]
+      val pluginArchiveName = sparkCommandPlugin.getArchiveNameForPlugin()
+      sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
 
-      //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
-      KerberosAuthenticator.loginWithKeyTabCLI()
+      // TODO Plugin jars along with their parents should be passed in;
+      // TODO For convenience now we pass graphon and parse the same in CommandDriver
+      //      val pluginJarPath = pluginArchiveName match {
+      //        case "engine-spark" => "" /* Running as part of the spark internal jar; no need to put explicitly */
+      //        case plugin: String => s",${SparkContextFactory.jarPath(plugin)}"
+      //      }
+      val pluginJarPath = s",${SparkContextFactory.jarPath("graphon")}"
 
+      withMyClassLoader {
+        //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
+        KerberosAuthenticator.loginWithKeyTabCLI()
       val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
         case Some(path) => (s",${path}",
           s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
         case None => ("", "")
       }
 
-      /* Prepare input arguments for Spark Submit */
-      import org.apache.spark.deploy.SparkSubmit
-      val inputArgs = Array[String](
-        s"--master", s"${SparkEngineConfig.sparkMaster}",
-        "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
-        "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
-        "--files", s"$tempConfFileName$kerbFile",
-        "--conf", s"config.resource=application.conf",
-        "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-        //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
-        "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions",
-        "--verbose",
-        "spark-internal", /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
-        s"${command.id}")
+        val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
+          case Some(path) => (s",${path}",
+            s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
+          case None => ("", "")
+        }
 
-      /* Launch Spark Submit */
-      info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-      SparkSubmit.main(inputArgs) /* Blocks */
+        val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
+        val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
+        val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")}$pluginJarPath")
+        val pluginDependencyFiles = Array("--files", s"$tempConfFileName$kerbFile", "--conf", s"config.resource=application.conf")
+        //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
+        val executionParams = Array("--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
+          "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
+
+        // TODO: 1. Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
+        // TODO: 2. This classpath should come from plugin's extra classpath in plugin's reference.conf
+        val driver_classpath = SparkEngineConfig.sparkMaster match {
+          case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"/etc/hbase/conf:/etc/hadoop/conf")
+          case _ => Array[String]()
+        }
+        val verbose = Array("--verbose")
+        /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
+        val sparkInternalDriverClass = Array("spark-internal")
+        val pluginArguments = Array(s"${command.id}")
+
+        /* Prepare input arguments for Spark Submit; Do not change the order */
+        import org.apache.spark.deploy.SparkSubmit
+        val inputArgs = sparkMaster ++
+          pluginExecutionDriverClass ++
+          pluginDependencyJars ++
+          pluginDependencyFiles ++
+          executionParams ++
+          driver_classpath ++
+          verbose ++
+          sparkInternalDriverClass ++
+          pluginArguments
+
+        /* Launch Spark Submit */
+        info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
+        SparkSubmit.main(inputArgs) /* Blocks */
+      }
     }
   }
 
