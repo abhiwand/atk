@@ -230,7 +230,7 @@ trait Schema {
    * Validate that all columns are of numeric data type
    */
   def requireColumnsOfNumericPrimitives(columnNames: Iterable[String]) = {
-    columnNames.map(columnName => {
+    columnNames.foreach(columnName => {
       require(hasColumn(columnName), s"column ${columnName} was not found")
       require(columnDataType(columnName).isNumerical, s"column ${columnName} should be of type numeric")
     })
