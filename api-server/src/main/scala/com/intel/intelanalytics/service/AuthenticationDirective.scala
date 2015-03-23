@@ -75,8 +75,9 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
 
         if (!apiKey.equals("test_api_key_1")) {
           validateUaaUser(apiKey)
-          val dateTime = DateTime.now()
-          val userPrincipal: UserPrincipal = new UserPrincipal(new User(1000, Some("Oauth User"), Some(apiKey), dateTime, dateTime), List("user"))
+          //just return a userPrincipal till we have the new security scheme in place
+          val userPrincipal = engine.getUserPrincipal("test_api_key_1")
+          info("authenticated " + userPrincipal)
           userPrincipal
         }
         else {
