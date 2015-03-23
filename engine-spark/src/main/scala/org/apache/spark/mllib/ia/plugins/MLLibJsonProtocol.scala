@@ -215,11 +215,6 @@ object MLLibJsonProtocol {
   }
 
 
-
-
-  //  public svm_parameter param;	// parameter
-  //  public svm_node[][] SV;	// SVs (SV[l])
-
   implicit object LibSVMModelFormat extends JsonFormat[svm_model] {
     /**
      * The write methods converts from LibSVMModel to JsValue
