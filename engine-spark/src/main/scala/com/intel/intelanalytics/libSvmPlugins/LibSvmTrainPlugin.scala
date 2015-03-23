@@ -31,9 +31,10 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import libsvm.{svm_node, svm_problem, svm_parameter, svm}
 import org.apache.spark.frame.FrameRDD
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import com.intel.libSvm.libsvm.java.libsvm._
+
 
 //Implicits needed for JSON conversion
 import spray.json._

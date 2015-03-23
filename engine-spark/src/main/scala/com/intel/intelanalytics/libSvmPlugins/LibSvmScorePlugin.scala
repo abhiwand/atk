@@ -28,8 +28,8 @@ import java.util.StringTokenizer
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.libSvm.libsvm.java.libsvm.{ svm, svm_node }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import libsvm.{svm, svm_node}
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 class LibSvmScorePlugin extends SparkCommandPlugin[LibSvmScoreArgs, DoubleValue] {
