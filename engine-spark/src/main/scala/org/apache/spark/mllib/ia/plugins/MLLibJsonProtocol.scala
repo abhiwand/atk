@@ -24,12 +24,14 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import libsvm.svm_model
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.classification.SVMModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
+import com.intel.intelanalytics.libSvmPlugins._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -211,6 +213,69 @@ object MLLibJsonProtocol {
     }
 
   }
+
+
+
+
+  //  public svm_parameter param;	// parameter
+  //  public svm_node[][] SV;	// SVs (SV[l])
+
+  implicit object LibSVMModelFormat extends JsonFormat[svm_model] {
+    /**
+     * The write methods converts from LibSVMModel to JsValue
+     * @param obj svm_model
+     * @return JsValue
+     */
+    override def write(obj: svm_model): JsValue = {
+      JsObject(
+        "nr_class" -> JsNumber(obj.nr_class),
+        "l" -> JsNumber(obj.l),
+        "rho" -> new JsArray(obj.rho.map(i => JsNumber(i)).toList),
+        "probA" -> new JsArray(obj.probA.map(d => JsNumber(d)).toList),
+        "probB" -> new JsArray(obj.probB.map(d => JsNumber(d)).toList),
+        "label" -> new JsArray(obj.label.map(i => JsNumber(i)).toList),
+        "sv_indices" -> new JsArray(obj.probB.map(d => JsNumber(d)).toList),
+        "sv_coef" -> new JsArray(obj.sv_coef.map(row => new JsArray(row.map(d => JsNumber(d)).toList)).toList),
+        "nSV" -> new JsArray(obj.label.map(i => JsNumber(i)).toList)
+        //"SV" -> new JsArray(obj.SV.map(row => new Array(row.map(d => ))))
+      )
+    }
+
+    /**
+     * The read method reads a JsValue to LibSVMModel
+     * @param json JsValue
+     * @return LogisticRegressionModel with format SVMModel(val weights: Vector,val intercept: Double)
+     *         and the weights Vector could be either a SparseVector or DenseVector
+     */
+    override def read(json: JsValue): svm_model = {
+      val fields = json.asJsObject.fields
+      val l = fields.get("l").get.asInstanceOf[JsNumber].value.intValue()
+      val nr_class = fields.get("nr_class").get.asInstanceOf[JsNumber].value.intValue()
+      val rho = fields.get("rho").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
+      val probA = fields.get("probA").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
+      val probB = fields.get("probB").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
+      val sv_indices = fields.get("sv_indices").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
+      val sv_coef = fields.get("sv_coef").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => j.asInstanceOf[JsNumber].value.doubleValue()).toArray).toArray
+      val label = fields.get("label").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
+      val nSV = fields.get("nSV").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
+
+
+      val svmModel = new svm_model()
+      svmModel.l = l
+      svmModel.nr_class = nr_class
+      svmModel.rho = rho
+      svmModel.probA = probA
+      svmModel.probB = probB
+      svmModel.sv_indices = sv_indices
+      svmModel.sv_coef = sv_coef
+      svmModel.label = label
+      svmModel.nSV = nSV
+
+      svmModel
+    }
+
+  }
+
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
@@ -220,4 +285,11 @@ object MLLibJsonProtocol {
   implicit val kmeansModelTrainReturnFormat = jsonFormat2(KMeansTrainReturn)
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
+  implicit val libSvmDataFormat = jsonFormat2(LibSvmData)
+  implicit val libSvmModelFormat = jsonFormat15(LibSvmTrainArgs)
+  implicit val libSvmPredictFormat = jsonFormat3(LibSvmPredictArgs)
+  implicit val libSvmScoreFormat = jsonFormat2(LibSvmScoreArgs)
+  implicit val libSvmScoreReturnFormat = jsonFormat1(LibSvmScoreReturn)
+  implicit val libSvmTestFormat = jsonFormat4(LibSvmTestArgs)
+
 }
