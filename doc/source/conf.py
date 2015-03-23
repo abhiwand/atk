@@ -55,7 +55,7 @@ rst_epilog = """
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
-.. |IA|     replace:: :abbr:`IA (Intel Analytics)`
+.. |IA|     replace:: Intel Analytics
 .. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
@@ -64,8 +64,10 @@ rst_epilog = """
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
+.. |PUF|    replace:: :abbr:`PUF (Python User Function)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
+.. |VM|     replace:: :abbr:`VM (Virtual Machine)`
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
 """

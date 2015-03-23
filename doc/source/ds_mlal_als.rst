@@ -26,7 +26,7 @@ given by:
 
 The optimization is said to converge if the change in the objective function
 is less than the convergence_threshold parameter or the algorithm hits the
-maximum number of super steps. 
+maximum number of :term:`supersteps`. 
 
 .. math::
 

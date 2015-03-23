@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
@@ -86,7 +86,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val modelMeta = models.expectModel(arguments.model)
 
     //create RDD from the frame
-    val inputFrameRDD = frames.loadFrameData(sc, inputFrame)
+    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
 
     //Extracting the KMeansModel from the stored JsObject
     val kmeansJsObject = modelMeta.data.get
@@ -100,7 +100,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val scalingValues = kmeansData.columnScalings
 
     //Predicting the cluster for each row
-    val predictionsRDD = inputFrameRDD.mapRows(row => {
+    val predictionsRDD = inputFrameRdd.mapRows(row => {
       val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
       val columnScalingsArray = scalingValues.toArray
       val doubles = columnsArray.zip(columnScalingsArray).map { case (x, y) => x * y }
@@ -128,12 +128,12 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     columnTypes += DataTypes.int32
 
     val newColumns = columnNames.toList.zip(columnTypes.toList.map(x => x: DataType))
-    val updatedSchema = inputFrameRDD.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
-    val predictFrameRDD = new FrameRDD(updatedSchema, predictionsRDD)
+    val updatedSchema = inputFrameRdd.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
     tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
       save(new SparkFrameData(
-        newPredictedFrame.meta, predictFrameRDD))
+        newPredictedFrame.meta, predictFrameRdd))
     }.meta
   }
 

@@ -66,7 +66,7 @@ class PageRank
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/ml/page_rank"
+  override def name: String = "graph:titan/page_rank"
 
   override def execute(arguments: Pr)(implicit invocation: Invocation): PrResult = {
     val config = configuration

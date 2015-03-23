@@ -139,7 +139,7 @@ object MiscFrameFunctions extends Serializable {
     pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
-  def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
+  def removeDuplicatesByColumnNames(rdd: LegacyFrameRdd, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
     val columnIndices = schema.columnIndices(columnNames)
 
     // run the operation

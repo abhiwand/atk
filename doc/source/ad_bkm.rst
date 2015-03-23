@@ -43,11 +43,11 @@ Resolution:
     and then stop the |CDH|.
 #)  Now run the following steps on each node:
 
-    a)  Find your largest partition::
+    a)  Find the largest partition::
 
             df -h
 
-    #)  Assuming /mnt is your largest partition, create the folder
+    #)  Assuming /mnt is the largest partition, create the folder
         "/mnt/.bda/tmp", if it isn't already present::
 
             sudo mkdir -p /mnt/.bda/tmp
@@ -56,7 +56,7 @@ Resolution:
 
             sudo chmod 1777 /mnt/.bda/tmp
 
-    #)  Add the following line to your /etc/fstab file and save it::
+    #)  Add the following line to the /etc/fstab file and save it::
 
             /mnt/.bda/tmp    /tmp    none   bind   0   0
 
@@ -68,7 +68,7 @@ Resolution:
 Spark space concerns
 ====================
 
-Whenever you run a Spark application, redundant jars and logs go to
+Whenever a Spark application is run, redundant jars and logs go to
 /va/run/spark/work (or other location configured in Cloudera Manager).
 These can occupy over 140MB per command.
 

@@ -25,8 +25,8 @@ To improve memory-related issues:
     There is a patch for spilling data to disk but it does not appear to be
     working very well at the moment.
 
-If you run into performance problems, try upgrading to the latest version of
-Giraph, which might include patches that address your performance concerns.
+To solve performance problems, try upgrading to the latest version of
+Giraph, which might include patches that address performance concerns.
 For example, Facebook submitted a large number of patches that allow Giraph to
 run at scale
 `http link <http://www.facebook.com/notes/facebook-engineering/scaling-apache-giraph-to-a-trillion-edges/10151617006153920>`_ .
@@ -43,9 +43,9 @@ Some memory optimizations to try are:
     serializes/deserializes on the fly thereby saving memory.
     Be careful to use this option, because some algorithms may fail with this
     option on.
-*   If your messages are stored as complex objects, try enabling the option
+*   If messages are stored as complex objects, try enabling the option
     **-Dgiraph.useMessageSizeEncoding=true**.
-    *Note: This option will cause your job to crash if the messages are simple
+    *Note: This option will cause jobs to crash if the messages are simple
     objects.*
 
 Other Giraph options are available at http://giraph.apache.org/options.html.

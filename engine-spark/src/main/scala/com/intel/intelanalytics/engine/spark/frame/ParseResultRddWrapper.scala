@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.Schema
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 
@@ -33,4 +33,4 @@ import com.intel.intelanalytics.engine.Rows.Row
  * @param parsedLines lines that were successfully parsed
  * @param errorLines lines that were NOT successfully parsed including error messages
  */
-case class ParseResultRddWrapper(parsedLines: FrameRDD, errorLines: FrameRDD)
+case class ParseResultRddWrapper(parsedLines: FrameRdd, errorLines: FrameRdd)

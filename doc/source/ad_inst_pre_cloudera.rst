@@ -5,37 +5,40 @@ Physical Machine Configuration
 .. contents:: Table of Contents
     :local:
 
-The following instructional will walk you through configuring a brand new physical machine from scratch.
-The first section called "Pre-Configuration" and will be a little vague because the configurations here
-can change from machine to machine.
-The second section called "Base Configuration" should be pretty identical for all machines.
+The following tutorial goes through configuring a new physical machine
+from scratch.
+The first section, called "Pre-Configuration", is a little vague because
+the information can vary between machines.
+The second section, called "Base Configuration", will usually be identical for
+all machines.
 
 -----------------
 Pre-Configuration
 -----------------
 
-1. Configure basic network connectivity
-#. Turn off IPV6 (many different ways to do this)
-#. If applicable, mount any large volume to /mnt* vi /etc/fstab
+1. Configure basic network connectivity.
+#. Turn off IPV6 (many different ways to do this).
+#. If applicable, mount any large volume to /mnt* (hint: vi /etc/fstab).
 
 ------------------
 Base Configuration
 ------------------
 
-1. Configure client-side :abbr:`DNS (Domain Name Service)`
-==========================================================
-Ensure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
+1. Client-side |DNS|
+====================
+All systems in the cluster must be reachable by |DNS|
+or by data in '/etc/hosts'.
 
-2. Disable Firewall
-===================
-::
+2. Firewall
+===========
+The firewall must be disabled::
 
     service iptables stop
     chkconfig iptables off
 
-3. Disable SELINUX
-==================
-::
+3. SELINUX
+==========
+SELINUX must be disabled::
 
     vi /etc/selinux/config
 
@@ -51,45 +54,46 @@ Or::
 
     SELINUX=permissive
 
-Note:
+.. note::
+
     Systems will need full reboot before changes take effect.
 
-4. Enable system default repos
-==============================
-Make sure system default yum repos are functional.
+4. Default Repositories
+=======================
+System default yum repos must be functional.
 
-5. Configure system proxy settings (if necessary)
-=================================================
-If working behind a proxy, make sure system proxy settings are configured.
+5. Proxy Settings
+=================
+If working behind a proxy, system proxy settings must be configured.
 
-6. Insure system packages are sync'ed with default repositories
-===============================================================
-::
+6. Syncronize System Packages
+=============================
+System packages must be syncronized with default repositories::
 
     yum clean all
     yum distro-sync
 
-7. Determine primary :abbr:`CDH (Cloudera Hadoop)` user
-=======================================================
+7. Primary |CDH| User
+=====================
+Cloudera supports use of root or sudo user as administration user.
+If using sudo, user must have full nopassword sudo privileges.
 
-Cloudera supports use of root or sudo user as administration user
-If using sudo insure user has full nopassword sudo privileges.
+8. *ssh* Connections
+====================
+Using the primary |CDH| user, every system in the cluster must be able to
+communicate via *ssh* to all other systems in the cluster.
 
-8. Insure proper SSH connections
-================================
-Insure that all systems in cluster can SSH between one-another using the administrative user previously determined.
+9. System Hostname
+==================
+Set the hostname for each system in the cluster.
 
-9. Set desired hostname of system
-=================================
-Set all hostname for systems in cluster.
+.. note::
 
-Note:
-    We recommend limiting host names to lower case alpha-numeric characters.
+    Limiting host names to lower-case alphanumeric characters is recommended.
 
-10. Set ulimits in /etc/security/limits.conf
-============================================
-Insure the following definitions exist in /etc/security/limits.conf
-
+10. Ulimits
+===========
+The following definitions must exist in /etc/security/limits.conf
 ::
 
     vi /etc/security/limits.conf
@@ -105,17 +109,17 @@ Insure the following definitions exist in /etc/security/limits.conf
     spark            -       nproc           32768
 
 
-11. Configure NTP
-=================
-Insure NTP is insttalled and properly configured on all cluster systems.
-Also insure NTP service starts on system boot::
+11. NTP
+=======
+NTP must be installed and properly configured on all cluster systems.
+Also NTP services should start on system boot::
 
     service ntpd start
     chkconfig ntpd on
 
-Make sure all systems in cluster are in time-sync with one-another.
+All systems in cluster must be in time-sync with one-another.
 
-12. Reboot!
-===========
-
-Reboot all cluster systems to properly set all changes made.
+12. Reboot
+==========
+Once all configuration has been done, rebooting all cluster systems is
+recommended to properly activate all of the changes.

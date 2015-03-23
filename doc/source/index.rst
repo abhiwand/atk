@@ -20,6 +20,7 @@ References
 * :doc:`glossary`
 * :doc:`ia_legal`
 * :ref:`genindex`
+* :doc:`appendices`
 * :doc:`errata`
 * :download:`PDF <_downloads/IntelAnalytics.pdf>`
 
@@ -27,9 +28,10 @@ References
     :hidden:
     :maxdepth: 1
 
-    errata
     glossary
     ia_legal
+    appendices
+    errata
 
 .. TODOLIST::
 
