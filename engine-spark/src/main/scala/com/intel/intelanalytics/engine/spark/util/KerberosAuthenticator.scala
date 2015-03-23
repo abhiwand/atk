@@ -59,7 +59,7 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits {
    */
   def loginConfigurationWithKeyTab(configuration: Configuration): Unit = {
     if (SparkEngineConfig.enableKerberos) {
-      UserGroupInformation.setConfiguration(configuration);
+      UserGroupInformation.setConfiguration(configuration)
       KerberosAuthenticator.loginWithKeyTab()
     }
   }

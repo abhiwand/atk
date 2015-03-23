@@ -29,7 +29,7 @@ import java.util
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
-import com.intel.intelanalytics.domain.frame.UdfArgs.{ UdfDependency, Udf }
+import com.intel.intelanalytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
