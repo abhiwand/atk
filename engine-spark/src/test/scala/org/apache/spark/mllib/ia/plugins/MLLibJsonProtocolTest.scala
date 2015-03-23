@@ -26,7 +26,7 @@ package org.apache.spark.mllib.ia.plugins
 //import org.apache.commons.math3.geometry.VectorFormat
 
 import com.intel.intelanalytics.libSvmPlugins.LibSvmData
-import libsvm.svm_model
+import libsvm.{svm_parameter, svm_model}
 import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -155,34 +155,5 @@ class MLLibJsonProtocolTest extends WordSpec {
       assert(s.observationColumns.length == 4)
     }
   }
-
-  "LibSvmDataFormat" should {
-
-    "be able to serialize" in {
-      val s = new LibSvmData(new svm_model(new DenseVector(Array(2.3, 3.4, 4.5)), 3.0), List("column1", "column2", "columns3", "column4"))
-      assert(s.toJson.compactPrint == "{\"svm_model\":{\"weights\":{\"values\":[2.3,3.4,4.5]},\"intercept\":3.0},\"observation_columns\":[\"column1\",\"column2\",\"columns3\",\"column4\"]}")
-    }
-
-    "parse json" in {
-      val string = "{\"svm_model\":{\"weights\":{\"values\":[2.3,3.4,4.5]},\"intercept\":3.0},\"observation_columns\":[\"column1\",\"column2\",\"columns3\",\"column4\"]}"
-      val json = JsonParser(string).asJsObject
-      val s = json.convertTo[LibSvmData]
-
-      assert(s.svmModel.weights.size == 3)
-      assert(s.svmModel.intercept == 3.0)
-      assert(s.observationColumns.length == 4)
-    }
-  }
 }
 
-//public libsvm.svm_parameter param;
-//public int nr_class;
-//public int l;
-//public libsvm.svm_node[][] SV;
-//public double[][] sv_coef;
-//public double[] rho;
-//public double[] probA;
-//public double[] probB;
-//public int[] sv_indices;
-//public int[] label;
-//public int[] nSV;

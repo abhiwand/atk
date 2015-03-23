@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.libSvmPlugins
 
-import libsvm.svm_model
+import libsvm.{svm_node, svm_parameter, svm_model}
 
 
 /**
@@ -36,32 +36,28 @@ case class LibSvmData(svmModel: svm_model, observationColumns: List[String]) {
   require(svmModel != null, "libsvmModel must not be null")
 }
 
-case class SvmModel(svCoef: Array[Array[Double]]) {
 
-  def this(svmModel: svm_model) = {
-    this(svmModel.sv_coef)
-  }
 
-}
 
-/*
-public class svm_model implements java.io.Serializable
-{
-public svm_parameter param;	// parameter
-public int nr_class;		// number of classes, = 2 in regression/one class svm
-public int l;			// total #SV
-public svm_node[][] SV;	// SVs (SV[l])
-public double[][] sv_coef;	// coefficients for SVs in decision functions (sv_coef[k-1][l])
-public double[] rho;		// constants in decision functions (rho[k*(k-1)/2])
-public double[] probA;         // pariwise probability information
-public double[] probB;
-public int[] sv_indices;       // sv_indices[0,...,nSV-1] are values in [1,...,num_traning_data] to indicate SVs in the training set
 
-// for classification only
+//case class svm_model(param: svm_parameter, nr_class: Int, l: Int, SV: Array[Array[svm_node]], sv_coef: Array[Array[Double]],
+//                     rho: Array[Double], probA: Array[Double], probB: Array[Double], sv_indices: Array[Int], label: Array[Int], nSV: Array[Int])
+//
+//
+//
+//case class svm_parameter(svm_type: Int, kernel_type: Int, degree: Int, gamma: Double, coef0: Double, cache_size: Double, eps: Double,
+//                          C: Double, nr_weight: Int, weight_label: Array[Int], weight: Array[Double], nu: Double, p: Double, shrinking: Int, probability: Int) {
+//
+//}
+//
+//case class svm_node(index: Int, value: Double) {
+//
+//}
 
-public int[] label;		// label of each class (label[k])
-public int[] nSV;		// number of SVs for each class (nSV[k])
-// nSV[0] + nSV[1] + ... + nSV[k-1] = l
-};
-
- */ 
+//case class SvmModel(svCoef: Array[Array[Double]]) {
+//
+//  def this(svmModel: svm_model) = {
+//    this(svmModel.sv_coef)
+//  }
+//
+//}
