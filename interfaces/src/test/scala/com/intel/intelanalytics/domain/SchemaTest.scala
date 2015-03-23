@@ -269,6 +269,17 @@ class SchemaTest extends WordSpec with Matchers {
         abcSchema.requireColumnIsType("invalid", str)
       }
     }
+    "be able to validate that column types are numeric" in {
+      val numericColumns = List(Column("a", int64), Column("b", int32), Column("c", float32), Column("d", float64))
+      val numericSchema = new FrameSchema(numericColumns)
+      numericSchema.requireColumnsOfNumericPrimitives(List("a", "b", "c", "d"))
+    }
+    "be able to validate that column types are not numeric" in {
+      intercept[IllegalArgumentException] {
+        ajSchema.requireColumnsOfNumericPrimitives(List("d", "e", "f", "g"))
+      }
+    }
+
     "preserve column order in columnNames" in {
       ajSchema.columnNames shouldBe List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
     }

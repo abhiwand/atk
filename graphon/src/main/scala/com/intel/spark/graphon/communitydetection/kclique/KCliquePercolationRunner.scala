@@ -114,7 +114,7 @@ object KCliquePercolationRunner {
     //    a unique Physical ID (in this case this vertex Id)
     //    a unique gb Id, and
     //    the properties of vertex (in this case the community property)
-    val gbVertexRDDBuilder: GBVertexRDDBuilder = new GBVertexRDDBuilder(inVertices, verticesToCommunityLists)
+    val gbVertexRDDBuilder: GBVertexRddBuilder = new GBVertexRddBuilder(inVertices, verticesToCommunityLists)
     val newGBVertices: RDD[GBVertex] = gbVertexRDDBuilder.setVertex(communityPropertyLabel)
 
     (newGBVertices, inEdges)

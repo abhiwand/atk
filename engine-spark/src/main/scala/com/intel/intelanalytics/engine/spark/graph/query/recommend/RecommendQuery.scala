@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }

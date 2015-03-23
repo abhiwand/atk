@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 
@@ -80,6 +80,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
 
     // save results
-    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
+    frames.saveFrameData(frame.toReference, FrameRdd.toFrameRdd(updatedSchema, splitRDD))
   }
 }

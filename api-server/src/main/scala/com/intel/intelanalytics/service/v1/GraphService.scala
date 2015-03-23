@@ -153,10 +153,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         }
                       } ~
                         delete {
-                          onComplete(for {
-                            graph <- engine.getGraph(id)
-                            res <- engine.deleteGraph(graph)
-                          } yield res) {
+                          onComplete(engine.deleteGraph(id)) {
                             case Success(ok) => complete("OK")
                             case Failure(ex) => throw ex
                           }

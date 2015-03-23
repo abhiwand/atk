@@ -44,7 +44,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
@@ -89,7 +89,7 @@ import TriangleCountJsonFormat._
  */
 class TriangleCount extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
-  override def name: String = "graph:titan/ml/graphx_triangle_count"
+  override def name: String = "graph:titan/graphx_triangle_count"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

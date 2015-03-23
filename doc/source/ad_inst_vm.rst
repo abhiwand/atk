@@ -9,11 +9,13 @@ Virtual Machines
 Introduction
 ------------
 
-Thank you for your interest in the |IA| Toolkit |version| beta.
-This guide will walk you through the download and import of the |IA| beta.
-Currently the |IA| toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
-We will not cover the installation of Virtual Box.
-Virtual Box supports many platforms and can be `downloaded for free <https://www.virtualbox.org/wiki/Downloads>`_.
+This guide goes through the download and import of the |IAT| beta on a virtual
+machine (VM).
+Currently the |IAT| |VM| only supports
+`Virtual Box <https://www.virtualbox.org/>`_.
+These instructions do not cover the installation of Virtual Box.
+Virtual Box supports many platforms and can be `downloaded for free
+<https://www.virtualbox.org/wiki/Downloads>`_.
 The installation documentation is also
 `available online <https://www.virtualbox.org/manual/UserManual.html>`_.
 
@@ -21,63 +23,164 @@ The installation documentation is also
 Requirements
 ------------
 
-A)  12GB of memory needs to be allocated to the VM
+*   12GB of memory needs to be allocated to the |VM|
+*   45GB of free hard drive space
+*   Working Virtual Box 4.3 installation
 
-#)  45GB of free hard drive space
+-------------------
+Download |VM| Image
+-------------------
 
-#)  Working Virtual Box 4.3 installation
+Open a Linux shell (or for Windows user a command prompt) to run the
+various commands.
 
------------------
-Download VM Image
------------------
+The |VM| image is downloaded from AWS.
+The download requires the AWS Command Line Interface (CLI) client.
+Instructions for downloading and installing CLI can be found at
+`Amazon cli documentation
+<http://docs.aws.amazon.com/cli/latest/userguide/installing.html>`_.
 
-Note:
-    Open a Linux shell (or for Windows user a command prompt) to run the various commands.
+After installing the interface, verify the installation by running::
 
-The VM image is downloaded from AWS.
-The download will require that you have the AWS Command Line Interface (CLI) client on your system.
-Instructions for downloading and installing can be found at `Amazon cli documentation <http://docs.aws.amazon.com/cli/latest/userguide/installing.html>`_.
+    $ aws --version
 
-After installing the interface you can verify the installation by running::
-
-    aws --version
-
-You should see this kind of response::
+The result should be similar to this::
 
     aws-cli/1.2.9 Python/2.7.6 Linux/3.8.0-35-generic
 
-Take note of the aws-cli version.
-Make sure the version is greater or equal to 1.2.9.
-Older versions of the aws-cli client won't work with the restricted permissions.
+Take note of the aws-cli version, as it must be greater or equal to 1.2.9.
+Older versions of the aws-cli client does not work with the restricted
+permissions.
 
-If you happen to have the aws-cli client you can update the client with pip.
+The aws-cli client can be updated with pip or
+download the new Windows MSI (reference :ref:`Windows GUI Installation`).
 ::
 
-    expand source
- 
+    $ sudo pip install -U awscli
+
 After aws installation, run::
 
-    aws configure
+    $ aws configure
 
-You will be prompted to enter the access and secret keys you were given.
-When Prompted for the "Default region name" use "us-west-2".
-When prompted for the "Default output format" use "json".
+The program prompts for the access and secret tokens given at registration.
+When prompted for the "Default region name", use "us-west-2".
+When prompted for the "Default output format", use "json".
 ::
 
-    AWS Access Key ID [None]: my access key
-    AWS Secret Access Key [None]: my secret key
-    Default region name [None]: us-west-2
-    Default output format [None]: json
+    AWS Access Key ID [None]: <my access key>
+    AWS Secret Access Key [None]: <my secret key>
+    Default region name [None]: <us-west-2>
+    Default output format [None]: <json>
 
-To download the VM run::
+List the files in the directory::
 
-    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics
-        -#.#.#-CDH-5.3.1.tar.gz
-    
-The preceding line was broken across multiple lines for improved viewing on various media.
-The line should be entered as one line with no gaps (spaces).
-You must change ``#.#.#`` to the release you wish to download.
-If the version of :abbr:`CDH (Cloudera Hadoop)` has changed, you need to change that as well.
+    $ aws s3 ls s3://intel-analytics-repo/release/latest/vm/
+    2014-08-19 12:57:03           0
+    2014-11-25 16:22:57          70 IntelAnalytics-VM.md5
+    2014-11-25 16:22:57 14656025025 IntelAnalytics-VM.tar.gz
+
+Download the tar.gz file.
+In this case, it's 'IntelAnalytics-VM.tar.gz'::
+
+    $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz
+
+[:ref:`Skip section about Windows GUI Client <extract_archive>`].
+
+------------------
+Windows GUI Client
+------------------
+If you are on a Windows machine, and you prefer a GUI client, use the
+`S3Browser <http://s3browser.com/>`__ to download the |VM|.
+
+1)  Download the Windows MSI http://s3browser.com/download.php.
+#)  Install and open the S3Browser application.
+#)  Add the keys provided.
+
+    A)  Navigate to:
+
+        1)  **Accounts**
+        #)  **Add new account**
+
+        or press **Ctrl** + **Shift** + **A**.
+
+        See :ref:`ad_inst_vm_01`.
+
+        .. _ad_inst_vm_01:
+
+        .. figure:: ad_inst_vm_01.*
+            :width: 60%
+            :align: center
+
+            Figure 1
+
+    #)  In the account creation window:
+
+        1)  Add your access and secret keys
+        #)  Give the account a name
+
+        See :ref:`ad_inst_vm_02`.
+
+        .. _ad_inst_vm_02:
+
+        .. figure:: ad_inst_vm_02.*
+            :width: 60%
+            :align: center
+
+            Figure 2
+
+#)  Navigate to:
+
+    A)  **Buckets**
+    #)  **Add External Bucket**
+
+    or press **Ctrl** + **E**.
+
+    See :ref:`ad_inst_vm_03`.
+
+    .. _ad_inst_vm_03:
+
+    .. figure:: ad_inst_vm_03.*
+        :width: 60%
+        :align: center
+
+        Figure 3
+
+#)  Add the bucket url "intel-analytics-repo/release",
+    then click **Add External bucket**.
+    See :ref:`ad_inst_vm_04`.
+
+    .. _ad_inst_vm_04:
+
+    .. figure:: ad_inst_vm_04.*
+        :width: 60%
+        :align: center
+
+        Figure 4
+
+#)  After adding the bucket, a list of folders shows up on the right.
+    See :ref:`ad_inst_vm_05`.
+
+    .. _ad_inst_vm_05:
+
+    .. figure:: ad_inst_vm_05.*
+        :width: 60%
+        :align: center
+
+        Figure 5
+
+#)  Select the appropriate version, and navigate to the |VM| folder,
+    then right click and download the "tar.gz" file.
+    See :ref:`ad_inst_vm_06`.
+
+    .. _ad_inst_vm_06:
+
+    .. figure:: ad_inst_vm_06.*
+        :width: 60%
+        :align: center
+
+        Figure 6
+
+.. _extract_archive:
 
 ---------------
 Extract Archive
@@ -86,67 +189,109 @@ Extract Archive
 Extracting On Windows
 =====================
 Extracting on Windows is relatively easy.
-Use the following tool (or your equivalent) to extract the archive: `7zip <http://7-zip.org/>`_.
+Use `7zip <http://7-zip.org/>`_ (or equivalent tool) to extract the archive.
 
 Extracting On Linux
 ===================
-After acquiring the VM, extract the archive. Replace ``#.#.#`` with the release number::
+After acquiring the |VM|, extract the archive::
 
-    tar -xvf IntelAnalytics-#.#.#-CDH-5.3.1.tar.gz
+    $ tar -xvf IntelAnalytics-VM.tar.gz
 
-You should have two files after extracting::
-
-    IntelAnalytics-#.#.#-CDH-5.3.1-disk1.vmdk
-    IntelAnalytics-#.#.#-CDH-5.3.1.ovf
+After extraction, there should be two (2) files,
+one with the extension 'vmdk', and another with the extension 'ovf'.
 
 ------------
 Import Image
 ------------
-In Virtual Box go to the file menu then import appliance.
+To import the |VM| image, do the following steps in Virtual Box.
 
-File -> Import Appliance
+1)  Go to the **File** menu, then **Import Appliance**.
+    See :ref:`ad_inst_vm_07`.
 
-.. figure:: ad_inst_vm_01.*
+    .. _ad_inst_vm_07:
 
-Select your .ovf file extracted from the vm image earlier
+    .. figure:: ad_inst_vm_07.*
+        :width: 60%
+        :align: center
 
-.. figure:: ad_inst_vm_02.*
- 
-Import |IA| VM
+        Figure 7
 
-.. figure:: ad_inst_vm_03.*
- 
-After clicking 'Import' wait for the VM to be imported
+        File -> Import Appliance
 
-.. figure:: ad_inst_vm_04.*
- 
-Once the VM is imported go ahead and boot the VM by selecting the VM and clicking start
+#)  Select the file with the extension 'ovf', which was extracted earlier from
+    the |VM| image.
+    See :ref:`ad_inst_vm_08`.
 
-.. figure:: ad_inst_vm_05.*
- 
----------------------
-Running |IA| VM image
----------------------
+    .. _ad_inst_vm_08:
 
-Before you start
-================
+    .. figure:: ad_inst_vm_08.*
+        :width: 60%
+        :align: center
 
-After every reboot of the VM you must restart the |IA| server.
+        Figure 8
+
+        Appliance to Import
+
+#)  Import the |IAT| |VM|.
+    See :ref:`ad_inst_vm_09`.
+
+    .. _ad_inst_vm_09:
+
+    .. figure:: ad_inst_vm_09.*
+        :width: 60%
+        :align: center
+
+        Figure 9
+
+#)  After clicking **Import**, wait for the |VM| to be imported.
+    See :ref:`ad_inst_vm_10`.
+
+    .. _ad_inst_vm_10:
+
+    .. figure:: ad_inst_vm_10.*
+        :width: 60%
+        :align: center
+
+        Figure 10
+
+#)  Once the |VM| is imported, boot the |VM| by selecting the |VM| and
+    clicking **Start**.
+    See :ref:`ad_inst_vm_11`.
+
+    .. _ad_inst_vm_11:
+
+    .. figure:: ad_inst_vm_11.*
+        :width: 60%
+        :align: center
+
+        Figure 11
+
+------------------------
+Running |IAT| |VM| Image
+------------------------
+
+Before starting
+===============
+
+After every reboot of the |VM|, the |IAT| server must also be restarted.
 ::
 
-    sudo service intelanalytics restart
+    $ sudo service intelanalytics restart
 
-If you restart service and you see the following output you can ignore it.
-All it means is that the service wasn't running before it was told to stop.
-::
-    
+Upon restart, if the service wasn't running before it was told to stop,
+the system reports::
+
     initctl: Unknown instance:
 
-Using Sample Scripts
-====================
+This message can be safely ignored.
 
-The VM is pre-configured and installed with the |IA| toolkit.
-It has several examples and datasets to get you started as soon as the VM is booted.
+
+Sample Scripts
+==============
+
+The |VM| is pre-configured and installed with the |IAT|.
+Several examples and datasets are included to get people
+familiar with the coding and behavior of the |IAT|.
 
 The examples are located in '/home/cloudera/examples'.
 ::
@@ -156,7 +301,8 @@ The examples are located in '/home/cloudera/examples'.
     -rw-r--r-- 1 cloudera cloudera  707 Aug  1 00:53 lda.py
     -rw-r--r-- 1 cloudera cloudera  930 Aug  1 00:53 lp.py
 
-The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/iauser/datasets/'.
+The datasets are located in '/home/cloudera/examples/datasets' and
+'hdfs://user/iauser/datasets/'.
 ::
 
     -rw-r--r--   1 iauser iauser        122 2014-08-01 /user/iauser/datasets/README
@@ -165,52 +311,109 @@ The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/
     -rw-r--r--   1 iauser iauser     188470 2014-08-01 /user/iauser/datasets/lp_edge.csv
     -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
-The datasets in '/home/cloudera/examples/datasets' are for reference,
-the actual data that is being used by the Python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
+The datasets in '/home/cloudera/examples/datasets' are for reference.
+The actual data that is being used by the Python examples and the |IAT| server
+is in 'hdfs://user/iauser/datasets'.
 
-To run any of the Python example scripts, make sure you are in the examples directory and start Python with the script name::
+To run any of the Python example scripts, start in the examples directory and
+start Python with the script name::
 
-    python <SCRIPT_NAME>.py
+    $ python <SCRIPT_NAME>.py
 
 where ``<SCRIPT_NAME>`` is any of the scripts in '/home/cloudera/example'.
 
-Make sure you are in the examples directory first, then run the desired script:
-
 Example::
 
-    cd /home/cloudera/examples
-    python pr.py
+    $ cd /home/cloudera/examples
+    $ python pr.py
 
+-------------
+Eclipse/PyDev
+-------------
+The |VM| comes with Eclipse and PyDev installed and ready for use.
+Importing the example scripts is easy.
+
+1.  Go to the desktop, and double-click on the Eclipse icon.
+#.  Go to **File** menu, and select **New** and then **Other**.
+
+    See :ref:`ad_inst_vm_12`.
+
+    .. _ad_inst_vm_12:
+
+    .. figure:: ad_inst_vm_12.*
+        :width: 60%
+        :align: center
+
+        Figure 12
+
+#.  After selecting **File**->**New**->**Other**, look for the PyDev folder
+    and expand the list, then select **PyDev Project** then click **Next**.
+    See :ref:`ad_inst_vm_13`.
+
+    .. _ad_inst_vm_13:
+
+    .. figure:: ad_inst_vm_13.*
+        :width: 60%
+        :align: center
+
+        Figure 13
+
+#.  The only field you have to change is the 'Project Contents' default directory.
+    Uncheck 'Use default' and enter the directory you want to use
+    '/home/cloudera/examples'.
+    Everything else can be left with the default values.
+    Click **Next** when you are done.
+    See :ref:`ad_inst_vm_14`.
+
+    .. _ad_inst_vm_14:
+
+    .. figure:: ad_inst_vm_14.*
+        :width: 60%
+        :align: center
+
+        Figure 14
+
+#.  You should now be able to see all the example scripts on the left hand pane.
+    See :ref:`ad_inst_vm_15`.
+
+    .. _ad_inst_vm_15:
+
+    .. figure:: ad_inst_vm_15.*
+        :width: 60%
+        :align: center
+
+        Figure 15
+
+----
 Logs
-====
+----
 
-If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
-To show the log information as it gets appended to the the log file run "tail -f"::
+To debug changes to the scripts (or to peek behind the curtain), the log
+file is '/var/log/intelanalytics/rest-server/output.log'.
+To show the log as it is generated, run ``tail -f``::
 
-    sudo tail -f /var/log/intelanalytics/rest-server/output.log
-    
-More details about the logs can be found here: :doc:`ad_log`.
+    $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-.. toctree::
-    :hidden:
-    
-    ad_log
-    
+More details can be found in the :doc:`section on log files <ad_log>`.
+
+--------
 Updating
-========
+--------
 
-If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
-Afterwards you will be able to run ``yum`` commands to check for and do updates.
+Upon receipt of access and secret tokens, edit '/etc/yum.repos.d/ia.repo' and
+replace *myKey* and *mySecret*.
+Afterwards, it is recommended to run ``yum`` commands to check for and perform
+updates.
 
 .. only:: html
 
     ::
 
-        sudo [vi/vim] /etc/yum.repos.d/ia.repo
+        $ sudo [vi|vim] /etc/yum.repos.d/ia.repo
 
         [Intel Analytics repo]
         name=Intel Analytics yum repo
-        baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/#.#.#/yum/dists/rhel/6
+        baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/latest/yum/dists/rhel/6
         gpgcheck=0
         priority=1
         #enabled=0
@@ -222,12 +425,12 @@ Afterwards you will be able to run ``yum`` commands to check for and do updates.
 
     ::
 
-        sudo [vi/vim] /etc/yum.repos.d/ia.repo
+        $ sudo [vi/vim] /etc/yum.repos.d/ia.repo
 
         [Intel Analytics repo]
         name=Intel Analytics yum repo
         baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/
-            release/#.#.#/yum/dists/rhel/6
+            release/latest/yum/dists/rhel/6
         gpgcheck=0
         priority=1
         #enabled=0
@@ -235,12 +438,22 @@ Afterwards you will be able to run ``yum`` commands to check for and do updates.
         key_id=myKey
         secret_key=mySecret
 
-Replace the ``#.#.#`` with the correct release number.
-To check for new updates and see the difference between the new and installed version::
+    The baseurl line shown above has been broken for proper display in certain
+    media.
+    It should be entered as a single line with no spaces.
 
-    sudo yum info intelanalytics-rest-server
+To check for new updates and see the difference between the new and installed
+version::
+
+    $ sudo yum info intelanalytics-rest-server
 
 To update::
 
-    sudo yum update intelanalytics-rest-server
+    $ sudo yum update intelanalytics-rest-server
+
+------------------
+Common VM problems
+------------------
+*   The VM doesn't have enough memory allocated.
+*   The IA rest server wasn't restarted after restart or boot.
 

@@ -25,7 +25,7 @@ package com.intel.graphbuilder.driver.spark.titan
 
 import java.text.NumberFormat
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.graphbuilder.graph.titan.{ TitanGraphCacheListener, TitanGraphConnector }
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }

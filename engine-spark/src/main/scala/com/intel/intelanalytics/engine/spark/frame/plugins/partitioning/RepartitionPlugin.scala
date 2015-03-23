@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.RepartitionArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.ExecutionContext
 
@@ -77,6 +77,6 @@ class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity]
     val repartitionedRdd = frameRdd.repartition(arguments.numberPartitions)
 
     // save results
-    frames.saveFrameData(frame.toReference, new FrameRDD(frameRdd.frameSchema, repartitionedRdd))
+    frames.saveFrameData(frame.toReference, new FrameRdd(frameRdd.frameSchema, repartitionedRdd))
   }
 }

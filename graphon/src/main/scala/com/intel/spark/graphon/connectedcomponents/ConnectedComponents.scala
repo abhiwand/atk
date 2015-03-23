@@ -40,7 +40,7 @@ import spray.json._
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
@@ -83,7 +83,7 @@ import ConnectedComponentsJsonFormat._
  */
 class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsResult] {
 
-  override def name: String = "graph:titan/ml/graphx_connected_components"
+  override def name: String = "graph:titan/graphx_connected_components"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

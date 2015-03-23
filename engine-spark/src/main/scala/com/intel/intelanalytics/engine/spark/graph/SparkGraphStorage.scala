@@ -41,7 +41,7 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
 import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.{ EdgeFrameRDD, VertexFrameRDD }
+import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.repository.MetaStore
 import org.apache.spark.storage.StorageLevel
@@ -170,7 +170,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           info(s"dropping graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
           if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+            backendStorage.deleteUnderlyingTable(graph.storage, quiet = true, inBackground = true)
           }
           metaStore.graphRepo.delete(graph.id).get
         }
@@ -245,10 +245,14 @@ class SparkGraphStorage(metaStore: MetaStore,
             }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
-          if (graph.isTitan) {
-            backendStorage.deleteUnderlyingTable(graph.name.get, quiet = true)
+
+          val graphEntity = metaStore.graphRepo.insert(graph).get
+          val graphBackendName: String = if (graph.isTitan) {
+            backendStorage.deleteUnderlyingTable(GraphBackendName.getGraphBackendName(graphEntity), quiet = true)
+            GraphBackendName.getGraphBackendName(graphEntity)
           }
-          metaStore.graphRepo.insert(graph).get
+          else ""
+          metaStore.graphRepo.update(graphEntity.copy(storage = graphBackendName)).get
         }
     }
   }
@@ -262,7 +266,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
           if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.name.get, newName)
+            backendStorage.renameUnderlyingTable(graph.storage, newName)
           }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
@@ -373,31 +377,31 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param vertexLabel
    * @return
    */
-  def loadVertexRDD(ctx: SparkContext, graphRef: GraphReference, vertexLabel: String)(implicit invocation: Invocation): VertexFrameRDD = {
+  def loadVertexRDD(ctx: SparkContext, graphRef: GraphReference, vertexLabel: String)(implicit invocation: Invocation): VertexFrameRdd = {
     val frame = expectSeamless(graphRef).vertexMeta(vertexLabel)
     val frameRdd = frameStorage.loadFrameData(ctx, frame)
-    new VertexFrameRDD(frameRdd)
+    new VertexFrameRdd(frameRdd)
   }
 
-  def loadVertexRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRDD = {
+  def loadVertexRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRdd = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
-    new VertexFrameRDD(frameRdd)
+    new VertexFrameRdd(frameRdd)
   }
 
-  def loadEdgeRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRDD = {
+  def loadEdgeRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRdd = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
-    new EdgeFrameRDD(frameRdd)
+    new EdgeFrameRdd(frameRdd)
   }
 
   // TODO: delete me if not needed?
-  //  def loadEdgeFrameRDD(ctx: SparkContext, graphId: Long, edgeLabel: String): EdgeFrameRDD = {
+  //  def loadEdgeFrameRdd(ctx: SparkContext, graphId: Long, edgeLabel: String): EdgeFrameRdd = {
   //    val frame = expectSeamless(graphId).edgeMeta(edgeLabel)
-  //    val frameRdd = frames.loadFrameRDD(ctx, frame)
-  //    new EdgeFrameRDD(frameRdd)
+  //    val frameRdd = frames.loadFrameRdd(ctx, frame)
+  //    new EdgeFrameRdd(frameRdd)
   //  }
 
   def loadGbVertices(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
@@ -408,9 +412,9 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
     else {
       // load from Titan
-      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
-      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+      val titanReaderRdd: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+      val gbVertices: RDD[GBVertex] = titanReaderRdd.filterVertices()
       gbVertices
     }
   }
@@ -423,8 +427,8 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
     else {
       // load from Titan
-      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
-      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+      import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
       gbEdges
     }
@@ -445,8 +449,8 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def getTitanReaderRDD(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+  def getTitanReaderRdd(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
@@ -463,22 +467,16 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param append if true will attempt to append to an existing graph
    */
 
-  def writeToTitan(graphName: String,
+  def writeToTitan(graph: GraphEntity,
                    gbVertices: RDD[GBVertex],
                    gbEdges: RDD[GBEdge],
-                   append: Boolean = false)(implicit invocation: Invocation): GraphEntity = {
+                   append: Boolean = false)(implicit invocation: Invocation): Unit = {
 
-    val graph = if (append)
-      getGraphByName(Some(graphName)).get
-    else
-      createGraph(GraphTemplate(Some(graphName), StorageFormats.HBaseTitan))
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graphName)
-
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val gb =
       new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = append))
 
     gb.buildGraphWithSpark(gbVertices, gbEdges)
-    graph
   }
 
   /**
@@ -488,8 +486,8 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @return RDDs of vertices and edges
    */
   def loadFromTitan(ctx: SparkContext, graph: GraphEntity): (RDD[GBVertex], RDD[GBEdge]) = {
-    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRDD(ctx, graph)
-    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     //Cache data to prevent Titan reader from scanning HBase/Cassandra table twice to read vertices and edges
     titanReaderRDD.persist(StorageLevel.MEMORY_ONLY)
@@ -513,29 +511,29 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def loadGbEdgesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBEdge] = {
-    loadEdgeRDD(ctx, frameRef).toGbEdgeRDD
+    loadEdgeRDD(ctx, frameRef).toGbEdgeRdd
   }
 
-  def saveVertexRDD(frameRef: FrameReference, vertexFrameRDD: VertexFrameRDD)(implicit invocation: Invocation) = {
+  def saveVertexRdd(frameRef: FrameReference, vertexFrameRdd: VertexFrameRdd)(implicit invocation: Invocation) = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
-    frameStorage.saveFrameData(frameEntity.toReference, vertexFrameRDD)
+    frameStorage.saveFrameData(frameEntity.toReference, vertexFrameRdd)
   }
 
-  //  def saveVertexRDD(graphId: Long, vertexLabel: String, vertexFrameRdd: VertexFrameRDD, rowCount: Option[Long] = None) = {
+  //  def saveVertexRdd(graphId: Long, vertexLabel: String, vertexFrameRdd: VertexFrameRdd, rowCount: Option[Long] = None) = {
   //    val frame = expectSeamless(graphId).vertexMeta(vertexLabel)
   //    frames.saveFrame(frame, vertexFrameRdd, rowCount)
   //  }
 
-  //  def saveEdgeRDD(graphId: Long, edgeLabel: String, edgeFrameRdd: EdgeFrameRDD, rowCount: Option[Long] = None) = {
+  //  def saveEdgeRdd(graphId: Long, edgeLabel: String, edgeFrameRdd: EdgeFrameRdd, rowCount: Option[Long] = None) = {
   //    val frame = expectSeamless(graphId).edgeMeta(edgeLabel)
   //    frames.saveFrame(frame, edgeFrameRdd, rowCount)
   //  }
 
-  def saveEdgeRdd(frameRef: FrameReference, edgeFrameRDD: EdgeFrameRDD)(implicit invocation: Invocation) = {
+  def saveEdgeRdd(frameRef: FrameReference, edgeFrameRdd: EdgeFrameRdd)(implicit invocation: Invocation) = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
-    frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRDD)
+    frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRdd)
   }
 
 }

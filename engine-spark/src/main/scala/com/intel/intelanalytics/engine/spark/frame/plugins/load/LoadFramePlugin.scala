@@ -27,11 +27,11 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -83,7 +83,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
       val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
+      val parseResult = LoadRddFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
         null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
 
@@ -93,11 +93,11 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
 
       val parseResult = if (arguments.source.isFieldDelimited) {
         val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-        LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+        LoadRddFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
       }
       else {
         val data = arguments.source.data.get
-        LoadRDDFunctions.loadAndParseData(ctx, data, parser)
+        LoadRddFunctions.loadAndParseData(ctx, data, parser)
       }
       // parse failures go to their own data frame
       val updatedFrame = if (parseResult.errorLines.count() > 0) {
@@ -124,7 +124,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRDD)(implicit invocation: Invocation): FrameEntity = {
+  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRdd)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val ctx = sc

@@ -27,6 +27,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
+import org.apache.spark.mllib.ia.plugins.VectorUtils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -51,17 +52,8 @@ public class LdaVertexData implements Writable {
         return ldaResult.get();
     }
 
-    //TODO: replace - results will be a list of doubles or a vector eventually
-    public String getLdaResultAsString() {
-        Vector vector = ldaResult.get();
-        String vertexValue = "";
-        for (int i = 0; i < vector.size(); i++) {
-            vertexValue += Double.toString(vector.getQuick(i));
-            if (i < (vector.size() - 1)) {
-                vertexValue = vertexValue + ",";
-            }
-        }
-        return vertexValue;
+    public double[] getLdaResultAsDoubleArray() {
+        return VectorUtils.toDoubleArray(getLdaResult());
     }
 
     @Override

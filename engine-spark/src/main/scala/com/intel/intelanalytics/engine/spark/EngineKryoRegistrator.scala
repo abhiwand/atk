@@ -30,14 +30,14 @@ import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAggregationFunctions, GroupByAggregateByKey }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRDDFunctions, RowParseResult }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRddFunctions, RowParseResult }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRddFunctions
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
-import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
-import org.apache.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRddFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRddFunctions, FlattenColumnFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
+import org.apache.spark.frame.FrameRdd
 
 import org.apache.spark.serializer.KryoRegistrator
 
@@ -64,18 +64,18 @@ class EngineKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Schema])
     kryo.register(classOf[CsvRowParser])
     kryo.register(classOf[RowParseResult])
-    kryo.register(classOf[LegacyFrameRDD])
-    kryo.register(classOf[FrameRDD])
+    kryo.register(classOf[LegacyFrameRdd])
+    kryo.register(classOf[FrameRdd])
     kryo.register(ClassificationMetrics.getClass)
     kryo.register(CumulativeDistFunctions.getClass)
     kryo.register(MiscFrameFunctions.getClass)
-    kryo.register(LoadRDDFunctions.getClass)
+    kryo.register(LoadRddFunctions.getClass)
     kryo.register(FlattenColumnFunctions.getClass)
     kryo.register(ColumnStatistics.getClass)
-    kryo.register(StatisticsRDDFunctions.getClass)
+    kryo.register(StatisticsRddFunctions.getClass)
     kryo.register(QuantilesFunctions.getClass)
-    kryo.register(TopKRDDFunctions.getClass)
-    kryo.register(EntropyRDDFunctions.getClass)
+    kryo.register(TopKRddFunctions.getClass)
+    kryo.register(EntropyRddFunctions.getClass)
     kryo.register(GroupByAggregationFunctions.getClass)
 
     // register GraphBuilder classes

@@ -82,7 +82,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
     // run the operation and return results
     val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
-    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
+    val entropy = EntropyRddFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
     DoubleValue(entropy)
   }
 }
@@ -98,23 +98,23 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object EntropyRDDFunctions extends Serializable {
+private[spark] object EntropyRddFunctions extends Serializable {
 
   /**
    * Calculate the Shannon entropy for specified column in data frame.
    *
-   * @param frameRDD RDD for data frame
+   * @param frameRdd RDD for data frame
    * @param dataColumnIndex Index of data column
    * @param weightsColumnOption Option for column providing the weights. Must be numerical data.
    * @return Weighted shannon entropy (using natural log)
    */
-  def shannonEntropy(frameRDD: RDD[Row],
+  def shannonEntropy(frameRdd: RDD[Row],
                      dataColumnIndex: Int,
                      weightsColumnOption: Option[Column] = None): Double = {
     require(dataColumnIndex >= 0, "column index must be greater than or equal to zero")
 
     val dataWeightPairs =
-      ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnOption, frameRDD)
+      ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnOption, frameRdd)
         .filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
     val distinctCountRDD = dataWeightPairs.reduceByKey(_ + _).map({ case (value, count) => count })

@@ -23,13 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema._
 import org.apache.hadoop.io._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * This class wraps raw row data adding schema information - this allows for a richer easier to use API.
@@ -271,11 +272,20 @@ trait AbstractRow {
   /**
    * Select several property values from their names
    * @param names the names of the properties to put into an array
+   * @param flattenInputs If true, flatten vector data types
    * @return values for the supplied properties
    */
-  def valuesAsArray(names: Seq[String] = schema.columnNames): Array[Any] = {
-    val indices = schema.columnIndices(names)
-    indices.map(i => row(i)).toArray
+  def valuesAsArray(names: Seq[String] = schema.columnNames, flattenInputs: Boolean = false): Array[Any] = {
+    val arrayBuf = new ArrayBuffer[Any]()
+
+    schema.columnIndices(names).map(i => {
+      schema.column(i).dataType match {
+        case DataTypes.vector => if (flattenInputs) arrayBuf ++= DataTypes.toVector(row(i)) else arrayBuf += row(i)
+        case _ => arrayBuf += row(i)
+      }
+    })
+
+    arrayBuf.toArray
   }
 
   def valueAsWritable(name: String): Writable = {
@@ -317,33 +327,6 @@ trait AbstractRow {
     new GenericRow(content)
   }
 
-  // TODO: is tuple conversion nice to have?  either we have a use or we should delete it?
-  //  /**
-  //   * Get a tuple out of the row
-  //   * @param columnName the column to include
-  //   * @tparam T the type for the column
-  //   * @return a tuple of the supplied columns
-  //   */
-  //  def toTuple[T](columnName: String): Tuple1[T] = {
-  //    Tuple1(value(columnName).asInstanceOf[T])
-  //  }
-  //
-  //  def toTuple[T1, T2](columnName1: String, columnName2: String): (T1, T2) = {
-  //    Tuple2(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2])
-  //  }
-  //
-  //  def toTuple[T1, T2, T3](columnName1: String, columnName2: String, columnName3: String): (T1, T2, T3) = {
-  //    Tuple3(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3])
-  //  }
-  //
-  //  def toTuple[T1, T2, T3, T4](columnName1: String, columnName2: String, columnName3: String, columnName4: String): (T1, T2, T3, T4) = {
-  //    Tuple4(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4])
-  //  }
-  //
-  //  def toTuple[T1, T2, T3, T4, T5](columnName1: String, columnName2: String, columnName3: String, columnName4: String, columnName5: String): (T1, T2, T3, T4, T5) = {
-  //    Tuple5(value(columnName1).asInstanceOf[T1], value(columnName2).asInstanceOf[T2], value(columnName3).asInstanceOf[T3], value(columnName4).asInstanceOf[T4], value(columnName5).asInstanceOf[T5])
-  //  }
-
   /**
    * Create a new empty row
    */
@@ -362,5 +345,11 @@ trait AbstractRow {
   def create(content: Array[Any]): Row = {
     create()
     setValues(content)
+  }
+
+  def create(vertex: GBVertex): Row = {
+    create()
+    vertex.properties.foreach(prop => setValue(prop.key, prop.value))
+    row
   }
 }

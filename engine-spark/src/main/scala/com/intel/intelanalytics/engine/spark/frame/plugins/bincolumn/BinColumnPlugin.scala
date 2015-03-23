@@ -28,11 +28,11 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.{ Await, ExecutionContext }
 
@@ -93,6 +93,6 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
     val binnedRdd = DiscretizationFunctions.binColumns(columnIndex, arguments.cutoffs,
       arguments.includeLowest.getOrElse(true), arguments.strictBinning.getOrElse(false), rdd)
 
-    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedRdd))).meta
+    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRdd(updatedSchema, binnedRdd))).meta
   }
 }
