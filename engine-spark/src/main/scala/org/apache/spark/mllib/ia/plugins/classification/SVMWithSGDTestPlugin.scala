@@ -72,7 +72,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
 
       val frame: SparkFrameData = resolve(arguments.frame)
       // load frame as RDD
-      val testFrameRDD = frame.data
+      val testFrameRdd = frame.data
 
       //Extracting the model and data to run on
       val svmJsObject = modelMeta.data.get
@@ -83,7 +83,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
       }
       val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
 
-      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, svmColumns)
+      val labeledTestRDD: RDD[LabeledPoint] = testFrameRdd.toLabeledPointRDD(arguments.labelColumn, svmColumns)
 
       //predicting and testing
       val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>

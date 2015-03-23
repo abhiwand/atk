@@ -840,6 +840,10 @@ Glossary
 
         A Python data type and a class for general string operations.
 
+    Superstep
+
+        A single iteration of an algorithm.
+
     Supervised Learning
 
         Supervised learning refers to algorithms where the input data are all

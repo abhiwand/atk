@@ -25,9 +25,10 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 /** Json conversion for arguments and return value case classes */
@@ -52,6 +53,12 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
    */
   override def name: String = "frame/dot_product"
 
+  /**
+   * Number of Spark jobs that get created by running this command
+   * (this configuration is used to prevent multiple progress bars in Python client)
+   */
+  override def numberOfJobs(arguments: DotProductArgs)(implicit invocation: Invocation) = 3
+
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   /**
@@ -65,22 +72,53 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
    */
   override def execute(arguments: DotProductArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-    val frame = frames.expectFrame(arguments.frame)
-    val frameSchema = frame.schema
+    val frame: SparkFrameData = resolve(arguments.frame)
 
-    // validate arguments    
-    frameSchema.validateColumnsExist(arguments.leftColumnNames)
-    frameSchema.validateColumnsExist(arguments.rightColumnNames)
-    require(!frameSchema.hasColumn(arguments.dotProductColumnName), s"Column name already exists: ${arguments.dotProductColumnName}")
+    // load frame as RDD
+    val frameRdd = frame.data
+    val frameSchema = frameRdd.frameSchema
+
+    validateDotProductArgs(frameRdd, arguments)
 
     // run the operation
-    val frameRdd = frames.loadFrameData(sc, frame)
     val dotProductRdd = DotProductFunctions.dotProduct(frameRdd, arguments.leftColumnNames, arguments.rightColumnNames,
       arguments.defaultLeftValues, arguments.defaultRightValues)
 
     // save results
     val updatedSchema = frameSchema.addColumn(arguments.dotProductColumnName, DataTypes.float64)
-    frames.saveFrameData(frame.toReference, new FrameRDD(updatedSchema, dotProductRdd))
+    engine.frames.saveFrameData(frame.meta.toReference, new FrameRdd(updatedSchema, dotProductRdd))
+  }
+
+  // Validate input arguments
+  private def validateDotProductArgs(frameRdd: FrameRdd, arguments: DotProductArgs): Unit = {
+    val frameSchema = frameRdd.frameSchema
+
+    val leftVectorSize = getVectorSize(frameRdd, arguments.leftColumnNames)
+    val rightVectorSize = getVectorSize(frameRdd, arguments.rightColumnNames)
+
+    require(leftVectorSize == rightVectorSize,
+      "number of elements in left columns should equal number in right columns")
+    require(arguments.defaultLeftValues.isEmpty || arguments.defaultLeftValues.get.size == leftVectorSize,
+      "size of default left values should match number of elements in left columns")
+    require(arguments.defaultRightValues.isEmpty || arguments.defaultRightValues.get.size == leftVectorSize,
+      "size of default right values should match number of elements in right columns")
+    require(!frameSchema.hasColumn(arguments.dotProductColumnName),
+      s"Column name already exists: ${arguments.dotProductColumnName}")
+  }
+
+  // Get the size of the column vector
+  private def getVectorSize(frameRdd: FrameRdd, columnNames: List[String]): Int = {
+    val frameSchema = frameRdd.frameSchema
+    if (columnNames.size == 1) {
+      frameSchema.requireColumnIsType(columnNames(0), DataTypes.vector)
+      //TODO: Remove once vector data type supports size
+      val firstDefinedValue = frameRdd.mapRows(row => row.value(columnNames(0))).filter(_ != null).take(1)
+      if (firstDefinedValue.nonEmpty) DataTypes.toVector(firstDefinedValue(0)).size else 1
+    }
+    else {
+      require(columnNames.size >= 1, "single vector column, or one or more numeric columns required")
+      frameSchema.requireColumnsOfNumericPrimitives(columnNames)
+      columnNames.size
+    }
   }
 }

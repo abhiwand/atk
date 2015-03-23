@@ -79,7 +79,7 @@ The |IAT| has been designed with modularity in mind, from day 1.
 We recognize that analysts have preferred methods and tools for getting a job
 done, and that there are trade-offs in the choices to be made in any analytical
 software pipeline design.
-Users are able to switch out many components of the standard IAT deployment.
+Users are able to switch out many components of the standard |IAT| deployment.
 Importantly, this allows users to write their own custom algorithms
 for specialized data types, such as are often found in bioinformatics or the
 security sectors.

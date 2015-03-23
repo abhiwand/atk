@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation
 
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -45,8 +45,8 @@ class CorrelationMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val columnsList = List("col_0", "col_1", "col_2")
     val inputDataColumnNamesAndTypes: List[Column] = columnsList.map({ name => Column(name, DataTypes.float64) }).toList
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    val frameRDD = new FrameRDD(schema, rdd)
-    val result = Correlation.correlationMatrix(frameRDD, columnsList).collect()
+    val frameRdd = new FrameRdd(schema, rdd)
+    val result = Correlation.correlationMatrix(frameRdd, columnsList).collect()
     result.size shouldBe 3
     result(0) shouldBe Array(1.0, 0.8451542547285167, 0.2988071523335984)
     result(1) shouldBe Array(0.8451542547285167, 1.0, 0.0)

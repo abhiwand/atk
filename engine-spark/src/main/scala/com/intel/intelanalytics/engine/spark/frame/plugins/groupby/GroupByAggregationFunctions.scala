@@ -25,9 +25,8 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.domain.frame.GroupByAggregationArgs
 import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
-
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators._
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 
 /**
@@ -50,28 +49,26 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
    *
    * @see GroupByAggregator
    *
-   * @param frameRDD Input frame
+   * @param frameRdd Input frame
    * @param groupByColumns List of columns to group by
    * @param aggregationArguments List of aggregation arguments
    * @return Summarized frame with aggregations
    */
-  def aggregation(frameRDD: FrameRDD,
+  def aggregation(frameRdd: FrameRdd,
                   groupByColumns: List[Column],
-                  aggregationArguments: List[GroupByAggregationArgs]): FrameRDD = {
+                  aggregationArguments: List[GroupByAggregationArgs]): FrameRdd = {
 
-    val frameSchema = frameRDD.frameSchema
+    val frameSchema = frameRdd.frameSchema
     val columnAggregators = createColumnAggregators(frameSchema, aggregationArguments)
 
-    val pairedRowRDD = pairRowsByGroupByColumns(frameRDD, groupByColumns, aggregationArguments)
+    val pairedRowRDD = pairRowsByGroupByColumns(frameRdd, groupByColumns, aggregationArguments)
 
     val aggregationRDD = GroupByAggregateByKey(pairedRowRDD, columnAggregators).aggregateByKey()
 
-    //using copy to prevent column indices from changing if spark re-orders operations and FrameSchema gets called
-    //column indices are var's so omitting this step causes index-out-of-bound exceptions
-    val newColumns = groupByColumns ++ columnAggregators.map(_.column.copy(index = -1))
+    val newColumns = groupByColumns ++ columnAggregators.map(_.column)
     val newSchema = FrameSchema(newColumns)
 
-    FrameRDD.toFrameRDD(newSchema, aggregationRDD)
+    FrameRdd.toFrameRdd(newSchema, aggregationRDD)
   }
 
   /**
@@ -88,19 +85,36 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
         val column = frameSchema.column(arg.columnName)
 
         arg.function match {
-          case "COUNT" => ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), CountAggregator())
-          case "COUNT_DISTINCT" => ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), DistinctCountAggregator())
-          case "MIN" => ColumnAggregator(Column(arg.newColumnName, column.dataType, i), MinAggregator())
-          case "MAX" => ColumnAggregator(Column(arg.newColumnName, column.dataType, i), MaxAggregator())
-          case "SUM" if column.dataType.isNumerical => {
-            if (column.dataType.isIntegral)
-              ColumnAggregator(Column(arg.newColumnName, DataTypes.int64, i), new SumAggregator[Long]())
-            else
-              ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), new SumAggregator[Double]())
+          case "COUNT" => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, CountAggregator())
           }
-          case "AVG" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), MeanAggregator())
-          case "VAR" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), VarianceAggregator())
-          case "STDEV" if column.dataType.isNumerical => ColumnAggregator(Column(arg.newColumnName, DataTypes.float64, i), StandardDeviationAggregator())
+          case "COUNT_DISTINCT" => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, DistinctCountAggregator())
+          }
+          case "MIN" => {
+            ColumnAggregator(Column(arg.newColumnName, column.dataType), i, MinAggregator())
+          }
+          case "MAX" => {
+            ColumnAggregator(Column(arg.newColumnName, column.dataType), i, MaxAggregator())
+          }
+          case "SUM" if column.dataType.isNumerical => {
+            if (column.dataType.isInteger)
+              ColumnAggregator(Column(arg.newColumnName, DataTypes.int64), i, new SumAggregator[Long]())
+            else
+              ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, new SumAggregator[Double]())
+          }
+          case "AVG" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, MeanAggregator())
+          }
+          case "VAR" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, VarianceAggregator())
+          }
+          case "STDEV" if column.dataType.isNumerical => {
+            ColumnAggregator(Column(arg.newColumnName, DataTypes.float64), i, StandardDeviationAggregator())
+          }
+          case function if function.matches("""HISTOGRAM.*""") && column.dataType.isNumerical => {
+            ColumnAggregator.getHistogramColumnAggregator(arg, i)
+          }
           case _ => throw new IllegalArgumentException(s"Unsupported aggregation function: ${arg.function} for data type: ${column.dataType}")
         }
     }
@@ -112,20 +126,20 @@ private[spark] object GroupByAggregationFunctions extends Serializable {
    * The group-by key is a sequence of column values, for example, group-by gender and age. The aggregation
    * columns are the columns containing the values to be aggregated, for example, annual income.
    *
-   * @param frameRDD Input frame
+   * @param frameRdd Input frame
    * @param groupByColumns Group by columns
    * @param aggregationArguments List of aggregation arguments
    * @return RDD of group-by keys, and aggregation column values
    */
-  def pairRowsByGroupByColumns(frameRDD: FrameRDD,
+  def pairRowsByGroupByColumns(frameRdd: FrameRdd,
                                groupByColumns: List[Column],
                                aggregationArguments: List[GroupByAggregationArgs]): RDD[(Seq[Any], Seq[Any])] = {
-    val frameSchema = frameRDD.frameSchema
+    val frameSchema = frameRdd.frameSchema
     val groupByColumnsNames = groupByColumns.map(col => col.name)
 
     val aggregationColumns = aggregationArguments.map(arg => frameSchema.column(columnName = arg.columnName))
 
-    frameRDD.mapRows(row => {
+    frameRdd.mapRows(row => {
       val groupByKey = if (!groupByColumnsNames.isEmpty) row.valuesAsArray(groupByColumnsNames).toSeq else Seq[Any]()
       val groupByRow = aggregationColumns.map(col => row.data(frameSchema.columnIndex(col.name)))
       (groupByKey, groupByRow.toSeq)

@@ -32,13 +32,13 @@ import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -96,10 +96,10 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
 
     val label = schema.asInstanceOf[VertexSchema].label
-    FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, FrameRDD.toFrameRDD(schema, duplicatesRemoved))
+    FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
 
     // save results
-    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRDD(schema, duplicatesRemoved))
+    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRdd(schema, duplicatesRemoved))
 
   }
 }

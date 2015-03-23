@@ -508,7 +508,7 @@ class Graph(DocStubsGraph, _BaseGraph):
     """
     _entity_type = 'graph:'
 
-    def __init__(self, source=None, name=None, _info=None):
+    def __init__(self, name=None, _info=None):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         from intelanalytics.rest.graph import GraphInfo
@@ -516,10 +516,8 @@ class Graph(DocStubsGraph, _BaseGraph):
             _info = GraphInfo(_info)
         if isinstance(_info, GraphInfo):
             self._id = _info.id_number
-        elif source is None:
-            self._id = self._backend.create(self, None, name, 'ia/frame', _info)
         else:
-            raise ValueError("Invalid source value of type %s" % type(source))
+            self._id = self._backend.create(self, None, name, 'ia/frame', _info)
 
         self._vertices = GraphFrameCollection(self._get_vertex_frame, self._get_vertex_frames)
         self._edges = GraphFrameCollection(self._get_edge_frame, self._get_edge_frames)

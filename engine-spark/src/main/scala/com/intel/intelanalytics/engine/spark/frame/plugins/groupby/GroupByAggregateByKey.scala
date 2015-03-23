@@ -87,7 +87,7 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
                      row: Seq[Any]): (Seq[Any], Seq[InputType]) = {
     val seq = columnAggregators.map(colAggregator => {
       val aggregator = colAggregator.aggregator
-      aggregator.mapFunction(row(colAggregator.column.index), colAggregator.column.dataType)
+      aggregator.mapFunction(row(colAggregator.columnIndex), colAggregator.column.dataType)
     })
     (key, seq)
   }

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -35,7 +35,7 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   val inputArray: Array[Array[Double]] = Array(Array(90.0, 60.0, 90.0), Array(90.0, 90.0, 30.0),
     Array(60.0, 60.0, 60.0), Array(60.0, 60.0, 90.0), Array(30.0, 30.0, 30.0))
 
-  "Covariance matrix calculations" should "return the correct values" in {
+  "CovarianceFunctions matrix calculations" should "return the correct values" in {
 
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
       val temp: Array[Any] = row.map(x => x)
@@ -46,14 +46,14 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val columnsList = List("col_0", "col_1", "col_2")
     val inputDataColumnNamesAndTypes: List[Column] = columnsList.map({ name => Column(name, DataTypes.float64) }).toList
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    val frameRDD = new FrameRDD(schema, rdd)
-    val result = Covariance.covarianceMatrix(frameRDD, columnsList).collect()
+    val frameRdd = new FrameRdd(schema, rdd)
+    val result = CovarianceFunctions.covarianceMatrix(frameRdd, columnsList).collect()
     result.size shouldBe 3
     result(0) shouldBe Array(630.0, 450.0, 225.0)
     result(1) shouldBe Array(450.0, 450.0, 0.0)
     result(2) shouldBe Array(225.0, 0.0, 900.0)
   }
-  "Covariance matrix calculations" should "return the correct values for vector data types" in {
+  "CovarianceFunctions matrix calculations" should "return the correct values for vector data types" in {
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
       val temp: Array[Any] = Array(DataTypes.toVector(row))
       new GenericRow(temp)
@@ -61,15 +61,15 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
 
     val rdd = sparkContext.parallelize(arrGenericRow)
     val schema = FrameSchema(List(Column("col_0", DataTypes.vector)))
-    val frameRDD = new FrameRDD(schema, rdd)
-    val result = Covariance.covarianceMatrix(frameRDD, List("col_0")).collect()
+    val frameRdd = new FrameRdd(schema, rdd)
+    val result = CovarianceFunctions.covarianceMatrix(frameRdd, List("col_0"), useVectorOutput = true).collect()
 
     result.size shouldBe 3
-    result(0) shouldBe Array(630.0, 450.0, 225.0)
-    result(1) shouldBe Array(450.0, 450.0, 0.0)
-    result(2) shouldBe Array(225.0, 0.0, 900.0)
+    result(0)(0) shouldBe Vector(630.0, 450.0, 225.0)
+    result(1)(0) shouldBe Vector(450.0, 450.0, 0.0)
+    result(2)(0) shouldBe Vector(225.0, 0.0, 900.0)
   }
-  "Covariance matrix calculations" should "return the correct values for mixed vector and numeric data types" in {
+  "CovarianceFunctions matrix calculations" should "return the correct values for mixed vector and numeric data types" in {
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
       val temp: Array[Any] = Array(DataTypes.toVector(row.slice(0, 2)), row(2))
       new GenericRow(temp)
@@ -77,12 +77,13 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
 
     val rdd = sparkContext.parallelize(arrGenericRow)
     val schema = FrameSchema(List(Column("col_0", DataTypes.vector), Column("col_1", DataTypes.float64)))
-    val frameRDD = new FrameRDD(schema, rdd)
-    val result = Covariance.covarianceMatrix(frameRDD, List("col_0", "col_1")).collect()
+    val frameRdd = new FrameRdd(schema, rdd)
+    val result = CovarianceFunctions.covarianceMatrix(frameRdd, List("col_0", "col_1")).collect()
 
     result.size shouldBe 3
     result(0) shouldBe Array(630.0, 450.0, 225.0)
     result(1) shouldBe Array(450.0, 450.0, 0.0)
     result(2) shouldBe Array(225.0, 0.0, 900.0)
   }
+
 }
