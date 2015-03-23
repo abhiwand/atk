@@ -32,7 +32,7 @@ class CommandDriver extends EngineComponent
 
   implicit lazy val startupCall = Call(null)
 
-  lazy val commandPluginRegistry = new CommandPluginRegistry(new EmptyCommandLoader)
+  lazy val commandPluginRegistry = new CommandPluginRegistry(new PluginCommandLoader)
 
   val sparkContextFactory = SparkContextFactory
 

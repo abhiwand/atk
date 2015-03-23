@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.SparkContext
@@ -93,6 +94,28 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   override def cleanup(invocation: Invocation) = {
     val sparkInvocation = invocation.asInstanceOf[SparkInvocation]
     SparkCommandPlugin.stop(sparkInvocation.commandId)
+  }
+
+  def serializePluginConfiguration(archiveName: String, path: String): Unit = withMyClassLoader {
+
+    info(s"Serializing Plugin Configuration for archive $archiveName to path $path")
+    import scala.collection.JavaConversions._
+    import java.nio.file.{ Paths, Files }
+    import java.nio.charset.StandardCharsets
+    val currentConfig = try {
+      Archive.getAugmentedConfig(archiveName, Thread.currentThread().getContextClassLoader).entrySet()
+    }
+    catch {
+      case _: Throwable => SparkEngineConfig.config.entrySet()
+    }
+    val allEntries = for {
+      i <- currentConfig
+    } yield s"${i.getKey}=${i.getValue.render}"
+    Files.write(Paths.get(path), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+  }
+
+  def getArchiveNameForPlugin(): String = withMyClassLoader {
+    Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
   }
 
 }

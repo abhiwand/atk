@@ -47,7 +47,11 @@ class CommandLoader extends CommandLoaderTrait {
   }.toMap
 }
 
-class EmptyCommandLoader extends CommandLoaderTrait {
-  def loadFromConfig(): Map[String, CommandPlugin[_, _]] = Map()
-
+class PluginCommandLoader extends CommandLoaderTrait {
+  def loadFromConfig(): Map[String, CommandPlugin[_, _]] = List("engine-spark", "graphon").flatMap {
+    archive =>
+      Boot.getArchive(archive)
+        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
+        .map(p => (p.name, p))
+  }.toMap
 }

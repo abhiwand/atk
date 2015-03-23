@@ -102,7 +102,8 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
 
   override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): GraphEntity = {
 
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     val degreeMethod: String = arguments.degreeMethod
     // Get the graph
