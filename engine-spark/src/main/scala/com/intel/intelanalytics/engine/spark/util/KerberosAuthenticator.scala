@@ -31,6 +31,8 @@ import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.deploy.SparkHadoopUtil
 import com.intel.intelanalytics.component.ClassLoaderAware
 
+import scala.reflect.io.{ File, Directory, Path }
+
 import scala.util.control.NonFatal
 
 /**
@@ -44,11 +46,15 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits wit
    */
   def loginWithKeyTab(): Unit = {
     if (SparkEngineConfig.enableKerberos) {
-      info("Authenticate with Kerberos")
+      println("What's in my path?")
+      Directory.Current.get.deepFiles.foreach(println)
       //if kerberos is enabled the following configs will have been set.
+      val keyTabPrincipal: String = SparkEngineConfig.kerberosPrincipalName.get
+      val keyTabFile: String = SparkEngineConfig.kerberosKeyTabPath.get
+      info(s"Authenticate with Kerberos\n\tPrincipal: $keyTabPrincipal\n\tKeyTab File: $keyTabFile")
       UserGroupInformation.loginUserFromKeytab(
-        SparkEngineConfig.kerberosPrincipalName.get,
-        SparkEngineConfig.kerberosKeyTabPath.get)
+        keyTabPrincipal,
+        keyTabFile)
     }
   }
 
