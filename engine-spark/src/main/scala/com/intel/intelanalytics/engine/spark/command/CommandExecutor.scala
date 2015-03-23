@@ -284,15 +284,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       withMyClassLoader {
         //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
         KerberosAuthenticator.loginWithKeyTabCLI()
-      val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
-        case Some(path) => (s",${path}",
-          s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
-        case None => ("", "")
-      }
-
         val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
           case Some(path) => (s",${path}",
-            s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
+            s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
           case None => ("", "")
         }
 
