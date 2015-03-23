@@ -31,6 +31,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import spray.json._
 
@@ -230,7 +231,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
       try {
-        executeCommandOnYarn(commandContext.command)
+        executeCommandOnYarn(commandContext.command, plugin)
         /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
         val updatedCommand = commands.lookup(commandContext.command.id).get
         if (updatedCommand.error.isDefined)
@@ -260,47 +261,53 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     }
   }
 
-  private def executeCommandOnYarn(command: Command)(implicit invocation: Invocation): Unit = withMyClassLoader {
+  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R])(implicit invocation: Invocation): Unit = {
     withContext("executeCommandOnYarn") {
 
-      /* Serialize current config so as to pass to Spark Submit */
-      import scala.collection.JavaConversions._
-      import java.nio.file.{ Paths, Files }
-      import java.nio.charset.StandardCharsets
-      val currentConfig = SparkEngineConfig.config.entrySet()
       val tempConfFileName = s"/tmp/application.conf"
-      val allEntries = for {
-        i <- currentConfig
-      } yield s"${i.getKey}=${i.getValue.render}"
-      Files.write(Paths.get(tempConfFileName), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+      /* Serialize current config for the plugin so as to pass to Spark Submit */
+      val sparkCommandPlugin = plugin.asInstanceOf[SparkCommandPlugin[A, R]]
+      val pluginArchiveName = sparkCommandPlugin.getArchiveNameForPlugin()
+      sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
 
-      //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
-      KerberosAuthenticator.loginWithKeyTabCLI()
+      // TODO Plugin jars along with their parents should be passed in;
+      // TODO For convenience now we pass graphon and parse the same in CommandDriver
+      //      val pluginJarPath = pluginArchiveName match {
+      //        case "engine-spark" => "" /* Running as part of the spark internal jar; no need to put explicitly */
+      //        case plugin: String => s",${SparkContextFactory.jarPath(plugin)}"
+      //      }
+      val pluginJarPath = s",${SparkContextFactory.jarPath("graphon")}"
 
-      val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
-        case Some(path) => (s",${path}",
-          s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
-        case None => ("", "")
+      withMyClassLoader {
+        //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
+        KerberosAuthenticator.loginWithKeyTabCLI()
+
+        val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
+          case Some(path) => (s",${path}",
+            s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
+          case None => ("", "")
+        }
+
+        /* Prepare input arguments for Spark Submit */
+        import org.apache.spark.deploy.SparkSubmit
+        val inputArgs = Array[String](
+          s"--master", s"${SparkEngineConfig.sparkMaster}",
+          "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
+          "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")}$pluginJarPath",
+          "--files", s"$tempConfFileName$kerbFile",
+          "--conf", s"config.resource=application.conf",
+          "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
+          //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
+          "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions",
+          "--driver-class-path", s"/etc/hbase/conf:/etc/hadoop/conf",
+          "--verbose",
+          "spark-internal", /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
+          s"${command.id}")
+
+        /* Launch Spark Submit */
+        info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
+        SparkSubmit.main(inputArgs) /* Blocks */
       }
-
-      /* Prepare input arguments for Spark Submit */
-      import org.apache.spark.deploy.SparkSubmit
-      val inputArgs = Array[String](
-        s"--master", s"${SparkEngineConfig.sparkMaster}",
-        "--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver",
-        "--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},${SparkContextFactory.jarPath("igiraph-titan")},${SparkContextFactory.jarPath("graphon")}",
-        "--files", s"$tempConfFileName$kerbFile",
-        "--conf", s"config.resource=application.conf",
-        "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-        //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
-        "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions",
-        "--verbose",
-        "spark-internal", /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
-        s"${command.id}")
-
-      /* Launch Spark Submit */
-      info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-      SparkSubmit.main(inputArgs) /* Blocks */
     }
   }
 
