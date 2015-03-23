@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
+import java.io.File
+import java.nio.file.Path
+
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
@@ -229,17 +232,13 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
-      try {
-        executeCommandOnYarn(commandContext.command)
-        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
-        val updatedCommand = commands.lookup(commandContext.command.id).get
-        if (updatedCommand.error.isDefined)
-          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-        updatedCommand.result.get
-      }
-      finally {
-        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
-      }
+      executeCommandOnYarn(commandContext.command)
+      sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
+      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+      val updatedCommand = commands.lookup(commandContext.command.id).get
+      if (updatedCommand.error.isDefined)
+        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+      updatedCommand.result.get
     }
     else {
       val returnValue = if (commandContext.action) {
@@ -279,7 +278,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
       val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
         case Some(path) => (s",${path}",
-          s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${path.stripPrefix("/")}")
+          s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
         case None => ("", "")
       }
 
