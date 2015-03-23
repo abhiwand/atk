@@ -26,7 +26,6 @@ package com.intel.intelanalytics.domain.frame
 /**
  * Input arguments class for covariance
  */
-
 case class CovarianceArgs(frame: FrameReference,
                           dataColumnNames: List[String]) {
   require(frame != null, "frame is required")
