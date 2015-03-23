@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.hadoop
+package com.intel.intelanalytics.engine.spark.hadoop
 
 import com.typesafe.config.{ Config, ConfigFactory, ConfigObject, ConfigValue }
 import org.apache.hadoop.conf.Configuration

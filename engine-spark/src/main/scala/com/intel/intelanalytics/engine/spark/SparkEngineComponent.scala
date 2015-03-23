@@ -29,7 +29,7 @@ import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
