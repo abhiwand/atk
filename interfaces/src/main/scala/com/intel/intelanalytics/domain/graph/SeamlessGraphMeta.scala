@@ -172,7 +172,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
   def getFrameSchemaList: List[Schema] = {
     this.frameEntities.map {
       frame => frame.schema
-    }.toList
+    }
   }
 
 }
