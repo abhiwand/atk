@@ -85,7 +85,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
     // load frame as RDD
     val rdd = frame.data
 
-    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
+    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) })
     val correlationRDD = Correlation.correlationMatrix(rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)

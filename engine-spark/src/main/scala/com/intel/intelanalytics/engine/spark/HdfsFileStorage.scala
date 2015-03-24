@@ -165,7 +165,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     if (ArrayUtils.isEmpty(fileStatuses.asInstanceOf[Array[AnyRef]])) {
       throw new RuntimeException("No file found at path " + abPath)
     }
-    fileStatuses.map(fileStatus => fileStatus.getLen).reduce(_ + _)
+    fileStatuses.map(fileStatus => fileStatus.getLen).sum
   }
 
   /**

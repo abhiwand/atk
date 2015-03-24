@@ -108,7 +108,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @return the blueprints.Edge
    */
   def update(edge: GBEdge, blueprintsEdge: blueprints.Edge): blueprints.Edge = {
-    edge.properties.map(property => blueprintsEdge.setProperty(property.key, property.value))
+    edge.properties.foreach(property => blueprintsEdge.setProperty(property.key, property.value))
     blueprintsEdge
   }
 
