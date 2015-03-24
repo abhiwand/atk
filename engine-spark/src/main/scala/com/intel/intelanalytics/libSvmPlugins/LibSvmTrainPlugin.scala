@@ -31,10 +31,9 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import libsvm.{svm_node, svm_problem, svm_parameter, svm}
-import org.apache.spark.frame.FrameRDD
+import libsvm.{ svm_node, svm_problem, svm_parameter, svm }
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-
 
 //Implicits needed for JSON conversion
 import spray.json._
@@ -73,11 +72,11 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
 
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
-    val trainFrameRDD = frame.data
+    val trainFrameRdd = frame.data
 
     //Running LibSVM
     val param = initializeParameters(arguments)
-    val prob = initializeProblem(trainFrameRDD, arguments, param)
+    val prob = initializeProblem(trainFrameRdd, arguments, param)
 
     val mySvmModel = svm.svm_train(prob, param)
 
@@ -111,7 +110,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     param
   }
 
-  private def initializeProblem(trainFrameRdd: FrameRDD, arguments: LibSvmTrainArgs, param: svm_parameter): svm_problem = {
+  private def initializeProblem(trainFrameRdd: FrameRdd, arguments: LibSvmTrainArgs, param: svm_parameter): svm_problem = {
     trainFrameRdd.frameSchema.requireColumnIsType(arguments.labelColumn, DataTypes.float64)
 
     val observedRdd = trainFrameRdd.selectColumns(arguments.labelColumn +: arguments.observationColumns)

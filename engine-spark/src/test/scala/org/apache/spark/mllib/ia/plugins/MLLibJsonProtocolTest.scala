@@ -26,7 +26,7 @@ package org.apache.spark.mllib.ia.plugins
 //import org.apache.commons.math3.geometry.VectorFormat
 
 import com.intel.intelanalytics.libSvmPlugins.LibSvmData
-import libsvm.{svm_parameter, svm_model}
+import libsvm.{ svm_parameter, svm_model }
 import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

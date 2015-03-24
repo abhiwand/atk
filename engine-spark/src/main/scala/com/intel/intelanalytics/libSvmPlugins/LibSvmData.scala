@@ -23,8 +23,7 @@
 
 package com.intel.intelanalytics.libSvmPlugins
 
-import libsvm.{svm_node, svm_parameter, svm_model}
-
+import libsvm.{ svm_node, svm_parameter, svm_model }
 
 /**
  * Command for loading model data into existing model in the model database.
@@ -35,10 +34,6 @@ case class LibSvmData(svmModel: svm_model, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
   require(svmModel != null, "libsvmModel must not be null")
 }
-
-
-
-
 
 //case class svm_model(param: svm_parameter, nr_class: Int, l: Int, SV: Array[Array[svm_node]], sv_coef: Array[Array[Double]],
 //                     rho: Array[Double], probA: Array[Double], probB: Array[Double], sv_indices: Array[Int], label: Array[Int], nSV: Array[Int])

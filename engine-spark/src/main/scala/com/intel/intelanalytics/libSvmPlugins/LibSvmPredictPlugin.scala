@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
@@ -99,7 +99,7 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     })
 
     val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.float64)
-    val predictFrameRdd = new FrameRDD(updatedSchema, predictionsRdd)
+    val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRdd)
 
     tryNew(CreateEntityArgs(description = Some("created by LibSvm's predict operation"))) {
       newPredictedFrame: FrameMeta =>
