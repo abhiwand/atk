@@ -91,7 +91,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], m
   }
 
   private def aggregateWeights(data: T, dataWeightPairs: Iterable[(T, Double)]): (T, Double) =
-    (data, dataWeightPairs.map({ case (data, weight) => weight }).reduce(_ + _))
+    (data, dataWeightPairs.map({ case (data, weight) => weight }).sum)
 
 }
 

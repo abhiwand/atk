@@ -43,3 +43,4 @@ Examples
 
     >>> model = ia.LogisticRegressionModel(name='LogReg')
     >>> model.train(train_frame, ['name_of_observation_column'], 'name_of_label_column', false, 50, 1.0, "L1", 0.02, 1.0)
+

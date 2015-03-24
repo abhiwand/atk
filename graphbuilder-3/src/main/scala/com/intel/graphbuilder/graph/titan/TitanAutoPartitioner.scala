@@ -222,7 +222,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
    */
   private def getHBaseRegionServerCount(hBaseAdmin: HBaseAdmin): Int = Try({
     hBaseAdmin.getClusterStatus() getServersSize
-  }).getOrElse(-1);
+  }).getOrElse(-1)
 
 }
 

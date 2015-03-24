@@ -48,7 +48,7 @@ case class AddEdgesArgs(edgeFrame: FrameReference,
   require(sourceFrame != null, "source frame is required")
   require(columnNameForSourceVertexId != null, "column name for source vertex id is required to create edges")
   require(columnNameForDestVertexId != null, "column name for destination vertex id is required to create edges")
-  allColumnNames.map(name => require(!GraphSchema.isEdgeSystemColumn(name), s"$name can't be used as an input column name, it is reserved for system use"))
+  allColumnNames.foreach(name => require(!GraphSchema.isEdgeSystemColumn(name), s"$name can't be used as an input column name, it is reserved for system use"))
 
   /**
    * All of the column names (idColumn plus the rest)

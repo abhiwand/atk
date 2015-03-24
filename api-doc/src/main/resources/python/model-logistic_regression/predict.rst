@@ -27,3 +27,4 @@ Examples
     >>> model = ia.LogisticRegressionModel(name='LogReg')
     >>> model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
     >>> model.predict(predict_frame, ['predict_for_observation_column'])
+

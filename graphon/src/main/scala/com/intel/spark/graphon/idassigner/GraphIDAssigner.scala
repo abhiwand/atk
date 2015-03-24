@@ -84,8 +84,8 @@ class GraphIDAssigner[T: ClassTag]() extends Serializable {
    * @param newIdsToOld  pairs mapping new IDs to their corresponding vertices in the base graph
    * @tparam T Type of the vertex IDs in the input graph
    */
-  case class GraphIDAssignerOutput[T: ClassTag](val vertices: RDD[Long],
-                                                val edges: RDD[(Long, Long)],
-                                                val newIdsToOld: RDD[(Long, T)])
+  case class GraphIDAssignerOutput[T: ClassTag](vertices: RDD[Long],
+                                                edges: RDD[(Long, Long)],
+                                                newIdsToOld: RDD[(Long, T)])
 
 }
