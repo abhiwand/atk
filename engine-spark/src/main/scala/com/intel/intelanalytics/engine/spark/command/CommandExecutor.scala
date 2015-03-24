@@ -181,7 +181,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         mutable.Map.empty,
         mutable.Map.empty)
 
-      commands.complete(context.command.id, Try { executeCommandContext(context, true) })
+      /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
+      commands.storeResult(context.command.id, Try { executeCommandContext(context, true) })
     }
 
   /**

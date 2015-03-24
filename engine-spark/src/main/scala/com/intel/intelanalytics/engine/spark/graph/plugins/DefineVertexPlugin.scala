@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineVertexArgs, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.VertexSchema
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.FrameEntity
@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Define a vertex type for a seamless graph
  */
-class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineVertexArgs, UnitReturn] {
+class DefineVertexPlugin(graphStorage: SparkGraphStorage) extends CommandPlugin[DefineVertexArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
