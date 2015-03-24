@@ -44,7 +44,7 @@ results: dict
     within_set_sum_of_squared_error: Double
         The set of sum of squared error for the model
 
-Example
+Examples
 --------
 
 .. code::

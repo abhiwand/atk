@@ -457,7 +457,6 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> graph.edge_count
         >>> graph.vertices['users'].inspect(20)
 
-    |
     This example uses a multiple source data frames and creates a graph of 'user' and 'movie' vertices
     connected by 'rating' edges.
 
@@ -502,7 +501,6 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
         >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
 
-    |
     This example shows edges between vertices of the same type.
     In this example, "employees work under other employees".
 
@@ -745,7 +743,6 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
         >>> my_graph = ia.TitanGraph([user, movie, rates])
 
-    |
     In another example, the vertex and edge rules can be sent to the method
     simultaneously.
 
@@ -872,7 +869,6 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
             >>> graph.append([user, movie, rates])
 
-        |
         This example shows creating a graph from one frame and appending data
         to it from other frames.
 

@@ -11,7 +11,7 @@ on a physical or virtual cluster.
 ------------------------
 Install Cloudera Manager
 ------------------------
-The `Cloudera Manager`_ must be downloaded and installed.
+The Cloudera Manager must be downloaded and installed.
 For instructions, see the Cloudera website
 (http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html).
 

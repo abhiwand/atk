@@ -769,3 +769,8 @@ Upgrading
 Unless specified otherwise in the release notes, upgrading requires removal of
 old software prior to installation of new software.
 
+.. toctree::
+    :hidden:
+
+    ad_inst_ia3
+

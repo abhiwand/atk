@@ -34,8 +34,8 @@ frame : Frame
     The frame contains data from every vertex of the graph with its
     :term:`local clustering coefficient` stored in the user-specified property.
 
-Example
--------
+Examples
+--------
 
 .. code::
 

@@ -30,8 +30,8 @@ input_edge_labels : list of str (optional)
     in the degree calculation, regardless of label.
 
 
-Return
-------
+Returns
+-------
 
 Graph : Degree annotated graph
     A Graph object with access to a new graph that is a copy of the input graph
