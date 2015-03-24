@@ -25,25 +25,28 @@ bin_type : str (optional)
 
 Notes
 -----
-1)  The num_bins parameter is considered to be the maximum permissible number
-    of bins because the data may dictate fewer bins.
-    With equal depth binning, for example, if the column to be binned has 10
-    elements with only 2 distinct values and the *num_bins* parameter is
-    greater than 2, then the number of actual number of bins will only be 2.
-    This is due to a restriction that elements with an identical value must
-    belong to the same bin.
+The num_bins parameter is considered to be the maximum permissible number
+of bins because the data may dictate fewer bins.
+With equal depth binning, for example, if the column to be binned has 10
+elements with only 2 distinct values and the *num_bins* parameter is
+greater than 2, then the number of actual number of bins will only be 2.
+This is due to a restriction that elements with an identical value must
+belong to the same bin.
 
 
 Returns
 -------
 histogram : Histogram
-    a Histogram object containing the result set. It contains three attributes:
-    cutoffs: array of type float
-        a list containing the edges of each bin
-    hist: array of type float
-        a list containing count of the weighted observations found in each bin
-    density: array of type float
-        a list containing a decimal containing the percentage of observations found in the total set per bin
+    A Histogram object containing the result set. It contains three attributes:
+
+    *   cutoffs |EM| array of type float
+        |EM| A list containing the edges of each bin.
+    *   hist |EM| array of type float
+        |EM| A list containing count of the weighted observations found in
+        each bin.
+    *   density |EM| array of type float
+        |EM| A list containing a decimal containing the percentage of
+        observations found in the total set per bin.
 
 
 Examples

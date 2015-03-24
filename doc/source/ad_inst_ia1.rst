@@ -389,20 +389,19 @@ replace 2181 with the zookeeper client port:
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update "invalid-spark-master" with the fully qualified domain name of the
-Spark master node.
+Update "invalid-spark-master".
 
-Example:
-
-.. code::
-
-    spark.master = "spark://invalid-spark-master:7077"
-
-Becomes:
+To run Spark on Yarn in yarn-cluster mode, set:
 
 .. code::
 
-    spark.master = "spark://localhost.localdomain:7077" 
+    spark.master = yarn-cluster
+
+To run Spark on Yarn in yarn-client mode, set:
+
+.. code::
+
+    spark.master = yarn-client
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
