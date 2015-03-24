@@ -37,7 +37,7 @@ import com.intel.intelanalytics.domain.schema.GraphSchema
  *                    empty list means use none.
  */
 case class AddVerticesArgs(vertexFrame: FrameReference, sourceFrame: FrameReference, idColumnName: String, columnNames: Option[Seq[String]] = None) {
-  allColumnNames.map(name => require(!GraphSchema.isVertexSystemColumn(name), s"$name can't be used as an input column name, it is reserved for system use"))
+  allColumnNames.foreach(name => require(!GraphSchema.isVertexSystemColumn(name), s"$name can't be used as an input column name, it is reserved for system use"))
 
   /**
    * All of the column names (idColumn plus the rest)

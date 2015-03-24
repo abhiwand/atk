@@ -38,7 +38,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
  * Object for calculating covariance and the covariance matrix
  */
 
-object Covariance extends Serializable {
+object CovarianceFunctions extends Serializable {
 
   /**
    * Compute covariance for exactly two columns
