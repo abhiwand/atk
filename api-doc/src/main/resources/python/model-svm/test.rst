@@ -33,7 +33,7 @@ Examples
 --------
 ::
 
-    model = ia.SvmModel(name='mySVM')
+    model = ia.SvmModel(name='mySvm')
     model.train(train_frame, ['name_of_observation_column'], 'name_of_label_column')
     metrics = model.test(test_frame, 'name_of_label_column',['name_of_observation_column'])
 

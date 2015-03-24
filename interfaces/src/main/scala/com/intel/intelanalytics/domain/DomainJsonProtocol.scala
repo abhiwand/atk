@@ -29,7 +29,7 @@ import java.util
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
-import com.intel.intelanalytics.domain.frame.UdfArgs.{ UdfDependency, Udf }
+import com.intel.intelanalytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
@@ -507,7 +507,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       val columns: Option[Map[String, String]] = jo.getFields("columns") match {
         case Seq(JsString(n)) => Some(Map[String, String](n -> n))
         case Seq(JsArray(names)) => Some((for (n <- names) yield (n.convertTo[String], n.convertTo[String])).toMap)
-        case Seq(JsObject(fields)) => Some((for ((name, new_name) <- fields) yield (name, new_name.convertTo[String])).toMap)
+        case Seq(JsObject(fields)) => Some((for ((name, new_name) <- fields) yield (name, new_name.convertTo[String])))
         case Seq(JsNull) => None
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON string, array, or object for argument 'columns' but got $x")

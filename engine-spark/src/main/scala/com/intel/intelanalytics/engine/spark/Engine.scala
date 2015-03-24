@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.engine.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._

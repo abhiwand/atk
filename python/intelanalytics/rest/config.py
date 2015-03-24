@@ -35,6 +35,14 @@ class server_defaults:
                'Accept': 'application/json,text/plain',
                'Authorization': "test_api_key_1"}
 
+class oauth_defaults:
+    url = "https://login.gotapaas.com/oauth/token"
+    user_name = "admin"
+    user_password = "WQXng43TEfj"
+    headers = {"Accept":"application/json"}
+    client_name = "atk-client"
+    client_password = "c1oudc0w"
+
 class upload_defaults:
     rows = 10000
 
@@ -45,3 +53,5 @@ class polling_defaults:
 
 
 build_id = None
+
+oauth_token = None

@@ -23,6 +23,6 @@ Examples
 --------
 ::
 
-    model = ia.SvmModel(name='mySVM')
+    model = ia.SvmModel(name='mySvm')
     model.train(train_frame, ['name_of_observation_column1'], 'name_of_label_column')
     predicted_frame = model.predict(predict_frame, ['predict_for_observation_column'])
