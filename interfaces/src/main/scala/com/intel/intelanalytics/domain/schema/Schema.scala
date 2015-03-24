@@ -193,7 +193,7 @@ trait Schema {
   def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
-    columns.map(col => col.name).toList
+    columns.map(col => col.name)
   }
 
   /**
