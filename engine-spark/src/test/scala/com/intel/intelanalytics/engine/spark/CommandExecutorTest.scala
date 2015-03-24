@@ -58,6 +58,7 @@ class FakeCommandStorage extends CommandStorage {
   override def scan(offset: Int, count: Int): Seq[Command] = commands.values.toSeq
 
   override def complete(id: Long, result: Try[JsObject]): Unit = {}
+  override def storeResult(id: Long, result: Try[JsObject]): Unit = {}
 
   /**
    * update command info regarding progress of jobs initiated by this command
