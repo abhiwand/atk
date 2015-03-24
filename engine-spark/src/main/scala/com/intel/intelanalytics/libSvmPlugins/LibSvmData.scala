@@ -34,25 +34,3 @@ case class LibSvmData(svmModel: svm_model, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
   require(svmModel != null, "libsvmModel must not be null")
 }
-
-//case class svm_model(param: svm_parameter, nr_class: Int, l: Int, SV: Array[Array[svm_node]], sv_coef: Array[Array[Double]],
-//                     rho: Array[Double], probA: Array[Double], probB: Array[Double], sv_indices: Array[Int], label: Array[Int], nSV: Array[Int])
-//
-//
-//
-//case class svm_parameter(svm_type: Int, kernel_type: Int, degree: Int, gamma: Double, coef0: Double, cache_size: Double, eps: Double,
-//                          C: Double, nr_weight: Int, weight_label: Array[Int], weight: Array[Double], nu: Double, p: Double, shrinking: Int, probability: Int) {
-//
-//}
-//
-//case class svm_node(index: Int, value: Double) {
-//
-//}
-
-//case class SvmModel(svCoef: Array[Array[Double]]) {
-//
-//  def this(svmModel: svm_model) = {
-//    this(svmModel.sv_coef)
-//  }
-//
-//}
