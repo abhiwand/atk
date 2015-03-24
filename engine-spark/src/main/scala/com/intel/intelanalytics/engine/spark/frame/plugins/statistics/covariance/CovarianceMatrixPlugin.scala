@@ -103,7 +103,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
       List(Column(dataColumnNames(0), DataTypes.vector))
     }
     else {
-      dataColumnNames.map(name => Column(name, DataTypes.float64)).toList
+      dataColumnNames.map(name => Column(name, DataTypes.float64))
     }
     FrameSchema(outputColumns)
   }

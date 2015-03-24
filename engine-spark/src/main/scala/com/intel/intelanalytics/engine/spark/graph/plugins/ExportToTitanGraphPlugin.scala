@@ -127,7 +127,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
         s"Edge: ${frame.schema.asInstanceOf[EdgeSchema].label} Column: $columnName"
       else
         ""
-    })).toList.filter(s => !s.isEmpty)
+    })).filter(s => !s.isEmpty)
     require(invalidColumnNames.size == 0,
       s"Titan does not allow properties with the same key as an edge label. Please rename the following columns:\n\t${invalidColumnNames.mkString("\n\t")}")
   }
