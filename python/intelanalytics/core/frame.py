@@ -417,7 +417,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Now the frame has a column *calculated_a* which has been filled with
         the results of the |PUF| *func*.
 
-        |PUF|s must return their value in the same format as the column is
+        A |PUF| must return a value in the same format as the column is
         defined.
         In most cases this is automatically the case, but sometimes it is less
         obvious.
@@ -437,7 +437,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.add_columns(function_b, [("calculated_b", float32)])
 
-        More information on row |PUF|s can be found at :doc:`ds_apir`
+        More information on a row |PUF| can be found at :doc:`ds_apir`
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
@@ -469,7 +469,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Returns
         -------
-        Frame | access to new frame
+        Frame : access to new frame
             A new Frame object accessing data in a new frame which is a copy of
             the original frame.
 
@@ -629,7 +629,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Now the frame only has information about ``ligers``.
 
-        More information on |PUF|s can be found at :doc:`ds_apir`.
+        More information on a |PUF| can be found at :doc:`ds_apir`.
 
 
         """
@@ -664,7 +664,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         The frame now only has data about ``lizards`` and ``frogs``.
 
-        More information on |PUF|s can be found at :doc:`ds_apir`.
+        More information on a |PUF| can be found at :doc:`ds_apir`.
 
 
 
@@ -1259,7 +1259,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
     Returns
     -------
-    class | VertexFrame object
+    class : VertexFrame object
         An object with access to the frame.
 
     Examples
@@ -1395,7 +1395,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
 
     Returns
     -------
-    class | VertexFrame object
+    class : VertexFrame object
         An object with access to the frame.
 
     Examples
@@ -1404,16 +1404,19 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     the data to the frame.
     Create an empty graph and define some vertex and edge types.
 
-        my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
-                                            ('user_name', str),
-                                            ('movie_id', int32),
-                                            ('movie_title', str),
-                                            ('rating', str)])
-        my_frame = ia.Frame(my_csv)
-        my_graph = ia.Graph()
-        my_graph.define_vertex_type('users')
-        my_graph.define_vertex_type('movies')
-        my_graph.define_edge_type('ratings','users','movies',directed=True)
+    .. code::
+
+        >>> my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        ...                                     ('user_name', str),
+        ...                                     ('movie_id', int32),
+        ...                                     ('movie_title', str),
+        ...                                     ('rating', str)])
+
+        >>> my_frame = ia.Frame(my_csv)
+        >>> my_graph = ia.Graph()
+        >>> my_graph.define_vertex_type('users')
+        >>> my_graph.define_vertex_type('movies')
+        >>> my_graph.define_edge_type('ratings','users','movies',directed=True)
 
     Add data to the graph from the frame:
     

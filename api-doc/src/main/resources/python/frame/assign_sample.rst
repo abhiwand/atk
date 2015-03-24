@@ -29,8 +29,9 @@ random_seed : int (optional)
     Random seed used to generate the labels.
     Defaults to 0.
 
-Probability Validation and Floating Point Precision
----------------------------------------------------
+Probability Validation
+
+----------------------
 
 The sample percentages provided by the user are preserved to at least eight decimal places, but beyond this
 there may be small changes do to floating point imprecision.

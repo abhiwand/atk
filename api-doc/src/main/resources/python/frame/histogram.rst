@@ -37,15 +37,19 @@ Notes
 Returns
 -------
 histogram : Histogram
-    a Histogram object containing the result set. It contains three attributes:
-    cutoffs: array of type float
-        a list containing the edges of each bin
-    hist: array of type float
-        a list containing count of the weighted observations found in each bin
-    density: array of type float
-        a list containing a decimal containing the percentage of observations found in the total set per bin
 
+    A Histogram object containing the result set. It contains three attributes:
 
+        cutoffs : array of type float
+            A list containing the edges of each bin.
+
+        hist : array of type float
+            A list containing count of the weighted observations found in each bin.
+
+        density : array of type float
+            A list containing a decimal containing the percentage of observations
+            found in the total set per bin.
+                                                
 Examples
 --------
 Consider the following sample data set:

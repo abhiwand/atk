@@ -47,7 +47,7 @@ Examples
 
         >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True, state_space_size = 5, max_iterations = 6)
 
-        {u'log': u'Vertex Count: 80000\nEdge Count: 318398\nIATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\nIATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\nIATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\nIATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\nIATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\n', u'time': 70.248999999999995}
+        {u'log': u'Vertex Count: 80000\\nEdge Count: 318398\\nIATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\\nIATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\\nIATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\\nIATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\\nIATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\\n', u'time': 70.248999999999995}
 
         >>> graph.query.gremlin("g.V [0..4]")
 
@@ -60,13 +60,13 @@ Examples
         >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True,
         ...    state_space_size = 5, max_iterations = 6)
 
-        {u'log': u'Vertex Count: 80000\n
-        Edge Count: 318398\n
-        IATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\n
-        IATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\n
-        IATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\n
-        IATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\n
-        IATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\n
+        {u'log': u'Vertex Count: 80000\\n
+        Edge Count: 318398\\n
+        IATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\\n
+        IATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\\n
+        IATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\\n
+        IATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\\n
+        IATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\\n
         ', u'time': 70.248999999999995}
 
         >>> graph.query.gremlin("g.V [0..4]")
@@ -133,6 +133,6 @@ Examples
          u'0.125 0.125 0.5 0.125 0.125',
          u'source': 3408035,
          u'_id': 20}],
-         u'run_time_seconds': 1.042}
+         u'run_time_seconds': 1.045}
 
 
