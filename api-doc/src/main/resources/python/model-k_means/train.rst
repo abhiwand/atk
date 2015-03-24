@@ -49,5 +49,5 @@ Example
 --------
 ::
 
-    model = ia.KMeansModel(name='MyKMeansModel')
+    model = ia.KMeansModel(name='myKmeans')
     model.train(train_frame, ['name_of_observation_column1', 'name_of_observation_column2'],[1.0,2.0] 3, 10, 0.0002, "random")

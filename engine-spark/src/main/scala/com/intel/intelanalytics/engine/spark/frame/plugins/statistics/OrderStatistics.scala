@@ -60,7 +60,7 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
 
     val weightsOfPartitions: Array[BigDecimal] = sortedDataWeightPairs.mapPartitions(sumWeightsInPartition).collect()
 
-    val totalWeight: BigDecimal = weightsOfPartitions.reduce(_ + _)
+    val totalWeight: BigDecimal = weightsOfPartitions.sum
 
     if (totalWeight <= 0) {
       None
@@ -82,7 +82,7 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
 
   // Sums the weights in an individual partition of an RDD[(T, BigDecimal)] where second coordinate is "weight'
   private def sumWeightsInPartition(it: Iterator[(T, BigDecimal)]): Iterator[BigDecimal] =
-    if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).reduce(_ + _)) else Iterator(0)
+    if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).sum) else Iterator(0)
 
   // take an iterator for the partition that contains the median, and returns the median...
   // as the single element in a new iterator

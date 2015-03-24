@@ -43,8 +43,8 @@ object TitanReader {
   val TITAN_STORAGE_HBASE_TABLE = "storage.hbase.table"
   // HBaseStoreManager.HBASE_TABLE
   val TITAN_STORAGE_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace"
-  val TITAN_CASSANDRA_INPUT_WIDEROWS = "cassandra.input.widerows";
-  val TITAN_CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.batch.size";
+  val TITAN_CASSANDRA_INPUT_WIDEROWS = "cassandra.input.widerows"
+  val TITAN_CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.batch.size"
   val TITAN_READER_DEFAULT_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
 }
 

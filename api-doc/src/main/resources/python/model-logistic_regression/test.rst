@@ -34,7 +34,7 @@ Examples
 --------
 ::
 
-    model = ia.LogisticRegressionModel(name='LogReg')
+    model = ia.LogisticRegressionModel(name='myLogReg')
     model.train(train_frame, 'name_of_observation_column', 'name_of_label_column')
     metrics = model.test(test_frame, 'name_of_label_column','name_of_observation_column')
 

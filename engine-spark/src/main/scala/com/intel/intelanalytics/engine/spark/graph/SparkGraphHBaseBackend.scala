@@ -65,8 +65,8 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       outputStream.flush()
       outputStream.close()
 
-      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
-      IOUtils.readLines(p.getErrorStream).map(errorMsg => warn(errorMsg))
+      IOUtils.readLines(p.getInputStream).foreach(infoMsg => info(infoMsg))
+      IOUtils.readLines(p.getErrorStream).foreach(errorMsg => warn(errorMsg))
 
       val exitValue = p.waitFor()
       info(s"Hbase shell exited with Exit Value: $exitValue")
