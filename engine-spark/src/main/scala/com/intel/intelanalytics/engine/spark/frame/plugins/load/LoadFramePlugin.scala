@@ -68,7 +68,8 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
-    val fsRoot = engine.fsRoot
+    def getAbsolutePath(s: String): String = engine.frames.frameFileStorage.hdfs.absolutePath(s).toString
+
     val ctx = sc
 
     // validate arguments
@@ -82,18 +83,19 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
-      val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRddFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
+      val filePath = getAbsolutePath(arguments.source.uri)
+      val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
+      val parseResult = LoadRddFunctions.loadAndParseLines(ctx, filePath,
         null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
 
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
-
+      val filePath = getAbsolutePath(arguments.source.uri)
       val parseResult = if (arguments.source.isFieldDelimited) {
-        val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-        LoadRddFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+        val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
+        LoadRddFunctions.loadAndParseLines(ctx, filePath, parser, partitions)
       }
       else {
         val data = arguments.source.data.get
