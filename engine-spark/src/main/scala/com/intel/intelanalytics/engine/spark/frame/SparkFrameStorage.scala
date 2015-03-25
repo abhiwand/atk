@@ -55,7 +55,7 @@ import scala.util.control.NonFatal
 
 import scala.language.implicitConversions
 
-class SparkFrameStorage(frameFileStorage: FrameFileStorage,
+class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner)
