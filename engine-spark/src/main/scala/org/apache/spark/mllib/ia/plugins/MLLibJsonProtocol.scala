@@ -309,9 +309,9 @@ object MLLibJsonProtocol {
         "probA" -> new JsArray(obj.probA.map(d => JsNumber(d)).toList),
         "probB" -> new JsArray(obj.probB.map(d => JsNumber(d)).toList),
         "label" -> new JsArray(obj.label.map(i => JsNumber(i)).toList),
-        "sv_indices" -> new JsArray(obj.probB.map(d => JsNumber(d)).toList),
+        "sv_indices" -> new JsArray(obj.sv_indices.map(d => JsNumber(d)).toList),
         "sv_coef" -> new JsArray(obj.sv_coef.map(row => new JsArray(row.map(d => JsNumber(d)).toList)).toList),
-        "nSV" -> new JsArray(obj.label.map(i => JsNumber(i)).toList),
+        "nSV" -> new JsArray(obj.nSV.map(i => JsNumber(i)).toList),
         "param" -> svm_parameter.write(obj.param),
         "SV" -> new JsArray(obj.SV.map(row => new JsArray(row.map(d => svm_node.write(d)).toList)).toList)
       )
