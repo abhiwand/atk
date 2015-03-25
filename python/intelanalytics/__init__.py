@@ -49,7 +49,6 @@ from intelanalytics.core.model import _BaseModel
 
 from intelanalytics.rest.connection import server
 connect = server.connect
-authorize = server.oauth
 server_test = server
 
 
