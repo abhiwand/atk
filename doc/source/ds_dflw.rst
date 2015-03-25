@@ -1142,6 +1142,20 @@ Inspect the graph:
     >>> my_graph.vertices['Employee'].inspect(20)
     >>> my_graph.edges['worksunder'].inspect(20)
 
+.. warning::
+
+    Improperly built graphs can give inconsistant results.
+    For example, given EdgeFrames with this data::
+
+        Movieid, movieTitle, Rating, userId
+        1, Titanic, 3, 1
+        1, My Own Private Idaho, 3, 2
+
+    If the vertices are built out of this data, the vertex with Movieid of 1
+    would sometimes have the Titanic data and sometimes would have the Idaho
+    data, based upon which order the records are delivered to the function.
+
+
 Other Graph Options
 ===================
 
