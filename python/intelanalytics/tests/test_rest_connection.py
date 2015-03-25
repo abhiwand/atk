@@ -85,7 +85,7 @@ class TestRestConnection(unittest.TestCase):
 
 class MockRequests(MagicMock):
 
-    def get(self, uri, headers=None):
+    def get(self, uri, **kwargs):
         response = Mock()
         response.uri = uri
         response.text = uri
