@@ -61,6 +61,7 @@ import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.Expor
 import com.intel.intelanalytics.engine.spark.model.plugins.RenameModelPlugin
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
@@ -234,6 +235,11 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
+  commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)

@@ -125,6 +125,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
       s"${valueIndexPairArray(0)._1} ${result.mkString(" ")}"
     }
     val output = observedRdd.map(row => columnFormatter(row.toArray.zipWithIndex)).collect()
+    //val rows: Array[List[Any]] = trainFrameRdd.mapRows(row => row.values(List(arguments.labelColumn, arguments.observationColumn))).collect()
 
     val vectory: Vector[Double] = null
     val vectorx: Vector[Array[svm_node]] = null
