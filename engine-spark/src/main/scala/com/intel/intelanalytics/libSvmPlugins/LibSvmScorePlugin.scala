@@ -73,7 +73,7 @@ class LibSvmScorePlugin extends SparkCommandPlugin[LibSvmScoreArgs, DoubleValue]
     val output = columnFormatter(arguments.vector.toArray.zipWithIndex)
 
     val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")
-
+    splitObs.nextToken()
     val counter: Int = splitObs.countTokens / 2
     val x: Array[svm_node] = new Array[svm_node](counter)
     var j: Int = 0
