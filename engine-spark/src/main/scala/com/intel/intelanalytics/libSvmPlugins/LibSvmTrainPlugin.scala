@@ -115,27 +115,19 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
 
     val observedRdd = trainFrameRdd.selectColumns(arguments.labelColumn +: arguments.observationColumns)
     val observedSchema = observedRdd.frameSchema.columns
-    def columnFormatter(valueIndexPairArray: Array[(Any, Int)]): String = {
-      val result = for {
-        i <- valueIndexPairArray
-        value = i._1
-        index = i._2
-        if index != 0 && value != 0
-      } yield s"$index:$value"
-      s"${valueIndexPairArray(0)._1} ${result.mkString(" ")}"
-    }
-    val output = observedRdd.map(row => columnFormatter(row.toArray.zipWithIndex)).collect()
 
-    val vectory: Vector[Double] = null
-    val vectorx: Vector[Array[svm_node]] = null
+    val output = LibSvmFunctions.LibSvmFormatter(observedRdd)
+
+    var vectory = Vector.empty[Double]
+    var vectorx = Vector.empty[Array[svm_node]]
     var max_index: Int = 0
     val prob = new svm_problem()
 
-    for (i <- 0 until output.length) {
+    for (i <- 0 until output.length -1) {
       val observation = output(i)
       val splitObs: StringTokenizer = new StringTokenizer(observation, " \t\n\r\f:")
 
-      vectory :+ atof(splitObs.nextToken)
+      vectory = vectory :+ atof(splitObs.nextToken)
       val counter: Int = splitObs.countTokens / 2
       val x: Array[svm_node] = new Array[svm_node](counter)
 
@@ -147,7 +139,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
         j += 1
       }
       if (counter > 0) max_index = Math.max(max_index, x(counter - 1).index)
-      vectorx :+ x
+      vectorx = vectorx :+ x
     }
 
     prob.l = vectory.size

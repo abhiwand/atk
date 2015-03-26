@@ -91,7 +91,7 @@ class LibSvmScorePlugin extends SparkCommandPlugin[LibSvmScoreArgs, DoubleValue]
       i <- valueIndexPairArray
       value = i._1
       index = i._2
-      if index != 0 && value != 0
+      if value != 0
     } yield s"$index:$value"
     s"${valueIndexPairArray(0)._1} ${result.mkString(" ")}"
   }
