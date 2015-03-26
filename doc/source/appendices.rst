@@ -2,5 +2,7 @@
 Appendices
 ==========
 
-:doc:`appendix_application_conf` Sample `application.conf'
+.. toctree::
+
+    appendix_application_conf
 

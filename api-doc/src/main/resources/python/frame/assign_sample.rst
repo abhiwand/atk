@@ -29,27 +29,33 @@ random_seed : int (optional)
     Random seed used to generate the labels.
     Defaults to 0.
 
-Probability Validation and Floating Point Precision
----------------------------------------------------
+Probability Validation
+
+----------------------
 
 The sample percentages provided by the user are preserved to at least eight decimal places, but beyond this
 there may be small changes do to floating point imprecision.
 
 In particular:
-1. The engine validates that the sum of probabilities sums to 1.0 within eight decimal places and returns an error
-if the sum falls outside of this range.
-2. The probability of the final class is clamped so that each row receives a valid label with probability one.
+
+1.  The engine validates that the sum of probabilities sums to 1.0 within
+    eight decimal places and returns an error if the sum falls outside of this
+    range.
+#.  The probability of the final class is clamped so that each row receives a
+    valid label with probability one.
 
 
 Examples
 --------
-For this example, *my_frame* is a BigFrame object accessing a frame with data.
+For this example, *my_frame* is a Frame object accessing a frame with data.
 Append a new column *sample_bin* to the frame;
-Assign the value in the new column to "train", "test", or "validate"::
+Assign the value in the new column to "train", "test", or "validate":
 
-    my_frame.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
+.. code::
 
-Now *my_frame*, the frame accessed by BigFrame, has a new column named
+    >>> my_frame.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
+
+Now *my_frame*, the frame accessed by Frame, has a new column named
 "sample_bin" and each row contains one of the values "train", "test", or
 "validate".
 Values in the other columns are unaffected.

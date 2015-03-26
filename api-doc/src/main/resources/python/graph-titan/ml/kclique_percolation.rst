@@ -28,8 +28,9 @@ result is written out.
 
 Examples
 --------
-::
 
-    graph.ml.kclique_percolation(4, 'community')
+.. code::
+
+    >>> graph.ml.kclique_percolation(4, 'community')
 
 

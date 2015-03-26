@@ -55,36 +55,40 @@ dictionary
 
 Examples
 --------
+Generate the prior and posterior histograms for LBP:
+
 .. only:: html
 
-    Generate the prior and posterior histograms for LBP::
+    .. code::
 
-        graph = BigGraph(...)
-        graph.ml.loopy_belief_propagation(...)
-        results = graph.query.histogram(prior_property_list ="value", posterior_property_list = "lbp_posterior",  property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
+        >>> graph = BigGraph(...)
+        >>> graph.ml.loopy_belief_propagation(...)
+        >>> results = graph.query.histogram(prior_property_list ="value", posterior_property_list = "lbp_posterior",  property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
 
-        results["prior_histograms"]
-        results["posterior_histograms"]
+        >>> results["prior_histograms"]
+        >>> results["posterior_histograms"]
 
 .. only:: latex
 
-    Generate the prior and posterior histograms for LBP::
+    .. code::
 
-        graph = BigGraph(...)
-        graph.ml.loopy_belief_propagation(...)
-        results = graph.query.histogram( \\
-            prior_property_list ="value", \\
-            posterior_property_list = "lbp_posterior", \\
-            property_type = "VERTEX_PROPERTY", \\
-            vertex_type_property_key="vertex_type", \\
-            split_types=["TR", "VA", "TE"], \\
-            histogram_buckets=30)
+        >>> graph = BigGraph(...)
+        >>> graph.ml.loopy_belief_propagation(...)
+        >>> results = graph.query.histogram(
+        ...     prior_property_list ="value",
+        ...     posterior_property_list = "lbp_posterior",
+        ...     property_type = "VERTEX_PROPERTY",
+        ...     vertex_type_property_key="vertex_type",
+        ...     split_types=["TR", "VA", "TE"],
+        ...     histogram_buckets=30)
 
-        results["prior_histograms"]
-        results["posterior_histograms"]
+        >>> results["prior_histograms"]
+        >>> results["posterior_histograms"]
 
-If you want compute only the prior histograms use::
+If you want compute only the prior histograms use:
 
-    results = graph.query.histogram(prior_property_list ="value")
+.. code::
+
+    >>> results = graph.query.histogram(prior_property_list ="value")
 
 

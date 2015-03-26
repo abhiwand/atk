@@ -11,14 +11,16 @@ Covariance of the two columns
 
 Notes
 -----
-This function applies only to columns containing numerical data.
+This method applies only to columns containing numerical data.
 
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single
-column named *obs*::
+column named *obs*:
 
-    cov = my_frame.covariance(['col_0', 'col_1'])
+.. code::
 
-    print(cov)
+    >>> cov = my_frame.covariance(['col_0', 'col_1'])
+
+    >>> print(cov)
 

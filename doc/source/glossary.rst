@@ -88,7 +88,7 @@ Glossary
         dependencies amongst a set of random variables with a directed acyclic
         graph.
 
-        Contrast with :term:`Markov Random Field`
+        Contrast with :term:`Markov Random Fields`
 
     Belief Propagation
 
@@ -223,6 +223,16 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
+    Degree
+
+        The degree of a vertex is the number of edges incident to the vertex.
+        Loops are counted twice.
+        The maximum and minimum degree of a graph are the maximum and minimum
+        degree of its vertices.
+
+        For more information see: `Wikipedia\: Degree (graph theory)
+        <https://en.wikipedia.org/wiki/Degree_(graph_theory)>`__.
+
     Deprecated
 
         See :term:`API Maturity Tags`.  |DEPRECATED|
@@ -341,7 +351,7 @@ Glossary
     Frame (capital F)
 
         A class object with the functionality to manipulate the data in a
-        :term:`frame`.
+        :term:`frame (lower case f)`.
 
     GaBP
 
@@ -376,6 +386,22 @@ Glossary
 
         A random group of vertices displaying a :term:`Gaussian distribution`
         of one or more sets of properties.
+
+    Global Clustering Coefficient
+
+        The global clustering coefficient is based on triplets of vertices.
+        A triplet consists of three vertices that are connected by either two
+        (open triplet) or three (closed triplet) undirected edges.
+        A triangle consists of three closed triplets, one centered on each of
+        the vertices.
+        The global clustering coefficient is the number of closed triplets
+        (or 3 x triangles) over the total number of triplets (both open and
+        closed).
+
+        For more information see: `Wikipedia\: Global Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Global_clustering_coefficient>`__.
+
+        See also :term:`Local Clustering Coefficient`.
 
     Graph
 
@@ -413,8 +439,9 @@ Glossary
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
 
-        For more information, see :ref:`the article "Graph Analytics"
-        by Pak Chung Wong <vacommunity.org/article26>`.
+        For more information, see the article
+        `Graph Analytics <http://vacommunity.org/article26>`__
+        by Pak Chung Wong.
 
     Graph Database Directions
 
@@ -584,6 +611,16 @@ Glossary
     list
 
         A sequence of objects in a single-dimension array.
+
+    Local Clustering Coefficient
+
+        The local clustering coefficient of a vertex in a graph quantifies how
+        close its neighbors are to being a clique (complete graph).
+
+        For more information see: `Wikipedia\: Local Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Local_clustering_coefficient>`__.
+
+        See also :term:`Global Clustering Coefficient`.
 
     Loopy Belief Propagation
 
@@ -841,6 +878,7 @@ Glossary
         A Python data type and a class for general string operations.
 
     Superstep
+    Supersteps
 
         A single iteration of an algorithm.
 
@@ -883,8 +921,6 @@ Glossary
     Transactional Functionality
 
         See :term:`Transaction Processing`.
-
-    Triangle Count
 
     Undirected Graph
 

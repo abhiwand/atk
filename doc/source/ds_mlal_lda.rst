@@ -169,9 +169,9 @@ and will likely depend on the characteristics of the text being analyzed.
 Typical text analytics experiments will try a variety of approaches on a small
 subset of the data to determine what works best.
 
-See :ref:`figure_1`.
+See :ref:`ds_mlal_lda_fig_1`.
 
-.. _Figure_1:
+.. _ds_mlal_lda_fig_1:
 
 .. figure:: ds_mlal_lda_1.*
     :align: center

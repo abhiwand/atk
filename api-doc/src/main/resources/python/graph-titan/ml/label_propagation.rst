@@ -74,31 +74,35 @@ Examples
 --------
 .. only:: html
 
-    ::
+    .. code::
 
-        g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
+        >>> g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
 
-    The expected output is like this::
+    The expected output is like this:
+    
+    .. code::
 
         {u'value': u'======Graph Statistics======\\nNumber of vertices: 600\\nNumber of edges: 15716\\n\\n======LP Configuration======\\nlambda: 0.000000\\nanchorThreshold: 0.900000\\nconvergenceThreshold: 0.000000\\nmaxSupersteps: 10\\nbidirectionalCheck: false\\n\\n======Learning Progress======\\nsuperstep = 1\\tcost = 0.008692\\nsuperstep = 2\\tcost = 0.008155\\nsuperstep = 3\\tcost = 0.007809\\nsuperstep = 4\\tcost = 0.007544\\nsuperstep = 5\\tcost = 0.007328\\nsuperstep = 6\\tcost = 0.007142\\nsuperstep = 7\\tcost = 0.006979\\nsuperstep = 8\\tcost = 0.006833\\nsuperstep = 9\\tcost = 0.006701\\nsuperstep = 10\\tcost = 0.006580'}
 
 .. only:: latex
 
-    ::
+    .. code::
 
-        g.ml.label_propagation(
-            vertex_value_property_list = "input_value",     \\
-            edge_value_property_list  = "weight",           \\
-            input_edge_label_list = "edge",                 \\
-            output_vertex_property_list = "lp_posterior",   \\
-            vector_value = "true",                          \\
-            max_supersteps = 10,                            \\
-            convergence_threshold = 0.0,                    \\
-            anchor_threshold = 0.9,                         \\
-            lp_lambda = 0.5,                                \\
-            bidirectional_check = False)
+        >>> g.ml.label_propagation(
+        ...     vertex_value_property_list = "input_value",
+        ...     edge_value_property_list  = "weight",
+        ...     input_edge_label_list = "edge",
+        ...     output_vertex_property_list = "lp_posterior",
+        ...     vector_value = "true",
+        ...     max_supersteps = 10,
+        ...     convergence_threshold = 0.0,
+        ...     anchor_threshold = 0.9,
+        ...     lp_lambda = 0.5,
+        ...     bidirectional_check = False)
 
-    The expected output is like this::
+    The expected output is like this:
+    
+    .. code::
 
         {u'value': u'======Graph Statistics======\\n
         Number of vertices: 600\\n

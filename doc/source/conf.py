@@ -60,7 +60,7 @@ rst_epilog = """
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
-.. |LSI|    replace:: :abbr:`LSI (Latent Semantic Indexing)1
+.. |LSI|    replace:: :abbr:`LSI (Latent Semantic Indexing)`
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
@@ -101,6 +101,12 @@ extensions = [
 #    'sphinx.ext.viewcode',
     'numpydoc',
 ]
+# This is to eliminate the warning that appears saying there is a reference
+# to a class but looking for a rst.
+numpydoc_class_members_toctree = False
+
+# This will eliminate the methods and attributes tables
+# numpydoc_show_class_members = False
 
 # This is a flag to print out To-Do items
 todo_include_todos = False

@@ -35,7 +35,7 @@ bin_column_name : str (optional)
 Notes
 -----
 #)  Unicode in column names is not supported and will likely cause the
-    drop_frames() function (and others) to fail!
+    drop_frames() method (and others) to fail!
 #)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
@@ -51,9 +51,11 @@ array of floats | cutoffs
 
 Examples
 --------
-Given a frame with column *a* accessed by a Frame object *my_frame*::
+Given a frame with column *a* accessed by a Frame object *my_frame*:
 
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> my_frame.inspect( n=11 )
 
       a:int32
     /---------/
@@ -72,10 +74,12 @@ Given a frame with column *a* accessed by a Frame object *my_frame*::
 Modify the frame, adding a column showing what bin the data is in.
 The data should be grouped into a maximum of five bins.
 Note that each bin will have the same quantity of members (as much as
-possible)::
+possible):
 
-    cutoffs = my_frame.bin_column_equal_depth('a', 5, 'aEDBinned')
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> cutoffs = my_frame.bin_column_equal_depth('a', 5, 'aEDBinned')
+    >>> my_frame.inspect( n=11 )
 
       a:int32     aEDBinned:int32
     /-----------------------------/
@@ -91,5 +95,5 @@ possible)::
        55                 4
        89                 4
 
-      print cutoffs
-      [1.0, 2.0, 5.0, 13.0, 34.0, 89.0]
+    >>> print cutoffs
+    [1.0, 2.0, 5.0, 13.0, 34.0, 89.0]
