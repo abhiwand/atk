@@ -122,6 +122,8 @@ trait Engine {
 
   def deleteModel(id: Identifier)(implicit invocation: Invocation): Future[Unit]
 
+  def ScoreModel(id: Identifier, values: Vector[Double])(implicit invocation: Invocation): Future[Double]
+
   /**
    * Cancel a running command
    * @param id command id
