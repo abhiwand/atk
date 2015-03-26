@@ -61,3 +61,6 @@ case class BoolValue(value: Boolean)
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
  */
 case class SingletonOrListValue[T](value: List[T])
+
+
+case class VectorValue(value: Vector[Double])
