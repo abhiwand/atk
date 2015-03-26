@@ -62,5 +62,4 @@ case class BoolValue(value: Boolean)
  */
 case class SingletonOrListValue[T](value: List[T])
 
-
 case class VectorValue(value: Vector[Double])

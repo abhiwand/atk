@@ -147,30 +147,30 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 }
               }
           } ~
-        pathPrefix(prefix/ LongNumber / "score") {
-          id =>
-            pathEnd {
-              requestUri {
-                uri =>
-                  post {
-                    import spray.httpx.SprayJsonSupport._
-                    implicit val format = DomainJsonProtocol.vectorValueFormat
-                    entity(as[VectorValue]) {
-                      values =>
-                          println(s">>>>>>>>>>>>>> $id, $values " )
+          pathPrefix(prefix / LongNumber / "score") {
+            id =>
+              pathEnd {
+                requestUri {
+                  uri =>
+                    post {
+                      import spray.httpx.SprayJsonSupport._
+                      implicit val format = DomainJsonProtocol.vectorValueFormat
+                      entity(as[VectorValue]) {
+                        values =>
+                          println(s">>>>>>>>>>>>>> $id, $values ")
                           complete("1234")
 
-//                        onComplete(engine.score(id, values)) {
-//                          case Success(model) => complete(decorate(uri + "/" + model.id, model))
-//                          case Failure(ex) => ctx => {
-//                            ctx.complete(500, ex.getMessage)
-//                          }
-//                        }
+                        //                        onComplete(engine.score(id, values)) {
+                        //                          case Success(model) => complete(decorate(uri + "/" + model.id, model))
+                        //                          case Failure(ex) => ctx => {
+                        //                            ctx.complete(500, ex.getMessage)
+                        //                          }
+                        //                        }
+                      }
                     }
-                  }
+                }
               }
-            }
-        }
+          }
     }
 
   }
