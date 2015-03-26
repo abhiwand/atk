@@ -92,7 +92,7 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
     val framePartitions = frameRdd.partitions.length
 
     // Frame compression ratio prevents us from under-estimating actual file size for compressed formats like Parquet
-    val approxFileSize = fileStorage.size(path)*SparkEngineConfig.frameCompressionRatio
+    val approxFileSize = fileStorage.size(path) * SparkEngineConfig.frameCompressionRatio
     val desiredPartitions = partitionsFromFileSize(approxFileSize.toLong)
 
     val delta = Math.abs(desiredPartitions - framePartitions) / framePartitions.toDouble

@@ -40,7 +40,7 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
     new GenericRow(Array[Any](3d, 0.6d, 0, 7, Vector(9d, 10d).asInstanceOf[Any], Vector(11d, 12d).asInstanceOf[Any])),
     new GenericRow(Array[Any](4d, 0.8d, 1, 8, Vector(-2d, 3d).asInstanceOf[Any], Vector(-4d, -5d).asInstanceOf[Any])),
     new GenericRow(Array[Any](5d, Double.NaN, 2, Double.NaN, Vector(6d, Double.NaN).asInstanceOf[Any], Vector(Double.NaN, 7d).asInstanceOf[Any])),
-    new GenericRow(Array[Any](Double.NaN, Double.NaN, Double.NaN, Double.NaN, Vector(Double.NaN, Double.NaN), Vector(Double.NaN, Double.NaN)))
+    new GenericRow(Array[Any](null, null, null, null, null, null))
   )
 
   val inputSchema = FrameSchema(List(
