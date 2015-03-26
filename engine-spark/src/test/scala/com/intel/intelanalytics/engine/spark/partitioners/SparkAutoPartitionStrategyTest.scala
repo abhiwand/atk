@@ -27,7 +27,7 @@ import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitionStra
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
 
-class SparkAutoPartitionStrategyTest extends FlatSpec with Matchers  {
+class SparkAutoPartitionStrategyTest extends FlatSpec with Matchers {
   "getPartitionStrategy" should "return the Spark auto-partitioning strategy" in {
 
     SparkAutoPartitionStrategy.getRepartitionStrategy("disabled") should equal(Disabled)

@@ -269,7 +269,7 @@ trait SparkEngineConfig extends EventLogging {
    * compression-ratio=uncompressed-size/compressed-size
    * e.g., compression-ratio=4 if  uncompressed size is 20MB, and compressed size is 5MB
    */
-  val frameCompressionRatio : Double =  {
+  val frameCompressionRatio: Double = {
     val ratio = config.getDouble("intel.analytics.engine-spark.auto-partitioner.repartition.frame-compression-ratio")
     if (ratio <= 0) throw new RuntimeException("frame-compression-ratio should be greater than zero")
     ratio
