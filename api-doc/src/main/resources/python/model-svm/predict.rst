@@ -1,12 +1,14 @@
 Make new frame with additional column for predicted label.
 
-Predict the labels for a test frame and create a new frame revision with existing columns and a new predicted label's column.
+Predict the labels for a test frame and create a new frame revision with
+existing columns and a new predicted label's column.
 
 Parameters
 ----------
 predict_frame : Frame
-    frame whose labels are to be predicted.
-    By default, predict is run on the same columns over which the model is trained.
+    A frame whose labels are to be predicted.
+    By default, predict is run on the same columns over which the model is
+    trained.
     The user could specify column names too if needed.
 
 observation_column : list of str (Optional)
@@ -22,9 +24,21 @@ Frame
 Examples
 --------
 
-.. code::
+.. only:: html
 
-    >>> model = ia.SvmModel(name='mySVM')
-    >>> model.train(train_frame, ['name_of_observation_column1'], 'name_of_label_column')
-    >>> predicted_frame = model.predict(predict_frame, ['predict_for_observation_column'])
+    .. code::
+
+        >>> my_model = ia.SvmModel(name='mySVM')
+        >>> my_model.train(train_frame, ['name_of_observation_column1'], 'name_of_label_column')
+        >>> predicted_frame = my_model.predict(predict_frame, ['predict_for_observation_column'])
+
+.. only:: latex
+
+    .. code::
+
+        >>> my_model = ia.SvmModel(name='mySVM')
+        >>> my_model.train(train_frame, ['name_of_observation_column1'],
+        ... 'name_of_label_column')
+        >>> predicted_frame = my_model.predict(predict_frame,
+        ... ['predict_for_observation_column'])
 
