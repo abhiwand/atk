@@ -7,10 +7,6 @@ Parameters
 columns: [ str | list of str ]
     column name OR list of column names to be removed from the frame
 
-Returns
--------
-None
-
 Notes
 -----
 Cannot delete all columns from a frame. At least one column needs to remain.

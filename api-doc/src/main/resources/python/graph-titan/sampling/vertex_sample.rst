@@ -14,10 +14,8 @@ Parameters
 ----------
 size : int
     The number of vertices to sample from the graph.
-
 sample_type : str
     The type of vertex sample among: ['uniform', 'degree', 'degreedist'].
-
 seed : int (optional)
     Random seed value.
 

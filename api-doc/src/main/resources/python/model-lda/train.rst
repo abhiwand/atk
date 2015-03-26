@@ -4,24 +4,19 @@ Parameters
 ----------
 frame : Frame
     Input frame data.
-
 doc : str
     Column Name for documents.
     Column should contain a str value.
-
 word : str
     Column name for words.
     Column should contain a str value.
-
 word_count : str
     Column name for word count.
     Column should contain an int64 value.
-
 max_interations : int (optional)
     The maximum number of iterations that the algorithm will execute.
     The valid value range is all positive int.
     Default is 20.
-
 alpha : float (optional)
     The hyper-parameter for document-specific distribution over topics.
     Mainly used as a smoothing parameter in Bayesian inference.
@@ -30,7 +25,6 @@ alpha : float (optional)
     concentrated on a small subset of topics.
     Valid value range is all positive float.
     Default is 0.1.
-
 beta : float (optional)
     The hyper-parameter for word-specific distribution over topics.
     Mainly used as a smoothing parameter in Bayesian inference.
@@ -39,7 +33,6 @@ beta : float (optional)
     subset of words.
     Valid value range is all positive float.
     Default is 0.1.
-
 convergence_threshold : float (optional)
     The amount of change in LDA model parameters that will be tolerated
     at convergence.
@@ -47,7 +40,6 @@ convergence_threshold : float (optional)
     before it reaches the maximum number of supersteps.
     Valid value range is all positive float and 0.0.
     Default is 0.001.
-
 evaluate_cost : bool (optional)
     "True" means turn on cost evaluation and "False" means turn off
     cost evaluation.
@@ -55,7 +47,6 @@ evaluate_cost : bool (optional)
     For time-critical applications, this option allows user to turn off cost
     function evaluation.
     Default is "False".
-
 num_topics : int (optional)
     The number of topics to identify in the LDA model.
     Using fewer topics will speed up the computation, but the extracted topics
@@ -71,10 +62,8 @@ dict : results dictionary
 
     Frame : doc_results
         Frame with LDA results.
-
     Frame : word_results
         Frame with LDA results.
-
     str : report
        The configuration and learning curve report for Latent Dirichlet
        Allocation as a multiple line str.
@@ -87,7 +76,7 @@ Examples
     >>> my_model = LdaModel()
     >>> results = my_model.train(frame, 'doc_column_name', 'word_column_name', 'word_count_column_name', num_topics = 3)
 
-The variable ``results`` is a dictionary with three keys:
+The variable *results* is a dictionary with three keys:
 
 .. code::
 

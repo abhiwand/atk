@@ -13,21 +13,17 @@ Parameters
 prior_property : str
     Name of the vertex property which contains the prior belief for the
     vertex.
-    
 posterior_property : str
     Name of the vertex property which will contain the posterior belief for
     each vertex.
-
 edge_weight_property : str (optional)
     The edge property that contains the edge weight for each edge.
     Default is 1.
-
 convergence_threshold : double (optional)
     Minimum average change in posterior beliefs between supersteps.
     Belief propagation will terminate when the average change in posterior
     beliefs between supersteps is less than or equal to this threshold.
     Default is 0.
-
 max_iterations : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid range is all positive int.
@@ -37,7 +33,6 @@ Returns
 -------
 str : Multiple line string
     Progress report for belief propagation.
-
 
 Examples
 --------
