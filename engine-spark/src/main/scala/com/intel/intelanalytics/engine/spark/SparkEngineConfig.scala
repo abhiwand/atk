@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.engine.spark.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
@@ -227,6 +228,63 @@ trait SparkEngineConfig extends EventLogging {
       FileSizeToPartitionSize(config.getBytes("upper-bound"), partitions)
     })
     unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
+  }
+
+  /**
+   * Minimum number of partitions that can be set by the Spark auto-partitioner
+   */
+  val minPartitions: Int = 2
+
+  /**
+   * Spark re-partitioning strategy
+   */
+  val repartitionStrategy: SparkAutoPartitionStrategy.PartitionStrategy = {
+    val strategyName = config.getString("intel.analytics.engine-spark.auto-partitioner.repartition.strategy")
+    val strategy = SparkAutoPartitionStrategy.getRepartitionStrategy(strategyName)
+
+    info("Setting Spark re-partitioning strategy to: " + strategy)
+    strategy
+  }
+
+  /**
+   * Spark re-partitioning threshold
+   *
+   * Re-partition RDD if the percentage difference between actual and desired partitions exceeds threshold
+   */
+  val repartitionThreshold: Double = {
+    val repartitionPercentage = config.getInt("intel.analytics.engine-spark.auto-partitioner.repartition.threshold-percent")
+    if (repartitionPercentage >= 0 && repartitionPercentage <= 100) {
+      repartitionPercentage / 100d
+    }
+    else {
+      throw new RuntimeException(s"Repartition threshold-percent should not be less than 0, or greater than 100")
+    }
+  }
+
+  /**
+   * Frame compression ratio
+   *
+   * Used to estimate actual size of the frame for compressed file formats like Parquet.
+   * This ratio prevents us from under-estimating the number of partitions for compressed files.
+   * compression-ratio=uncompressed-size/compressed-size
+   * e.g., compression-ratio=4 if  uncompressed size is 20MB, and compressed size is 5MB
+   */
+  val frameCompressionRatio : Double =  {
+    val ratio = config.getDouble("intel.analytics.engine-spark.auto-partitioner.repartition.frame-compression-ratio")
+    if (ratio <= 0) throw new RuntimeException("frame-compression-ratio should be greater than zero")
+    ratio
+  }
+
+  /**
+   * Default Spark tasks-per-core
+   *
+   * Used by some plugins to set the number of partitions to default-tasks-per-core*Spark cores
+   * The performance of some plugins (e.g. group by) degrades significantly if there are too many partitions
+   * relative to available cores (especially in the reduce phase)
+   */
+  val maxTasksPerCore: Int = {
+    val tasksPerCore = config.getInt("intel.analytics.engine-spark.auto-partitioner.default-tasks-per-core")
+    if (tasksPerCore > 0) tasksPerCore else throw new RuntimeException(s"Default tasks per core should be greater than 0")
   }
 
   /**

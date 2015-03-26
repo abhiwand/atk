@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.groupby
 
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.aggregators._
+import com.intel.intelanalytics.engine.spark.partitioners.SparkCoresPartitioner
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
@@ -61,11 +62,12 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    */
   def aggregateByKey(): RDD[Rows.Row] = {
     val zeroValues = columnAggregators.map(_.aggregator.zero)
+    val numPartitions = SparkCoresPartitioner.getNumPartitions(pairedRDD)
 
     pairedRDD.map {
       case (key, row) =>
         mapAll(key, row)
-    }.aggregateByKey[Seq[Any]](zeroValues)(
+    }.aggregateByKey[Seq[Any]](zeroValues, numPartitions)(
       (aggregateValues, columnValues) => addAll(aggregateValues, columnValues),
       (aggregateValues1, aggregateValues2) => mergeAll(aggregateValues1, aggregateValues2)
     ).map {
