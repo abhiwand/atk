@@ -33,5 +33,4 @@ induced subgraph:
 
 .. code::
 
-    >>> graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-    >>> subgraph = graph.sampling.vertex_sample(1000, 'uniform')
+    >>> my_subgraph = my_graph.sampling.vertex_sample(1000, 'uniform')

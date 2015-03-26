@@ -56,9 +56,8 @@ Generate the prior and posterior histograms for LBP:
 
     .. code::
 
-        >>> graph = BigGraph(...)
-        >>> graph.ml.loopy_belief_propagation(...)
-        >>> results = graph.query.histogram(prior_property_list ="value", posterior_property_list = "lbp_posterior",  property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
+        >>> my_graph.ml.loopy_belief_propagation(...)
+        >>> results = my_graph.query.histogram(prior_property_list ="value", posterior_property_list = "lbp_posterior",  property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
 
         >>> results["prior_histograms"]
         >>> results["posterior_histograms"]
@@ -67,9 +66,8 @@ Generate the prior and posterior histograms for LBP:
 
     .. code::
 
-        >>> graph = BigGraph(...)
-        >>> graph.ml.loopy_belief_propagation(...)
-        >>> results = graph.query.histogram(
+        >>> my_graph.ml.loopy_belief_propagation(...)
+        >>> results = my_graph.query.histogram(
         ...     prior_property_list ="value",
         ...     posterior_property_list = "lbp_posterior",
         ...     property_type = "VERTEX_PROPERTY",
@@ -84,6 +82,6 @@ If you want compute only the prior histograms use:
 
 .. code::
 
-    >>> results = graph.query.histogram(prior_property_list ="value")
+    >>> results = my_graph.query.histogram(prior_property_list ="value")
 
 

@@ -28,8 +28,7 @@ Get the first two outgoing edges of the vertex whose source equals 5767244:
 
 .. code::
 
-    >>> mygraph = BigGraph(...)
-    >>> results = mygraph.query.gremlin("g.V('source', 5767244).outE[0..1]")
+    >>> results = my_graph.query.gremlin("g.V('source', 5767244).outE[0..1]")
     >>> print results["results"]
 
 .. only:: html
