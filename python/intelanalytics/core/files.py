@@ -58,7 +58,7 @@ class CsvFile(DataFile):
     Returns
     -------
     class : CsvFile object
-        A class which holds both the name and schema of a :term:`CSV` file.
+        A class which holds both the name and schema of a CSV file.
 
     Examples
     --------
@@ -226,7 +226,7 @@ class LineFile(DataFile):
     Returns
     -------
     class : LineFile object
-        A class which holds the name of a :term:`Line` file.
+        A class which holds the name of a Line file.
 
     Examples
     --------
@@ -297,11 +297,11 @@ class JsonFile(MultiLineFile):
     Returns
     -------
     class : JsonFile object
-        An object which holds both the name and tag of a :term:`JSON` file.
+        An object which holds both the name and tag of a JSON file.
 
     Examples
     --------
-    Give a raw data file named 'raw_data.json' located at
+    Given a raw data file named 'raw_data.json' located at
     'hdfs://localhost.localdomain/user/iauser/data/'.
     It consists of a 3 top level json objects with a single value each called
     obj. Each object contains the attributes color, size, and shape.
@@ -433,7 +433,7 @@ class XmlFile(MultiLineFile):
     Returns
     -------
     class : XmlFile object
-        An object which holds both the name and tag of a :term:`XML` file.
+        An object which holds both the name and tag of a XML file.
 
     Examples
     --------

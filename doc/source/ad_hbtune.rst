@@ -46,14 +46,15 @@ Remember to sync these changes to all servers in the cluster.
     in write-heavy workloads.
     This setting needs to be tuned carefully because it increases the number of
     files to compact.
-    See `the HBase Administration Cookbook`_ (Chapter 9)
+    See `The HBase Administration Cookbook`_ (Chapter 9)
 
 #.  Increase region server handler count.
     If the workload has many concurrent clients, increasing the number of
     handlers can improve performance.
     However, too many handlers will lead to out of memory errors.
-    See `the HBase Administration Cookbook`_ (Chapter 9)
+    See `The HBase Administration Cookbook <http://library.intel.com/Catalog/CatalogItemDetails.aspx?id=225983>`__ (Chapter 9)
 
 Other recommendations include turning off automatic compactions and doing it
 manually: http://hbase.apache.org/book.html#managed.compactions.
 
+.. _The HBase Administration Cookbook: http://library.intel.com/Catalog/CatalogItemDetails.aspx?id=225983

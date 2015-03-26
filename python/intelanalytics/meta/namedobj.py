@@ -117,14 +117,15 @@ class _NamedObjectsFunctionFactory(object):
 
         Examples
         --------
-        ::
 
-            my_{term}.name
+        .. code::
+
+            >>> my_{term}.name
 
             "csv_data"
 
-            my_{term}.name = "cleaned_data"
-            my_{term}.name
+            >>> my_{term}.name = "cleaned_data"
+            >>> my_{term}.name
 
             "cleaned_data"
         """.format(term=self._term)

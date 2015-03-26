@@ -39,6 +39,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ HBaseAdminFactory, SparkGra
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
+import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.util.{ DiskSpaceReporter, JvmVersionReporter }

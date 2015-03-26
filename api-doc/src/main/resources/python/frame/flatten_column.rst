@@ -30,35 +30,45 @@ The "original_data"::
 
 .. only:: html
 
-    I run my commands to bring the data in where I can work on it::
+    I run my commands to bring the data in where I can work on it:
+    
+    .. code::
 
-        my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', str)], delimiter='-')
-        my_frame = Frame(source=my_csv)
+        >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', str)], delimiter='-')
+        >>> my_frame = Frame(source=my_csv)
 
 .. only:: latex
 
-    I run my commands to bring the data in where I can work on it::
+    I run my commands to bring the data in where I can work on it:
+    
+    .. code::
 
-        my_csv = CsvFile("original_data.csv", schema=[('a', int32), \\
-            ('b', str)], delimiter='-')
-        my_frame = Frame(source=my_csv)
+        >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),
+        ...    ('b', str)], delimiter='-')
+        >>> my_frame = Frame(source=my_csv)
 
-I look at it and see::
+I look at it and see:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       a:int32   b:str
     /------------------------------/
         1       solo, mono, single
         2       duo, double
 
-Now, I want to spread out those sub-strings in column *b*::
+Now, I want to spread out those sub-strings in column *b*:
 
-    my_frame.flatten_column('b')
+.. code::
 
-Now I check again and my result is::
+    >>> my_frame.flatten_column('b')
 
-    my_frame.inspect()
+Now I check again and my result is:
+
+.. code::
+
+    >>> my_frame.inspect()
 
       a:int32   b:str
     /------------------/

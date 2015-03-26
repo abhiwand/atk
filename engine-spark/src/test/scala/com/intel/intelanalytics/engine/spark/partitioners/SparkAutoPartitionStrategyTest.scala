@@ -21,25 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.partitioners
 
-import org.scalatest.FlatSpec
+import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitionStrategy._
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ FlatSpec, Matchers }
 
-class SparkAutoPartitionerTest extends FlatSpec {
+class SparkAutoPartitionStrategyTest extends FlatSpec with Matchers {
+  "getPartitionStrategy" should "return the Spark auto-partitioning strategy" in {
 
-  val partitioner = new SparkAutoPartitioner(null)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("disabled") should equal(Disabled)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("shrink_only") should equal(ShrinkOnly)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("shrink_or_grow") should equal(ShrinkOrGrow)
 
-  "SparkAutoPartitioner" should "calculate expected partitioning for VERY small files" in {
-    assert(partitioner.partitionsFromFileSize(1) == 30)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("DISABLED") should equal(Disabled)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("SHRINK_ONLY") should equal(ShrinkOnly)
+    SparkAutoPartitionStrategy.getRepartitionStrategy("SHRINK_OR_GROW") should equal(ShrinkOrGrow)
   }
-
-  it should "calculate the expected partitioning for small files" in {
-    val tenMb = 10000000
-    assert(partitioner.partitionsFromFileSize(tenMb) == 90)
-  }
-
-  it should "calculate max-partitions for VERY LARGE files" in {
-    assert(partitioner.partitionsFromFileSize(Long.MaxValue) == 10000)
-  }
-
 }
