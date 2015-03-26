@@ -9,28 +9,23 @@ prior_property_list : str
     Name of the property containing the vector of prior probabilities.
     The prior probabilities are represented in the graph as a delimited list
     of real values between [0,1], one for each feature dimension.
-
 posterior_property_list : str (optional)
     Name of the property containing the vector of posterior probabilities.
     The posterior probabilities are represented in the graph as a delimited
     list of real values between [0,1], one for each feature dimension.
-
 property_type : str (optional)
     The type of property for the prior and posterior values.
     Valid values are either "VERTEX_PROPERTY" or "EDGE_PROPERTY".
     The default value is "VERTEX_PROPERTY".
-
 vertex_type_property_key : str (optional)
     The property name for vertex type.
     The default value "vertex_type".
     This property indicates whether the data is in the train, validation, or
     test splits.
-
 split_types : list of str (optional)
     The list of split types to include in the report.
     The default value is ["TR", "VA", "TE"] for train (TR), validation (VA),
     and test (TE) splits.
-
 histogram_buckets : int32 (optional)
     The number of buckets to plot in histograms.
     The default value is 30.

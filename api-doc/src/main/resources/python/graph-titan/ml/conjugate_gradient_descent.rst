@@ -14,31 +14,24 @@ edge_value_property_list : list of str
     The edge properties which contain the input edge values.
     A comma-separated list of property names when declaring
     more than one edge property.
-
 input_edge_label_list : list of str
     The name of edge label.
-
 output_vertex_property_list : list of str  
     The list of vertex properties to store output vertex values.
-
 vertex_type_property_key : str
     The name of vertex property which contains vertex type.
     Vertices must have a property to identify them as either left-side
     ("L") or right-side ("R").
-
 edge_type_property_key : str
     The name of edge property which contains edge type.
-
 vector_value : str (optional)
     "True" means a vector as vertex value is supported,
     "False" means a vector as vertex value is not supported.
     Default is "False".
-
 max_supersteps : int (optional)
     The maximum number of supersteps (iterations) that the algorithm
     will execute.
     Default is 20.
-
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
@@ -46,7 +39,6 @@ convergence_threshold : float (optional)
     before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
     Default is 0.
-
 cgd_lambda : float (optional)
     The tradeoff parameter that controls the strength of regularization.
     Larger value implies stronger regularization that helps prevent
@@ -55,25 +47,21 @@ cgd_lambda : float (optional)
     The value is usually determined by cross validation (CV).
     The valid value range is all positive float and zero.
     Default is 0.065.
-
 feature_dimension : int (optional)
     The length of feature vector to use in CGD model.
     Larger value in general results in more accurate parameter estimation,
     but slows down the computation.
     The valid value range is all positive int.
     Default is 3.
-
 learning_curve_output_interval : int (optional)
     The learning curve output interval.
     Each CGD iteration is composed of 2 supersteps.
     Default is 1 (means two supersteps).
-
 validate_graph_structure : bool (optional)
     Checks if the graph meets certain structural requirements before starting
     the algorithm: at every vertex, the in-degree equals the out-degree.
     This algorithm is intended for undirected graphs.
     Therefore, this is a necessary, but insufficient, check for valid input.
-
 bias_on : bool (optional)
     True means turn on the update for bias term and False means turn off
     the update for bias term.
@@ -82,7 +70,6 @@ bias_on : bool (optional)
     Turning it off disables term update and treats the value of
     bias term as 0.
     Default is False.
-
 max_value : float (optional)
     The maximum edge weight value.
     If an edge weight is larger than this value, the algorithm will throw an
@@ -90,7 +77,6 @@ max_value : float (optional)
     This option is mainly for graph integrity check.
     Valid value range is all float.
     Default is Infinity.
-
 min_value : float (optional)
     The minimum edge weight value.
     If an edge weight is smaller than this value, the algorithm will throw an
@@ -102,7 +88,6 @@ min_value : float (optional)
 Notes
 -----
 Vertices must be identified as left-side ("L") or right-side ("R").
-See vertex rules.
 
 Returns
 -------

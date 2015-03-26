@@ -13,26 +13,25 @@ Parameters
 ----------
 left_column_names : [ str | list of str ]
     Names of columns used to create the left vector (A) for each row.
-    Names should refer to a single column of type vector, or two or more columns of numeric scalars.
-
+    Names should refer to a single column of type vector, or two or more
+    columns of numeric scalars.
 right_column_names : [ str | list of str ]
     Names of columns used to create right vector (B) for each row.
-    Names should refer to a single column of type vector, or two or more columns of numeric scalars.
-
+    Names should refer to a single column of type vector, or two or more
+    columns of numeric scalars.
 dot_product_column_name : str
     Name of column used to store the dot product.
-
 default_left_values : list of double (optional)
     Default values used to substitute null values in left vector.
     Default is None.
-
 default_right_values : list of double (optional)
     Default values used to substitute null values in right vector.
     Default is None.
 
 Notes
 -----
-If default_left_values or default_right_values are not specified, any null values will be replaced by zeros.
+If default_left_values or default_right_values are not specified, any null
+values will be replaced by zeros.
 
 Examples
 --------

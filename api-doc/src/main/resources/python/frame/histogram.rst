@@ -2,26 +2,24 @@ Compute the histogram for a column in a frame.
 
 Extended Summary
 ----------------
-Compute the histogram of the data in a column. The returned value is a Histogram object containing
-3 lists one each for; the cutoff points of the bins, size of each bin, and density of each bin.
-
+Compute the histogram of the data in a column.
+The returned value is a Histogram object containing 3 lists one each for:
+the cutoff points of the bins, size of each bin, and density of each bin.
 
 Parameters
 ----------
 column_name: str
-    name of column to be evaluated
-
+    Name of column to be evaluated.
 num_bins: int (optional)
-    number of bins in histogram
-    if omitted the system will use the Square-root choice `math.floor(math.sqrt(frame.row_count))`
-
+    Number of bins in histogram.
+    If omitted the system will use the Square-root choice
+    `math.floor(math.sqrt(frame.row_count))`.
 weight_column_name: str (optional)
-    name of column containing weights.
-    if omitted the system will weigh all observations equally
-
+    Name of column containing weights.
+    If omitted the system will weigh all observations equally.
 bin_type : str (optional)
     The binning algorithm to use ['equalwidth' | 'equaldepth'].
-    if omitted defaults to equalwidth.
+    If omitted defaults to equalwidth.
 
 Notes
 -----
@@ -32,7 +30,6 @@ elements with only 2 distinct values and the *num_bins* parameter is
 greater than 2, then the number of actual number of bins will only be 2.
 This is due to a restriction that elements with an identical value must
 belong to the same bin.
-
 
 Returns
 -------
