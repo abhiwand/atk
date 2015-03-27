@@ -7,6 +7,7 @@ import com.intel.intelanalytics.engine.plugin.Call
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameFileStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
+import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage, CommandPluginRegistry, CommandLoaderTrait }

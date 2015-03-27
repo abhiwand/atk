@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
 import com.intel.intelanalytics.engine.spark.command._
 import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
 

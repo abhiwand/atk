@@ -74,7 +74,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
 
     // compute covariance
     val useVectorOutput = frameSchema.columnDataType(arguments.dataColumnNames(0)) == DataTypes.vector
-    val covarianceRdd = Covariance.covarianceMatrix(frameRdd, arguments.dataColumnNames, useVectorOutput)
+    val covarianceRdd = CovarianceFunctions.covarianceMatrix(frameRdd, arguments.dataColumnNames, useVectorOutput)
 
     val outputSchema = getOutputSchema(arguments.dataColumnNames, useVectorOutput)
     tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
@@ -103,7 +103,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
       List(Column(dataColumnNames(0), DataTypes.vector))
     }
     else {
-      dataColumnNames.map(name => Column(name, DataTypes.float64)).toList
+      dataColumnNames.map(name => Column(name, DataTypes.float64))
     }
     FrameSchema(outputColumns)
   }

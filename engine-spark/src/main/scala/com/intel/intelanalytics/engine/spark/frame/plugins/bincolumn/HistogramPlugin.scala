@@ -120,7 +120,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     //sort by key return values
     val histSizes: Seq[Double] = bins.sortBy(_._1).map(_._2)
 
-    val totalSize: Double = histSizes.reduce(_ + _)
+    val totalSize: Double = histSizes.sum
     val frequencies: Seq[Double] = histSizes.map(size => size / totalSize)
 
     new Histogram(binnedResults.cutoffs, histSizes, frequencies)

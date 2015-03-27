@@ -264,8 +264,8 @@ object DiscretizationFunctions extends Serializable {
       iter.map {
         case (element, frequency) =>
           // Using while loop instead of range because Scala ranges cannot cope with values that exceed Max.Int
-          var rankCounter = rank;
-          var rankSum = 0.0;
+          var rankCounter = rank
+          var rankSum = 0.0
           while (rankCounter < (rank + frequency)) {
             rankSum = rankSum + rankCounter
             rankCounter = rankCounter + 1

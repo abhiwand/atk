@@ -142,7 +142,13 @@ class _Api(object):
             from intelanalytics.rest.jsonschema import get_command_def
             from intelanalytics.meta.metaprog import install_command_defs, delete_docstubs
             logger.info("Requesting available commands from server")
-            response = http.get("commands/definitions")
+            try:
+                response = http.get("commands/definitions")
+            except:
+                import sys
+                sys.stderr.write('Unable to connect to server\n')
+                raise IaError(logger)
+
             commands_json_schema = response.json()
             # ensure the assignment to __commands_from_backend is the last line in this 'if' block before the fatal try:
             _Api.__commands_from_backend = [get_command_def(c) for c in commands_json_schema]

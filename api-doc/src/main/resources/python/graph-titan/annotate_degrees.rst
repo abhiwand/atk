@@ -30,8 +30,8 @@ input_edge_labels : list of str (optional)
     in the degree calculation, regardless of label.
 
 
-Return
-------
+Returns
+-------
 
 Graph : Degree annotated graph
     A Graph object with access to a new graph that is a copy of the input graph
@@ -40,9 +40,11 @@ Graph : Degree annotated graph
 
 Examples
 --------
-Given a graph::
+Given a graph:
 
-    g.query.gremlin('g.V [ 0 .. 1]')
+.. code::
+
+    >>> g.query.gremlin('g.V [ 0 .. 1]')
 
     Out[12]:
        {u'results': [{u'_id': 19456,
@@ -57,9 +59,9 @@ Given a graph::
         u'source': 31599}],
         u'run_time_seconds': 1.822}
 
-    h = g.annotate_degrees('degreed_graph', 'degree')
+    >>> h = g.annotate_degrees('degreed_graph', 'degree')
     
-    h.query.gremlin('g.V [ 0 .. 1]')
+    >>> h.query.gremlin('g.V [ 0 .. 1]')
     
     
     Out[14]:

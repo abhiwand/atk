@@ -49,6 +49,7 @@ from intelanalytics.core.model import _BaseModel
 
 from intelanalytics.rest.connection import server
 connect = server.connect
+server_test = server
 
 
 # do api_globals last because other imports may have added to the api_globals

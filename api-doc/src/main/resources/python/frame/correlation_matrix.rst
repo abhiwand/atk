@@ -11,14 +11,16 @@ A matrix with the correlation values for the columns
 
 Notes
 -----
-This function applies only to columns containing numerical data.
+This method applies only to columns containing numerical data.
 
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single
-column named *obs*::
+column named *obs*:
 
-    cor_matirx = my_frame.correlation_matrix(['col_0', 'col_1', 'col_2'])
+.. code::
 
-    cor_matrix.inspect()
+    >>> cor_matirx = my_frame.correlation_matrix(['col_0', 'col_1', 'col_2'])
+
+    >>> cor_matrix.inspect()
 

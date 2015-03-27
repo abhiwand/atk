@@ -23,41 +23,29 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.event.EventLogging
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, GraphElement }
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain._
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
-import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
-import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameName, FrameEntity }
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.intelanalytics.domain.graph._
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.schema.{ Schema, GraphSchema, EdgeSchema, VertexSchema }
+import com.intel.intelanalytics.engine.{ EntityTypeRegistry, GraphBackendStorage, GraphStorage }
+import com.intel.intelanalytics.repository.MetaStore
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.{ EntityTypeRegistry, Rows, GraphBackendStorage, GraphStorage }
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import org.apache.spark.SparkContext
-import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
+import com.thinkaurelius.titan.core.TitanGraph
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.repository.MetaStore
 import org.apache.spark.storage.StorageLevel
 import org.joda.time.DateTime
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.event.EventLogging
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.component.Boot
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.thinkaurelius.titan.core.TitanGraph
-
-import scala.util.Try
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
@@ -67,7 +55,8 @@ import scala.util.Try
 class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
-    extends GraphStorage with EventLogging { storage =>
+    extends GraphStorage with EventLogging {
+  storage =>
   def updateLastReadDate(graph: GraphEntity): Option[GraphEntity] = {
     metaStore.withSession("graph.updateLastReadDate") {
       implicit session =>
@@ -233,14 +222,13 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           val check = metaStore.graphRepo.lookupByName(graph.name)
           check match {
-            case Some(g) => {
+            case Some(g) =>
               if (g.statusId == Status.Active) {
                 throw new RuntimeException("Graph with same name exists. Create aborted.")
               }
               else {
                 metaStore.graphRepo.delete(g.id)
               }
-            }
             case _ => //do nothing. it is fine that there is no existing graph with same name.
           }
 
@@ -368,13 +356,6 @@ class SparkGraphStorage(metaStore: MetaStore,
     expectSeamless(graphRef)
   }
 
-  /**
-   *
-   * @param ctx
-   * @param graphRef
-   * @param vertexLabel
-   * @return
-   */
   def loadVertexRDD(ctx: SparkContext, graphRef: GraphReference, vertexLabel: String)(implicit invocation: Invocation): VertexFrameRdd = {
     val frame = expectSeamless(graphRef).vertexMeta(vertexLabel)
     val frameRdd = frameStorage.loadFrameData(ctx, frame)
@@ -459,7 +440,6 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   /**
    * Create a new Titan graph with the given name.
-   * @param graphName Name of the graph to be written.
    * @param gbVertices RDD of vertices.
    * @param gbEdges RDD of edges
    * @param append if true will attempt to append to an existing graph

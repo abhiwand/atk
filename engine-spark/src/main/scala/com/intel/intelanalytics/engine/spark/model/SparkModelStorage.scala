@@ -35,7 +35,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.{ JsValue, JsObject }
 import scala.Some
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.engine.spark.SparkAutoPartitioner
 import com.intel.intelanalytics.component.ClassLoaderAware
 import scala.slick.model
 
