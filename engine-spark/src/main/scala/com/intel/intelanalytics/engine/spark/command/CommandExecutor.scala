@@ -233,7 +233,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     info(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
-    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT")) {
+    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarnClusterMode) {
       try {
         executeCommandOnYarn(commandContext.command, plugin)
         /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */

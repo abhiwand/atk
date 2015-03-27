@@ -98,6 +98,8 @@ trait SparkEngineConfig extends EventLogging {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
 
+  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
+
   /**
    * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
    * NOTE: true should break the progress bar.
