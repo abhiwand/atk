@@ -40,7 +40,7 @@ case class LibSvmTrainArgs(model: ModelReference,
                            epsilon: Option[Double] = None,
                            degree: Option[Int] = None,
                            gamma: Option[Double] = None,
-                           coef0: Option[Double] = None,
+                           coef: Option[Double] = None,
                            nu: Option[Double] = None,
                            cacheSize: Option[Double] = None,
                            shrinking: Option[Int] = None,
@@ -75,7 +75,7 @@ case class LibSvmTrainArgs(model: ModelReference,
   }
 
   def getCoef0: Double = {
-    coef0.getOrElse(0.0)
+    coef.getOrElse(0.0)
   }
 
   def getCacheSize: Double = {
