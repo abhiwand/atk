@@ -93,7 +93,7 @@ import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -544,14 +544,14 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    * Score a vector on a model.
    * @param id Model id
    */
-  override def scoreModel(id: Identifier, values: Vector[Double])(implicit invocation: Invocation): Future[Double] = {
+  override def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double] = {
     withContext("se.scoremodel") {
       future {
         val model = models.expectModel(ModelReference(id))
         val libsvmscorePlugin = new LibSvmScorePlugin
-        5.0
-        //          val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(model.toReference, values))
-        //          predictionLabel
+
+        val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(model.toReference, values.value))
+        predictionLabel.value
       }
     }
   }
