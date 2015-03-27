@@ -77,15 +77,17 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     val commandId = cmd.id
     val commandName = cmd.name
     val context: SparkContext = sparkContextFactory.context(s"(id:$commandId,name:$commandName)", kryoRegistrator)
-    try {
-      val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
-      val progressPrinter = new ProgressPrinter(listener)
-      context.addSparkListener(listener)
-      context.addSparkListener(progressPrinter)
-    }
-    catch {
-      // exception only shows up here due to dev error, but it is hard to debug without this logging
-      case e: Exception => error("could not create progress listeners", exception = e)
+    if (!SparkEngineConfig.reuseSparkContext) {
+      try {
+        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
+        val progressPrinter = new ProgressPrinter(listener)
+        context.addSparkListener(listener)
+        context.addSparkListener(progressPrinter)
+      }
+      catch {
+        // exception only shows up here due to dev error, but it is hard to debug without this logging
+        case e: Exception => error("could not create progress listeners", exception = e)
+      }
     }
     SparkCommandPlugin.commandIdContextMapping += (commandId -> context)
     context
@@ -130,7 +132,7 @@ object SparkCommandPlugin extends EventLogging {
   }
 
   private def stopContextIfNeeded(sc: SparkContext): Unit = {
-    if (SparkEngineConfig.reuseSparkContext && sc.isLocal) {
+    if (SparkEngineConfig.reuseSparkContext) {
       info("not stopping local SparkContext so that it can be re-used")
     }
     else {
