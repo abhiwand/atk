@@ -45,7 +45,7 @@ object FrameExportHdfs extends Serializable {
   def exportToHdfsCsv(
     frameRdd: FrameRdd,
     filename: String,
-    separator: String,
+    separator: Char,
     count: Option[Int] = None,
     offset: Option[Int] = None) {
 
@@ -53,8 +53,8 @@ object FrameExportHdfs extends Serializable {
     val recOffset = offset.getOrElse(0)
 
     val filterRdd = if (recCount > 0) MiscFrameFunctions.getPagedRdd(frameRdd, recOffset, recCount, -1) else frameRdd
-    val headers = frameRdd.frameSchema.columnNames.mkString(separator)
-    val csvFormat = CSVFormat.RFC4180.withDelimiter(separator.trim().charAt(0))
+    val headers = frameRdd.frameSchema.columnNames.mkString(separator.toString)
+    val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
 
     val csvRdd = filterRdd.map(row => {
       val stringBuilder = new java.lang.StringBuilder
