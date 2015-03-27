@@ -48,7 +48,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
 
-  override def numberOfJobs(arguments: LibSvmTestArgs)(implicit invocation: Invocation) = 1
+  override def numberOfJobs(arguments: LibSvmTestArgs)(implicit invocation: Invocation) = 2
 
   /**
    * Get the predictions for observations in a test frame

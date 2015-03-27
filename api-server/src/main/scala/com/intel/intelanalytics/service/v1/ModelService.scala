@@ -156,16 +156,15 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       import spray.httpx.SprayJsonSupport._
                       implicit val format = DomainJsonProtocol.vectorValueFormat
                       entity(as[VectorValue]) {
-                        values =>
-                          println(s">>>>>>>>>>>>>> $id, $values ")
-                          complete("1234")
-
-                        //                        onComplete(engine.score(id, values)) {
-                        //                          case Success(model) => complete(decorate(uri + "/" + model.id, model))
-                        //                          case Failure(ex) => ctx => {
-                        //                            ctx.complete(500, ex.getMessage)
-                        //                          }
-                        //                        }
+                        observation =>
+                          println(s">>>>>>>>>>>>>> $id, $observation ")
+                                      complete("1256")
+//                          onComplete(engine.scoreModel(id, observation)) {
+//                            case Success(scored) => complete(scored)
+//                            case Failure(ex) => ctx => {
+//                              ctx.complete(500, ex.getMessage)
+//                            }
+//                          }
                       }
                     }
                 }
