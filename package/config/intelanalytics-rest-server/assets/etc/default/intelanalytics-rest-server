@@ -37,3 +37,4 @@ if [ -f /etc/intelanalytics/rest-server/classpath ]; then
 fi
 
 export CLASSPATH=$CLASSPATH
+export YARN_CONF_DIR="/etc/hadoop/conf"

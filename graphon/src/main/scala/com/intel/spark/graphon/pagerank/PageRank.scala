@@ -108,7 +108,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(arguments: PageRankArgs)(implicit invocation: Invocation): PageRankResult = {
 
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

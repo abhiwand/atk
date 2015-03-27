@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ RenameColumnsArgs, FrameEntity, FlattenColumnArgs }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -35,12 +35,10 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
  * Rename columns of a frame
  */
-class RenameColumnsPlugin extends SparkCommandPlugin[RenameColumnsArgs, FrameEntity] {
+class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
