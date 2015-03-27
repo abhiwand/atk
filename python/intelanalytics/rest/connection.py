@@ -73,6 +73,7 @@ class Server(object):
         self._scheme = config.server_defaults.scheme
         self._version = config.server_defaults.version
         self._headers = config.server_defaults.headers
+        self._oauth = config.server_defaults.oauth
 
     @property
     def host(self):
@@ -124,6 +125,15 @@ class Server(object):
     def headers(self, value):
         self._headers = value
 
+    @property
+    def oauth(self):
+        return self._oauth
+
+    @oauth.setter
+    @error_if_api_already_loaded
+    def oauth(self, value):
+        self._oauth = value
+
     def reset(self):
         """Restores the server configuration to defaults"""
         self.__init__()
@@ -162,7 +172,7 @@ version:  %s
         try:
             uri = self._get_scheme_and_authority() + "/info"
             logger.info("[HTTP Get] %s", uri)
-            r = requests.get(uri)
+            r = requests.get(uri, timeout=config.requests_defaults.ping_timeout_secs)
             logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
             HttpMethods._check_response(r)
             if "Intel Analytics" != r.json()['name']:
@@ -187,8 +197,33 @@ version:  %s
         if _Api.is_loaded():
             print "Already connected to intelanalytics server."
         else:
+            if server.oauth:
+                acquire_oauth_token()
             _Api.load_api()
             print "Connected to intelanalytics server."
+
+
+def acquire_oauth_token():
+    """
+    Connect to the cloudfoundry uaa server and acquire token and set in the server Authorization.
+
+    Calling this method is required before invoking any ATK operations. This method connects to UAA server
+    and validates the user and the client and returns an token that will be passed in the rest server header
+    """
+    url = server.oauth.url
+    data={"grant_type": "password",
+          "password": server.oauth.user_password,
+          "username": server.oauth.user_name}
+    headers = server.oauth.headers
+    auth = (server.oauth.client_name, server.oauth.client_password)
+    logger.info("[HTTP Post] %s\n%s\n%s\n%s", url, data, headers, auth)
+    r = requests.post(url=url, data=data, headers=headers, auth=auth)
+    if logger.level <= logging.DEBUG:
+        logger.debug("[HTTP Post Response] %s", r.text)
+    HttpMethods._check_response(r)
+    token = r.json()['access_token']
+    server.headers['Authorization'] = token
+    #print "server.headers = %s" % server.headers
 
 
 class HttpMethods(object):
@@ -244,10 +279,13 @@ class HttpMethods(object):
 
     def get_full_uri(self, uri):
         if logger.level <= logging.INFO:
-            logger.info("[HTTP Get] %s", uri)
-        r = requests.get(uri, headers=self.server.headers)
+            details = uri
+            if logger.level <= logging.DEBUG:
+               details += "\nheaders=%s" % self.server.headers
+            logger.info("[HTTP Get] %s", details)
+        r = requests.get(uri, headers=self.server.headers, timeout=config.requests_defaults.get_timeout_secs)
         if logger.level <= logging.DEBUG:
-            logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
+            logger.debug("[HTTP Get Response] %s\nheaders=%s", r.text, r.headers)
 
         self._check_response(r)
         return r
@@ -276,7 +314,6 @@ class HttpMethods(object):
         r = requests.post(uri, data=data, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
-            self.reason = r.text
 
         self._check_response(r, {406: 'long initialization time'})
         return r

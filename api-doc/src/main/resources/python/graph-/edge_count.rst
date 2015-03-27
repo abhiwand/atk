@@ -2,8 +2,9 @@ Get the total number of edges in the graph.
 
 Examples
 --------
-::
 
-    graph.edge_count
+.. code::
+
+    >>> graph.edge_count
 
 

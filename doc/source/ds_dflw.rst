@@ -64,15 +64,15 @@ Connect to the server:
 
     Clean up any previous frames (optional)::
 
-    for name in ia.get_frame_names():
-        print 'deleting frame: %s' %name
-        ia.drop_frames(name)
+        for name in ia.get_frame_names():
+            print 'deleting frame: %s' %name
+            ia.drop_frames(name)
 
     Clean up any previous graphs (optional)::
 
-    for name in ia.get_graph_names():
-        print 'deleting graph: %s' %name
-        ia.drop_graphs(name)
+        for name in ia.get_graph_names():
+            print 'deleting graph: %s' %name
+            ia.drop_graphs(name)
 
 To see the data types supported:
 
@@ -120,7 +120,7 @@ character(s).
 In the above example, the separating character is a comma (,).
 
 To import data, you must tell the system how the input file is formatted.
-This is done by defining a :type:`schema`.
+This is done by defining a :term:`schema`.
 Schemas are constructed as a list of tuples, each of which contains pairs of
 ASCII-character names and data types (see :ref:`Valid Data Types
 <valid_data_types>`), ordered according to the order of columns in the input
@@ -202,7 +202,7 @@ the data layouts:
 
         >>> raw_csv_data_file = "datasets/my_data.csv"
         >>> column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
-        >>> csv4 = ia.CsvFile(file_name=raw_csv_data_file,  \
+        >>> csv4 = ia.CsvFile(file_name=raw_csv_data_file,
         ... schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
@@ -291,7 +291,7 @@ Let's create a Frame and check it out:
 
 Append:
 -------
-The :code:`append` function adds rows and columns of data to a frame.
+The :code:`append` method adds rows and columns of data to a frame.
 Columns and rows are added to the database structure, and data is imported
 as appropriate.
 If columns are the same in both name and data type, the appended data will
@@ -300,7 +300,7 @@ go into the existing column.
 As an example, let's start with a frame containing two columns *a* and *b*.
 The frame can be accessed by Frame *my_frame1*.
 We can look at the data and structure of the database by using the
-:code:`inspect` function:
+:code:`inspect` method:
 
 .. code::
 
@@ -361,10 +361,10 @@ It would still be accessed by Frame *my_frame1*:
 
     Try this example with data files *objects1.csv* and *objects2.csv*::
 
-        >>> objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv", \
-        ... schema=[('Object', str), ('Count', ia.int64)], \
+        >>> objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv",
+        ... schema=[('Object', str), ('Count', ia.int64)],
         ... skip_header_lines=1), 'objects1')
-        >>> objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv", \
+        >>> objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv",
         ... schema=[('Thing', str)], skip_header_lines=1), 'objects2')
 
         >>> objects1.inspect()
@@ -418,9 +418,9 @@ Gives you something like this:
         12.3000            500    
        195.1230         183954    
 
-Here, we see a list of lists of data from *myframe*, containing 3 lists.
-Each list has the data from a row in the frame accessed by *my_frame*,
-beginning at row 2.
+Using the take() method, makes a list of lists of frame data.
+Each list has the data from a row in the frame accessed by the Frame,
+in this case, 3 rows beginning from row 2.
 
 .. code::
 
@@ -437,6 +437,8 @@ Gives you something like this:
 
     The row sequence of the data is NOT guaranteed to match the sequence of the
     input file.
+    When the data is spread out over multiple clusters, the original sequence
+    of rows from the raw data is lost.
 
 .. only:: html
 
@@ -459,11 +461,11 @@ Gives you something like this:
 
     Some more examples to try:
     
-    ..code::
+    .. code::
 
-        >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv", \
-        ... schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64), \
-        ... ('int2', ia.int64), ('Float1', ia.float64), ('Float2', \
+        >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv",
+        ... schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64),
+        ... ('int2', ia.int64), ('Float1', ia.float64), ('Float2',
         ... ia.float64)], skip_header_lines=1), 'animals')
         >>> animals.inspect()
         >>> freq = animals.top_k('animals', animals.row_count)
@@ -479,11 +481,11 @@ Gives you something like this:
 Clean The Data
 ==============
 
-The process of "data cleaning" encompasses the identification and removal of
-incomplete, incorrect, or mal-formed information in a data set.
-While |IAT|'s Frame API provides much of the functionality necessary for these
-tasks, it's important to keep in mind that it was designed with scalability
-in mind.
+The process of "data cleaning" encompasses the identification and removal or
+repair of incomplete, incorrect, or malformed information in a data set.
+The |IAT|'s Python API provides much of the functionality necessary for these
+tasks.
+It is important to keep in mind that it was designed for data scalability.
 Thus, using external Python packages for these tasks, while possible, may
 not provide the same level of efficiency.
 
@@ -512,7 +514,7 @@ Example of data cleaning:
     ...     if 'basset hound' in row.animals:
     ...         return 'dog'
     ...     elif 'ginea pig' in row.animals:
-    ...         return 'guinea pig'
+    ...         return 'cavy'
     ...     else:
     ...         return row.animals
 
@@ -525,7 +527,7 @@ Example of data cleaning:
 Drop Rows:
 ----------
 
-The :code:`drop` function takes a predicate function and removes all rows for
+The :code:`drop` method takes a predicate function and removes all rows for
 which the predicate evaluates to ``True``.
 
 Examples:
@@ -554,13 +556,13 @@ To drop any rows where any column is empty:
 Filter Rows:
 ------------
 
-The :code:`filter` function is like :code:`drop`, except it removes all rows
+The :code:`filter` method is like :code:`drop`, except it removes all rows
 for which the predicate evaluates to False.
 
 Examples:
 ~~~~~~~~~
 
-To keep only those rows where field *b* is in the range 0 to 10:
+To delete those rows where field *b* is outside the range of 0 to 10:
 
 .. code::
 
@@ -571,7 +573,7 @@ To keep only those rows where field *b* is in the range 0 to 10:
 Drop Duplicates:
 ----------------
 
-The :code:`drop_duplicates` function performs a row uniqueness comparison
+The :code:`drop_duplicates` method performs a row uniqueness comparison
 across the whole table.
 
 Examples:
@@ -658,7 +660,7 @@ value.
     
     .. code::
 
-        >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2', \
+        >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2',
         ... ia.float64))
 
 Add a new column *all_ones* and fill the entire column with the value 1:
@@ -684,9 +686,9 @@ Add a new column *all_ones* and fill the entire column with the value 1:
     value of column *float1* plus column *float2*, then save a summary of
     the frame statistics::
 
-        >>> animals.add_columns(lambda row: row.Float1 + row.Float2, \
+        >>> animals.add_columns(lambda row: row.Float1 + row.Float2,
         ... ('Float1PlusFloat2', ia.float64))
-        >>> summary['Float1PlusFloat2'] = \
+        >>> summary['Float1PlusFloat2'] =
         ... animals.column_summary_statistics('Float1PlusFloat2')
 
 Add a new column *pwl*, type ia.float64, and fill the value according to
@@ -742,7 +744,7 @@ An example of Piecewise Linear Transformation:
     
     .. code::
 
-        >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)], \
+        >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)],
         ... [('abs_int1', ia.int64), ('abs_int2', ia.int64)])
 
 .. _ds_dflw_frame_examine:
@@ -792,7 +794,7 @@ Example process of using aggregation based on columns:
 
     .. code::
 
-        >>> grouped_animals = animals.group_by('animals', {'int1': [ia.agg.avg, \
+        >>> grouped_animals = animals.group_by('animals', {'int1': [ia.agg.avg,
         ... ia.agg.sum, ia.agg.stdev], 'int2': [ia.agg.avg, ia.agg.sum]})
         >>> grouped_animals.inspect()
 
@@ -825,8 +827,8 @@ Example process of using aggregation based on both column and row together:
 
     .. code::
 
-        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], {'Float1': \
-        ... [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max], \
+        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], {'Float1':
+        ... [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max],
         ... 'int2': [ia.agg.count, ia.agg.count_distinct]})
 
 Example process of using aggregation based on row:
@@ -847,8 +849,10 @@ Example process of using aggregation based on row:
 
     .. code::
 
-        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], \
+        >>> grouped_animals2 = animals.group_by(['animals', 'int1'],
         ... ia.agg.count)
+
+.. _aggregation_functions:
 
 .. note::
 
@@ -964,7 +968,7 @@ in *my_frame* which has a value in *b* that matches a value in
 
     .. code::
 
-        >>> right_frame = my_frame.join(your_frame, left_on='b', right_on='d', \
+        >>> right_frame = my_frame.join(your_frame, left_on='b', right_on='d',
         ... how='right')
 
 Result is *right_frame*:
@@ -1011,7 +1015,7 @@ Bring the data in where it can by worked on:
 
     .. code::
 
-        >>> my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), \
+        >>> my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64),
         ... ('b', str)], delimiter='-')
         >>> my_frame = ia.Frame(source=my_csv)
 
@@ -1092,8 +1096,8 @@ We need to bring the data into a frame:
 
     .. code::
 
-        >>> employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", \
-        ... schema = [('Employee', str), ('Manager', str), ('Title', str),    \
+        >>> employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv",
+        ... schema = [('Employee', str), ('Manager', str), ('Title', str),
         ... ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
         >>> employees_frame.inspect()
 
@@ -1137,6 +1141,20 @@ Inspect the graph:
     >>> my_graph.edge_count
     >>> my_graph.vertices['Employee'].inspect(20)
     >>> my_graph.edges['worksunder'].inspect(20)
+
+.. warning::
+
+    Improperly built graphs can give inconsistant results.
+    For example, given EdgeFrames with this data::
+
+        Movieid, movieTitle, Rating, userId
+        1, Titanic, 3, 1
+        1, My Own Private Idaho, 3, 2
+
+    If the vertices are built out of this data, the vertex with Movieid of 1
+    would sometimes have the Titanic data and sometimes would have the Idaho
+    data, based upon which order the records are delivered to the function.
+
 
 Other Graph Options
 ===================
@@ -1188,15 +1206,11 @@ Graph Analytics
 .. _PR:
 .. include:: ds_gaal_pr.rst
 
-.. TODO::
-
-    .. _APL:
-    .. include:: ds_gaal_apl.rst
-
-
 .. toctree::
     :hidden:
 
     ds_apir
-
-
+    ds_gaal_clco
+    ds_gaal_cc
+    ds_gaal_dc
+    ds_gaal_pr

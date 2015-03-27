@@ -53,7 +53,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
     val frame = frames.expectFrame(arguments.frame)
     // validation only
     frame.schema.dropColumns(arguments.columns)
-    DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns.toList, systemFields)
+    DropVertexColumnPlugin.rejectInvalidColumns(arguments.columns, systemFields)
 
     // let the frame plugin do the actual work
     super.execute(arguments)

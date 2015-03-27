@@ -37,6 +37,7 @@ import com.intel.intelanalytics.engine.spark.command
 import com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
 import com.intel.intelanalytics.engine.spark.graph
+import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
@@ -55,7 +56,7 @@ import scala.util.control.NonFatal
 
 import scala.language.implicitConversions
 
-class SparkFrameStorage(frameFileStorage: FrameFileStorage,
+class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner)
@@ -182,16 +183,18 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
-        new FrameRdd(frame.schema, ctx.parallelize[sql.Row](Nil, SparkAutoPartitioner.minDefaultPartitions))
+        new FrameRdd(frame.schema, ctx.parallelize[sql.Row](Nil, SparkEngineConfig.minPartitions))
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
         //ctx.hadoopFile[OrderedParquetInputFormat](absPath.toString)
-        //val partitions = new FrameRdd(frame.schema, rows).getPartitions()
-        new FrameRdd(frame.schema, rows)
+        //val partitions = new FrameRDD(frame.schema, rows).getPartitions()
+        val frameRdd = new FrameRdd(frame.schema, rows)
+        sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some("file/sequence"), Some(absPath)) =>
         val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-        new LegacyFrameRdd(frame.schema, rows).toFrameRdd()
+        val frameRdd = new LegacyFrameRdd(frame.schema, rows).toFrameRdd()
+        sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some(s), _) => illegalArg(s"Cannot load frame with storage '$s'")
     }
   }

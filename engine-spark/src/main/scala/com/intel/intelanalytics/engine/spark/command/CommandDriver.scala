@@ -80,7 +80,6 @@ object CommandDriver {
       }
       catch {
         case t: Throwable => error(s"Error captured in CommandDriver to prevent percolating up to ApplicationMaster + ${ExceptionUtils.getStackTrace(t)}")
-        case _ => error(s"A Non Throwable exception called!!")
       }
       finally {
         sys.props -= "SPARK_SUBMIT"

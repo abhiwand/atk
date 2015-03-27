@@ -83,13 +83,14 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     fileSystem
   }
 
+  private val absolutePathPattern = """^\w+\:/.+""".r
+
   /**
    * Path from a path
    * @param path a path relative to the root or that includes the root
    */
   private[spark] def absolutePath(path: String): Path = {
-    // TODO: this seems to work but this could be revisited and perhaps done nicer
-    if (path.startsWith(fsRoot)) {
+    if (absolutePathPattern.findFirstIn(path).isDefined) {
       new Path(path)
     }
     else {
@@ -165,7 +166,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     if (ArrayUtils.isEmpty(fileStatuses.asInstanceOf[Array[AnyRef]])) {
       throw new RuntimeException("No file found at path " + abPath)
     }
-    fileStatuses.map(fileStatus => fileStatus.getLen).reduce(_ + _)
+    fileStatuses.map(fileStatus => fileStatus.getLen).sum
   }
 
   /**
