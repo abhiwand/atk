@@ -49,12 +49,15 @@ class UserStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends
             case Nil => throw new SecurityException("User not found with apiKey:" + apiKey)
             case us if us.length > 1 => throw new SecurityException("Problem accessing user credentials")
             case user => {
-              val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
-              userPrincipal
+              createUserPrincipalFromUser(users(0))
             }
           }
         }
     }
   }
 
+  def createUserPrincipalFromUser(user: User): UserPrincipal = {
+    val userPrincipal: UserPrincipal = new UserPrincipal(user, List("user")) //TODO need role definitions
+    userPrincipal
+  }
 }

@@ -63,6 +63,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
       .setSparkHome(SparkEngineConfig.sparkHome)
       .setAppName(s"intel-analytics:$userName:$description")
 
+    SparkEngineConfig.sparkConfProperties.foreach { case (k, v) => println(s"$k->$v") }
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
     if (!SparkEngineConfig.disableKryo && kryoRegistrator.isDefined) {
@@ -75,7 +76,8 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     info("SparkConf settings: " + sparkConf.toDebugString)
 
     val sparkContext = new SparkContext(sparkConf)
-    sparkContext.addJar(jarPath("engine-spark"))
+    if (SparkEngineConfig.sparkMaster != "yarn-cluster")
+      sparkContext.addJar(jarPath("engine-spark"))
     sparkContext
   }
 

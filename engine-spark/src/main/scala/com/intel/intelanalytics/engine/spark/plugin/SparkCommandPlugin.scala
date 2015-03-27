@@ -23,8 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.SparkEngine
+import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import org.apache.spark.SparkContext
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import com.intel.event.EventLogging
+import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
@@ -35,11 +40,103 @@ import com.intel.intelanalytics.engine.spark.SparkEngine
 trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     extends CommandPlugin[Argument, Return] {
 
-  override def engine(implicit invocation: Invocation): SparkEngine = {
-    // TODO: ClassCastException here is because of a bug here where SparkCommandPlugins aren't recognized from external jars loaded via config --Todd 1/28/2015
-    invocation.asInstanceOf[SparkInvocation].engine
+  override def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
+
+  /**
+   * Name of the custom kryoclass this plugin needs.
+   * kryoRegistrator = None means use JavaSerializer
+   */
+  def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
+
+  def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
+
+  /**
+   * Can be overridden by subclasses to provide a more specialized Invocation. Called before
+   * calling the execute method.
+   */
+  override protected def customizeInvocation(invocation: Invocation, arguments: Argument): Invocation = {
+    require(invocation.isInstanceOf[CommandInvocation], "Cannot invoke a CommandPlugin without a CommandInvocation")
+    val commandInvocation = invocation.asInstanceOf[CommandInvocation]
+    val sparkEngine: SparkEngine = commandInvocation.engine.asInstanceOf[SparkEngine]
+    val sparkInvocation = new SparkInvocation(sparkEngine,
+      invocation.user,
+      commandInvocation.commandId,
+      invocation.executionContext,
+      commandInvocation.arguments,
+      //TODO: Hide context factory behind a property on SparkEngine?
+      null,
+      commandInvocation.commandStorage,
+      invocation.resolver,
+      invocation.eventContext)
+    sparkInvocation.copy(sparkContext = createSparkContextForCommand(arguments, sparkEngine.sparkContextFactory)(sparkInvocation))
   }
 
-  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
+  def createSparkContextForCommand(arguments: Argument, sparkContextFactory: SparkContextFactory)(implicit invocation: SparkInvocation): SparkContext = {
+    val cmd = invocation.commandStorage.lookup(invocation.commandId)
+      .getOrElse(throw new IllegalArgumentException(s"Command ${invocation.commandId} does not exist"))
+    val commandId = cmd.id
+    val commandName = cmd.name
+    val context: SparkContext = sparkContextFactory.context(s"(id:$commandId,name:$commandName)", kryoRegistrator)
+    if (!SparkEngineConfig.reuseSparkContext) {
+      try {
+        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
+        val progressPrinter = new ProgressPrinter(listener)
+        context.addSparkListener(listener)
+        context.addSparkListener(progressPrinter)
+      }
+      catch {
+        // exception only shows up here due to dev error, but it is hard to debug without this logging
+        case e: Exception => error("could not create progress listeners", exception = e)
+      }
+    }
+    SparkCommandPlugin.commandIdContextMapping += (commandId -> context)
+    context
+  }
 
+  override def cleanup(invocation: Invocation) = {
+    val sparkInvocation = invocation.asInstanceOf[SparkInvocation]
+    SparkCommandPlugin.stop(sparkInvocation.commandId)
+  }
+
+  def serializePluginConfiguration(archiveName: String, path: String): Unit = withMyClassLoader {
+
+    info(s"Serializing Plugin Configuration for archive $archiveName to path $path")
+    import scala.collection.JavaConversions._
+    import java.nio.file.{ Paths, Files }
+    import java.nio.charset.StandardCharsets
+    val currentConfig = try {
+      Archive.getAugmentedConfig(archiveName, Thread.currentThread().getContextClassLoader).entrySet()
+    }
+    catch {
+      case _: Throwable => SparkEngineConfig.config.entrySet()
+    }
+    val allEntries = for {
+      i <- currentConfig
+    } yield s"${i.getKey}=${i.getValue.render}"
+    Files.write(Paths.get(path), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+  }
+
+  def getArchiveNameForPlugin(): String = withMyClassLoader {
+    Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
+  }
+
+}
+
+object SparkCommandPlugin extends EventLogging {
+
+  private var commandIdContextMapping = Map.empty[Long, SparkContext]
+
+  def stop(commandId: Long) = {
+    commandIdContextMapping.get(commandId).foreach { case (context) => stopContextIfNeeded(context) }
+    commandIdContextMapping -= commandId
+  }
+
+  private def stopContextIfNeeded(sc: SparkContext): Unit = {
+    if (SparkEngineConfig.reuseSparkContext) {
+      info("not stopping local SparkContext so that it can be re-used")
+    }
+    else {
+      sc.stop()
+    }
+  }
 }
