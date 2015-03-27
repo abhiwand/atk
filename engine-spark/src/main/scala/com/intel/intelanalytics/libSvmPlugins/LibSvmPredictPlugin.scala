@@ -64,9 +64,6 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     val models = engine.models
     val modelMeta = models.expectModel(arguments.model)
 
-    val frames = engine.frames
-    val inputFrame = frames.expectFrame(arguments.frame)
-
     val frame: SparkFrameData = resolve(arguments.frame)
 
     // load frame as RDD
@@ -88,13 +85,13 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     val predictionsRdd = inputFrameRdd.mapRows(row => {
       val array = row.valuesAsArray(libsvmData.observationColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
-      val vector: Vector[Double] = null
+      var vector = Vector.empty[Double]
       var i: Int = 0
       while (i < doubles.length) {
-        vector :+ doubles(i)
+        vector = vector :+ doubles(i)
         i += 1
       }
-      val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(arguments.model, vector))
+      val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, vector)
       row.addValue(predictionLabel.value)
     })
 
@@ -105,13 +102,5 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
       newPredictedFrame: FrameMeta =>
         save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
     }.meta
-  }
-
-  private def atof(s: String): Double = {
-    s.toDouble
-  }
-
-  private def atoi(s: String): Int = {
-    Integer.parseInt(s)
   }
 }

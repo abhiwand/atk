@@ -26,13 +26,13 @@ package com.intel.intelanalytics.libSvmPlugins
 import java.util.StringTokenizer
 
 import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import libsvm.{ svm, svm_node }
+import libsvm.{ svm_model, svm, svm_node }
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-class LibSvmScorePlugin extends SparkCommandPlugin[LibSvmScoreArgs, DoubleValue] {
+class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
 
   /**
    * The name of the command.
@@ -65,12 +65,18 @@ class LibSvmScorePlugin extends SparkCommandPlugin[LibSvmScoreArgs, DoubleValue]
     val models = engine.models
     val modelMeta = models.expectModel(arguments.model)
 
-    //Running MLLib
     val svmJsObject = modelMeta.data.get
     val libsvmData = svmJsObject.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
-    val output = columnFormatter(arguments.vector.toArray.zipWithIndex)
+    LibSvmScorePluginFunctions.score(libsvmModel, arguments.vector)
+  }
+}
+
+object LibSvmScorePluginFunctions extends Serializable {
+
+  def score(libsvmModel: svm_model, vector: Vector[Double]): DoubleValue = {
+    val output = columnFormatter(vector.toArray.zipWithIndex)
 
     val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")
     splitObs.nextToken()

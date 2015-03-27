@@ -23,7 +23,9 @@
 
 package com.intel.intelanalytics.libSvmPlugins
 
+import com.intel.intelanalytics.domain.schema.DataTypes
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.rdd.RDD
 
 /**
  * Aggregations for LibSvm
@@ -63,4 +65,5 @@ object LibSvmFunctions extends Serializable {
     } yield s"$index:$value"
     s"${valueIndexPairArray(0)._1} ${result.mkString(" ")}"
   }
+
 }

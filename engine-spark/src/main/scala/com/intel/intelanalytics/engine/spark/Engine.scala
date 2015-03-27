@@ -237,7 +237,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
+  //commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
@@ -540,20 +540,21 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     }
   }
 
-  //  /**
-  //   * Score a vector on a model.
-  //   * @param id Model id
-  //   */
-  //  override def scoreModel(id: Identifier, values: Vector[Double])(implicit invocation: Invocation): Future[Double] = {
-  //    withContext("se.scoremodel") {
-  //      future {
-  //        val model = models.expectModel(ModelReference(id))
-  //        val libsvmscorePlugin = new LibSvmScorePlugin
-  //        val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(model.toReference, values))
-  //        predictionLabel.toDouble
-  //      }
-  //    }
-  //  }
+  /**
+   * Score a vector on a model.
+   * @param id Model id
+   */
+  override def scoreModel(id: Identifier, values: Vector[Double])(implicit invocation: Invocation): Future[Double] = {
+    withContext("se.scoremodel") {
+      future {
+        val model = models.expectModel(ModelReference(id))
+        val libsvmscorePlugin = new LibSvmScorePlugin
+        5.0
+        //          val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(model.toReference, values))
+        //          predictionLabel
+      }
+    }
+  }
 
   override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {
