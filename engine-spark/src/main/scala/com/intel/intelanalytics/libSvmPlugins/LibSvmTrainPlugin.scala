@@ -92,7 +92,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val param = new svm_parameter()
 
     // values for svm_parameters
-    param.svm_type = svm_parameter.C_SVC
+    param.svm_type = svm_parameter.ONE_CLASS
     param.kernel_type = svm_parameter.RBF
     param.degree = arguments.getDegree
     param.gamma = arguments.getGamma
