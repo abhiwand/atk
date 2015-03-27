@@ -88,13 +88,13 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
       val array = row.valuesAsArray(libsvmData.observationColumns)
       val label = row.value(arguments.labelColumn)
       val doubles = array.map(i => DataTypes.toDouble(i))
-      val vector: Vector[Double] = null
+      var vector = Vector.empty[Double]
       var i: Int = 0
       while (i < doubles.length) {
-        vector :+ doubles(i)
+        vector = vector :+ doubles(i)
         i += 1
       }
-      val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(arguments.model, vector))
+      val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, vector)
       Array[Any](label, predictionLabel)
     })
 
@@ -103,11 +103,4 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     ClassificationMetrics.binaryClassificationMetrics(predictionsRdd, 0, 1, posLabel, 1)
   }
 
-  private def atof(s: String): Double = {
-    s.toDouble
-  }
-
-  private def atoi(s: String): Int = {
-    Integer.parseInt(s)
-  }
 }
