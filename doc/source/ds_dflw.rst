@@ -1195,22 +1195,18 @@ Graph Analytics
     Add these to the toctree above.
 
 .. _ClCo:
-.. include:: ds_gaal_clco.rst
+.. include:: ds_gaal_clco.inc
 
 .. _CC:
-.. include:: ds_gaal_cc.rst
+.. include:: ds_gaal_cc.inc
 
 .. _DC:
-.. include:: ds_gaal_dc.rst
+.. include:: ds_gaal_dc.inc
 
 .. _PR:
-.. include:: ds_gaal_pr.rst
+.. include:: ds_gaal_pr.inc
 
 .. toctree::
     :hidden:
 
     ds_apir
-    ds_gaal_clco
-    ds_gaal_cc
-    ds_gaal_dc
-    ds_gaal_pr
