@@ -138,7 +138,7 @@ directly:
 
 .. only:: html
 
-    This code is :download:`downloadable <ia-deps.sh>`.
+    This code is :download:`downloadable <ia-deps.sh>` (open, copy, and paste).
 
 Test the installation of the dependencies repository:
 
@@ -188,7 +188,7 @@ Create '/etc/yum.repos.d/ia.repo':
         > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ia.repo
 
 
-    This code is :download:`downloadable <ia-repo.sh>`.
+    This code is :download:`downloadable <ia-repo.sh>` (open, copy, and paste).
 
 .. only:: latex
 
