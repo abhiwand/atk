@@ -238,7 +238,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPlugin)
-  //commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
