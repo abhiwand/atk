@@ -28,7 +28,7 @@ import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, DefaultA
 import FileUtil.writeFile
 import com.intel.intelanalytics.engine.plugin.Call
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
-import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
+import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
@@ -80,12 +80,10 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
       /*models*/ null,
       /*users*/ null,
       queries,
-      queryExecutor,
       /*sparkAutoPartitioner*/ null,
       new CommandPluginRegistry(new CommandLoader)) {}
     Await.ready(engine.getCommands(0, 1), 30 seconds) //make sure engine is initialized
-    lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, null)
-    lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, null)
+    lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands)
     val commandDefs = engine.getCommandDefinitions()
     val commandDump = "{ \"commands\": [" + commandDefs.map(_.toJson).mkString(",\n") + "] }"
     val currentDir = System.getProperty("user.dir")

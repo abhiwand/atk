@@ -78,6 +78,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
 
     override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
       val meta = getMetaData(reference)
+      val sc = invocation.asInstanceOf[SparkInvocation].sparkContext
       new SparkFrameData(meta.meta, storage.loadFrameData(sc, meta.meta))
     }
 
@@ -86,8 +87,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.create(args).toReference
 
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(FrameReference(id)).toReference
-
-    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
     /**
      * Save data of the given type, possibly creating a new object.
@@ -409,17 +408,17 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
-    withContext("frame.getPagedRowsRDD") {
-      require(frame != null, "frame is required")
-      require(offset >= 0, "offset must be zero or greater")
-      require(count > 0, "count must be zero or greater")
-      withMyClassLoader {
-        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.toReference)
-        val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
-        rows
-      }
-    }
+  //  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
+  //    withContext("frame.getPagedRowsRDD") {
+  //      require(frame != null, "frame is required")
+  //      require(offset >= 0, "offset must be zero or greater")
+  //      require(count > 0, "count must be zero or greater")
+  //      withMyClassLoader {
+  //        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.toReference)
+  //        val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
+  //        rows
+  //      }
+  //    }
 
   /**
    * Retrieve records from the given dataframe
