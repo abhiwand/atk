@@ -92,7 +92,8 @@ class ConnectedComponents extends SparkCommandPlugin[ConnectedComponentsArgs, Co
 
     val sparkContext = sc
 
-    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

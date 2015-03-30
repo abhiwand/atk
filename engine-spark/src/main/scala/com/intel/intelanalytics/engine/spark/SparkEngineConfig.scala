@@ -34,7 +34,6 @@ import com.intel.intelanalytics.engine.spark.partitioners.{ FileSizeToPartitionS
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -99,6 +98,8 @@ trait SparkEngineConfig extends EventLogging {
   val isLocalMaster: Boolean = {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
+
+  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
 
   /**
    * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
@@ -302,6 +303,14 @@ trait SparkEngineConfig extends EventLogging {
     }
     joinThreshold
   }
+
+  /**
+   * spark driver max size should be minimum of 128M for Spark Submit to work. We are currently loading multiple
+   * class loaders and Spark Submit driver throws OOM if default value of 64M is kept for PermGen space
+   */
+  val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
+
+  val sparkOnYarnNumExecutors = config.getString("intel.analytics.engine.spark.conf.properties.spark.yarnNumExecutors")
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
