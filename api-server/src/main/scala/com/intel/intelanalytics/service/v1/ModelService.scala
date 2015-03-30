@@ -158,13 +158,12 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       entity(as[VectorValue]) {
                         observation =>
                           println(s">>>>>>>>>>>>>> $id, $observation ")
-                                      complete("1256")
-//                          onComplete(engine.scoreModel(id, observation)) {
-//                            case Success(scored) => complete(scored)
-//                            case Failure(ex) => ctx => {
-//                              ctx.complete(500, ex.getMessage)
-//                            }
-//                          }
+                          onComplete(engine.scoreModel(id, observation)) {
+                            case Success(scored) => complete(scored.toString)
+                            case Failure(ex) => ctx => {
+                              ctx.complete(500, ex.getMessage)
+                            }
+                          }
                       }
                     }
                 }
