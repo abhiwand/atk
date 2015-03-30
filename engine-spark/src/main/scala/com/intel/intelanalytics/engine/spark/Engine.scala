@@ -132,6 +132,8 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -548,9 +550,10 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     withContext("se.scoremodel") {
       future {
         val model = models.expectModel(ModelReference(id))
-        val libsvmscorePlugin = new LibSvmScorePlugin
-
-        val predictionLabel = libsvmscorePlugin.execute(new LibSvmScoreArgs(model.toReference, values.value))
+        val svmJsObject = model.data.get
+        val libsvmData = svmJsObject.convertTo[LibSvmData]
+        val libsvmModel = libsvmData.svmModel
+        val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, values.value)
         predictionLabel.value
       }
     }
