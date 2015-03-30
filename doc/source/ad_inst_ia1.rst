@@ -53,7 +53,9 @@ the |IAT| private repository.
 EPEL Repository
 ---------------
 
-Verify the installation of the "epel" repository::
+Verify the installation of the "epel" repository:
+
+..code::
 
     $ sudo yum repolist
 
@@ -85,14 +87,14 @@ If the "epel" repository is not listed, do this to install it:
 
 .. only:: html
 
-    ::
+    ..code::
 
         $ wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
         $ sudo rpm -ivh epel-release-6-8.noarch.rpm
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.
             noarch.rpm
@@ -110,21 +112,23 @@ To add the dependency repository, do this:
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/
             ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
 Alternatively, do this to build the dependency repository information file
-directly::
+directly:
+
+.. code::
 
     $ echo "[intel-analytics-deps]
     > name=intel-analytics-deps
@@ -132,7 +136,13 @@ directly::
     > gpgcheck=0
     > priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ia-deps.repo
 
-Test the installation of the dependencies repository::
+.. only:: html
+
+    This code is :download:`downloadable <ia-deps.sh>`.
+
+Test the installation of the dependencies repository:
+
+.. code::
 
     $ sudo yum info yum-s3
 
@@ -150,7 +160,9 @@ Results should be similar to this::
     License     : Apache License 2.0
 
 Installing the *yum-s3* package allows access to the Amazon S3 repository.
-To install the *yum-s3* package, do this::
+To install the *yum-s3* package, do this:
+
+.. code::
 
     $ sudo yum -y install yum-s3
 
@@ -164,7 +176,7 @@ Create '/etc/yum.repos.d/ia.repo':
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ echo "[intel-analytics]
         > name=intel analytics
@@ -175,9 +187,12 @@ Create '/etc/yum.repos.d/ia.repo':
         > key_id=ACCESS_TOKEN
         > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ia.repo
 
+
+    This code is :download:`downloadable <ia-repo.sh>`.
+
 .. only:: latex
 
-    ::
+    .. code::
 
         $ echo "[intel-analytics]
         > name=intel analytics
@@ -196,7 +211,9 @@ Create '/etc/yum.repos.d/ia.repo':
 
     Replace "ACCESS_TOKEN" and "SECRET_TOKEN" with appropriate tokens.
 
-To verify the installation of the |IAT| repository, do this::
+To verify the installation of the |IAT| repository, do this:
+
+.. code::
 
     $ sudo yum info intelanalytics-rest-server
 
@@ -224,7 +241,9 @@ Troubleshooting Private Repository
 *   Double check the access and secret keys in the ia.repo file.
 *   AWS S3 will fail with access denied errors if the system time is out of
     sync with the website.
-    To keep the system time in sync with the website run::
+    To keep the system time in sync with the website run:
+    
+    .. code::
 
         $ sudo service ntpd start
 
@@ -233,7 +252,9 @@ Troubleshooting Private Repository
     before the |IAT| private repository.
 *   To use the yum command inside a corporate proxy make sure the
     *http_proxy* and *https_proxy* environment variables are set.
-*   The sudo command may need the -E option to maintain environment variables::
+*   The sudo command may need the -E option to maintain environment variables:
+  
+    .. code::
 
         $ sudo -E yum command
 
@@ -250,7 +271,7 @@ Only one instance of the rest server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
 
-::
+.. code::
 
     $ sudo yum -y install intelanalytics-rest-server
 
@@ -262,13 +283,13 @@ running the spark worker role.
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ sudo yum -y install intelanalytics-spark-deps
         $ sudo yum -y install intelanalytics-python-rest-client
@@ -292,7 +313,9 @@ create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
 work with the |IAT| server.
 
-To configure the |IAT| installation, do this::
+To configure the |IAT| installation, do this:
+
+.. code::
 
     $ cd /etc/intelanalytics/rest-server/
     $ sudo ./config
@@ -308,7 +331,9 @@ database multiple times can wipe out a users data frames and graphs.
 Command line arguments can also be supplied for every prompt.
 If a command line argument is given, no prompt will be presented.
 To get a list of all the command line arguments for the configuration script,
-run the same command with --help::
+run the same command with --help:
+
+.. code::
 
     $ sudo ./config --help
 
@@ -324,12 +349,16 @@ configuration file are needed.** (:ref:`Skip section <skip_manual_section>`).
 The rest server package provides a configuration template file which must be
 used to create a configuration file.
 Copy the configuration template file 'application.conf.tpl' to
-'application.conf' in the same directory, like this::
+'application.conf' in the same directory, like this:
+
+.. code::
 
     $ cd /etc/intelanalytics/rest-server
     $ sudo cp application.conf.tpl application.conf
 
-Open the file with a text editor::
+Open the file with a text editor:
+
+.. code::
 
     $ sudo vi application.conf
 
@@ -688,37 +717,51 @@ Now that the database is created, uncomment all the postgres lines in
         #comment any h2 configuration lines with a # or //::
          //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
-Restart the |IAT| service::
+Restart the |IAT| service:
+
+.. code::
 
     $ sudo service intelanalytics restart
 
 After restarting the service, the |IAT| will create all the database tables.
 Now insert a meta user to enable Python client requests.
 
-Login to the postgres linux user::
+Login to the postgres linux user:
+
+.. code::
 
     $ sudo su postgres
 
-Open the postgres command line::
+Open the postgres command line:
+
+.. code::
 
     $ psql
 
-Switch databases::
+Switch databases:
+
+.. code::
 
     postgres=# \c YOURDATABASE
     psql (8.4.18)
     You are now connected to database "YOURDATABASE".
 
-Then insert into the users table::
+Then insert into the users table:
+
+.. code::
 
     postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
     INSERT 0 1
 
-View the insertion by doing a select on the users table::
+View the insertion by doing a select on the users table:
+
+.. code::
 
     postgres=# select * from users;
 
-There should only be a single row per api_key::
+There should only be a single row per api_key:
+
+.. code::
 
 
      user_id | username  |    api_key     |         created_on         |        modified_on
@@ -738,7 +781,9 @@ Starting The |IAT| rest Server
 ==============================
 
 Starting the rest server is very easy.
-It can be started like any other Linux service. ::
+It can be started like any other Linux service. 
+
+.. code::
 
     $ sudo service intelanalytics start
 
@@ -751,11 +796,15 @@ Troubleshooting |IAT| rest Server
 A log gets written to '/var/log/intelanalytics/rest-server/output.log or
 '/var/log/intelanalytics/rest-server/application.log'.
 To resolve issues starting or running jobs, tail either log to see what
-error is getting reported while running the task::
+error is getting reported while running the task:
+
+.. code::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-or::
+or:
+
+.. code::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
