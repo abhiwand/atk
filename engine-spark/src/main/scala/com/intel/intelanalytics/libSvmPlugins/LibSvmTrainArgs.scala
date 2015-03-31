@@ -71,7 +71,7 @@ case class LibSvmTrainArgs(model: ModelReference,
   }
 
   def getGamma: Double = {
-    gamma.getOrElse(0.0)
+    gamma.getOrElse(1/9)
   }
 
   def getNu: Double = {
@@ -99,7 +99,7 @@ case class LibSvmTrainArgs(model: ModelReference,
   }
 
   def getNrWeight: Int = {
-    nrWeight.getOrElse(0)
+    nrWeight.getOrElse(1)
   }
 
   def getC: Double = {
