@@ -364,7 +364,7 @@ object MLLibJsonProtocol {
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val libSvmDataFormat = jsonFormat2(LibSvmData)
-  implicit val libSvmModelFormat = jsonFormat15(LibSvmTrainArgs)
+  implicit val libSvmModelFormat = jsonFormat19(LibSvmTrainArgs)
   implicit val libSvmPredictFormat = jsonFormat3(LibSvmPredictArgs)
   implicit val libSvmScoreFormat = jsonFormat2(LibSvmScoreArgs)
   implicit val libSvmScoreReturnFormat = jsonFormat1(LibSvmScoreReturn)
