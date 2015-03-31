@@ -89,7 +89,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven-snapshots</id>
-            <url>http://10.54.8.251:8081/nexus/content/repositories/snapshots</url>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
