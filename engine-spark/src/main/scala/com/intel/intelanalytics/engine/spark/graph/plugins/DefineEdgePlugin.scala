@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineEdgeArgs, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.EdgeSchema
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.FrameEntity
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Define an edge type for a seamless graph
  */
-class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DefineEdgeArgs, UnitReturn] {
+class DefineEdgePlugin(graphStorage: SparkGraphStorage) extends CommandPlugin[DefineEdgeArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample

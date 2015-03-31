@@ -23,38 +23,20 @@
 
 package com.intel.intelanalytics.repository
 
-import java.util.concurrent.TimeUnit
-
+import org.apache.commons.dbcp.BasicDataSource;
 import com.github.tototoshi.slick.GenericJodaSupport
-import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
+
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
-import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
-import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
+import com.intel.intelanalytics.domain.query.{ Query => QueryRecord }
 import com.intel.intelanalytics.domain.schema.Schema
-import com.typesafe.config.ConfigFactory
-import org.joda.time.{ Duration, DateTime }
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, EdgeSchema, FrameSchema, Schema }
 import org.joda.time.DateTime
-import scala.slick.driver.{ JdbcDriver, JdbcProfile }
+import scala.slick.driver.{ JdbcDriver }
 import org.flywaydb.core.Flyway
 import spray.json._
 import scala.util.Try
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.engine.ProgressInfo
-import scala.Some
-import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.UserTemplate
 import com.intel.event.{ EventContext, EventLogging }
-import scala.Some
+
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.schema.FrameSchema
@@ -112,9 +94,17 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   private[repository] val database = withContext("Connecting to database") {
-    info("JDBC Connection String: " + profile.connectionString)
-    info("JDBC Driver: " + profile.driver)
-    Database.forURL(profile.connectionString, driver = profile.driver, user = profile.username, password = profile.password)
+    info(s"JDBC Connection String: ${profile.connectionString}")
+    info(s"JDBC Driver: ${profile.driver}")
+    val dataSource = new BasicDataSource()
+    dataSource.setDriverClassName(profile.driver)
+    dataSource.setUrl(profile.connectionString)
+    dataSource.setUsername(profile.username)
+    dataSource.setPassword(profile.password)
+    // TODO: expose setting in config files
+    dataSource.setMaxActive(100)
+    info(s"JDBC minIdle: ${dataSource.getMinIdle}, maxTotal: ${dataSource.getMaxActive}")
+    Database.forDataSource(dataSource)
   }(null)
 
   type Session = profile.profile.simple.Session
@@ -747,7 +737,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, "", None, List(), complete = false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, "", None, List(), complete = false, None, new DateTime(), new DateTime(), command.createdBy)
       commandsAutoInc.insert(c)
     }
 

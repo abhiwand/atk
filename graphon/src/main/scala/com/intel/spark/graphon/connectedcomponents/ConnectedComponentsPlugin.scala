@@ -90,7 +90,8 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
   override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): FrameEntity = {
     val sparkContext = sc
 
-    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)

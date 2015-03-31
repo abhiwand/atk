@@ -25,4 +25,10 @@ package com.intel.intelanalytics.domain.command
 
 import spray.json.JsObject
 
-case class CommandTemplate(name: String, arguments: Option[JsObject])
+/**
+ * Template for creating new command entities
+ * @param name name of command to run
+ * @param arguments argument list for command
+ * @param createdBy id of the user who initiated the command execution
+ */
+case class CommandTemplate(name: String, arguments: Option[JsObject], createdBy: Option[Long] = None)
