@@ -143,21 +143,33 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     }
 
     prob.l = vectory.size
-    val myprobx = Array.ofDim[Array[svm_node]](prob.l)
+    prob.x = Array.ofDim[Array[svm_node]](prob.l)
     var k: Int = 0
     while (k < prob.l) {
-      myprobx(k) = vectorx(k)
+      prob.x(k) = vectorx(k)
       k += 1
     }
-    prob.x = myprobx
-
-    val myproby = Array.ofDim[Double](prob.l)
+    prob.y = Array.ofDim[Double](prob.l)
     var i: Int = 0
     while (i < prob.l) {
-      myproby(i) = vectory(i)
+      prob.y(i) = vectory(i)
       i += 1
     }
-    prob.y = myproby
+//    val myprobx = Array.ofDim[Array[svm_node]](prob.l)
+//    var k: Int = 0
+//    while (k < prob.l) {
+//      myprobx(k) = vectorx(k)
+//      k += 1
+//    }
+//    prob.x = myprobx
+
+//    val myproby = Array.ofDim[Double](prob.l)
+//    var i: Int = 0
+//    while (i < prob.l) {
+//      myproby(i) = vectory(i)
+//      i += 1
+//    }
+//    prob.y = myproby
 
     if (param.gamma == 0 && max_index > 0) param.gamma = 1.0 / max_index
     prob

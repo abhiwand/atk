@@ -1,4 +1,4 @@
-Train Liv Svn model based on another frame.
+Train Lib Svm model based on another frame.
 
 Creating a lib Svm Model using the observation column and label column of the train
 frame.
