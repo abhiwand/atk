@@ -41,6 +41,7 @@ import spray.json._
 import scala.concurrent._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+import scala.slick.collection.heterogenous.Zero.*
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.intelanalytics.domain.command.CommandTemplate
@@ -311,7 +312,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         val pluginArguments = Array(s"${command.id}")
 
         /* Prepare input arguments for Spark Submit; Do not change the order */
-        import org.apache.spark.deploy.SparkSubmit
         val inputArgs = sparkMaster ++
           pluginExecutionDriverClass ++
           pluginDependencyJars ++
@@ -324,7 +324,15 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
         /* Launch Spark Submit */
         info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-        SparkSubmit.main(inputArgs) /* Blocks */
+        import sys.process._
+        import scala.collection.JavaConversions._
+        val pluginDependencyJarsStr = "/usr/lib/intelanalytics/rest-server/lib/engine-spark.jar:/etc/hbase/conf:/etc/hadoop/conf"
+        val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
+
+        val pb = new java.lang.ProcessBuilder(javaArgs: _*)
+        pb.environment().putAll(sys.props.clone())
+        val result = (pb.inheritIO() !)
+        info(s"Command ${command.id} complete with result: $result")
       }
     }
   }
