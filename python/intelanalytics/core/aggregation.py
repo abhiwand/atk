@@ -41,7 +41,7 @@ class AggregationFunctions(object):
     var = 'VAR'
     stdev = 'STDEV'
 
-    def histogram(self, cutoffs, include_lowest=None, strict_binning=None):
+    def histogram(self, cutoffs, include_lowest=True, strict_binning=False):
         return repr(GroupByHistogram(cutoffs, include_lowest, strict_binning))
 
     def __repr__(self):
@@ -58,7 +58,7 @@ class GroupByHistogram:
     """
     Class for histogram aggregation function that uses cutoffs to compute histograms
     """
-    def __init__(self, cutoffs, include_lowest=None, strict_binning=None):
+    def __init__(self, cutoffs, include_lowest=True, strict_binning=False):
         for c in cutoffs:
             if not isinstance(c, (int, long, float, complex)):
                 raise ValueError("Bad value %s in cutoffs, expected a number")
