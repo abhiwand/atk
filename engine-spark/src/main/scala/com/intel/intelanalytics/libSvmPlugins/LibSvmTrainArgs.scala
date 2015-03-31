@@ -47,7 +47,11 @@ case class LibSvmTrainArgs(model: ModelReference,
                            probability: Option[Int] = None,
                            nrWeight: Option[Int] = None,
                            C: Option[Double] = None,
-                           p: Option[Double] = None) {
+                           p: Option[Double] = None,
+                           svmType:  Option[Int],
+                           kernelType: Option[Int],
+                           weightLabel: Option[Array[Int]],
+                           weight: Option[Array[Double]]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
@@ -100,6 +104,22 @@ case class LibSvmTrainArgs(model: ModelReference,
 
   def getC: Double = {
     C.getOrElse(1.0)
+  }
+
+  def getSvmType: Int = {
+    svmType.getOrElse(2)
+  }
+
+  def getKernelType: Int = {
+    kernelType.getOrElse(2)
+  }
+
+  def getWeightLabel: Array[Int] = {
+    weightLabel.getOrElse(Array[Int](0))
+  }
+
+  def getWeight: Array[Double] = {
+    weight.getOrElse(Array[Double](0.0))
   }
 }
 

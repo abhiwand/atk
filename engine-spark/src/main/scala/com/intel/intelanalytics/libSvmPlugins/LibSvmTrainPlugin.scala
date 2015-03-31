@@ -92,8 +92,8 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val param = new svm_parameter()
 
     // values for svm_parameters
-    param.svm_type = svm_parameter.ONE_CLASS
-    param.kernel_type = svm_parameter.RBF
+    param.svm_type = arguments.getSvmType
+    param.kernel_type = arguments.getKernelType
     param.degree = arguments.getDegree
     param.gamma = arguments.getGamma
     param.coef0 = arguments.getCoef0
@@ -105,8 +105,8 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     param.shrinking = arguments.getShrinking
     param.probability = arguments.getProbability
     param.nr_weight = arguments.getNrWeight
-    param.weight_label = new Array[Int](0)
-    param.weight = new Array[Double](0)
+    param.weight_label = arguments.getWeightLabel //new Array[Int](0)
+    param.weight = arguments.getWeight //new Array[Double](0)
     param
   }
 
@@ -155,21 +155,6 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
       prob.y(i) = vectory(i)
       i += 1
     }
-//    val myprobx = Array.ofDim[Array[svm_node]](prob.l)
-//    var k: Int = 0
-//    while (k < prob.l) {
-//      myprobx(k) = vectorx(k)
-//      k += 1
-//    }
-//    prob.x = myprobx
-
-//    val myproby = Array.ofDim[Double](prob.l)
-//    var i: Int = 0
-//    while (i < prob.l) {
-//      myproby(i) = vectory(i)
-//      i += 1
-//    }
-//    prob.y = myproby
 
     if (param.gamma == 0 && max_index > 0) param.gamma = 1.0 / max_index
     prob

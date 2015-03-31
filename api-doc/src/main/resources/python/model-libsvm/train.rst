@@ -47,6 +47,17 @@ c : double (Optional)
 p : double (Optional)
     Default is 0.1.
 
+svm_type: int (Optional)
+    Default is 2.
+
+kernel_type: int (Optional)
+    Default is 2.
+
+weight_label: Array[Int] (Optional)
+    Default is (Array[Int](0))
+
+weight: Array[Double] (Optional)
+    Default is (Array[Double](0.0))
 
 Returns
 -------
