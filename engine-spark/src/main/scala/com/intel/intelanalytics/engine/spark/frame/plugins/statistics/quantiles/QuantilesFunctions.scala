@@ -72,7 +72,7 @@ object QuantilesFunctions extends Serializable {
     val sorted = singleColumn.sortBy(x => x)
 
     val quantileTargetMapping = getQuantileTargetMapping(rowCount, quantiles)
-    val sumsAndCounts: Map[Int, (Int, Int)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(sorted)
+    val sumsAndCounts: Map[Int, (Long, Long)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(sorted)
 
     //this is the first stage of calculating quantile
     //generate data that has keys as quantiles and values as column data times weight

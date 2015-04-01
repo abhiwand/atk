@@ -80,7 +80,7 @@ trait Engine {
 
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
+  //  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
   @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]

@@ -78,8 +78,6 @@ class SparkModelStorage(metaStore: MetaStore)
 
     implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
 
-    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
-
     /**
      * Save data of the given type, possibly creating a new object.
      */

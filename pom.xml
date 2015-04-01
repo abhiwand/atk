@@ -89,7 +89,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven-snapshots</id>
-            <url>http://10.54.8.251:8081/nexus/content/repositories/snapshots</url>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -1406,6 +1406,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.chuusai</groupId>
                 <artifactId>shapeless_${scala.long.version}</artifactId>
                 <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-dbcp</groupId>
+                <artifactId>commons-dbcp</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>2.3</version>
             </dependency>
 
             <!--test scope-->

@@ -60,3 +60,10 @@ frame= frame.join(word_results, left_on="word_id", right_on="word_id", how="left
 
 frame.dot_product(['lda_results_doc'], ['lda_results_word'], 'lda_score')
 frame.inspect()
+
+print("compute histogram of scores")
+word_hist = frame.histogram('word_count')
+lda_hist = frame.histogram('lda_score')
+group_frame = frame.group_by('word_id_L', {'word_count': ia.agg.histogram(word_hist.cutoffs), 'lda_score':  ia.agg.histogram(lda_hist.cutoffs)})
+group_frame.inspect()
+
