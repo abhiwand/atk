@@ -14,7 +14,17 @@ import java.io.{ Serializable, FileWriter }
 import org.apache.spark.SparkContext._
 
 import scala.io.Source
+case class HierarchicalClusteringEdge(var src: Long,
+                                      var srcNodeCount: Int,
+                                      var dest: Long,
+                                      var destNodeCount: Int,
+                                      var distance: Float,
+                                      isInternal: Boolean) {
+  def getTotalNodeCount(): Int = {
+    srcNodeCount + destNodeCount
+  }
 
+}
 object HierarchicalClusteringImpl extends Serializable {
 
   def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration): Unit = {
