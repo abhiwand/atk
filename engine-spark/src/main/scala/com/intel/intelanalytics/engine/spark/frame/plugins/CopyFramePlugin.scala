@@ -35,7 +35,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Copies specified columns into a new BigFrame object, optionally renaming them and/or filtering them
+ * Copies specified columns into a new Frame object, optionally renaming them and/or filtering them
  */
 class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
