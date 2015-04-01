@@ -45,6 +45,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.hierarchicalclustering.HierarchicalClusteringPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RDDJoinParam, JoinArgs, JoinPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
@@ -238,6 +239,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
+
+  commandPluginRegistry.registerCommand(new HierarchicalClusteringPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
