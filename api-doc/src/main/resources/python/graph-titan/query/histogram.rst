@@ -61,7 +61,7 @@ Generate the prior and posterior histograms for LBP:
 
     .. code::
 
-        >>> graph = BigGraph(...)
+        >>> graph = ia.TitanGraph(...)
         >>> graph.ml.loopy_belief_propagation(...)
         >>> results = graph.query.histogram(prior_property_list ="value", posterior_property_list = "lbp_posterior",  property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
 
@@ -72,7 +72,7 @@ Generate the prior and posterior histograms for LBP:
 
     .. code::
 
-        >>> graph = BigGraph(...)
+        >>> graph = ia.TitanGraph(...)
         >>> graph.ml.loopy_belief_propagation(...)
         >>> results = graph.query.histogram(
         ...     prior_property_list ="value",
