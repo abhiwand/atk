@@ -197,7 +197,7 @@ Glossary
 
     Confusion Matrices
 
-        See :term:`Confusion Matrix`
+        Plural form of :term:`Confusion Matrix`
 
     Confusion Matrix
 
@@ -983,7 +983,7 @@ Glossary
 
     Vertices
 
-        See :term:`Vertex`.
+        Plural form of :term:`Vertex`.
 
 .. _Wikipedia\: Standard Deviation:
     http://en.wikipedia.org/wiki/Standard_deviation
