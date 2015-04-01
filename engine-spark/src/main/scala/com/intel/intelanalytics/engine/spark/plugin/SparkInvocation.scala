@@ -28,8 +28,8 @@ import com.intel.intelanalytics.engine.plugin.CommandInvocation
 import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkEngine }
 import com.intel.intelanalytics.engine.{ CommandStorageProgressUpdater, CommandStorage, ReferenceResolver }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.SparkContext
 import spray.json.JsObject
+import org.apache.spark.SparkContext
 
 import scala.concurrent.ExecutionContext
 

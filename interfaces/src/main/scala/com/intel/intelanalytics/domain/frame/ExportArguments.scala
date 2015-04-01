@@ -28,7 +28,7 @@ package com.intel.intelanalytics.domain.frame
  */
 case class ExportHdfsCsvArgs(frame: FrameReference,
                              folderName: String,
-                             separator: Option[String] = None,
+                             separator: Option[Char] = None,
                              count: Option[Int] = None,
                              offset: Option[Int] = None) {
   require(frame != null, "frame is required")

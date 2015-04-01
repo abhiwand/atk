@@ -67,7 +67,8 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
 
     val graph = engine.graphs.expectGraph(arguments.graph)
     require(graph.isTitan, "assign sample is currently only implemented for Titan Graphs")
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     //convert graph into vertex and edge RDDs
     val gbVertices = engine.graphs.loadGbVertices(sc, graph)
