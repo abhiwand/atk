@@ -25,9 +25,11 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.hierarchicalclusteri
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 
@@ -36,12 +38,10 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Parameters for executing connected components.
- * @param graph Reference to the graph object on which to compute connected components.
- * @param output_property Name of the property to which connected components value will be stored on vertex and edge.
- * @param output_graph_name Name of output graph.
+ *
+ * @param graph
  */
-case class HierarchicalClusteringArgs(frame: FrameReference)
+case class HierarchicalClusteringArgs(graph: GraphReference)
 
 /** Json conversion for arguments and return value case classes */
 object HierarchicalClusteringFormat {
@@ -61,7 +61,7 @@ import HierarchicalClusteringFormat._
  */
 class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
 
-  override def name: String = "frame:/hierarchical_clustering"
+  override def name: String = "graph:titan/hierarchical_clustering"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
@@ -69,11 +69,11 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
   override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
+    val graph = engine.graphs.expectGraph(arguments.graph)
+    val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    val frame = engine.frames.expectFrame(arguments.frame)
-    val data = engine.frames.loadFrameData(sc, frame)
-    val d = data.mapRows(row => row.valuesAsArray()).collect()
-    HierarchicalClusteringImpl.execute(data)
+    HierarchicalClusteringImpl.execute(vertices, edges, titanConfig)
 
     new UnitReturn
   }
