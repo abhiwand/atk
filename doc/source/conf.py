@@ -146,7 +146,7 @@ release = '1.0.0'
 #today = ''
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
-today_fmt='%Y%m%d.%H%M'
+today_fmt='%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -200,7 +200,7 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-tml_theme = 'IA'
+html_theme = 'IA'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -245,8 +245,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
-html_sidebars = {'**': ['globaltoc.html']}
+html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
