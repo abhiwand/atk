@@ -25,12 +25,14 @@ package com.intel.intelanalytics.libSvmPlugins
 
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.rdd.RDD
 
 class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, ClassificationMetricValue] {
   /**
@@ -82,9 +84,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     }
 
     //predicting a label for the observation column/s
-    val libsvmscorePlugin = new LibSvmScorePlugin
-
-    val predictionsRdd = inputFrameRdd.mapRows(row => {
+    val predictionsRdd: RDD[Row] = inputFrameRdd.mapRows(row => {
       val array = row.valuesAsArray(libsvmData.observationColumns)
       val label = row.value(arguments.labelColumn)
       val doubles = array.map(i => DataTypes.toDouble(i))
@@ -95,7 +95,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, vector)
-      Array[Any](label, predictionLabel)
+      Array[Any](label.asInstanceOf[Double], predictionLabel.value)
     })
 
     //Run Binary classification metrics
