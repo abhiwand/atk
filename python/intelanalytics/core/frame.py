@@ -724,8 +724,18 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             the resultant column is named 'a_avg'.
         *   An aggregation argument of 'count' results in a column named
             'count'.
+        *   The aggregation function `agg.count` is the only full row
+            aggregation function supported at this time.
+        *   Aggregation currently supports using the following functions:
 
-        See :ref:`Supported aggregation functions <aggregation_functions>`.
+            *   avg
+            *   count
+            *   count_distinct
+            *   max
+            *   min
+            *   stdev
+            *   sum
+            *   var
 
         Examples
         --------
