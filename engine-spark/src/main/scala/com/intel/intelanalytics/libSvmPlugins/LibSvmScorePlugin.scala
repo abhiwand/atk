@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, ApiMaturityTag, I
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_model, svm, svm_node }
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
@@ -69,11 +70,11 @@ class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
     val libsvmData = svmJsObject.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
-    LibSvmScorePluginFunctions.score(libsvmModel, arguments.vector)
+    LibSvmPluginFunctions.score(libsvmModel, arguments.vector)
   }
 }
 
-object LibSvmScorePluginFunctions extends Serializable {
+object LibSvmPluginFunctions extends Serializable {
 
   def score(libsvmModel: svm_model, vector: Vector[Double]): DoubleValue = {
     val output = columnFormatter(vector.toArray.zipWithIndex)
@@ -85,11 +86,15 @@ object LibSvmScorePluginFunctions extends Serializable {
     var j: Int = 0
     while (j < counter) {
       x(j) = new svm_node
-      x(j).index = (atoi(splitObs.nextToken)) + 1
+      x(j).index = atoi(splitObs.nextToken) + 1
       x(j).value = atof(splitObs.nextToken)
       j += 1
     }
     new DoubleValue(svm.svm_predict(libsvmModel, x))
+  }
+
+  def LibSvmFormatter(frameRdd: FrameRdd): Array[String] = {
+    frameRdd.map(row => columnFormatter(row.toArray.zipWithIndex)).collect()
   }
 
   private def columnFormatter(valueIndexPairArray: Array[(Any, Int)]): String = {
@@ -102,11 +107,11 @@ object LibSvmScorePluginFunctions extends Serializable {
     s"${valueIndexPairArray(0)._1} ${result.mkString(" ")}"
   }
 
-  private def atof(s: String): Double = {
+  def atof(s: String): Double = {
     s.toDouble
   }
 
-  private def atoi(s: String): Int = {
+  def atoi(s: String): Int = {
     Integer.parseInt(s)
   }
 }

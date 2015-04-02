@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
- * Command for loading model data into existing model in the model database.
+ * Command for predicting labels on the given dataset using a libsvm model
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column of the data frame

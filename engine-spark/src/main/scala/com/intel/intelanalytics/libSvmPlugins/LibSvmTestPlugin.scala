@@ -73,7 +73,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     // load frame as RDD
     val inputFrameRdd = frame.data
 
-    //Running MLLib
+    //Loading the model
     val svmColumns = arguments.observationColumns
     val svmJsObject = modelMeta.data.get
     val libsvmData = svmJsObject.convertTo[LibSvmData]
@@ -94,7 +94,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         vector = vector :+ doubles(i)
         i += 1
       }
-      val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, vector)
+      val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
       Array[Any](label.asInstanceOf[Double], predictionLabel.value)
     })
 
