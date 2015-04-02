@@ -6,7 +6,6 @@ Parameters
 ----------
 column_name : str
     The column to calculate quantiles
-
 quantiles : [ float | list of float ]
 
 Returns

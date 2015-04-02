@@ -10,7 +10,6 @@ Parameters
 ----------
 column : str
     The column to be flattened.
-
 delimiter : str (optional)
     The delimiter string.
     Default is comma (,).

@@ -7,21 +7,17 @@ Parameters
 ----------
 output_property : str
     The name of output property to be added to vertex/edge upon completion.
-
 output_graph_name : str
     The name of output graph to be created (original graph will be left
     unmodified).
-
 input_edge_labels : list of str (optional)
     The name of edge labels to be considered for pagerank.
     Default is all edges are considered.
-
 max_iterations : int (optional)
     The maximum number of iterations that the algorithm will execute.
     The valid range is all positive int.
     Invalid value will terminate with vertex page rank set to reset_probability.
     Default is 20.
-
 convergence_tolerance : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
@@ -30,7 +26,6 @@ convergence_tolerance : float (optional)
     If the change is less than this threshold, the algorithm exits earlier.
     The valid value range is all float and zero.
     Default is 0.001.
-
 reset_probability : float (optional)
     The probability that the random walk of a page is reset.
     Default is 0.15.

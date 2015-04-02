@@ -404,7 +404,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    */
   def getGraph(id: Identifier)(implicit invocation: Invocation): Future[GraphEntity] = {
     future {
-      graphs.lookup(id).get
+      graphs.lookup(id).getOrElse(throw new NotFoundException("graph"))
     }
   }
 
