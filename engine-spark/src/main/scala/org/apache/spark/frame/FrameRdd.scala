@@ -310,14 +310,14 @@ class FrameRdd(val frameSchema: Schema,
    * @param startId  the first id to add (defaults to 0), incrementing from there
    */
   def assignUniqueIds(columnName: String, startId: Long = 0): FrameRdd = {
-    val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
+    val sumsAndCounts: Map[Int, (Long, Long)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
 
     val newRows: RDD[sql.Row] = this.mapPartitionsWithIndex((i, rows) => {
-      val (ct: Int, sum: Int) = if (i == 0) (0, 0)
+      val (ct: Long, sum: Long) = if (i == 0) (0L, 0L)
       else sumsAndCounts(i - 1)
       val partitionStart = sum + startId
       rows.zipWithIndex.map {
-        case (row, index) => {
+        case (row: sql.Row, index: Int) => {
           val id: Long = partitionStart + index
           rowWrapper(row).addOrSetValue(columnName, id)
         }

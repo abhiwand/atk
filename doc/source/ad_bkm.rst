@@ -5,19 +5,12 @@ Best Known Methods (Admin)
 .. contents:: Table of Contents
     :local:
 
-.. toctree::
-    :hidden:
-
-    ad_gitune
-    ad_hbtune
-    ad_how.rst
-
 -------------------------
 Configuration information
 -------------------------
 
-.. include:: ad_gitune.rst
-.. include:: ad_hbtune.rst
+.. include:: ad_gitune.inc
+.. include:: ad_hbtune.inc
 
 -----
 Spark
@@ -84,7 +77,7 @@ These can occupy over 140MB per command.
 
     *   Spark 1.0 will automatically clean up the files
 
-.. include:: ad_how.rst
+.. include:: ad_how.inc
 
 ----------
 References

@@ -7,7 +7,6 @@ predict_frame : Frame
     By default, predict is run on the same columns over which the model is
     trained.
     The user could specify column names too if needed.
-
 observation_columns : list of str (optional)
     Column(s) containing the observations whose clusters are to be predicted.
     By default, we predict the clusters over columns the KMeansModel was

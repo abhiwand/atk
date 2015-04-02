@@ -9,11 +9,9 @@ Parameters
 input_edge_label : str
     The name of edge label used to for performing the connected components
     calculation.
-
 output_vertex_property : str
     The vertex property which will contain the connected component id for
     each vertex.
-
 convergence_output_interval : int (optional)
     The convergence progress output interval.
     Since convergence is a tricky notion for

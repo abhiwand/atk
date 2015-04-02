@@ -6,15 +6,12 @@ Parameters
 ----------
 input_edge_label : list of str
     The name(s) of edge label(s).
-
 output_vertex_property_list : list of str
     Vertex properties to store output vertex values.
-
 max_supersteps : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid range is all positive int.
     The default value is 20.
-
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
@@ -22,10 +19,8 @@ convergence_threshold : float (optional)
     before it reaches the maximum number of supersteps.
     The valid range is all float and zero.
     The default value is 0.001.
-
 reset_probability : float (optional)
     The probability that the random walk of a page is reset.
-
 convergence_output_interval : int (optional)
     The convergence progress output interval.
     The valid value range is [1, max_supersteps].
