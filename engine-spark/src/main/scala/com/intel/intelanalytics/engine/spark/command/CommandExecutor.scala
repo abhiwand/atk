@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import java.io.File
-import java.nio.file.{ FileSystems, Files, Path }
+import java.nio.file.{ FileSystems, Files }
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
@@ -34,20 +34,16 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
-import com.typesafe.config.ConfigFactory
-import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.concurrent._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import scala.slick.collection.heterogenous.Zero.*
 import scala.util.Try
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.event.{ EventContext, EventLogging }
@@ -232,20 +228,15 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
-    info(s"System Properties are: ${sys.props.keys.mkString(",")}")
+    debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarnClusterMode) {
-      try {
         executeCommandOnYarn(commandContext.command, plugin)
         /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
         val updatedCommand = commands.lookup(commandContext.command.id).get
         if (updatedCommand.error.isDefined)
           throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-        updatedCommand.result.get
-      }
-      finally {
-        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
-      }
+        updatedCommand.result.getOrElse(throw new Exception("Error submitting command to yarn-cluster"))
     }
     else {
       val returnValue = if (commandContext.action) {
@@ -332,13 +323,13 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
 
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)
-          pb.environment().putAll(sys.props.clone())
           val result = (pb.inheritIO() !)
           info(s"Command ${command.id} complete with result: $result")
         }
       }
       finally {
         Files.deleteIfExists(FileSystems.getDefault().getPath(s"$tempConfFileName"))
+        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
       }
     }
   }
