@@ -191,17 +191,31 @@ function main {
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
 
-            # debug: Update scala server
             pushd ../ > /dev/null
+
+            # debug: Update scala server
             update_scala $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" != "0" ]; then popd; return 1; fi
+            if [ "$?" != "0" ]; then
+                pkill -9 -f java
+                popd
+                return 1
+            fi
 
             # debug: Update the additional python documentation files
             cd python
             update_python $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" == "1" ]; then popd; return 1; fi
+            if [ "$?" == "1" ]; then
+                pkill -9 -f java
+                popd
+                return 1
+            fi
+
+            # Start the server
+            cp conf/examples/application.conf.build conf/application.conf
+            nohup bin/api-server.sh > out 2>&1&
 
             # debug: Return to original directory to continue
+            pkill -9 -f java
             popd > /dev/null
         fi
 
@@ -425,25 +439,9 @@ function update_scala {
     # Update scala server
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
-#       RunCommand="mvn compile"
-#       log_step "$RunCommand" $2 $4
-#       $RunCommand > $3
-#       if [ "$?" != "0" ]; then
-#           Err "$RunCommand" $1 $2 $3 $4
-#           if [ "$?" == "1" ]; then return 1; fi
-            RunCommand="mvn clean install -DskipTests"
-#           read -p "Try \"$RunCommand\"? [y|N]" UserResponse
-#           if [ -z $UserResponse ];then
-#               UserResponse='y'
-#           fi
-#           if [ ${UserResponse:0:1} == 'N' -o ${UserResponse:0:1} == 'n' ]; then
-#               return 1
-#           fi
-            do_this "$RunCommand" $1 $2 $3 $4
-            return $?
-#       else
-#           rm $3 > /dev/null
-#       fi
+        RunCommand="mvn clean install -DskipTests"
+        do_this "$RunCommand" $1 $2 $3 $4
+        return $?
     else
         Err "Maven does not appear to be installed." $1 $2 $3 $4
         if [ "$?" == "1" ]; then return 1; fi
