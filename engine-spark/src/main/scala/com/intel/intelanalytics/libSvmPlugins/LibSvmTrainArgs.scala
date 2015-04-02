@@ -48,7 +48,7 @@ case class LibSvmTrainArgs(model: ModelReference,
                            nrWeight: Option[Int] = None,
                            C: Option[Double] = None,
                            p: Option[Double] = None,
-                           svmType:  Option[Int],
+                           svmType: Option[Int],
                            kernelType: Option[Int],
                            weightLabel: Option[Array[Int]],
                            weight: Option[Array[Double]]) {
@@ -71,7 +71,7 @@ case class LibSvmTrainArgs(model: ModelReference,
   }
 
   def getGamma: Double = {
-    gamma.getOrElse(1/9)
+    gamma.getOrElse(1 / 9)
   }
 
   def getNu: Double = {
