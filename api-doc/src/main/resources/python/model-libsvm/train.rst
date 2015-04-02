@@ -21,22 +21,22 @@ degree: int (Optional)
     Degree of the polynomial kernel function ('poly'). Ignored by all other kernels. Default is 3.
 
 gamma: Double (Optional)
-    Default is 0.0.
+    Kernel coefficient for 'rbf', 'poly' and 'sigmoid'. If gamma is 0.0, then 1/n_features will be used. Default is 0.0.
 
 coef: double (Optional)
-    Default is 0.0.
+    Independent term in kernel function. It is only significant in 'poly' and 'sigmoid'. Default is 0.0.
 
 nu : double (Optional)
     Default is 0.5.
 
 cache_size : double (Optional)
-    Default is 100.0.
+    Specify the size of the kernel cache (in MB). Default is 100.0.
 
 shrinking : int (Optional)
-    Default is 1.
+    Whether to use the shrinking heuristic. Default is 1(true).
 
 probability : int (Optional)
-    Default is 0.
+    Whether to enable probability estimates. Default is 0(false).
 
 nr_weight : int (Optional)
     Default is 0.
