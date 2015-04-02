@@ -85,7 +85,7 @@ object LibSvmScorePluginFunctions extends Serializable {
     var j: Int = 0
     while (j < counter) {
       x(j) = new svm_node
-      x(j).index = atoi(splitObs.nextToken)
+      x(j).index = (atoi(splitObs.nextToken)) + 1
       x(j).value = atof(splitObs.nextToken)
       j += 1
     }

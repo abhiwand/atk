@@ -18,7 +18,7 @@ epsilon: double (Optional)
     Default is 0.001.
 
 degree: int (Optional)
-    Default is 3.
+    Degree of the polynomial kernel function ('poly'). Ignored by all other kernels. Default is 3.
 
 gamma: Double (Optional)
     Default is 0.0.
@@ -42,7 +42,7 @@ nr_weight : int (Optional)
     Default is 0.
 
 c : double (Optional)
-    Default is 1.0.
+    Penalty parameter C of the error term. Default is 1.0.
 
 p : double (Optional)
     Default is 0.1.
@@ -51,7 +51,7 @@ svm_type: int (Optional)
     Default is 2.
 
 kernel_type: int (Optional)
-    Default is 2.
+    Specifies the kernel type to be used in the algorithm. It must be one of 'linear=0', 'poly=1', 'rbf=2', 'precomputed=3'. Default is 2.
 
 weight_label: Array[Int] (Optional)
     Default is (Array[Int](0))
