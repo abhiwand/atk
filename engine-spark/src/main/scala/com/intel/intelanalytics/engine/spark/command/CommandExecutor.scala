@@ -231,12 +231,12 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarnClusterMode) {
-        executeCommandOnYarn(commandContext.command, plugin)
-        /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
-        val updatedCommand = commands.lookup(commandContext.command.id).get
-        if (updatedCommand.error.isDefined)
-          throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-        updatedCommand.result.getOrElse(throw new Exception("Error submitting command to yarn-cluster"))
+      executeCommandOnYarn(commandContext.command, plugin)
+      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+      val updatedCommand = commands.lookup(commandContext.command.id).get
+      if (updatedCommand.error.isDefined)
+        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+      updatedCommand.result.getOrElse(throw new Exception("Error submitting command to yarn-cluster"))
     }
     else {
       val returnValue = if (commandContext.action) {
