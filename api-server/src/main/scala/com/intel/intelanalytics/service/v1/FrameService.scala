@@ -77,7 +77,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       val baseUri = StringUtils.substringBeforeLast(uri.toString(), "/")
                       complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }
-                    case Success(None) => complete(StatusCodes.NotFound)
+                    case Success(None) => complete(StatusCodes.NotFound, s"Frame with name '$name' was not found.")
                     case Failure(ex) => throw ex
                   }
                 }
@@ -126,7 +126,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       decorated
                     }
                   }
-                  case Success(None) => complete(StatusCodes.NotFound)
+                  case Success(None) => complete(StatusCodes.NotFound, "Frame was not found")
                   case Failure(ex) => throw ex
                 }
               } ~

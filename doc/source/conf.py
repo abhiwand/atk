@@ -56,7 +56,7 @@ rst_epilog = """
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
 .. |IA|     replace:: Intel Analytics
-.. |IAT|    replace:: :abbr:`ATK (Analytics Toolkit)`
+.. |IAT|    replace:: :abbr:`ATK (Intel Analytics Toolkit)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
@@ -146,6 +146,7 @@ release = '1.0.0'
 #today = ''
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
+today_fmt='%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -199,17 +200,6 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'default'
-#html_theme = 'nature'
-#html_theme = 'agogo'
-#html_theme = 'scipy'
-#html_theme = 'basic'
-#html_theme = 'epub'
-#html_theme = 'haiku'
-#html_theme = 'pyramid'
-#html_theme = 'scrolls'
-#html_theme = 'sphinxdoc'
-#html_theme = 'traditional'
 html_theme = 'IA'
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -255,15 +245,14 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
-html_sidebars = {'**': ['globaltoc.html']}
+html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-html_domain_indices = True
+html_domain_indices = False
 
 # If false, no index is generated.
 html_use_index = True

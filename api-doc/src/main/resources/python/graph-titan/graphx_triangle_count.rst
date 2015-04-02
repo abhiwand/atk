@@ -11,11 +11,9 @@ Parameters
 ----------
 output_property : str
     The name of output property to be added to vertex/edge upon completion.
-
 output_graph_name : str
     The name of output graph to be created (original graph will be left
     unmodified).
-
 input_edge_labels : list of str (optional)
     The name of edge labels to be considered for triangle count.
     Default is all edges are considered.

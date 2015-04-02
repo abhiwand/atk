@@ -14,7 +14,6 @@ Parameters
 ----------
 data_column : str
     The column whose median is to be calculated.
-
 weights_column : str (optional)
     The column that provides weights (frequencies) for the median
     calculation.
