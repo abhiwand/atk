@@ -123,7 +123,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     var max_index: Int = 0
     val prob = new svm_problem()
 
-    for (i <- 0 until output.length - 1) {
+    for (i <- 0 until output.length) {
       val observation = output(i)
       val splitObs: StringTokenizer = new StringTokenizer(observation, " \t\n\r\f:")
 
