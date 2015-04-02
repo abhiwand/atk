@@ -86,6 +86,6 @@ object Status {
   /** Object is active but is unnamed **/
   final val Weakly_Live: Long = 7
 
-  /** Object has been marked deleted on metastore **/
+  /** INACTIVE AND UNUSED, the data on disk will be deleted but can be recreated **/
   final val Dead: Long = 8
 }
