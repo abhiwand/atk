@@ -11,21 +11,19 @@ Parameters
 ----------
 column_name : str
     The column whose values are to be binned.
-
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
     :math:`math.floor(math.sqrt(frame.row_count))`
-
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
 
 Notes
 -----
-#)  Unicode in column names is not supported and will likely cause the
+1)  Unicode in column names is not supported and will likely cause the
     drop_frames() method (and others) to fail!
-#)  The num_bins parameter is considered to be the maximum permissible number
+2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
     elements with only 2 distinct values and the *num_bins* parameter is

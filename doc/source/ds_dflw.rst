@@ -904,18 +904,17 @@ the Frames by the same name, unless needed for clarity:
       berry          5218        frog
       blue              0        log         
 
-Column *b* in both frames is a unique identifier used to tie the two frames
-together.
-Join *your_frame* to *my_frame*, creating a new frame with a new Frame to
-access it;
-Include all data from *my_frame* and only that data from *your_frame* which
-has a value in *b* that matches a value in *my_frame* *b*:
+Column *b* in both frames is a unique identifier used to relate the two frames.
+Following this instruction will join *your_frame* to *my_frame*, creating a new
+frame with a new Frame to access it, with all of the data from *my_frame* and
+only that data from *your_frame* which has a value in *b* that matches a value
+in *my_frame* *b*:
 
 .. code::
 
     >>> our_frame = my_frame.join(your_frame, 'b', how='left')
 
-Result is *our_frame*:
+The result is *our_frame*:
 
 .. code::
 
@@ -928,8 +927,8 @@ Result is *our_frame*:
       apple       berry       cantelope    5281           frog
       mirror      frog        ball         None           None
 
-Do it again but this time include only data from *my_frame* and *your_frame*
-which have matching values in *b*:
+Doing an "inner" join this time will include only data from *my_frame* and
+*your_frame* which have matching values in *b*:
 
 .. code::
 
@@ -951,6 +950,28 @@ Result is *inner_frame*:
     /-----------------------------------------------------------/
       auto        bus         car             871         dog
       apple       berry       cantelope      5218         frog
+
+Doing an "outer" join this time will include only data from *my_frame* and
+*your_frame* which do not have matching values in *b*:
+
+.. code::
+
+    >>> outer_frame = my_frame.join(your_frame, 'b', how='outer')
+
+Result is *outer_frame*:
+
+.. code::
+
+    >>> outer_frame.inspect()
+
+      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+    /-----------------------------------------------------------/
+      auto        bus         car            None         None
+      apple       berry       cantelope      None         None
+      alligator   bear        cat            None         None
+      mirror      frog        ball           None         None
+      None        None        blue              0         log
+
 
 If column *b* in *my_frame* and column *d* in *your_frame* are the common
 column:
@@ -1195,22 +1216,18 @@ Graph Analytics
     Add these to the toctree above.
 
 .. _ClCo:
-.. include:: ds_gaal_clco.rst
+.. include:: ds_gaal_clco.inc
 
 .. _CC:
-.. include:: ds_gaal_cc.rst
+.. include:: ds_gaal_cc.inc
 
 .. _DC:
-.. include:: ds_gaal_dc.rst
+.. include:: ds_gaal_dc.inc
 
 .. _PR:
-.. include:: ds_gaal_pr.rst
+.. include:: ds_gaal_pr.inc
 
 .. toctree::
     :hidden:
 
     ds_apir
-    ds_gaal_clco
-    ds_gaal_cc
-    ds_gaal_dc
-    ds_gaal_pr

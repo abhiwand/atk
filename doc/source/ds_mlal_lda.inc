@@ -169,7 +169,7 @@ and will likely depend on the characteristics of the text being analyzed.
 Typical text analytics experiments will try a variety of approaches on a small
 subset of the data to determine what works best.
 
-See :ref:`ds_mlal_lda_fig_1`.
+See `ds_mlal_lda_fig_1`_.
 
 .. _ds_mlal_lda_fig_1:
 
