@@ -34,7 +34,7 @@ object HierarchicalClusteringImpl extends Serializable {
         1,
         e.tailPhysicalId.asInstanceOf[Number].longValue,
         1,
-        e.getProperty("dist").get.value.asInstanceOf[Float], false)
+        1 - e.getProperty("dist").get.value.asInstanceOf[Float], false)
     }.distinct()
 
     HierarchicalGraphClustering.execute(graphAdRdd, titanConfig)
@@ -389,7 +389,7 @@ object HierarchicalGraphClustering extends Serializable {
   def execute(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
-    val fileWriter = new FileWriter("test.txt", true)
+    val fileWriter = new FileWriter("/tmp/test.txt", true)
 
     fileWriter.write("Initial graph\n")
     currentGraph.collect().foreach((e: HierarchicalClusteringEdge) => fileWriter.write(e.toString() + "\n"))
@@ -428,38 +428,30 @@ object HierarchicalGraphClustering extends Serializable {
 
     fileWriter.write("-------------Iteration " + iteration + " ---------------\n")
 
+    val collapsableEdgesCount = collapsableEdges.count()
     if (collapsableEdges.count() > 0) {
-      fileWriter.write("Collapsed edges - start\n")
-      collapsableEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("Collapsed edges - done\n\n")
+      fileWriter.write("Collapsed edges " + collapsableEdgesCount + "\n")
     }
     else {
       fileWriter.write("No new collapsed edges\n")
     }
     fileWriter.flush()
 
-    if (internalEdges.count() > 0) {
-      fileWriter.write("Internal edges - start\n")
-      internalEdges.collect().foreach((e: HierarchicalClusteringEdge) => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("Internal edges - done\n\n")
+    val internalEdgesCount = internalEdges.count()
+    if (internalEdgesCount > 0) {
+      fileWriter.write("Internal edges " + internalEdgesCount + "\n")
     }
     else {
       fileWriter.write("No new internal edges\n")
     }
     fileWriter.flush()
 
-    if (nonSelectedEdges.count() > 0) {
-      fileWriter.write("Non-selected edges - start\n")
-      nonSelectedEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("Non-selected edges - done\n\n")
-    }
-    else {
-      fileWriter.write("No new non-selected edges\n")
-    }
-    fileWriter.flush()
-
+    val activeEdgesCount = activeEdges.count()
     if (activeEdges.count > 0) {
       internalEdges.unpersist()
+
+      fileWriter.write("Active edges " + activeEdgesCount + "\n")
+      fileWriter.flush()
 
       //double the edges for edge selection algorithm
       val activeEdgesBothDirections = activeEdges.flatMap((e: HierarchicalClusteringEdge) => Seq(e, HierarchicalClusteringEdge(e.dest,
@@ -488,9 +480,7 @@ object HierarchicalGraphClustering extends Serializable {
       collapsableEdges.unpersist()
       activeEdges.unpersist()
 
-      fileWriter.write("Active new edges - start\n")
-      newGraphWithoutInternalEdges.collect().foreach((e: HierarchicalClusteringEdge) => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("Active new edges - done\n\n")
+      fileWriter.write("Active edges to next iteration " + newGraphWithoutInternalEdges.count() + "\n")
       fileWriter.flush()
 
       newGraphWithoutInternalEdges
@@ -518,15 +508,15 @@ object HierarchicalGraphClustering extends Serializable {
       case (e) => ((e.src, e.dest, e.destNodeCount), e)
     }.groupByKey()
 
-    if (activeEdges.count() > 0) {
-      fileWriter.write("activeEdges- start\n")
-      activeEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("activeEdges - done\n\n")
-    }
-    else {
-      fileWriter.write("No activeEdges\n")
-    }
-    fileWriter.flush()
+    //    if (activeEdges.count() > 0) {
+    //      fileWriter.write("activeEdges- start\n")
+    //      activeEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("activeEdges - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No activeEdges\n")
+    //    }
+    //    fileWriter.flush()
 
     // create new active edges
     val activeEdgesWithWeightedAvgDistance = activeEdges.map {
@@ -540,58 +530,58 @@ object HierarchicalGraphClustering extends Serializable {
           EdgeDistance.weightedAvg(newEdges), false)
     }.distinct()
 
-    if (activeEdgesWithWeightedAvgDistance.count() > 0) {
-      fileWriter.write("activeEdgesWithWeightedAvgDistance- start\n")
-      activeEdgesWithWeightedAvgDistance.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("activeEdgesWithWeightedAvgDistance - done\n\n")
-    }
-    else {
-      fileWriter.write("No activeEdgesWithWeightedAvgDistance\n")
-    }
-    fileWriter.flush()
+    //    if (activeEdgesWithWeightedAvgDistance.count() > 0) {
+    //      fileWriter.write("activeEdgesWithWeightedAvgDistance- start\n")
+    //      activeEdgesWithWeightedAvgDistance.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("activeEdgesWithWeightedAvgDistance - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No activeEdgesWithWeightedAvgDistance\n")
+    //    }
+    //    fileWriter.flush()
 
     val newEdges = (internalEdges union activeEdgesWithWeightedAvgDistance).coalesce(internalEdges.partitions.length, true).map(
       (e: HierarchicalClusteringEdge) => (e.dest, e)
     ).groupByKey()
 
-    if (newEdges.count() > 0) {
-      fileWriter.write("newEdges- start\n")
-      newEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("newEdges - done\n\n")
-    }
-    else {
-      fileWriter.write("No newEdges\n")
-    }
-    fileWriter.flush()
+    //    if (newEdges.count() > 0) {
+    //      fileWriter.write("newEdges- start\n")
+    //      newEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("newEdges - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No newEdges\n")
+    //    }
+    //    fileWriter.flush()
 
     // update the dest node with meta-node in the list
     val newEdgesWithMetaNodeForDest = newEdges.map {
       case (dest, newEdges) => edgeManager.replaceWithMetaNode(newEdges)
     }.flatMap(identity)
 
-    if (newEdgesWithMetaNodeForDest.count() > 0) {
-      fileWriter.write("newEdgesWithMetaNodeForDest- start\n")
-      newEdgesWithMetaNodeForDest.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("newEdgesWithMetaNodeForDest - done\n\n")
-    }
-    else {
-      fileWriter.write("No newEdgesWithMetaNodeForDest\n")
-    }
-    fileWriter.flush()
+    //    if (newEdgesWithMetaNodeForDest.count() > 0) {
+    //      fileWriter.write("newEdgesWithMetaNodeForDest- start\n")
+    //      newEdgesWithMetaNodeForDest.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("newEdgesWithMetaNodeForDest - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No newEdgesWithMetaNodeForDest\n")
+    //    }
+    //    fileWriter.flush()
 
     val newEdgesWithMetaNodeGrouped = newEdgesWithMetaNodeForDest.map(
       (e: HierarchicalClusteringEdge) => ((e.src, e.dest), e)
     ).groupByKey()
 
-    if (newEdgesWithMetaNodeGrouped.count() > 0) {
-      fileWriter.write("newEdgesWithMetaNodeGrouped- start\n")
-      newEdgesWithMetaNodeGrouped.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("newEdgesWithMetaNodeGrouped - done\n\n")
-    }
-    else {
-      fileWriter.write("No newEdgesWithMetaNodeGrouped\n")
-    }
-    fileWriter.flush()
+    //    if (newEdgesWithMetaNodeGrouped.count() > 0) {
+    //      fileWriter.write("newEdgesWithMetaNodeGrouped- start\n")
+    //      newEdgesWithMetaNodeGrouped.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("newEdgesWithMetaNodeGrouped - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No newEdgesWithMetaNodeGrouped\n")
+    //    }
+    //    fileWriter.flush()
 
     // recalculate the edge distance if several outgoing edges go into the same meta-node
     val newEdgesWithMetaNodesAndDistUpdated = newEdgesWithMetaNodeGrouped.map {
@@ -600,15 +590,15 @@ object HierarchicalGraphClustering extends Serializable {
       (e: HierarchicalClusteringEdge) => ((e.src, e.dest), e)
     }.groupByKey()
 
-    if (newEdgesWithMetaNodesAndDistUpdated.count() > 0) {
-      fileWriter.write("newEdgesWithMetaNodesAndDistUpdated- start\n")
-      newEdgesWithMetaNodesAndDistUpdated.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-      fileWriter.write("newEdgesWithMetaNodesAndDistUpdated - done\n\n")
-    }
-    else {
-      fileWriter.write("No newEdgesWithMetaNodesAndDistUpdated\n")
-    }
-    fileWriter.flush()
+    //    if (newEdgesWithMetaNodesAndDistUpdated.count() > 0) {
+    //      fileWriter.write("newEdgesWithMetaNodesAndDistUpdated- start\n")
+    //      newEdgesWithMetaNodesAndDistUpdated.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+    //      fileWriter.write("newEdgesWithMetaNodesAndDistUpdated - done\n\n")
+    //    }
+    //    else {
+    //      fileWriter.write("No newEdgesWithMetaNodesAndDistUpdated\n")
+    //    }
+    //    fileWriter.flush()
 
     newEdgesWithMetaNodesAndDistUpdated.map {
       case ((src, dest), edges) => EdgeDistance.simpleAvg(edges)
@@ -622,10 +612,6 @@ object HierarchicalGraphClustering extends Serializable {
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
                                   titanConfig: SerializableBaseConfiguration): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
-
-    println("Collapsable before\n")
-    collapsedEdges.collect().foreach(e => println(e._1.toString() + "\n"))
-    println("Collapsable end\n")
 
     val result = collapsedEdges.mapPartitions {
       case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {
@@ -655,8 +641,6 @@ object HierarchicalGraphClustering extends Serializable {
    */
   private def createCollapsableEdges(graph: RDD[HierarchicalClusteringEdge]): RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] = {
 
-    val edgeManager = EdgeManager
-
     val collapsableEdges = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
       case (sourceNode, allEdges) =>
         val min = EdgeDistance.min(allEdges)
@@ -666,12 +650,12 @@ object HierarchicalGraphClustering extends Serializable {
             nonSelectedEdges) => (vertexId, (minEdge, nonSelectedEdges))
         }
     }.groupByKey().filter {
-      case (vertexId, pairedEdgeList) => edgeManager.canEdgeCollapse(pairedEdgeList)
+      case (vertexId, pairedEdgeList) => EdgeManager.canEdgeCollapse(pairedEdgeList)
     }
 
     collapsableEdges.map {
       case (vertexName, pairedEdgeList) =>
-        val outgoingEdges = edgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
+        val outgoingEdges = EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
         outgoingEdges match {
           case (collapsableEdge, outgoingEdgeList) => (collapsableEdge, outgoingEdgeList)
         }
