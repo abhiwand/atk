@@ -509,7 +509,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
         val svmJsObject = model.data.get
         val libsvmData = svmJsObject.convertTo[LibSvmData]
         val libsvmModel = libsvmData.svmModel
-        val predictionLabel = LibSvmScorePluginFunctions.score(libsvmModel, values.value)
+        val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
         predictionLabel.value
       }
     }

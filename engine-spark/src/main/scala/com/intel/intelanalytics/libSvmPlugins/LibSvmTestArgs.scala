@@ -26,6 +26,13 @@ package com.intel.intelanalytics.libSvmPlugins
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
 
+
+/**
+ * Command for testing a lib svm model with the provided dataset
+ * @param model Handle to the model to be used.
+ * @param frame Handle to the data frame
+ * @param observationColumns Handle to the observation column/s of the data frame
+ */
 case class LibSvmTestArgs(model: ModelReference,
                           frame: FrameReference,
                           labelColumn: String,

@@ -27,11 +27,10 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
 
 /**
- * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
+ * Command for training a lib svm model with the provided dataset and params.
+ * @param model Handle to the model to be used.
  * @param frame Handle to the data frame
- * @param observationColumns Handle to the observation column of the data frame
- * @param epsilon Optional distance threshold within which we've considered centers to have converged. Default is 1e-4
+ * @param observationColumns Handle to the observation column/s of the data frame
  */
 case class LibSvmTrainArgs(model: ModelReference,
                            frame: FrameReference,
@@ -71,7 +70,7 @@ case class LibSvmTrainArgs(model: ModelReference,
   }
 
   def getGamma: Double = {
-    gamma.getOrElse(1 / 9)
+    gamma.getOrElse(1 / observationColumns.length)
   }
 
   def getNu: Double = {

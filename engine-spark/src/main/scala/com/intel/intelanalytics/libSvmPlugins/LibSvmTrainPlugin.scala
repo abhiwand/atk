@@ -88,6 +88,12 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
 
   }
 
+  /**
+   * Initializes the libsvm params based on user's input else to default values
+   *
+   * @param arguments user supplied arguments for initializing the libsvm params
+   * @return a data structure containing all the user supplied or default values for libsvm
+   */
   private def initializeParameters(arguments: LibSvmTrainArgs): svm_parameter = {
     val param = new svm_parameter()
 
@@ -105,10 +111,19 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     param.shrinking = arguments.getShrinking
     param.probability = arguments.getProbability
     param.nr_weight = arguments.getNrWeight
-    param.weight_label = arguments.getWeightLabel //new Array[Int](0)
-    param.weight = arguments.getWeight //new Array[Double](0)
+    param.weight_label = arguments.getWeightLabel
+    param.weight = arguments.getWeight
     param
   }
+
+  /**
+   * Extracts the dataset from the provided Dataframe and converts into libsvm format
+   *
+   * @param trainFrameRdd Rdd containing the label and feature columns
+   * @param arguments user supplied arguments for running this plugin
+   * @param param data structure containing all the values for libsvm's exposed params
+   * @return libsvm problem
+   */
 
   private def initializeProblem(trainFrameRdd: FrameRdd, arguments: LibSvmTrainArgs, param: svm_parameter): svm_problem = {
     trainFrameRdd.frameSchema.requireColumnIsType(arguments.labelColumn, DataTypes.float64)
@@ -116,7 +131,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val observedRdd = trainFrameRdd.selectColumns(arguments.labelColumn +: arguments.observationColumns)
     val observedSchema = observedRdd.frameSchema.columns
 
-    val output = LibSvmFunctions.LibSvmFormatter(observedRdd)
+    val output = LibSvmPluginFunctions.LibSvmFormatter(observedRdd)
 
     var vectory = Vector.empty[Double]
     var vectorx = Vector.empty[Array[svm_node]]
@@ -127,15 +142,15 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
       val observation = output(i)
       val splitObs: StringTokenizer = new StringTokenizer(observation, " \t\n\r\f:")
 
-      vectory = vectory :+ atof(splitObs.nextToken)
+      vectory = vectory :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
       val counter: Int = splitObs.countTokens / 2
       val x: Array[svm_node] = new Array[svm_node](counter)
 
       var j: Int = 0
       while (j < counter) {
         x(j) = new svm_node
-        x(j).index = atoi(splitObs.nextToken)
-        x(j).value = atof(splitObs.nextToken)
+        x(j).index = LibSvmPluginFunctions.atoi(splitObs.nextToken)
+        x(j).value = LibSvmPluginFunctions.atof(splitObs.nextToken)
         j += 1
       }
       if (counter > 0) max_index = Math.max(max_index, x(counter - 1).index)
@@ -158,14 +173,6 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
 
     if (param.gamma == 0 && max_index > 0) param.gamma = 1.0 / max_index
     prob
-  }
-
-  private def atof(s: String): Double = {
-    s.toDouble
-  }
-
-  private def atoi(s: String): Int = {
-    Integer.parseInt(s)
   }
 
 }
