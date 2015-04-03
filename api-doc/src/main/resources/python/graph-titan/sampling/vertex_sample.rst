@@ -14,10 +14,8 @@ Parameters
 ----------
 size : int
     The number of vertices to sample from the graph.
-
 sample_type : str
     The type of vertex sample among: ['uniform', 'degree', 'degreedist'].
-
 seed : int (optional)
     Random seed value.
 
@@ -35,5 +33,6 @@ induced subgraph:
 
 .. code::
 
-    >>> graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-    >>> subgraph = graph.sampling.vertex_sample(1000, 'uniform')
+<<<<<<< HEAD
+    >>> my_graph = ia.TitanGraph([user_vertex_rule, product_vertex_rule, edge_rule])
+    >>> my_subgraph = my_graph.sampling.vertex_sample(1000, 'uniform')

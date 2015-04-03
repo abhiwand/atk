@@ -43,7 +43,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
   /**
    * Generate the empirical cumulative distribution for an input dataframe column
    *
-   * @param frameRdd rdd for a BigFrame
+   * @param frameRdd rdd for a Frame
    * @param sampleColumn column containing the sample data
    * @return a new RDD of tuples containing each distinct sample value and its ecdf value
    */

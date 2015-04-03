@@ -4,17 +4,6 @@ Machine Learning Algorithms
 
 .. contents:: Table of Contents
     :local:
-    
-.. toctree::
-    :hidden:
-    
-    ds_mlal_cf
-    ds_mlal_als
-    ds_mlal_cgd
-    ds_mlal_lp
-    ds_mlal_lbp
-    ds_mlal_lda
-    ds_mlal_k
 
 The graph machine learning algorithms currently supported fall into these categories:
 *Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
@@ -32,13 +21,13 @@ The graph machine learning algorithms currently supported fall into these catego
 
 
 .. _Collaborative_Filtering:
-.. include:: ds_mlal_cf.rst
+.. include:: ds_mlal_cf.inc
 
 .. _ALS:
-.. include:: ds_mlal_als.rst
+.. include:: ds_mlal_als.inc
 
 .. _CGD:
-.. include:: ds_mlal_cgd.rst
+.. include:: ds_mlal_cgd.inc
 
 
 .. _Graphical_Models:
@@ -52,11 +41,11 @@ The graphical models find more insights from structured noisy data.
 We currently support :ref:`LP` and :ref:`LBP`
 
 .. _LP:
-.. include:: ds_mlal_lp.rst
+.. include:: ds_mlal_lp.inc
 
 
 .. _LBP:
-.. include:: ds_mlal_lbp.rst
+.. include:: ds_mlal_lbp.inc
 
 
 .. _Topic_Modeling:
@@ -69,4 +58,5 @@ Topic Modeling
 For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 
 .. _LDA:
-.. include:: ds_mlal_lda.rst
+.. include:: ds_mlal_lda.inc
+
