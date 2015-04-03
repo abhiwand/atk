@@ -721,15 +721,11 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
-    PUF
+    Python User-defined Function
 
-        See :term:`Python User Function`.
-
-    Python User Function
-
-        A Python User Function (PUF) is a Python function written by the user
-        on the client-side which can execute in a distributed fashion on the
-        cluster.
+        A Python User-defined Function (UDF) is a Python function written by
+        the user on the client-side which can execute in a distributed fashion
+        on the cluster.
         For further explanation, see :doc:`ds_apir`
 
         Further examples and explanations can be found at :doc:`ds_apir`.
