@@ -92,10 +92,10 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
-    val sparkContext = sc
 
-    if (sc.master != "yarn-cluster")
-      sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster") {
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
+    }
 
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)
@@ -103,11 +103,8 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
     // Read the graph from Titan
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    val inputVertices: RDD[Long] = gbVertices
-      .map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
-
-    val inputEdges = gbEdges
-      .map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
+    val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
+    val inputEdges = gbEdges.map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
 
     // Call ConnectedComponentsGraphXDefault to kick off ConnectedComponents computation on RDDs
     val intermediateVertices = ConnectedComponentsGraphXDefault.run(inputVertices, inputEdges)
@@ -117,28 +114,14 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
 
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
-    val labeledVertices = outVertices.labelVertices(Nil)
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
-    val vertexSchemaAggregator = new VertexSchemaAggregator(Nil)
-    // Write the RDD[GBVertex] to a Frame
-
-    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroValue)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
-
-    new ConnectedComponentsReturn(vertexSchemas.map(schema => {
-      val filteredVertices: RDD[GBVertex] = labeledVertices.filter(v => {
-        v.getProperty("_label") match {
-          case Some(p) => p.value == schema.label
-          case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
-        }
-      })
-      val vertexWrapper = new VertexWrapper(schema)
-      val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
-      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
-
-      val result = tryNew(CreateEntityArgs(description = Some("created by ConnectedComponents operation"))) { newOutputFrame: FrameMeta =>
+    new ConnectedComponentsReturn(frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
         save(new SparkFrameData(newOutputFrame.meta, frameRdd))
       }.meta
-      (schema.label, result)
+      (label, result)
     }).toMap)
 
   }
