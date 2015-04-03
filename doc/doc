@@ -190,33 +190,9 @@ function main {
         # debug: Check for rebuilding the scala routines
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
-
-            pushd ../ > /dev/null
-
-            # debug: Update scala server
-            update_scala $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" != "0" ]; then
-                pkill -9 -f java
-                popd
-                return 1
-            fi
-
-            # debug: Update the additional python documentation files
-            cd python
-            update_python $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" == "1" ]; then
-                pkill -9 -f java
-                popd
-                return 1
-            fi
-
-            # Start the server
-            cp conf/examples/application.conf.build conf/application.conf
-            nohup bin/api-server.sh > out 2>&1&
-
-            # debug: Return to original directory to continue
-            pkill -9 -f java
-            popd > /dev/null
+            # Update the scala and python cmdgen
+            maven $AskThem $DisplayStatus $TempFile $LogFile
+            if [ "$?" == "1" ]; then return 1; fi
         fi
 
         # debug: Look for sphinx build types
@@ -307,6 +283,50 @@ function main {
     if [ -e doc.log ]; then
         rm doc.log
     fi
+}
+############################################################################################################
+function maven(){
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = Temporary file
+    # $4 = LogFile
+
+    # Start the server
+    pushd ../ > /dev/null
+    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+    do_this "$RunCommand" $1 $2 $3 $4
+    if [ "$?" == "1" ]; then return 1; fi
+    log_step "nohup bin/api-server.sh" $2 $4
+    nohup bin/api-server.sh > $2 2>&1&
+    if [ "$?" == "1" ]; then
+        Err "nohup bin/api-server.sh" $1 $2 $3 $4
+        popd
+        return 1;
+    fi
+    popd > /dev/null
+
+    # debug: Update scala server
+    pushd ../ > /dev/null
+    update_scala $1 $2 $3 $4
+    if [ "$?" != "0" ]; then
+        pkill -9 -f java
+        popd
+        return 1
+    fi
+    popd > /dev/null
+
+    # debug: Update the additional python documentation files
+    pushd ../python > /dev/null
+    update_python $1 $2 $3 $4
+    if [ "$?" == "1" ]; then
+        pkill -9 -f java
+        popd
+        return 1
+    fi
+    popd > /dev/null
+
+    # debug: Return to original directory to continue
+    pkill -9 -f java
 }
 ############################################################################################################
 function packages {
