@@ -106,7 +106,7 @@ Plugins are developed using a thin Scala wrapper, and the |IAT| framework
 automatically generates a Python presentation for those added functions.
 Plug-ins can be used for a range of purposes, such as developing custom
 algorithms for specialized data types, building custom transformations for
-commonly used functions to get higher performance than a |PUF|, or integrating
+commonly used functions to get higher performance than a |UDF|, or integrating
 other tools to further unify the workflow.
 See the :doc:`Plugin Authoring Guide <ad_plug>` for more information.
 
