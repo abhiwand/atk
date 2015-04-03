@@ -302,16 +302,34 @@ object MLLibJsonProtocol {
      * @return JsValue
      */
     override def write(obj: svm_model): JsValue = {
+      //val t = if (obj.label == null) JsNull else new JsArray(obj.label.map(i => JsNumber(i)).toList)
+      val checkLabel =  obj.label match {
+        case null => JsNull
+        case _ => new JsArray(obj.label.map(i => JsNumber(i)).toList)
+      }
+      val checkProbA = obj.probA match {
+        case null => JsNull
+        case _ => new JsArray(obj.probA.map(d => JsNumber(d)).toList)
+      }
+      val checkProbB = obj.probB match {
+        case null => JsNull
+        case _ => new JsArray(obj.probB.map(d => JsNumber(d)).toList)
+      }
+      val checkNsv = obj.nSV match {
+        case null => JsNull
+        case _ => new JsArray(obj.nSV.map(d => JsNumber(d)).toList)
+      }
+
       JsObject(
         "nr_class" -> JsNumber(obj.nr_class),
         "l" -> JsNumber(obj.l),
         "rho" -> new JsArray(obj.rho.map(i => JsNumber(i)).toList),
-        //"probA" -> new JsArray(obj.probA.map(d => JsNumber(d)).toList),
-        //"probB" -> new JsArray(obj.probB.map(d => JsNumber(d)).toList),
-        //"label" -> new JsArray(obj.label.map(i => JsNumber(i)).toList),
+        "probA" -> checkProbA,
+        "probB" -> checkProbB,
+        "label" -> checkLabel,
         "sv_indices" -> new JsArray(obj.sv_indices.map(d => JsNumber(d)).toList),
         "sv_coef" -> new JsArray(obj.sv_coef.map(row => new JsArray(row.map(d => JsNumber(d)).toList)).toList),
-        //"nSV" -> new JsArray(obj.nSV.map(i => JsNumber(i)).toList),
+        "nSV" -> checkNsv,
         "param" -> svm_parameter.write(obj.param),
         "SV" -> new JsArray(obj.SV.map(row => new JsArray(row.map(d => svm_node.write(d)).toList)).toList)
       )
@@ -328,12 +346,24 @@ object MLLibJsonProtocol {
       val l = fields.get("l").get.asInstanceOf[JsNumber].value.intValue()
       val nr_class = fields.get("nr_class").get.asInstanceOf[JsNumber].value.intValue()
       val rho = fields.get("rho").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
-      //val probA = fields.get("probA").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
-      //val probB = fields.get("probB").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
+      val probA = fields.get("probA").get match {
+        case JsNull => null
+        case _ => fields.get("probA").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.doubleValue () ).toArray
+      }
+      val probB = fields.get("probB").get match {
+        case JsNull => null
+        case _ => fields.get("probB").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.doubleValue () ).toArray
+      }
       val sv_indices = fields.get("sv_indices").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
       val sv_coef = fields.get("sv_coef").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => j.asInstanceOf[JsNumber].value.doubleValue()).toArray).toArray
-      //val label = fields.get("label").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
-      //val nSV = fields.get("nSV").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
+      val label = fields.get("label").get match {
+        case JsNull => null
+        case _ => fields.get("label").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.intValue () ).toArray
+      }
+      val nSV = fields.get("nSV").get match {
+        case JsNull => null
+        case _ => fields.get("nSV").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.intValue () ).toArray
+      }
       val param = fields.get("param").map(v => svm_parameter.read(v)).get
       val SV = fields.get("SV").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => svm_node.read(j))toArray).toArray
 
@@ -341,12 +371,12 @@ object MLLibJsonProtocol {
       svmModel.l = l
       svmModel.nr_class = nr_class
       svmModel.rho = rho
-      //svmModel.probA = probA
-      //svmModel.probB = probB
+      svmModel.probA = probA
+      svmModel.probB = probB
       svmModel.sv_indices = sv_indices
       svmModel.sv_coef = sv_coef
-      //svmModel.label = label
-      //svmModel.nSV = nSV
+      svmModel.label = label
+      svmModel.nSV = nSV
       svmModel.param = param
       svmModel.SV = SV
 
