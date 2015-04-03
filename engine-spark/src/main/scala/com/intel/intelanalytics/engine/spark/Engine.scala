@@ -93,7 +93,7 @@ import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{VectorValue, CreateEntityArgs, FilterArgs}
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -134,6 +134,7 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import scala.util.{ Try, Success, Failure }
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -312,6 +313,15 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   override def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal = {
     users.getUserPrincipal(apiKey)
+  }
+
+  override def addUserPrincipal(userName: String)(implicit invocation: Invocation): UserPrincipal = {
+    Try { users.getUserPrincipal(userName) } match {
+      case Success(found) => throw new RuntimeException(s"User $userName already exists, cannot add it.")
+      case Failure(missing) =>
+        println(s"Adding new user $userName")
+        users.insertUser(userName)
+    }
   }
 
   /**

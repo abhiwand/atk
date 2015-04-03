@@ -51,7 +51,7 @@ print("define csv file")
 schema =  [("number", str), ("factor", str), ("binary", str), ("isPrime", str), ("reverse", str), ("isPalindrome", str)]
 csv = ia.CsvFile("/numbers.csv", schema, delimiter=":", skip_header_lines=1)
 
-print("create big frame")
+print("create frame")
 frame = ia.Frame(csv)
 
 print("inspect frame")
