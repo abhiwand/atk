@@ -12,7 +12,12 @@ echo $DIR
 LAUNCHER=$DIR/../launcher.jar
 jq=$DIR/../jq
 
+export UAA_URI=uaa.run.gotapaas.eu
+export CC_URI=api.run.gotapaas.eu
+
 export APP_NAME=$(echo $VCAP_APPLICATION | $jq -r .application_name)
+export APP_URI=$(echo $VCAP_APPLICATION | $jq -r .application_uris.[0] | tr -d '"')
+export APP_SPACE=$(echo $VCAP_APPLICATION | $jq -r .space_id)
 export SPARK_PUBLIC_DNS=$(echo $VCAP_APPLICATION | $jq -r .host_ip)
 #export SPARK_LOCAL_IP=0.0.0.0
 export SPARK_DRIVER_HOST=$(echo $VCAP_APPLICATION | $jq -r .host_ip)

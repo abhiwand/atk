@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import Column
-from intelanalytics.rest.connection import http
+from intelanalytics.rest.iaserver import server
 from intelanalytics.core.frame import VertexFrame, EdgeFrame
 from intelanalytics.rest.command import executor
 
@@ -42,14 +42,14 @@ def initialize_graph(graph, graph_info):
     graph._id = graph_info.id_number
     graph._name = graph_info.name
     graph._ia_uri = graph_info.ia_uri
-    graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
+    graph._uri= server.create_full_uri("graphs/"+ str(graph._id))
     return graph
 
 
 class GraphBackendRest(object):
 
     def __init__(self, http_methods = None):
-        self.rest_http = http_methods or http
+        self.server = http_methods or server
 
     def create(self, graph, rules, name, storage_format, _info=None):
         logger.info("REST Backend: create graph with name %s: " % name)
@@ -65,7 +65,7 @@ class GraphBackendRest(object):
             raise TypeError("rules must be a list of Rule objects")
         else:
             payload = {'name': name, 'storage_format': storage_format, 'is_named': is_named}
-            r=self.rest_http.post('graphs', payload)
+            r=self.server.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
             initialized_graph=initialize_graph(graph, graph_info)
@@ -93,11 +93,11 @@ class GraphBackendRest(object):
         return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name)])
 
     def _get_graph_info(self, graph):
-        response = self.rest_http.get_full_uri(self._get_graph_full_uri(graph))
+        response = self.server.get(self._get_graph_full_uri(graph))
         return GraphInfo(response.json())
 
     def _get_graph_full_uri(self,graph):
-        return self.rest_http.create_full_uri('graphs/%d' % graph._id)
+        return self.server.create_full_uri('graphs/%d' % graph._id)
 
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: %s" % graph.name)
@@ -105,19 +105,19 @@ class GraphBackendRest(object):
         graph.load(frame_rules, append=True)
 
     def get_vertex_frames(self, graphid):
-        r = self.rest_http.get('graphs/%s/vertices' % graphid)
+        r = self.server.get('graphs/%s/vertices' % graphid)
         return [VertexFrame(_info=x) for x in r.json()]
 
     def get_vertex_frame(self,graphid, label):
-        r = self.rest_http.get('graphs/%s/vertices?label=%s' % (graphid, label))
+        r = self.server.get('graphs/%s/vertices?label=%s' % (graphid, label))
         return VertexFrame(_info=r.json())
 
     def get_edge_frames(self, graphid):
-        r = self.rest_http.get('graphs/%s/edges' % graphid)
+        r = self.server.get('graphs/%s/edges' % graphid)
         return [EdgeFrame(_info=x) for x in r.json()]
 
     def get_edge_frame(self,graphid, label):
-        r = self.rest_http.get('graphs/%s/edges?label=%s' % (graphid, label))
+        r = self.server.get('graphs/%s/edges?label=%s' % (graphid, label))
         return EdgeFrame(_info=r.json())
 
     def get_vertex_count(self, graph):

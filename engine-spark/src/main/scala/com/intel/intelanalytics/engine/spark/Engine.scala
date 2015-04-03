@@ -131,6 +131,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
+import scala.util.{ Try, Success, Failure }
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -304,6 +305,15 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   override def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal = {
     users.getUserPrincipal(apiKey)
+  }
+
+  override def addUserPrincipal(userName: String)(implicit invocation: Invocation): UserPrincipal = {
+    Try { users.getUserPrincipal(userName) } match {
+      case Success(found) => throw new RuntimeException(s"User $userName already exists, cannot add it.")
+      case Failure(missing) =>
+        println(s"Adding new user $userName")
+        users.insertUser(userName)
+    }
   }
 
   /**
