@@ -137,12 +137,12 @@ trait AbstractEdge extends AbstractRow with Serializable {
   /**
    * Convert this row to a GBEdge
    */
-  def toGbEdge(): GBEdge = createGBEdge(reversed = false)
+  def toGbEdge: GBEdge = createGBEdge(reversed = false)
 
   /**
    * Convert this row to a GBEdge that has the source and destination vertices reversed
    */
-  def toReversedGbEdge(): GBEdge = createGBEdge(reversed = true)
+  def toReversedGbEdge: GBEdge = createGBEdge(reversed = true)
 
   /**
    * create a GBEdge object from this row
