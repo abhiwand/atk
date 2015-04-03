@@ -9,13 +9,8 @@ Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative sum.
-
 count_value : str
     The column value to be used for the counts.
-
-Returns
--------
-None
 
 Examples
 --------

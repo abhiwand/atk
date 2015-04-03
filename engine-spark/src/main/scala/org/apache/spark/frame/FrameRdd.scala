@@ -24,10 +24,12 @@
 package org.apache.spark.frame
 
 import com.intel.graphbuilder.elements.GBVertex
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
 import org.apache.spark.ia.graph.VertexWrapper
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
@@ -313,14 +315,14 @@ class FrameRdd(val frameSchema: Schema,
    * @param startId  the first id to add (defaults to 0), incrementing from there
    */
   def assignUniqueIds(columnName: String, startId: Long = 0): FrameRdd = {
-    val sumsAndCounts = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
+    val sumsAndCounts: Map[Int, (Long, Long)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
 
     val newRows: RDD[sql.Row] = this.mapPartitionsWithIndex((i, rows) => {
-      val (ct: Int, sum: Int) = if (i == 0) (0, 0)
+      val (ct: Long, sum: Long) = if (i == 0) (0L, 0L)
       else sumsAndCounts(i - 1)
       val partitionStart = sum + startId
       rows.zipWithIndex.map {
-        case (row, index) => {
+        case (row: sql.Row, index: Int) => {
           val id: Long = partitionStart + index
           rowWrapper(row).addOrSetValue(columnName, id)
         }
@@ -378,15 +380,36 @@ object FrameRdd {
     createLogicalPlanFromSql(schema, rdd)
   }
 
-  def toFrameRdd(schema: VertexSchema, gbVertexRDD: RDD[GBVertex]) = {
-    val vertexWrapper = new VertexWrapper(schema)
-    val rows = gbVertexRDD.map(gbVertex => vertexWrapper.create(gbVertex))
-    new FrameRdd(schema.toFrameSchema, rows)
-  }
+  /**
+   * Convert an RDD of mixed vertex types into a map where the keys are labels and values are FrameRdd's
+   * @param gbVertexRDD Graphbuilder Vertex RDD
+   * @return  keys are labels and values are FrameRdd's
+   */
+  def toFrameRddMap(gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-  //  def toFrameRdd(gbVertexRDD: RDD[GBVertex]) = {
-  //
-  //  }
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+
+    // make sure all of the vertices have a label
+    val labeledVertices = gbVertexRDD.labelVertices(Nil)
+
+    // figure out the schemas of the different vertex types
+    val vertexSchemaAggregator = new VertexSchemaAggregator(Nil)
+    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroValue)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
+
+    vertexSchemas.map(schema => {
+      val filteredVertices: RDD[GBVertex] = labeledVertices.filter(v => {
+        v.getProperty("_label") match {
+          case Some(p) => p.value == schema.label
+          case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
+        }
+      })
+      val vertexWrapper = new VertexWrapper(schema)
+      val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
+      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
+
+      (schema.label, frameRdd)
+    }).toMap
+  }
 
   /**
    * Creates a logical plan for creating a SchemaRDD from an existing sql.Row object and our schema representation

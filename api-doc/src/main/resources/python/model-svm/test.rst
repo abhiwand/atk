@@ -7,10 +7,8 @@ Parameters
 ----------
 predict_frame : Frame
     frame whose labels are to be predicted.
-
 label_column : str
     Column containing the actual label for each observation.
-
 observation_column : list of str (Optional)
     Column(s) containing the observations whose labels are to be predicted and
     tested.

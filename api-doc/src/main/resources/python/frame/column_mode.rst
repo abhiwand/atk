@@ -16,14 +16,12 @@ Parameters
 ----------
 data_column : str
     The column whose mode is to be calculated.
-
 weights_column : str (optional)
     The name of the column that provides weights (frequencies) for the mode
     calculation.
     Must contain numerical data.
     Uniform weights of 1 for all items will be used for the calculation
     if this parameter is not provided.
-
 max_modes_returned : int (optional)
     Maximum number of modes returned.
     If this parameter is not provided, it defaults to 1.

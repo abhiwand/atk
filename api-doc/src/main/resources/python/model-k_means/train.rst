@@ -6,27 +6,21 @@ Parameters
 ----------
 frame : Frame
     A frame to train the model on.
-
 observation_columns : list of str
     Columns containing the observations.
-
 column_scalings : list of double
     Column scalings for each of the observation columns.
     The scaling value is multiplied by the corresponding value in the
     observation column.
-
 k : int (Optional)
     Desired number of clusters.
     This is an optional paramter with default value 2.
-
 maxIterations : int (Optional)
     Number of iterations for which the algorithm should run.
     This is an optional paramter with default value 20.
-
 epsilon : double (Optional)
     Distance threshold within which we consider k-means to have converged.
     This is an optional parameter with default value 1e-4.
-
 initializationMode : str (Optional)
     The initialization technique for the algorithm.
     It could be either "random" or "k-means||".
