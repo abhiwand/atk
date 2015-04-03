@@ -23,10 +23,13 @@
 
 package org.apache.spark.frame
 
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
+import org.apache.spark.ia.graph.VertexWrapper
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
@@ -374,6 +377,16 @@ object FrameRdd {
     val rdd = FrameRdd.toRowRDD(schema, rows)
     createLogicalPlanFromSql(schema, rdd)
   }
+
+  def toFrameRdd(schema: VertexSchema, gbVertexRDD: RDD[GBVertex]) = {
+    val vertexWrapper = new VertexWrapper(schema)
+    val rows = gbVertexRDD.map(gbVertex => vertexWrapper.create(gbVertex))
+    new FrameRdd(schema.toFrameSchema, rows)
+  }
+
+  //  def toFrameRdd(gbVertexRDD: RDD[GBVertex]) = {
+  //
+  //  }
 
   /**
    * Creates a logical plan for creating a SchemaRDD from an existing sql.Row object and our schema representation
