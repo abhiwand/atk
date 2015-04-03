@@ -52,6 +52,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import DomainJsonProtocol._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 import java.util.UUID
 
@@ -65,10 +66,13 @@ case class ConnectedComponentsArgs(graph: GraphReference,
   require(!outputProperty.isEmpty, "Output property label must be provided")
 }
 
+case class ConnectedComponentsReturn(connectedComponentsDictionary: Map[String, FrameEntity])
+
 /** Json conversion for arguments and return value case classes */
 object ConnectedComponentsJsonFormat {
   import DomainJsonProtocol._
-  implicit val CCFormat = jsonFormat2(ConnectedComponentsArgs)
+  implicit val CCArgsFormat = jsonFormat2(ConnectedComponentsArgs)
+  implicit val CCReturnFormat = jsonFormat1(ConnectedComponentsReturn)
 }
 
 import ConnectedComponentsJsonFormat._
@@ -81,13 +85,13 @@ import ConnectedComponentsJsonFormat._
  *
  * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
  */
-class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, FrameEntity] {
+class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsReturn] {
   override def name: String = "graph/graphx_connected_components"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): FrameEntity = {
+  override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
     val sparkContext = sc
 
     if (sc.master != "yarn-cluster")
@@ -113,16 +117,29 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
 
     val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
 
-    // Write the RDD[GBVertex] to a Frame
-    val schema = outVertices.aggregate(FrameSchemaAggregator.zeroValue)(FrameSchemaAggregator.seqOp, FrameSchemaAggregator.combOp)
-    val rowWrapper = new RowWrapper(schema)
-    val outputRows = outVertices.map(gbVertex => rowWrapper.create(gbVertex))
-    val outputFrameRdd = new FrameRdd(schema, outputRows)
+    val labeledVertices = outVertices.labelVertices(Nil)
 
-    tryNew(CreateEntityArgs(description = Some("created by ConnectedComponents operation"))) { newOutputFrame: FrameMeta =>
-      save(new SparkFrameData(
-        newOutputFrame.meta, outputFrameRdd))
-    }.meta
+    val vertexSchemaAggregator = new VertexSchemaAggregator(Nil)
+    // Write the RDD[GBVertex] to a Frame
+
+    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroValue)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
+
+    new ConnectedComponentsReturn(vertexSchemas.map(schema => {
+      val filteredVertices: RDD[GBVertex] = labeledVertices.filter(v => {
+        v.getProperty("_label") match {
+          case Some(p) => p.value == schema.label
+          case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
+        }
+      })
+      val vertexWrapper = new VertexWrapper(schema)
+      val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
+      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
+
+      val result = tryNew(CreateEntityArgs(description = Some("created by ConnectedComponents operation"))) { newOutputFrame: FrameMeta =>
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (schema.label, result)
+    }).toMap)
 
   }
 

@@ -104,3 +104,12 @@ def return_lda_train(selfish, json_result):
     doc_frame = get_frame(json_result['doc_results']['id'])
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
+
+# @postprocessor('graph/connected_components')
+# def return_connected_components(selfish, json_result):
+#     from intelanalytics.core.frame import get_frame
+#     if json_result.has_key('frame'):
+#         frame = get_frame(json_result['frame']['id'])
+#     else:
+#         frame = None
+#     return ClusteringCoefficient(json_result['global_clustering_coefficient'], frame)
