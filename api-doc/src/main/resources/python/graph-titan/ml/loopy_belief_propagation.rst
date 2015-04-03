@@ -13,31 +13,24 @@ Parameters
 vertex_value_property_list : list of str
     The vertex properties which contain prior vertex values if more than one
     vertex property is used.
-
 edge_value_property_list : list of str
     The edge properties which contain the input edge values.
     A comma-separated list of property names if more than one edge property is
     used.
-
 input_edge_label_list : list of str
     The name of edge label.
-
 output_vertex_property_list : list of str
     The list of vertex properties to store output vertex values.
-
 vertex_type : str
     The name of vertex property which contains vertex type.
     The default value is "vertex_type".
-
 vector_value : bool
     True means a vector as vertex value is supported,
     False means a vector as vertex value is not supported.
-
 max_supersteps : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
     Default is 20.
-
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
@@ -45,7 +38,6 @@ convergence_threshold : float (optional)
     before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
     Default is 0.001.
-
 anchor_threshold : float (optional)
     The parameter that determines if a node's posterior will be updated or
     not.
@@ -56,7 +48,6 @@ anchor_threshold : float (optional)
     nodes and don't want the algorithm updates these nodes.
     The valid value range is in [0, 1].
     Default is 1.0.
-
 smoothing : float (optional)
     The Ising smoothing parameter.
     This parameter adjusts the relative strength of closeness encoded edge
@@ -64,21 +55,17 @@ smoothing : float (optional)
     Larger value implies smoother decay and the edge weight beomes less
     important.
     Default is 2.0.
-
 validate_graph_structure : bool (optional)
     Checks if the graph meets certain structural requirements before starting
     the algorithm: at every vertex, the in-degree equals the out-degree.
     This algorithm is for undirected graphs, therefore this is a necessary,
     but insufficient, check for valid input.
-
 ignore_vertex_type : bool (optional)
     If True, all vertex will be treated as training data.
     Default is False.
-
 max_product : bool (optional)
     Should LBP use max_product or not.
     Default is False.
-
 power : float (optional)
     Power coefficient for power edge potential.
     Default is 0.

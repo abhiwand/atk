@@ -910,7 +910,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             frames.
             Default is the same as the left frame.
 
-        how : str ['left' | 'right' | 'inner'] (optional)
+        how : str ['left' | 'right' | 'inner' | 'outer'] (optional)
             How to qualify the data to be joined together.
             Default is 'inner'.
 
@@ -969,6 +969,9 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         We end up with a new Frame *joined_frame* accessing a new frame with
         all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.
+
+        More examples can be found in the :ref:`user manual
+        <example_frame.join>`.
 
         """
         # For further examples, see :ref:`example_frame.join`.

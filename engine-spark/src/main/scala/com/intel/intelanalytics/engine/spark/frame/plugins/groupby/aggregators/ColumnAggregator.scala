@@ -67,11 +67,11 @@ object ColumnAggregator {
       case Some(x) => Try(x.convertTo[List[Double]]).getOrElse(throw new IllegalArgumentException(s"cutoffs should be numeric"))
       case _ => throw new IllegalArgumentException(s"cutoffs required for group_by histogram")
     }
-    val includeLowest: Option[Boolean] = jsObject.fields.get("includeLowest") match {
+    val includeLowest: Option[Boolean] = jsObject.fields.get("include_lowest") match {
       case Some(x) => Some(Try(x.convertTo[Boolean]).getOrElse(throw new IllegalArgumentException(s"includeLowest should be boolean")))
       case _ => None
     }
-    val strictBinning: Option[Boolean] = jsObject.fields.get("strictBinning") match {
+    val strictBinning: Option[Boolean] = jsObject.fields.get("strict_binning") match {
       case Some(x) => Some(Try(x.convertTo[Boolean]).getOrElse(throw new IllegalArgumentException(s"strictBinning should be boolean")))
       case _ => None
     }
