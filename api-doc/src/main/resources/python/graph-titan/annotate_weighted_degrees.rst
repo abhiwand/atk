@@ -13,11 +13,9 @@ Parameters
 output_graph_name : str
     The name of the new graph.
     Results are written to this graph.
-
 output_property_name : str
     The name of the new property.
     The weighted degree is stored in this property.
-
 degree_option : str (optional)
     Indicator for the definition of degree to be used for the calculation.
     Permitted values:
@@ -30,17 +28,14 @@ degree_option : str (optional)
     Any string with a prefix of the strings "out", "in", "undirected" will
     select the corresponding option.
     Default is "out".
-
 input_edge_labels : list of str (optional)
     If this list is provided, only edges whose labels are included in the given
     set will be considered in the degree calculation.
     In the default situation (when no list is provided), all edges will be used
     in the degree calculation, regardless of label.
-
 edge_weight_property : str (optional)
     The name of the edge property that contains the weights of edges.
     Default is 1.0D.
-
 edge_weight_default : double (optional)
     Default weight to use for an edge if the edge does not possess a property
     of key edge_weight_property.

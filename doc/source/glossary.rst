@@ -55,7 +55,7 @@ Glossary
         steps, each involving the application of the :term:`least squares`
         method of parameter estimation.
 
-        See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
+        See the :ref:`ALS section <ALS>` on machine learning for an
         in-depth discussion of this method.
 
     API Maturity Tags
@@ -197,7 +197,7 @@ Glossary
 
     Confusion Matrices
 
-        See :term:`Confusion Matrix`
+        Plural form of :term:`Confusion Matrix`
 
     Confusion Matrix
 
@@ -531,7 +531,7 @@ Glossary
 
         A multi-pass process for grouping vertices.
 
-        See :doc:`ds_mlal_lp`.
+        See :ref:`LP`.
 
         For additional reference:
         `Learning from Labeled and Unlabeled Data with Label Propagation`_.
@@ -983,7 +983,7 @@ Glossary
 
     Vertices
 
-        See :term:`Vertex`.
+        Plural form of :term:`Vertex`.
 
 .. _Wikipedia\: Standard Deviation:
     http://en.wikipedia.org/wiki/Standard_deviation

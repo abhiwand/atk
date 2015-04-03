@@ -85,7 +85,6 @@ else
    echo "$NAME Python tests FAILED"
    echo "$NAME see nosetest output: $OUTPUT2 "
    echo "$NAME also see log output in target dir"
-   tail -n 1000 $TARGET_DIR/api-server.log
    exit 2
 fi
 

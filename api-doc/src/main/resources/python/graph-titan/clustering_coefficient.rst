@@ -15,7 +15,6 @@ output_property_name : str (optional)
     coefficient will be written.
     If this option is not specified, no output frame will be produced and only
     the global clustering coefficient will be returned.
-
 input_edge_labels : list of str (optional)
     If this list is provided, only edges whose labels are included in the given
     set will be considered in the clustering coefficient calculation.
