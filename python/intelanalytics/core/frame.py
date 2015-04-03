@@ -735,7 +735,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             *   min
             *   stdev
             *   sum
-            *   var
+            *   var (see glossary :term:`Bias vs Variance`)
 
         Examples
         --------
