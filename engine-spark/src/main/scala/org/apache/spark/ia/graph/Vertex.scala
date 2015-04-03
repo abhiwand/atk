@@ -24,10 +24,9 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property => GBProperty }
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes, Schema }
-import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
+import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
+import com.intel.intelanalytics.engine.spark.frame.AbstractRow
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
  * Vertex: self contained vertex with complete schema information included.
