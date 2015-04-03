@@ -30,7 +30,7 @@ print("define csv file")
 csv = ia.CsvFile("/lda.csv", schema= [('doc_id', str),
                                         ('word_id', str),
                                         ('word_count', ia.int64)], skip_header_lines=1)
-print("create big frame")
+print("create frame")
 frame = ia.Frame(csv)
 
 print("inspect frame")
