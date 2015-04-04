@@ -55,4 +55,16 @@ object ApiServiceConfig {
   val defaultCount: Int = config.getInt("intel.analytics.api.default-count")
 
   val buildId = config.getString("intel.analytics.api.buildId")
+
+  /** sentinel token which avoids oauth */
+  val shortCircuitApiKey = config.getString("intel.analytics.component.archives.api-server.shortCircuitApiKey")
+
+  /** the space id of this ATK instance */ // todo - get from CC or VCAPS
+  val appSpace = config.getString("intel.analytics.component.archives.api-server.appSpace")
+
+  /** the URI of the Cloud Controller */
+  val ccUri = config.getString("intel.analytics.component.archives.api-server.ccUri")
+
+  /** the URI of the UAA server */
+  val uaaUri = config.getString("intel.analytics.component.archives.api-server.uaaUri")
 }

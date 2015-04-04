@@ -286,7 +286,7 @@ trait AbstractRow {
             arrayBuf ++= DataTypes.toVector(row(i))
           }
           else {
-            throw new RuntimeException(s"Vector data type should not be null in row:${row}")
+            throw new RuntimeException(s"Vector data type should not be null in row:$row")
           }
         }
         else {
