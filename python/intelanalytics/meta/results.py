@@ -108,5 +108,5 @@ def return_lda_train(selfish, json_result):
 @postprocessor('graph/graphx_connected_components')
 def return_connected_components(selfish, json_result):
     from intelanalytics.core.frame import get_frame
-    dictionary = json_result["connected_components_dictionary"]
+    dictionary = json_result["frame_dictionary_output"]
     return dict([(k,get_frame(v["id"])) for k,v in dictionary.items()])
