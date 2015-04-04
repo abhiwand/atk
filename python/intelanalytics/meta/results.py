@@ -105,8 +105,8 @@ def return_lda_train(selfish, json_result):
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
-@postprocessor('graph/graphx_connected_components')
+@postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees')
 def return_connected_components(selfish, json_result):
     from intelanalytics.core.frame import get_frame
-    dictionary = json_result["connected_components_dictionary"]
+    dictionary = json_result["frame_dictionary_output"]
     return dict([(k,get_frame(v["id"])) for k,v in dictionary.items()])
