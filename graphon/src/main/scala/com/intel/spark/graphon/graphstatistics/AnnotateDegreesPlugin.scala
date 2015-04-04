@@ -27,8 +27,8 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameEntity}
-import com.intel.intelanalytics.domain.{CreateEntityArgs, StorageFormats, DomainJsonProtocol}
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
