@@ -66,7 +66,7 @@ case class ConnectedComponentsArgs(graph: GraphReference,
   require(!outputProperty.isEmpty, "Output property label must be provided")
 }
 
-case class ConnectedComponentsReturn(connectedComponentsDictionary: Map[String, FrameEntity])
+case class ConnectedComponentsReturn(frameDictionaryOutput: Map[String, FrameEntity])
 
 /** Json conversion for arguments and return value case classes */
 object ConnectedComponentsJsonFormat {
