@@ -137,7 +137,7 @@ class Server(object):
 
     def create_full_uri(self, uri_path=''):
         base = self._get_base_uri()
-        if uri_path.startswith(base):
+        if uri_path.startswith('http'):
             return uri_path
         if len(uri_path) > 0 and uri_path[0] != '/':
             uri_path = '/' + uri_path
