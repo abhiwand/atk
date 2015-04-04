@@ -1,7 +1,5 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.hierarchicalclustering
 
-import java.lang
-
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
@@ -356,9 +354,13 @@ object EdgeManager extends Serializable {
         edge.dest,
         edge.destNodeCount,
         1, true)
+
+      (metaNodeVertexId, edge.getTotalNodeCount, edges)
+    }
+    else {
+      (0, 0, edges)
     }
 
-    (metaNodeVertexId, edge.getTotalNodeCount, edges)
   }
 
   /**
@@ -391,10 +393,10 @@ object HierarchicalGraphClustering extends Serializable {
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
     val fileWriter = new FileWriter("/tmp/test.txt", true)
 
-    fileWriter.write("Initial graph\n")
-    currentGraph.collect().foreach((e: HierarchicalClusteringEdge) => fileWriter.write(e.toString() + "\n"))
-    fileWriter.write("\n\n")
-    fileWriter.flush()
+    //    fileWriter.write("Initial graph\n")
+    //    currentGraph.collect().foreach((e: HierarchicalClusteringEdge) => fileWriter.write(e.toString() + "\n"))
+    //    fileWriter.write("\n\n")
+    //    fileWriter.flush()
 
     var iteration = 0
     val graphStorage = TitanStorage.connectToTitan(titanConfig)
@@ -434,6 +436,11 @@ object HierarchicalGraphClustering extends Serializable {
     }
     else {
       fileWriter.write("No new collapsed edges\n")
+      if (graph.count() > 0) {
+        fileWriter.write("Current graph edges\n")
+        graph.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+        fileWriter.write("current graph edges - done\n")
+      }
     }
     fileWriter.flush()
 
@@ -453,13 +460,6 @@ object HierarchicalGraphClustering extends Serializable {
       fileWriter.write("Active edges " + activeEdgesCount + "\n")
       fileWriter.flush()
 
-      //double the edges for edge selection algorithm
-      val activeEdgesBothDirections = activeEdges.flatMap((e: HierarchicalClusteringEdge) => Seq(e, HierarchicalClusteringEdge(e.dest,
-        e.destNodeCount,
-        e.src,
-        e.srcNodeCount,
-        e.distance, e.isInternal)))
-
       // create a key-value pair list of edges from the current graph (for subtractByKey)
       val currentGraphAsKVPair = graph.map((e: HierarchicalClusteringEdge) => (e.src, e))
 
@@ -472,18 +472,30 @@ object HierarchicalGraphClustering extends Serializable {
       //remove collapsed edges from the active graph - by src node
       val newGraphReducedBySrc = currentGraphAsKVPair.subtractByKey(collapsedEdgesAsKVPair).values
 
+      //double the edges for edge selection algorithm
+      val activeEdgesBothDirections = activeEdges.flatMap((e: HierarchicalClusteringEdge) => Seq(e, HierarchicalClusteringEdge(e.dest,
+        e.destNodeCount,
+        e.src,
+        e.srcNodeCount,
+        e.distance, e.isInternal))).distinct()
+      activeEdges.unpersist()
+
       //remove collapsed edges from the active graph - by dest node
       val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: HierarchicalClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
       val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, true)
+      val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
 
-      newGraphWithoutInternalEdges.cache()
+      distinctNewGraphWithoutInternalEdges.cache()
       collapsableEdges.unpersist()
-      activeEdges.unpersist()
 
-      fileWriter.write("Active edges to next iteration " + newGraphWithoutInternalEdges.count() + "\n")
+      fileWriter.write("Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count() + "\n")
+      //      if (distinctNewGraphWithoutInternalEdges.count() > 0) {
+      //        newGraphWithoutInternalEdges.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
+      //        fileWriter.write("activeEdges - done\n")
+      //      }
       fileWriter.flush()
 
-      newGraphWithoutInternalEdges
+      distinctNewGraphWithoutInternalEdges
     }
     else {
       fileWriter.write("No new active edges - terminating...\n")
@@ -654,11 +666,10 @@ object HierarchicalGraphClustering extends Serializable {
     }
 
     collapsableEdges.map {
-      case (vertexName, pairedEdgeList) =>
-        val outgoingEdges = EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
-        outgoingEdges match {
-          case (collapsableEdge, outgoingEdgeList) => (collapsableEdge, outgoingEdgeList)
-        }
+      case (vertexId, pairedEdgeList) =>
+        EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
+    }.filter {
+      case (collapsableEdge, outgoingEdgeList) => (collapsableEdge != null)
     }
   }
 }
