@@ -22,7 +22,6 @@
 ##############################################################################
 
 from intelanalytics.core.iatypes import valid_data_types
-import pandas
 
 
 class Pandas(object):
@@ -79,6 +78,7 @@ class Pandas(object):
     annotation = "pandas_frame"
 
     def __init__(self, pandas_frame, schema, row_index=True):
+        import pandas
         if not isinstance(pandas_frame, pandas.DataFrame):
             raise ValueError("pandas_frame must be a pandas Data Frame")
         if not schema:
