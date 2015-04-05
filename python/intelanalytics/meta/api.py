@@ -138,12 +138,12 @@ class _Api(object):
         Subsequent calls to this method invoke no action.
         """
         if not _Api.is_loaded():
-            from intelanalytics.rest.connection import http
+            from intelanalytics.rest.iaserver import server
             from intelanalytics.rest.jsonschema import get_command_def
             from intelanalytics.meta.metaprog import install_command_defs, delete_docstubs
             logger.info("Requesting available commands from server")
             try:
-                response = http.get("commands/definitions")
+                response = server.get("/commands/definitions")
             except:
                 import sys
                 sys.stderr.write('Unable to connect to server\n')
