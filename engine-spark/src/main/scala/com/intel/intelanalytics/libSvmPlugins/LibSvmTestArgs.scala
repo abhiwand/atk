@@ -38,6 +38,6 @@ case class LibSvmTestArgs(model: ModelReference,
                           observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
-  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
+  require(labelColumn != null && !labelColumn.isEmpty, "label column name is required")
 
 }

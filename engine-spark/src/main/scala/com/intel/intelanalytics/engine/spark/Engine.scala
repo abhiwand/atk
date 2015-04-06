@@ -93,7 +93,7 @@ import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{VectorValue, CreateEntityArgs, FilterArgs}
+import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -517,15 +517,14 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.scoremodel") {
       future {
         val model = models.expectModel(ModelReference(id))
-        if(model.modelType.equals("model:libsvm")) {
-          val svmJsObject = model.data.get
+        if (model.modelType.equals("model:libsvm")) {
+          val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
           val libsvmData = svmJsObject.convertTo[LibSvmData]
           val libsvmModel = libsvmData.svmModel
           val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
           predictionLabel.value
         }
-        else
-        {
+        else {
           throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
         }
       }
