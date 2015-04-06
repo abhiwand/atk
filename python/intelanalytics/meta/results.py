@@ -83,7 +83,7 @@ def return_histogram(selfish, json_result):
     from intelanalytics.core.histogram import Histogram
     return Histogram(json_result["cutoffs"], json_result["hist"], json_result["density"])
 
-@postprocessor('graph:titan/clustering_coefficient')
+@postprocessor('graph/clustering_coefficient')
 def return_clustering_coefficient(selfish, json_result):
     from intelanalytics.core.frame import get_frame
     from intelanalytics.core.clusteringcoefficient import  ClusteringCoefficient
