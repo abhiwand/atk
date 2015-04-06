@@ -158,7 +158,6 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       implicit val format = DomainJsonProtocol.vectorValueFormat
                       entity(as[VectorValue]) {
                         observation =>
-                          println(s">>>>>>>>>>>>>> $id, $observation ")
                           onComplete(engine.scoreModel(id, observation)) {
                             case Success(scored) => complete(scored.toString)
                             case Failure(ex) => ctx => {

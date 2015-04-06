@@ -303,7 +303,7 @@ object MLLibJsonProtocol {
      */
     override def write(obj: svm_model): JsValue = {
       //val t = if (obj.label == null) JsNull else new JsArray(obj.label.map(i => JsNumber(i)).toList)
-      val checkLabel =  obj.label match {
+      val checkLabel = obj.label match {
         case null => JsNull
         case _ => new JsArray(obj.label.map(i => JsNumber(i)).toList)
       }
@@ -348,21 +348,21 @@ object MLLibJsonProtocol {
       val rho = fields.get("rho").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
       val probA = fields.get("probA").get match {
         case JsNull => null
-        case _ => fields.get("probA").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.doubleValue () ).toArray
+        case _ => fields.get("probA").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
       }
       val probB = fields.get("probB").get match {
         case JsNull => null
-        case _ => fields.get("probB").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.doubleValue () ).toArray
+        case _ => fields.get("probB").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue()).toArray
       }
       val sv_indices = fields.get("sv_indices").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
       val sv_coef = fields.get("sv_coef").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => j.asInstanceOf[JsNumber].value.doubleValue()).toArray).toArray
       val label = fields.get("label").get match {
         case JsNull => null
-        case _ => fields.get("label").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.intValue () ).toArray
+        case _ => fields.get("label").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
       }
       val nSV = fields.get("nSV").get match {
         case JsNull => null
-        case _ => fields.get("nSV").get.asInstanceOf[JsArray].elements.map (i => i.asInstanceOf[JsNumber].value.intValue () ).toArray
+        case _ => fields.get("nSV").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
       }
       val param = fields.get("param").map(v => svm_parameter.read(v)).get
       val SV = fields.get("SV").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => svm_node.read(j))toArray).toArray
