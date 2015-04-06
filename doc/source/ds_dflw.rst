@@ -122,7 +122,7 @@ In the above example, the separating character is a comma (,).
 To import data, you must tell the system how the input file is formatted.
 This is done by defining a :term:`schema`.
 Schemas are constructed as a list of tuples, each of which contains pairs of
-ASCII-character names and data types (see :ref:`Valid Data Types
+:term:`ASCII`-character names and data types (see :ref:`Valid Data Types
 <valid_data_types>`), ordered according to the order of columns in the input
 file.
 
@@ -871,7 +871,7 @@ Aggregation currently supports using the following functions:
     * min
     * stdev
     * sum
-    * var
+    * var (see glossary :term:`Bias vs Variance`)
 
 .. _example_frame.join:
 
