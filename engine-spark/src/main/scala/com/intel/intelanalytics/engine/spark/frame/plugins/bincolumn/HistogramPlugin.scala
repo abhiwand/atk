@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema, 
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
-import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, SparkFrameData }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
@@ -120,7 +120,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     //sort by key return values
     val histSizes: Seq[Double] = bins.sortBy(_._1).map(_._2)
 
-    val totalSize: Double = histSizes.reduce(_ + _)
+    val totalSize: Double = histSizes.sum
     val frequencies: Seq[Double] = histSizes.map(size => size / totalSize)
 
     new Histogram(binnedResults.cutoffs, histSizes, frequencies)

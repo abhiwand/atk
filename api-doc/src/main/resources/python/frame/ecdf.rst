@@ -17,9 +17,11 @@ Examples
 --------
 Consider the following sample data set in *frame* with actual data labels
 specified in the *labels* column and the predicted labels in the
-*predictions* column::
+*predictions* column:
 
-    frame.inspect()
+.. code::
+
+    >>> frame.inspect()
 
       a:unicode   b:int32
     /---------------------/
@@ -28,8 +30,8 @@ specified in the *labels* column and the predicted labels in the
        blue        1
        green       0
 
-    result = frame.ecdf('b')
-    result.inspect()
+    >>> result = frame.ecdf('b')
+    >>> result.inspect()
 
       b:int32   b_ECDF:float64
     /--------------------------/

@@ -160,14 +160,20 @@ object Archive extends ClassLoaderAware {
   def getCodePaths(archive: String, sourceRoots: Array[String], jarFolders: Array[String]): Array[CodePath] = {
     //TODO: Sometimes ${PWD} doesn't get replaced by Config library, figure out why
     val paths = sourceRoots.map(s => s.replace("${PWD}", Directory.Current.get.toString()): Path).flatMap { root =>
-      Array(
+      val baseSearchPath = Array(
         FolderPath("development class files", root / archive / "target" / "classes"),
         FolderPath("development resource files", root / archive / "src" / "main" / "resources"),
         JarPath("development jar", root / archive / "target" / (archive + ".jar")),
         FolderPath("giraph development class files", root / "igiraph" / archive.substring(1) / "target" / "classes"),
         FolderPath("giraph development resource files", root / "igiraph" / archive.substring(1) / "src" / "main" / "resources"),
-        JarPath("giraph development jar", root / "igiraph" / archive.substring(1) / "target" / (archive + ".jar"))
+        JarPath("giraph development jar", root / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")),
+        JarPath("yarn cluster mode", root / (archive + ".jar")), /* In yarn container mode, all jars are copied to root */
+        JarPath("launcher", root / ".." / (archive + ".jar"))
       )
+      archive match {
+        case "engine-spark" => baseSearchPath :+ JarPath("__spark__", root / "__spark__.jar")
+        case _ => baseSearchPath
+      }
     } ++ jarFolders.map(s => JarPath("deployed jar",
       (s.replace("${PWD}", Directory.Current.get.toString()): Path) / (archive + ".jar")))
     paths.foreach { p =>
@@ -284,7 +290,7 @@ object Archive extends ClassLoaderAware {
     })
   }
 
-  private def getAugmentedConfig(archiveName: String, loader: ClassLoader) = {
+  def getAugmentedConfig(archiveName: String, loader: ClassLoader) = {
     val parseOptions = ConfigParseOptions.defaults()
     parseOptions.setAllowMissing(true)
 

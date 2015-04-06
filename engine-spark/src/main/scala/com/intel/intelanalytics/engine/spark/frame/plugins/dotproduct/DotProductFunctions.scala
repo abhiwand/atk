@@ -27,7 +27,7 @@ import java.io.Serializable
 
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -37,39 +37,35 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
  */
 object DotProductFunctions extends Serializable {
 
-  import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductColumn._
-
   /**
    * Computes the dot product for each row in the frame.
    *
    * Uses the left column values, and the right column values to compute the dot product for each row.
    *
    * @param frameRdd Data frame
-   * @param leftColumnsNames Left column names
-   * @param rightColumnsNames Right column names
+   * @param leftColumnNames Left column names
+   * @param rightColumnNames Right column names
    * @param defaultLeftValues  Optional default values used to substitute null values in the left columns
    * @param defaultRightValues Optional default values used to substitute null values in the right columns
    * @return Data frame with an additional column containing the dot product
    */
-  def dotProduct(frameRdd: FrameRDD, leftColumnsNames: List[String], rightColumnsNames: List[String],
+  def dotProduct(frameRdd: FrameRdd, leftColumnNames: List[String], rightColumnNames: List[String],
                  defaultLeftValues: Option[List[Double]] = None,
                  defaultRightValues: Option[List[Double]] = None): RDD[sql.Row] = {
 
-    val leftColumns = leftColumnsNames.map(name => createDotProductColumn(frameRdd, name))
-    val rightColumns = rightColumnsNames.map(name => createDotProductColumn(frameRdd, name))
+    val leftVectorSize = getVectorSize(frameRdd, leftColumnNames)
+    val rightVectorSize = getVectorSize(frameRdd, rightColumnNames)
 
-    val expectedSize = leftColumns.map(col => col.expectedSize).sum
-    val rightVectorSize = rightColumns.map(col => col.expectedSize).sum
-
-    require(expectedSize == rightVectorSize, "number of left columns should equal number of right columns")
-    require(defaultLeftValues.isEmpty || defaultLeftValues.get.size == expectedSize,
+    require(leftVectorSize == rightVectorSize,
+      "number of elements in left columns should equal number in right columns")
+    require(defaultLeftValues.isEmpty || defaultLeftValues.get.size == leftVectorSize,
       "size of default left values should match number of elements in left columns")
-    require(defaultRightValues.isEmpty || defaultRightValues.get.size == expectedSize,
+    require(defaultRightValues.isEmpty || defaultRightValues.get.size == leftVectorSize,
       "size of default right values should match number of elements in right columns")
 
     frameRdd.mapRows(row => {
-      val leftVector = createVector(row, leftColumns, expectedSize, defaultLeftValues)
-      val rightVector = createVector(row, rightColumns, expectedSize, defaultRightValues)
+      val leftVector = createVector(row, leftColumnNames, leftVectorSize, defaultLeftValues)
+      val rightVector = createVector(row, rightColumnNames, rightVectorSize, defaultRightValues)
       val dotProduct = computeDotProduct(leftVector, rightVector)
       new GenericRow(row.valuesAsArray() :+ dotProduct)
     })
@@ -78,41 +74,50 @@ object DotProductFunctions extends Serializable {
   /**
    * Create vector of doubles from column values.
    *
-   * The columns contain numeric data represented as scalars or comma-delimited lists
+   * The columns contain numeric data represented as scalars or vectors
    *
    * @param row Input row
-   * @param columns Input columns
-   * @param expectedSize Expected size of vector
+   * @param columnNames Input column names
    * @param defaultValues Default values used to substitute nulls
-   * @return
+   * @return Vector of doubles
    */
-  def createVector(row: RowWrapper, columns: List[DotProductColumn], expectedSize: Int, defaultValues: Option[List[Double]]): Seq[BigDecimal] = {
-    val vector: List[BigDecimal] = columns.flatMap(col => {
-      row.value(col.column.name) match {
-        case null => Array.fill(col.expectedSize)(null.asInstanceOf[BigDecimal])
-        case s: String => DataTypes.toBigDecimalArray(s)
-        case x => Array(DataTypes.toBigDecimal(x))
+  def createVector(row: RowWrapper,
+                   columnNames: List[String],
+                   vectorSize: Int,
+                   defaultValues: Option[List[Double]]): Vector[Double] = {
+    val vector = columnNames.flatMap(columnName => {
+      val value = row.value(columnName)
+
+      row.schema.columnDataType(columnName) match {
+        case DataTypes.vector => {
+          if (value == null) {
+            Array.fill[Double](vectorSize)(Double.NaN)
+          }
+          else {
+            DataTypes.toVector(value)
+          }
+        }
+        case _ => if (value == null) Array(Double.NaN) else Array(DataTypes.toDouble(value))
       }
-    })
-    replaceNulls(vector, defaultValues, expectedSize)
+    }).toVector
+
+    replaceNaNs(vector, defaultValues)
   }
 
   /**
-   * Replace nulls in input vector with default values
+   * Replace NaNs in input vector with default values
    *
    * @param vector Input vector
    * @param defaultValues Default values
-   * @param expectedSize Expected size of vector
    * @return Vector with NaNs replaced by defaults or zero
    */
-  def replaceNulls(vector: List[BigDecimal], defaultValues: Option[List[Double]], expectedSize: Int): Seq[BigDecimal] = {
-    require(vector.size == expectedSize, s"size in vector ${vector} should be ${expectedSize}")
-    require(defaultValues.isEmpty || defaultValues.get.size == expectedSize, s"size in default values should be ${expectedSize}")
+  def replaceNaNs(vector: Vector[Double], defaultValues: Option[List[Double]]): Vector[Double] = {
+    require(defaultValues.isEmpty || defaultValues.get.size == vector.size, s"size in default values should be ${vector.size}")
 
     vector.zipWithIndex.map {
       case (value, i) =>
         value match {
-          case x if (x == null) => if (defaultValues.isDefined) BigDecimal(defaultValues.get(i)) else BigDecimal(0)
+          case x if x.isNaN => if (defaultValues.isDefined) defaultValues.get(i) else 0d
           case _ => value
         }
     }
@@ -127,15 +132,26 @@ object DotProductFunctions extends Serializable {
    * @param rightVector Right vector
    * @return Dot product
    */
-  def computeDotProduct(leftVector: Seq[BigDecimal], rightVector: Seq[BigDecimal]): Double = {
+  def computeDotProduct(leftVector: Vector[Double], rightVector: Vector[Double]): Double = {
     require(!leftVector.isEmpty, "left vector should not be empty")
     require(leftVector.size == rightVector.size, "size of left vector should equal size of right vector")
 
-    var dotProduct = BigDecimal(0)
+    var dotProduct = 0d
     for (i <- 0 until leftVector.size) {
       dotProduct += leftVector(i) * rightVector(i)
     }
-    dotProduct.doubleValue()
+    dotProduct
   }
 
+  //TODO: Remove once vector data type supports size
+  private def getVectorSize(frameRdd: FrameRdd, columnNames: List[String]): Int = {
+    val frameSchema = frameRdd.frameSchema
+    if (columnNames.size == 1 && frameSchema.columnDataType(columnNames(0)) == DataTypes.vector) {
+      val firstDefinedValue = frameRdd.mapRows(row => row.value(columnNames(0))).filter(_ != null).take(1)
+      if (firstDefinedValue.nonEmpty) DataTypes.toVector(firstDefinedValue(0)).size else 1
+    }
+    else {
+      columnNames.size
+    }
+  }
 }

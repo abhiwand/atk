@@ -6,10 +6,8 @@ data_column : str
     The column to be statistically summarized.
     Must contain numerical data; all NaNs and infinite values are excluded
     from the calculation.
-
 weights_column_name : str (optional)
     Name of column holding weights of column values
-
 use_population_variance : bool (optional)
     If true, the variance is calculated as the population variance.
     If false, the variance calculated as the sample variance.
@@ -22,15 +20,12 @@ Returns
 -------
 dict
     Dictionary containing summary statistics in the following entries:
-
 mean : [ double | None ]
     Arithmetic mean of the data.
-
 geometric_mean : [ double | None ]
     Geometric mean of the data.
     None when there is a data element <= 0, 1.0 when there are no
     data elements.
-
 variance : [ double | None ]
     None when there are <= 1 many data elements.
     Sample variance is the weighted sum of the squared distance of
@@ -40,44 +35,34 @@ variance : [ double | None ]
     Population variance is the weighted sum of the squared distance
     of each data element from the weighted mean, divided by the total
     weight.
-
 standard_deviation : [ double | None ]
     The square root of the variance. None when  sample variance
     is being used and the sum of weights is <= 1.
-
 valid_data_count : long
     The count of all data elements that are finite numbers.
     (In other words, after excluding NaNs and infinite values.)
-
 minimum : [ double | None ]
     Minimum value in the data.
     None when there are no data elements.
-
 maximum : [ double | None ]
     Maximum value in the data. None when there are no data elements.
-
 mean_confidence_lower : [ double | None ]
     Lower limit of the 95% confidence interval about the mean.
     Assumes a Gaussian distribution.
     None when there are no elements of positive weight.
-
 mean_confidence_upper : [ double | None ]
     Upper limit of the 95% confidence interval about the mean.
     Assumes a Gaussian distribution.
     None when there are no elements of positive weight.
-
 bad_row_count : [ double | None ]
     The number of rows containing a NaN or infinite value
     in either the data or weights column.
-
 good_row_count : [ double | None ]
     The number of rows not containing a NaN or infinite
     value in either the data or weights column.
-
 positive_weight_count : [ double | None ]
     The number of valid data elements with weight > 0.
     This is the number of entries used in the statistical calculation.
-
 non_positive_weight_count : [ double | None ]
     The number valid data elements with finite weight <= 0.
 
@@ -130,7 +115,8 @@ Equations
 
 Examples
 --------
-::
 
-    stats = frame.column_summary_statistics('data column', 'weight column')
+.. code::
+
+    >>> stats = frame.column_summary_statistics('data column', 'weight column')
 

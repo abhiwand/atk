@@ -73,13 +73,13 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
       val modelMeta = models.expectModel(arguments.model)
 
       //create RDD from the frame
-      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
-      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRDD.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+      val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
+      val labeledTrainRdd: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
       //Running MLLib
       val logReg = initializeLogisticRegressionModel(arguments)
 
-      val logRegModel = logReg.run(labeledTrainRDD)
+      val logRegModel = logReg.run(labeledTrainRdd)
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models

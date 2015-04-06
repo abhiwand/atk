@@ -53,7 +53,7 @@ Older versions of the aws-cli client does not work with the restricted
 permissions.
 
 The aws-cli client can be updated with pip or
-download the new Windows MSI (reference :ref:`Windows GUI Installation`).
+download the new Windows MSI (reference :ref:`Windows GUI Client`).
 ::
 
     $ sudo pip install -U awscli
@@ -85,6 +85,8 @@ In this case, it's 'IntelAnalytics-VM.tar.gz'::
     $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz
 
 [:ref:`Skip section about Windows GUI Client <extract_archive>`].
+
+.. _windows gui client:
 
 ------------------
 Windows GUI Client

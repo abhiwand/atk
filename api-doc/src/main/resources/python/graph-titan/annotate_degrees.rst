@@ -9,20 +9,19 @@ Parameters
 output_graph_name : str
     The name of the new graph.
     The results are written to this graph.
-
 output_property_name : str
     The name of the new property.
     The degree is stored in this property.
-
 degree_option : str (optional)
     Indicator for the definition of degree to be used for the calculation.
     Permitted values:
+
     *   "out" (default value) : Degree is calculated as the out-degree.
     *   "in" : Degree is calculated as the in-degree.
     *   "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
+
     Any prefix of the strings "out", "in", "undirected" will select the
     corresponding option.
-
 input_edge_labels : list of str (optional)
     If this list is provided, only edges whose labels are included in the given
     set will be considered in the degree calculation.
@@ -30,8 +29,8 @@ input_edge_labels : list of str (optional)
     in the degree calculation, regardless of label.
 
 
-Return
-------
+Returns
+-------
 
 Graph : Degree annotated graph
     A Graph object with access to a new graph that is a copy of the input graph
@@ -40,9 +39,11 @@ Graph : Degree annotated graph
 
 Examples
 --------
-Given a graph::
+Given a graph:
 
-    g.query.gremlin('g.V [ 0 .. 1]')
+.. code::
+
+    >>> g.query.gremlin('g.V [ 0 .. 1]')
 
     Out[12]:
        {u'results': [{u'_id': 19456,
@@ -57,9 +58,9 @@ Given a graph::
         u'source': 31599}],
         u'run_time_seconds': 1.822}
 
-    h = g.annotate_degrees('degreed_graph', 'degree')
+    >>> h = g.annotate_degrees('degreed_graph', 'degree')
     
-    h.query.gremlin('g.V [ 0 .. 1]')
+    >>> h.query.gremlin('g.V [ 0 .. 1]')
     
     
     Out[14]:

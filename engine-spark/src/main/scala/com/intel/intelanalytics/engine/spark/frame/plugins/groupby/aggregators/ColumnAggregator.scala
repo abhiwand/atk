@@ -44,30 +44,37 @@ object ColumnAggregator {
    */
   def getHistogramColumnAggregator(aggregationArgs: GroupByAggregationArgs, columnIndex: Int): ColumnAggregator = {
     val functionName = aggregationArgs.function
-    require(functionName.matches("""HISTOGRAM\s*=\s*\{.*\}"""), s"Unsupported aggregation function for histogram: ${functionName}")
+    require(functionName.matches("""HISTOGRAM\s*=\s*\{.*\}"""), s"Unsupported aggregation function for histogram: $functionName")
 
     val newColumnName = aggregationArgs.newColumnName.split("=")(0)
-    val cutoffs = parseHistogramCutoffs(functionName.split("=")(1))
-    ColumnAggregator(Column(newColumnName, DataTypes.vector), columnIndex, HistogramAggregator(cutoffs))
+    val histogramAggregator = getHistogramAggregator(functionName.split("=")(1))
+    ColumnAggregator(Column(newColumnName, DataTypes.vector), columnIndex, histogramAggregator)
   }
 
   /**
-   * Parse cutoffs for the histogram
-   *
-   * @param cutoffJson Json string with list of cutoffs
-   * @return List of cutoffs
+   * Parses the JSON for arguments and creates a new HistogramAggregator
+   * @param argsJson json str of object describing histogram args
+   * @return new aggregator
    */
-  def parseHistogramCutoffs(cutoffJson: String): List[Double] = {
+  def getHistogramAggregator(argsJson: String): HistogramAggregator = {
     import spray.json._
     import spray.json.DefaultJsonProtocol._
 
-    val jsObject = Try(cutoffJson.parseJson.asJsObject).getOrElse({
-      throw new IllegalArgumentException(s"cutoffs should be valid JSON: ${cutoffJson}")
+    val jsObject = Try(argsJson.parseJson.asJsObject).getOrElse({
+      throw new IllegalArgumentException(s"cutoffs should be valid JSON: $argsJson")
     })
-
-    jsObject.fields.get("cutoffs") match {
+    val cutoffs: List[Double] = jsObject.fields.get("cutoffs") match {
       case Some(x) => Try(x.convertTo[List[Double]]).getOrElse(throw new IllegalArgumentException(s"cutoffs should be numeric"))
       case _ => throw new IllegalArgumentException(s"cutoffs required for group_by histogram")
     }
+    val includeLowest: Option[Boolean] = jsObject.fields.get("include_lowest") match {
+      case Some(x) => Some(Try(x.convertTo[Boolean]).getOrElse(throw new IllegalArgumentException(s"includeLowest should be boolean")))
+      case _ => None
+    }
+    val strictBinning: Option[Boolean] = jsObject.fields.get("strict_binning") match {
+      case Some(x) => Some(Try(x.convertTo[Boolean]).getOrElse(throw new IllegalArgumentException(s"strictBinning should be boolean")))
+      case _ => None
+    }
+    HistogramAggregator(cutoffs, includeLowest, strictBinning)
   }
 }

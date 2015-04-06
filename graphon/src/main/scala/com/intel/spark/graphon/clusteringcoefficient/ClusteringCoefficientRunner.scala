@@ -27,7 +27,7 @@ import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
 import com.intel.spark.graphon.graphconversions.GraphConversions
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.rdd.RDD
@@ -38,7 +38,7 @@ import org.apache.spark.SparkContext._
  * @param vertexOutput vertex data with the local clustering coefficient placed in the specified property.
  * @param globalClusteringCoefficient The global clustering coefficient of the input graph.
  */
-case class ClusteringCoefficientRunnerReturn(vertexOutput: Option[FrameRDD], globalClusteringCoefficient: Double)
+case class ClusteringCoefficientRunnerReturn(vertexOutput: Option[FrameRdd], globalClusteringCoefficient: Double)
 
 /**
  * Provides a method for running clustering coefficient on a graph using graphx. The result is a new graph with the
@@ -99,7 +99,7 @@ object ClusteringCoefficientRunner extends Serializable {
         .join(intermediateVertices)
         .map({ case (_, (row, coefficient)) => rowWrapper(row).setValue(outputProperty, coefficient) })
 
-      Some(new FrameRDD(schema, outputRows))
+      Some(new FrameRdd(schema, outputRows))
     }
     else {
       None

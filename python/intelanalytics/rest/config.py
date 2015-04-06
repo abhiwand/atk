@@ -25,18 +25,23 @@
 config file for rest client
 """
 
+
+# for specific server settings, see intelanalytics/connections.py
+
 # default connection config
 class server_defaults:
-    host = "localhost"
-    port = 9099
-    scheme = "http"
-    version = "v1"
     headers = {'Content-type': 'application/json',
-               'Accept': 'application/json,text/plain',
-               'Authorization': "test_api_key_1"}
+               'Accept': 'application/json,text/plain'}
+
 
 class upload_defaults:
     rows = 10000
+
+
+class requests_defaults:
+    ping_timeout_secs = 10
+    request_timeout_secs = None  # None means no timeout
+
 
 class polling_defaults:
     start_interval_secs = 1
@@ -45,3 +50,4 @@ class polling_defaults:
 
 
 build_id = None
+

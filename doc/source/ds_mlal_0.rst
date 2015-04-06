@@ -4,42 +4,13 @@ Machine Learning Algorithms
 
 .. contents:: Table of Contents
     :local:
-    
-.. toctree::
-    :hidden:
-    
-    ds_mlal_cf
-    ds_mlal_als
-    ds_mlal_cgd
-    ds_mlal_pr
-    ds_mlal_lp
-    ds_mlal_lbp
-    ds_mlal_glbp
-    ds_mlal_lda
-    ds_mlal_clco
-    ds_mlal_cc
-    ds_mlal_dc
-    ds_mlal_k
 
 The graph machine learning algorithms currently supported fall into these categories:
-*Collaborative Filtering*, *Graph Analytics*, *Graphical Models*, and *Topic Modeling*.
+*Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
 
 * :ref:`Collaborative_Filtering`
     * :ref:`ALS`
     * :ref:`CGD`
-
-* :ref:`Graph_Analytics`
-    * :ref:`ClCo`
-    * :ref:`CC`
-    * :ref:`PR`
-    * :ref:`DC`
-
-.. TODO::
-
-    * ref:`APL`
-    
-    Add these to the toctree above.
-
 
 * :ref:`Graphical_Models`
     * :ref:`LP`
@@ -50,41 +21,14 @@ The graph machine learning algorithms currently supported fall into these catego
 
 
 .. _Collaborative_Filtering:
-.. include:: ds_mlal_cf.rst
+.. include:: ds_mlal_cf.inc
 
 .. _ALS:
-.. include:: ds_mlal_als.rst
+.. include:: ds_mlal_als.inc
 
 .. _CGD:
-.. include:: ds_mlal_cgd.rst
+.. include:: ds_mlal_cgd.inc
 
-
-.. _Graph_Analytics:
-
----------------
-Graph Analytics
----------------
-
-The algorithms we currently support in this category are :ref:`ClCo`, :ref:`CC`, :ref:`DC` and :ref:`PR`.
-
-.. _ClCo:
-.. include:: ds_mlal_clco.rst
-
-.. _CC:
-.. include:: ds_mlal_cc.rst
-
-.. _DC:
-.. include:: ds_mlal_dc.rst
-
-.. _PR:
-.. include:: ds_mlal_pr.rst
-
-.. TODO::
-
-    We support three algorithms in this category, ref:`APL`, ref:`CC`, and :ref:`PR`
-
-    .. _APL:
-    .. include:: ds_mlal_apl.rst
 
 .. _Graphical_Models:
 
@@ -97,15 +41,11 @@ The graphical models find more insights from structured noisy data.
 We currently support :ref:`LP` and :ref:`LBP`
 
 .. _LP:
-.. include:: ds_mlal_lp.rst
+.. include:: ds_mlal_lp.inc
 
 
 .. _LBP:
-.. include:: ds_mlal_lbp.rst
-
-
-.. _GLBP:
-.. include:: ds_mlal_glbp.rst
+.. include:: ds_mlal_lbp.inc
 
 
 .. _Topic_Modeling:
@@ -118,4 +58,5 @@ Topic Modeling
 For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 
 .. _LDA:
-.. include:: ds_mlal_lda.rst
+.. include:: ds_mlal_lda.inc
+

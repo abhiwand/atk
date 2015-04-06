@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.engine.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
@@ -45,8 +45,8 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
-import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RDDJoinParam, JoinArgs, JoinPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RddJoinParam, JoinArgs, JoinPlugin }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRddFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation.{ CorrelationPlugin, CorrelationMatrixPlugin }
@@ -59,18 +59,19 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins._
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.ExportToGraphPlugin
 import com.intel.intelanalytics.engine.spark.model.plugins.RenameModelPlugin
-import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
+import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
+import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ LoadGraphPlugin, RenameGraphPlugin }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
+import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -79,7 +80,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -130,12 +131,13 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
+import scala.util.{ Try, Success, Failure }
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(sparkContextFactory: SparkContextFactory,
+class SparkEngine(val sparkContextFactory: SparkContextFactory,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
@@ -143,14 +145,13 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
                   val models: SparkModelStorage,
                   users: UserStorage,
                   queryStorage: SparkQueryStorage,
-                  queries: QueryExecutor,
                   val sparkAutoPartitioner: SparkAutoPartitioner,
                   commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
 
-  type Data = FrameRDD
+  type Data = FrameRdd
   type Context = SparkContext
 
   val fsRoot = SparkEngineConfig.fsRoot
@@ -306,6 +307,15 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
     users.getUserPrincipal(apiKey)
   }
 
+  override def addUserPrincipal(userName: String)(implicit invocation: Invocation): UserPrincipal = {
+    Try { users.getUserPrincipal(userName) } match {
+      case Success(found) => throw new RuntimeException(s"User $userName already exists, cannot add it.")
+      case Failure(missing) =>
+        println(s"Adding new user $userName")
+        users.insertUser(userName)
+    }
+  }
+
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
@@ -356,43 +366,6 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   }
 
   /**
-   * Execute getRows Query plugin
-   * @param arguments RowQuery object describing id, offset, and count
-   * @return the QueryExecution
-   */
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult = {
-    val queryExecution = queries.execute(getRowsQuery, arguments)
-    val frame = frames.lookup(arguments.id).get
-    frames.updateLastReadDate(frame)
-    val schema = frame.schema
-    PagedQueryResult(queryExecution, Some(schema))
-  }
-
-  val getRowsQuery = queries.registerQuery("frames/data", getRowsSimple)
-
-  /**
-   * Create an intermediate RDD containing the results of a getRows call.
-   * This will be used for pagination after completion of the query
-   *
-   * @param arguments RowQuery object describing id, offset, and count
-   * @param user current user
-   * @return RDD consisting of the requested number of rows
-   */
-  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
-    implicit val inv = invocation
-    if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
-      val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, FrameReference(arguments.id)).rows
-      val takenRows = rdd.take((arguments.count + arguments.offset).toInt).drop(arguments.offset.toInt)
-      invocation.sparkContext.parallelize(takenRows)
-    }
-    else {
-      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-      val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
-      rows
-    }
-  }
-
-  /**
    * Return a sequence of Rows from an RDD starting from a supplied offset
    *
    * @param arguments RowQuery object describing id, offset, and count
@@ -401,13 +374,8 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult = {
     withMyClassLoader {
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-      if (frames.isParquet(frame)) {
-        val rows = frames.getRows(frame, arguments.offset, arguments.count)
-        QueryDataResult(rows, Some(frame.schema))
-      }
-      else {
-        getRowsLarge(arguments)
-      }
+      val rows = frames.getRows(frame, arguments.offset, arguments.count)
+      QueryDataResult(rows, Some(frame.schema))
     }
   }
 
@@ -439,7 +407,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
    */
   def getGraph(id: Identifier)(implicit invocation: Invocation): Future[GraphEntity] = {
     future {
-      graphs.lookup(id).get
+      graphs.lookup(id).getOrElse(throw new NotFoundException("graph"))
     }
   }
 
@@ -535,7 +503,7 @@ class SparkEngine(sparkContextFactory: SparkContextFactory,
 
   override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {
-      commands.stopCommand(id)
+      commands.cancelCommand(id, commandPluginRegistry)
     }
   }
 

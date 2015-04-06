@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 import scala.concurrent.ExecutionContext
@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
-class SizeOnDiskPlugin extends SparkCommandPlugin[FrameNoArgs, LongValue] {
+class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

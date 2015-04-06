@@ -29,7 +29,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.Vectors
@@ -78,16 +78,16 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
       val inputFrame = frames.expectFrame(arguments.frame)
 
       //create RDD from the frame
-      val trainFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
 
       /**
        * Constructs a KMeans instance with parameters passed or default parameters if not specified
        */
       val kMeans = initializeKmeans(arguments)
 
-      val vectorRDD = trainFrameRDD.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
+      val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
       val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRDD, arguments.observationColumns, arguments.columnScalings)
+      val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
       val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
 
       //Writing the kmeansModel as JSON
@@ -107,9 +107,9 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
     kmeans.setEpsilon(arguments.geteEpsilon)
   }
 
-  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRDD: FrameRDD, observationColumns: List[String], columnScalings: List[Double]): Map[String, Int] = {
+  private def computeClusterSize(kmeansModel: KMeansModel, trainFrameRdd: FrameRdd, observationColumns: List[String], columnScalings: List[Double]): Map[String, Int] = {
 
-    val predictRDD = trainFrameRDD.mapRows(row => {
+    val predictRDD = trainFrameRdd.mapRows(row => {
       val array = row.valuesAsArray(observationColumns).map(row => DataTypes.toDouble(row))
       val columnWeightsArray = columnScalings.toArray
       val doubles = array.zip(columnWeightsArray).map { case (x, y) => x * y }

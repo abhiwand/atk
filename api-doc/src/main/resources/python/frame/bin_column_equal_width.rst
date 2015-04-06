@@ -3,29 +3,27 @@ Classify a particular column into same-width groups.
 Group rows of data based on the value in a single column and add a label
 to identify grouping.
 
-*   Equal width binning places column values into groups such that the values
-    in each group fall within the same interval and the interval width for each
-    group is equal.
+Equal width binning places column values into groups such that the values
+in each group fall within the same interval and the interval width for each
+group is equal.
 
 Parameters
 ----------
 column_name : str
     The column whose values are to be binned.
-
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
     :math:`math.floor(math.sqrt(frame.row_count))`
-
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
 
 Notes
 -----
-#)  Unicode in column names is not supported and will likely cause the
-    drop_frames() function (and others) to fail!
-#)  The num_bins parameter is considered to be the maximum permissible number
+1)  Unicode in column names is not supported and will likely cause the
+    drop_frames() method (and others) to fail!
+2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
     elements with only 2 distinct values and the *num_bins* parameter is
@@ -40,9 +38,11 @@ array of floats : cutoffs
 
 Examples
 --------
-Given a frame with column *a* accessed by a Frame object *my_frame*::
+Given a frame with column *a* accessed by a Frame object *my_frame*:
 
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> my_frame.inspect( n=11 )
 
       a:int32
     /---------/
@@ -61,10 +61,12 @@ Given a frame with column *a* accessed by a Frame object *my_frame*::
 Modify the frame, adding a column showing what bin the data is in.
 The data should be separated into a maximum of five bins and the bin cutoffs 
 should be evenly spaced.
-Note that there may be bins with no members::
+Note that there may be bins with no members:
 
-    cutoffs = my_frame.bin_column_equal_width('a', 5, 'aEWBinned')
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> cutoffs = my_frame.bin_column_equal_width('a', 5, 'aEWBinned')
+    >>> my_frame.inspect( n=11 )
 
       a:int32     aEWBinned:int32
     /-----------------------------/
@@ -80,8 +82,10 @@ Note that there may be bins with no members::
        55                 3
        89                 4
 
-The function returns a list of 6 cutoff values that define the edges of each
-bin. Note that difference between the cutoff values is constant::
+The method returns a list of 6 cutoff values that define the edges of each
+bin. Note that difference between the cutoff values is constant:
 
-    print cutoffs
+.. code::
+
+    >>> print cutoffs
     [1.0, 18.6, 36.2, 53.8, 71.4, 89.0]

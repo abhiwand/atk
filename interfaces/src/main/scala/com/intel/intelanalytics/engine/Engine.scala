@@ -74,13 +74,15 @@ trait Engine {
 
   //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
 
-  def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
+  def getUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
+
+  def addUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
 
   def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
+  //  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
   @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]

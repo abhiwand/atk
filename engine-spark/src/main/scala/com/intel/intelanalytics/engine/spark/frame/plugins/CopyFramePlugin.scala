@@ -28,14 +28,14 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
- * Copies specified columns into a new BigFrame object, optionally renaming them and/or filtering them
+ * Copies specified columns into a new Frame object, optionally renaming them and/or filtering them
  */
 class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
@@ -70,7 +70,7 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // Note: Update if UDF wrapping logic ever moves out of the client and into the server
-      PythonRDDStorage.mapWith(sourceRdd, arguments.where.get, finalSchema, sc)
+      PythonRddStorage.mapWith(sourceRdd, arguments.where.get, finalSchema, sc)
     }
     else {
       if (arguments.columns.isDefined) {

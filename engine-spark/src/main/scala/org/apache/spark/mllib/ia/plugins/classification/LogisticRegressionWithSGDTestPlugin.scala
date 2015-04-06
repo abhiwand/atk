@@ -70,7 +70,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[Classificat
       val modelMeta = models.expectModel(arguments.model)
 
       //create RDD from the frame
-      val testFrameRDD = frames.loadFrameData(sc, inputFrame)
+      val testFrameRdd = frames.loadFrameData(sc, inputFrame)
 
       val logRegJsObject = modelMeta.data.get
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
@@ -80,17 +80,17 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[Classificat
       }
       val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
-      val labeledTestRDD: RDD[LabeledPoint] = testFrameRDD.toLabeledPointRDD(arguments.labelColumn, logRegColumns)
+      val labeledTestRdd: RDD[LabeledPoint] = testFrameRdd.toLabeledPointRDD(arguments.labelColumn, logRegColumns)
 
       //predicting and testing
-      val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
+      val scoreAndLabelRdd: RDD[Row] = labeledTestRdd.map { point =>
         val prediction = logRegModel.predict(point.features)
         Array[Any](point.label, prediction)
       }
 
       //Run Binary classification metrics
       val posLabel: String = "1.0"
-      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRDD, 0, 1, posLabel, 1)
+      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRdd, 0, 1, posLabel, 1)
 
     }
 }

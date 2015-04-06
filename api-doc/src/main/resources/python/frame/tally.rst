@@ -8,7 +8,6 @@ Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative count
-
 count_value : str
     The column value to be used for the counts
 
@@ -19,9 +18,11 @@ None
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single
-column *obs*::
+column *obs*:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32
     /-----------/
@@ -32,16 +33,20 @@ column *obs*::
         1
         2
 
-The cumulative count for column *obs* using *count_value = 1* is obtained by::
+The cumulative count for column *obs* using *count_value = 1* is obtained by:
 
-    my_frame.tally('obs', '1')
+.. code::
+
+    >>> my_frame.tally('obs', '1')
 
 The Frame *my_frame* accesses a frame which now contains two columns *obs*
 and *obsCumulativeCount*.
 Column *obs* still has the same data and *obsCumulativeCount* contains the
-cumulative counts::
+cumulative counts:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32        obs_tally:int32
     /----------------------------------/

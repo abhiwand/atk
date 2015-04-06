@@ -62,7 +62,7 @@ object MiscFrameFunctions extends Serializable {
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
-      val (ct: Int, sum: Int) = sumsAndCounts(i)
+      val (ct: Long, sum: Long) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + capped) {
         //println("skipping partition " + i)
@@ -95,16 +95,16 @@ object MiscFrameFunctions extends Serializable {
   /**
    * Return the count and accumulated sum of rows in each partition
    */
-  def getPerPartitionCountAndAccumulatedSum[T](rdd: RDD[T]): Map[Int, (Int, Int)] = {
+  def getPerPartitionCountAndAccumulatedSum[T](rdd: RDD[T]): Map[Int, (Long, Long)] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size.toLong)))
       .collect()
       .sortBy(_._1)
 
     //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
     //if there were 412 rows divided into two 200 row partitions and one 12 row partition
-    val sums = counts.scanLeft((0, 0)) {
+    val sums = counts.scanLeft((0L, 0L)) {
       (t1, t2) => (t2._1, t1._2 + t2._2)
     }
       .drop(1) //first one is (0,0), drop that
@@ -139,7 +139,7 @@ object MiscFrameFunctions extends Serializable {
     pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
-  def removeDuplicatesByColumnNames(rdd: LegacyFrameRDD, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
+  def removeDuplicatesByColumnNames(rdd: LegacyFrameRdd, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
     val columnIndices = schema.columnIndices(columnNames)
 
     // run the operation

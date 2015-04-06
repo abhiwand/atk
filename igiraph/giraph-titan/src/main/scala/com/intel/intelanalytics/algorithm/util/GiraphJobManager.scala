@@ -144,7 +144,6 @@ object GiraphJobManager {
         val stream = fs.open(getFullyQualifiedPath(output_dir_path + "/" + reportName, fs))
         def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
         val result = readLines.takeWhile(_ != null).toList.mkString("\n")
-        fs.close()
         result
     }
   }
