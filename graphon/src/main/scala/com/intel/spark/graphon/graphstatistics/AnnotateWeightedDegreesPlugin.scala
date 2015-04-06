@@ -24,16 +24,18 @@
 package com.intel.spark.graphon.graphstatistics
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property }
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 case class AnnotateWeightedDegreesArgs(graph: GraphReference,
-                                       outputGraphName: String,
                                        outputPropertyName: String,
                                        degreeOption: Option[String] = None,
                                        inputEdgeLabels: Option[List[String]] = None,
@@ -43,7 +45,6 @@ case class AnnotateWeightedDegreesArgs(graph: GraphReference,
   // validate arguments
 
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
-  require(!outputGraphName.isEmpty, "Output graph name must be provided")
   def degreeMethod: String = degreeOption.getOrElse("out")
   require("out".startsWith(degreeMethod) || "in".startsWith(degreeMethod) || "undirected".startsWith(degreeMethod),
     "degreeMethod should be prefix of 'in', 'out' or 'undirected', not " + degreeMethod)
@@ -70,13 +71,16 @@ case class AnnotateWeightedDegreesArgs(graph: GraphReference,
   }
 }
 
+case class AnnotateWeightedDegreesReturn(connectedComponentsDictionary: Map[String, FrameEntity])
+
 import DomainJsonProtocol._
 import spray.json._
 
 /** Json conversion for arguments and return value case classes */
 object AnnotateWeightedDegreesJsonFormat {
 
-  implicit val AWDFormat = jsonFormat7(AnnotateWeightedDegreesArgs)
+  implicit val AWDArgsFormat = jsonFormat6(AnnotateWeightedDegreesArgs)
+  implicit val AWDReturnFormat = jsonFormat1(AnnotateWeightedDegreesReturn)
 }
 
 import AnnotateWeightedDegreesJsonFormat._
@@ -91,16 +95,16 @@ import AnnotateWeightedDegreesJsonFormat._
  *
  * Right now it uses only Titan for graph storage. Other backends will be supported later.
  */
-class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, GraphEntity] {
+class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, AnnotateWeightedDegreesReturn] {
 
-  override def name: String = "graph:titan/annotate_weighted_degrees"
+  override def name: String = "graph/annotate_weighted_degrees"
 
   override def numberOfJobs(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): Int = 4
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): GraphEntity = {
+  override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): AnnotateWeightedDegreesReturn = {
 
     if (sc.master != "yarn-cluster")
       sc.addJar(SparkContextFactory.jarPath("graphon"))
@@ -132,10 +136,15 @@ class AnnotateWeightedDegrees extends SparkCommandPlugin[AnnotateWeightedDegrees
         properties = v.properties + Property(arguments.outputPropertyName, wd))
     })
 
-    val newGraphName = arguments.outputGraphName
-    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
-    engine.graphs.writeToTitan(newGraph, outVertices, gbEdges)
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
-    newGraph
+    new AnnotateWeightedDegreesReturn(frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by annotate weighted degrees operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap)
+
   }
 }
