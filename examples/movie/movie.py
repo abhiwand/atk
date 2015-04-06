@@ -55,7 +55,7 @@ csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
                                         ('rating', str),
                                         ('splits', str)])
 
-print("create big frame")
+print("create frame")
 frame = ia.Frame(csv)
 
 

@@ -31,6 +31,7 @@ import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import org.springframework.security.jwt._
 import org.springframework.security.jwt.crypto.sign.RsaVerifier
 import spray.http.HttpHeader
+import spray.client
 
 import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,11 +44,15 @@ import com.intel.event.EventLogging
 import org.joda.time.DateTime
 
 import scala.util.parsing.json.JSON
+import scala.util.{ Failure, Success, Try }
+import com.intel.intelanalytics.service.CfRequests.TokenUserInfo
 
 /**
  * Uses authorization HTTP header and engine to authenticate a user
  */
 class AuthenticationDirective(val engine: Engine) extends Directives with EventLogging with EventLoggingImplicits {
+
+  private lazy val shortCircuitApiKey = ApiServiceConfig.shortCircuitApiKey
 
   /**
    * Gets authorization header and authenticates a user
@@ -72,41 +77,33 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
         throw new SecurityException("Api key was not provided")
       }
       future {
-
-        if (!apiKey.equals("test_api_key_1")) {
-          validateUaaUser(apiKey)
-          //just return a userPrincipal till we have the new security scheme in place
-          val userPrincipal = engine.getUserPrincipal("test_api_key_1")
-          info("authenticated " + userPrincipal)
-          userPrincipal
+        val tokenUserInfo = if (apiKey.equals(shortCircuitApiKey)) {
+          TokenUserInfo(userId = shortCircuitApiKey, userName = shortCircuitApiKey)
         }
         else {
-          val userPrincipal = engine.getUserPrincipal(apiKey)
-          info("authenticated " + userPrincipal)
-          userPrincipal
+          CfRequests.getTokenUserInfo(apiKey)
         }
+
+        // todo - add mapping support from userId to userName for humans
+        val userKey = tokenUserInfo.userId
+        val userPrincipal: UserPrincipal = Try { engine.getUserPrincipal(userKey) } match {
+          case Success(found) => found
+          case Failure(missing) =>
+            // Don't know about this user id.  See if the user meets requirements to be added to the metastore
+            // 1. The userId must belong to the same organization as this server instance
+            val userOrganizationIds = CfRequests.getOrganizationsForUserId(apiKey, tokenUserInfo.userId)
+            val appOrganizationId = CfRequests.getOrganizationForSpaceId(apiKey, ApiServiceConfig.appSpace)
+            if (userOrganizationIds.contains(appOrganizationId)) {
+              engine.addUserPrincipal(userKey)
+            }
+            else {
+              throw new RuntimeException(s"User ${tokenUserInfo.userId} (${tokenUserInfo.userName}) is not a member of this server's organization")
+            }
+        }
+        info("authenticated " + userPrincipal)
+        userPrincipal
       }
     }
-  }
-
-  protected def validateUaaUser(apiKey: String): Unit = {
-
-    //val apiKey: String = "eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiI4OTUxNjZjNC1hYTgxLTRjZTUtYmM1OS05OTQ0NWVhNTQ3Y2QiLCJzdWIiOiIyNWFiMDgwYy1jMjI4LTRjZDktODg2YS1jZGY1YWQ0Nzg5M2MiLCJzY29wZSI6WyJjbG91ZF9jb250cm9sbGVyLndyaXRlIiwiY2xvdWRfY29udHJvbGxlcl9zZXJ2aWNlX3Blcm1pc3Npb25zLnJlYWQiLCJvcGVuaWQiLCJjbG91ZF9jb250cm9sbGVyLnJlYWQiXSwiY2xpZW50X2lkIjoiYXRrLWNsaWVudCIsImNpZCI6ImF0ay1jbGllbnQiLCJhenAiOiJhdGstY2xpZW50IiwiZ3JhbnRfdHlwZSI6InBhc3N3b3JkIiwidXNlcl9pZCI6IjI1YWIwODBjLWMyMjgtNGNkOS04ODZhLWNkZjVhZDQ3ODkzYyIsInVzZXJfbmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbiIsImlhdCI6MTQyNjc5Mzk1NiwiZXhwIjoxNDI2ODM3MTU2LCJpc3MiOiJodHRwczovL3VhYS5nb3RhcGFhcy5jb20vb2F1dGgvdG9rZW4iLCJhdWQiOlsiYXRrLWNsaWVudCIsImNsb3VkX2NvbnRyb2xsZXIiLCJjbG91ZF9jb250cm9sbGVyX3NlcnZpY2VfcGVybWlzc2lvbnMiLCJvcGVuaWQiXX0.xJ5IlPsrHXutETZgdbTtiDTkliyIs26UYf_2oP-cwRWuxdsxAcphOXZEgHZXgNECr591Ts9R1-v8e6EihwW5x5CQ_7_BzmIYM0Z2IfYm220ZPktDkEryoKjujG5eqhUqjVGnj1og1ro6HX7ANu-HAXPhZ-USKu2eh_hR02EeZUU"
-    val firstPeriod: Int = apiKey.indexOf('.')
-    val lastPeriod: Int = apiKey.lastIndexOf('.')
-
-    println(apiKey)
-    println()
-
-    val decodedKey = JwtHelper.decode(apiKey)
-    println("decodedkey: " + decodedKey.toString())
-    //val json = JSON // decodedKey.getClaims()
-    println("claims: " + decodedKey.getClaims())
-    println()
-    //using the public key from http://uaa.gotapaas.com/token_key. This is static
-    val rsa = new RsaVerifier("-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d\nKVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX\nqHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug\nspULZVNRxq7veq/fzwIDAQAB\n-----END PUBLIC KEY-----\n")
-    val jwt = decodedKey.verifySignature(rsa)
-
   }
 
 }
