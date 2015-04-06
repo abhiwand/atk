@@ -42,8 +42,9 @@ pushd $SCRIPTPATH
     cp -Rv assets/* ${BUILD_DIR}
 popd
 
-
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar"
+#excluded jars are now combined in deploy.jar
+#engine-spark.jar igiraph-titan.jar graphon.jar
+jars=" api-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 pushd ..
 for jar in $jars
@@ -60,10 +61,10 @@ echo $jarPath
 #enable this to copy the regular launcher.jar to the correct place
 cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/launcher.jar
 
-jarPath=$(find /root/.m2/repository/ch/qos/logback/ -name "logback-classic-1.1.1.jar")
-cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib/
-jarPath=$(find /root/.m2/repository/ch/qos/logback/ -name "logback-core-1.1.1.jar")
-cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib/
+#jarPath=$(find /root/.m2/repository/ch/qos/logback/ -name "logback-classic-1.1.1.jar")
+#cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib/
+#jarPath=$(find /root/.m2/repository/ch/qos/logback/ -name "logback-core-1.1.1.jar")
+#cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib/
 
 
 popd
