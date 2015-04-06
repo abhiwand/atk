@@ -53,7 +53,7 @@ case class LibSvmTrainArgs(model: ModelReference,
                            weight: Option[Array[Double]]) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
+  require(observationColumns != null && !observationColumns.isEmpty, "One or more observation columns is required")
 
   def getEpsilon: Double = {
     if (epsilon.isDefined) {

@@ -41,10 +41,9 @@ class LibSvmPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] 
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:libsvm")))
-    }
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    val models = engine.models
+    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:libsvm")))
+  }
 }
 
