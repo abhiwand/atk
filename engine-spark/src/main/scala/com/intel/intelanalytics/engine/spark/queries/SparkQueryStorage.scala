@@ -54,23 +54,23 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
 
   /**
    * Create an RDD from a frame data file.
-   * @param ctx spark context
+   * @param sc spark context
    * @param queryId primary key of the query record
    * @return the newly created RDD
    */
-  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Array[Any]] = {
-    ctx.objectFile(getAbsoluteQueryDirectory(queryId))
+  def getQueryRdd(sc: SparkContext, queryId: Long): RDD[Array[Any]] = {
+    sc.objectFile(getAbsoluteQueryDirectory(queryId))
   }
 
   /**
    * Returns the data found in a single partition
-   * @param ctx spark context
+   * @param sc spark context
    * @param queryId primary key of the query record
    * @param pageId partition number to return
    * @return data from partition as a local object
    */
-  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long)(implicit invocation: Invocation): Iterable[Array[Any]] = {
-    val rdd = getQueryRdd(ctx, queryId)
+  def getQueryPage(sc: SparkContext, queryId: Long, pageId: Long)(implicit invocation: Invocation): Iterable[Array[Any]] = {
+    val rdd = getQueryRdd(sc, queryId)
     val query = lookup(queryId)
     val (pageSize: Int, totalPages: Int) = query match {
       case Some(q) => (
