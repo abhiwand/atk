@@ -25,29 +25,13 @@
 config file for rest client
 """
 
-class cf:
-    # config specific to cloud foundry
 
-    class oauth:  # (see server_defaults o disable entirely)
-        url = "https://login.gotapaas.com/oauth/token"
-        user_name = "admin"  # uaa user name
-        user_password = "WQXng43TEfj"  # uaa user password
-        client_name = "atk-client"
-        client_password = "c1oudc0w"  # for gotapaas.eu
-        headers = {"Accept": "application/json"}
-
+# for specific server settings, see intelanalytics/connections.py
 
 # default connection config
 class server_defaults:
-    host = "localhost"
-    port = 9099
-    scheme = "http"
-    version = "v1"
     headers = {'Content-type': 'application/json',
-               'Accept': 'application/json,text/plain',
-               'Authorization': "test_api_key_1"}
-    #oauth = cf.oauth  # to disable oauth, set to None
-    oauth = None
+               'Accept': 'application/json,text/plain'}
 
 
 class upload_defaults:
@@ -56,7 +40,7 @@ class upload_defaults:
 
 class requests_defaults:
     ping_timeout_secs = 10
-    get_timeout_secs = None  # None means no timeout
+    request_timeout_secs = None  # None means no timeout
 
 
 class polling_defaults:

@@ -30,8 +30,6 @@ logger = logging.getLogger(__name__)
 from collections import defaultdict, namedtuple, OrderedDict
 import json
 import sys
-import pandas
-import numpy as np
 import intelanalytics.rest.config as config
 
 from intelanalytics.core.frame import Frame
@@ -41,7 +39,7 @@ from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
-from intelanalytics.rest.connection import http
+from intelanalytics.rest.iaserver import server
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import get_udf_arg, get_add_one_column_function, get_add_many_columns_function
@@ -59,14 +57,14 @@ class FrameBackendRest(object):
     """REST plumbing for Frame"""
 
     def __init__(self, http_methods=None):
-        self.rest_http = http_methods or http
+        self.server = http_methods or server
 
     def get_frame_by_id(self, id):
         logger.info("REST Backend: get_frame_by_id")
         if id is None:
             return None
         else:
-            r = self.rest_http.get('frames/' + str(id))
+            r = self.server.get('frames/' + str(id))
             payload = r.json()
             frame = Frame(_info=payload)
             return frame
@@ -85,7 +83,7 @@ class FrameBackendRest(object):
             become_frame(frame, source[0].frame.copy(columns=[s.name for s in source], name=name))
         else:
             payload = {'name': name }
-            r = self.rest_http.post('frames', payload)
+            r = self.server.post('/frames', payload)
             logger.info("REST Backend: create frame response: " + r.text)
             frame_info = FrameInfo(r.json())
             initialize_frame(frame, frame_info)
@@ -93,7 +91,7 @@ class FrameBackendRest(object):
                 try:
                     self.append(frame, source)
                 except Exception:
-                    self.rest_http.delete("frames/%s" % frame_info.id_number)
+                    self.server.delete("/frames/%s" % frame_info.id_number)
                     raise
             return frame_info.name
         return frame.name
@@ -101,7 +99,7 @@ class FrameBackendRest(object):
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
-        r = self.rest_http.post('frames', payload)
+        r = self.server.post('/frames', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         frame_info = FrameInfo(r.json())
         initialize_frame(frame, frame_info)
@@ -147,11 +145,11 @@ class FrameBackendRest(object):
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
     def _get_frame_info(self, frame):
-        response = self.rest_http.get_full_uri(self._get_frame_full_uri(frame))
+        response = self.server.get(self._get_frame_full_uri(frame))
         return FrameInfo(response.json())
 
     def _get_frame_full_uri(self, frame):
-        return self.rest_http.create_full_uri('frames/%d' % frame._id)
+        return self.server.create_full_uri('/frames/%d' % frame._id)
 
     def _get_load_arguments(self, frame, source, data=None):
         if isinstance(source, CsvFile):

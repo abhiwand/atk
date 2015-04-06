@@ -63,7 +63,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
       .setSparkHome(SparkEngineConfig.sparkHome)
       .setAppName(s"intel-analytics:$userName:$description")
 
-    SparkEngineConfig.sparkConfProperties.foreach { case (k, v) => println(s"$k->$v") }
+    SparkEngineConfig.sparkConfProperties.foreach { case (k, v) => debug(s"$k->$v") }
     sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
 
     if (!SparkEngineConfig.disableKryo && kryoRegistrator.isDefined) {
