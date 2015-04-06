@@ -27,7 +27,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD
 import com.intel.testutils.TestingSparkContextFlatSpec
 
-class ConnectedComponentsGraphXDefaultTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+class ConnectedComponentsPluginGraphXDefaultTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait ConnectedComponentsTest {
     val vertexList: List[Long] = List(1, 2, 3, 5, 6, 7)
