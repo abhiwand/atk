@@ -26,7 +26,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 import java.util.Date
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -103,7 +103,8 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val start = System.currentTimeMillis()
 
     // Get the SparkContext as one the input parameters for Driver
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

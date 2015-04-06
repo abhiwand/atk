@@ -47,8 +47,9 @@ from intelanalytics.core.frame import Frame, VertexFrame
 from intelanalytics.core.graph import Graph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.core.model import _BaseModel
 
-from intelanalytics.rest.connection import server
+from intelanalytics.rest.iaserver import server
 connect = server.connect
+server_test = server
 
 
 # do api_globals last because other imports may have added to the api_globals

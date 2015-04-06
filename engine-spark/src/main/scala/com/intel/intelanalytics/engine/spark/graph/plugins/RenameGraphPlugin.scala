@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ RenameGraphArgs, GraphEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -36,12 +36,10 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
  * Rename a graph in the database
  */
-class RenameGraphPlugin extends SparkCommandPlugin[RenameGraphArgs, GraphEntity] {
+class RenameGraphPlugin extends CommandPlugin[RenameGraphArgs, GraphEntity] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample

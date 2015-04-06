@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.frame.ComputedBinColumnArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
@@ -77,7 +77,7 @@ class BinColumnEqualDepthPlugin extends ComputedBinColumnPlugin {
    * @param rdd rdd to bin against
    * @return a result object containing the binned rdd and the list of computed cutoffs
    */
-  override def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRDD): RddWithCutoffs = {
+  override def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRdd): RddWithCutoffs = {
     DiscretizationFunctions.binEqualDepth(columnIndex, numBins, None, rdd)
   }
 }

@@ -26,23 +26,33 @@ package com.intel.intelanalytics.service
 //TODO: Is this right execution context for us?
 
 import com.intel.intelanalytics.EventLoggingImplicits
+import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
+import org.springframework.security.jwt._
+import org.springframework.security.jwt.crypto.sign.RsaVerifier
 import spray.http.HttpHeader
+import spray.client
 
 import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
-import scala.Some
 import spray.routing._
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.Engine
 import com.intel.event.EventLogging
+import org.joda.time.DateTime
+
+import scala.util.parsing.json.JSON
+import scala.util.{ Failure, Success, Try }
+import com.intel.intelanalytics.service.CfRequests.TokenUserInfo
 
 /**
  * Uses authorization HTTP header and engine to authenticate a user
  */
 class AuthenticationDirective(val engine: Engine) extends Directives with EventLogging with EventLoggingImplicits {
+
+  private lazy val shortCircuitApiKey = ApiServiceConfig.shortCircuitApiKey
 
   /**
    * Gets authorization header and authenticates a user
@@ -67,10 +77,33 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
         throw new SecurityException("Api key was not provided")
       }
       future {
-        val userPrincipal = engine.getUserPrincipal(apiKey)
+        val tokenUserInfo = if (apiKey.equals(shortCircuitApiKey)) {
+          TokenUserInfo(userId = shortCircuitApiKey, userName = shortCircuitApiKey)
+        }
+        else {
+          CfRequests.getTokenUserInfo(apiKey)
+        }
+
+        // todo - add mapping support from userId to userName for humans
+        val userKey = tokenUserInfo.userId
+        val userPrincipal: UserPrincipal = Try { engine.getUserPrincipal(userKey) } match {
+          case Success(found) => found
+          case Failure(missing) =>
+            // Don't know about this user id.  See if the user meets requirements to be added to the metastore
+            // 1. The userId must belong to the same organization as this server instance
+            val userOrganizationIds = CfRequests.getOrganizationsForUserId(apiKey, tokenUserInfo.userId)
+            val appOrganizationId = CfRequests.getOrganizationForSpaceId(apiKey, ApiServiceConfig.appSpace)
+            if (userOrganizationIds.contains(appOrganizationId)) {
+              engine.addUserPrincipal(userKey)
+            }
+            else {
+              throw new RuntimeException(s"User ${tokenUserInfo.userId} (${tokenUserInfo.userName}) is not a member of this server's organization")
+            }
+        }
         info("authenticated " + userPrincipal)
         userPrincipal
       }
     }
   }
+
 }

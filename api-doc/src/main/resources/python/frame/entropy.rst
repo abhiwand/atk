@@ -10,7 +10,6 @@ Parameters
 ----------
 data_column : str
     The column whose entropy is to be calculated
-
 weights_column : str (optional)
     The column that provides weights (frequencies) for the entropy
     calculation.
@@ -25,9 +24,10 @@ float64
 
 Examples
 --------
-::
 
-    entropy = frame.entropy('data column')
-    weighted_entropy = frame.entropy('data column', 'weight column')
+.. code::
+
+    >>> entropy = frame.entropy('data column')
+    >>> weighted_entropy = frame.entropy('data column', 'weight column')
 
 

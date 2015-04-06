@@ -29,15 +29,10 @@ import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 
-/**
- * Base trait for query plugins that need direct access to a SparkContext
- *
- * @tparam Argument the argument type for the query
- */
-trait SparkQueryPlugin[Argument <: Product]
-    extends QueryPlugin[Argument] {
-
-  def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
-
-  def sc(implicit invocation: Invocation) = invocation.asInstanceOf[SparkInvocation].sparkContext
-}
+///**
+// * Base trait for query plugins that need direct access to a SparkContext
+// *
+// * @tparam Argument the argument type for the query
+// */
+//trait SparkQueryPlugin[Argument <: Product]
+//  extends QueryPlugin[Argument] with SparkPlugin[Argument]

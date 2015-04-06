@@ -46,7 +46,7 @@ Glossary
           `Wikipedia\: Standard Deviation`_
         * sum : The result of adding all the values in the column together
         * var : The variance of the values in the column, see
-          `Wikipedia\: Variance`_
+          `Wikipedia\: Variance`_ and :term:`Bias vs Variance`
 
     Alternating Least Squares
 
@@ -55,7 +55,7 @@ Glossary
         steps, each involving the application of the :term:`least squares`
         method of parameter estimation.
 
-        See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
+        See the :ref:`ALS section <ALS>` on machine learning for an
         in-depth discussion of this method.
 
     API Maturity Tags
@@ -88,7 +88,7 @@ Glossary
         dependencies amongst a set of random variables with a directed acyclic
         graph.
 
-        Contrast with :term:`Markov Random Field`
+        Contrast with :term:`Markov Random Fields`
 
     Belief Propagation
 
@@ -109,15 +109,6 @@ Glossary
 
         In this context, "bias" means accuracy, while "variance" means
         accounting for outlier data points.
-
-    bool
-
-        See :term:`Boolean`.
-
-    Boolean
-
-        A variable that holds a single "True" or "False" value.
-        In Python, it can also be "None" meaning that it is undefined.
 
     Central Tendency
 
@@ -197,7 +188,7 @@ Glossary
 
     Confusion Matrices
 
-        See :term:`Confusion Matrix`
+        Plural form of :term:`Confusion Matrix`
 
     Confusion Matrix
 
@@ -223,17 +214,19 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
+    Degree
+
+        The degree of a vertex is the number of edges incident to the vertex.
+        Loops are counted twice.
+        The maximum and minimum degree of a graph are the maximum and minimum
+        degree of its vertices.
+
+        For more information see: `Wikipedia\: Degree (graph theory)
+        <https://en.wikipedia.org/wiki/Degree_(graph_theory)>`__.
+
     Deprecated
 
         See :term:`API Maturity Tags`.  |DEPRECATED|
-
-    dict
-
-        See :term:`Dictionary`.
-
-    Dictionary
-
-        A data type composed of key/value pairs.
 
     Directed Acyclic Graph (DAG)
 
@@ -341,7 +334,7 @@ Glossary
     Frame (capital F)
 
         A class object with the functionality to manipulate the data in a
-        :term:`frame`.
+        :term:`frame (lower case f)`.
 
     GaBP
 
@@ -376,6 +369,22 @@ Glossary
 
         A random group of vertices displaying a :term:`Gaussian distribution`
         of one or more sets of properties.
+
+    Global Clustering Coefficient
+
+        The global clustering coefficient is based on triplets of vertices.
+        A triplet consists of three vertices that are connected by either two
+        (open triplet) or three (closed triplet) undirected edges.
+        A triangle consists of three closed triplets, one centered on each of
+        the vertices.
+        The global clustering coefficient is the number of closed triplets
+        (or 3 x triangles) over the total number of triplets (both open and
+        closed).
+
+        For more information see: `Wikipedia\: Global Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Global_clustering_coefficient>`__.
+
+        See also :term:`Local Clustering Coefficient`.
 
     Graph
 
@@ -413,8 +422,9 @@ Glossary
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
 
-        For more information, see :ref:`the article "Graph Analytics"
-        by Pak Chung Wong <vacommunity.org/article26>`.
+        For more information, see the article
+        `Graph Analytics <http://vacommunity.org/article26>`__
+        by Pak Chung Wong.
 
     Graph Database Directions
 
@@ -504,7 +514,7 @@ Glossary
 
         A multi-pass process for grouping vertices.
 
-        See :doc:`ds_mlal_lp`.
+        See :ref:`LP`.
 
         For additional reference:
         `Learning from Labeled and Unlabeled Data with Label Propagation`_.
@@ -547,9 +557,9 @@ Glossary
         Further examples and explanations can be found at this page:
         :doc:`ds_apir`.
 
-        Related term: :term:`User Functions <Python User Function>`.
+        Related term: :term:`Python User-defined Functions`.
 
-        .. warning:: This term is often used where a :term:`Python user
+        .. warning:: This term is often used where a :term:`Python user-defined
             function` is more accurate.
             A key distinction is that the lambda function is not referable by a
             name.
@@ -580,10 +590,16 @@ Glossary
         However, because squares of the offsets are used, outlying points can
         have a disproportionate effect on the fit, a property which may or may
         not be desirable depending on the problem at hand.
-        
-    list
 
-        A sequence of objects in a single-dimension array.
+    Local Clustering Coefficient
+
+        The local clustering coefficient of a vertex in a graph quantifies how
+        close its neighbors are to being a clique (complete graph).
+
+        For more information see: `Wikipedia\: Local Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Local_clustering_coefficient>`__.
+
+        See also :term:`Global Clustering Coefficient`.
 
     Loopy Belief Propagation
 
@@ -684,15 +700,11 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
-    PUF
+    Python User-defined Function
 
-        See :term:`Python User Function`.
-
-    Python User Function
-
-        A Python User Function (PUF) is a Python function written by the user
-        on the client-side which can execute in a distributed fashion on the
-        cluster.
+        A Python User-defined Function (UDF) is a Python function written by
+        the user on the client-side which can execute in a distributed fashion
+        on the cluster.
         For further explanation, see :doc:`ds_apir`
 
         Further examples and explanations can be found at :doc:`ds_apir`.
@@ -767,7 +779,7 @@ Glossary
 
     Row Functions
 
-        Refer to :term:`Lambda Function` and :term:`Python User Function`
+        Refer to :term:`Lambda Function` and :term:`Python User-defined Function`
 
     Semi-Supervised Learning
 
@@ -832,13 +844,10 @@ Glossary
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
 
-    str
+    Superstep
+    Supersteps
 
-        A Python function for converting an object to type string.
-
-    string
-
-        A Python data type and a class for general string operations.
+        A single iteration of an algorithm.
 
     Supervised Learning
 
@@ -879,8 +888,6 @@ Glossary
     Transactional Functionality
 
         See :term:`Transaction Processing`.
-
-    Triangle Count
 
     Undirected Graph
 
@@ -943,7 +950,7 @@ Glossary
 
     Vertices
 
-        See :term:`Vertex`.
+        Plural form of :term:`Vertex`.
 
 .. _Wikipedia\: Standard Deviation:
     http://en.wikipedia.org/wiki/Standard_deviation
@@ -1059,4 +1066,35 @@ Glossary
 .. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of
     Belief Propagation in Gaussian Graphical Models of Arbitrary Topology".
     Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.
+
+.. unsed::
+
+    bool
+
+        See :term:`Boolean`.
+
+    Boolean
+
+        A variable that holds a single "True" or "False" value.
+        In Python, it can also be "None" meaning that it is undefined.
+ 
+    dict
+
+        See :term:`Dictionary`.
+
+    Dictionary
+
+        A data type composed of key/value pairs.
+       
+    list
+
+        A sequence of objects in a single-dimension array.
+
+    str
+
+        A Python function for converting an object to type string.
+
+    string
+
+        A Python data type and a class for general string operations.
 

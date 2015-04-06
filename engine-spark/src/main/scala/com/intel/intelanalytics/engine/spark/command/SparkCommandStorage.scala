@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.Error
+import com.jcraft.jsch.Session
 import org.joda.time.DateTime
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
@@ -64,7 +65,17 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
     require(result != null, "result must not be null")
-    metaStore.withSession("se.command.complete") {
+    updateResult(id, result, true)
+  }
+
+  override def storeResult(id: Long, result: Try[JsObject]): Unit = {
+    require(id > 0, "invalid ID")
+    require(result != null, "result must not be null")
+    updateResult(id, result, false)
+  }
+
+  private def updateResult(id: Long, result: Try[JsObject], markComplete: Boolean): Unit = {
+    metaStore.withSession("se.command.updateResult") {
       implicit session =>
         val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
         val corId = EventContext.getCurrent.getCorrelationId
@@ -76,7 +87,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
           case Failure(ex) =>
             error(s"command completed with error, id: $id, name: ${command.name}, args: ${command.compactArgs} ", exception = ex)
 
-            command.copy(complete = true,
+            command.copy(complete = markComplete,
               error = Some(throwableToError(ex)),
               correlationId = corId)
           case Success(r) => {
@@ -84,7 +95,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
             // because the actually progress notification events are sent to SparkProgressListener.
             // The exact timing of the events arrival can not be determined.
             val progress = command.progress.map(info => info.copy(progress = 100f))
-            command.copy(complete = true,
+            command.copy(complete = markComplete,
               progress = if (progress.nonEmpty) progress else List(ProgressInfo(100f, None)),
               result = Some(r),
               error = None,

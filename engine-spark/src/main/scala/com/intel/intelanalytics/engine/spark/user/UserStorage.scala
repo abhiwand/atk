@@ -27,8 +27,9 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.commons.lang.StringUtils
-import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.{ UserTemplate, User }
 import com.intel.event.EventLogging
+import scala.util.{ Try, Failure, Success }
 
 /**
  * Get users from metaStore
@@ -49,12 +50,32 @@ class UserStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends
             case Nil => throw new SecurityException("User not found with apiKey:" + apiKey)
             case us if us.length > 1 => throw new SecurityException("Problem accessing user credentials")
             case user => {
-              val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
-              userPrincipal
+              createUserPrincipalFromUser(users(0))
             }
           }
         }
     }
   }
 
+  def createUserPrincipalFromUser(user: User): UserPrincipal = {
+    val userPrincipal: UserPrincipal = new UserPrincipal(user, List("user")) //TODO need role definitions
+    userPrincipal
+  }
+  def insertUser(apiKey: String): UserPrincipal = {
+    metaStore.withSession("Insert user") {
+      implicit session =>
+        {
+          if (StringUtils.isBlank(apiKey)) {
+            throw new SecurityException("Api key was not provided")
+          }
+          Try { getUserPrincipal(apiKey) } match {
+            case Success(found) => throw new RuntimeException(s"Cannot insert user $apiKey because it already exists")
+            case Failure(expected) => metaStore.userRepo.insert(new UserTemplate(apiKey)) match {
+              case Failure(ex) => throw new RuntimeException(ex)
+              case Success(user) => getUserPrincipal(apiKey)
+            }
+          }
+        }
+    }
+  }
 }

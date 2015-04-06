@@ -65,7 +65,7 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArgs, DoubleValue] {
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
     val rdd = frame.data
-    Covariance.covariance(rdd, arguments.dataColumnNames)
+    CovarianceFunctions.covariance(rdd, arguments.dataColumnNames)
   }
 
 }

@@ -75,11 +75,11 @@ private[intelanalytics] object JsonSchemaExtractor {
     val propertyInfo = ordered.map({
       case (sym, i) => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> func(sym, i)
     })
-    val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
+    val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
     ObjectSchema(properties = Some(properties),
       required = Some(required),
-      order = Some(members.map(sym => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded)).toArray))
+      order = Some(members.map(sym => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded))))
   }
 
   /**
