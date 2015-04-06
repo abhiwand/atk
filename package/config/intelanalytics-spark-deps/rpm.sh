@@ -22,7 +22,18 @@ DESCRIPTION=$SUMMARY
 REQUIRES="java-1.7.0-openjdk"
 
 POST="
+deployJar=deploy.jar
 
+jars=\"engine-spark.jar igiraph-titan.jar graphon.jar\"
+
+for jar in \$jars
+do
+ if [ -f /usr/lib/intelanalytics/rest-server/lib/\$jar ]; then
+   rm /usr/lib/intelanalytics/rest-server/lib/\$jar
+ fi
+
+ ln -s /usr/lib/intelanalytics/rest-server/lib/\$deployJar  /usr/lib/intelanalytics/rest-server/lib/\$jar
+done
 "
 
 #delete the sym link only if we are uninstalling not updating

@@ -46,7 +46,7 @@ Glossary
           `Wikipedia\: Standard Deviation`_
         * sum : The result of adding all the values in the column together
         * var : The variance of the values in the column, see
-          `Wikipedia\: Variance`_
+          `Wikipedia\: Variance`_ and :term:`Bias vs Variance`
 
     Alternating Least Squares
 
@@ -109,15 +109,6 @@ Glossary
 
         In this context, "bias" means accuracy, while "variance" means
         accounting for outlier data points.
-
-    bool
-
-        See :term:`Boolean`.
-
-    Boolean
-
-        A variable that holds a single "True" or "False" value.
-        In Python, it can also be "None" meaning that it is undefined.
 
     Central Tendency
 
@@ -236,14 +227,6 @@ Glossary
     Deprecated
 
         See :term:`API Maturity Tags`.  |DEPRECATED|
-
-    dict
-
-        See :term:`Dictionary`.
-
-    Dictionary
-
-        A data type composed of key/value pairs.
 
     Directed Acyclic Graph (DAG)
 
@@ -574,9 +557,9 @@ Glossary
         Further examples and explanations can be found at this page:
         :doc:`ds_apir`.
 
-        Related term: :term:`User Functions <Python User Function>`.
+        Related term: :term:`Python User-defined Functions`.
 
-        .. warning:: This term is often used where a :term:`Python user
+        .. warning:: This term is often used where a :term:`Python user-defined
             function` is more accurate.
             A key distinction is that the lambda function is not referable by a
             name.
@@ -607,10 +590,6 @@ Glossary
         However, because squares of the offsets are used, outlying points can
         have a disproportionate effect on the fit, a property which may or may
         not be desirable depending on the problem at hand.
-        
-    list
-
-        A sequence of objects in a single-dimension array.
 
     Local Clustering Coefficient
 
@@ -721,15 +700,11 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
-    PUF
+    Python User-defined Function
 
-        See :term:`Python User Function`.
-
-    Python User Function
-
-        A Python User Function (PUF) is a Python function written by the user
-        on the client-side which can execute in a distributed fashion on the
-        cluster.
+        A Python User-defined Function (UDF) is a Python function written by
+        the user on the client-side which can execute in a distributed fashion
+        on the cluster.
         For further explanation, see :doc:`ds_apir`
 
         Further examples and explanations can be found at :doc:`ds_apir`.
@@ -804,7 +779,7 @@ Glossary
 
     Row Functions
 
-        Refer to :term:`Lambda Function` and :term:`Python User Function`
+        Refer to :term:`Lambda Function` and :term:`Python User-defined Function`
 
     Semi-Supervised Learning
 
@@ -868,14 +843,6 @@ Glossary
         arithmetic mean of a simple random sample of the population.
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
-
-    str
-
-        A Python function for converting an object to type string.
-
-    string
-
-        A Python data type and a class for general string operations.
 
     Superstep
     Supersteps
@@ -1099,4 +1066,35 @@ Glossary
 .. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of
     Belief Propagation in Gaussian Graphical Models of Arbitrary Topology".
     Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.
+
+.. unsed::
+
+    bool
+
+        See :term:`Boolean`.
+
+    Boolean
+
+        A variable that holds a single "True" or "False" value.
+        In Python, it can also be "None" meaning that it is undefined.
+ 
+    dict
+
+        See :term:`Dictionary`.
+
+    Dictionary
+
+        A data type composed of key/value pairs.
+       
+    list
+
+        A sequence of objects in a single-dimension array.
+
+    str
+
+        A Python function for converting an object to type string.
+
+    string
+
+        A Python data type and a class for general string operations.
 

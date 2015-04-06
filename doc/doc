@@ -190,19 +190,9 @@ function main {
         # debug: Check for rebuilding the scala routines
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
-
-            # debug: Update scala server
-            pushd ../ > /dev/null
-            update_scala $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" != "0" ]; then popd; return 1; fi
-
-            # debug: Update the additional python documentation files
-            cd python
-            update_python $AskThem $DisplayStatus $TempFile $LogFile
-            if [ "$?" == "1" ]; then popd; return 1; fi
-
-            # debug: Return to original directory to continue
-            popd > /dev/null
+            # Update the scala and python cmdgen
+            maven $AskThem $DisplayStatus $TempFile $LogFile
+            if [ "$?" == "1" ]; then return 1; fi
         fi
 
         # debug: Look for sphinx build types
@@ -293,6 +283,51 @@ function main {
     if [ -e doc.log ]; then
         rm doc.log
     fi
+}
+############################################################################################################
+function maven(){
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = Temporary file
+    # $4 = LogFile
+
+    # Start the server
+    pushd ../ > /dev/null
+    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+    do_this "$RunCommand" $1 $2 $3 $4
+    if [ "$?" == "1" ]; then return 1; fi
+    log_step "nohup bin/api-server.sh" $2 $4
+    nohup bin/api-server.sh > $3 2>&1&
+    if [ "$?" == "1" ]; then
+        Err "nohup bin/api-server.sh" $1 $2 $3 $4
+        ABORT_QUESTION=$?
+        popd
+        return ABORT_QUESTION;
+    fi
+    popd > /dev/null
+
+    # debug: Update scala server
+    pushd ../ > /dev/null
+    update_scala $1 $2 $3 $4
+    if [ "$?" != "0" ]; then
+        pkill -9 -f java
+        popd
+        return 1
+    fi
+    popd > /dev/null
+
+    # debug: Update the additional python documentation files
+    pushd ../python > /dev/null
+    update_python $1 $2 $3 $4
+    if [ "$?" == "1" ]; then
+        pkill -9 -f java
+        popd
+        return 1
+    fi
+    popd > /dev/null
+
+    # debug: Return to original directory to continue
+    pkill -9 -f java
 }
 ############################################################################################################
 function packages {
@@ -425,25 +460,9 @@ function update_scala {
     # Update scala server
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
-#       RunCommand="mvn compile"
-#       log_step "$RunCommand" $2 $4
-#       $RunCommand > $3
-#       if [ "$?" != "0" ]; then
-#           Err "$RunCommand" $1 $2 $3 $4
-#           if [ "$?" == "1" ]; then return 1; fi
-            RunCommand="mvn clean install -DskipTests"
-#           read -p "Try \"$RunCommand\"? [y|N]" UserResponse
-#           if [ -z $UserResponse ];then
-#               UserResponse='y'
-#           fi
-#           if [ ${UserResponse:0:1} == 'N' -o ${UserResponse:0:1} == 'n' ]; then
-#               return 1
-#           fi
-            do_this "$RunCommand" $1 $2 $3 $4
-            return $?
-#       else
-#           rm $3 > /dev/null
-#       fi
+        RunCommand="mvn clean install -DskipTests"
+        do_this "$RunCommand" $1 $2 $3 $4
+        return $?
     else
         Err "Maven does not appear to be installed." $1 $2 $3 $4
         if [ "$?" == "1" ]; then return 1; fi
