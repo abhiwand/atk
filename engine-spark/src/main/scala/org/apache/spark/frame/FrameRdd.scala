@@ -23,10 +23,15 @@
 
 package org.apache.spark.frame
 
+import com.intel.graphbuilder.elements.GBVertex
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
+import org.apache.spark.ia.graph.VertexWrapper
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
@@ -373,6 +378,37 @@ object FrameRdd {
   def createLogicalPlan(schema: Schema, rows: RDD[Array[Any]]): LogicalPlan = {
     val rdd = FrameRdd.toRowRDD(schema, rows)
     createLogicalPlanFromSql(schema, rdd)
+  }
+
+  /**
+   * Convert an RDD of mixed vertex types into a map where the keys are labels and values are FrameRdd's
+   * @param gbVertexRDD Graphbuilder Vertex RDD
+   * @return  keys are labels and values are FrameRdd's
+   */
+  def toFrameRddMap(gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
+
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+
+    // make sure all of the vertices have a label
+    val labeledVertices = gbVertexRDD.labelVertices(Nil)
+
+    // figure out the schemas of the different vertex types
+    val vertexSchemaAggregator = new VertexSchemaAggregator(Nil)
+    val vertexSchemas = labeledVertices.aggregate(vertexSchemaAggregator.zeroValue)(vertexSchemaAggregator.seqOp, vertexSchemaAggregator.combOp).values
+
+    vertexSchemas.map(schema => {
+      val filteredVertices: RDD[GBVertex] = labeledVertices.filter(v => {
+        v.getProperty("_label") match {
+          case Some(p) => p.value == schema.label
+          case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
+        }
+      })
+      val vertexWrapper = new VertexWrapper(schema)
+      val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
+      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
+
+      (schema.label, frameRdd)
+    }).toMap
   }
 
   /**
