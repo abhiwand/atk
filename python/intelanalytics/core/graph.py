@@ -700,7 +700,7 @@ class GraphFrameCollection(object):
 @api
 class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     """
-    Creates a big graph.
+    Creates a TitanGraph.
 
     Parameters
     ----------

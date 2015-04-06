@@ -36,7 +36,8 @@ errors.show_details = True
 class TestNamedObj(unittest.TestCase):
 
     @mock.patch('intelanalytics.rest.command.execute_command', mock.MagicMock())
-    @mock.patch('intelanalytics.rest.connection.http', mock.MagicMock())
+    @mock.patch('intelanalytics.rest.http.get', mock.MagicMock())
+    @mock.patch('intelanalytics.rest.http.delete', mock.MagicMock())
     @mock.patch("intelanalytics.meta.api.check_api_is_loaded", mock.Mock())
     @mock.patch("intelanalytics.meta.namedobj.get_loadable_class_from_entity_type", mock.Mock())
     def test_add_named_object_support(self):

@@ -33,6 +33,5 @@ induced subgraph:
 
 .. code::
 
-<<<<<<< HEAD
     >>> my_graph = ia.TitanGraph([user_vertex_rule, product_vertex_rule, edge_rule])
     >>> my_subgraph = my_graph.sampling.vertex_sample(1000, 'uniform')

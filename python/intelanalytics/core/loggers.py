@@ -30,7 +30,7 @@ import inspect
 
 # Constants
 API_LOGGER_NAME = 'IA Python API'
-HTTP_LOGGER_NAME = 'intelanalytics.rest.connection'
+HTTP_LOGGER_NAME = 'intelanalytics.rest.http'
 LINE_FORMAT = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
 API_LINE_FORMAT = '|api| %(message)s'
 
