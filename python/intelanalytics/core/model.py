@@ -32,9 +32,8 @@ from intelanalytics.meta.api import get_api_decorator
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import, get_entity_type_from_class_name
-from intelanalytics.core.errorhandle import IaError
-from intelanalytics.rest.connection import http
+from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.rest.iaserver import server
 
 # _BaseModel
 try:
@@ -70,11 +69,11 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
         CommandLoadable.__init__(self)
 
     def _get_model_info(self):
-        response = http.get_full_uri(self._get_model_full_uri())
+        response = server.get(self._get_model_full_uri())
         return ModelInfo(response.json())
 
     def _get_model_full_uri(self):
-        return self.rest_http.create_full_uri('models/%d' % self._id)
+        return server.create_full_uri('models/%d' % self._id)
 
     @staticmethod
     def _is_entity_info(obj):

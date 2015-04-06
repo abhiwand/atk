@@ -36,13 +36,8 @@ from requests import HTTPError
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
-from intelanalytics.rest.connection import http
-from intelanalytics.core.errorhandle import IaError
+from intelanalytics.rest.iaserver import server
 from collections import namedtuple
-
-
-
-
 
 def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output."""
@@ -342,7 +337,7 @@ class Polling(object):
 
     @staticmethod
     def _get_command_info(uri):
-        response = http.get_full_uri(uri)
+        response = server.get(uri)
         return CommandInfo(response.json())
 
     @staticmethod
@@ -385,7 +380,7 @@ class Executor(object):
         max_retries = 20
         for i in range(max_retries):
             try:
-                info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                info = CommandInfo(server.get("queries/%s/data/%s" % (id, partition)).json())
                 return info
             except HTTPError as e:
                 time.sleep(5)
@@ -397,7 +392,7 @@ class Executor(object):
         Issues the command_request to the server
         """
         logger.info("Issuing command " + command_request.name)
-        response = http.post("commands", command_request.to_json_obj())
+        response = server.post("commands", command_request.to_json_obj())
         return self.poll_command_info(response)
 
     def poll_command_info(self, response):
@@ -427,10 +422,10 @@ class Executor(object):
         """
         logger.info("Issuing query " + query_url)
         try:
-            response = http.get(query_url)
+            response = server.get(query_url)
         except:
             # do a single retry
-            response = http.get(query_url)
+            response = server.get(query_url)
 
         response_json = response.json()
 
@@ -477,7 +472,7 @@ class Executor(object):
 
         arguments = {'status': 'cancel'}
         command_request = CommandRequest("", arguments)
-        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
+        server.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
     def fetch(self):
         """
@@ -485,7 +480,7 @@ class Executor(object):
         :return: the commands available
         """
         logger.info("Requesting available commands")
-        response = http.get("commands/definitions")
+        response = server.get("commands/definitions")
         commands = response.json()
         return commands
 
