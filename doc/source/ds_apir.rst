@@ -5,20 +5,20 @@ Python User Functions
 .. contents:: Table of Contents
     :local:
 
-A :term:`PUF` is a Python function written by the user on the client-side which can
+A :term:`UDF` is a Python function written by the user on the client-side which can
 execute in a distributed fashion on the cluster.
 The function is serialized and copies are distributed throughout the cluster as
 part of command execution.
-Various API command methods accept a |PUF| as a parameter.
-A |PUF| runs under the constraints of the particular command.
+Various API command methods accept a |UDF| as a parameter.
+A |UDF| runs under the constraints of the particular command.
 
 ---------------
-Frame Row |PUF|
+Frame Row |UDF|
 ---------------
 
-A Frame Row |PUF| is a |PUF| which operates on a single row of a frame.
+A Frame Row |UDF| is a |UDF| which operates on a single row of a frame.
 The function has one parameter, a *row* object.
-Here is an example of a Row |PUF| that returns True for a row where the column
+Here is an example of a Row |UDF| that returns True for a row where the column
 named “score” has a value greater than zero:
 
 .. code::
@@ -105,25 +105,25 @@ For example::
     list comprehension.
 
 ----------------
-|PUF| Guidelines
+|UDF| Guidelines
 ----------------
 
-Here are some guidelines to follow when writing a |PUF|:
+Here are some guidelines to follow when writing a |UDF|:
 
 1.  Error handling:
     Include error handling.
     If the function execution raises an exception, it will cause the entire
     command to fail and possibly leave the frame or graph in an incomplete
     state.
-    The best practice is to put all |PUF| functionality in a ``try: except:``
+    The best practice is to put all |UDF| functionality in a ``try: except:``
     block, where the ``except:`` clause returns a default value or performs a
     benign side effect.
     See the ``row_sum`` function example above, where we used a ``try: except:``
     block and produced a -1 for rows which caused errors.
 
 #.  Dependencies:
-    All dependencies used in the |PUF| must be available in **the same Python
-    code file** as the |PUF| or available in the server's installed Python
+    All dependencies used in the |UDF| must be available in **the same Python
+    code file** as the |UDF| or available in the server's installed Python
     libraries.
     The serialization technique to get the code distributed throughout the
     cluster will only serialize dependencies in the same Python module (in
@@ -137,7 +137,7 @@ Here are some guidelines to follow when writing a |PUF|:
     Be mindful of performance.
     These functions execute on every row of data, in other words, several times.
 #.  Printing:
-    Printing (to stdout, stderr, …) within the |PUF| will not show up in the
+    Printing (to stdout, stderr, …) within the |UDF| will not show up in the
     client REPL.
     Such messages will usually end up in the server logs.
     In general, avoid printing.
@@ -160,10 +160,10 @@ Here are some guidelines to follow when writing a |PUF|:
 #.  Multiple executions:
     Do not make any assumptions about how many times the function may get
     executed.
-#.  Parameterizing a |PUF|:
-    Parameterizing a |PUF| is possible using Python techniques of closures and
+#.  Parameterizing a |UDF|:
+    Parameterizing a |UDF| is possible using Python techniques of closures and
     nesting function definitions.
-    For example, the Row |PUF| only takes a single row object parameter.
+    For example, the Row |UDF| only takes a single row object parameter.
     It could be useful to have a row function that takes a few other parameters.
     Let’s augment the row_sum function above to take a list of columns to
     ignore:
