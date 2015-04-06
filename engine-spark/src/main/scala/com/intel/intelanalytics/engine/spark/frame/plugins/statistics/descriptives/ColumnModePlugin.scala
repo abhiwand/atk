@@ -61,14 +61,13 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeRetu
   override def execute(arguments: ColumnModeArgs)(implicit invocation: Invocation): ColumnModeReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
     val frame = frames.expectFrame(frameRef)
 
     // run the operation and return results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
