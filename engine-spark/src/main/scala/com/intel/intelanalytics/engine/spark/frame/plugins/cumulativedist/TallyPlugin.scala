@@ -64,7 +64,6 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
   override def execute(arguments: TallyArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
@@ -72,7 +71,7 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameEntity)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameEntity)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_tally")
     val frameSchema = frameEntity.schema
     val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)

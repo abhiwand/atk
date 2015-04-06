@@ -70,8 +70,6 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
     def getAbsolutePath(s: String): String = engine.frames.frameFileStorage.hdfs.absolutePath(s).toString
 
-    val ctx = sc
-
     // validate arguments
     val frameRef = arguments.destination
     val destinationFrame = frames.expectFrame(frameRef)
@@ -79,13 +77,13 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
+      val additionalData = frames.loadFrameData(sc, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
       val filePath = getAbsolutePath(arguments.source.uri)
       val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
-      val parseResult = LoadRddFunctions.loadAndParseLines(ctx, filePath,
+      val parseResult = LoadRddFunctions.loadAndParseLines(sc, filePath,
         null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
 
@@ -95,11 +93,11 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
       val filePath = getAbsolutePath(arguments.source.uri)
       val parseResult = if (arguments.source.isFieldDelimited) {
         val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
-        LoadRddFunctions.loadAndParseLines(ctx, filePath, parser, partitions)
+        LoadRddFunctions.loadAndParseLines(sc, filePath, parser, partitions)
       }
       else {
         val data = arguments.source.data.get
-        LoadRddFunctions.loadAndParseData(ctx, data, parser)
+        LoadRddFunctions.loadAndParseData(sc, data, parser)
       }
       // parse failures go to their own data frame
       val updatedFrame = if (parseResult.errorLines.count() > 0) {
@@ -129,9 +127,8 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
   private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRdd)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
-    val existingRdd = frames.loadFrameData(ctx, existingFrame)
+    val existingRdd = frames.loadFrameData(sc, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     frames.saveFrameData(existingFrame.toReference, unionedRdd)
   }
