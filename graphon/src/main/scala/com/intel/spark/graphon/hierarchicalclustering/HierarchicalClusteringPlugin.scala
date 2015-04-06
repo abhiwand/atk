@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins.hierarchicalclustering
+package com.intel.spark.graphon.hierarchicalclustering
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.frame.FrameReference
@@ -61,14 +61,12 @@ import HierarchicalClusteringFormat._
  */
 class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
 
-  override def name: String = "graph:titan/hierarchical_clustering"
-
-  //TODO remove when we move to the next version of spark
+  override def name: String = HierarchicalClusteringConstants.PlugInIdentifier
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    sc.addJar(SparkContextFactory.jarPath(HierarchicalClusteringConstants.JarPath))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
