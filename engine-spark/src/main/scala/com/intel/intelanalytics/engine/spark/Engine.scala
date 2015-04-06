@@ -287,9 +287,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextFactory.context("query")
+      val sc = sparkContextFactory.context("query")
       try {
-        val data = queryStorage.getQueryPage(ctx, id, pageId)
+        val data = queryStorage.getQueryPage(sc, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
@@ -297,7 +297,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
           info("not stopping local SparkContext so that it can be re-used")
         }
         else {
-          ctx.stop()
+          sc.stop()
         }
       }
     }

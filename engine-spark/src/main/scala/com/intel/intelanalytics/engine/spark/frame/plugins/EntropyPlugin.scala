@@ -72,7 +72,6 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
   override def execute(arguments: EntropyArgs)(implicit invocation: Invocation): DoubleValue = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
@@ -80,7 +79,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
     // run the operation and return results
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
     val entropy = EntropyRddFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
     DoubleValue(entropy)
