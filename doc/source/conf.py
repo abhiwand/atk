@@ -64,9 +64,9 @@ rst_epilog = """
 .. |MDA|    replace:: :abbr:`MDA (Multi-Dimensional Analytical)`
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
-.. |PUF|    replace:: :abbr:`PUF (Python User Function)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
+.. |UDF|    replace:: :abbr:`UDF (Python User-defined Function)`
 .. |VM|     replace:: :abbr:`VM (Virtual Machine)`
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`

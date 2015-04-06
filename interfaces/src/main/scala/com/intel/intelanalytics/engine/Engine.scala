@@ -74,7 +74,9 @@ trait Engine {
 
   //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
 
-  def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
+  def getUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
+
+  def addUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
 
   def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
