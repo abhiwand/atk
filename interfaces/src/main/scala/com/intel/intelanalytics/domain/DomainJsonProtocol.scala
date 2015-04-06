@@ -305,6 +305,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val intValueFormat = jsonFormat1(IntValue)
   implicit val stringValueFormat = jsonFormat1(StringValue)
   implicit val boolValueFormat = jsonFormat1(BoolValue)
+  implicit val vectorValueFormat = jsonFormat1(VectorValue)
 
   implicit val createEntityArgsFormat = jsonFormat3(CreateEntityArgs.apply)
 

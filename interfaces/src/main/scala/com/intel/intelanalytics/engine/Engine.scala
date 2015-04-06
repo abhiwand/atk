@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, EntityType }
+import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, UriReference, EntityType }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
@@ -123,6 +123,8 @@ trait Engine {
   def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[ModelEntity]]
 
   def deleteModel(id: Identifier)(implicit invocation: Invocation): Future[Unit]
+
+  def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double]
 
   /**
    * Cancel a running command
