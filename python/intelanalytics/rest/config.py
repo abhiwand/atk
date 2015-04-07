@@ -26,12 +26,15 @@ config file for rest client
 """
 
 
-# for specific server settings, see intelanalytics/connections.py
-
 # default connection config
 class server_defaults:
+    host="localhost"
+    port=9099
+    scheme = 'http'
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json,text/plain'}
+    version = 'v1'
+    user_name = "test_api_key_1"
 
 
 class upload_defaults:
@@ -50,4 +53,3 @@ class polling_defaults:
 
 
 build_id = None
-

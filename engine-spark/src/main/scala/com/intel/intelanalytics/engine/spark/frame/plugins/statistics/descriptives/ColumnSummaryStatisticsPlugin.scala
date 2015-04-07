@@ -61,7 +61,6 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
   override def execute(arguments: ColumnSummaryStatisticsArgs)(implicit invocation: Invocation): ColumnSummaryStatisticsReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef: FrameReference = arguments.frame
@@ -78,7 +77,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     }
 
     // run the operation and return the results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
     ColumnStatistics.columnSummaryStatistics(columnIndex,
       valueDataType,
       weightsColumnIndexOption,
