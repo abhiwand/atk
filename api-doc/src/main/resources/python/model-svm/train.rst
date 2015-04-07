@@ -12,7 +12,7 @@ label_column : str
 observation_column : list of str
     Column(s) containing the observations.
 intercept : bool (Optional)
-    Intercept value. Default is true.
+    The algorithm adds an intercept. Default is true.
 num_iterations: int (Optional)
     Number of iterations. Default is 100.
 step_size: int (Optional)
