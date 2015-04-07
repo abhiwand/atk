@@ -137,7 +137,7 @@ class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, Anno
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     new AnnotateDegreesReturn(frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = tryNew(CreateEntityArgs(description = Some("created by annotated degrees operation"))) { newOutputFrame: FrameMeta =>
         val frameRdd = frameRddMap(label)
         save(new SparkFrameData(newOutputFrame.meta, frameRdd))
       }.meta
