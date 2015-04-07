@@ -1,5 +1,6 @@
 package com.intel.spark.graphon.hierarchicalclustering
 
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.rdd.RDD
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -7,22 +8,34 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
 import java.io.{ Serializable, FileWriter }
 import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
 
 /**
  * This is the main clustering class.
  */
-object HierarchicalClusteringMain extends Serializable {
+object HierarchicalClusteringFunctions extends Serializable {
 
-  def execute(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
+  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration): Unit = {
+
+    val graphAdRdd: RDD[HierarchicalClusteringEdge] = edges.map {
+      case e => HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
+        HierarchicalClusteringConstants.DefaultNodeCount,
+        e.tailPhysicalId.asInstanceOf[Number].longValue,
+        HierarchicalClusteringConstants.DefaultNodeCount,
+        1 - e.getProperty("dist").get.value.asInstanceOf[Float], false)
+    }.distinct()
+
+    HierarchicalClusteringFunctions.mainLoop(graphAdRdd, titanConfig)
+  }
+
+  def mainLoop(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
     val fileWriter = new FileWriter(HierarchicalClusteringConstants.OutputFilename, true)
 
     var iteration = 0
-    val graphStorage = TitanStorage.connectToTitan(titanConfig)
-    TitanStorage.addSchemaToTitan(graphStorage)
-    TitanStorage.shutDown(graphStorage)
 
+    configStorage(titanConfig)
     while (currentGraph != null) {
       iteration = iteration + 1
       currentGraph = clusterNewLayer(currentGraph, fileWriter, iteration, titanConfig)
@@ -31,22 +44,29 @@ object HierarchicalClusteringMain extends Serializable {
     fileWriter.close()
   }
 
+  private def configStorage(titanConfig: SerializableBaseConfiguration): Unit = {
+
+    val graphStorage = TitanStorage.connectToTitan(titanConfig)
+    TitanStorage.addSchemaToTitan(graphStorage)
+    graphStorage.shutdown()
+  }
+
   private def clusterNewLayer(graph: RDD[HierarchicalClusteringEdge],
                               fileWriter: FileWriter,
                               iteration: Int, titanConfig: SerializableBaseConfiguration): RDD[HierarchicalClusteringEdge] = {
 
     // the list of edges to be collapsed and removed from the active graph
     val collapsableEdges = createCollapsableEdges(graph)
-    collapsableEdges.cache()
+    collapsableEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     // the list of internal nodes connecting a newly created meta-node and the nodes of the collapsed edge
     val (internalEdges, nonSelectedEdges) = createInternalEdges(collapsableEdges, titanConfig)
-    internalEdges.cache()
-    nonSelectedEdges.cache()
+    internalEdges.persist(StorageLevel.MEMORY_AND_DISK)
+    nonSelectedEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     // the list of newly created active edges in the graph
     val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges, fileWriter)
-    activeEdges.cache()
+    activeEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     fileWriter.write("-------------Iteration " + iteration + " ---------------\n")
 
@@ -105,7 +125,7 @@ object HierarchicalClusteringMain extends Serializable {
       val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, true)
       val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
 
-      distinctNewGraphWithoutInternalEdges.cache()
+      distinctNewGraphWithoutInternalEdges.persist(StorageLevel.MEMORY_AND_DISK)
       collapsableEdges.unpersist()
 
       fileWriter.write("Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count() + "\n")
@@ -174,8 +194,10 @@ object HierarchicalClusteringMain extends Serializable {
 
   /**
    * Create internal edges for all collapsed edges of the graph
-   * @param collapsedEdges - a list of collapsed edges
-   * @return an RDD of newly created internal edges
+   * @param collapsedEdges a list of edges to be collapsed
+   * @param titanConfig titan configuration for writing to storage
+   * @return a list of internal edges generated because of the collapse. Each collapsed edge generates 2 internal edges
+   *         between the meta-node and the vertices of the collapsed edge
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
                                   titanConfig: SerializableBaseConfiguration): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
@@ -184,7 +206,7 @@ object HierarchicalClusteringMain extends Serializable {
       case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {
         val titanConnector = TitanGraphConnector(titanConfig)
         val graph = titanConnector.connect()
-        val tmp = edges.map {
+        val result = edges.map {
           case edge =>
             val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(edge._1, graph)
             val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, edge._2).map(_._2)
@@ -194,10 +216,10 @@ object HierarchicalClusteringMain extends Serializable {
         graph.commit()
         graph.shutdown()
 
-        tmp.toIterator
+        result.toIterator
       }
     }
-    internalEdges.cache()
+    internalEdges.persist(StorageLevel.MEMORY_AND_DISK)
     (internalEdges.flatMap(_._1), internalEdges.flatMap(_._2))
   }
 
@@ -208,10 +230,10 @@ object HierarchicalClusteringMain extends Serializable {
    */
   private def createCollapsableEdges(graph: RDD[HierarchicalClusteringEdge]): RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] = {
 
-    val collapsableEdges = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
+    val edgesBySourceIdWithMinEdge = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
       case (sourceNode, allEdges) =>
-        val min = EdgeDistance.min(allEdges)
-        min match {
+        val edgesBySourceId = EdgeDistance.min(allEdges)
+        edgesBySourceId match {
           case (vertexId,
             minEdge,
             nonSelectedEdges) => (vertexId, (minEdge, nonSelectedEdges))
@@ -220,7 +242,7 @@ object HierarchicalClusteringMain extends Serializable {
       case (vertexId, pairedEdgeList) => EdgeManager.canEdgeCollapse(pairedEdgeList)
     }
 
-    collapsableEdges.map {
+    edgesBySourceIdWithMinEdge.map {
       case (vertexId, pairedEdgeList) =>
         EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
     }.filter {

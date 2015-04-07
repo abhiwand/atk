@@ -3,9 +3,11 @@ package com.intel.spark.graphon.hierarchicalclustering
 import java.io.Serializable
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.schema.GraphSchema
 import com.intel.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
+import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }
 
@@ -18,8 +20,8 @@ object TitanStorage extends Serializable {
 
   def addSchemaToTitan(titanGraph: TitanGraph): Unit = {
 
-    val schema = new GraphSchema(List(EdgeLabelDef(HierarchicalClusteringConstants.LabelProperty)),
-      List(PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexLabelProperty, classOf[String]),
+    val schema = new GraphSchema(List(EdgeLabelDef(HierarchicalClusteringConstants.LabelPropertyValue)),
+      List(PropertyDef(PropertyType.Vertex, GraphSchema.labelProperty, classOf[String]),
         PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeCountProperty, classOf[Int]),
         PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeNameProperty, classOf[String])))
     val schemaWriter = new TitanSchemaWriter(titanGraph)
@@ -32,8 +34,8 @@ object TitanStorage extends Serializable {
                        titanGraph: TitanGraph): Vertex = {
 
     val vertex = titanGraph.addVertex(null)
-    vertex.setProperty(HierarchicalClusteringConstants.VertexLabelProperty, HierarchicalClusteringConstants.LabelProperty)
-    vertex.setProperty(HierarchicalClusteringConstants.VertexNodeCountProperty, nodeCount)
+    vertex.setProperty(GraphSchema.labelProperty, HierarchicalClusteringConstants.LabelPropertyValue)
+    vertex.setProperty(GraphSchema.labelProperty, nodeCount)
 
     //
     // TODO: this is testing only, remove later.
@@ -45,18 +47,8 @@ object TitanStorage extends Serializable {
 
   def addEdgeToTitan(src: Vertex, dest: Vertex,
                      titanGraph: TitanGraph): Edge = {
-    titanGraph.addEdge(null, src, dest, HierarchicalClusteringConstants.LabelProperty)
+    titanGraph.addEdge(null, src, dest, HierarchicalClusteringConstants.LabelPropertyValue)
 
-  }
-
-  def commit(titanGraph: TitanGraph): Unit = {
-
-    titanGraph.commit()
-  }
-
-  def shutDown(titanGraph: TitanGraph): Unit = {
-
-    titanGraph.shutdown()
   }
 
   /**
