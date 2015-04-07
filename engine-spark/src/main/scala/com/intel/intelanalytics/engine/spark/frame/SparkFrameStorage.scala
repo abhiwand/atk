@@ -175,24 +175,24 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    *
    * This is our preferred format for loading frames as RDDs.
    *
-   * @param ctx spark context
+   * @param sc spark context
    * @param frame the model for the frame
    * @return the newly created FrameRdd
    */
-  def loadFrameData(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): FrameRdd = withContext("loadFrameRdd") {
+  def loadFrameData(sc: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): FrameRdd = withContext("loadFrameRdd") {
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
-        new FrameRdd(frame.schema, ctx.parallelize[sql.Row](Nil, SparkEngineConfig.minPartitions))
+        new FrameRdd(frame.schema, sc.parallelize[sql.Row](Nil, SparkEngineConfig.minPartitions))
       case (Some("file/parquet"), Some(absPath)) =>
-        val sqlContext = new SQLContext(ctx)
+        val sqlContext = new SQLContext(sc)
         val rows = sqlContext.parquetFile(absPath.toString)
         //ctx.hadoopFile[OrderedParquetInputFormat](absPath.toString)
         //val partitions = new FrameRDD(frame.schema, rows).getPartitions()
         val frameRdd = new FrameRdd(frame.schema, rows)
         sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some("file/sequence"), Some(absPath)) =>
-        val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+        val rows = sc.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
         val frameRdd = new LegacyFrameRdd(frame.schema, rows).toFrameRdd()
         sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some(s), _) => illegalArg(s"Cannot load frame with storage '$s'")
@@ -206,14 +206,14 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    * - This format requires extra maps to read/write Parquet files.
    * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
    *
-   * @param ctx spark context
+   * @param sc spark context
    * @param frameRef primary key of the frame record
    * @return the newly created RDD
    */
   @deprecated("use FrameRdd and related methods instead")
-  def loadLegacyFrameRdd(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRdd = {
+  def loadLegacyFrameRdd(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRdd = {
     val frame = expectFrame(frameRef)
-    loadLegacyFrameRdd(ctx, frame)
+    loadLegacyFrameRdd(sc, frame)
   }
 
   /**
@@ -223,13 +223,13 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    * - This format requires extra maps to read/write Parquet files.
    * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
    *
-   * @param ctx spark context
+   * @param sc spark context
    * @param frame the model for the frame
    * @return the newly created FrameRdd
    */
   @deprecated("use FrameRdd and related methods instead")
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): LegacyFrameRdd =
-    loadFrameData(ctx, frame).toLegacyFrameRdd
+  def loadLegacyFrameRdd(sc: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): LegacyFrameRdd =
+    loadFrameData(sc, frame).toLegacyFrameRdd
 
   /**
    * Determine if a dataFrame is saved as parquet
@@ -408,7 +408,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  //  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, ctx: SparkContext)(implicit invocation: Invocation): RDD[Row] =
+  //  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, sc: SparkContext)(implicit invocation: Invocation): RDD[Row] =
   //    withContext("frame.getPagedRowsRDD") {
   //      require(frame != null, "frame is required")
   //      require(offset >= 0, "offset must be zero or greater")
@@ -528,13 +528,13 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
 
   /**
    * Get the pair of LegacyFrameRdd's that were the result of a parse
-   * @param ctx spark context
+   * @param sc spark context
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
    */
-  def getParseResult(ctx: SparkContext, frame: FrameEntity, errorFrame: FrameEntity)(implicit invocation: Invocation): ParseResultRddWrapper = {
-    val frameRdd = loadFrameData(ctx, frame)
-    val errorFrameRdd = loadFrameData(ctx, errorFrame)
+  def getParseResult(sc: SparkContext, frame: FrameEntity, errorFrame: FrameEntity)(implicit invocation: Invocation): ParseResultRddWrapper = {
+    val frameRdd = loadFrameData(sc, frame)
+    val errorFrameRdd = loadFrameData(sc, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 

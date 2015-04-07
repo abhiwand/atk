@@ -356,84 +356,84 @@ class SparkGraphStorage(metaStore: MetaStore,
     expectSeamless(graphRef)
   }
 
-  def loadVertexRDD(ctx: SparkContext, graphRef: GraphReference, vertexLabel: String)(implicit invocation: Invocation): VertexFrameRdd = {
+  def loadVertexRDD(sc: SparkContext, graphRef: GraphReference, vertexLabel: String)(implicit invocation: Invocation): VertexFrameRdd = {
     val frame = expectSeamless(graphRef).vertexMeta(vertexLabel)
-    val frameRdd = frameStorage.loadFrameData(ctx, frame)
+    val frameRdd = frameStorage.loadFrameData(sc, frame)
     new VertexFrameRdd(frameRdd)
   }
 
-  def loadVertexRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRdd = {
+  def loadVertexRDD(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): VertexFrameRdd = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isVertexFrame, "frame was not a vertex frame")
-    val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
+    val frameRdd = frameStorage.loadFrameData(sc, frameEntity)
     new VertexFrameRdd(frameRdd)
   }
 
-  def loadEdgeRDD(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRdd = {
+  def loadEdgeRDD(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): EdgeFrameRdd = {
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
-    val frameRdd = frameStorage.loadFrameData(ctx, frameEntity)
+    val frameRdd = frameStorage.loadFrameData(sc, frameEntity)
     new EdgeFrameRdd(frameRdd)
   }
 
   // TODO: delete me if not needed?
-  //  def loadEdgeFrameRdd(ctx: SparkContext, graphId: Long, edgeLabel: String): EdgeFrameRdd = {
+  //  def loadEdgeFrameRdd(sc: SparkContext, graphId: Long, edgeLabel: String): EdgeFrameRdd = {
   //    val frame = expectSeamless(graphId).edgeMeta(edgeLabel)
-  //    val frameRdd = frames.loadFrameRdd(ctx, frame)
+  //    val frameRdd = frames.loadFrameRdd(sc, frame)
   //    new EdgeFrameRdd(frameRdd)
   //  }
 
-  def loadGbVertices(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
+  def loadGbVertices(sc: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBVertex] = {
     val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
       val graphEntity = expectSeamless(graph.toReference)
-      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(ctx, frame.toReference)).reduce(_.union(_))
+      graphEntity.vertexFrames.map(frame => loadGbVerticesForFrame(sc, frame.toReference)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      val titanReaderRdd: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+      val titanReaderRdd: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
       import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
       val gbVertices: RDD[GBVertex] = titanReaderRdd.filterVertices()
       gbVertices
     }
   }
 
-  def loadGbEdges(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBEdge] = {
+  def loadGbEdges(sc: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): RDD[GBEdge] = {
     val graphEntity = expectGraph(graph.toReference)
     if (graphEntity.isSeamless) {
       val graphMeta = expectSeamless(graph.toReference)
-      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(ctx, frame.toReference)).reduce(_.union(_))
+      graphMeta.edgeFrames.map(frame => loadGbEdgesForFrame(sc, frame.toReference)).reduce(_.union(_))
     }
     else {
       // load from Titan
-      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+      val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
       import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
       gbEdges
     }
   }
 
-  def loadGbElements(ctx: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
+  def loadGbElements(sc: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
     val graphEntity = expectGraph(SparkGraphManagement.graphToRef(graph))
 
     if (graphEntity.isSeamless) {
-      val vertexRDD = loadGbVertices(ctx, graph)
-      val edgeRDD = loadGbEdges(ctx, graph)
+      val vertexRDD = loadGbVertices(sc, graph)
+      val edgeRDD = loadGbEdges(sc, graph)
       (vertexRDD, edgeRDD)
     }
     else {
       //Prevents us from scanning the NoSQL table twice when loading vertices and edges
       //Scanning NoSQL tables is a very expensive operation.
-      loadFromTitan(ctx, graph)
+      loadFromTitan(sc, graph)
     }
   }
 
-  def getTitanReaderRdd(ctx: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
+  def getTitanReaderRdd(sc: SparkContext, graph: GraphEntity): RDD[GraphElement] = {
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
-    val titanReader = new TitanReader(ctx, titanConnector)
+    val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
     titanReaderRDD
   }
@@ -459,12 +459,12 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   /**
    * Loads vertices and edges from Titan graph database
-   * @param ctx Spark context
+   * @param sc Spark context
    * @param graph Graph metadata object
    * @return RDDs of vertices and edges
    */
-  def loadFromTitan(ctx: SparkContext, graph: GraphEntity): (RDD[GBVertex], RDD[GBEdge]) = {
-    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(ctx, graph)
+  def loadFromTitan(sc: SparkContext, graph: GraphEntity): (RDD[GBVertex], RDD[GBEdge]) = {
+    val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
     import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     //Cache data to prevent Titan reader from scanning HBase/Cassandra table twice to read vertices and edges
@@ -484,12 +484,12 @@ class SparkGraphStorage(metaStore: MetaStore,
     titanConnector.connect()
   }
 
-  def loadGbVerticesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBVertex] = {
-    loadVertexRDD(ctx, frameRef).toGbVertexRDD
+  def loadGbVerticesForFrame(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBVertex] = {
+    loadVertexRDD(sc, frameRef).toGbVertexRDD
   }
 
-  def loadGbEdgesForFrame(ctx: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBEdge] = {
-    loadEdgeRDD(ctx, frameRef).toGbEdgeRdd
+  def loadGbEdgesForFrame(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): RDD[GBEdge] = {
+    loadEdgeRDD(sc, frameRef).toGbEdgeRdd
   }
 
   def saveVertexRdd(frameRef: FrameReference, vertexFrameRdd: VertexFrameRdd)(implicit invocation: Invocation) = {

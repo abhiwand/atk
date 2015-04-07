@@ -147,6 +147,27 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       }
                 }
               }
+          } ~
+          pathPrefix(prefix / LongNumber / "score") {
+            id =>
+              pathEnd {
+                requestUri {
+                  uri =>
+                    post {
+                      import spray.httpx.SprayJsonSupport._
+                      implicit val format = DomainJsonProtocol.vectorValueFormat
+                      entity(as[VectorValue]) {
+                        observation =>
+                          onComplete(engine.scoreModel(id, observation)) {
+                            case Success(scored) => complete(scored.toString)
+                            case Failure(ex) => ctx => {
+                              ctx.complete(500, ex.getMessage)
+                            }
+                          }
+                      }
+                    }
+                }
+              }
           }
     }
 
