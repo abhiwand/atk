@@ -66,10 +66,9 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
   override def execute(arguments: GroupByArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
-    val originalFrame = frames.loadFrameData(ctx, frames.expectFrame(arguments.frame))
+    val originalFrame = frames.loadFrameData(sc, frames.expectFrame(arguments.frame))
     val frameSchema = originalFrame.frameSchema
     val groupByColumns = arguments.groupByColumns.map(columnName => frameSchema.column(columnName))
 

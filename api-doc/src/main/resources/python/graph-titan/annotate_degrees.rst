@@ -6,9 +6,6 @@ user-specified property.
 
 Parameters
 ----------
-output_graph_name : str
-    The name of the new graph.
-    The results are written to this graph.
 output_property_name : str
     The name of the new property.
     The degree is stored in this property.
@@ -31,11 +28,8 @@ input_edge_labels : list of str (optional)
 
 Returns
 -------
-
-Graph : Degree annotated graph
-    A Graph object with access to a new graph that is a copy of the input graph
-    with the addition that every vertex of the graph has its :term:`degree`
-    stored in a user-specified property.
+dict(label, Frame) : Dictionary containing the vertex type as the key and the corresponding vertex's frame with a column storing the annotated degree for the vertex in a user specified property.
+    Call dictionary_name['label'] to get the handle to frame whose vertex type is label
 
 Examples
 --------
@@ -58,25 +52,5 @@ Given a graph:
         u'source': 31599}],
         u'run_time_seconds': 1.822}
 
-    >>> h = g.annotate_degrees('degreed_graph', 'degree')
-    
-    >>> h.query.gremlin('g.V [ 0 .. 1]')
-    
-    
-    Out[14]:
-       {u'results': [{u'_id': 16384,
-        u'_label': u'vertex',
-        u'_type': u'vertex',
-        u'_vid': 594142,
-        u'degree': 3,
-        u'source': 35562,
-        u'titanPhysicalId': 169968},
-       {u'_id': 25088,
-        u'_label': u'vertex',
-        u'_type': u'vertex',
-        u'_vid': 676474,
-        u'degree': 1,
-        u'source': 31035,
-        u'titanPhysicalId': 292368}],
-        u'run_time_seconds': 1.428}
+    >>> h = g.annotate_degrees('degree')
     

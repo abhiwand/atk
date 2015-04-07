@@ -61,7 +61,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     // dependencies (later to be replaced with dependency injection)
 
     val frames = engine.frames
-    val ctx = sc
 
     val frame = frames.expectFrame(arguments.frame)
     val samplePercentages = arguments.samplePercentages.toArray
@@ -72,7 +71,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
 
     // run the operation
     val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
-    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(sc, frame))
 
     val splitRDD: RDD[Rows.Row] =
       labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.asInstanceOf[Seq[Any]] :+ x.label.asInstanceOf[Any]).toArray[Any])

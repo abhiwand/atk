@@ -24,15 +24,14 @@ mkdir -p  tarballs/$package/conf
 mkdir -p  tarballs/$package/lib
 
 
-cp -v ../conf/examples/application.conf.tpl tarballs/$package/conf
-cp -v ../conf/examples/application.conf.single-system.tpl tarballs/$package/conf
-cp -v ../conf/examples/application.conf tarballs/$package/conf
-cp -v ../conf/examples/logback.xml tarballs/$package/conf
+cp -v  config/intelanalytics-rest-server-tar/application.conf tarballs/$package/conf
+cp -v  config/intelanalytics-rest-server-tar/logback.xml tarballs/$package/conf
 cp -Rv config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
 cp -v  config/intelanalytics-rest-server-tar/api-server.sh tarballs/$package/bin/
 
 
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar"
+
+jars="api-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 #popd
 
