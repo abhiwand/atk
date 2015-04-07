@@ -30,6 +30,7 @@ git
 /python/intelanalytics/core/autoframe.py
 /python/intelanalytics/core/autograph.py
 /python/intelanalytics/core/docstubs.py*
+/python/intelanalytics/connections.py*
 largegit.sh
 make.sh
 .metadata*
