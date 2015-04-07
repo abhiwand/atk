@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEntity] {
   /**
