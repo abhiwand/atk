@@ -73,7 +73,7 @@ import ClusteringCoefficientJsonFormat._
  */
 class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficientArgs, ClusteringCoefficientResult] {
 
-  override def name: String = "graph:titan/clustering_coefficient"
+  override def name: String = "graph/clustering_coefficient"
 
   override def numberOfJobs(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): Int = 6
 

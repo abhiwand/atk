@@ -82,13 +82,13 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
 
   /**
    * Add vertices
-   * @param ctx spark context
-   * @param arguments user supplied arguements
+   * @param sc spark context
+   * @param arguments user supplied arguments
    * @param sourceRdd source data
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(ctx: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
+  def addVertices(sc: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
@@ -109,7 +109,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     graphs.updateIdCounter(graphRef, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
-    val existingVertexData = graphs.loadVertexRDD(ctx, vertexFrameMeta.toReference)
+    val existingVertexData = graphs.loadVertexRDD(sc, vertexFrameMeta.toReference)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)

@@ -80,28 +80,28 @@ object PythonRddStorage {
     includes
   }
 
-  def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, ctx: SparkContext): FrameRdd = {
+  def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, sc: SparkContext): FrameRdd = {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRdd, ctx)
+    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRdd, sc)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
     FrameRdd.toFrameRdd(newSchema, frameRdd)
   }
 
   //TODO: fix hardcoded paths
-  def uploadFilesToSpark(uploads: List[String], ctx: SparkContext): JArrayList[String] = {
+  def uploadFilesToSpark(uploads: List[String], sc: SparkContext): JArrayList[String] = {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
       for (k <- 0 until uploads.size) {
-        ctx.addFile(s"file://${SparkEngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
+        sc.addFile(s"file://${SparkEngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
         pythonIncludes.add(uploads(k))
       }
     }
     pythonIncludes
   }
 
-  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, ctx: SparkContext): EnginePythonRdd[String] = {
+  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, sc: SparkContext): EnginePythonRdd[String] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
     val baseRdd: RDD[String] = rdd
@@ -136,7 +136,7 @@ object PythonRddStorage {
 
     if (udf.dependencies != null) {
       val includes = uploadUdfDependencies(udf)
-      pyIncludes = uploadFilesToSpark(includes, ctx)
+      pyIncludes = uploadFilesToSpark(includes, sc)
     }
 
     val pyRdd = new EnginePythonRdd[String](
@@ -172,12 +172,12 @@ class PythonRddStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
    * @return the RDD
    */
-  def createPythonRDD(frameRef: FrameReference, py_expression: String, ctx: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[String] = {
+  def createPythonRDD(frameRef: FrameReference, py_expression: String, sc: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[String] = {
     withMyClassLoader {
 
-      val rdd: LegacyFrameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+      val rdd: LegacyFrameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
 
-      PythonRddStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, ctx)
+      PythonRddStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, sc)
     }
   }
 }

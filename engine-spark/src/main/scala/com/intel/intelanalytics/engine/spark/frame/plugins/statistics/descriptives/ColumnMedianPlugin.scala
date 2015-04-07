@@ -61,7 +61,6 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedi
   override def execute(arguments: ColumnMedianArgs)(implicit invocation: Invocation): ColumnMedianReturn = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef: FrameReference = arguments.frame
@@ -70,7 +69,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedi
     val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
 
     // run the operation and return results
-    val rdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }

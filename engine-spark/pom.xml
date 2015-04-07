@@ -160,6 +160,10 @@
         <!--END BDA dependencies to our modules-->
 
         <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.2.2</version>
@@ -355,6 +359,14 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>imahout</artifactId>
+        </dependency>
+				<dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tw.edu.ntu.csie</groupId>
+            <artifactId>libsvm</artifactId>
         </dependency>
     </dependencies>
 </project>
