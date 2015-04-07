@@ -25,7 +25,7 @@ package com.intel.spark.graphon.hierarchicalclustering
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.domain.graph.{ GraphNoArgs, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -59,21 +59,20 @@ import HierarchicalClusteringFormat._
  *
  * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
  */
-class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
+class HierarchicalClusteringPlugin extends SparkCommandPlugin[GraphNoArgs, UnitReturn] {
 
-  override def name: String = HierarchicalClusteringConstants.PlugInIdentifier
+  override def name: String = "graph:titan/hierarchical_clustering"
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    sc.addJar(SparkContextFactory.jarPath(HierarchicalClusteringConstants.JarPath))
+    sc.addJar(SparkContextFactory.jarPath("graphon"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    HierarchicalClusteringImpl.execute(vertices, edges, titanConfig)
+    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig)
 
     new UnitReturn
   }
-
 }

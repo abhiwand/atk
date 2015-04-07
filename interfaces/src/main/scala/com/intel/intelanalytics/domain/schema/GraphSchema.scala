@@ -31,6 +31,7 @@ package com.intel.intelanalytics.domain.schema
  */
 object GraphSchema {
 
+  val labelProperty = "_label"
   val vertexSystemColumns = Column("_vid", DataTypes.int64) :: Column("_label", DataTypes.string) :: Nil
   /** ordered list */
   val vertexSystemColumnNames = vertexSystemColumns.map(column => column.name)

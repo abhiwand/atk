@@ -15,6 +15,9 @@ The internal vertices and edges are for graph navigation and are added to the in
 
 Examples
 --------
+
+::
+
 sample_graph.txt is a file in the following format: src, dest, distance
 
 1, 2, 1.5f
@@ -26,20 +29,24 @@ sample_graph.txt is a file in the following format: src, dest, distance
 
 the script:
 
-import intelanalytics as ia
-ia.connect()
-d = "sample_graph.txt"
-s = [("src", str), ("dest", str), ("dist", ia.float32)]
-c = ia.CsvFile(d,s)
-frame = ia.Frame(c, "sample")
-print frame.inspect(frame.row_count)
-src = ia.VertexRule("vertex", frame.src)
-dest = ia.VertexRule("vertex", frame.dest)
-dist = ia.EdgeRule("edge", src, dest, {"dist":frame.dist}, bidirectional=True)
-print "Creating graph 'sample_graph'"
-graph = ia.TitanGraph([src, dest, dist], "sample_graph")
-#graph = ia.get_graph("7_9")
-graph.hierarchical_clustering()
+    import intelanalytics as ia
+    ia.connect()
+    d = "sample_graph.txt"
+    s = [("src", str), ("dest", str), ("dist", ia.float32)]
+    c = ia.CsvFile(d,s)
+    frame = ia.Frame(c, "sample")
+    print frame.inspect(frame.row_count)
+    src = ia.VertexRule("vertex", frame.src)
+    dest = ia.VertexRule("vertex", frame.dest)
+    dist = ia.EdgeRule("edge", src, dest, {"dist":frame.dist}, bidirectional=True)
+    print "Creating graph 'sample_graph'"
+    graph = ia.TitanGraph([src, dest, dist], "sample_graph")
+    graph.hierarchical_clustering()
+
+The expected output (new vertices) can be queried ::
+
+    graph.query.gremlin('g.V.map(\'id\', \'vertex\', \'_label\', \'name\',\'count\')')
+
 
 
 

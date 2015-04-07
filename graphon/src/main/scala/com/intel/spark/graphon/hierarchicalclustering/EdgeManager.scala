@@ -59,7 +59,7 @@ object EdgeManager extends Serializable {
     if ((null != list) && (!list.isEmpty)) {
       for (edgeList <- list) {
         if ((null != edgeList) && (null != edgeList._2)) {
-          outgoingEdges :::= edgeList._2.toList
+          outgoingEdges = outgoingEdges ++ edgeList._2.toList
           edge = edgeList._1
         }
       }
