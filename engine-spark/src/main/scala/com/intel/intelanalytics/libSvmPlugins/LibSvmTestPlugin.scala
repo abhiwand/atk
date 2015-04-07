@@ -85,7 +85,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
 
     //predicting a label for the observation column/s
     val predictionsRdd: RDD[Row] = inputFrameRdd.mapRows(row => {
-      val array = row.valuesAsArray(libsvmData.observationColumns)
+      val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
       val label = row.value(arguments.labelColumn)
       val doubles = array.map(i => DataTypes.toDouble(i))
       var vector = Vector.empty[Double]
