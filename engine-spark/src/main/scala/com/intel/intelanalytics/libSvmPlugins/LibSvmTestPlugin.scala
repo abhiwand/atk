@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
 
 class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, ClassificationMetricValue] {
