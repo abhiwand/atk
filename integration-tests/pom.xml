@@ -11,7 +11,14 @@
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
-
+    <profiles>
+    <profile>
+    <id>package</id>
+    <activation>
+        <property>
+            <name>!skipTests</name>
+        </property>
+    </activation>
     <build>
         <plugins>
             <plugin>
@@ -76,6 +83,8 @@
             </plugin>
         </plugins>
     </build>
+    </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>ch.qos.logback</groupId>

@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -71,7 +71,6 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
   override def execute(arguments: TopKArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
@@ -79,11 +78,11 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0
-    val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
+    val topRdd = TopKRddFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
     val newSchema = Schema.fromTuples(List(
@@ -93,7 +92,7 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
 
     // save results
     frames.tryNewFrame(CreateEntityArgs(description = Some("created by top k command"))) { newFrame =>
-      frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRDD(newSchema, topRdd))
+      frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRdd(newSchema, topRdd))
     }
   }
 

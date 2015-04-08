@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, UriReference, EntityType }
+import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, UriReference, EntityType }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
@@ -74,18 +74,20 @@ trait Engine {
 
   //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
 
-  def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): UserPrincipal
+  def getUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
+
+  def addUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
 
   def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
+  //  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
   @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]
 
-  def delete(frame: FrameEntity)(implicit invocation: Invocation): Future[Unit]
+  def deleteFrame(id: Identifier)(implicit invocation: Invocation): Future[Unit]
 
   def getFrames()(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
@@ -110,7 +112,7 @@ trait Engine {
 
   def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
-  def deleteGraph(graph: GraphEntity)(implicit invocation: Invocation): Future[Unit]
+  def deleteGraph(graphId: Identifier)(implicit invocation: Invocation): Future[Unit]
 
   def createModel(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[ModelEntity]
 
@@ -120,7 +122,9 @@ trait Engine {
 
   def getModelByName(name: String)(implicit invocation: Invocation): Future[Option[ModelEntity]]
 
-  def deleteModel(model: ModelEntity)(implicit invocation: Invocation): Future[Unit]
+  def deleteModel(id: Identifier)(implicit invocation: Invocation): Future[Unit]
+
+  def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double]
 
   /**
    * Cancel a running command

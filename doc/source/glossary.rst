@@ -25,12 +25,12 @@ Glossary
             /------------------------/
                A         B, D
                B         A, C, D
-               C         B 
+               C         B
                D         A, B
 
     Alpha
 
-        See :term:`API Maturity Tags`   |ALPHA|
+        See :term:`API Maturity Tags`.
 
     Aggregation Function
 
@@ -46,7 +46,7 @@ Glossary
           `Wikipedia\: Standard Deviation`_
         * sum : The result of adding all the values in the column together
         * var : The variance of the values in the column, see
-          `Wikipedia\: Variance`_
+          `Wikipedia\: Variance`_ and :term:`Bias vs Variance`
 
     Alternating Least Squares
 
@@ -55,7 +55,7 @@ Glossary
         steps, each involving the application of the :term:`least squares`
         method of parameter estimation.
 
-        See the :doc:`ALS section <ds_mlal_als>` on machine learning for an
+        See the :ref:`ALS section <ALS>` on machine learning for an
         in-depth discussion of this method.
 
     API Maturity Tags
@@ -63,17 +63,20 @@ Glossary
         Functions in the API may be at different levels of software maturity.
         Where a function is not mature, the documentation will note it with one
         of the following tags.  The absence of a tag means the function is
-        standardized and fully tested. 
-        
-        |ALPHA| Indicates a function or feature which has been developed, but has
-        not been completely tested.  Use this function with caution.
+        standardized and fully tested.
+
+        |ALPHA| Indicates a function or feature which has been developed, but
+        has not been completely tested.
+        Use this function with caution.
         This function may be changed or eliminated in future releases.
 
-        |BETA| Indicates a function or feature which has been developed and preliminarily
-        tested, but has not been completely tested.  Use this function with caution.
+        |BETA| Indicates a function or feature which has been developed and
+        preliminarily tested, but has not been completely tested.
+        Use this function with caution.
         This function may be changed in future releases.
 
-        |DEPRECATED| Indicates a function or feature which is no longer supported.
+        |DEPRECATED| Indicates a function or feature which is no longer
+        supported.
         It is recommended that an alternate solution be found.
         This function may be removed in future releases.
 
@@ -82,13 +85,16 @@ Glossary
         In network topology, the average number of steps along the shortest
         paths for all possible pairs of vertices.
 
-    Baysian Network
+    Bayesian Inference
 
         A probabilistic graphical model representing the conditional
         dependencies amongst a set of random variables with a directed acyclic
         graph.
 
-        Contrast with :term:`Markov Random Field`
+        Contrast with :term:`Markov Random Fields`
+
+        For more information, see `Wikipedia\: Bayesian Network
+        <http://en.wikipedia.org/wiki/Bayesian_network>`__.
 
     Belief Propagation
 
@@ -96,7 +102,7 @@ Glossary
 
     Beta
 
-        See :term:`API Maturity Tags`   |BETA|
+        See :term:`API Maturity Tags`.
 
     Bias-variance tradeoff
 
@@ -110,15 +116,6 @@ Glossary
         In this context, "bias" means accuracy, while "variance" means
         accounting for outlier data points.
 
-    bool
-
-        See :term:`Boolean`.
-
-    Boolean
-
-        A variable that holds a single "True" or "False" value.
-        In Python, it can also be "None" meaning that it is undefined.
-
     Central Tendency
 
         A typical value for a probability distribution.
@@ -129,16 +126,16 @@ Glossary
 
         From `Wikipedia\: Centrality`_:
 
-        In graph theory and network analysis, centrality of a vertex measures
-        its relative importance within a graph.
-        Applications include how influential a person is within a social
-        network, how important a room is within a building (space syntax), and
-        how well-used a road is within an urban network.
-        There are four main measures of centrality: degree, betweenness,
-        closeness, and eigenvector.
-        Centrality concepts were first developed in social network analysis,
-        and many of the terms used to measure centrality reflect their
-        sociological origin. [#f10]_
+            In graph theory and network analysis, centrality of a vertex
+            measures its relative importance within a graph.
+            Applications include how influential a person is within a social
+            network, how important a room is within a building (space syntax),
+            and how well-used a road is within an urban network.
+            There are four main measures of centrality: degree, betweenness,
+            closeness, and eigenvector.
+            Centrality concepts were first developed in social network analysis,
+            and many of the terms used to measure centrality reflect their
+            sociological origin. [#f10]_
 
     Centrality (Katz)
 
@@ -158,7 +155,7 @@ Glossary
         character.
         Commas are usually used for this purpose.
         Tab characters are also quite common.
-        
+
     Classification
 
         The process of predicting category membership for a set of
@@ -197,7 +194,7 @@ Glossary
 
     Confusion Matrices
 
-        See :term:`Confusion Matrix`
+        Plural form of :term:`Confusion Matrix`
 
     Confusion Matrix
 
@@ -223,17 +220,23 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
+    CSV
+
+        See :term:`Character-Separated Values`
+
+    Degree
+
+        The degree of a vertex is the number of edges incident to the vertex.
+        Loops are counted twice.
+        The maximum and minimum degree of a graph are the maximum and minimum
+        degree of its vertices.
+
+        For more information see: `Wikipedia\: Degree (graph theory)
+        <https://en.wikipedia.org/wiki/Degree_(graph_theory)>`__.
+
     Deprecated
 
-        See :term:`API Maturity Tags`.  |DEPRECATED|
-
-    dict
-
-        See :term:`Dictionary`.
-
-    Dictionary
-
-        A data type composed of key/value pairs.
+        See :term:`API Maturity Tags`.
 
     Directed Acyclic Graph (DAG)
 
@@ -248,7 +251,7 @@ Glossary
         See `Wikipedia\: Directed Acyclic Graph`_.
 
     ECDF
-    
+
         See :term:`Empirical Cumulative Distribution`
 
     Edge
@@ -268,7 +271,7 @@ Glossary
         that each group contains the same number of elements.
 
     Empirical Cumulative Distribution
-    
+
         :math:`\hat F_{n}(t)` is a step function with jumps :math:`i/n` at
         observation values, where :math:`i` is the number of tied observations
         at that value.
@@ -277,7 +280,7 @@ Glossary
         For observations :math:`x = (x_{1},x_{2}, ... x_{n})`,
         :math:`\hat F_{n}(t)` is the fraction of observations less than or
         equal to :math:`t`.
-        
+
         .. math::
 
             \hat F_{n}(t) = \frac {x_{i} \le t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator\{x_{i} \le t\}.
@@ -317,7 +320,7 @@ Glossary
         See :term:`F-Measure`.
 
     F-Measure
-        
+
         In machine learning, a metric that quantifies a classifier's accuracy.
         Traditionally defined as the harmonic mean of precision and recall.
         Also known as F1 score.
@@ -341,7 +344,7 @@ Glossary
     Frame (capital F)
 
         A class object with the functionality to manipulate the data in a
-        :term:`frame`.
+        :term:`frame (lower case f)`.
 
     GaBP
 
@@ -351,12 +354,12 @@ Glossary
 
         A special case of belief propagation when the underlying distributions
         are :term:`Gaussian <gaussian distribution>` (Weiss & Freeman [#f11]_).
-        
+
     Gaussian Distribution
     Normal Distribution
 
         A group of values, where the probability of any specific value:
-        
+
         *   will fall between two real limits,
         *   is evenly centered around the mean,
         *   approaches zero on either side of the mean.
@@ -377,6 +380,22 @@ Glossary
         A random group of vertices displaying a :term:`Gaussian distribution`
         of one or more sets of properties.
 
+    Global Clustering Coefficient
+
+        The global clustering coefficient is based on triplets of vertices.
+        A triplet consists of three vertices that are connected by either two
+        (open triplet) or three (closed triplet) undirected edges.
+        A triangle consists of three closed triplets, one centered on each of
+        the vertices.
+        The global clustering coefficient is the number of closed triplets
+        (or 3 x triangles) over the total number of triplets (both open and
+        closed).
+
+        For more information see: `Wikipedia\: Global Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Global_clustering_coefficient>`__.
+
+        See also :term:`Local Clustering Coefficient`.
+
     Graph
 
         A representation of a set of vertices, where some pairs of objects are
@@ -393,14 +412,14 @@ Glossary
         The broad category of methods used to examine the statistical and
         structural properties of a graph, including:
 
-            #.  Traversals --
-                Algorithmic walk throughs of the graph to determine optimal
-                paths and relationship between vertices.
+        #.  Traversals --
+            Algorithmic walk throughs of the graph to determine optimal
+            paths and relationship between vertices.
 
-            #.  Statistics --
-                Important attributes of the graph such as degrees of
-                separation, number of triangular counts, centralities (highly
-                influential nodes), and so on.
+        #.  Statistics --
+            Important attributes of the graph such as degrees of
+            separation, number of triangular counts, centralities (highly
+            influential nodes), and so on.
 
         Some are user-guided interactions, where the user navigates through
         the data connections, others are algorithmic, where a result is
@@ -413,8 +432,9 @@ Glossary
         Thus, finding similarities based on relationships, or recursively
         optimizing some parameter across nodes.
 
-        For more information, see :ref:`the article "Graph Analytics"
-        by Pak Chung Wong <vacommunity.org/article26>`.
+        For more information, see the article
+        `Graph Analytics <http://vacommunity.org/article26>`__
+        by Pak Chung Wong.
 
     Graph Database Directions
 
@@ -422,9 +442,9 @@ Glossary
         assumed to be from whatever vertex you are currently using.
         These directions are:
 
-            | **left**: The calling frame's index
-            | **right**: The input frame's index
-            | **inner**: An intersection of indexes
+        *    **left**: The calling frame's index
+        *    **right**: The input frame's index
+        *    **inner**: An intersection of indexes
 
         So a direction like this: "The suffix to use from the left frame's
         overlapping columns" means to use the suffix from the calling frame's
@@ -472,39 +492,46 @@ Glossary
         A larger smoothing value implies stronger relationships between
         adjacent random variables in the graph.
 
+    JSON
+
+        Data in the JavaScript Object Notation format. An open standard format
+        that uses human-readable text to transmit data objects consisting of
+        attributevalue pairs. For more information see http:/json.org.
+
     Katz Centrality
 
         From `Wikipedia\: Katz Centrality`_:
 
-        In Social Network Analysis (SNA) there are various measures of
-        :term:`centrality` which determine the relative importance of an actor
-        (or node) within the network.
-        Katz centrality was introduced by Leo Katz in 1953 and is used to
-        measure the degree of influence of an actor in a social network. [#f8]_
-        Unlike typical centrality measures which consider only the shortest
-        path (the geodesic) between a pair of actors, Katz centrality measures
-        influence by taking into account the total number of walks between a
-        pair of actors. [#f9]_
+            In Social Network Analysis (SNA) there are various measures of
+            :term:`centrality` which determine the relative importance of an
+            actor (or node) within the network.
+            Katz centrality was introduced by Leo Katz in 1953 and is used to
+            measure the degree of influence of an actor in a social network.
+            [#f8]_
+            Unlike typical centrality measures which consider only the shortest
+            path (the geodesic) between a pair of actors, Katz centrality
+            measures influence by taking into account the total number of walks
+            between a pair of actors. [#f9]_
 
     |K-S| Test
 
         From `Wikipedia\: Kolmogorov–Smirnov Test`_:
 
-        In statistics, the |K-S| test is a nonparametric test of the equality
-        of continuous, one-dimensional probability distributions that can be
-        used to compare a sample with a reference probability distribution
-        (one-sample |K-S| test), or to compare two samples (two-sample |K-S|
-        test).
-        The |K-S| statistic quantifies a distance between the empirical
-        distribution function of the sample and the cumulative distribution
-        function of the reference distribution, or between the empirical
-        distribution functions of two samples.
+            In statistics, the |K-S| test is a nonparametric test of the
+            equality of continuous, one-dimensional probability distributions
+            that can be used to compare a sample with a reference probability
+            distribution (one-sample |K-S| test), or to compare two samples
+            (two-sample |K-S| test).
+            The |K-S| statistic quantifies a distance between the empirical
+            distribution function of the sample and the cumulative distribution
+            function of the reference distribution, or between the empirical
+            distribution functions of two samples.
 
     Label Propagation
 
         A multi-pass process for grouping vertices.
 
-        See :doc:`ds_mlal_lp`.
+        See :ref:`Label Propagation (LP) <LP>`.
 
         For additional reference:
         `Learning from Labeled and Unlabeled Data with Label Propagation`_.
@@ -537,7 +564,7 @@ Glossary
             an increasing penalty on the cost function.
             This penalty is dependent on the squares of the parameters as well
             as the magnitude of lambda.
-            
+
     Lambda Function
 
         An anonymous function or function literal in code.
@@ -547,9 +574,9 @@ Glossary
         Further examples and explanations can be found at this page:
         :doc:`ds_apir`.
 
-        Related term: :term:`User Functions <Python User Function>`.
+        Related term: :term:`Python User-defined Function`.
 
-        .. warning:: This term is often used where a :term:`Python user
+        .. warning:: This term is often used where a :term:`Python user-defined
             function` is more accurate.
             A key distinction is that the lambda function is not referable by a
             name.
@@ -580,15 +607,26 @@ Glossary
         However, because squares of the offsets are used, outlying points can
         have a disproportionate effect on the fit, a property which may or may
         not be desirable depending on the problem at hand.
-        
-    list
 
-        A sequence of objects in a single-dimension array.
+    LineFile
+
+        A data format where the records are line-delimited.
+
+    Local Clustering Coefficient
+
+        The local clustering coefficient of a vertex in a graph quantifies how
+        close its neighbors are to being a clique (complete graph).
+
+        For more information see: `Wikipedia\: Local Clustering Coefficient
+        <https://en.wikipedia.org/wiki/Clustering_coefficient#Local_clustering_coefficient>`__.
+
+        See also :term:`Global Clustering Coefficient`.
 
     Loopy Belief Propagation
 
         Belief Propagation is an algorithm that makes inferences on graph
-        models, like a Bayesian network or Markov Random Fields.
+        models, like a :term:`Bayesian inference` or :term:`Markov Random
+        Fields`.
         It is called Loopy when the algorithm runs iteratively until
         convergence.
 
@@ -625,7 +663,7 @@ Glossary
 
         Markov Random fields, or Markov Network, are an undirected graph model
         that may be cyclic.
-        This contrasts with :term:`Baysian Network`, which is directed and
+        This contrasts with :term:`Bayesian inference`, which is directed and
         acyclic.
 
         For more information see: `Wikipedia\: Markov Random Field`_.
@@ -669,14 +707,14 @@ Glossary
 
         From `Wikipedia\: Precision and Recall`_:
 
-        In pattern recognition and information retrieval with binary
-        classification, precision (also called positive predictive value) is
-        the fraction of retrieved instances that are relevant, while recall
-        (also known as sensitivity) is the fraction of relevant instances that
-        are retrieved.
-        Both precision and recall are therefore based on an understanding and
-        measure of relevance.
-        
+            In pattern recognition and information retrieval with binary
+            classification, precision (also called positive predictive value) is
+            the fraction of retrieved instances that are relevant, while recall
+            (also known as sensitivity) is the fraction of relevant instances
+            that are retrieved.
+            Both precision and recall are therefore based on an understanding
+            and measure of relevance.
+
     Property Map
 
         A property map is a key-value map.
@@ -684,15 +722,11 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
-    PUF
+    Python User-defined Function
 
-        See :term:`Python User Function`.
-
-    Python User Function
-
-        A Python User Function (PUF) is a Python function written by the user
-        on the client-side which can execute in a distributed fashion on the
-        cluster.
+        A Python User-defined Function (UDF) is a Python function written by
+        the user on the client-side which can execute in a distributed fashion
+        on the cluster.
         For further explanation, see :doc:`ds_apir`
 
         Further examples and explanations can be found at :doc:`ds_apir`.
@@ -708,36 +742,37 @@ Glossary
         value of the next quantile.
 
     Receiver Operating Characteristic
-    
+
         From `Wikipedia\: Receiver Operating Characteristic`_:
 
-        In signal detection theory, a receiver operating characteristic (ROC),
-        or simply ROC curve, is a graphical plot which illustrates the
-        performance of a binary classifier system as its discrimination
-        threshold is varied.
-        It is created by plotting the fraction of true positives out of the
-        total actual positives (TPR = true positive rate) vs. the fraction of
-        false positives out of the total actual negatives (FPR = false positive
-        rate), at various threshold settings.
-        TPR is also known as sensitivity or recall in machine learning.
-        The FPR is also known as the fall-out and can be calculated as one
-        minus the more well known specificity.
-        The ROC curve is then the sensitivity as a function of fall-out.
-        In general, if both of the probability distributions for detection and
-        false alarm are known,
-        the ROC curve can be generated by plotting the Cumulative Distribution
-        Function (area under the probability distribution from -inf to +inf) of
-        the detection probability in the y-axis versus the Cumulative
-        Distribution Function of the false alarm probability in x-axis.
-        
+            In signal detection theory, a receiver operating characteristic
+            (ROC), or simply ROC curve, is a graphical plot which illustrates
+            the performance of a binary classifier system as its discrimination
+            threshold is varied.
+            It is created by plotting the fraction of true positives out of the
+            total actual positives (TPR = true positive rate) vs. the fraction
+            of false positives out of the total actual negatives (FPR = false
+            positive rate), at various threshold settings.
+            TPR is also known as sensitivity or recall in machine learning.
+            The FPR is also known as the fall-out and can be calculated as one
+            minus the more well known specificity.
+            The ROC curve is then the sensitivity as a function of fall-out.
+            In general, if both of the probability distributions for detection
+            and false alarm are known,
+            the ROC curve can be generated by plotting the Cumulative
+            Distribution Function (area under the probability distribution from
+            -inf to +inf) of the detection probability in the y-axis versus the
+            Cumulative Distribution Function of the false alarm probability in
+            x-axis.
+
     Recommendation Systems
 
         From `Wikipedia\: Recommender System`_:
 
-        Recommender systems or recommendation systems (sometimes replacing
-        "system" with a synonym such as platform or engine) are a subclass of
-        information filtering system that seek to predict the 'rating' or
-        'preference' that user would give to an item [#f3]_ [#f4]_ .
+            Recommender systems or recommendation systems (sometimes replacing
+            "system" with a synonym such as platform or engine) are a subclass
+            of information filtering system that seek to predict the 'rating'
+            or 'preference' that user would give to an item [#f3]_ [#f4]_ .
 
 
     Resource Description Framework
@@ -751,14 +786,14 @@ Glossary
         For example, information in a particular vertex, might include the
         property "Author".
         The value for the Author property could be either a string giving the
-        name of the author, or a link to another resource describing the author. 
+        name of the author, or a link to another resource describing the author.
         Sets of properties are defined within RDF Vocabularies (or schemas).
         A vertex may include properties defined in different schemas.
         The properties within a resource description are associated with a
         certain schema definition using the XML namespace mechanism.
 
     ROC
-    
+
         See :term:`Receiver Operating Characteristic`
 
     RDF
@@ -767,7 +802,8 @@ Glossary
 
     Row Functions
 
-        Refer to :term:`Lambda Function` and :term:`Python User Function`
+        Refer to :term:`Lambda Function` and :term:`Python User-defined
+        Function`
 
     Semi-Supervised Learning
 
@@ -802,7 +838,7 @@ Glossary
         Smoothing means to reduce the "noise" in a data set.
         "In smoothing, the data points of a signal are modified so individual
         points (presumably because of noise) are reduced, and points that are
-        lower than the adjacent points are increased leading to a smoother 
+        lower than the adjacent points are increased leading to a smoother
         signal."
 
         For more information see:
@@ -832,13 +868,10 @@ Glossary
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
 
-    str
+    Superstep
+    Supersteps
 
-        A Python function for converting an object to type string.
-
-    string
-
-        A Python data type and a class for general string operations.
+        A single iteration of an algorithm.
 
     Supervised Learning
 
@@ -870,17 +903,19 @@ Glossary
 
         From `Wikipedia\: Transaction Processing`_:
 
-        In computer science, transaction processing is information processing
-        that is divided into individual, indivisible operations, called
-        transactions.
-        Each transaction must succeed or fail as a complete unit; it cannot be
-        only partially complete.
+            In computer science, transaction processing is information
+            processing that is divided into individual, indivisible operations,
+            called transactions.
+            Each transaction must succeed or fail as a complete unit; it cannot
+            be only partially complete.
 
     Transactional Functionality
 
         See :term:`Transaction Processing`.
 
-    Triangle Count
+    UDF
+
+        See :term:`Python User-defined Function`.
 
     Undirected Graph
 
@@ -925,25 +960,27 @@ Glossary
 
         From `Wikipedia\: Vertex Degree`_:
 
-        In graph theory, the degree (or valency) of a vertex of a graph is the
-        number of edges incident to the vertex, with loops counted twice [#f7]_.
-        The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
-        The maximum degree of a graph :math:`G`, denoted by :math:`\Delta(G)`,
-        and the minimum degree of a graph, denoted by :math:`\delta(G)`, are
-        the maximum and minimum degree of its vertices.
+            In graph theory, the degree (or valency) of a vertex of a graph is
+            the number of edges incident to the vertex, with loops counted
+            twice [#f7]_.
+            The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
+            The maximum degree of a graph :math:`G`, denoted by
+            :math:`\Delta(G)`,
+            and the minimum degree of a graph, denoted by :math:`\delta(G)`, are
+            the maximum and minimum degree of its vertices.
 
     Vertex Degree Distribution
 
         From `Wikipedia\: Degree Distribution`_:
 
-        In the study of graphs and networks, the degree of a node in a network
-        is the number of connections it has to other nodes and the degree
-        distribution is the probability distribution of these degrees over the
-        whole network.
+            In the study of graphs and networks, the degree of a node in a
+            network is the number of connections it has to other nodes and the
+            degree distribution is the probability distribution of these
+            degrees over the whole network.
 
     Vertices
 
-        See :term:`Vertex`.
+        Plural form of :term:`Vertex`.
 
 .. _Wikipedia\: Standard Deviation:
     http://en.wikipedia.org/wiki/Standard_deviation
@@ -954,7 +991,6 @@ Glossary
     http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
 .. _Wikipedia\: Average Path Length:
     http://en.wikipedia.org/wiki/Average_path_length.
-.. _Wikipedia\: Bayesian Network: http://en.wikipedia.org/wiki/Bayesian_network
 .. _Wikipedia\: Bias-Variance Tradeoff:
     http://en.wikipedia.org/wiki/Bias_variance#Bias-variance_tradeoff
 .. _Wikipedia\: Convergence (mathematics):
@@ -993,7 +1029,7 @@ Glossary
     https://en.wikipedia.org/wiki/Simple_random_sampling
 .. _Wikipedia\: Smoothing: http://en.wikipedia.org/wiki/Smoothing
 .. _Wikipedia\: Relaxation (iterative method):
-    http://en.wikipedia.org/wiki/Relaxation_(iterative_method 
+    http://en.wikipedia.org/wiki/Relaxation_(iterative_method
 .. _Wikipedia\: Stratified Sampling:
     https://en.wikipedia.org/wiki/Stratified_sampling
 .. _Wikipedia\: Undirected Graph:
@@ -1058,5 +1094,7 @@ Glossary
     Oxford University Press.
 .. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of
     Belief Propagation in Gaussian Graphical Models of Arbitrary Topology".
-    Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.
+    Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769.
+    PMID 11570995.
+
 

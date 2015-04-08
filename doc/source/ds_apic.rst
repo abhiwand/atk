@@ -1,3 +1,6 @@
+.. index::
+    single: Python
+
 Python API
 ==========
 
@@ -5,7 +8,7 @@ Python API
     :local:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     api_datatypes.rst
     api_datasources.rst

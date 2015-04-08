@@ -5,11 +5,11 @@ Physical Machine Configuration
 .. contents:: Table of Contents
     :local:
 
-The following instructional will go through configuring a new physical machine
+The following tutorial goes through configuring a new physical machine
 from scratch.
-The first section called "Pre-Configuration" is a little vague because
-the configurations here can change from machine to machine.
-The second section called "Base Configuration" will usually be identical for
+The first section, called "Pre-Configuration", is a little vague because
+the information can vary between machines.
+The second section, called "Base Configuration", will usually be identical for
 all machines.
 
 -----------------
@@ -18,16 +18,16 @@ Pre-Configuration
 
 1. Configure basic network connectivity.
 #. Turn off IPV6 (many different ways to do this).
-#. If applicable, mount any large volume to /mnt* (vi /etc/fstab).
+#. If applicable, mount any large volume to /mnt* (hint: vi /etc/fstab).
 
 ------------------
 Base Configuration
 ------------------
 
-1. Client-side :abbr:`DNS (Domain Name Service)`
-================================================
-All systems in the cluster must be :abbr:`DNS (Domain Name Service)` or
-/etc/hosts resolvable.
+1. Client-side |DNS|
+====================
+All systems in the cluster must be reachable by |DNS|
+or by data in '/etc/hosts'.
 
 2. Firewall
 ===========
@@ -46,7 +46,7 @@ Change::
 
     SELINUX=enforcing
 
-To::        
+To::
 
     SELINUX=disabled
 
@@ -61,6 +61,9 @@ Or::
 4. Default Repositories
 =======================
 System default yum repos must be functional.
+
+.. index::
+    single: proxy
 
 5. Proxy Settings
 =================
@@ -78,18 +81,18 @@ System packages must be syncronized with default repositories::
 Cloudera supports use of root or sudo user as administration user.
 If using sudo, user must have full nopassword sudo privileges.
 
-8. SSH Connections
-==================
-Using the primary |CDH| user, each system in the cluster must be able to
-communicate via SSH to all other systems in the cluster.
+8. *ssh* Connections
+====================
+Using the primary |CDH| user, every system in the cluster must be able to
+communicate via *ssh* to all other systems in the cluster.
 
 9. System Hostname
 ==================
-All systems must have defined hostnames for systems in cluster.
+Set the hostname for each system in the cluster.
 
 .. note::
 
-    Limiting host names to lower case alpha-numeric characters is recommended.
+    Limiting host names to lower-case alphanumeric characters is recommended.
 
 10. Ulimits
 ===========
@@ -122,4 +125,4 @@ All systems in cluster must be in time-sync with one-another.
 12. Reboot
 ==========
 Once all configuration has been done, rebooting all cluster systems is
-recommended to properly set all changes made.
+recommended to properly activate all of the changes.

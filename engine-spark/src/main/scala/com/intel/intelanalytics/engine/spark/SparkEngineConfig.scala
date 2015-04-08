@@ -30,10 +30,10 @@ import java.util.concurrent.TimeUnit
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.engine.spark.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -98,6 +98,8 @@ trait SparkEngineConfig extends EventLogging {
   val isLocalMaster: Boolean = {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
+
+  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
 
   /**
    * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
@@ -230,6 +232,63 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   * Minimum number of partitions that can be set by the Spark auto-partitioner
+   */
+  val minPartitions: Int = 2
+
+  /**
+   * Spark re-partitioning strategy
+   */
+  val repartitionStrategy: SparkAutoPartitionStrategy.PartitionStrategy = {
+    val strategyName = config.getString("intel.analytics.engine-spark.auto-partitioner.repartition.strategy")
+    val strategy = SparkAutoPartitionStrategy.getRepartitionStrategy(strategyName)
+
+    info("Setting Spark re-partitioning strategy to: " + strategy)
+    strategy
+  }
+
+  /**
+   * Spark re-partitioning threshold
+   *
+   * Re-partition RDD if the percentage difference between actual and desired partitions exceeds threshold
+   */
+  val repartitionThreshold: Double = {
+    val repartitionPercentage = config.getInt("intel.analytics.engine-spark.auto-partitioner.repartition.threshold-percent")
+    if (repartitionPercentage >= 0 && repartitionPercentage <= 100) {
+      repartitionPercentage / 100d
+    }
+    else {
+      throw new RuntimeException(s"Repartition threshold-percent should not be less than 0, or greater than 100")
+    }
+  }
+
+  /**
+   * Frame compression ratio
+   *
+   * Used to estimate actual size of the frame for compressed file formats like Parquet.
+   * This ratio prevents us from under-estimating the number of partitions for compressed files.
+   * compression-ratio=uncompressed-size/compressed-size
+   * e.g., compression-ratio=4 if  uncompressed size is 20MB, and compressed size is 5MB
+   */
+  val frameCompressionRatio: Double = {
+    val ratio = config.getDouble("intel.analytics.engine-spark.auto-partitioner.repartition.frame-compression-ratio")
+    if (ratio <= 0) throw new RuntimeException("frame-compression-ratio should be greater than zero")
+    ratio
+  }
+
+  /**
+   * Default Spark tasks-per-core
+   *
+   * Used by some plugins to set the number of partitions to default-tasks-per-core*Spark cores
+   * The performance of some plugins (e.g. group by) degrades significantly if there are too many partitions
+   * relative to available cores (especially in the reduce phase)
+   */
+  val maxTasksPerCore: Int = {
+    val tasksPerCore = config.getInt("intel.analytics.engine-spark.auto-partitioner.default-tasks-per-core")
+    if (tasksPerCore > 0) tasksPerCore else throw new RuntimeException(s"Default tasks per core should be greater than 0")
+  }
+
+  /**
    * Use broadcast join if file size is lower than threshold.
    *
    * A threshold of zero disables broadcast joins. This threshold should not exceed the maximum size of results
@@ -244,6 +303,14 @@ trait SparkEngineConfig extends EventLogging {
     }
     joinThreshold
   }
+
+  /**
+   * spark driver max size should be minimum of 128M for Spark Submit to work. We are currently loading multiple
+   * class loaders and Spark Submit driver throws OOM if default value of 64M is kept for PermGen space
+   */
+  val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
+
+  val sparkOnYarnNumExecutors = config.getString("intel.analytics.engine.spark.conf.properties.spark.yarnNumExecutors")
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.

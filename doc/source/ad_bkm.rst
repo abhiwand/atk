@@ -5,23 +5,25 @@ Best Known Methods (Admin)
 .. contents:: Table of Contents
     :local:
 
-.. toctree::
-    :hidden:
-
-    ad_gitune
-    ad_hbtune
-    ad_how.rst
-
 -------------------------
 Configuration information
 -------------------------
 
-.. include:: ad_gitune.rst
-.. include:: ad_hbtune.rst
+.. include:: ad_gitune.inc
+.. include:: ad_hbtune.inc
+
+.. index::
+    single: Spark
 
 -----
 Spark
 -----
+
+.. index::
+    single: disk full
+    single: Red Hat
+    single: CentOS
+    single: Fedora
 
 Resolving disk full issue while running Spark jobs
 ==================================================
@@ -84,7 +86,7 @@ These can occupy over 140MB per command.
 
     *   Spark 1.0 will automatically clean up the files
 
-.. include:: ad_how.rst
+.. include:: ad_how.inc
 
 ----------
 References

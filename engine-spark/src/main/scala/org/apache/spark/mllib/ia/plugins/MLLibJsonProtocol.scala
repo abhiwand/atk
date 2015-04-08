@@ -211,6 +211,7 @@ object MLLibJsonProtocol {
     }
 
   }
+
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)

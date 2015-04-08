@@ -1,3 +1,6 @@
+.. index::
+    single: administration
+
 ==============
 Administration
 ==============
@@ -11,4 +14,6 @@ Administration
     ad_ipython
     ad_inst_vm
     ad_plug
+    ad_log
     ad_bkm
+    ad_other

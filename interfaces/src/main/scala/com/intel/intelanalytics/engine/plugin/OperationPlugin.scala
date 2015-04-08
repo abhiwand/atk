@@ -128,23 +128,39 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
    */
-  final override def apply(invocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
-    require(invocation != null, "Invocation required")
+  final override def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
+    require(simpleInvocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
 
     //We call execute rather than letting plugin authors directly implement
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      debug("Invoking execute method with arguments:\n" + arguments)
-      val result = execute(arguments)(invocation)
+      implicit val invocation = customizeInvocation(simpleInvocation, arguments)
+      val result = try {
+        debug("Invoking execute method with arguments:\n" + arguments)
+        execute(arguments)(invocation)
+      }
+      finally {
+        cleanup(invocation)
+      }
       if (result == null) {
         throw new Exception(s"Plugin ${this.getClass.getName} returned null")
       }
       debug("Result was:\n" + result)
       result
     }
-  })(invocation)
+  })(simpleInvocation)
+
+  /**
+   * Can be overridden by subclasses to provide a more specialized Invocation. Called before
+   * calling the execute method.
+   */
+  protected def customizeInvocation(invocation: Invocation, arguments: Arguments) = {
+    invocation
+  }
+
+  protected def cleanup(invocation: Invocation) = {}
 
   implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
@@ -183,14 +199,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
-
-  //TODO: This needs to move somewhere else,
-  //this is very spark specific
-  /**
-   * Name of the custom kryoclass this plugin needs.
-   * kryoRegistrator = None means use JavaSerializer
-   */
-  def kryoRegistrator: Option[String] = Some("com.intel.intelanalytics.engine.spark.EngineKryoRegistrator")
 
   //  /**
   //   * Resolves a reference down to the requested type
@@ -246,6 +254,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
     withPluginContext("resolve") {
       invocation.resolver.resolve[Out](ref).get
     }
+
 }
 
 /**

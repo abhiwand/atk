@@ -1,10 +1,13 @@
-====================================================
-Intel Analytics Toolkit (|IAT|) Package Installation
-====================================================
+.. index::
+    single: installation
+
+====================
+Package Installation
+====================
 
 .. contents::
     :local:
-    
+
 ------------
 Introduction
 ------------
@@ -25,6 +28,9 @@ These instructions are oriented towards `Red Hat Enterprise Linux
 <http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.6.
 |IAT| uses 'yum' for installation, 'sudo' for proper authority.
 
+.. index::
+    single: cluster
+
 Cluster Requirements
 ====================
 
@@ -38,15 +44,12 @@ Cloudera cluster 5.3.x with following services:
 
 The |IAT| Python client supports Python 2.7.
 
-----------------------------------
-|IAT| Packages Support Information
-----------------------------------
-
-For more details on package details see :doc:`ad_inst_ia2`.
-
 ---------------------------
 |IAT| Packages Installation
 ---------------------------
+
+.. index::
+    single: repository
 
 Adding Extra Repositories
 =========================
@@ -59,7 +62,9 @@ the |IAT| private repository.
 EPEL Repository
 ---------------
 
-Verify the installation of the "epel" repository::
+Verify the installation of the "epel" repository:
+
+..code::
 
     $ sudo yum repolist
 
@@ -91,18 +96,21 @@ If the "epel" repository is not listed, do this to install it:
 
 .. only:: html
 
-    ::
+    ..code::
 
         $ wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
         $ sudo rpm -ivh epel-release-6-8.noarch.rpm
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.
             noarch.rpm
         $ sudo rpm -ivh epel-release-6-8.noarch.rpm
+
+.. index::
+    single: repository
 
 |IAT| Dependency Repository
 ---------------------------
@@ -116,21 +124,23 @@ To add the dependency repository, do this:
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/
             ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
 Alternatively, do this to build the dependency repository information file
-directly::
+directly:
+
+.. code::
 
     $ echo "[intel-analytics-deps]
     > name=intel-analytics-deps
@@ -138,7 +148,13 @@ directly::
     > gpgcheck=0
     > priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ia-deps.repo
 
-Test the installation of the dependencies repository::
+.. only:: html
+
+    This code is :download:`downloadable <ia-deps.sh>` (open, copy, and paste).
+
+Test the installation of the dependencies repository:
+
+.. code::
 
     $ sudo yum info yum-s3
 
@@ -156,12 +172,17 @@ Results should be similar to this::
     License     : Apache License 2.0
 
 Installing the *yum-s3* package allows access to the Amazon S3 repository.
-To install the *yum-s3* package, do this::
+To install the *yum-s3* package, do this:
+
+.. code::
 
     $ sudo yum -y install yum-s3
 
 
 .. _add_IA_private_repository:
+
+.. index::
+    single: repository
 
 |IAT| Private Repository
 ------------------------
@@ -170,7 +191,7 @@ Create '/etc/yum.repos.d/ia.repo':
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ echo "[intel-analytics]
         > name=intel analytics
@@ -181,9 +202,12 @@ Create '/etc/yum.repos.d/ia.repo':
         > key_id=ACCESS_TOKEN
         > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ia.repo
 
+
+    This code is :download:`downloadable <ia-repo.sh>` (open, copy, and paste).
+
 .. only:: latex
 
-    ::
+    .. code::
 
         $ echo "[intel-analytics]
         > name=intel analytics
@@ -202,7 +226,9 @@ Create '/etc/yum.repos.d/ia.repo':
 
     Replace "ACCESS_TOKEN" and "SECRET_TOKEN" with appropriate tokens.
 
-To verify the installation of the |IAT| repository, do this::
+To verify the installation of the |IAT| repository, do this:
+
+.. code::
 
     $ sudo yum info intelanalytics-rest-server
 
@@ -223,14 +249,16 @@ Troubleshooting Private Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *   The most common errors when using the private repository:
 
-    *   Incorrect access token
-    *   Incorect secret token
+    *   Incorrect access token/key
+    *   Incorect secret token/key
     *   The server time is out of sync with the world
 
 *   Double check the access and secret keys in the ia.repo file.
 *   AWS S3 will fail with access denied errors if the system time is out of
     sync with the website.
-    To keep the system time in sync with the website run::
+    To keep the system time in sync with the website run:
+
+    .. code::
 
         $ sudo service ntpd start
 
@@ -239,7 +267,9 @@ Troubleshooting Private Repository
     before the |IAT| private repository.
 *   To use the yum command inside a corporate proxy make sure the
     *http_proxy* and *https_proxy* environment variables are set.
-*   The sudo command may need the -E option to maintain environment variables::
+*   The sudo command may need the -E option to maintain environment variables:
+
+    .. code::
 
         $ sudo -E yum command
 
@@ -251,12 +281,12 @@ Installing |IAT| Packages
 Installing On The Master Node
 -----------------------------
 
-Install the |IAT| rest server and dependencies.
+Install the |IAT| Python rest server and its dependencies.
 Only one instance of the rest server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
 
-::
+.. code::
 
     $ sudo yum -y install intelanalytics-rest-server
 
@@ -268,16 +298,18 @@ running the spark worker role.
 
 .. only:: html
 
-    ::
+    .. code::
 
         $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
 
 .. only:: latex
 
-    ::
+    .. code::
 
         $ sudo yum -y install intelanalytics-spark-deps
-            intelanalytics-python-rest-client
+        $ sudo yum -y install intelanalytics-python-rest-client
+
+.. _rest_server_configuration:
 
 -------------------------
 Rest Server Configuration
@@ -296,7 +328,9 @@ create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
 work with the |IAT| server.
 
-To configure the spark service and the |IAT| installation, do this::
+To configure the |IAT| installation, do this:
+
+.. code::
 
     $ cd /etc/intelanalytics/rest-server/
     $ sudo ./config
@@ -307,12 +341,14 @@ To see an example of the prompts see :doc:`ad_inst_ia3`.
 The script goes through all the necessary configurations to get the |IAT|
 service running.
 The script can be run multiple times but there is a danger that configuring the
-database multiple times can wipe out a users data frames and graphs. 
+database multiple times can wipe out a users data frames and graphs.
 
-Command line arguments can also be supplied for every single prompt.
-If a command line argument is given no prompt will be presented.
-To get a list of all the command line arguments for the configuration script
-run the same command with --help::
+Command line arguments can also be supplied for every prompt.
+If a command line argument is given, no prompt will be presented.
+To get a list of all the command line arguments for the configuration script,
+run the same command with --help:
+
+.. code::
 
     $ sudo ./config --help
 
@@ -321,25 +357,28 @@ Manual Configuration
 
 **This section is optional, but informative if additional changes to the
 configuration file are needed.** (:ref:`Skip section <skip_manual_section>`).
- 
+
 /etc/intelanalytics/rest-server/application.conf
 ------------------------------------------------
 
 The rest server package provides a configuration template file which must be
 used to create a configuration file.
 Copy the configuration template file 'application.conf.tpl' to
-'application.conf' in the same directory, like this::
+'application.conf' in the same directory, like this:
+
+.. code::
 
     $ cd /etc/intelanalytics/rest-server
     $ sudo cp application.conf.tpl application.conf
 
-Open the file with a text editor::
+Open the file with a text editor:
+
+.. code::
 
     $ sudo vi application.conf
 
 All of the changes that need to be made are located at the top of the file.
-See :doc:`appendix_application_conf` for an example
-'application.conf' file.
+See :doc:`appendix_application_conf` for an example 'application.conf' file.
 
 .. _ad_inst_IA_configure_file_system_root:
 
@@ -359,7 +398,7 @@ Becomes:
 
 .. code::
 
-    fs.root = "hdfs://localhost.localdomain/user/iauser" 
+    fs.root = "hdfs://localhost.localdomain/user/iauser"
 
 If the HDFS Name Node port does not use the standard port, specify it
 after the host name with a colon:
@@ -384,7 +423,7 @@ Becomes:
 
 .. code::
 
-    titan.load.storage.hostname = "localhost.localdomain,localhost.localdomain" 
+    titan.load.storage.hostname = "localhost.localdomain,localhost.localdomain"
 
 If the zookeeper client port is not 2181, un-comment the following line and
 replace 2181 with the zookeeper client port:
@@ -396,20 +435,19 @@ replace 2181 with the zookeeper client port:
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update "invalid-spark-master" with the fully qualified domain name of the
-Spark master node.
+Update "invalid-spark-master".
 
-Example:
-
-.. code::
-
-    spark.master = "spark://invalid-spark-master:7077"
-
-Becomes:
+To run Spark on Yarn in yarn-cluster mode, set:
 
 .. code::
 
-    spark.master = "spark://localhost.localdomain:7077" 
+    spark.master = yarn-cluster
+
+To run Spark on Yarn in yarn-client mode, set:
+
+.. code::
+
+    spark.master = yarn-client
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -433,9 +471,14 @@ Becomes:
 
 Click on the Spark service then configuration in Cloudera Manager to get
 executor memory.
+See :ref:`ad_inst_ia_01`.
 
-.. image:: ad_inst_ia_01.*
+.. _ad_inst_ia_01:
+
+.. figure:: ad_inst_ia_01.*
     :align: center
+
+    Figure 1
 
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -455,29 +498,42 @@ Updating the Spark Class Path
 The automatic configuration script updates the classpath in Cloudera Manager.
 The spark class path can also be configured through Cloudera Manager under the
 spark configuration / Worker Environment Advanced Configuration Snippet.
+See :ref:`ad_inst_ia_02`.
 If it isn't already set, add:
 
 .. code::
 
     SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-.. image:: ad_inst_ia_02.*
+.. _ad_inst_ia_02:
+
+.. figure:: ad_inst_ia_02.*
     :align: center
+
+    Figure 2
 
 .. _skip_manual_section:
 
 **End of manual configuration**
 
 Restart the Spark service.
+See :ref:`ad_inst_ia_03`.
 
-.. image:: ad_inst_ia_03.*
+.. _ad_inst_ia_03:
+
+.. figure:: ad_inst_ia_03.*
     :align: center
+
+    Figure 3
 
 Database Configuration
 ======================
 
 The |IAT| service can use two different databases H2 and PostgreSQL.
 The configuration script configures postgresql automatically.
+
+.. index::
+    single: H2
 
 H2
 --
@@ -505,7 +561,7 @@ The following lines need to be commented:
         metastore.connection-postgresql.password = "myPassword"
         metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
         metastore.connection = ${intel.analytics.metastore.connection-postgresql}
-    
+
     After:
 
     .. code::
@@ -534,7 +590,7 @@ The following lines need to be commented:
             connection-postgresql.port}"/"${intel.analytics.metastore.connection-
             postgresql.database}
         metastore.connection = ${intel.analytics.metastore.connection-postgresql}
-    
+
     After:
 
     .. code::
@@ -566,7 +622,10 @@ After:
 
 .. _ad_inst_ia1_postgresql:
 
-Postgresql
+.. index::
+    single: PostgreSQL
+
+PostgreSQL
 ----------
 
 PostgreSQL configuration is more involved than H2 configuration and should
@@ -583,7 +642,7 @@ Start the postgres command line client::
 
 Wait for the command line prompt to come::
 
-    postgres=# 
+    postgres=#
 
 Then create a user::
 
@@ -607,7 +666,7 @@ After creating the database exit the postgres command line by hitting
 Once the database and user are created, open '/var/lib/pgsql/data/pg_hba.conf'
 and add this line
 ``host    all         YOURUSER     127.0.0.1/32            md5``
-to the top of the file::
+to very the top of the file::
 
     $ vi /var/lib/pgsql/data/pg_hba.conf
 
@@ -615,14 +674,14 @@ Add the new line at the very top of the file or before any uncommented lines.
 If the pg_hba.conf file doesn't exist, initialize postgresql with::
 
     $ sudo survice postgresql initdb
- 
+
 Now that the database is created, uncomment all the postgres lines in
 ``application.conf``.
 
 .. only:: html
 
     Before:
-    
+
     .. code::
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
@@ -634,7 +693,7 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
     After:
-    
+
     .. code::
 
         metastore.connection-postgresql.host = "localhost"
@@ -648,7 +707,7 @@ Now that the database is created, uncomment all the postgres lines in
 .. only:: latex
 
     Before:
-    
+
     .. code::
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
@@ -663,7 +722,7 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
     After:
-    
+
     .. code::
 
         metastore.connection-postgresql.host = "localhost"
@@ -679,37 +738,51 @@ Now that the database is created, uncomment all the postgres lines in
         #comment any h2 configuration lines with a # or //::
          //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
-Restart the |IAT| service::
+Restart the |IAT| service:
+
+.. code::
 
     $ sudo service intelanalytics restart
 
 After restarting the service, the |IAT| will create all the database tables.
 Now insert a meta user to enable Python client requests.
 
-Login to the postgres linux user::
+Login to the postgres linux user:
+
+.. code::
 
     $ sudo su postgres
 
-Open the postgres command line::
+Open the postgres command line:
+
+.. code::
 
     $ psql
 
-Switch databases::
+Switch databases:
+
+.. code::
 
     postgres=# \c YOURDATABASE
     psql (8.4.18)
     You are now connected to database "YOURDATABASE".
 
-Then insert into the users table::
+Then insert into the users table:
+
+.. code::
 
     postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
     INSERT 0 1
 
-View the insertion by doing a select on the users table::
+View the insertion by doing a select on the users table:
+
+.. code::
 
     postgres=# select * from users;
 
-There should only be a single row per api_key::
+There should only be a single row per api_key:
+
+.. code::
 
 
      user_id | username  |    api_key     |         created_on         |        modified_on
@@ -718,18 +791,23 @@ There should only be a single row per api_key::
        (1 row)
 
 If there is more than one row for a single api key, remove one of them or
-create a new database. 
+create a new database.
 The server will not be able to validate a request from the rest client if there
 are duplicate api keys.
 
 After the confirmation of the insert, commands from the python client can be
 sent.
 
+.. index::
+    single: rest server
+
 Starting The |IAT| rest Server
 ==============================
 
 Starting the rest server is very easy.
-It can be started like any other Linux service. ::
+It can be started like any other Linux service.
+
+.. code::
 
     $ sudo service intelanalytics start
 
@@ -742,16 +820,20 @@ Troubleshooting |IAT| rest Server
 A log gets written to '/var/log/intelanalytics/rest-server/output.log or
 '/var/log/intelanalytics/rest-server/application.log'.
 To resolve issues starting or running jobs, tail either log to see what
-error is getting reported while running the task::
+error is getting reported while running the task:
+
+.. code::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-or::
+or:
+
+.. code::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
 
-More details about the logs can be found here: :doc:`ad_log`.
+More details can be found in the :doc:`section on log files <ad_log>`.
 
 Upgrading
 =========
@@ -761,7 +843,6 @@ old software prior to installation of new software.
 
 .. toctree::
     :hidden:
-    
-    ad_inst_ia2
-    ad_log
+
+    ad_inst_ia3
 

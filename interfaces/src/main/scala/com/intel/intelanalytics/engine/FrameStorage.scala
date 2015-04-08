@@ -67,4 +67,5 @@ trait FrameStorage {
    * @return the parse errors for the 'good' frame
    */
   def lookupErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): Option[FrameEntity]
+  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long]
 }

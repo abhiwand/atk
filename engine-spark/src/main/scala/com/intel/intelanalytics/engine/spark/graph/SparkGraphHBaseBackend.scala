@@ -33,6 +33,8 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
+import scala.util.{ Success, Failure }
 
 /**
  * Implements graph backend storage in HBase for Spark.
@@ -63,8 +65,8 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       outputStream.flush()
       outputStream.close()
 
-      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
-      IOUtils.readLines(p.getErrorStream).map(errorMsg => warn(errorMsg))
+      IOUtils.readLines(p.getInputStream).foreach(infoMsg => info(infoMsg))
+      IOUtils.readLines(p.getErrorStream).foreach(errorMsg => warn(errorMsg))
 
       val exitValue = p.waitFor()
       info(s"Hbase shell exited with Exit Value: $exitValue")
@@ -102,8 +104,25 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    * Deletes a graph's underlying table from HBase.
    * @param graphName The user's name for the graph.
    * @param quiet Whether we attempt to delete quietly(if true) or raise raise an error if table doesn't exist(if false).
+   * @param inBackground true to let the actual deletion happen sometime in the future, false to block until delete is complete
+   *                           true will also prevent exceptions from bubbling up
    */
-  override def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
+  override def deleteUnderlyingTable(graphName: String, quiet: Boolean, inBackground: Boolean)(implicit invocation: Invocation): Unit = withContext("deleteUnderlyingTable") {
+    if (inBackground) {
+      Future {
+        performDelete(graphName, quiet)
+      } onComplete {
+        case Success(ok) => info(s"deleting table '$graphName' completed, quiet: $quiet, inBackground: $inBackground")
+        case Failure(ex) => error(s"deleting table '$graphName' failed, quiet: $quiet, inBackground: $inBackground", exception = ex)
+      }
+      Unit
+    }
+    else {
+      performDelete(graphName, quiet)
+    }
+  }
+
+  private def performDelete(graphName: String, quiet: Boolean): Unit = {
     // TODO: To be deleted later. Workaround for TRIB: 4318.
     val tableName: String = graphName
     var outputStream: OutputStream = null

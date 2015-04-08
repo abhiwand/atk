@@ -40,10 +40,10 @@ def name_support(term):
 
 
 def add_named_object_support(obj_class, obj_term):
-    from intelanalytics.rest.connection import http
+    from intelanalytics.rest.iaserver import server
     from intelanalytics.rest.command import execute_command
     module = get_module(obj_class)
-    factory = _NamedObjectsFunctionFactory(obj_class, obj_term, http, execute_command)
+    factory = _NamedObjectsFunctionFactory(obj_class, obj_term, server, execute_command)
     for function in factory.global_functions:
         setattr(module, function.__name__, function)
         api_globals.add(function)
@@ -117,14 +117,15 @@ class _NamedObjectsFunctionFactory(object):
 
         Examples
         --------
-        ::
 
-            my_{term}.name
+        .. code::
+
+            >>> my_{term}.name
 
             "csv_data"
 
-            my_{term}.name = "cleaned_data"
-            my_{term}.name
+            >>> my_{term}.name = "cleaned_data"
+            >>> my_{term}.name
 
             "cleaned_data"
         """.format(term=self._term)

@@ -14,7 +14,6 @@ Parameters
 ----------
 data_column : str
     The column whose median is to be calculated.
-
 weights_column : str (optional)
     The column that provides weights (frequencies) for the median
     calculation.
@@ -33,8 +32,9 @@ median : The median of the values
 
 Examples
 --------
-::
 
-    median = frame.column_median('middling column')
+.. code::
+
+    >>> median = frame.column_median('middling column')
 
 

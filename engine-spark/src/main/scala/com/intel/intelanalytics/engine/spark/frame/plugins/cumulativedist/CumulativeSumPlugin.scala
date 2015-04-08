@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -64,7 +64,6 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
   override def execute(arguments: CumulativeSumArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
@@ -72,12 +71,12 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
     val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
     val frameSchema = frameEntity.schema
     val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRDD(updatedSchema, cumulativeDistRdd))
+    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

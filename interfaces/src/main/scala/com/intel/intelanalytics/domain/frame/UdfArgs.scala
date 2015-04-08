@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame.UdfArgs
+package com.intel.intelanalytics.domain.frame
 
 case class Udf(function: String, dependencies: List[UdfDependency]) {
   require(function != null, "user defined function is required")

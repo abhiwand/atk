@@ -1,3 +1,5 @@
+.. index:: ! IPython
+
 ==========================
 IPython Setup Instructions
 ==========================
@@ -9,11 +11,12 @@ IPython Setup Instructions
 Introduction
 ------------
 
-These instructions show how to use the |IAT| server through IPython.
-This is a guide through IPython setup needed to communicate with an |IAT|
+These instructions show how to use the |IAT| server through
+`IPython <http://ipython.org/>`__.
+This is a guide through the IPython setup needed to communicate with an |IAT|
 service on a remote cluster.
-With an understanding of this information the Python rest client can be
-accessed from a remote host through IPyhon shell or notebook server. 
+With an understanding of this information, the Python rest client can be
+accessed from a remote host through an IPyhon shell or notebook server.
 
 ------------
 Requirements
@@ -21,8 +24,7 @@ Requirements
 
 A working |IAT| cluster installation is required.
 It must be configured to run with the Python2.7 executable.
-If the |IAT| is not installed see :ref:`|IAT| Package Installation` to install
-it.
+If the |IAT| is not installed, see :doc:`ad_inst_ia1` to install it.
 
 Installing IPython
 ==================
@@ -31,19 +33,19 @@ To install IPython run::
 
     $ sudo yum install python27-ipython
 
----------------------------------
-Configure |IA| Python Rest Client
----------------------------------
+----------------------------------
+Configure |IAT| Python Rest Client
+----------------------------------
 
 Before IPython can operate properly, it is necessary to configure the |IAT|
 rest client.
-The rest client needs to know where to find the |IA| rest server.
+The rest client needs to know where to find the |IAT| rest server.
 This is done by updating the host address in
-/usr/lib/intelanalytics/rest-client/python/rest/config.py::
+'/usr/lib/intelanalytics/rest-client/python/rest/config.py'::
 
     $ sudo vim /usr/lib/intelanalytics/rest-client/python/rest/config.py
 
-The config.py file will look similar to this::
+The 'config.py' file will look similar to this::
 
     """
     config file for rest client
@@ -67,7 +69,7 @@ The config.py file will look similar to this::
 
 Update the address for host to the `Fully Qualified Domain Name
 <http://en.wikipedia.org/wiki/Fully_qualified_domain_name>`_ or
-the IP address of the node hosting the |IA| rest server.
+the IP address of the node hosting the |IAT| rest server.
 
 ---------------
 Running IPython
@@ -78,7 +80,7 @@ inside of a notebook or IPython shell and ping the rest server.
 ::
 
     # testing IPython/Intel Analytics
-    
+
     $ ipython
     Python 2.7.5 (default, Sep  4 2014, 17:06:50)
     Type "copyright", "credits" or "license" for more information.
@@ -101,6 +103,6 @@ IPython Notebook
 All the dependencies to run the IPython notebook server are also installed
 which lets the IPython shell be run from a web browser.
 The notebook server is accessed by::
-    
+
     $ ipython notebook
 

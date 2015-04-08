@@ -24,9 +24,11 @@
 """
 intelanalytics frame aggregation functions
 """
+import json
 
 
 class AggregationFunctions(object):
+
     """
     Defines supported aggregation functions, maps them to keyword strings
     """
@@ -39,6 +41,9 @@ class AggregationFunctions(object):
     var = 'VAR'
     stdev = 'STDEV'
 
+    def histogram(self, cutoffs, include_lowest=True, strict_binning=False):
+        return repr(GroupByHistogram(cutoffs, include_lowest, strict_binning))
+
     def __repr__(self):
         return ", ".join([k for k in AggregationFunctions.__dict__.keys()
                           if isinstance(k, basestring) and not k.startswith("__")])
@@ -47,3 +52,20 @@ class AggregationFunctions(object):
         return item in AggregationFunctions.__dict__.values()
 
 agg = AggregationFunctions()
+
+
+class GroupByHistogram:
+    """
+    Class for histogram aggregation function that uses cutoffs to compute histograms
+    """
+    def __init__(self, cutoffs, include_lowest=True, strict_binning=False):
+        for c in cutoffs:
+            if not isinstance(c, (int, long, float, complex)):
+                raise ValueError("Bad value %s in cutoffs, expected a number")
+        self.cutoffs = cutoffs
+        self.include_lowest = include_lowest
+        self.strict_binning = strict_binning
+
+    def __repr__(self):
+        return 'HISTOGRAM=' + json.dumps(self.__dict__)
+

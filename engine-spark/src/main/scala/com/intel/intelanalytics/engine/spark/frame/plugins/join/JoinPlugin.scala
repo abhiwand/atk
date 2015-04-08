@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 /** Json conversion for arguments and return value case classes */
 object JoinJsonFormat {
@@ -78,7 +78,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
     // Get estimated size of frame to determine whether to use a broadcast join
     val broadcastJoinThreshold = SparkEngineConfig.broadcastJoinThreshold
 
-    val joinResultRDD = JoinRDDFunctions.joinRDDs(
+    val joinResultRDD = JoinRddFunctions.joinRDDs(
       createRDDJoinParam(frames, leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
       createRDDJoinParam(frames, rightFrame, arguments.rightFrame.joinColumn, broadcastJoinThreshold),
       arguments.how, broadcastJoinThreshold
@@ -87,7 +87,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
     val allColumns = Schema.join(leftFrame.data.frameSchema.columns, rightFrame.data.frameSchema.columns)
     val newJoinSchema = FrameSchema(allColumns)
 
-    val joinedFrame = new FrameRDD(newJoinSchema, joinResultRDD)
+    val joinedFrame = new FrameRdd(newJoinSchema, joinResultRDD)
 
     frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from join operation"))) {
       newFrame => frames.saveFrameData(newFrame.toReference, joinedFrame)
@@ -98,9 +98,9 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
   private def createRDDJoinParam(frames: SparkFrameStorage,
                                  frame: SparkFrameData,
                                  joinColumn: String,
-                                 broadcastJoinThreshold: Long)(implicit invocation: Invocation): RDDJoinParam = {
+                                 broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
     val frameSize = if (broadcastJoinThreshold > 0) frames.getSizeInBytes(frame.meta) else None
     val pairRdd = frame.data.keyByRows(row => row.value(joinColumn))
-    RDDJoinParam(pairRdd, frame.data.frameSchema.columns.length, frameSize)
+    RddJoinParam(pairRdd, frame.data.frameSchema.columns.length, frameSize)
   }
 }

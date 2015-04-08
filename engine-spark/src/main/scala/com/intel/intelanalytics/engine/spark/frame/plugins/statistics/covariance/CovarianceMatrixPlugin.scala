@@ -23,24 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.schema.FrameSchema
 import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.command.CommandDoc
-import scala.Some
 import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.Column
@@ -76,18 +66,45 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
   override def execute(arguments: CovarianceMatrixArgs)(implicit invocation: Invocation): FrameEntity = {
 
     val frame: SparkFrameData = resolve(arguments.frame)
+
     // load frame as RDD
-    val rdd = frame.data
+    val frameRdd = frame.data
+    val frameSchema = frameRdd.frameSchema
+    validateCovarianceArgs(frameSchema, arguments)
 
-    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
-    val covarianceRDD = Covariance.covarianceMatrix(rdd, arguments.dataColumnNames)
+    // compute covariance
+    val useVectorOutput = frameSchema.columnDataType(arguments.dataColumnNames(0)) == DataTypes.vector
+    val covarianceRdd = CovarianceFunctions.covarianceMatrix(frameRdd, arguments.dataColumnNames, useVectorOutput)
 
-    val schema = FrameSchema(inputDataColumnNamesAndTypes)
+    val outputSchema = getOutputSchema(arguments.dataColumnNames, useVectorOutput)
     tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
       if (arguments.matrixName.isDefined) {
         engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, covarianceRDD)))
+      save(new SparkFrameData(newFrame.meta, new FrameRdd(outputSchema, covarianceRdd)))
     }.meta
+  }
+
+  // Validate input arguments
+  private def validateCovarianceArgs(frameSchema: Schema, arguments: CovarianceMatrixArgs): Unit = {
+    val dataColumnNames = arguments.dataColumnNames
+    if (dataColumnNames.size == 1) {
+      frameSchema.requireColumnIsType(dataColumnNames.toList(0), DataTypes.vector)
+    }
+    else {
+      require(dataColumnNames.size >= 2, "single vector column, or two or more numeric columns required")
+      frameSchema.requireColumnsOfNumericPrimitives(dataColumnNames)
+    }
+  }
+
+  // Get output schema for covariance matrix
+  private def getOutputSchema(dataColumnNames: List[String], useVectorOutput: Boolean = false): FrameSchema = {
+    val outputColumns = if (useVectorOutput) {
+      List(Column(dataColumnNames(0), DataTypes.vector))
+    }
+    else {
+      dataColumnNames.map(name => Column(name, DataTypes.float64))
+    }
+    FrameSchema(outputColumns)
   }
 }

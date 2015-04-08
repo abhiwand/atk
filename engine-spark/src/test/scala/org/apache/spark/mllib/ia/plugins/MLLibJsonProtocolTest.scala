@@ -25,6 +25,8 @@ package org.apache.spark.mllib.ia.plugins
 
 //import org.apache.commons.math3.geometry.VectorFormat
 
+import com.intel.intelanalytics.libSvmPlugins.LibSvmData
+import libsvm.{ svm_node, svm_parameter, svm_model }
 import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -34,6 +36,7 @@ import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.scalatest.WordSpec
 import spray.json._
+import Array._
 
 class MLLibJsonProtocolTest extends WordSpec {
   "DenseVectorFormat" should {
@@ -152,5 +155,7 @@ class MLLibJsonProtocolTest extends WordSpec {
       assert(s.svmModel.intercept == 3.0)
       assert(s.observationColumns.length == 4)
     }
+
   }
 }
+

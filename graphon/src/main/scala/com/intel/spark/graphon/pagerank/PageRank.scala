@@ -40,7 +40,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
@@ -108,7 +108,8 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def execute(arguments: PageRankArgs)(implicit invocation: Invocation): PageRankResult = {
 
-    sc.addJar(SparkContextFactory.jarPath("graphon"))
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
     // Titan Settings for input
     val config = configuration

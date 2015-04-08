@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.gc
+package com.intel.intelanalytics.engine.spark.gc
 
 import java.lang.management.ManagementFactory
 import java.net.InetAddress

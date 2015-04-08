@@ -1,3 +1,9 @@
+.. index::
+    single: plugin
+    single: extend
+    single: develop
+    single: enhance
+
 ======================
 Plugin Authoring Guide
 ======================
@@ -9,7 +15,7 @@ Plugin Authoring Guide
 Introduction
 ------------
 
-The |IA| Toolkit provides an extensibility framework that allows new commands
+The |IAT| provides an extensibility framework that allows new commands
 and algorithms to be added to the system at runtime, without requiring |IAT|
 source code, nor recompiling the application.
 
@@ -146,8 +152,8 @@ Name components are separated by slashes.
 For instance, the command that drops columns from a dataframe is called
 dataframe/drop_column.
 The Python client sees that name, knows that dataframe commands are associated
-with the :term:`Frame` class, and therefore generates a function named
-drop_column on the Frame.
+with the :term:`Frame (capital F)` class, and therefore generates a function
+named drop_column on the Frame.
 When the user calls that function, its arguments will be converted to JSON,
 sent to the REST server, and then on to the engine for processing.
 The results from the engine flow back through the REST server, and are
@@ -166,7 +172,8 @@ the command tree structure defined by the command names in the system.
 REST Input and Output
 =====================
 
-Each command or query plug-in should define two case classes: one for arguments, and one for return value.
+Each command or query plug-in should define two case classes: one for
+arguments, and one for return value.
 The plug-in framework will ensure that the user's Python (or JSON) commands are
 converted into an instance of the argument class, and the output from the
 plug-in will also be converted back to Python (or JSON) for storage in the
@@ -204,9 +211,9 @@ value.
 Creating an Archive
 -------------------
 
-Plugins are deployed in Archives – jar files that contain the plugin class, its
-argument and result classes, and any supporting classes it needs, along with a
-class that implements the Archive trait.
+Plugins are deployed in Archives – jar files that contain the plugin class,
+its argument and result classes, and any supporting classes it needs, along
+with a class that implements the Archive trait.
 The Archive trait provides the system with a directory of available services
 that the archive provides.
 On application start up, the application will query all the jar files it knows
@@ -217,30 +224,40 @@ Deployment
 ----------
 
 Plug-Ins should be installed in the system using jar files.
-Jars that are found in the server's lib directory will be available to be loaded based on configuration.
-The plug-ins that will be installed must be listed in the application.conf file.
-Each command or query advertises the location at which it would prefer to be installed in the URL structure, and if no further directives
+Jars that are found in the server's lib directory will be available to be
+loaded based on configuration.
+The plug-ins that will be installed must be listed in the application.conf
+file.
+Each command or query advertises the location at which it would prefer to be
+installed in the URL structure, and if no further directives
 appear in configuration, they will be installed according to their request.
-However, using the configuration file, it is also possible to remap a plug-in to a different location or an additional location in the URL structure.
+However, using the configuration file, it is also possible to remap a plug-in
+to a different location or an additional location in the URL structure.
 
-In the future, plugin discovery may be further automated, and it may also be possible to add a plugin without restarting the server.
+In the future, plugin discovery may be further automated, and it may also be
+possible to add a plugin without restarting the server.
 
 -------------
 Configuration
 -------------
 
-Server-side configuration should be stored in the reference.conf file for the plugin archive.
+Server-side configuration should be stored in the reference.conf file for the
+plugin archive.
 This is a Typesafe Config file (see https://github.com/typesafehub/config).
 
 -------------------
 Archive Declaration
 -------------------
 
-Each archive should have a reference.conf file stored as a resource in its jar file.
-For example, in a typical Maven-based project, this file might reside in the src/main/resources folder.
-The Typesafe Config library automatically finds resources named "reference.conf", so this is how the configuration file will be discovered.
+Each archive should have a reference.conf file stored as a resource in its jar
+file.
+For example, in a typical Maven-based project, this file might reside in the
+src/main/resources folder.
+The Typesafe Config library automatically finds resources named
+"reference.conf", so this is how the configuration file will be discovered.
 
-The first section of the reference.conf should be the declaration of how the archive should be activated.
+The first section of the reference.conf should be the declaration of how the
+archive should be activated.
 This configuration should look like the following::
 
     intel.analytics.component.archives {
@@ -252,30 +269,42 @@ This configuration should look like the following::
     }
 
 The <archive-name> is required.
-It should be replaced with the actual name of the archive (without the .jar suffix).
+It should be replaced with the actual name of the archive (without the .jar
+suffix).
 For example, for graphon.jar, just use the word graphon by itself.
 
 ``<archive-class>`` is optional.
-If provided, it must be the name of a class that can be found in the jar file or in its parent classloader.
-This class must implement the Archive trait, which makes it the archive manager.
-The archive manager is the service that the system uses to discover plugins in the archive.
-If omitted, this defaults to DefaultArchive, which uses the Config system for plugin registration and publishing.
+If provided, it must be the name of a class that can be found in the jar file
+or in its parent classloader.
+This class must implement the Archive trait, which makes it the archive
+manager.
+The archive manager is the service that the system uses to discover plugins in
+the archive.
+If omitted, this defaults to DefaultArchive, which uses the Config system for
+plugin registration and publishing.
 
 ``<parent>`` is also optional.
-If provided, this archive is treated as dependent on whatever archive is specified here.
-For example, SparkCommand plugins should use "engine-spark" for this entry, so that they have access to the same version of Spark
-the engine is using, as well as the SparkInvocation class.
+If provided, this archive is treated as dependent on whatever archive is
+specified here.
+For example, SparkCommand plugins should use "engine-spark" for this entry, so
+that they have access to the same version of Spark the engine is using, as well
+as the SparkInvocation class.
 
 ``<config-path>`` is also optional.
-It specifies the config path where the configuration for plugins for this archive can be found.
-If omitted, configuration is assumed to be included in the archive declaration block.
-It can be convenient to provide a vale for the config path because it leads to less nested config files.
+It specifies the config path where the configuration for plugins for this
+archive can be found.
+If omitted, configuration is assumed to be included in the archive declaration
+block.
+It can be convenient to provide a vale for the config path because it leads to
+less nested config files.
 
 Here is a sample config file for an archive that provides a single plugin.
-Note that it relies on the engine-spark archive, and re-maps its configuration to "intel.graphon" rather than including
-the configuration in the intel.analytics.component.archives.graphon section.
+Note that it relies on the engine-spark archive, and re-maps its configuration
+to "intel.graphon" rather than including the configuration in the
+intel.analytics.component.archives.graphon section.
 
-Also note the $-substitutions that allow configuration options from other sections to be pulled in so they're available to the plugin.
+Also note the $-substitutions that allow configuration options from other
+sections to be pulled in so they're available to the plugin.
 ::
 
     intel.analytics.component.archives {
@@ -307,16 +336,19 @@ Also note the $-substitutions that allow configuration options from other sectio
     intel.analytics.engine {
         default-timeout = 30s
         titan {}
-    }                   
+    }
 
 --------------------
 Enabling the Archive
 --------------------
 
-The command executor uses the config key "intel.analytics.engine.plugin.command.archives" to determine which archives it should check
-for command plugins.
-This setting is built into the reference.conf that is embedded in the engine archive (at the time of writing).
-For your installation, you can control this list using the application.conf file.
+The command executor uses the config key
+"intel.analytics.engine.plugin.command.archives" to determine which archives it
+should check for command plugins.
+This setting is built into the reference.conf that is embedded in the engine
+archive (at the time of writing).
+For your installation, you can control this list using the application.conf
+file.
 
 Once this setting has been updated, restart the server to activate the changes.
 

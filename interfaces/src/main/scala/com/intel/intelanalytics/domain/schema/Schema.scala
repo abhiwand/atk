@@ -193,7 +193,7 @@ trait Schema {
   def copy(columns: List[Column]): Schema
 
   def columnNames: List[String] = {
-    columns.map(col => col.name).toList
+    columns.map(col => col.name)
   }
 
   /**
@@ -226,9 +226,22 @@ trait Schema {
     columnNames
   }
 
+  /**
+   * Validate that all columns are of numeric data type
+   */
+  def requireColumnsOfNumericPrimitives(columnNames: Iterable[String]) = {
+    columnNames.foreach(columnName => {
+      require(hasColumn(columnName), s"column ${columnName} was not found")
+      require(columnDataType(columnName).isNumerical, s"column ${columnName} should be of type numeric")
+    })
+  }
+
+  /**
+   * Validate that a column exists, and has the expected data type
+   */
   def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
-    require(hasColumn(columnName), "column $columnName was not found")
-    require(columnDataType(columnName) == dataType, "column $columnName is required to be of type $dataType")
+    require(hasColumn(columnName), s"column ${columnName} was not found")
+    require(columnDataType(columnName) == dataType, s"column ${columnName} should be of type ${dataType}")
   }
 
   /**
@@ -381,6 +394,21 @@ trait Schema {
       throw new IllegalArgumentException(s"Cannot add a duplicate column name: $columnName")
     }
     copy(columns = columns :+ Column(columnName, dataType))
+  }
+
+  /**
+   * Add a column if it doesn't already exist.
+   *
+   * Throws error if column name exists with different data type
+   */
+  def addColumnIfNotExists(columnName: String, dataType: DataType): Schema = {
+    if (hasColumn(columnName)) {
+      requireColumnIsType(columnName, DataTypes.float64)
+      this
+    }
+    else {
+      addColumn(columnName, dataType)
+    }
   }
 
   /**

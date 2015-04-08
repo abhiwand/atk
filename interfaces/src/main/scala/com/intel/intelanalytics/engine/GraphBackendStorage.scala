@@ -33,7 +33,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
  * Titan can not or will not.
  */
 trait GraphBackendStorage {
-  def deleteUnderlyingTable(graphName: String, quiet: Boolean)(implicit invocation: Invocation)
+  def deleteUnderlyingTable(graphName: String, quiet: Boolean, inBackground: Boolean = false)(implicit invocation: Invocation)
   def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation)
   def copyUnderlyingTable(graphName: String, name: String)(implicit invocation: Invocation)
 }
