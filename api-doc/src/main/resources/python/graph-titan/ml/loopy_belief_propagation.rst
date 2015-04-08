@@ -1,6 +1,6 @@
 Make inferences on graph data until converence.
 
-Loopy belief propagation on Markov Random Fields(MRF).
+Loopy belief propagation on :term:`Markov Random Fields` (MRF).
 This algorithm was originally designed for acyclic graphical models, then it
 was found that the Belief Propagation algorithm can be used in general graphs.
 The algorithm is then sometimes called "loopy" belief propagation,

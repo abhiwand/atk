@@ -1,9 +1,15 @@
+.. index::
+    single: example
+
 =====================
 Process Flow Examples
 =====================
 
 .. contents:: Table of Contents
     :local:
+
+.. index::
+    single: Python
 
 -----------------
 Python Path Setup
@@ -27,6 +33,9 @@ rest server:
     >>> import intelanalytics as ia
     >>> ia.connect()
 
+.. index::
+    pair: data; type
+
 ------------
 Data Sources
 ------------
@@ -34,7 +43,8 @@ Data Sources
 .. _valid_data_types:
 
 Data is made up of variables of heterogeneous types (for example, strings,
-integers, and floats) that can be organized as a collection of rows and columns.
+integers, and floats) that can be organized as a collection of rows and
+columns.
 Each row corresponds to the data associated with one observation, and each
 column corresponds to a variable being observed.
 
@@ -54,7 +64,7 @@ Connect to the server:
     Sometimes it is helpful to see the details of the python stack trace upon error.
     Setting the *show_details* to ``True`` causes the full python stack trace to be
     printed, rather than a friendlier digest.
-    
+
     .. code::
 
         >>> ia.errors.show_details = True
@@ -97,6 +107,11 @@ You should see a list of variable types similar to this:
     should treat the values as None.
 
 .. _Importing Data:
+
+.. index::
+    single: CSV
+    single: JSON
+    single: LineFile
 
 Types Of Raw Data
 =================
@@ -153,7 +168,7 @@ format:
 .. code::
 
     >>> my_csv_description = ia.CsvFile(my_data_file, my_schema)
-    
+
 The data fields are separated by a character delimiter.
 The default delimiter to separate column data is a comma.
 It can be changed with the parameter *delimiter*:
@@ -209,6 +224,12 @@ the data layouts:
 .. _example_frame.frame:
 
 .. TODO:: Add example for JsonFile.
+
+.. index::
+    single: frame (lower case f)
+    single: Frame (capital F)
+    pair: frame (lower case f); example
+    pair: Frame (capital F); example
 
 ------
 Frames
@@ -288,6 +309,10 @@ Let's create a Frame and check it out:
     >>> small_songs.get_error_frame().inspect()
 
 .. _example_frame.append:
+
+.. index::
+    pair: append; example
+    single: append
 
 Append:
 -------
@@ -413,10 +438,10 @@ Gives you something like this:
 
 .. code::
 
-      a:ia.float64  b:ia.int64   
+      a:ia.float64  b:ia.int64
     /--------------------------/
-        12.3000            500    
-       195.1230         183954    
+        12.3000            500
+       195.1230         183954
 
 Using the take() method, makes a list of lists of frame data.
 Each list has the data from a row in the frame accessed by the Frame,
@@ -426,7 +451,7 @@ in this case, 3 rows beginning from row 2.
 
     >>> subset_of_objects1 = objects1.take(3, offset=2)
     >>> print subset_of_objects1
- 
+
 Gives you something like this:
 
 .. code::
@@ -443,7 +468,7 @@ Gives you something like this:
 .. only:: html
 
     Some more examples to try:
-    
+
     .. code::
 
         >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv", schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64), ('int2', ia.int64), ('Float1', ia.float64), ('Float2', ia.float64)], skip_header_lines=1), 'animals')
@@ -460,7 +485,7 @@ Gives you something like this:
 .. only:: latex
 
     Some more examples to try:
-    
+
     .. code::
 
         >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv",
@@ -497,7 +522,7 @@ not provide the same level of efficiency.
     It is recommended that you copy the data to a new frame on a regular
     basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected:
-    
+
     .. code::
 
         >>> next_frame = current_frame.copy()
@@ -523,6 +548,10 @@ Example of data cleaning:
     >>> animals.rename_columns({'animals_cleaned' : 'animals'})
 
 .. _example_frame.drop_rows:
+
+.. index::
+    pair: drop rows; example
+    single: drop rows
 
 Drop Rows:
 ----------
@@ -553,6 +582,10 @@ To drop any rows where any column is empty:
 
 .. _example_frame.filter:
 
+.. index::
+    pair: filter rows; example
+    single: filter rows
+
 Filter Rows:
 ------------
 
@@ -569,6 +602,11 @@ To delete those rows where field *b* is outside the range of 0 to 10:
     >>> my_frame.filter(lambda row: 0 >= row['b'] >= 10)
 
 .. _example_frame.drop_duplicates:
+
+.. index::
+    pair: drop duplicates; example
+    single: drop duplicates
+    single: duplicates
 
 Drop Duplicates:
 ----------------
@@ -593,8 +631,12 @@ duplicate:
 
     >>> animals.drop_duplicates(['User', 'animals'])
     >>> animals.inspect(animals.row_count)
- 
+
 .. _example_frame.drop_columns:
+
+.. index::
+    pair: drop column; example
+    single: drop column
 
 Drop Columns:
 -------------
@@ -608,6 +650,10 @@ list of strings:
     >>> my_frame.drop_columns(['a', 'c'])
 
 .. _example_frame.rename_columns:
+
+.. index::
+    pair: rename column; example
+    single: rename column
 
 Rename Columns:
 ---------------
@@ -638,6 +684,10 @@ you need the average age of students attending a college.
 
 .. _example_frame.add_columns:
 
+.. index::
+    pair: add column; example
+    single: add column
+
 Add Columns:
 ------------
 
@@ -648,7 +698,7 @@ value.
 
     Add a column *int1_times_int2* as an ia.float64 and fill it with the contents
     of column *int1* and column *int2* multiplied together:
-    
+
     .. code::
 
         >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2', ia.float64))
@@ -657,7 +707,7 @@ value.
 
     Add a column *int1_times_int2* as an ia.float64 and fill it with the contents
     of column *int1* and column *int2* multiplied together:
-    
+
     .. code::
 
         >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2',
@@ -674,7 +724,7 @@ Add a new column *all_ones* and fill the entire column with the value 1:
     Add a new column *float1_plus_float2* and fill the entire column with the
     value of column *float1* plus column *float2*, then save a summary of
     the frame statistics:
-    
+
     .. code::
 
         >>> animals.add_columns(lambda row: row.Float1 + row.Float2, ('Float1PlusFloat2', ia.float64))
@@ -694,19 +744,22 @@ Add a new column *all_ones* and fill the entire column with the value 1:
 Add a new column *pwl*, type ia.float64, and fill the value according to
 this table:
 
-+---------------------------------------+-----------------------------------------------+
-| value in column *float1_plus_float2*  | value for column *pwl*                        |
-+=======================================+===============================================+
-| None                                  | None                                          |
-+---------------------------------------+-----------------------------------------------+
-| Less than 50                          | *float1_plus_float2* times 0.0046 plus 0.4168 |
-+---------------------------------------+-----------------------------------------------+
-| At least 50 and less than 81          | *float1_plus_float2* times 0.0071 plus 0.3429 |
-+---------------------------------------+-----------------------------------------------+
-| At least 81                           | *float1_plus_float2* times 0.0032 plus 0.4025 |
-+---------------------------------------+-----------------------------------------------+
-| None of the above                     | None                                          |
-+---------------------------------------+-----------------------------------------------+
++---------------------------------------+--------------------------+
+| value in column *float1_plus_float2*  | value for column *pwl*   |
++=======================================+==========================+
+| None                                  | None                     |
++---------------------------------------+--------------------------+
+| Less than 50                          | *float1_plus_float2*     |
+|                                       | times 0.0046 plus 0.4168 |
++---------------------------------------+--------------------------+
+| At least 50 and less than 81          | *float1_plus_float2*     |
+|                                       | times 0.0071 plus 0.3429 |
++---------------------------------------+--------------------------+
+| At least 81                           | *float1_plus_float2*     |
+|                                       | times 0.0032 plus 0.4025 |
++---------------------------------------+--------------------------+
+| None of the above                     | None                     |
++---------------------------------------+--------------------------+
 
 An example of Piecewise Linear Transformation:
 
@@ -732,7 +785,7 @@ An example of Piecewise Linear Transformation:
 
     Create multiple columns at once by making a function return a list of
     values for the new frame columns:
-    
+
     .. code::
 
         >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)], [('abs_int1', ia.int64), ('abs_int2', ia.int64)])
@@ -741,13 +794,16 @@ An example of Piecewise Linear Transformation:
 
     Create multiple columns at once by making a function return a list of
     values for the new frame columns:
-    
+
     .. code::
 
         >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)],
         ... [('abs_int1', ia.int64), ('abs_int2', ia.int64)])
 
 .. _ds_dflw_frame_examine:
+
+.. index::
+    single: statistics
 
 Examining the Data
 ==================
@@ -760,6 +816,10 @@ frame function :code:`column_summary_statistics`:
     >>> my_frame.column_summary_statistics()
 
 .. _example_frame.group_by:
+
+.. index::
+    pair: group by; example
+    single: group by
 
 Group by (and aggregate):
 -------------------------
@@ -875,6 +935,10 @@ Aggregation currently supports using the following functions:
 
 .. _example_frame.join:
 
+.. index::
+    pair: join; example
+    single: join
+
 Join:
 -----
 
@@ -887,22 +951,22 @@ the Frames by the same name, unless needed for clarity:
 
 .. code::
 
-    >>> my_frame.inspect()                      
+    >>> my_frame.inspect()
 
       a:str       b:str       c:str
     /-----------------------------------/
       alligator   bear        cat
       auto        bus         car
-      apple       berry       cantelope     
+      apple       berry       cantelope
       mirror      frog        ball
 
     >>> your_frame.inspect()
-                                        
+
       b:str       c:ia.int64     d:str
     /----------------------------------/
       bus             871        dog
       berry          5218        frog
-      blue              0        log         
+      blue              0        log
 
 Column *b* in both frames is a unique identifier used to relate the two frames.
 Following this instruction will join *your_frame* to *my_frame*, creating a new
@@ -1006,6 +1070,10 @@ Result is *right_frame*:
 
 .. _example_frame.flatten_column:
 
+.. index::
+    pair: flatten column; example
+    single: flatten column
+
 Flatten Column:
 ---------------
 
@@ -1024,7 +1092,7 @@ The "original_data"::
     2-"duo,double"
 
 Bring the data in where it can by worked on:
-    
+
 .. only:: html
 
     .. code::
@@ -1204,15 +1272,15 @@ Make a EdgeFrame:
 Graph Analytics
 ---------------
 
-* :ref:`ClCo`
-* :ref:`CC`
-* :ref:`DC`
-* :ref:`PR`
+* `ClCo`_
+* `CC`_
+* `DC`_
+* `PR`_
 
 .. TODO::
 
     * ref:`APL`
-    
+
     Add these to the toctree above.
 
 .. _ClCo:

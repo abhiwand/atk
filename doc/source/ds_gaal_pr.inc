@@ -1,4 +1,7 @@
-﻿PageRank (PR)
+﻿.. index::
+    single: PageRank
+
+PageRank (PR)
 =============
 
 Basics and Background
@@ -37,13 +40,14 @@ vertex :math:`v` of the graph:
 
 .. math::
 
-    PR(v) = \frac {\rho}{n} + \rho \left (\sum_{u\in InSet(v)} \frac {PR(u)}{L(u)} \right ) 
+    PR(v) = \frac {\rho}{n} + \rho \left (\sum_{u\in InSet(v)} \frac \
+    {PR(u)}{L(u)} \right )
 
 Where:
     |   :math:`v` – a vertex
     |   :math:`L(v)` – outbound degree of the vertex v
-    |   :math:`PR(v)` – *PageRank* score of the vertex v 
-    |   :math:`InSet(v)` – set of vertices pointing to the vertex v 
+    |   :math:`PR(v)` – *PageRank* score of the vertex v
+    |   :math:`InSet(v)` – set of vertices pointing to the vertex v
     |   :math:`n` – total number of vertices in the graph
     |   :math:`\rho` - user specified damping factor (also known as reset
         probability)

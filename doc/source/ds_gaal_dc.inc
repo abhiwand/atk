@@ -1,8 +1,11 @@
+.. index::
+    single: degree calculation
+
 Degree Calculation
 ==================
 
 A fundamental quantity in graph analyses is the degree of a vertex:
-The degree of a vertex is the number of edges adjacent to it. 
+The degree of a vertex is the number of edges adjacent to it.
 
 For a directed edge relation, a vertex has both an out-degree (the number of
 edges leaving the vertex) and an in-degree (the number of edges entering the
