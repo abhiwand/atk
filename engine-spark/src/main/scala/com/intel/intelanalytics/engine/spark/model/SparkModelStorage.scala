@@ -35,7 +35,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.{ JsValue, JsObject }
 import scala.Some
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.engine.spark.SparkAutoPartitioner
 import com.intel.intelanalytics.component.ClassLoaderAware
 import scala.slick.model
 
@@ -78,8 +77,6 @@ class SparkModelStorage(metaStore: MetaStore)
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
     implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
-
-    implicit def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
     /**
      * Save data of the given type, possibly creating a new object.

@@ -100,7 +100,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           val links = List(Rel.self(uri.toString))
                           complete(GraphDecorator.decorateEntity(uri.toString(), links, graph))
                         }
-                        case Success(None) => complete(StatusCodes.NotFound)
+                        case Success(None) => complete(StatusCodes.NotFound, s"Graph with name '$name' was not found.")
                         case Failure(ex) => throw ex
                       }
                     }
@@ -153,12 +153,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         }
                       } ~
                         delete {
-                          onComplete(Future {
-                            for {
-                              graph <- engine.getGraph(id)
-                              res <- engine.deleteGraph(graph)
-                            } yield res
-                          }) {
+                          onComplete(engine.deleteGraph(id)) {
                             case Success(ok) => complete("OK")
                             case Failure(ex) => throw ex
                           }

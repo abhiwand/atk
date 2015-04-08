@@ -23,13 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema._
 import org.apache.hadoop.io._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * This class wraps raw row data adding schema information - this allows for a richer easier to use API.
@@ -271,11 +272,31 @@ trait AbstractRow {
   /**
    * Select several property values from their names
    * @param names the names of the properties to put into an array
+   * @param flattenInputs If true, flatten vector data types
    * @return values for the supplied properties
    */
-  def valuesAsArray(names: Seq[String] = schema.columnNames): Array[Any] = {
-    val indices = schema.columnIndices(names)
-    indices.map(i => row(i)).toArray
+  def valuesAsArray(names: Seq[String] = schema.columnNames, flattenInputs: Boolean = false): Array[Any] = {
+    val arrayBuf = new ArrayBuffer[Any]()
+
+    schema.columnIndices(names).map(i => {
+      schema.column(i).dataType match {
+        case DataTypes.vector => if (flattenInputs) {
+          //TODO: Revisit handling of nulls when vector data type supports size
+          if (row(i) != null) {
+            arrayBuf ++= DataTypes.toVector(row(i))
+          }
+          else {
+            throw new RuntimeException(s"Vector data type should not be null in row:$row")
+          }
+        }
+        else {
+          arrayBuf += row(i)
+        }
+        case _ => arrayBuf += row(i)
+      }
+    })
+
+    arrayBuf.toArray
   }
 
   def valueAsWritable(name: String): Writable = {
@@ -335,5 +356,11 @@ trait AbstractRow {
   def create(content: Array[Any]): Row = {
     create()
     setValues(content)
+  }
+
+  def create(vertex: GBVertex): Row = {
+    create()
+    vertex.properties.foreach(prop => setValue(prop.key, prop.value))
+    row
   }
 }

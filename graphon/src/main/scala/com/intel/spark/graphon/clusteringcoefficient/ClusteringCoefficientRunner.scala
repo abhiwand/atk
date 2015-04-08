@@ -24,7 +24,10 @@
 package com.intel.spark.graphon.clusteringcoefficient
 
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.spark.frame.RowWrapper
 import com.intel.spark.graphon.graphconversions.GraphConversions
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.rdd.RDD
@@ -32,10 +35,10 @@ import org.apache.spark.SparkContext._
 
 /**
  * Return value for the clustering coefficient runner
- * @param vertices RDD of vertices with the local clustering coefficient placed in the specified property.
+ * @param vertexOutput vertex data with the local clustering coefficient placed in the specified property.
  * @param globalClusteringCoefficient The global clustering coefficient of the input graph.
  */
-case class ClusteringCoefficientRunnerReturn(vertices: RDD[GBVertex], globalClusteringCoefficient: Double)
+case class ClusteringCoefficientRunnerReturn(vertexOutput: Option[FrameRdd], globalClusteringCoefficient: Double)
 
 /**
  * Provides a method for running clustering coefficient on a graph using graphx. The result is a new graph with the
@@ -81,24 +84,28 @@ object ClusteringCoefficientRunner extends Serializable {
 
     val (newGraph, globalClusteringCoefficient) = ClusteringCoefficient.run(graph)
 
-    val outVertices = if (outputPropertyLabel.nonEmpty) {
+    val vertexOutput = if (outputPropertyLabel.nonEmpty) {
       val outputProperty = outputPropertyLabel.get
       // extract vertices and edges from graphx graph instance
-      val intermediateVertices: RDD[(Long, Property)] = newGraph.vertices.map({
-        case (physicalId, clusteringCoefficient) => (physicalId, Property(outputProperty, clusteringCoefficient))
-      })
+      val intermediateVertices: RDD[(Long, Double)] = newGraph.vertices
+
+      val schema = inVertices.aggregate(FrameSchemaAggregator.zeroValue)(FrameSchemaAggregator.seqOp, FrameSchemaAggregator.combOp)
+        .addColumnIfNotExists(outputProperty, DataTypes.float64)
+
+      val rowWrapper = new RowWrapper(schema)
 
       // Join the intermediate vertex/edge rdds with input vertex/edge rdd's to append the triangleCount attribute
-      inVertices
-        .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
+      val outputRows = inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], rowWrapper.create(gbVertex)))
         .join(intermediateVertices)
-        .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
+        .map({ case (_, (row, coefficient)) => rowWrapper(row).setValue(outputProperty, coefficient) })
+
+      Some(new FrameRdd(schema, outputRows))
     }
     else {
-      inVertices
+      None
     }
 
-    ClusteringCoefficientRunnerReturn(outVertices, globalClusteringCoefficient)
+    ClusteringCoefficientRunnerReturn(vertexOutput, globalClusteringCoefficient)
   }
 
 }

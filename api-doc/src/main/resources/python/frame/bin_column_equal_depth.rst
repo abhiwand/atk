@@ -21,12 +21,10 @@ Parameters
 ----------
 column_name : str
     The column whose values are to be binned.
-
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice:
     ``math.floor(math.sqrt(frame.row_count))``.
-
 
 bin_column_name : str (optional)
     The name for the new binned column.
@@ -34,9 +32,9 @@ bin_column_name : str (optional)
 
 Notes
 -----
-#)  Unicode in column names is not supported and will likely cause the
-    drop_frames() function (and others) to fail!
-#)  The num_bins parameter is considered to be the maximum permissible number
+1)  Unicode in column names is not supported and will likely cause the
+    drop_frames() method (and others) to fail!
+2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
     With equal depth binning, for example, if the column to be binned has 10
     elements with only 2 distinct values and the *num_bins* parameter is
@@ -51,9 +49,11 @@ array of floats | cutoffs
 
 Examples
 --------
-Given a frame with column *a* accessed by a Frame object *my_frame*::
+Given a frame with column *a* accessed by a Frame object *my_frame*:
 
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> my_frame.inspect( n=11 )
 
       a:int32
     /---------/
@@ -72,24 +72,26 @@ Given a frame with column *a* accessed by a Frame object *my_frame*::
 Modify the frame, adding a column showing what bin the data is in.
 The data should be grouped into a maximum of five bins.
 Note that each bin will have the same quantity of members (as much as
-possible)::
+possible):
 
-    cutoffs = my_frame.bin_equal_depth('a', 5, 'aEDBinned')
-    my_frame.inspect( n=11 )
+.. code::
+
+    >>> cutoffs = my_frame.bin_column_equal_depth('a', 5, 'aEDBinned')
+    >>> my_frame.inspect( n=11 )
 
       a:int32     aEDBinned:int32
     /-----------------------------/
-       1                   1
-       1                   1
-       2                   1
-       3                   2
-       5                   2
-       8                   3
-      13                   3
-      21                   4
-      34                   4
-      55                   5
-      89                   5
+        1                 0
+        1                 0
+        2                 1
+        3                 1
+        5                 2
+        8                 2
+       13                 3
+       21                 3
+       34                 4
+       55                 4
+       89                 4
 
-      print cutoffs
-      [1.0, 3.0, 8.0, 21.0, 55.0, 89.0]
+    >>> print cutoffs
+    [1.0, 2.0, 5.0, 13.0, 34.0, 89.0]

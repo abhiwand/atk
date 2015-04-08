@@ -42,7 +42,7 @@ case class AssignSampleTitanArgs(graph: GraphReference,
   require(samplePercentages.length > 0, "AssignSample  requires that the percentages vector contain at least one value.")
 
   require(samplePercentages.forall(_ >= 0), "AssignSample requires that all percentages be non-negative")
-  require(samplePercentages.reduce(_ + _) <= 1, "AssignSample requires that percentages sum to no more than 1")
+  require(samplePercentages.sum <= 1, "AssignSample requires that percentages sum to no more than 1")
 
   require(sampleLabels.isEmpty || sampleLabels.getOrElse(List()).size == samplePercentages.size,
     "AssignSample requires a label for each group")

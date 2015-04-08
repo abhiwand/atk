@@ -62,7 +62,7 @@ object DataTypes extends EventLogging {
     def isNumerical: Boolean
 
     /** True if data type is an integral data type (e.g., int32, int64). */
-    def isIntegral: Boolean
+    def isInteger: Boolean
   }
 
   /**
@@ -92,7 +92,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = true
 
-    override def isIntegral = true
+    override def isInteger = true
   }
 
   /**
@@ -122,7 +122,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = true
 
-    override def isIntegral = true
+    override def isInteger = true
   }
 
   /**
@@ -152,7 +152,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = true
 
-    override def isIntegral = false
+    override def isInteger = false
   }
 
   /**
@@ -183,7 +183,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = true
 
-    override def isIntegral = false
+    override def isInteger = false
   }
 
   /**
@@ -219,7 +219,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = false
 
-    override def isIntegral = false
+    override def isInteger = false
   }
 
   /**
@@ -270,7 +270,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = false
 
-    override def isIntegral = false
+    override def isInteger = false
 
     def compare(valueA: VectorDataType, valueB: VectorDataType): Int = {
       if (valueB == null) {
@@ -325,7 +325,7 @@ object DataTypes extends EventLogging {
 
     override def isNumerical = false
 
-    override def isIntegral = false
+    override def isInteger = false
   }
 
   /**
@@ -562,6 +562,7 @@ object DataTypes extends EventLogging {
       }
       case v: VectorDataType => v
       case ab: ArrayBuffer[_] => ab.map(value => toDouble(value)).toVector
+      case a: Array[_] => a.map(value => toDouble(value)).toVector
       case l: List[Any] => l.map(value => toDouble(value)).toVector
       case i: Iterator[Any] => i.map(value => toDouble(value)).toVector
       case i: java.util.Iterator[Any] => i.map(value => toDouble(value)).toVector

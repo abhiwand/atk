@@ -76,7 +76,6 @@ object Dependencies {
     val commands = unfulfilled.map(obj => obj.command()).toSet
     val deps = commands.map(c => c.arguments.get)
       .flatMap(getUriReferencesFromJsObject)
-      .toSet
       .map((ref: UriReference) => {
         resolver.resolve[ref.type with HasMetaData](ref).asInstanceOf[Computable]
       })

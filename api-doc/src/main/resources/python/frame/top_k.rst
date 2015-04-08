@@ -10,10 +10,8 @@ Parameters
 ----------
 data_column : str
     The column whose top (or bottom) K distinct values are to be calculated
-
 k : int
     Number of entries to return (If k is negative, return bottom k)
-
 weights_column : str (optional)
     The column that provides weights (frequencies) for the topK calculation.
     Must contain numerical data.
@@ -22,14 +20,16 @@ weights_column : str (optional)
 
 Returns
 -------
-BigFrame : An object with access to the frame
+Frame : An object with access to the frame
 
 Examples
 --------
-For this example, we calculate the top 5 movie genres in a data frame::
+For this example, we calculate the top 5 movie genres in a data frame:
 
-    top5 = frame.top_k('genre', 5)
-    top5.inspect()
+.. code::
+
+    >>> top5 = frame.top_k('genre', 5)
+    >>> top5.inspect()
 
       genre:str   count:float64
     /---------------------------/
@@ -39,10 +39,12 @@ For this example, we calculate the top 5 movie genres in a data frame::
       Documentary  323150
       Talk-Show    265180
 
-This example calculates the top 3 movies weighted by rating::
+This example calculates the top 3 movies weighted by rating:
 
-    top3 = frame.top_k('genre', 3, weights_column='rating')
-    top3.inspect()
+.. code::
+
+    >>> top3 = frame.top_k('genre', 3, weights_column='rating')
+    >>> top3.inspect()
 
       movie:str      count:float64
     /------------------------------/
@@ -50,10 +52,12 @@ This example calculates the top 3 movies weighted by rating::
       Shawshank Redemption  6358.0
       The Dark Knight       5426.0
 
-This example calculates the bottom 3 movie genres in a data frame::
+This example calculates the bottom 3 movie genres in a data frame:
 
-    bottom3 = frame.top_k('genre', -3)
-    bottom3.inspect()
+.. code::
+
+    >>> bottom3 = frame.top_k('genre', -3)
+    >>> bottom3.inspect()
 
       genre:str   count:float64
     /---------------------------/

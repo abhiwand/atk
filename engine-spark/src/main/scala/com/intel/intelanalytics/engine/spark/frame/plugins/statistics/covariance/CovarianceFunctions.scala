@@ -27,7 +27,7 @@ import breeze.linalg.DenseVector
 import breeze.numerics.abs
 import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.rdd.RDD
@@ -38,20 +38,20 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
  * Object for calculating covariance and the covariance matrix
  */
 
-object Covariance extends Serializable {
+object CovarianceFunctions extends Serializable {
 
   /**
    * Compute covariance for exactly two columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance
    * @return covariance wrapped in CovarianceReturn
    */
-  def covariance(frameRDD: FrameRDD,
+  def covariance(frameRdd: FrameRdd,
                  dataColumnNames: List[String]): DoubleValue = {
 
     // compute and return covariance
-    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
+    def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
 
@@ -63,22 +63,25 @@ object Covariance extends Serializable {
   /**
    * Compute covariance for two or more columns
    *
-   * @param frameRDD input rdd containing all columns
+   * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance matrix
+   * @param useVectorOutput If true, output results as a column of type 'vector'
    * @return the covariance matrix in a RDD[Rows]
    */
-  def covarianceMatrix(frameRDD: FrameRDD,
-                       dataColumnNames: List[String]): RDD[sql.Row] = {
+  def covarianceMatrix(frameRdd: FrameRdd,
+                       dataColumnNames: List[String],
+                       useVectorOutput: Boolean = false): RDD[sql.Row] = {
 
-    def rowMatrix: RowMatrix = new RowMatrix(frameRDD.toVectorDenseRDD(dataColumnNames))
+    def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
     val arrGenericRow = vecArray.map(row => {
-      val temp: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
-      new GenericRow(temp)
+      val results: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
+      val tempRow: Array[Any] = if (useVectorOutput) Array(DataTypes.toVector(results)) else results
+      new GenericRow(tempRow)
     })
 
-    frameRDD.sparkContext.parallelize(arrGenericRow)
+    frameRdd.sparkContext.parallelize(arrGenericRow)
   }
 }

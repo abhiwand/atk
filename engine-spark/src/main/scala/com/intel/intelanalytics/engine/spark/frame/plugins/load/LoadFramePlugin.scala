@@ -27,11 +27,11 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -68,8 +68,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
-    val fsRoot = engine.fsRoot
-    val ctx = sc
+    def getAbsolutePath(s: String): String = engine.frames.frameFileStorage.hdfs.absolutePath(s).toString
 
     // validate arguments
     val frameRef = arguments.destination
@@ -78,26 +77,27 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameData(ctx, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
+      val additionalData = frames.loadFrameData(sc, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
-      val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri,
+      val filePath = getAbsolutePath(arguments.source.uri)
+      val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
+      val parseResult = LoadRddFunctions.loadAndParseLines(sc, filePath,
         null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
 
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
-
+      val filePath = getAbsolutePath(arguments.source.uri)
       val parseResult = if (arguments.source.isFieldDelimited) {
-        val partitions = sparkAutoPartitioner.partitionsForFile(arguments.source.uri)
-        LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + arguments.source.uri, parser, partitions)
+        val partitions = sparkAutoPartitioner.partitionsForFile(filePath)
+        LoadRddFunctions.loadAndParseLines(sc, filePath, parser, partitions)
       }
       else {
         val data = arguments.source.data.get
-        LoadRDDFunctions.loadAndParseData(ctx, data, parser)
+        LoadRddFunctions.loadAndParseData(sc, data, parser)
       }
       // parse failures go to their own data frame
       val updatedFrame = if (parseResult.errorLines.count() > 0) {
@@ -124,12 +124,11 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRDD)(implicit invocation: Invocation): FrameEntity = {
+  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRdd)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
-    val existingRdd = frames.loadFrameData(ctx, existingFrame)
+    val existingRdd = frames.loadFrameData(sc, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     frames.saveFrameData(existingFrame.toReference, unionedRdd)
   }

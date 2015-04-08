@@ -40,7 +40,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -123,52 +123,38 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
   override def execute(arguments: BeliefPropagationArgs)(implicit invocation: Invocation): BeliefPropagationResult = {
 
     val start = System.currentTimeMillis()
-    val sparkContext = sc
-    sparkContext.addJar(SparkContextFactory.jarPath("graphon"))
 
-    // TODO: stopping the old spark context and restarting it here avoids a class not found error...
-    // there has got to be a better way
-    // This issue appears to be due to a classloader bug in Spark https://github.com/tribbloid/ISpark/issues/7
-    // It will be fixed in Spark 1.1.1+
-    sc.stop
+    if (sc.master != "yarn-cluster")
+      sc.addJar(SparkContextFactory.jarPath("graphon"))
 
-    val ctx = new SparkContext(sc.getConf)
+    // Get the graph
+    val graph = engine.graphs.expectGraph(arguments.graph)
+    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 
-    try {
-      ctx.addJar(SparkContextFactory.jarPath("graphon"))
+    val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
+      arguments.priorProperty,
+      arguments.maxIterations,
+      stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
+      arguments.convergenceThreshold,
+      arguments.edgeWeightProperty)
 
-      // Get the graph
-      val graph = engine.graphs.expectGraph(arguments.graph)
-      val (gbVertices, gbEdges) = engine.graphs.loadGbElements(ctx, graph)
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
-      val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
-        arguments.priorProperty,
-        arguments.maxIterations,
-        stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
-        arguments.convergenceThreshold,
-        arguments.edgeWeightProperty)
+    // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
+    val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
 
-      // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
+    // write out the graph
 
-      val dummyOutEdges: RDD[GBEdge] = ctx.parallelize(List.empty[GBEdge])
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
 
-      // write out the graph
-
-      // Create the GraphBuilder object
-      // Setting true to append for updating existing graph
-      val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
-      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-      // Build the graph using spark
-      gb.buildGraphWithSpark(outVertices, dummyOutEdges)
-
-      // Get the execution time and print it
-      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-      BeliefPropagationResult(log, time)
-    }
-    finally {
-      ctx.stop
-    }
+    // Get the execution time and print it
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    BeliefPropagationResult(log, time)
   }
 }

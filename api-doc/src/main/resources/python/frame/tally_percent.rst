@@ -9,20 +9,17 @@ Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative sum.
-
 count_value : str
     The column value to be used for the counts.
-
-Returns
--------
-None
 
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single
-column named *obs*::
+column named *obs*:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32
     /-----------/
@@ -33,15 +30,19 @@ column named *obs*::
          1
          2
 
-The cumulative percent count for column *obs* is obtained by::
+The cumulative percent count for column *obs* is obtained by:
 
-    my_frame.tally_percent('obs', 1)
+.. code::
+
+    >>> my_frame.tally_percent('obs', 1)
 
 The Frame *my_frame* accesses the original frame that now contains two
 columns, *obs* that contains the original column values, and
-*obsCumulativePercentCount* that contains the cumulative percent count::
+*obsCumulativePercentCount* that contains the cumulative percent count:
 
-    my_frame.inspect()
+.. code::
+
+    >>> my_frame.inspect()
 
       obs:int32    obs_tally_percent:float64
     /----------------------------------------/

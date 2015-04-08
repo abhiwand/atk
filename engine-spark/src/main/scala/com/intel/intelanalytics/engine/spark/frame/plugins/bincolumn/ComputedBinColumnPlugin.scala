@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
@@ -83,7 +83,7 @@ abstract class ComputedBinColumnPlugin extends SparkCommandPlugin[ComputedBinCol
 
     val binnedResults = executeBinColumn(columnIndex, numBins, rdd)
 
-    val frameMeta = save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRDD(updatedSchema, binnedResults.rdd))).meta
+    val frameMeta = save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRdd(updatedSchema, binnedResults.rdd))).meta
 
     new BinColumnResults(frameMeta, binnedResults.cutoffs)
 
@@ -96,6 +96,6 @@ abstract class ComputedBinColumnPlugin extends SparkCommandPlugin[ComputedBinCol
    * @param rdd rdd to bin against
    * @return a result object containing the binned rdd and the list of computed cutoffs
    */
-  def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRDD): RddWithCutoffs = ???
+  def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRdd): RddWithCutoffs = ???
 
 }

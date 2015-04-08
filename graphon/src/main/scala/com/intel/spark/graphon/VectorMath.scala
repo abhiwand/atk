@@ -117,7 +117,7 @@ object VectorMath {
       0d
     }
     else {
-      v.map(x => Math.abs(x)).reduce(_ + _)
+      v.map(x => Math.abs(x)).sum
     }
   }
 

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetric
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -68,13 +68,12 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
 
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
     val frameEntity = frames.expectFrame(arguments.frame)
     val frameSchema = frameEntity.schema
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val betaValue = arguments.beta.getOrElse(1.0)
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)

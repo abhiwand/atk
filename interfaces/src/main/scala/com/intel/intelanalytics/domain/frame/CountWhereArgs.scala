@@ -23,8 +23,6 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.frame.UdfArgs.Udf
-
 case class CountWhereArgs(frame: FrameReference, udf: Udf) {
   require(frame != null, "frame is required")
   require(udf != null, "where predicate is required")

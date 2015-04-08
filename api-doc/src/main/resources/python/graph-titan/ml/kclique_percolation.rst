@@ -7,7 +7,6 @@ clique_size : int
     Larger values of clique size result in fewer, smaller communities that are
     more connected.
     Must be at least 2.
-
 community_property_label : str
     Name of the community property of vertex that will be updated/created in
     the graph.
@@ -28,8 +27,9 @@ result is written out.
 
 Examples
 --------
-::
 
-    graph.ml.kclique_percolation(4, 'community')
+.. code::
+
+    >>> graph.ml.kclique_percolation(4, 'community')
 
 

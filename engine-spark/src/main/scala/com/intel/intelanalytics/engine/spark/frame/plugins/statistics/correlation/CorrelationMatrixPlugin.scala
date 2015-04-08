@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, 
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -85,7 +85,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
     // load frame as RDD
     val rdd = frame.data
 
-    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) }).toList
+    val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) })
     val correlationRDD = Correlation.correlationMatrix(rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
@@ -93,7 +93,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
       if (arguments.matrixName.isDefined) {
         engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRDD(schema, correlationRDD)))
+      save(new SparkFrameData(newFrame.meta, new FrameRdd(schema, correlationRDD)))
     }.meta
   }
 }

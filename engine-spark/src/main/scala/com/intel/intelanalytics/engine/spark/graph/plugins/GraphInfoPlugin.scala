@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, GraphNoArgs }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Debug information for a graph
  */
-class GraphInfoPlugin extends SparkCommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
+class GraphInfoPlugin extends CommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample

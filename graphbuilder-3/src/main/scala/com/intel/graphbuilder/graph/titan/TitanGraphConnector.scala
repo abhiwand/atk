@@ -28,7 +28,7 @@ import java.io.File
 import com.intel.graphbuilder.graph.GraphConnector
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.Graph
-import com.intel.graphbuilder.titan.cache.TitanGraphCache;
+import com.intel.graphbuilder.titan.cache.TitanGraphCache
 
 import org.apache.commons.configuration.{ Configuration, PropertiesConfiguration }
 

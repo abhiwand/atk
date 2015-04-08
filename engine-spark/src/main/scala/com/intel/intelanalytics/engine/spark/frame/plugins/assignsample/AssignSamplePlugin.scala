@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.frame.FrameRDD
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 
@@ -61,7 +61,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     // dependencies (later to be replaced with dependency injection)
 
     val frames = engine.frames
-    val ctx = sc
 
     val frame = frames.expectFrame(arguments.frame)
     val samplePercentages = arguments.samplePercentages.toArray
@@ -72,7 +71,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
 
     // run the operation
     val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
-    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(ctx, frame))
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(sc, frame))
 
     val splitRDD: RDD[Rows.Row] =
       labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.asInstanceOf[Seq[Any]] :+ x.label.asInstanceOf[Any]).toArray[Any])
@@ -80,6 +79,6 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
     val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
 
     // save results
-    frames.saveFrameData(frame.toReference, FrameRDD.toFrameRDD(updatedSchema, splitRDD))
+    frames.saveFrameData(frame.toReference, FrameRdd.toFrameRdd(updatedSchema, splitRDD))
   }
 }

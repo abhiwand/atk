@@ -7,8 +7,9 @@ label : str
 
 Examples
 --------
-::
 
-    graph = ia.Graph()
-    graph.define_vertex_type('users')
+.. code::
+
+    >>> graph = ia.Graph()
+    >>> graph.define_vertex_type('users')
 
