@@ -9,7 +9,7 @@ the entropy is zero.
 Parameters
 ----------
 data_column : str
-    The column whose entropy is to be calculated
+    The column whose entropy is to be calculated.
 weights_column : str (optional)
     The column that provides weights (frequencies) for the entropy
     calculation.
@@ -19,12 +19,10 @@ weights_column : str (optional)
 
 Returns
 -------
-float64
-    entropy
+float64 : entropy
 
 Examples
 --------
-
 .. code::
 
     >>> entropy = frame.entropy('data column')

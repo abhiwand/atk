@@ -69,7 +69,26 @@ Examples
 
         >>> g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
 
-    The expected output is like this:
+.. only:: latex
+
+    .. code::
+
+        >>> g.ml.label_propagation(
+        ... vertex_value_property_list = "input_value",
+        ... edge_value_property_list  = "weight",
+        ... input_edge_label_list = "edge",
+        ... output_vertex_property_list = "lp_posterior",
+        ... vector_value = "true",
+        ... max_supersteps = 10,
+        ... convergence_threshold = 0.0,
+        ... anchor_threshold = 0.9,
+        ... lp_lambda = 0.5,
+        ... bidirectional_check = False)
+
+
+The expected output is like this:
+
+.. only:: html
     
     .. code::
 
@@ -77,22 +96,6 @@ Examples
 
 .. only:: latex
 
-    .. code::
-
-        >>> g.ml.label_propagation(
-        ...     vertex_value_property_list = "input_value",
-        ...     edge_value_property_list  = "weight",
-        ...     input_edge_label_list = "edge",
-        ...     output_vertex_property_list = "lp_posterior",
-        ...     vector_value = "true",
-        ...     max_supersteps = 10,
-        ...     convergence_threshold = 0.0,
-        ...     anchor_threshold = 0.9,
-        ...     lp_lambda = 0.5,
-        ...     bidirectional_check = False)
-
-    The expected output is like this:
-    
     .. code::
 
         {u'value': u'======Graph Statistics======\\n

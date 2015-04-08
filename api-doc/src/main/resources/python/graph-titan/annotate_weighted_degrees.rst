@@ -134,29 +134,4 @@ Given a directed graph with three nodes and two edges like this:
         >>> h = g.annotate_weighted_degrees(
         ...        'weight',
         ...        edge_weight_property = 'weight')
- 
-        >>> h.query.gremlin('g.V')
-            Out[26]:
-            {u'results': [{u'_id': 24112,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 4,
-             u'source': 2,
-             u'titanPhysicalId': 28304,
-             u'weight': 0},
-            {u'_id': 17648,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 1,
-             u'source': 1,
-             u'titanPhysicalId': 21152,
-             u'weight': 0.11},
-            {u'_id': 30568,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 3,
-             u'source': 3,
-             u'titanPhysicalId': 28064,
-             u'weight': 0}],
-             u'run_time_seconds': 1.326}
 

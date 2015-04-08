@@ -34,7 +34,8 @@ belong to the same bin.
 Returns
 -------
 histogram : Histogram
-    A Histogram object containing the result set. It contains three attributes:
+    A Histogram object containing the result set.
+    It contains three attributes:
 
     *   cutoffs |EM| array of type float
         |EM| A list containing the edges of each bin.

@@ -3,12 +3,13 @@ Calculate covariance matrix for two or more columns.
 Parameters
 ----------
 columns : [ str | list of str ]
-    The names of the column from which to compute the matrix
-    Names should refer to a single column of type vector, or two or more columns of numeric scalars.
+    The names of the column from which to compute the matrix.
+    Names should refer to a single column of type vector, or two or more
+    columns of numeric scalars.
 
 Returns
 -------
-A matrix with the covariance values for the columns
+A matrix with the covariance values for the columns.
 
 Notes
 -----
@@ -16,7 +17,8 @@ This function applies only to columns containing numerical data.
 
 Examples
 --------
-Consider Frame *my_frame1*, which computes the covariance matrix for three numeric columns:
+Consider Frame *my_frame1*, which computes the covariance matrix for three
+numeric columns:
 
 .. code::
 
@@ -37,7 +39,8 @@ Consider Frame *my_frame1*, which computes the covariance matrix for three numer
          1.00             1.00            -6.65
          -6.65           -6.65            139.99
 
-Consider Frame *my_frame2*, which computes the covariance matrix for a single vector column:
+Consider Frame *my_frame2*, which computes the covariance matrix for a single
+vector column:
 
 .. code::
 

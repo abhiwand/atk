@@ -6,7 +6,7 @@ Parameters
 ----------
 
 folderName : str
-    The HDFS folder path where the files will be created
+    The HDFS folder path where the files will be created.
 count : int (optional)
     The number of records you want.
     Default, or value less than 1, is the whole frame.
