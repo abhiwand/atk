@@ -26,7 +26,7 @@ package com.intel.intelanalytics.service.v1
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import spray.json._
-import spray.http.{ StatusCodes, Uri }
+import spray.http.{ StatusCode, StatusCodes, Uri }
 import scala.Some
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
@@ -145,6 +145,27 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           case Failure(ex) => throw ex
                         }
                       }
+                }
+              }
+          } ~
+          pathPrefix(prefix / LongNumber / "score") {
+            id =>
+              pathEnd {
+                requestUri {
+                  uri =>
+                    post {
+                      import spray.httpx.SprayJsonSupport._
+                      implicit val format = DomainJsonProtocol.vectorValueFormat
+                      entity(as[VectorValue]) {
+                        observation =>
+                          onComplete(engine.scoreModel(id, observation)) {
+                            case Success(scored) => complete(scored.toString)
+                            case Failure(ex) => ctx => {
+                              ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                            }
+                          }
+                      }
+                    }
                 }
               }
           }

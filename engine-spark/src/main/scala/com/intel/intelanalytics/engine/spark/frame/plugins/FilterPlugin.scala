@@ -69,7 +69,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
   override def execute(arguments: FilterArgs)(implicit invocation: Invocation): FrameEntity = {
     val frame: SparkFrameData = resolve(arguments.frame)
 
-    val updatedRdd = PythonRddStorage.mapWith(frame.data, arguments.udf, ctx = sc)
+    val updatedRdd = PythonRddStorage.mapWith(frame.data, arguments.udf, sc = sc)
     engine.frames.saveFrameData(frame.meta.toReference, updatedRdd)
   }
 }

@@ -72,8 +72,8 @@ object CommandDriver {
 
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")
-      /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */
       try {
+        /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */
         sys.props += Tuple2("SPARK_SUBMIT", "true")
         val commandId = args(0).toLong
         executeCommand(commandId)
@@ -84,9 +84,6 @@ object CommandDriver {
       finally {
         sys.props -= "SPARK_SUBMIT"
       }
-
     }
-
   }
-
 }
