@@ -113,7 +113,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       onComplete(engine.createModel(createArgs)) {
                         case Success(model) => complete(decorate(uri + "/" + model.id, model))
                         case Failure(ex) => ctx => {
-                          ctx.complete(500, ex.getMessage)
+                          ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
                         }
                       }
                   }

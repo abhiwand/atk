@@ -7,9 +7,6 @@ Parameters
 ----------
 predict_frame : Frame
     A frame whose labels are to be predicted.
-    By default, predict is run on the same columns over which the model is
-    trained.
-    The user could specify column names too if needed.
 
 observation_column : list of str (Optional)
     Column(s) containing the observations whose labels are to be predicted.
