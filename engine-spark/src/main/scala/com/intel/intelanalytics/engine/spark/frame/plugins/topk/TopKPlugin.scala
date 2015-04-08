@@ -71,7 +71,6 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
   override def execute(arguments: TopKArgs)(implicit invocation: Invocation): FrameEntity = {
     // dependencies (later to be replaced with dependency injection)
     val frames = engine.frames
-    val ctx = sc
 
     // validate arguments
     val frameRef = arguments.frame
@@ -79,7 +78,7 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef)
+    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val valueDataType = frame.schema.columnTuples(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0

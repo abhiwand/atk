@@ -27,13 +27,16 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.graph._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{ SparkConf, SparkContext }
@@ -43,12 +46,10 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import scala.concurrent.Await
 
 case class AnnotateDegreesArgs(graph: GraphReference,
-                               outputGraphName: String,
                                outputPropertyName: String,
                                degreeOption: Option[String] = None,
                                inputEdgeLabels: Option[List[String]] = None) {
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
-  require(!outputGraphName.isEmpty, "Output graph name must be provided")
 
   // validate arguments
 
@@ -69,13 +70,16 @@ case class AnnotateDegreesArgs(graph: GraphReference,
   def useOutDegree() = "out".startsWith(degreeMethod)
 }
 
+case class AnnotateDegreesReturn(frameDictionaryOutput: Map[String, FrameEntity])
+
 import DomainJsonProtocol._
 import spray.json._
 
 /** Json conversion for arguments and return value case classes */
 object AnnotateDegreesJsonFormat {
 
-  implicit val ADFormat = jsonFormat5(AnnotateDegreesArgs)
+  implicit val ADArgsFormat = jsonFormat4(AnnotateDegreesArgs)
+  implicit val ADReturnFormat = jsonFormat1(AnnotateDegreesReturn)
 }
 
 import AnnotateDegreesJsonFormat._
@@ -90,16 +94,16 @@ import AnnotateDegreesJsonFormat._
  *
  * Right now it uses only Titan for graph storage. Other backends will be supported later.
  */
-class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, GraphEntity] {
+class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDegreesReturn] {
 
-  override def name: String = "graph:titan/annotate_degrees"
+  override def name: String = "graph/annotate_degrees"
 
   override def numberOfJobs(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): Int = 4
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): GraphEntity = {
+  override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): AnnotateDegreesReturn = {
 
     if (sc.master != "yarn-cluster")
       sc.addJar(SparkContextFactory.jarPath("graphon"))
@@ -130,10 +134,15 @@ class AnnotateDegrees extends SparkCommandPlugin[AnnotateDegreesArgs, GraphEntit
         properties = v.properties + Property(arguments.outputPropertyName, d))
     })
 
-    val newGraphName = arguments.outputGraphName
-    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
-    engine.graphs.writeToTitan(newGraph, outVertices, gbEdges)
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
-    newGraph
+    new AnnotateDegreesReturn(frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by annotated degrees operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap)
+
   }
 }

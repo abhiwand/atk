@@ -23,8 +23,10 @@
 
 import intelanalytics.rest.http as http
 import intelanalytics.rest.config as config
-import intelanalytics.connections as connections
 import json
+
+
+_connections_module = None # global singleton, indicating the module to use for connection config
 
 
 class Server(object):
@@ -35,8 +37,14 @@ class Server(object):
 
     @staticmethod
     def _get_value_from_config(server_name, value_name, default=_unspecified):
+        global _connections_module
+        if not _connections_module:
+            try:
+                import intelanalytics.connections as _connections_module
+            except:
+                _connections_module = config
         try:
-            server_config = getattr(connections, server_name)
+            server_config = getattr(_connections_module, server_name)
             value = getattr(server_config, value_name)
         except AttributeError:
             try:
@@ -56,9 +64,27 @@ class Server(object):
         self._user_password = user_password
         self._conf_frozen = None
 
+    def _repr_attrs(self):
+        return ["host", "port", "scheme", "headers", "user_name", "user_password"]
+
     def __repr__(self):
-        return '{"host": "%s", "port": "%s", "scheme": "%s", "headers": "%s", "user_name": "%s", "user_password": "%s"}' \
-               % (self.host, self.port, self.scheme, self.headers, self.user_name, self.user_password)
+        d = dict([(a, getattr(self, a)) for a in self._repr_attrs()])
+        return json.dumps(d, cls=ServerJsonEncoder, sort_keys=True, indent=2)
+
+    @staticmethod
+    def _str_truncate_value(v):
+        """helper method for __str__"""
+        s = str(v)
+        if len(s) > 58:
+            return s[:58] + "..."
+        return s
+
+    def __str__(self):
+        """This is a friendlier str representation, which truncates long lines"""
+        import json
+        d = json.loads(repr(self))
+        line = "\n------------------------------------------------------------------------------\n"
+        return line + "\n".join(["%-15s: %s" % (k, self._str_truncate_value(v)) for k, v in sorted(d.items())]) + line
 
     def _error_if_conf_frozen(self):
         if self._conf_frozen:
@@ -137,7 +163,7 @@ class Server(object):
 
     def create_full_uri(self, uri_path=''):
         base = self._get_base_uri()
-        if uri_path.startswith(base):
+        if uri_path.startswith('http'):
             return uri_path
         if len(uri_path) > 0 and uri_path[0] != '/':
             uri_path = '/' + uri_path
@@ -163,4 +189,12 @@ class Server(object):
         response = http.delete(self, url)
         self._check_response(response)
         return response
+
+
+class ServerJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Server):
+            return json.loads(repr(obj))
+        return json.JSONEncoder.default(self, obj)
+
 

@@ -62,6 +62,7 @@ import com.intel.intelanalytics.engine.spark.model.plugins.RenameModelPlugin
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
@@ -92,7 +93,7 @@ import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -131,6 +132,8 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import scala.util.{ Try, Success, Failure }
 
 object SparkEngine {
@@ -235,6 +238,11 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
   commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
+  commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -287,9 +295,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextFactory.context("query")
+      val sc = sparkContextFactory.context("query")
       try {
-        val data = queryStorage.getQueryPage(ctx, id, pageId)
+        val data = queryStorage.getQueryPage(sc, id, pageId)
         com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
@@ -297,7 +305,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
           info("not stopping local SparkContext so that it can be re-used")
         }
         else {
-          ctx.stop()
+          sc.stop()
         }
       }
     }
@@ -497,6 +505,28 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       future {
         val model = models.expectModel(ModelReference(id))
         models.drop(model.toReference)
+      }
+    }
+  }
+
+  /**
+   * Score a vector on a model.
+   * @param id Model id
+   */
+  override def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double] = {
+    withContext("se.scoremodel") {
+      future {
+        val model = models.expectModel(ModelReference(id))
+        if (model.modelType.equals("model:libsvm")) {
+          val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
+          val libsvmData = svmJsObject.convertTo[LibSvmData]
+          val libsvmModel = libsvmData.svmModel
+          val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
+          predictionLabel.value
+        }
+        else {
+          throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
+        }
       }
     }
   }
