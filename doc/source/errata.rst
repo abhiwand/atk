@@ -19,7 +19,8 @@ Errata
         .schema.OriginalType.
 
 *   Creating a table with an invalid source data file name causes the server to
-    return an error message and abort, but also creates the empty (named) frame.
+    return an error message and abort, but also creates the empty (named)
+    frame.
 
 *   When importing |CSV| data files to frames, small datasets may affect the
     number of lines skipped.

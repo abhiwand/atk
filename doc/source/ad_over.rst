@@ -1,3 +1,6 @@
+.. index::
+    single: administration
+
 ==============
 Administration
 ==============

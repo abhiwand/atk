@@ -1,3 +1,6 @@
+.. index::
+    single: K-clique percolation, community detection
+
 ====================
 K-Clique Percolation
 ====================
@@ -70,7 +73,7 @@ Usage:
     Syntax::
 
         graph.ml.kclique_percolation (
-                                     cliqueSize, 
+                                     cliqueSize,
                                      communityPropertyDefaultLabel
                                      )
 
@@ -93,7 +96,7 @@ The algorithm updates the input graph vertex with updated property named in
 “communityPropertyDefaultLabel”, mentioned in the argument list.
 
     Example::
-    
+
         import intelanalytics as ia
         ia.connect()
         dataset = r"datasets/kclique_edges.csv"
@@ -105,22 +108,25 @@ The algorithm updates the input graph vertex with updated property named in
         my_graph.name = "mygraph"
         source_vertex_type = my_graph.define_vertex_type("source")
         target_vertex_type = my_graph.define_vertex_type("target")
-        direction_edge_type = my_graph.define_edge_type("direction", "source", "target", directed=True)
+        direction_edge_type = my_graph.define_edge_type("direction", \
+            "source", "target", directed=True)
 
         my_graph.vertices['source'].add_vertices(my_frame, 'source')
         my_graph.vertices['target'].add_vertices(my_frame, 'target')
-        my_graph.edges['direction'].add_edges(my_frame, 'source', 'target', is_directed=True)
+        my_graph.edges['direction'].add_edges(my_frame, 'source', 'target', \
+            is_directed=True)
         my_titan_graph = my_graph.export_to_titan("mytitangraph"))
-        my_titan_graph.ml.kclique_percolation(cliqueSize = 3, communityPropertyDefaultLabel = "Community")
+        my_titan_graph.ml.kclique_percolation(cliqueSize = 3, \
+            communityPropertyDefaultLabel = "Community")
 
 .. rubric:: Footnotes
 
-.. [1] 
+.. [1]
     G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
     community structure of complex networks in nature and society”.
     Nature, 435:814, 2005 (
     See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
-    
+
 .. [2]
     Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
     "Distributed Clique Percolation based community detection on social

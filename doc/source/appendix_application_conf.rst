@@ -81,7 +81,7 @@ Appendix A
               max-partitions = 10000
           }
         }
-      
+
         # Configuration for the Intel Analytics REST API server
         api {
           #this is reported by the API server in the /info results - it can be used to identify
@@ -90,66 +90,66 @@ Appendix A
 
           #The default page size for result pagination
           //default-count = 20
-          
+
           #Timeout for waiting for results from the engine
           //default-timeout = 30s
-          
+
           #HTTP request timeout for the api server
           //request-timeout = 29s
         }
-        
+
           #Configuration for the processing engine
           engine {
               //default-timeout = 30s
              //page-size = 1000
-             
+
         spark {
-        
+
           # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
           # For local mode (useful only for development testing) set master = "local[4]"
           # in cluster mode, set master and home like the example
           # master = "spark://MASTER_HOSTNAME:7077"
           # home = "/opt/cloudera/parcels/CDH/lib/spark"
-          
+
           # When home is empty the system will check expected locations on the local system and use the first one it finds
           # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
           //home = ""
-          
+
           conf {
             properties {
               # These key/value pairs will be parsed dynamically and provided to SparkConf()
               # See Spark docs for possible values http://spark.apache.org/docs/0.9.0/configuration.html
               # All values should be convertible to Strings
-              
+
               #Examples of other useful properties to edit for performance tuning:
-              
+
               # Increased Akka frame size from default of 10MB to 100MB to allow tasks to send large results to Spark driver
               # (e.g., using collect() on large datasets)
               //spark.akka.frameSize=100
-              
+
               #spark.akka.retry.wait=30000
               #spark.akka.timeout=200
               #spark.akka.timeout=30000
-              
+
               //spark.shuffle.consolidateFiles=true
-              
+
               # Enabling RDD compression to save space (might increase CPU cycles)
               # Snappy compression is more efficient
               //spark.rdd.compress=true
               //spark.io.compression.codec=org.apache.spark.io.SnappyCompressionCodec
-              
+
               #spark.storage.blockManagerHeartBeatMs=300000
               #spark.storage.blockManagerSlaveTimeoutMs=300000
-              
+
               #spark.worker.timeout=600
               #spark.worker.timeout=30000
               spark.eventLog.enabled=true
               spark.eventLog.dir="hdfs://master.silvern.gao.cluster:8020/user/spark/applicationHistory"
             }
-            
+
           }
         }
-        
+
         giraph {
           #Overrides of normal Hadoop settings that are used when running Giraph jobs
           giraph.maxWorkers = 30
@@ -159,55 +159,55 @@ Appendix A
           mapreduce.map.java.opts = "-Xmx6144m"
           //giraph.zkIsExternal = false
         }
-        
-        
+
+
         titan {
           load {
             # documentation for these settings is available on Titan website
             # http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html
             storage {
-            
+
               # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
               //batch-loading = true
-              
+
               # Size of the batch in which mutations are persisted
               //buffer-size = 2048
-              
+
               lock {
                 #Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend
                 //wait-time = 400
-                
+
                 #Number of times the system attempts to acquire a lock before giving up and throwing an exception
                 //retries = 15
               }
-              
+
               hbase {
                 # Pre-split settngs for large datasets
                 //region-count = 12
                 //compression-algorithm = "SNAPPY"
               }
-              
+
               cassandra {
                 # Cassandra configuration options
               }
             }
-            
+
             ids {
               #Globally reserve graph element IDs in chunks of this size. Setting this too low will make commits
               #frequently block on slow reservation requests. Setting it too high will result in IDs wasted when a
               #graph instance shuts down with reserved but mostly-unused blocks.
               //block-size = 300000
-              
+
               #Number of partition block to allocate for placement of vertices
               //num-partitions = 10
-              
+
               #The number of milliseconds that the Titan id pool manager will wait before giving up on allocating a new block of ids
               //renew-timeout = 150000
-              
+
               #When true, vertices and edges are assigned IDs immediately upon creation. When false, IDs are assigned
               #only when the transaction commits. Must be disabled for graph partitioning to work.
               //flush = true
-              
+
               authority {
                 #This setting helps separate Titan instances sharing a single graph storage
                 #backend avoid contention when reserving ID blocks, increasing overall throughput.
@@ -218,31 +218,31 @@ Appendix A
                 #                but duplicates will not compromise correctness
                 #GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations.
                 //conflict-avoidance-mode = "GLOBAL_AUTO"
-                
+
                 #The number of milliseconds the system waits for an ID block reservation to be acknowledged by the storage backend
                 //wait-time = 300
-                
+
                 # Number of times the system attempts ID block reservations with random conflict avoidance tags
                 # before giving up and throwing an exception
                 //randomized-conflict-avoidance-retries = 10
               }
             }
-            
+
             auto-partitioner {
               hbase {
                 # Number of regions per regionserver to set when creating Titan/HBase table
                 regions-per-server = 2
-                
+
                 # Number of input splits for Titan reader is based on number of available cores
                 # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
                 #     graph size in HBase/minimum-input-splits-size-mb)
                 input-splits-per-spark-core = 20
               }
-              
+
               enable = true
             }
           }
-          
+
           query {
             storage {
               # query does use the batch load settings in titan.load
