@@ -1,8 +1,12 @@
+.. index::
+    single: machine learning
+
 ================
 Machine Learning
 ================
 
-:term:`Machine learning` is the study of constructing algorithms that can learn from data.
+:term:`Machine learning` is the study of constructing algorithms that can learn
+from data.
 
 When someone uses a search engine to perform a query, they are returned a
 ranked list of websites, ordered according to predicted relevance.
@@ -31,8 +35,16 @@ Algorithm Types
 
 .. toctree::
     :maxdepth: 2
-    
+
     ds_mlal_0
+
+.. index::
+    single: supervised
+    single: unsupervised
+    single: semi-supervised
+    single: binary logistic regression
+    single: classification
+    single: prediction
 
 The |IAT| incorporates supervised, unsupervised, and
 semi-supervised machine learning algorithms.
@@ -64,9 +76,12 @@ limitations.
 Other Resources
 ---------------
 
-There is plenty of literature on :term:`machine learning` for those who want to gain a more thorough understanding of it.
-We recommend: `Introduction to Machine Learning`_ and `Wikipedia\: Machine Learning`_.
-You might find this link helpful as well: `Everything You Wanted to Know About Machine Learning, But Were Too Afraid To Ask (Part Two)`_.
+There is plenty of literature on :term:`machine learning` for those who want to
+gain a more thorough understanding of it.
+We recommend: `Introduction to Machine Learning`_ and `Wikipedia\: Machine
+Learning`_.
+You might find this link helpful as well: `Everything You Wanted to Know About
+Machine Learning, But Were Too Afraid To Ask (Part Two)`_.
 
 .. _Introduction to Machine Learning: http://alex.smola.org/drafts/thebook.pdf
 .. _Wikipedia\: Machine Learning: http://en.wikipedia.org/wiki/Machine_learning
@@ -75,4 +90,5 @@ You might find this link helpful as well: `Everything You Wanted to Know About M
 
 .. rubric:: Footnotes
 
-.. [#ML1] Alex Smola and S.V.N. Vishwanathan (2008). thebook.pdf, Cambridge University Press, ISBN 0-521-82583-0.
+.. [#ML1] Alex Smola and S.V.N. Vishwanathan (2008). thebook.pdf, Cambridge
+     University Press, ISBN 0-521-82583-0.

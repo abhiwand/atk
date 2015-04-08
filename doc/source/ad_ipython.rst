@@ -1,3 +1,5 @@
+.. index:: ! IPython
+
 ==========================
 IPython Setup Instructions
 ==========================
@@ -14,7 +16,7 @@ These instructions show how to use the |IAT| server through
 This is a guide through the IPython setup needed to communicate with an |IAT|
 service on a remote cluster.
 With an understanding of this information, the Python rest client can be
-accessed from a remote host through an IPyhon shell or notebook server. 
+accessed from a remote host through an IPyhon shell or notebook server.
 
 ------------
 Requirements
@@ -78,7 +80,7 @@ inside of a notebook or IPython shell and ping the rest server.
 ::
 
     # testing IPython/Intel Analytics
-    
+
     $ ipython
     Python 2.7.5 (default, Sep  4 2014, 17:06:50)
     Type "copyright", "credits" or "license" for more information.
@@ -101,6 +103,6 @@ IPython Notebook
 All the dependencies to run the IPython notebook server are also installed
 which lets the IPython shell be run from a web browser.
 The notebook server is accessed by::
-    
+
     $ ipython notebook
 

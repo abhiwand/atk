@@ -33,7 +33,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_node, svm_problem, svm_parameter, svm }
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 //Implicits needed for JSON conversion
 import spray.json._

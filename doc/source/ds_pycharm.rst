@@ -1,3 +1,6 @@
+.. index:: ! PyCharm
+    single: IDE
+
 ==========================
 PyCharm Setup Instructions
 ==========================
@@ -49,7 +52,8 @@ Setup
     #)  Choose *Apply* button.
     #)  Choose *OK* button.
 
-#)  Right click your project folder, for example, "myproject", and select :menuselection:`New --> Python File`.
+#)  Right click your project folder, for example, "myproject", and select
+    :menuselection:`New --> Python File`.
 
     a)  Name the file "test" and type in the following code::
 

@@ -1,10 +1,13 @@
+.. index::
+    single: installation
+
 ====================
 Package Installation
 ====================
 
 .. contents::
     :local:
-    
+
 ------------
 Introduction
 ------------
@@ -25,6 +28,9 @@ These instructions are oriented towards `Red Hat Enterprise Linux
 <http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.6.
 |IAT| uses 'yum' for installation, 'sudo' for proper authority.
 
+.. index::
+    single: cluster
+
 Cluster Requirements
 ====================
 
@@ -41,6 +47,9 @@ The |IAT| Python client supports Python 2.7.
 ---------------------------
 |IAT| Packages Installation
 ---------------------------
+
+.. index::
+    single: repository
 
 Adding Extra Repositories
 =========================
@@ -99,6 +108,9 @@ If the "epel" repository is not listed, do this to install it:
         $ wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.
             noarch.rpm
         $ sudo rpm -ivh epel-release-6-8.noarch.rpm
+
+.. index::
+    single: repository
 
 |IAT| Dependency Repository
 ---------------------------
@@ -168,6 +180,9 @@ To install the *yum-s3* package, do this:
 
 
 .. _add_IA_private_repository:
+
+.. index::
+    single: repository
 
 |IAT| Private Repository
 ------------------------
@@ -242,7 +257,7 @@ Troubleshooting Private Repository
 *   AWS S3 will fail with access denied errors if the system time is out of
     sync with the website.
     To keep the system time in sync with the website run:
-    
+
     .. code::
 
         $ sudo service ntpd start
@@ -253,7 +268,7 @@ Troubleshooting Private Repository
 *   To use the yum command inside a corporate proxy make sure the
     *http_proxy* and *https_proxy* environment variables are set.
 *   The sudo command may need the -E option to maintain environment variables:
-  
+
     .. code::
 
         $ sudo -E yum command
@@ -326,7 +341,7 @@ To see an example of the prompts see :doc:`ad_inst_ia3`.
 The script goes through all the necessary configurations to get the |IAT|
 service running.
 The script can be run multiple times but there is a danger that configuring the
-database multiple times can wipe out a users data frames and graphs. 
+database multiple times can wipe out a users data frames and graphs.
 
 Command line arguments can also be supplied for every prompt.
 If a command line argument is given, no prompt will be presented.
@@ -342,7 +357,7 @@ Manual Configuration
 
 **This section is optional, but informative if additional changes to the
 configuration file are needed.** (:ref:`Skip section <skip_manual_section>`).
- 
+
 /etc/intelanalytics/rest-server/application.conf
 ------------------------------------------------
 
@@ -383,7 +398,7 @@ Becomes:
 
 .. code::
 
-    fs.root = "hdfs://localhost.localdomain/user/iauser" 
+    fs.root = "hdfs://localhost.localdomain/user/iauser"
 
 If the HDFS Name Node port does not use the standard port, specify it
 after the host name with a colon:
@@ -408,7 +423,7 @@ Becomes:
 
 .. code::
 
-    titan.load.storage.hostname = "localhost.localdomain,localhost.localdomain" 
+    titan.load.storage.hostname = "localhost.localdomain,localhost.localdomain"
 
 If the zookeeper client port is not 2181, un-comment the following line and
 replace 2181 with the zookeeper client port:
@@ -517,6 +532,9 @@ Database Configuration
 The |IAT| service can use two different databases H2 and PostgreSQL.
 The configuration script configures postgresql automatically.
 
+.. index::
+    single: H2
+
 H2
 --
 
@@ -543,7 +561,7 @@ The following lines need to be commented:
         metastore.connection-postgresql.password = "myPassword"
         metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
         metastore.connection = ${intel.analytics.metastore.connection-postgresql}
-    
+
     After:
 
     .. code::
@@ -572,7 +590,7 @@ The following lines need to be commented:
             connection-postgresql.port}"/"${intel.analytics.metastore.connection-
             postgresql.database}
         metastore.connection = ${intel.analytics.metastore.connection-postgresql}
-    
+
     After:
 
     .. code::
@@ -604,7 +622,10 @@ After:
 
 .. _ad_inst_ia1_postgresql:
 
-Postgresql
+.. index::
+    single: PostgreSQL
+
+PostgreSQL
 ----------
 
 PostgreSQL configuration is more involved than H2 configuration and should
@@ -621,7 +642,7 @@ Start the postgres command line client::
 
 Wait for the command line prompt to come::
 
-    postgres=# 
+    postgres=#
 
 Then create a user::
 
@@ -653,14 +674,14 @@ Add the new line at the very top of the file or before any uncommented lines.
 If the pg_hba.conf file doesn't exist, initialize postgresql with::
 
     $ sudo survice postgresql initdb
- 
+
 Now that the database is created, uncomment all the postgres lines in
 ``application.conf``.
 
 .. only:: html
 
     Before:
-    
+
     .. code::
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
@@ -672,7 +693,7 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
     After:
-    
+
     .. code::
 
         metastore.connection-postgresql.host = "localhost"
@@ -686,7 +707,7 @@ Now that the database is created, uncomment all the postgres lines in
 .. only:: latex
 
     Before:
-    
+
     .. code::
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
@@ -701,7 +722,7 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
     After:
-    
+
     .. code::
 
         metastore.connection-postgresql.host = "localhost"
@@ -770,18 +791,21 @@ There should only be a single row per api_key:
        (1 row)
 
 If there is more than one row for a single api key, remove one of them or
-create a new database. 
+create a new database.
 The server will not be able to validate a request from the rest client if there
 are duplicate api keys.
 
 After the confirmation of the insert, commands from the python client can be
 sent.
 
+.. index::
+    single: rest server
+
 Starting The |IAT| rest Server
 ==============================
 
 Starting the rest server is very easy.
-It can be started like any other Linux service. 
+It can be started like any other Linux service.
 
 .. code::
 

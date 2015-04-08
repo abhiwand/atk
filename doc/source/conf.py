@@ -106,7 +106,8 @@ extensions = [
 numpydoc_class_members_toctree = False
 
 # This will eliminate the methods and attributes tables
-# numpydoc_show_class_members = False
+# default value is True
+numpydoc_show_class_members = True
 
 # This is a flag to print out To-Do items
 todo_include_todos = False
@@ -168,7 +169,8 @@ add_module_names = True
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+ #pygments_style = 'sphinx'
+pygments_style = 'bw'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []

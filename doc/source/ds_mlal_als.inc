@@ -1,3 +1,6 @@
+.. index::
+    single: ALS, optimization, collaborative filtering
+
 Using ALS Optimization to Solve the Collaborative Filtering Problem
 ===================================================================
 
@@ -26,21 +29,25 @@ given by:
 
 The optimization is said to converge if the change in the objective function
 is less than the convergence_threshold parameter or the algorithm hits the
-maximum number of :term:`supersteps`. 
+maximum number of :term:`supersteps`.
 
 .. math::
 
-    cost = \frac {\sum error^{2}}{n}+\lambda*\left(bias^{2}+\sum f_{k}^{2} \right)
+    cost = \frac {\sum error^{2}}{n}+\lambda*\left(bias^{2}+\sum f_{k}^{2} \
+    \right)
 
 Note that the equations above omit user and item subscripts for generality.
-The :math:`l_{2}` regularization term, lambda, tries to avoid overfitting by penalizing the magnitudes of
-the parameters, and :math:`\lambda` is a tradeoff parameter that balances the two terms and is usually
-determined by cross validation (CV).
+The :math:`l_{2}` regularization term, lambda, tries to avoid overfitting by
+penalizing the magnitudes of the parameters, and :math:`\lambda` is a tradeoff
+parameter that balances the two terms and is usually determined by cross
+validation (CV).
 
-After the parameters :math:`\overrightarrow f_{*}` and :math:`b_{*}` are determined, given an item
-:math:`m_{j}` the rating from user :math:`u_{i}` can be predicted by the simple linear model:
+After the parameters :math:`\overrightarrow f_{*}` and :math:`b_{*}` are
+determined, given an item :math:`m_{j}` the rating from user :math:`u_{i}` can
+be predicted by the simple linear model:
 
 .. math::
 
-    r_{ij} = \overrightarrow {f_{ui}} \cdot \overrightarrow {f_{mj}} + b_{ui} + b_{mj}
+    r_{ij} = \overrightarrow {f_{ui}} \cdot \overrightarrow {f_{mj}} + b_{ui} \
+    + b_{mj}
 

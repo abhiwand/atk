@@ -15,6 +15,11 @@ The Cloudera Manager must be downloaded and installed.
 For instructions, see the Cloudera website
 (http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html).
 
+.. index::
+    single: proxy
+    single: parcel
+    single: cloudera manager
+
 -----------------------------------------
 Proxy and Parcel Info in Cloudera Manager
 -----------------------------------------
@@ -48,7 +53,11 @@ Submit License File
     the left of the Upload button
 #.  Select the license file
 #.  Hit the *Upload* button
-#.  Hit *Continue* on the bottom right of the window  
+#.  Hit *Continue* on the bottom right of the window
+
+.. index::
+    single: host
+    single: cluster
 
 ----------------
 Specifying Hosts
@@ -74,7 +83,7 @@ Hit *Search*, and make sure that the computer detects as many hosts as there
 are nodes in the cluster.
 See :ref:`ad_inst_cloudera_04` for examples.
 If all correct hosts are selected, hit *Continue*.
-Otherwise, click *New Search*. 
+Otherwise, click *New Search*.
 
 .. _ad_inst_cloudera_04:
 
@@ -83,6 +92,10 @@ Otherwise, click *New Search*.
     :align: center
 
     Figure 1
+
+.. index::
+    single: parcel
+    single: repository
 
 -----------------------
 |CDH| Parcel Repository
@@ -101,6 +114,9 @@ Repository* :ref:`ad_inst_cloudera_05` and then hit *Continue*.
 
     Figure 2
 
+.. index::
+    single: Java
+
 ---------------
 Java Encryption
 ---------------
@@ -111,6 +127,9 @@ SSH Login Credentials
 ---------------------
 Fill out appropriate login information for |CDH| administrator user.
 
+.. index::
+    single: cluster
+
 --------------------
 Cluster Installation
 --------------------
@@ -120,7 +139,7 @@ problem nodes. See :ref:`ad_inst_cloudera_07`.
 
 Hit *Continue* button when it lights up after the progress bar fills.
 You will be greeted by more progress bars.
-Wait and hit *Continue* when they finish too.   
+Wait and hit *Continue* when they finish too.
 
 .. _ad_inst_cloudera_07:
 
@@ -129,6 +148,9 @@ Wait and hit *Continue* when they finish too.
     :align: center
 
     Figure 3
+
+.. index::
+    single: host
 
 ------------------
 Host Configuration
@@ -146,6 +168,9 @@ Click *Finish*
     :align: center
 
     Figure 4
+
+.. index::
+    single: services
 
 -------------------------
 |CDH| Services to Install
@@ -167,7 +192,7 @@ In the drop-down menu, mark the following boxes:
 * ZooKeeper
 
 See :ref:`ad_inst_cloudera_09`.
-Click *Continue*.                
+Click *Continue*.
 
 .. _ad_inst_cloudera_09:
 
@@ -176,6 +201,9 @@ Click *Continue*.
     :align: center
 
     Figure 5
+
+.. index::
+    role assignment
 
 --------------------------
 Customize Role Assignments
@@ -201,7 +229,7 @@ Changes to make near the top:
 .. figure:: ad_inst_cloudera_10a.*
     :width: 60%
     :align: center
- 
+
     Figure 6
 
 Changes to make near the bottom:
@@ -211,10 +239,13 @@ Changes to make near the bottom:
     :align: center
 
     Figure 7
- 
--------------- 
+
+.. index::
+    single: database
+
+--------------
 Database Setup
--------------- 
+--------------
 
 The "Database Host Name" field should auto-populate with the hostname of the
 system on which Cloudera Manager is installed.
@@ -231,10 +262,10 @@ If successful, click *Continue*.
     :align: center
 
     Figure 8
- 
--------------- 
+
+--------------
 Review Changes
--------------- 
+--------------
 
 In the "Review Changes" window, all fields should remain their default values.
 
@@ -271,12 +302,12 @@ The next page requires no interaction. Just more loading bars.
 .. figure:: ad_inst_cloudera_13.*
     :width: 40%
     :align: center
- 
+
     Figure 9
 
------------------------- 
+------------------------
 Final Settings and Tests
------------------------- 
+------------------------
 Test functionality of |HDFS|.
 
 ------
@@ -294,7 +325,7 @@ If a Giraph job requests twice the amount of memory configured in YARN, then
 the YARN resource manager will not schedule it causing the job to hang.
 
 To run Giraph jobs, ensure that the memory settings in |CDH| match those in
-application.conf using one of the following approaches: 
+application.conf using one of the following approaches:
 
 #.  Modify the following YARN configuration in |CDH| to match the setting under
     intel.analytics.giraph in application.conf.
@@ -310,7 +341,7 @@ application.conf using one of the following approaches:
         application.conf (currently 6554MB).
         The rule of thumb is that mapreduce.map.java.opts.max should be at most
         85% of mapreduce.map.memory.mb
-    #.  Search for ``yarn.nodemanager.resource.memory-mb`` in the search box. 
+    #.  Search for ``yarn.nodemanager.resource.memory-mb`` in the search box.
         Modify this setting to a multiple of ``mapreduce.map.memory.mb``.
         For example, to run at most 4 mappers on each node, and
         ``mapreduce.map.memory.mb`` is set to 8192MB, then set

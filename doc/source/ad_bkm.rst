@@ -12,9 +12,18 @@ Configuration information
 .. include:: ad_gitune.inc
 .. include:: ad_hbtune.inc
 
+.. index::
+    single: Spark
+
 -----
 Spark
 -----
+
+.. index::
+    single: disk full
+    single: Red Hat
+    single: CentOS
+    single: Fedora
 
 Resolving disk full issue while running Spark jobs
 ==================================================
