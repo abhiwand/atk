@@ -517,15 +517,16 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.scoremodel") {
       future {
         val model = models.expectModel(ModelReference(id))
-        if (model.modelType.equals("model:libsvm")) {
-          val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
-          val libsvmData = svmJsObject.convertTo[LibSvmData]
-          val libsvmModel = libsvmData.svmModel
-          val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
-          predictionLabel.value
-        }
-        else {
-          throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
+
+        model.modelType match {
+          case "model:libsvm" => {
+            val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
+            val libsvmData = svmJsObject.convertTo[LibSvmData]
+            val libsvmModel = libsvmData.svmModel
+            val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
+            predictionLabel.value
+          }
+          case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
         }
       }
     }
