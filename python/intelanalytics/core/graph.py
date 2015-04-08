@@ -65,7 +65,7 @@ def _get_backend():
 
 
 class RuleWithDifferentFramesError(ValueError):
-    # TODO - Add docstring if this is really a |PUF|
+    # TODO - Add docstring if this is really a |UDF|
     def __init__(self):
         ValueError.__init__(self, "Rule contains columns from different frames")
 

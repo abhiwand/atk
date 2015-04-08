@@ -1,3 +1,8 @@
+.. index::
+    single: metadata
+    single: H2
+    single: PostgreSQL
+
 =================
 Tracking Metadata
 =================
@@ -53,7 +58,7 @@ data to persist between restarts).
     *   Verify PostgreSQL is already installed::
 
             yum info postgresql
-        
+
         If PostgreSQL is not already installed, you will need to install it
         before going on.
 
@@ -64,49 +69,49 @@ data to persist between restarts).
     *   Switch to the Postgres user::
 
             sudo su postgres
-    
+
     *   cd to the data folder::
 
             cd /var/lib/pgsql/data
-    
+
     *   Modify *pg_hba.conf*, adding a line with the IP that PostgreSQL will
         listen on for connections, add this **before** the other lines in the
         file.
-    
+
         *   If Engine and PostgreSQL are on the same node::
 
-                TYPE    DATABASE    USER        CIDR-ADDRESS    METHOD  
+                TYPE    DATABASE    USER        CIDR-ADDRESS    METHOD
                 host    all         metastore   127.0.0.1/32    md5
-    
+
         *   If Engine and PostgreSQL are on different nodes::
 
                 TYPE    DATABASE    USER        CIDR-ADDRESS                METHOD
                 host    all         metastore   <IP of Engine Server>/32    md5
-    
+
     *   Modify ``postgresql.conf`` and uncomment the *listen_addresses*
         setting with the IP that PostgreSQL should listen on.
-    
+
         *   If Engine and PostgreSQL are on the same node, lock PostgreSQL to
             listen on the local loopback interface only::
-        
+
                 listen_addresses = 'localhost'
-            
+
         *   If Engine and PostgreSQL are on different nodes allow PostgreSQL
             to listen to both an externally accessible interface and the local
             loopback interface::
 
                 listen_addresses = 'localhost,<IP of Accessible Interface>'
-                
+
         *   or to listen on all interfaces::
-            
+
                 listen_addresses = '*'
-                
+
 *   Restart PostgreSQL
 
 ::
 
         sudo service postgresql restart
-    
+
 *   Create a metastore user and database
 
     *   Run *psql*
@@ -115,14 +120,14 @@ data to persist between restarts).
     *   create database metastore with owner metastore
     *   It is also good to create a user for yourself so you don't have to
         ``sudo`` all of the time
-    
+
         * create user yourUserName with superuser; // etc
-        
+
 *   Start our application, it will create the schema automatically using
     Flyway (which is installed by default).
 
     *   Use *\d* to see the schema, see the `cheatsheet <ad_psql_cs>`
-    
+
 .. only:: html
 
     *   Insert a user::
@@ -138,11 +143,15 @@ data to persist between restarts).
             insert into users (username, API_key, created_on, modified_on)
                 values( 'metastore', 'test_API_key_1', now(), now() )
 
+.. index::
+    single: PostgreSQL
+
 -------------------
 Basic PSQL commands
 -------------------
 
-PSQL has a really nice command-line interface with full help and documentation build-in.
+PSQL has a really nice command-line interface with full help and documentation
+build-in.
 
 *psql dbname* \- launch the psql prompt and connect to a database
 

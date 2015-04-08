@@ -334,24 +334,24 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Parameters
         ----------
         func : row function
-            Function (|PUF|) which takes the values in the row and produces a
+            Function (|UDF|) which takes the values in the row and produces a
             value, or collection of values, for the new cell(s).
 
         schema : [ tuple | list of tuples ]
-            The schema for the results of the |PUF|, indicating the new
+            The schema for the results of the |UDF|, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type, and is of the form (str, type).
 
         columns_accessed : list of str (optional)
-            List of columns which the |PUF| will access.
+            List of columns which the |UDF| will access.
             This adds significant performance benefit if we know which
-            column(s) will be needed to execute the |PUF|, especially when the
+            column(s) will be needed to execute the |UDF|, especially when the
             frame has significantly more columns than those being used to
-            evaluate the |PUF|.
+            evaluate the |UDF|.
 
         Notes
         -----
-        1)  The row |PUF| ('func') must return a value in the same format as
+        1)  The row |UDF| ('func') must return a value in the same format as
             specified by the schema.
             See :doc:`ds_apir`.
         #)  Unicode in column names is not supported and will likely cause the
@@ -406,7 +406,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         appropriate contents.
 
         Given a frame of data and Frame *my_frame* points to it.
-        In addition we have defined a |PUF| *func*.
+        In addition we have defined a |UDF| *func*.
         Run *func* on each row of the frame and put the result in a new int
         column *calculated_a*:
         
@@ -415,13 +415,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             >>> my_frame.add_columns( func, ("calculated_a", int))
 
         Now the frame has a column *calculated_a* which has been filled with
-        the results of the |PUF| *func*.
+        the results of the |UDF| *func*.
 
-        A |PUF| must return a value in the same format as the column is
+        A |UDF| must return a value in the same format as the column is
         defined.
         In most cases this is automatically the case, but sometimes it is less
         obvious.
-        Given a |PUF| *function_b* which returns a value in a list, store
+        Given a |UDF| *function_b* which returns a value in a list, store
         the result in a new column *calculated_b*:
         
         .. code::
@@ -437,7 +437,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.add_columns(function_b, [("calculated_b", float32)])
 
-        More information on a row |PUF| can be found at :doc:`ds_apir`
+        More information on a row |UDF| can be found at :doc:`ds_apir`
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
@@ -459,7 +459,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             renaming, {source_column_name: destination_column_name}.
             Default is None.
 
-        where : |PUF| (optional)
+        where : |UDF| (optional)
             If not None, only those rows which evaluate to True will be copied.
             Default is None.
 
@@ -530,14 +530,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        where : |PUF|
-            |PUF| or :term:`lambda` which takes a row argument and evaluates
+        where : |UDF|
+            |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
         Returns
         -------
         int : count
-            number of rows for which the where |PUF| evaluated to True.
+            number of rows for which the where |UDF| evaluated to True.
         """
         return self._backend.get_row_count(self, where)
 
@@ -612,8 +612,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        predicate : |PUF|
-            |PUF| or :term:`lambda` which takes a row argument and
+        predicate : |UDF|
+            |UDF| or :term:`lambda` which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -629,7 +629,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Now the frame only has information about ``ligers``.
 
-        More information on a |PUF| can be found at :doc:`ds_apir`.
+        More information on a |UDF| can be found at :doc:`ds_apir`.
 
 
         """
@@ -644,8 +644,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Parameters
         ----------
-        predicate : |PUF|
-            |PUF| definition or lambda which takes a row argument and
+        predicate : |UDF|
+            |UDF| definition or lambda which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -664,7 +664,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         The frame now only has data about ``lizards`` and ``frogs``.
 
-        More information on a |PUF| can be found at :doc:`ds_apir`.
+        More information on a |UDF| can be found at :doc:`ds_apir`.
 
 
 
@@ -1340,8 +1340,8 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
         Parameters
         ----------
-        predicate : |PUF|
-            |PUF| or :term:`lambda` which takes a row argument and evaluates
+        predicate : |UDF|
+            |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
         Examples
@@ -1366,7 +1366,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
         Now the frame only has information about ``ligers``.
 
-        More information on |PUF| can be found at :doc:`ds_apir`
+        More information on |UDF| can be found at :doc:`ds_apir`
 
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)

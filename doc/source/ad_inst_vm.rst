@@ -2,6 +2,9 @@
 Virtual Machines
 ================
 
+.. index::
+    pair: virtual; machine
+
 .. contents:: Table of Contents
     :local:
 
@@ -329,6 +332,10 @@ Example::
     $ cd /home/cloudera/examples
     $ python pr.py
 
+.. index::
+    single: Eclipse
+    single: PyDev
+
 -------------
 Eclipse/PyDev
 -------------
@@ -360,7 +367,8 @@ Importing the example scripts is easy.
 
         Figure 13
 
-#.  The only field you have to change is the 'Project Contents' default directory.
+#.  The only field you have to change is the 'Project Contents' default
+    directory.
     Uncheck 'Use default' and enter the directory you want to use
     '/home/cloudera/examples'.
     Everything else can be left with the default values.
@@ -375,7 +383,8 @@ Importing the example scripts is easy.
 
         Figure 14
 
-#.  You should now be able to see all the example scripts on the left hand pane.
+#.  You should now be able to see all the example scripts on the left hand
+    pane.
     See :ref:`ad_inst_vm_15`.
 
     .. _ad_inst_vm_15:
@@ -385,6 +394,9 @@ Importing the example scripts is easy.
         :align: center
 
         Figure 15
+
+.. index::
+    single: log
 
 ----
 Logs

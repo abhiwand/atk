@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_model, svm, svm_node }
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
 

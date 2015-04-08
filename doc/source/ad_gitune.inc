@@ -1,3 +1,6 @@
+.. index::
+    single: Giraph, performance, tuning, benchmarking
+
 Giraph Performance Tuning and Benchmarking
 ==========================================
 

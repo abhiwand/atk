@@ -1,3 +1,6 @@
+.. index::
+    single: topic modeling, latent dirichlet allocation, LDA
+
 Topic Modeling with Latent Dirichlet Allocation
 ===============================================
 
@@ -68,7 +71,7 @@ Data preparation and ingest
 Most topic modeling workflows involve several data pre-processing and cleaning
 steps.
 Depending on the characteristics of the data being analyzed, there are
-different best-practices to use here, so it's important to be familiar with 
+different best-practices to use here, so it's important to be familiar with
 the standard procedures for analytics in the domain from which the text
 originated.
 For example, in the biomedical text analytics community, it is common practice
@@ -81,7 +84,8 @@ phenomenon may not arise in every domain.
 In general, both stemming and stop word filtering are recommended steps for
 topic modeling pre-processing.
 Stemming refers to a set of methods used to normalize different tenses and
-variations of the same word (for example, stemmer, stemming, stemmed, and stem).
+variations of the same word (for example, stemmer, stemming, stemmed, and
+stem).
 Stemming algorithms will normalize all variations of a word to one common form
 (for example, stem).
 There are many approaches to stemming, but the Porter Stemming (Porter, 2006
@@ -203,8 +207,10 @@ observed values
 
 .. math::
 
-    p(\beta_{1:K},\theta_{1:D},z_{1:D},w_{1:D} )=\prod_{i=1}^{K} p(\beta_i)\prod_{i=1}^{D} p(\theta_d)
-    \left(\sideset{_{}^{}}{_{n=1}^N}\prod_{}^{} p\left(z_{d,n} | \theta_{d} \right)p\left(w_{d,n} | \beta_{1:K},z_{d,n} \right) \right)
+    p(\beta_{1:K},\theta_{1:D},z_{1:D},w_{1:D} )=\prod_{i=1}^{K} p(\beta_i) \
+    \prod_{i=1}^{D} p(\theta_d) \left(\sideset{_{}^{}}{_{n=1}^N}\prod_{}^{} \
+    p\left(z_{d,n} | \theta_{d} \right)p\left(w_{d,n} | \beta_{1:K},z_{d,n} \
+    \right) \right)
 
 This distribution depicts several dependencies: topic assignment
 :math:`z_{d,n}` depends on the topic proportions :math:`\theta_d`,
@@ -260,7 +266,8 @@ regarding topic membership, using this information.
 
     Command Line Options
     - ------------------
-    |LDA| can be invoked in the |IAT| using the function ``latent_dirichlet_allocation``.
+    |LDA| can be invoked in the |IAT| using the function
+    ``latent_dirichlet_allocation``.
     It can take several parameters, each of which are explained below.
     ::
 
@@ -288,7 +295,8 @@ regarding topic membership, using this information.
         Comma-separated String
 
         The edge properties containing the input edge values.
-        We expect comma-separated list of property names if you use more than one edge property.
+        We expect comma-separated list of property names if you use more than
+        one edge property.
      
     input_edge_label_list:
         Comma-separated String
@@ -306,74 +314,88 @@ regarding topic membership, using this information.
         The name of the vertex type.
      
     vector_value:
-        :term:`Boolean`
+        Boolean
 
         Denotes whether a vector can be passed as a vertex value.
      
     max_supersteps:
         Integer (optional)
 
-        The maximum number of :term:`supersteps` (iterations) that will be executed.
+        The maximum number of :term:`supersteps` (iterations) that will be
+        executed.
         Defaults to 20, but any positive integer is accepted.
      
     alpha:
         Float (optional)
 
         The hyper-parameter for document-specific distribution over topics.
-        Larger values imply that documents are assumed to cover topics more uniformly; smaller values imply documents are concentrated
+        Larger values imply that documents are assumed to cover topics more
+        uniformly; smaller values imply documents are concentrated
         on a small subset of topics.
-        Defaults to 0.1, but all positive floating-point numbers are acceptable.
-     
+        Defaults to 0.1, but all positive floating-point numbers are
+        acceptable.
+
     beta:
         Float (optional)
 
         The hyper-parameter for word-specific distribution over topics.
-        Larger values imply topics contain all words more uniformly, while smaller values imply topics are concentrated on a smaller subset of words.
+        Larger values imply topics contain all words more uniformly, while
+        smaller values imply topics are concentrated on a smaller subset of
+        words.
 
-        Defaults to 0.1, but all positive floating-point numbers are acceptable.
+        Defaults to 0.1, but all positive floating-point numbers are
+        acceptable.
      
     convergence_threshold:
         Float (optional)
 
         Sets the maximum change for convergence to be achieved.
-        Defaults to 0.001, but floating-point values greater than or equal to zero are acceptable.
+        Defaults to 0.001, but floating-point values greater than or equal to
+        zero are acceptable.
 
     evaluate_cost:
         String (optional)
 
         "True" turns on cost evaluation, and "False" turns it off.
         It is relatively expensive for |LDA| to evaluate cost function.
-        For time- critical applications, this option allows user to turn off cost function evaluation.
+        For time- critical applications, this option allows user to turn off
+        cost function evaluation.
         Defaults to "False".
      
     max_val:
         Float (optional)
 
         The maximum value for edge weights.
-        If an edge weight is larger than this, the algorithm will throw an exception and terminate.
+        If an edge weight is larger than this, the algorithm will throw an
+        exception and terminate.
         This option is used for graph integrity checks.
-        The defaults to infinity, but all floating-point numbers are acceptable.
+        The defaults to infinity, but all floating-point numbers are
+        acceptable.
      
     min_val:
         Float (optional)
 
         The minimum value for edge weights.
-        If an edge weight is smaller than this, the algorithm will throw an exception and terminate.
+        If an edge weight is smaller than this, the algorithm will throw an
+        exception and terminate.
         This option is used for graph integrity check.
-        Negative infinity is the default value, but all floating-point numbers are acceptable.
+        Negative infinity is the default value, but all floating-point numbers
+        are acceptable.
 
     bidirectional_check:
         Boolean (optional)
 
         Turns bidirectional check on and off.
-        |LDA| expects a bi-partite input graph, so each edge should be bi-directional.
+        |LDA| expects a bi-partite input graph, so each edge should be
+        bi-directional.
         This option is mainly for graph integrity check.
 
     num_topics:
         Integer (optional)
 
         The number of topics to identify in the |LDA| model.
-        Using fewer topics will speed up the computation, but the extracted topics will be less specific; using more topics will result
+        Using fewer topics will speed up the computation, but the extracted
+        topics will be less specific; using more topics will result
         in more computation but lead to more specific topics.
         The default value is 10, but all positive integers are accepted.
 
@@ -381,7 +403,8 @@ regarding topic membership, using this information.
 
     Multi-line string
 
-        The configuration and learning curve report for Latent Dirichlet Allocation.
+        The configuration and learning curve report for Latent Dirichlet
+        Allocation.
 
      
     Examples
