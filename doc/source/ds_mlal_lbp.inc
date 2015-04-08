@@ -1,3 +1,6 @@
+.. index::
+    single: loopy belief propagation, LBP, belief propagation, message passing
+
 Loopy Belief Propagation (LBP)
 ==============================
 
@@ -102,7 +105,8 @@ an error.
 Look at a case where a node has two states, 0 and 1.
 The 0 state has a prior probability of 0.9 and the 1 state has a prior
 probability of 0.2.
-The states have uniform weights of 1, power of 1 and a smoothing parameter of 2.
+The states have uniform weights of 1, power of 1 and a smoothing parameter of
+2.
 The nodes initial message would be
 :math:`\textstyle \left [ \ln \left ( 0.2 + 0.8 e ^{-2} \right ), \ln \left ( \
 0.8 + 0.2 e ^{-2} \right ) \right ]`,
@@ -153,7 +157,8 @@ reached without converging.
 A node is said to converge if the total change in its distribution (the sum of
 absolute value changes in state probabilities) is less than
 the ``convergence_threshold`` parameter.
-Convergence is a local phenomenon; not all nodes will converge at the same time.
+Convergence is a local phenomenon; not all nodes will converge at the same
+time.
 It is also possible for some (most) nodes to converge and others to never
 converge.
 The algorithm requires all nodes to converge before declaring that the

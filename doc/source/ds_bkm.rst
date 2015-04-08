@@ -5,6 +5,9 @@ Best Known Methods (User)
 .. contents:: Table of Contents
     :local:
 
+.. index::
+    single: Python
+
 ------
 Python
 ------
@@ -70,19 +73,19 @@ property:
 .. code::
 
     >>> import intelanalytics as ia
-     
+
     # show full stack traces
     >>> ia.errors.show_details = True
-     
+
     >>> ia.connect()
-     
+
     # … the rest of your script …
 
 If you enable this setting at the top of your script you get better error
 messages.
 The longer error messages are really helpful in bug reports, emails about
 issues, etc.
- 
+
 Tab Completion
 ==============
 
@@ -140,6 +143,9 @@ Note:
 
         export PYTHONSTARTUP=~/.pythonrc
 
+.. index::
+    single: Spark
+
 -----
 Spark
 -----
@@ -150,7 +156,7 @@ Resolving disk full issue while running Spark jobs
 Using a Red Hat cluster, or an old CentOS cluster,
 the /tmp drive may become full while running spark jobs.
 This causes the jobs to fail, and it is caused by the way the /tmp file system
-is setup, 
+is setup,
 Spark and other |CDH| services, by default, use /tmp as the temporary location
 to store files required during run time, including, but not limited to, shuffle
 data.
@@ -181,7 +187,7 @@ Steps to resolve this issue:
     #)  Add the following line to your '/etc/fstab' file and save it::
 
             /mnt/.bda/tmp    /tmp    none   bind   0   0
-    
+
     #)  Reboot the machine.
 
 Spark space concerns

@@ -1,3 +1,6 @@
+.. index:: ! IntelliJ
+    single: IDE
+
 ================================
 IntelliJ IDEA Setup Instructions
 ================================

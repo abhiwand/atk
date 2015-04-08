@@ -1,3 +1,6 @@
+.. index::
+    single: HBase, performance, tuning
+
 HBase Performance Tuning
 ========================
 
@@ -36,7 +39,7 @@ Remember to sync these changes to all servers in the cluster.
     http://hbase.apache.org/book.html#d0e24641
     Once installed, turn on column family compression when creating the table,
     for example::
-    
+
       create 'mytable', {NAME => 'mycolumnfamily1', COMPRESSION => 'SNAPPY'}
 
 #.  Avoid update blocking for write-heavy workloads.

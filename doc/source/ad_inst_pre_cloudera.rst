@@ -46,7 +46,7 @@ Change::
 
     SELINUX=enforcing
 
-To::        
+To::
 
     SELINUX=disabled
 
@@ -61,6 +61,9 @@ Or::
 4. Default Repositories
 =======================
 System default yum repos must be functional.
+
+.. index::
+    single: proxy
 
 5. Proxy Settings
 =================
