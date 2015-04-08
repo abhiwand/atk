@@ -19,7 +19,7 @@ max_interations : int (optional)
     Default is 20.
 alpha : float (optional)
     The hyper-parameter for document-specific distribution over topics.
-    Mainly used as a smoothing parameter in Bayesian inference.
+    Mainly used as a smoothing parameter in :term:`Bayesian inference`.
     Larger value implies that documents are assumed to cover all topics
     more uniformly; smaller value implies that documents are more
     concentrated on a small subset of topics.
@@ -27,7 +27,7 @@ alpha : float (optional)
     Default is 0.1.
 beta : float (optional)
     The hyper-parameter for word-specific distribution over topics.
-    Mainly used as a smoothing parameter in Bayesian inference.
+    Mainly used as a smoothing parameter in :term:`Bayesian inference`.
     Larger value implies that topics contain all words more uniformly and
     smaller value implies that topics are more concentrated on a small
     subset of words.

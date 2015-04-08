@@ -1,3 +1,7 @@
+.. index::
+    single: machine learning
+    single: model
+
 ===========================
 Machine Learning Algorithms
 ===========================
@@ -5,19 +9,20 @@ Machine Learning Algorithms
 .. contents:: Table of Contents
     :local:
 
-The graph machine learning algorithms currently supported fall into these categories:
+The graph machine learning algorithms currently supported fall into these
+categories:
 *Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
 
-* :ref:`Collaborative_Filtering`
-    * :ref:`ALS`
-    * :ref:`CGD`
+* `Collaborative_Filtering`_
+    * `ALS`_
+    * `CGD`_
 
-* :ref:`Graphical_Models`
-    * :ref:`LP`
-    * :ref:`LBP`
+* `Graphical_Models`_
+    * `LP`_
+    * `LBP`_
 
-* :ref:`Topic_Modeling`
-    * :ref:`LDA`
+* `Topic_Modeling`_
+    * `LDA`_
 
 
 .. _Collaborative_Filtering:
@@ -38,7 +43,7 @@ Graphical Models
 
 
 The graphical models find more insights from structured noisy data.
-We currently support :ref:`LP` and :ref:`LBP`
+We currently support `LP`_ and `LBP`_.
 
 .. _LP:
 .. include:: ds_mlal_lp.inc

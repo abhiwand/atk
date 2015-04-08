@@ -1,3 +1,6 @@
+.. index:: ! UDF
+    single: Python
+
 =====================
 Python User Functions
 =====================
@@ -5,8 +8,8 @@ Python User Functions
 .. contents:: Table of Contents
     :local:
 
-A :term:`UDF` is a Python function written by the user on the client-side which can
-execute in a distributed fashion on the cluster.
+A :term:`UDF` is a Python function written by the user on the client-side which
+can execute in a distributed fashion on the cluster.
 The function is serialized and copies are distributed throughout the cluster as
 part of command execution.
 Various API command methods accept a |UDF| as a parameter.
@@ -118,8 +121,8 @@ Here are some guidelines to follow when writing a |UDF|:
     The best practice is to put all |UDF| functionality in a ``try: except:``
     block, where the ``except:`` clause returns a default value or performs a
     benign side effect.
-    See the ``row_sum`` function example above, where we used a ``try: except:``
-    block and produced a -1 for rows which caused errors.
+    See the ``row_sum`` function example above, where we used a
+    ``try: except:`` block and produced a -1 for rows which caused errors.
 
 #.  Dependencies:
     All dependencies used in the |UDF| must be available in **the same Python
@@ -135,7 +138,8 @@ Here are some guidelines to follow when writing a |UDF|:
     (which will fail due to permissions).
 #.  Performance:
     Be mindful of performance.
-    These functions execute on every row of data, in other words, several times.
+    These functions execute on every row of data, in other words, several
+    times.
 #.  Printing:
     Printing (to stdout, stderr, …) within the |UDF| will not show up in the
     client REPL.
@@ -143,7 +147,7 @@ Here are some guidelines to follow when writing a |UDF|:
     In general, avoid printing.
 #.  Lambda:
     Lambda syntax is valid, but discouraged:
-    
+
     .. code::
 
         >>> frame.filter(lambda row: row.score > 0)
@@ -164,10 +168,11 @@ Here are some guidelines to follow when writing a |UDF|:
     Parameterizing a |UDF| is possible using Python techniques of closures and
     nesting function definitions.
     For example, the Row |UDF| only takes a single row object parameter.
-    It could be useful to have a row function that takes a few other parameters.
+    It could be useful to have a row function that takes a few other
+    parameters.
     Let’s augment the row_sum function above to take a list of columns to
     ignore:
-    
+
     .. code::
 
         >>> def get_row_sum_func(ignore_list):

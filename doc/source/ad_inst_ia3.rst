@@ -10,18 +10,18 @@ Configuration Script
         What port is Cloudera Manager listening on? defaults to "7180" if nothing is entered:
         What is the Cloudera Manager username? defaults to "admin" if nothing is entered:
         What is the Cloudera Manager password? defaults to "admin" if nothing is entered:
-     
+
         No current SPARK_CLASSPATH set.
         Setting to:
         SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-        Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
+        Deploying config   .   .   .   .   .   .   .   .   .   .   .   .
         Config Deployed
 
         You need to restart Spark service for the config changes to take affect.
         Would you like to restart now? Enter 'yes' to restart. defaults to 'no' if nothing is
         entered: yes
-        Restarting Spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   
+        Restarting Spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .
         Restarted Spark
 
 
@@ -29,8 +29,8 @@ Configuration Script
         What is the port of the database server? defaults to "5432" if nothing is entered:
         What is the name of the database? defaults to "ia_metastore" if nothing is entered:
         What is the database user name? defaults to "iauser" if nothing is entered:
-         
-        #The dollar sign($) is not allowed in the password. 
+
+        #The dollar sign($) is not allowed in the password.
         What is the database password? The default password was randomly generated.
             Defaults to "****************************" if nothing is entered:
 
@@ -74,12 +74,12 @@ Configuration Script
             defaults to "admin" if nothing is entered:
         What is the Cloudera Manager password?
             defaults to "admin" if nothing is entered:
-     
+
         No current SPARK_CLASSPATH set.
         Setting to:
         SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-        Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
+        Deploying config   .   .   .   .   .   .   .   .   .   .   .   .
         Config Deployed
 
         You need to restart Spark service for the config changes to take affect.
@@ -97,8 +97,8 @@ Configuration Script
             defaults to "ia_metastore" if nothing is entered:
         What is the database user name?
             defaults to "iauser" if nothing is entered:
-         
-        #The dollar sign($) is not allowed in the password. 
+
+        #The dollar sign($) is not allowed in the password.
         What is the database password?
             The default password was randomly generated.
             Defaults to "****************************" if nothing is entered.

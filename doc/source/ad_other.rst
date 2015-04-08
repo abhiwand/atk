@@ -1,5 +1,10 @@
 .. _windows_python_setup:
 
+.. index::
+    pair: Windows; Python
+    single: Anaconda
+    single: Python
+
 --------------------
 Windows Python Setup
 --------------------
@@ -21,6 +26,11 @@ Windows Python Setup
     This creates a virtual Python environment that mimics the cluster's
     configuration.
 
+.. index::
+    single: IDE
+    single: Eclipse
+    single: IntelliJ
+    single: PyCharm
 
 -----------------------------------
 Integrated Development Environments
