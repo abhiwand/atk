@@ -38,7 +38,6 @@ str : Name of graph
 
 Examples
 --------
-
 .. code::
 
     >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
@@ -49,10 +48,10 @@ The expected output is like this:
 
     {u'graph': u'pr_graph'}
 
+To query:
+    
 .. only:: html
 
-    To query:
-    
     .. code::
 
         >>> pr_graph = get_graph('pr_graph')
@@ -62,8 +61,6 @@ The expected output is like this:
 
 .. only:: latex
 
-    To query:
-    
     .. code::
 
         >>> pr_graph = get_graph('pr_graph')
@@ -101,7 +98,3 @@ The expected output is like this:
             u'user_id':3223,
             u'vertex_type':u'L'}],
            u'run_time_seconds':1.489}
-
-
-
-

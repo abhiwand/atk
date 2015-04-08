@@ -5,13 +5,13 @@ Calculate quantiles on the given column.
 Parameters
 ----------
 column_name : str
-    The column to calculate quantiles
+    The column to calculate quantiles.
 quantiles : [ float | list of float ]
 
 Returns
 -------
 Frame
-    A new Frame with two columns (float64): requested Quantiles and their
+    A new frame with two columns (float64): requested Quantiles and their
     respective values
 
 Examples

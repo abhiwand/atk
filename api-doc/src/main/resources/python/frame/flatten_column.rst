@@ -14,10 +14,6 @@ delimiter : str (optional)
     The delimiter string.
     Default is comma (,).
 
-Returns
--------
-None
-
 Examples
 --------
 Given that I have a frame accessed by Frame *my_frame* and the frame has two
