@@ -68,17 +68,16 @@ Calculate the accuracy, precision, confusion_matrix, recall and
 Parameters
 ----------
 label_column : str
-    the name of the column containing the correct label for each
-    instance.
+    The name of the column containing the correct label for each instance.
 pred_column : str
-    the name of the column containing the predicted label for each
-    instance.
+    The name of the column containing the predicted label for each instance.
 pos_label : [ str | int | Null ] (optional)
-    str or int for binary classifiers, Null for multi-class classifiers.
+    This is a str or int for binary classifiers, and Null for multi-class
+    classifiers.
     The value to be interpreted as a positive instance.
 beta : double (optional)
-    beta value to use for :math:`F_{\\beta}` measure (default F1 measure
-    is computed); must be greater than zero.
+    This is the beta value to use for :math:`F_{\\beta}` measure (default F1
+    measure is computed); must be greater than zero.
     Defaults to 1.
 
 Notes

@@ -74,7 +74,8 @@ Examples
 .. code::
 
     >>> my_model = LdaModel()
-    >>> results = my_model.train(frame, 'doc_column_name', 'word_column_name', 'word_count_column_name', num_topics = 3)
+    >>> results = my_model.train(frame, 'doc_column_name', 'word_column_name',
+    ... 'word_count_column_name', num_topics = 3)
 
 The variable *results* is a dictionary with three keys:
 

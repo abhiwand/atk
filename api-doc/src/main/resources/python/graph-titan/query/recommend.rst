@@ -98,10 +98,12 @@ Examples
     
     .. code::
 
-        {u'recommendation': [{u'vertex_id': u'once_upon_a_time_in_mexico',
-        u'score': 3.831419911100037, u'rank': 1},
-        {u'vertex_id': u'nocturne_1946', u'score': 3.541907655192171, u'rank': 2},
-        {u'vertex_id': u'red_hot_skate_rock', u'score': 3.2573571020389407,
-        u'rank': 3}]}
+        {u'recommendation':
+        [{u'vertex_id': u'once_upon_a_time_in_mexico',
+          u'score': 3.831419911100037, u'rank': 1},
+         {u'vertex_id': u'nocturne_1946',
+          u'score': 3.541907655192171, u'rank': 2},
+         {u'vertex_id': u'red_hot_skate_rock',
+          u'score': 3.2573571020389407, u'rank': 3}]}
 
 

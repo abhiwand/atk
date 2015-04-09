@@ -18,14 +18,14 @@ Returns
 Frame
     A new frame consisting of the existing columns of the frame along with the
     following new columns:
-    'k' columns of type Double containing squared distance of each point to
-    every cluster center predicted_cluster' column of type Int containing the
-    cluster assignment
+'k' columns : double
+    Containing squared distance of each point to every cluster center.
+predicted_cluster : int
+    Containing the cluster assignment.
 
 
 Examples
 --------
-
 .. only:: html
 
     .. code::

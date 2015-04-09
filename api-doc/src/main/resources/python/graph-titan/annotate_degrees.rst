@@ -15,7 +15,8 @@ degree_option : str (optional)
 
     *   "out" (default value) : Degree is calculated as the out-degree.
     *   "in" : Degree is calculated as the in-degree.
-    *   "undirected" : Degree is calculated as the undirected degree. (Assumes that the edges are all undirected.)
+    *   "undirected" : Degree is calculated as the undirected degree.
+        (Assumes that the edges are all undirected.)
 
     Any prefix of the strings "out", "in", "undirected" will select the
     corresponding option.
@@ -28,8 +29,12 @@ input_edge_labels : list of str (optional)
 
 Returns
 -------
-dict(label, Frame) : Dictionary containing the vertex type as the key and the corresponding vertex's frame with a column storing the annotated degree for the vertex in a user specified property.
-    Call dictionary_name['label'] to get the handle to frame whose vertex type is label
+dict : dict(label, Frame)
+    Dictionary containing the vertex type as the key and the corresponding
+    vertex's frame with a column storing the annotated degree for the vertex
+    in a user specified property.
+    Call dictionary_name['label'] to get the handle to frame whose vertex type
+    is label.
 
 Examples
 --------
@@ -53,4 +58,4 @@ Given a graph:
         u'run_time_seconds': 1.822}
 
     >>> h = g.annotate_degrees('degree')
-    
+

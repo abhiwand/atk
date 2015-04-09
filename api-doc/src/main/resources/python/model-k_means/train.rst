@@ -28,21 +28,17 @@ initializationMode : str (Optional)
        
 Returns
 -------
-results: dict
-    Contains with keys
-
-    cluster_size: dict
-        Contains with keys
-
-        ClusterId : Int
-            Number of elements in the cluster 'ClusterId'
-
-    within_set_sum_of_squared_error: Double
-        The set of sum of squared error for the model
+dict : results
+    Contains with keys.
+dict : cluster_size
+    Contains with keys.
+int : ClusterId
+    Number of elements in the cluster 'ClusterId'.
+double : within_set_sum_of_squared_error
+    The set of sum of squared error for the model.
 
 Examples
 --------
-
 .. only:: html
 
     .. code::

@@ -25,7 +25,6 @@ num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice:
     ``math.floor(math.sqrt(frame.row_count))``.
-
 bin_column_name : str (optional)
     The name for the new binned column.
     Default is '<column_name>_binned'.
