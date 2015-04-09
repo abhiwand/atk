@@ -20,6 +20,18 @@ KMeansModel
     :members:
     :inherited-members:
 
+LdaModel
+--------
+.. autoclass:: intelanalytics.LdaModel
+    :members:
+    :inherited-members:
+
+LibSvmModel
+-----------
+.. autoclass:: intelanalytics.LibsvmModel
+    :members:
+    :inherited-members:
+
 LogisticRegressionModel
 -----------------------
 .. autoclass:: intelanalytics.LogisticRegressionModel
