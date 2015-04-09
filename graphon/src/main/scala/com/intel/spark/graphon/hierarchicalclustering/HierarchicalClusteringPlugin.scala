@@ -52,12 +52,7 @@ object HierarchicalClusteringFormat {
 import HierarchicalClusteringFormat._
 
 /**
- * ConnectedComponent plugin implements the connected components computation on a graph by invoking graphx api.
- *
- * Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault, and then writes the output graph
- * back to the underlying store.
- *
- * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
+ * HierarchicalClusteringPlugin implements the hierarchical clustering algorithm on a graph.
  */
 class HierarchicalClusteringPlugin extends SparkCommandPlugin[GraphNoArgs, UnitReturn] {
 

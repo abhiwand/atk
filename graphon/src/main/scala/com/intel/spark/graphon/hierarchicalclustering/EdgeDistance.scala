@@ -10,9 +10,9 @@ object EdgeDistance extends Serializable {
   /**
    * Calculates the minimum distance of an edge list
    * @param edgeList a list of active edges
-   * @return a tuple as follows (virtual vertex id, the min distance edge, the list of non-min distance edges)
+   * @return a vertex distance class (vertex id, min distance edge, non-min distance edges)
    */
-  def min(edgeList: Iterable[HierarchicalClusteringEdge]): (Long, HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge]) = {
+  def min(edgeList: Iterable[HierarchicalClusteringEdge]): (Long, VertexOutEdges) = {
 
     var dist: Float = Int.MaxValue
     var edgeWithMinDist: HierarchicalClusteringEdge = null
@@ -63,7 +63,7 @@ object EdgeDistance extends Serializable {
 
       if (null != edgeWithMinDist) {
 
-        // edgeWithMinDist can be null in rar cases. We need to test for null
+        // edgeWithMinDist can be null in rare cases. We need to test for null
         if (edgeWithMinDist.dest.toString < edgeWithMinDist.src.toString) {
 
           // swap the node ids so the smaller node is always source
@@ -72,14 +72,15 @@ object EdgeDistance extends Serializable {
           edgeWithMinDist.dest = temp
         }
 
-        (edgeWithMinDist.src + edgeWithMinDist.dest, edgeWithMinDist, nonMinDistEdges)
+        //BUG HERE - uniqueness was lost (was ok for strings)
+        (edgeWithMinDist.src + edgeWithMinDist.dest, VertexOutEdges(edgeWithMinDist, nonMinDistEdges))
       }
       else {
-        (0, null, null)
+        (0, VertexOutEdges(null, null))
       }
     }
     else {
-      (0, null, null)
+      (0, VertexOutEdges(null, null))
     }
   }
 
@@ -115,24 +116,7 @@ object EdgeDistance extends Serializable {
    * @param edges a list of active edges
    * @return the head of the input list with the distance adjusted as per formula
    */
-  def simpleAvg(edges: Iterable[HierarchicalClusteringEdge]): HierarchicalClusteringEdge = {
-    var dist: Float = 0
-    var edgeCount = 0
-
-    for (e <- edges) {
-      dist += e.distance
-      edgeCount += 1
-    }
-
-    if (edgeCount > 1) {
-      edges.head.distance = dist / edgeCount
-    }
-
-    edges.head
-  }
-
-  // Same as simpleAvg + node swaps on the "head edge"
-  def simpleAvgWithNodeSWap(edges: Iterable[HierarchicalClusteringEdge]): HierarchicalClusteringEdge = {
+  def simpleAvg(edges: Iterable[HierarchicalClusteringEdge], swapInfo: Boolean): HierarchicalClusteringEdge = {
     var dist: Float = 0
     var edgeCount = 0
 
@@ -143,17 +127,24 @@ object EdgeDistance extends Serializable {
 
     if (edgeCount > 1) {
       val head = edges.head
-
       head.distance = dist / edgeCount
-      val tmpName = head.src
-      val tmpNodeCount = head.srcNodeCount
 
-      head.src = head.dest
-      head.dest = tmpName
-      head.srcNodeCount = head.destNodeCount
-      head.destNodeCount = tmpNodeCount
+      if (swapInfo) {
+        swapEdgeInfo(head)
+      }
     }
 
     edges.head
+  }
+
+  def swapEdgeInfo(edge: HierarchicalClusteringEdge): Unit = {
+
+    val tmpName = edge.src
+    val tmpNodeCount = edge.srcNodeCount
+
+    edge.src = edge.dest
+    edge.dest = tmpName
+    edge.srcNodeCount = edge.destNodeCount
+    edge.destNodeCount = tmpNodeCount
   }
 }

@@ -7,4 +7,5 @@ object HierarchicalClusteringConstants {
   val VertexNodeCountProperty = "count"
   val VertexNodeNameProperty = "name"
   val LabelPropertyValue = "cluster"
+  val EdgeDistanceProperty = "dist"
 }
