@@ -15,19 +15,33 @@ import org.apache.spark.storage.StorageLevel
  */
 object HierarchicalClusteringFunctions extends Serializable {
 
+  /**
+   * Convert the storage graph into a hierarchical edge RDD
+   * @param vertices the list of vertices for the initial graph
+   * @param edges the list of edges for the initial graph
+   * @param titanConfig titan configuration file
+   */
   def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration): Unit = {
 
     val graphAdRdd: RDD[HierarchicalClusteringEdge] = edges.map {
-      case e => HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
-        HierarchicalClusteringConstants.DefaultNodeCount,
-        e.tailPhysicalId.asInstanceOf[Number].longValue,
-        HierarchicalClusteringConstants.DefaultNodeCount,
-        1 - e.getProperty("dist").get.value.asInstanceOf[Float], false)
+      case e =>
+        val edgeDistProperty = e.getProperty(HierarchicalClusteringConstants.EdgeDistanceProperty)
+          .getOrElse(throw new Exception(s"Edge does not have ${HierarchicalClusteringConstants.EdgeDistanceProperty} property"))
+        HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
+          HierarchicalClusteringConstants.DefaultNodeCount,
+          e.tailPhysicalId.asInstanceOf[Number].longValue,
+          HierarchicalClusteringConstants.DefaultNodeCount,
+          1 - edgeDistProperty.value.asInstanceOf[Float], false)
     }.distinct()
 
-    HierarchicalClusteringFunctions.mainLoop(graphAdRdd, titanConfig)
+    mainLoop(graphAdRdd, titanConfig)
   }
 
+  /**
+   * This is the main loop of the algorithm
+   * @param graph initial in memory graph as RDD of hierarchical clustering edges
+   * @param titanConfig the config for storage
+   */
   def mainLoop(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
@@ -44,6 +58,10 @@ object HierarchicalClusteringFunctions extends Serializable {
     fileWriter.close()
   }
 
+  /**
+   * Add schema to the storage configuration
+   * @param titanConfig the initial/default configuration
+   */
   private def configStorage(titanConfig: SerializableBaseConfiguration): Unit = {
 
     val graphStorage = TitanStorage.connectToTitan(titanConfig)
@@ -51,9 +69,18 @@ object HierarchicalClusteringFunctions extends Serializable {
     graphStorage.shutdown()
   }
 
+  /**
+   * Creates a set of meta-node and a set of internal nodes and edges (saved to storage)
+   * @param graph (n-1) in memory graph (as an RDD of hierarchical clustering edges)
+   * @param fileWriter testing purposes only, a text file writer
+   * @param iteration current iteration, testing purposes only
+   * @param titanConfig storage configuration file
+   * @return (n) in memory graph (as an RDD of hierarchical clustering edges)
+   */
   private def clusterNewLayer(graph: RDD[HierarchicalClusteringEdge],
                               fileWriter: FileWriter,
-                              iteration: Int, titanConfig: SerializableBaseConfiguration): RDD[HierarchicalClusteringEdge] = {
+                              iteration: Int,
+                              titanConfig: SerializableBaseConfiguration): RDD[HierarchicalClusteringEdge] = {
 
     // the list of edges to be collapsed and removed from the active graph
     val collapsableEdges = createCollapsableEdges(graph)
@@ -149,7 +176,8 @@ object HierarchicalClusteringFunctions extends Serializable {
    * @return a list of new edges (containing meta-nodes) to be added to the active graph. The edge distance is updated/calculated for the new edges
    */
   private def createActiveEdges(nonSelectedEdges: RDD[HierarchicalClusteringEdge],
-                                internalEdges: RDD[HierarchicalClusteringEdge], fileWriter: FileWriter): RDD[HierarchicalClusteringEdge] = {
+                                internalEdges: RDD[HierarchicalClusteringEdge],
+                                fileWriter: FileWriter): RDD[HierarchicalClusteringEdge] = {
 
     val activeEdges = nonSelectedEdges.map {
       case (e) => ((e.src, e.dest, e.destNodeCount), e)
@@ -182,13 +210,13 @@ object HierarchicalClusteringFunctions extends Serializable {
 
     // recalculate the edge distance if several outgoing edges go into the same meta-node
     val newEdgesWithMetaNodesAndDistUpdated = newEdgesWithMetaNodeGrouped.map {
-      case ((src, dest), edges) => EdgeDistance.simpleAvgWithNodeSWap(edges)
+      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, true)
     }.map {
       (e: HierarchicalClusteringEdge) => ((e.src, e.dest), e)
     }.groupByKey()
 
     newEdgesWithMetaNodesAndDistUpdated.map {
-      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges)
+      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, false)
     }
   }
 
@@ -196,8 +224,8 @@ object HierarchicalClusteringFunctions extends Serializable {
    * Create internal edges for all collapsed edges of the graph
    * @param collapsedEdges a list of edges to be collapsed
    * @param titanConfig titan configuration for writing to storage
-   * @return a list of internal edges generated because of the collapse. Each collapsed edge generates 2 internal edges
-   *         between the meta-node and the vertices of the collapsed edge
+   * @return 2 RDDs - one with internal edges and a second with non-minimal distance edges. The RDDs will be used
+   *         to calculate the new active edges for the current iteration.
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
                                   titanConfig: SerializableBaseConfiguration): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
@@ -231,19 +259,14 @@ object HierarchicalClusteringFunctions extends Serializable {
   private def createCollapsableEdges(graph: RDD[HierarchicalClusteringEdge]): RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] = {
 
     val edgesBySourceIdWithMinEdge = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
-      case (sourceNode, allEdges) =>
-        val edgesBySourceId = EdgeDistance.min(allEdges)
-        edgesBySourceId match {
-          case (vertexId,
-            minEdge,
-            nonSelectedEdges) => (vertexId, (minEdge, nonSelectedEdges))
-        }
+      case (sourceNode, allEdges) => EdgeDistance.min(allEdges)
     }.groupByKey().filter {
-      case (vertexId, pairedEdgeList) => EdgeManager.canEdgeCollapse(pairedEdgeList)
+      case (vertexId,
+        pairedEdgeList: Iterable[VertexOutEdges]) => EdgeManager.canEdgeCollapse(pairedEdgeList)
     }
 
     edgesBySourceIdWithMinEdge.map {
-      case (vertexId, pairedEdgeList) =>
+      case (vertexId, pairedEdgeList: Iterable[VertexOutEdges]) =>
         EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
     }.filter {
       case (collapsableEdge, outgoingEdgeList) => (collapsableEdge != null)

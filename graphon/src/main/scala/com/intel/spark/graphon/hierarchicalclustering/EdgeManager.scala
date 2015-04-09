@@ -12,7 +12,7 @@ object EdgeManager extends Serializable {
    * @param list a  list of iterable edges. If the list has 2 elements, the head element (an edge) of any of the lists can collapse
    * @return true if the edge can collapse; false otherwise
    */
-  def canEdgeCollapse(list: Iterable[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])]): Boolean = {
+  def canEdgeCollapse(list: Iterable[VertexOutEdges]): Boolean = {
     (null != list) && (list.toArray.length > 1)
   }
 
@@ -51,16 +51,16 @@ object EdgeManager extends Serializable {
    * @param list a list of (lists of) edges. The source node of the head element of each list is the metanode
    * @return a flat list of outgoing edges for metanode
    */
-  def createOutgoingEdgesForMetaNode(list: Iterable[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])]): (HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge]) = {
+  def createOutgoingEdgesForMetaNode(list: Iterable[VertexOutEdges]): (HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge]) = {
 
     var outgoingEdges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
     var edge: HierarchicalClusteringEdge = null
 
     if ((null != list) && (!list.isEmpty)) {
       for (edgeList <- list) {
-        if ((null != edgeList) && (null != edgeList._2)) {
-          outgoingEdges = outgoingEdges ++ edgeList._2.toList
-          edge = edgeList._1
+        if ((null != edgeList) && (null != edgeList.higherDistanceEdgeList)) {
+          outgoingEdges = outgoingEdges ++ edgeList.higherDistanceEdgeList.toList
+          edge = edgeList.minDistanceEdge
         }
       }
     }
@@ -85,15 +85,8 @@ object EdgeManager extends Serializable {
         graph)
       metaNodeVertexId = metaNodeVertex.getId.asInstanceOf[Long]
 
-      TitanStorage.addEdgeToTitan(
-        metaNodeVertex,
-        graph.getVertex(edge.src),
-        graph)
-
-      TitanStorage.addEdgeToTitan(
-        metaNodeVertex,
-        graph.getVertex(edge.dest),
-        graph)
+      TitanStorage.addEdgeToTitan(metaNodeVertex, graph.getVertex(edge.src), graph)
+      TitanStorage.addEdgeToTitan(metaNodeVertex, graph.getVertex(edge.dest), graph)
 
       edges = edges :+ HierarchicalClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,

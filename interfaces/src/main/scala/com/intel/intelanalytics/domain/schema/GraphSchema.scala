@@ -32,14 +32,14 @@ package com.intel.intelanalytics.domain.schema
 object GraphSchema {
 
   val labelProperty = "_label"
-  val vertexSystemColumns = Column("_vid", DataTypes.int64) :: Column("_label", DataTypes.string) :: Nil
+  val vertexSystemColumns = Column("_vid", DataTypes.int64) :: Column(labelProperty, DataTypes.string) :: Nil
   /** ordered list */
   val vertexSystemColumnNames = vertexSystemColumns.map(column => column.name)
   val vertexSystemColumnNamesSet = vertexSystemColumnNames.toSet
   val edgeSystemColumns = Column("_eid", DataTypes.int64) ::
     Column("_src_vid", DataTypes.int64) ::
     Column("_dest_vid", DataTypes.int64) ::
-    Column("_label", DataTypes.string) ::
+    Column(labelProperty, DataTypes.string) ::
     Nil
 
   /** ordered list */

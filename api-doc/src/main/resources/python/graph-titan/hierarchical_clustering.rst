@@ -27,25 +27,29 @@ sample_graph.txt is a file in the following format: src, dest, distance
 1, 3, 1.5f
 3, 1, 1.5f
 
+the edge should have a property called "dist" holding the float value
+
 the script:
 
     import intelanalytics as ia
     ia.connect()
-    d = "sample_graph.txt"
-    s = [("src", str), ("dest", str), ("dist", ia.float32)]
-    c = ia.CsvFile(d,s)
-    frame = ia.Frame(c, "sample")
-    print frame.inspect(frame.row_count)
-    src = ia.VertexRule("vertex", frame.src)
-    dest = ia.VertexRule("vertex", frame.dest)
-    dist = ia.EdgeRule("edge", src, dest, {"dist":frame.dist}, bidirectional=True)
-    print "Creating graph 'sample_graph'"
     graph = ia.TitanGraph([src, dest, dist], "sample_graph")
     graph.hierarchical_clustering()
 
 The expected output (new vertices) can be queried ::
 
     graph.query.gremlin('g.V.map(\'id\', \'vertex\', \'_label\', \'name\',\'count\')')
+
+Snippet output for the above query will look like this:
+
+{u'results': [u'{id=18432, count=null, _label=null, vertex=29, name=null}',
+  u'{id=24576, count=null, _label=null, vertex=22, name=null}',
+  u'{id=27136, count=null, _label=2, vertex=null, name=21944_25304}'
+
+where:
+     24576 - represents a initial ode
+     27136 - represents a meta-node of 2 nodes (as per _label value)
+
 
 
 
