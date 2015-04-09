@@ -9,8 +9,8 @@ sample_col : str
 
 Returns
 -------
-frame : Frame
-    a Frame object containing each distinct value in the sample and its
+Frame : ECDF frame
+    A frame containing each distinct value in the sample and its
     corresponding ecdf value.
 
 Examples

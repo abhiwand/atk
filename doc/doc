@@ -196,52 +196,48 @@ function main {
         fi
 
         # debug: Look for sphinx build types
+        RunCommand="which sphinx-build"
+        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        if [ "$?" != "0" ]; then return 1; fi
         SphinxFormats="latex text html"
         SphinxFlag=OK
         for Format in $SphinxFormats
         do
-            if [ "$SphinxFlag" == "OK" ]; then
-                echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
-                if [ "$?" == "0" ]; then
-                    which sphinx-build > /dev/null
-                    if [ "$?" == "0" ]; then
-                        sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
-                        if [ "$?" == "1" ]; then return 1; fi
-                    else
-                        echo "The sphinx documentation system does not seem to be present."
-                        read -p "Abort? [Y/n] "
-                        if [ -z $UserResponse ];then
-                            UserResponse='y'
-                        fi
-                        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                            return 1
-                        fi
-                        SphinxFlag=No
-                    fi
-                fi
+            echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
+            if [ "$?" == "0" ]; then
+                sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
+                if [ "$?" == "1" ]; then return 1; fi
             fi
         done
 
         # debug: Look for pdf building
         echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
         if [ $? == 0 ]; then
-            which pdflatex > /dev/null
-            if [ "$?" == "0" ]; then
-                pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
-                if [ "$?" == "1" ]; then return 1; fi
-                if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+            RunCommand="which pdflatex"
+            do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+            if [ "$?" != "0" ]; then return 1; fi
+            pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
+            if [ "$?" != "0" ]; then return 1; fi
+            if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+                let COUNT=6
+                while [ $COUNT -gt 0 ]
+                do
+                    if [ -s build/latex/IntelAnalytics.pdf ]; then
+                        let COUNT=-1
+                    else
+                        sleep 10s
+                        let COUNT-=1
+                    fi
+                done
+                if [ $COUNT -eq 0 ]; then
+                    Err "PDF too short to copy" $AskThem $DisplayStatus $TempFile $LogFile
+                    if [ "$?" != "0" ]; then
+                        return 1
+                    fi
+                else
                     RunCommand="cp build/latex/IntelAnalytics.pdf build/html/_downloads/"
                     do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-                    if [ "$?" == "1" ]; then return 1; fi
-                fi
-            else
-                echo "The latex to pdf convert does not seem to be present."
-                read -p "Abort? [Y/n] "
-                if [ -z $UserResponse ];then
-                    UserResponse='y'
-                fi
-                if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                    return 1
+                    if [ "$?" != "0" ]; then return 1; fi
                 fi
             fi
         fi
@@ -261,23 +257,14 @@ function main {
     # debug: Compress the results into a single file
     echo $ModifiedArguments | grep -i -e "/zip/" > /dev/null
     if [ $? == 0 ]; then
-        which zip > /dev/null
+        RunCommand="which zip"
+        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
         if [ "$?" == "0" ]; then
             if [[ -e intel_analytics_docs.zip ]]; then
                 rm intel_analytics_docs.zip
             fi
-            
             RunCommand="zip -q -9 -r intel_analytics_docs build"
             do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-        else
-            echo "The zip utility does not seem to be present."
-            read -p "Abort? [Y/n] "
-            if [ -z $UserResponse ];then
-                UserResponse='y'
-            fi
-            if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                return 1
-            fi
         fi
     fi
     if [ -e doc.log ]; then
@@ -470,6 +457,4 @@ function update_scala {
 #==========================================================================================================#
 main $(parameters "$*")
 
-# debug: Return to original directory to continue
-pkill -9 -f java
 

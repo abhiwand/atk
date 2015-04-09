@@ -7,7 +7,7 @@ data_column : str
     Must contain numerical data; all NaNs and infinite values are excluded
     from the calculation.
 weights_column_name : str (optional)
-    Name of column holding weights of column values
+    Name of column holding weights of column values.
 use_population_variance : bool (optional)
     If true, the variance is calculated as the population variance.
     If false, the variance calculated as the sample variance.
@@ -115,7 +115,6 @@ Equations
 
 Examples
 --------
-
 .. code::
 
     >>> stats = frame.column_summary_statistics('data column', 'weight column')

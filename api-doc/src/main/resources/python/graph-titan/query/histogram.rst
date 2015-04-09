@@ -39,7 +39,8 @@ dictionary
 
     *   prior_histograms : An array of histograms of prior probabilities
         for each feature dimension.
-        The histogram comprises of an array of buckets and corresponding counts.
+        The histogram comprises of an array of buckets and corresponding
+        counts.
         The buckets are all open to the left except for the last which is
         closed, for example, for the array [1,5,10] the buckets are
         [1, 5] [5, 10].
@@ -80,7 +81,7 @@ Generate the prior and posterior histograms for LBP:
         >>> results["prior_histograms"]
         >>> results["posterior_histograms"]
 
-If you want compute only the prior histograms use:
+If you want to compute only the prior histograms, use:
 
 .. code::
 
