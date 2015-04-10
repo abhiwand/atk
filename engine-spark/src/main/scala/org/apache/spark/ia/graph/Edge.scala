@@ -24,7 +24,7 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
-import com.intel.intelanalytics.domain.schema.{GraphSchema, EdgeSchema, DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, EdgeSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
 

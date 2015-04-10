@@ -30,7 +30,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class VertexWrapperTest extends FlatSpec with Matchers {
 
-  val columns = List(Column("_vid"GraphSchema.vidProperty
+  val columns = List(Column(GraphSchema.vidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("name", DataTypes.string), Column("from", DataTypes.string), Column("to", DataTypes.string), Column("fair", DataTypes.int32))
   val schema = new VertexSchema(columns, GraphSchema.labelProperty, null)
 
   "VertexWrapper" should "allow accessing underlying vertex data" in {
@@ -81,7 +81,7 @@ class VertexWrapperTest extends FlatSpec with Matchers {
     wrapper(row)
     val gbVertex = wrapper.toGbVertex
 
-    gbVertex.gbId.key should be(GraphSchema.vidProperty)
+    gbVertex.gbId.key should be("_vid")
     gbVertex.gbId.value should be(1L)
     gbVertex.getProperty("name").get.value shouldBe ("Bob")
     gbVertex.getProperty("from").get.value shouldBe ("PDX")

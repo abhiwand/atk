@@ -35,7 +35,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.{GraphSchema, VertexSchema, DataTypes}
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
 import org.apache.spark.frame.FrameRdd

@@ -630,10 +630,10 @@ class SchemaTest extends WordSpec with Matchers {
 
     "be able to select a subset and rename" in {
       val schema = edgeSchema.copySubsetWithRename(Map((GraphSchema.edgeProperty, GraphSchema.edgeProperty),
-                                                       (GraphSchema.labelProperty, GraphSchema.labelProperty,),
-                                                       (GraphSchema.srcVidProperty, GraphSchema.srcVidProperty),
-                                                       (GraphSchema.destVidProperty, GraphSchema.destVidProperty),
-                                                       ("rating", "stars")))
+        (GraphSchema.labelProperty, GraphSchema.labelProperty),
+        (GraphSchema.srcVidProperty, GraphSchema.srcVidProperty),
+        (GraphSchema.destVidProperty, GraphSchema.destVidProperty),
+        ("rating", "stars")))
       assert(schema.columns.length == 5)
       assert(schema.hasColumn(GraphSchema.edgeProperty))
       assert(schema.hasColumn(GraphSchema.labelProperty))
