@@ -24,12 +24,13 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.intelanalytics.domain.schema.GraphSchema
 import org.scalatest.WordSpec
 
 class VertexSchemaAggregatorTest extends WordSpec {
 
-  val movieVertex = GBVertex(1L, Property("titanPhysicalId", 2L), Set(Property("_label", "movie"), Property("movieId", 23L)))
-  val userVertex = GBVertex(2L, Property("titanPhysicalId", 3L), Set(Property("_label", "user"), Property("userId", 52L)))
+  val movieVertex = GBVertex(1L, Property("titanPhysicalId", 2L), Set(Property(GraphSchema.labelProperty, "movie"), Property("movieId", 23L)))
+  val userVertex = GBVertex(2L, Property("titanPhysicalId", 3L), Set(Property(GraphSchema.labelProperty, "user"), Property("userId", 52L)))
   val vertexSchemaAggregator = new VertexSchemaAggregator(List("movieId", "userId"))
 
   val zeroValue = vertexSchemaAggregator.zeroValue
@@ -38,14 +39,14 @@ class VertexSchemaAggregatorTest extends WordSpec {
     "convert movie GBVertices to VertexSchemas" in {
       val schema = vertexSchemaAggregator.toSchema(movieVertex)
       assert(schema.label == "movie")
-      assert(schema.hasColumns(Seq("_vid", "_label", "movieId")))
+      assert(schema.hasColumns(Seq(GraphSchema.vidProperty, GraphSchema.labelProperty, "movieId")))
       assert(schema.columns.size == 3, "expected _vid, _label, and movieId")
     }
 
     "convert user GBVertices to VertexSchemas" in {
       val schema = vertexSchemaAggregator.toSchema(userVertex)
       assert(schema.label == "user")
-      assert(schema.hasColumns(Seq("_vid", "_label", "userId")))
+      assert(schema.hasColumns(Seq(GraphSchema.vidProperty, GraphSchema.labelProperty, "userId")))
       assert(schema.columns.size == 3, "expected _vid, _label, and userId")
     }
 

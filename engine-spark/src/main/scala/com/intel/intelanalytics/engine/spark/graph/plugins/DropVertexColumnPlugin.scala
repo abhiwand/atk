@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.domain.schema.VertexSchema
+import com.intel.intelanalytics.domain.schema.{GraphSchema, VertexSchema}
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity, DropColumnsArgs }
@@ -44,7 +44,7 @@ class DropVertexColumnPlugin extends DropColumnsPlugin {
    */
   override def name: String = "frame:vertex/drop_columns"
 
-  val systemFields = Set("_vid", "_label")
+  val systemFields = Set(GraphSchema.vidProperty, GraphSchema.labelProperty)
 
   override def execute(arguments: DropColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     val frames = engine.frames

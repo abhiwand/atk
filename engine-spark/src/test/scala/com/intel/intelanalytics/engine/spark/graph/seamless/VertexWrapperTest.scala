@@ -23,16 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark.graph.seamless
 
-import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, Schema, VertexSchema }
+import com.intel.intelanalytics.domain.schema._
 import org.apache.spark.ia.graph.VertexWrapper
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.{ FlatSpec, Matchers }
 
 class VertexWrapperTest extends FlatSpec with Matchers {
 
-  val columns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("from", DataTypes.string), Column("to", DataTypes.string), Column("fair", DataTypes.int32))
-
-  val schema = new VertexSchema(columns, "label", null)
+  val columns = List(Column("_vid"GraphSchema.vidProperty
+  val schema = new VertexSchema(columns, GraphSchema.labelProperty, null)
 
   "VertexWrapper" should "allow accessing underlying vertex data" in {
     val wrapper = new VertexWrapper(schema)
@@ -82,7 +81,7 @@ class VertexWrapperTest extends FlatSpec with Matchers {
     wrapper(row)
     val gbVertex = wrapper.toGbVertex
 
-    gbVertex.gbId.key should be("_vid")
+    gbVertex.gbId.key should be(GraphSchema.vidProperty)
     gbVertex.gbId.value should be(1L)
     gbVertex.getProperty("name").get.value shouldBe ("Bob")
     gbVertex.getProperty("from").get.value shouldBe ("PDX")

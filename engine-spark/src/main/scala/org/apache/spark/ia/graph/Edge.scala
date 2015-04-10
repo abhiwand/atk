@@ -24,7 +24,7 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{GraphSchema, EdgeSchema, DataTypes, Schema}
 import com.intel.intelanalytics.engine.spark.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
 
@@ -75,48 +75,48 @@ class EdgeWrapper(override val schema: EdgeSchema) extends AbstractEdge with Ser
  */
 trait AbstractEdge extends AbstractRow with Serializable {
   require(schema.isInstanceOf[EdgeSchema], "schema should be for edges")
-  require(schema.hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + schema.columnTuples)
-  require(schema.hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + schema.columnTuples)
-  require(schema.hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + schema.columnTuples)
-  require(schema.hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.edgeProperty, DataTypes.int64), "schema did not have int64 _eid column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.srcVidProperty, DataTypes.int64), "schema did not have int64 _src_vid column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.destVidProperty, DataTypes.int64), "schema did not have int64 _dest_vid column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have string _label column: " + schema.columnTuples)
 
   /**
    * Return id of the edge
    * @return edge id
    */
-  def eid(): Long = longValue("_eid")
+  def eid(): Long = longValue(GraphSchema.edgeProperty)
 
   /**
    * Return id of the source vertex
    * @return source vertex id
    */
-  def srcVertexId(): Long = longValue("_src_vid")
+  def srcVertexId(): Long = longValue(GraphSchema.srcVidProperty)
 
   /**
    * Return id of the destination vertex
    * @return destination vertex id
    */
-  def destVertexId(): Long = longValue("_dest_vid")
+  def destVertexId(): Long = longValue(GraphSchema.destVidProperty)
 
   /**
    * Return label of the edge
    * @return label of the edge
    */
-  def label(): String = stringValue("_label")
+  def label(): String = stringValue(GraphSchema.labelProperty)
 
   /**
    * Set the label on this vertex
    */
   def setLabel(label: String): Row = {
-    setValue("_label", label)
+    setValue(GraphSchema.labelProperty, label)
   }
 
   def setSrcVertexId(vid: Long): Row = {
-    setValue("_src_vid", vid)
+    setValue(GraphSchema.srcVidProperty, vid)
   }
 
   def setDestVertexId(vid: Long): Row = {
-    setValue("_dest_vid", vid)
+    setValue(GraphSchema.destVidProperty, vid)
   }
 
   /**
@@ -126,7 +126,7 @@ trait AbstractEdge extends AbstractRow with Serializable {
     create()
     edge.properties.foreach(prop => setValue(prop.key, prop.value))
     if (edge.eid.isDefined) {
-      setValue("_eid", edge.eid.get)
+      setValue(GraphSchema.edgeProperty, edge.eid.get)
     }
     setSrcVertexId(edge.tailPhysicalId.asInstanceOf[Long])
     setDestVertexId(edge.headPhysicalId.asInstanceOf[Long])
@@ -150,11 +150,11 @@ trait AbstractEdge extends AbstractRow with Serializable {
    *
    */
   private def createGBEdge(reversed: Boolean): GBEdge = {
-    val filteredColumns = schema.columnsExcept(List("_label", "_src_vid", "_dest_vid"))
+    val filteredColumns = schema.columnsExcept(List(GraphSchema.labelProperty, GraphSchema.srcVidProperty, GraphSchema.destVidProperty))
     val properties = filteredColumns.map(column => GBProperty(column.name, value(column.name)))
     // TODO: eid() will be included as a property, is that good enough?
-    val srcProperty: GBProperty = GBProperty("_vid", srcVertexId())
-    val destProperty: GBProperty = GBProperty("_vid", destVertexId())
+    val srcProperty: GBProperty = GBProperty(GraphSchema.vidProperty, srcVertexId())
+    val destProperty: GBProperty = GBProperty(GraphSchema.vidProperty, destVertexId())
     if (reversed)
       GBEdge(None, null, null, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
     else
