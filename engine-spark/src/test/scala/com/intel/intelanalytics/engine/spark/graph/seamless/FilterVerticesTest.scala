@@ -26,14 +26,11 @@ package com.intel.intelanalytics.engine.spark.graph.seamless
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContext }
 import com.intel.intelanalytics.engine.spark.graph.plugins.FilterVerticesFunctions
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema, DataTypes, Column }
+import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.domain.schema.EdgeSchema
-import com.intel.intelanalytics.domain.schema.Schema
 import scala.Some
-import com.intel.intelanalytics.domain.schema.Column
 
 class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
 
@@ -41,8 +38,8 @@ class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
     val edgeArray = Array(Array(1, 11, 21, "like", 100), Array(2, 12, 22, "like", 80), Array(3, 13, 23, "like", 90), Array(4, 14, 24, "like", 5))
     val edgeRdd = sparkContext.parallelize(edgeArray)
 
-    val columns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("distance", DataTypes.int32))
-    val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
+    val columns = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("distance", DataTypes.int32))
+    val schema = new EdgeSchema(columns, GraphSchema.labelProperty, "srclabel", "destlabel")
     val edgeLegacyRdd = new LegacyFrameRdd(schema, edgeRdd)
 
     val vertexArray = Array(5, 13)

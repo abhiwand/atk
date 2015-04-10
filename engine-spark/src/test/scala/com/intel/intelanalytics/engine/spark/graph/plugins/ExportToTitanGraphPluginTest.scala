@@ -46,13 +46,13 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import scala.collection.JavaConversions._
 
 class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Matchers with MockitoSugar {
-  val edgeColumns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
+  val edgeColumns = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("startDate", DataTypes.string))
   val edgeSchema = new EdgeSchema(edgeColumns, "worksUnder", "srclabel", "destlabel", true)
 
-  val employeeColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("employee", DataTypes.int64))
+  val employeeColumns = List(Column(GraphSchema.vidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("name", DataTypes.string), Column("employee", DataTypes.int64))
   val employeeSchema = new VertexSchema(employeeColumns, "employee", null)
 
-  val divisionColumns = List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("name", DataTypes.string), Column("divisionID", DataTypes.int64))
+  val divisionColumns = List(Column(GraphSchema.vidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("name", DataTypes.string), Column("divisionID", DataTypes.int64))
   val divisionSchema = new VertexSchema(divisionColumns, "division", null)
 
   "ExportToTitanGraph" should {
@@ -101,7 +101,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       this.titanGraph.getEdges().size should be(2)
       titanVertices.size should be(3)
 
-      val bobVertex = this.titanGraph.getVertices("_vid", 1l).iterator().next()
+      val bobVertex = this.titanGraph.getVertices(GraphSchema.vidProperty, 1l).iterator().next()
       bobVertex.getProperty[String]("name") should be("Bob")
       val bobsDivisionIterator = bobVertex.getVertices(Direction.OUT)
       bobsDivisionIterator.size should be(1)
@@ -116,15 +116,15 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
 
     "unallowed titan naming elements will throw proper exceptions" in {
       intercept[IllegalArgumentException] {
-        val edgeColumns1 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label1", DataTypes.string), Column("label3", DataTypes.string))
+        val edgeColumns1 = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("label1", DataTypes.string), Column("label3", DataTypes.string))
         val edgeSchema1 = new EdgeSchema(edgeColumns1, "label1", "srclabel", "destlabel")
         val frame1 = new FrameEntity(1, Some("name"), edgeSchema1, 0L, new DateTime, new DateTime)
 
-        val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("label2", DataTypes.string))
+        val edgeColumns2 = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("label2", DataTypes.string))
         val edgeSchema2 = new EdgeSchema(edgeColumns2, "label2", "srclabel", "destlabel")
         val frame2 = new FrameEntity(1, Some("name"), edgeSchema2, 0L, new DateTime, new DateTime)
 
-        val edgeColumns3 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
+        val edgeColumns3 = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("startDate", DataTypes.string))
         val edgeSchema3 = new EdgeSchema(edgeColumns3, "label3", "srclabel", "destlabel")
         val frame3 = new FrameEntity(1, Some("name"), edgeSchema3, 0L, new DateTime, new DateTime)
 
@@ -135,7 +135,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
     "no exception thrown if titan naming elements are valid" in {
       val frame1 = new FrameEntity(1, Some("name"), edgeSchema, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
-      val edgeColumns2 = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("startDate", DataTypes.string))
+      val edgeColumns2 = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("startDate", DataTypes.string))
       val edgeSchema2 = new EdgeSchema(edgeColumns2, "label1", "srclabel", "destlabel")
       val frame2 = new FrameEntity(1, Some("name"), edgeSchema2, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
