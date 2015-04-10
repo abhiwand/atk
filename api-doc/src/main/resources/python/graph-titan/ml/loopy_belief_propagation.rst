@@ -112,7 +112,7 @@ The expected output is like this:
         {u'value': u'======Graph Statistics======\\nNumber of vertices: 80000 (train: 56123, validate: 15930, test: 7947)\\nNumber of edges: 318400\\n\\n======LBP Configuration======\\nmaxSupersteps: 10\\nconvergenceThreshold: 0.000000\\nanchorThreshold: 0.900000\\nsmoothing: 2.000000\\nbidirectionalCheck: false\\nignoreVertexType: false\\nmaxProduct: false\\npower: 0.000000\\n\\n======Learning Progress======\\nsuperstep = 1\\tavgTrainDelta = 0.594534\\tavgValidateDelta = 0.542366\\tavgTestDelta = 0.542801\\nsuperstep = 2\\tavgTrainDelta = 0.322596\\tavgValidateDelta = 0.373647\\tavgTestDelta = 0.371556\\nsuperstep = 3\\tavgTrainDelta = 0.180468\\tavgValidateDelta = 0.194503\\tavgTestDelta = 0.198478\\nsuperstep = 4\\tavgTrainDelta = 0.113280\\tavgValidateDelta = 0.117436\\tavgTestDelta = 0.122555\\nsuperstep = 5\\tavgTrainDelta = 0.076510\\tavgValidateDelta = 0.074419\\tavgTestDelta = 0.077451\\nsuperstep = 6\\tavgTrainDelta = 0.051452\\tavgValidateDelta = 0.051683\\tavgTestDelta = 0.052538\\nsuperstep = 7\\tavgTrainDelta = 0.038257\\tavgValidateDelta = 0.033629\\tavgTestDelta = 0.034017\\nsuperstep = 8\\tavgTrainDelta = 0.027924\\tavgValidateDelta = 0.026722\\tavgTestDelta = 0.025877\\nsuperstep = 9\\tavgTrainDelta = 0.022886\\tavgValidateDelta = 0.019267\\tavgTestDelta = 0.018190\\nsuperstep = 10\\tavgTrainDelta = 0.018271\\tavgValidateDelta = 0.015924\\tavgTestDelta = 0.015377'}
 
 .. only:: latex
-    
+
     .. code::
 
         {u'value': u'======Graph Statistics======\\n

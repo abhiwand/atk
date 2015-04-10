@@ -1,4 +1,4 @@
-Predict the cluster assignments for the data points. 
+Predict the cluster assignments for the data points.
 
 Parameters
 ----------

@@ -26,7 +26,7 @@ The "original_data"::
 .. only:: html
 
     I run my commands to bring the data in where I can work on it:
-    
+
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', str)], delimiter='-')
@@ -35,7 +35,7 @@ The "original_data"::
 .. only:: latex
 
     I run my commands to bring the data in where I can work on it:
-    
+
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),

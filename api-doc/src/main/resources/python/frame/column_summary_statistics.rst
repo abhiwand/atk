@@ -99,7 +99,7 @@ Logging Invalid Data
     In this case, it contributes to bad_row_count; otherwise it
     contributes to good row count.
 
-    A good row can be skipped because the value in its weight 
+    A good row can be skipped because the value in its weight
     column is less than or equal to 0.
     In this case, it contributes to non_positive_weight_count, otherwise
     (when the weight is greater than 0) it contributes to
