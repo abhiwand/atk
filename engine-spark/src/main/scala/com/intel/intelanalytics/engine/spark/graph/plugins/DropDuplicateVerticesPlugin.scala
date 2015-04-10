@@ -35,7 +35,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
+import com.intel.intelanalytics.domain.schema.{GraphSchema, VertexSchema, DataTypes}
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
 import org.apache.spark.frame.FrameRdd
@@ -90,7 +90,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
       case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
       case None =>
         // _vid is always unique so don't include it
-        vertexFrame.schema.columnNames.dropWhile(s => s == "_vid")
+        vertexFrame.schema.columnNames.dropWhile(s => s == GraphSchema.vidProperty)
     }
     schema.validateColumnsExist(columnNames)
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)

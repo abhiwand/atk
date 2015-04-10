@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.RenameColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -42,7 +43,7 @@ class RenameVertexColumnsPlugin extends RenameColumnsPlugin {
    */
   override def name: String = "frame:vertex/rename_columns"
 
-  val systemFields = Set("_vid", "_label")
+  val systemFields = Set(GraphSchema.vidProperty, GraphSchema.labelProperty)
 
   override def execute(arguments: RenameColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
     rejectInvalidColumns(arguments.names.keys, systemFields)

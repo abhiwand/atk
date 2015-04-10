@@ -23,16 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark.graph.seamless
 
-import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, EdgeSchema, Schema }
+import com.intel.intelanalytics.domain.schema._
 import org.apache.spark.ia.graph.EdgeWrapper
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.{ FlatSpec, Matchers }
 
 class EdgeWrapperTest extends FlatSpec with Matchers {
 
-  val columns = List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("distance", DataTypes.int32))
+  val columns = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("distance", DataTypes.int32))
 
-  val schema = new EdgeSchema(columns, "label", "srclabel", "destlabel")
+  val schema = new EdgeSchema(columns, GraphSchema.labelProperty, "srclabel", "destlabel")
 
   "EdgeWrapper" should "allow access to underlying edge data" in {
     val wrapper = new EdgeWrapper(schema)
@@ -61,7 +61,7 @@ class EdgeWrapperTest extends FlatSpec with Matchers {
     val wrapper = new EdgeWrapper(schema)
     val row = new GenericRow(Array(1L, 2L, 3L, "distance", 500))
     wrapper(row)
-    wrapper.hasProperty("_src_vid") shouldBe true
+    wrapper.hasProperty(GraphSchema.srcVidProperty) shouldBe true
     wrapper.hasProperty("distance") shouldBe true
     wrapper.hasProperty("random_column") shouldBe false
   }
@@ -81,9 +81,9 @@ class EdgeWrapperTest extends FlatSpec with Matchers {
     val gbEdge = wrapper.toGbEdge
     gbEdge.label should be("label")
     gbEdge.getProperty("distance").get.value should be(500)
-    gbEdge.getProperty("_eid").get.value should be(1)
-    gbEdge.tailVertexGbId.key should be("_vid")
-    gbEdge.headVertexGbId.key should be("_vid")
+    gbEdge.getProperty(GraphSchema.edgeProperty).get.value should be(1)
+    gbEdge.tailVertexGbId.key should be(GraphSchema.vidProperty)
+    gbEdge.headVertexGbId.key should be(GraphSchema.vidProperty)
     gbEdge.tailVertexGbId.value should be(2L)
     gbEdge.headVertexGbId.value should be(3L)
   }

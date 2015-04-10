@@ -47,8 +47,8 @@ case class Column(name: String, dataType: DataType,
  * Extra schema if this is a vertex frame
  */
 case class VertexSchema(columns: List[Column] = List[Column](), label: String, idColumnName: Option[String] = None) extends GraphElementSchema {
-  require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
-  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  require(hasColumnWithType(GraphSchema.vidProperty, DataTypes.int64), "schema did not have int64 _vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have string _label column: " + columns)
   if (idColumnName != null) {
     //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
   }
@@ -89,10 +89,10 @@ case class VertexSchema(columns: List[Column] = List[Column](), label: String, i
  * @param directed true if edges are directed, false if they are undirected
  */
 case class EdgeSchema(columns: List[Column] = List[Column](), label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) extends GraphElementSchema {
-  require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
-  require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
-  require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
-  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  require(hasColumnWithType(GraphSchema.edgeProperty, DataTypes.int64), "schema did not have int64 _eid column: " + columns)
+  require(hasColumnWithType(GraphSchema.srcVidProperty, DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.destVidProperty, DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have string _label column: " + columns)
 
   override def copy(columns: List[Column]): EdgeSchema = {
     new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
