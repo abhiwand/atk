@@ -27,7 +27,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
-import com.intel.intelanalytics.domain.schema.{GraphSchema, DataTypes, EdgeSchema}
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, EdgeSchema }
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage

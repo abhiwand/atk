@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.domain.schema.{GraphSchema, DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, Schema }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
 import org.scalatest.Matchers

@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.AddVerticesArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.domain.schema.{GraphSchema, VertexSchema}
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -102,7 +102,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
     val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(arguments.idColumnName, idColumnName)
 
     // assign unique ids
-    val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds(GraphSchema.vidProperty startId = graph.nextId())
+    val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds(GraphSchema.vidProperty, startId = graph.nextId())
 
     verticesToAdd.persist(StorageLevel.MEMORY_AND_DISK)
 
