@@ -126,7 +126,7 @@ a movie recommendation for user 1, the command to use is:
         ...     max_value = 5)
 
 The expected output is like this:
-    
+
 .. only:: html
 
     .. code::

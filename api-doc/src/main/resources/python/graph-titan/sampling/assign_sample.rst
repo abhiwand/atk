@@ -46,7 +46,7 @@ Given *my_graph* is a Graph object accessing a graph with data:
 
         >>> my_graph = ia.get_graph('my_graph')
         >>> my_graph.query.gremlin("g.V [0..2]")
-        {u'results': 
+        {u'results':
           [{u'_vid': 4,
             u'source': 3,
             u'_type':
@@ -77,8 +77,8 @@ Assign the value in the new vertex property to "train", "test", or "validate":
 
     >>> my_graph.sampling.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
 
-Now the vertices of *my_graph* have a new vertex property named "sample_bin" and
-each vertex contains one of the values "train", "test", or "validate".
+Now the vertices of *my_graph* have a new vertex property named "sample_bin"
+and each vertex contains one of the values "train", "test", or "validate".
 Existing properties are unaffected.
 
 .. only:: html

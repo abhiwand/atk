@@ -31,7 +31,7 @@ import org.apache.hadoop.conf.Configuration
 /**
  * Create HBaseAdmin instances
  *
- * HBaseAdmin should not be re-used forever: you should create, use, throw away - andl then get another one next time
+ * HBaseAdmin should not be re-used forever: you should create, use, throw away - and then get another one next time
  */
 class HBaseAdminFactory {
 

@@ -7,6 +7,7 @@ Parameters
 column_name : str
     The column to calculate quantiles.
 quantiles : [ float | list of float ]
+    What is being requested.
 
 Returns
 -------
@@ -35,7 +36,7 @@ column *final_sale_price*:
                 420
                 250
                 335
-                
+
 To calculate 10th, 50th, and 100th quantile:
 
 .. code::

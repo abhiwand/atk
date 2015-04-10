@@ -92,7 +92,7 @@ object
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double
-    
+
 Examples
 --------
 Consider the following sample data set in *frame* with actual data
