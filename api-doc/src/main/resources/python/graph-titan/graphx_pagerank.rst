@@ -16,7 +16,8 @@ input_edge_labels : list of str (optional)
 max_iterations : int (optional)
     The maximum number of iterations that the algorithm will execute.
     The valid range is all positive int.
-    Invalid value will terminate with vertex page rank set to reset_probability.
+    Invalid value will terminate with vertex page rank set to
+    reset_probability.
     Default is 20.
 convergence_tolerance : float (optional)
     The amount of change in cost function that will be tolerated at
@@ -49,7 +50,7 @@ The expected output is like this:
     {u'graph': u'pr_graph'}
 
 To query:
-    
+
 .. only:: html
 
     .. code::

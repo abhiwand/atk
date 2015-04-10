@@ -16,7 +16,7 @@ edge_value_property_list : list of str
     more than one edge property.
 input_edge_label_list : list of str
     The name of edge label.
-output_vertex_property_list : list of str  
+output_vertex_property_list : list of str
     The list of vertex properties to store output vertex values.
 vertex_type_property_key : str
     The name of vertex property which contains vertex type.
@@ -117,7 +117,7 @@ Examples
         ...     num_iters = 3)
 
 The expected output is like this:
-    
+
 .. only:: html
 
     .. code::

@@ -25,7 +25,7 @@ initializationMode : str (Optional)
     The initialization technique for the algorithm.
     It could be either "random" or "k-means||".
     Default is "k-means||".
-       
+
 Returns
 -------
 dict : results
@@ -46,7 +46,7 @@ Examples
         >>> my_model = ia.KMeansModel(name='MyKMeansModel')
         >>> my_model.train(train_frame, ['name_of_observation_column1', 'name_of_observation_column2'],[1.0,2.0] 3, 10, 0.0002, "random")
 
-.. only:: html
+.. only:: latex
 
     .. code::
 

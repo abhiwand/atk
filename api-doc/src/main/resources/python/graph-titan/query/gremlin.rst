@@ -33,7 +33,7 @@ Get the first two outgoing edges of the vertex whose source equals 5767244:
     >>> print results["results"]
 
 The expected output is a list of edges in GraphSON format:
-    
+
 .. only:: html
 
     .. code::
