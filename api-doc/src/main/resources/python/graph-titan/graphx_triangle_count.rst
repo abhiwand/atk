@@ -38,7 +38,7 @@ The expected output is like this:
     {u'graph': u'tc_graph'}
 
 To query:
-    
+
 .. only:: html
 
     .. code::

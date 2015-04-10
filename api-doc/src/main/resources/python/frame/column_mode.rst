@@ -40,18 +40,15 @@ mode : A mode is a data element of maximum net weight.
     If the number of modes is greater than the max_modes_returned
     parameter, only the first max_modes_returned many modes (per a
     canonical ordering) are returned.
-
 weight_of_mode : Weight of a mode.
     If there are no data elements of finite weight greater than 0,
     the weight of the mode is 0.
     If no weights column is given, this is the number of appearances
     of each mode.
-
 total_weight : Sum of all weights in the weight column.
     This is the row count if no weights are given.
     If no weights column is given, this is the number of rows in
     the table with non-zero weight.
-
 mode_count : The number of distinct modes in the data.
     In the case that the data is very multimodal, this number may
     exceed max_modes_returned.
