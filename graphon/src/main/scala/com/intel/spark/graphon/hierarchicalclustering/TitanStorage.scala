@@ -22,14 +22,14 @@ object TitanStorage extends Serializable {
 
     val schema = new GraphSchema(List(EdgeLabelDef(HierarchicalClusteringConstants.LabelPropertyValue)),
       List(PropertyDef(PropertyType.Vertex, GraphSchema.labelProperty, classOf[String]),
-        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeCountProperty, classOf[Int]),
+        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeCountProperty, classOf[Long]),
         PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeNameProperty, classOf[String])))
     val schemaWriter = new TitanSchemaWriter(titanGraph)
 
     schemaWriter.write(schema)
   }
 
-  def addVertexToTitan(nodeCount: Int,
+  def addVertexToTitan(nodeCount: Long,
                        name: String,
                        titanGraph: TitanGraph): Vertex = {
 

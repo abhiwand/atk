@@ -74,7 +74,7 @@ object EdgeManager extends Serializable {
    * @return 2 internal edges replacing the collapsed edge in the graph
    */
   def createInternalEdgesForMetaNode(edge: HierarchicalClusteringEdge,
-                                     graph: TitanGraph): (Long, Int, List[HierarchicalClusteringEdge]) = {
+                                     graph: TitanGraph): (Long, Long, List[HierarchicalClusteringEdge]) = {
     var edges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
     var metaNodeVertexId: Long = HierarchicalClusteringConstants.DefaultVertextId
 
@@ -116,8 +116,8 @@ object EdgeManager extends Serializable {
    * @param nonSelectedEdges
    * @return
    */
-  def createActiveEdgesForMetaNode(metaNode: Long, count: Int,
-                                   nonSelectedEdges: Iterable[HierarchicalClusteringEdge]): List[((Long, Int), HierarchicalClusteringEdge)] = {
+  def createActiveEdgesForMetaNode(metaNode: Long, count: Long,
+                                   nonSelectedEdges: Iterable[HierarchicalClusteringEdge]): List[((Long, Long), HierarchicalClusteringEdge)] = {
 
     nonSelectedEdges.map(e => ((e.dest, e.destNodeCount),
       HierarchicalClusteringEdge(

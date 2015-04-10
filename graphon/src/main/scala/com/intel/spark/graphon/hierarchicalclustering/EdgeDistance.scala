@@ -94,7 +94,7 @@ object EdgeDistance extends Serializable {
    */
   def weightedAvg(edges: Iterable[HierarchicalClusteringEdge]): Float = {
     var dist: Float = 0
-    var nodeCount = 0
+    var nodeCount: Long = 0
 
     for (e <- edges) {
       dist += (e.distance * e.srcNodeCount)
