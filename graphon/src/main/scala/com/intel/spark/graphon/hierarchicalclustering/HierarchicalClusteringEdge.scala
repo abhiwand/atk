@@ -10,16 +10,16 @@ package com.intel.spark.graphon.hierarchicalclustering
  * @param isInternal true if the edge is internal (created through node edge collapse), false otherwise
  */
 case class HierarchicalClusteringEdge(var src: Long,
-                                      var srcNodeCount: Int,
+                                      var srcNodeCount: Long,
                                       var dest: Long,
-                                      var destNodeCount: Int,
+                                      var destNodeCount: Long,
                                       var distance: Float,
                                       isInternal: Boolean) {
   /**
    * Get the total node count of the edge
    * @return sum of src + dest counts
    */
-  def getTotalNodeCount(): Int = {
+  def getTotalNodeCount(): Long = {
     srcNodeCount + destNodeCount
   }
 
