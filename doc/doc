@@ -197,7 +197,7 @@ function main {
 
         # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
-        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
         if [ "$?" != "0" ]; then return 1; fi
         SphinxFormats="latex text html"
         SphinxFlag=OK
@@ -214,7 +214,7 @@ function main {
         echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
         if [ $? == 0 ]; then
             RunCommand="which pdflatex"
-            do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+            do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
             pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
@@ -258,7 +258,7 @@ function main {
     echo $ModifiedArguments | grep -i -e "/zip/" > /dev/null
     if [ $? == 0 ]; then
         RunCommand="which zip"
-        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
         if [ "$?" == "0" ]; then
             if [[ -e intel_analytics_docs.zip ]]; then
                 rm intel_analytics_docs.zip
@@ -281,37 +281,27 @@ function maven(){
     # debug: Update scala server
     pushd ../ > /dev/null
     update_scala $1 $2 $3 $4
-    if [ "$?" != "0" ]; then
-        pkill -9 -f java
-        popd
-        return 1
-    fi
+    RETURN=$?
     popd > /dev/null
+    if [ "$RETURN" != "0" ]; then return $RETURN; fi
 
     # Start the server
     pushd ../ > /dev/null
-    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-    do_this "$RunCommand" $1 $2 $3 $4
-    if [ "$?" == "1" ]; then return 1; fi
-    log_step "nohup bin/api-server.sh" $2 $4
-    nohup bin/api-server.sh > $3 2>&1&
-    if [ "$?" == "1" ]; then
-        Err "nohup bin/api-server.sh" $1 $2 $3 $4
-        ABORT_QUESTION=$?
-        popd
-        return ABORT_QUESTION;
-    fi
+    server_start $1 $2 $3 $4
+    RETURN=$?
     popd > /dev/null
+    if [ "$RETURN" != "0" ]; then return $RETURN; fi
 
     # debug: Update the additional python documentation files
     pushd ../python > /dev/null
     update_python $1 $2 $3 $4
-    if [ "$?" == "1" ]; then
-        pkill -9 -f java
-        popd
-        return 1
-    fi
+    RETURN=$?
     popd > /dev/null
+
+    # debug: Stop the server
+    server_stop
+
+    return $RETURN
 
 }
 ############################################################################################################
@@ -381,6 +371,36 @@ function pdf_build {
     return 0
 }
 ############################################################################################################
+function server_start(){
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = Temporary file
+    # $4 = LogFile
+
+    # Start the server
+    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+    do_this "$RunCommand" $1 $2 $3 $4
+    RETURN=$?
+    if [ "$RETURN" == "0" ]; then
+        log_step "nohup bin/api-server.sh" $2 $4
+        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+        RETURN=$?
+        if [ "$RETURN" != "0" ]; then
+            Err "nohup bin/api-server.sh" $1 $2 $3 $4
+            RETURN=$?
+        fi
+    fi
+    return $RETURN
+}
+############################################################################################################
+function server_stop(){
+
+    # Stop the server
+    pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
+    kill $pid 2>%1 > /dev/null
+    return
+}
+############################################################################################################
 function sphinx_build {
     # $1 = Format
     # $2 = AskThem
@@ -408,23 +428,15 @@ function update_python {
     # $4 = LogFile
 
 # Update the additional python documentation files
-    which python2.7 > /dev/null
-    if [ "$?" == "0" ]; then
-        if [[ -f cmdgen.py ]]; then
-            do_this "python2.7 cmdgen.py" $1 $2 $3 $4
-            return $?
-        else
-            echo "The python script cmdgen.py seems to be missing."
-            read -p "Abort? [Y/n] "
-            if [ -z $UserResponse ];then
-                UserResponse='y'
-            fi
-            if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                return 1
-            fi
-        fi
+    RUNCOMMAND="which python2.7"
+    do_this "$RunCommand" $1 "No" $3 $4
+    RETURN=$?
+    if [ "$RETURN" != "0" ]; then return $RETURN; fi
+    if [[ -f cmdgen.py ]]; then
+        do_this "python2.7 cmdgen.py" $1 $2 $3 $4
+        return $?
     else
-        echo "Python 2.7 seems to be missing."
+        echo "The python script cmdgen.py seems to be missing."
         read -p "Abort? [Y/n] "
         if [ -z $UserResponse ];then
             UserResponse='y'
