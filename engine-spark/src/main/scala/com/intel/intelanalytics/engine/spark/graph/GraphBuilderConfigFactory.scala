@@ -167,17 +167,17 @@ object GraphBuilderConfigFactory {
    * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
    * @param commandConfig Configuration object for command.
    * @param titanPath Dot-separated expressions with Titan config, e.g., titan.load
-   * @param graphName Name of the graph to be written to.
+   * @param backendStorageName Name of the graph to be written to.
    *
    * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
    */
-  def getTitanConfiguration(commandConfig: Config, titanPath: String, graphName: String): SerializableBaseConfiguration = {
+  def getTitanConfiguration(commandConfig: Config, titanPath: String, backendStorageName: String): SerializableBaseConfiguration = {
 
     // load settings from titan.conf file...
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
-    titanConfiguration.setProperty(titanGraphNameKey, graphName)
+    titanConfiguration.setProperty(titanGraphNameKey, backendStorageName)
     titanConfiguration
   }
 
@@ -188,8 +188,8 @@ object GraphBuilderConfigFactory {
    * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
    */
   def getTitanConfiguration(graph: GraphEntity): SerializableBaseConfiguration = {
-    val graphName = graph.storage
-    getTitanConfiguration(graphName)
+    val backendStorageName = graph.storage
+    getTitanConfiguration(backendStorageName)
   }
 
   /**
@@ -212,7 +212,7 @@ object GraphBuilderConfigFactory {
    * @param titanConfig Titan configuration
    * @return Graph name key for backend (either "storage.hbase.table" or "storage.cassandra.keyspace")
    */
-  def getTitanGraphNameKey(titanConfig: SerializableBaseConfiguration): String = {
+  private def getTitanGraphNameKey(titanConfig: SerializableBaseConfiguration): String = {
     val storageBackend = titanConfig.getString("storage.backend")
 
     storageBackend.toLowerCase match {
