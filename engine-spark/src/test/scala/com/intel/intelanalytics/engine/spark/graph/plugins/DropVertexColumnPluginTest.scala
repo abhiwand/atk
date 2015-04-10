@@ -23,16 +23,17 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.domain.schema.GraphSchema
 import org.scalatest.{ FlatSpec, Matchers }
 
 class DropVertexColumnPluginTest extends FlatSpec with Matchers {
   "rejectInvalidColumns" should "raise IllegalArgumentException if receiving invalid columns" in {
     intercept[IllegalArgumentException] {
-      DropVertexColumnPlugin.rejectInvalidColumns(List("name", "_vid"), Set("_vid"))
+      DropVertexColumnPlugin.rejectInvalidColumns(List("name", GraphSchema.vidProperty), Set(GraphSchema.vidProperty))
     }
   }
 
   "rejectInvalidColumns" should "NOT raise IllegalArgumentException if not receiving invalid columns" in {
-    DropVertexColumnPlugin.rejectInvalidColumns(List("name", "address"), Set("_vid"))
+    DropVertexColumnPlugin.rejectInvalidColumns(List("name", "address"), Set(GraphSchema.vidProperty))
   }
 }
