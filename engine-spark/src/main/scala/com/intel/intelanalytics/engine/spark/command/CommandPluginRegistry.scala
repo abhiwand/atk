@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, CommandDoc }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.JsonSchemaExtractor
 import spray.json.JsonFormat
@@ -34,9 +35,11 @@ import ru._
 /**
  * Register and store command plugin
  */
-class CommandPluginRegistry(loader: CommandLoaderTrait) {
+class CommandPluginRegistry(loader: CommandLoader) {
 
-  private var commandPlugins: Map[String, CommandPlugin[_, _]] = loader.loadFromConfig()
+  private val registry: CommandPluginRegistryMaps = loader.loadFromConfig()
+  private def commandPlugins = registry.commandPlugins
+  private def pluginsToArchiveMap = registry.pluginsToArchiveMap
 
   /**
    * Get command plugin by name
@@ -54,7 +57,7 @@ class CommandPluginRegistry(loader: CommandLoaderTrait) {
    */
   def registerCommand[A <: Product, R <: Product](command: CommandPlugin[A, R]): CommandPlugin[A, R] = {
     synchronized {
-      commandPlugins += (command.name -> command)
+      registry.commandPlugins += (command.name -> command)
     }
     command
   }
@@ -127,4 +130,11 @@ class CommandPluginRegistry(loader: CommandLoaderTrait) {
   def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
   }
+
+  // Get archive name for the plugin. If it does not exist in the map, check if it is in commandPlugins as a valid plugin
+  def getArchiveNameFromPlugin(name: String): Option[String] = {
+    pluginsToArchiveMap.get(name)
+  }
 }
+
+case class CommandPluginRegistryMaps(var commandPlugins: Map[String, CommandPlugin[_, _]], var pluginsToArchiveMap: Map[String, String])
