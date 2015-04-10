@@ -235,9 +235,9 @@ object HierarchicalClusteringFunctions extends Serializable {
         val titanConnector = TitanGraphConnector(titanConfig)
         val graph = titanConnector.connect()
         val result = edges.map {
-          case edge =>
-            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(edge._1, graph)
-            val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, edge._2).map(_._2)
+          case (minDistEdge, nonMinDistEdges) =>
+            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, graph)
+            val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, nonMinDistEdges).map(_._2)
             (metaEdges, replacedEdges)
         }.toList
 
