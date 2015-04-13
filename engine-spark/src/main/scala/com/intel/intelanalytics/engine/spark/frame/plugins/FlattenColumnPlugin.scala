@@ -68,20 +68,20 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     // validate arguments
     val frameEntity = frames.expectFrame(arguments.frame)
     var schema = frameEntity.schema
-    var flattener: (Int, RDD[Row]) => RDD[Row] = null
+    var flattener: RDD[Row] => RDD[Row] = null
     val columnIndex = frameEntity.schema.columnIndex(arguments.column)
     val columnDataType = frameEntity.schema.columnDataType(arguments.column)
     columnDataType match {
-      case DataTypes.string => flattener = FlattenColumnFunctions.flattenRddByStringColumnIndex(arguments.delimiter.getOrElse(","))
-      case DataTypes.vector =>
+      case DataTypes.string => flattener = FlattenColumnFunctions.flattenRddByStringColumnIndex(columnIndex, arguments.delimiter.getOrElse(","))
+      case DataTypes.vector(length) =>
         schema = schema.convertType(arguments.column, DataTypes.float64)
-        flattener = FlattenColumnFunctions.flattenRddByVectorColumnIndex
+        flattener = FlattenColumnFunctions.flattenRddByVectorColumnIndex(columnIndex, length)
       case _ => throw new IllegalArgumentException(s"Flatten column does not support type $columnDataType")
     }
 
     // run the operation
     val rdd = frames.loadLegacyFrameRdd(sc, frameEntity)
-    val flattenedRDD = flattener(columnIndex, rdd)
+    val flattenedRDD = flattener(rdd)
 
     // save results
     frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(schema, flattenedRDD))
@@ -104,8 +104,9 @@ object FlattenColumnFunctions extends Serializable {
    * @param rdd RDD for flattening
    * @return new RDD with column flattened
    */
-  def flattenRddByVectorColumnIndex(index: Int, rdd: RDD[Row]): RDD[Row] = {
-    rdd.flatMap(row => flattenRowByVectorColumnIndex(index, row))
+  def flattenRddByVectorColumnIndex(index: Int, vectorLength: Long)(rdd: RDD[Row]): RDD[Row] = {
+    val flattener = flattenRowByVectorColumnIndex(index, vectorLength)_
+    rdd.flatMap(row => flattener(row))
   }
 
   /**
@@ -115,8 +116,9 @@ object FlattenColumnFunctions extends Serializable {
    * @param rdd RDD for flattening
    * @return new RDD with column flattened
    */
-  def flattenRddByStringColumnIndex(separator: String)(index: Int, rdd: RDD[Row]): RDD[Row] = {
-    rdd.flatMap(row => flattenRowByStringColumnIndex(index, row, separator))
+  def flattenRddByStringColumnIndex(index: Int, separator: String)(rdd: RDD[Row]): RDD[Row] = {
+    val flattener = flattenRowByStringColumnIndex(index, separator)_
+    rdd.flatMap(row => flattener(row))
   }
 
   /**
@@ -125,8 +127,8 @@ object FlattenColumnFunctions extends Serializable {
    * @param row row data
    * @return flattened out row/rows
    */
-  private[frame] def flattenRowByVectorColumnIndex(index: Int, row: Array[Any]): Array[Array[Any]] = {
-    DataTypes.toVector(row(index)).toArray.map(s => {
+  private[frame] def flattenRowByVectorColumnIndex(index: Int, vectorLength: Long)(row: Array[Any]): Array[Array[Any]] = {
+    DataTypes.toVector(vectorLength)(row(index)).toArray.map(s => {
       val r = row.clone()
       r(index) = s
       r
@@ -141,7 +143,7 @@ object FlattenColumnFunctions extends Serializable {
    * @param delimiter separator for splitting
    * @return flattened out row/rows
    */
-  private[frame] def flattenRowByStringColumnIndex(index: Int, row: Array[Any], delimiter: String): Array[Array[Any]] = {
+  private[frame] def flattenRowByStringColumnIndex(index: Int, delimiter: String)(row: Array[Any]): Array[Array[Any]] = {
     val splitted = row(index).asInstanceOf[String].split(Pattern.quote(delimiter))
     splitted.map(s => {
       val r = row.clone()

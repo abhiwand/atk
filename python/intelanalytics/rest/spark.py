@@ -44,8 +44,7 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
-from intelanalytics.core.row import NumpyJSONEncoder
-from intelanalytics.core.iatypes import valid_data_types
+from intelanalytics.core.iatypes import valid_data_types, NumpyJSONEncoder
 
 
 import json

@@ -48,8 +48,8 @@ class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers 
     Column("col_1", DataTypes.float64),
     Column("col_2", DataTypes.int32),
     Column("col_3", DataTypes.int32),
-    Column("col_4", DataTypes.vector),
-    Column("col_5", DataTypes.vector)
+    Column("col_4", DataTypes.vector(2)),
+    Column("col_5", DataTypes.vector(2))
   ))
 
   "dotProduct" should "compute the dot product for sequences of columns" in {
