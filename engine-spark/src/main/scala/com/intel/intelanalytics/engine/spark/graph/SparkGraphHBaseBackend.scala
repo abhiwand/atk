@@ -154,8 +154,10 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       }
     }
     finally {
-      outputStream.flush()
-      outputStream.close()
+      if (null != outputStream) {
+        outputStream.flush()
+        outputStream.close()
+      }
     }
   }
 
