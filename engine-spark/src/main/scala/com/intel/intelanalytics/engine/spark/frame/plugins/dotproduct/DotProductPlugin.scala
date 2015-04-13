@@ -110,7 +110,7 @@ class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
     }
     else {
       val columnDataType = frameSchema.columnDataType(columnNames(0))
-      require(columnDataType == DataTypes.vector || columnDataType.isNumerical,
+      require(columnDataType.isVector || columnDataType.isNumerical,
         s"column ${columnNames(0)} should be of type numeric")
     }
   }

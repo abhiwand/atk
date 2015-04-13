@@ -25,19 +25,7 @@ from collections import OrderedDict
 from intelanalytics.core.iatypes import valid_data_types
 
 import json
-import intelanalytics.core.iatypes as iatypes
-
-
-class NumpyJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, iatypes.float32) or isinstance(obj, iatypes.float64):
-            return float(obj)
-        if isinstance(obj, iatypes.int32) or isinstance(obj, iatypes.float64):
-            return int(obj)
-        if isinstance(obj, iatypes.vector):
-            return obj.tolist()
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+from intelanalytics.core.iatypes import NumpyJSONEncoder
 
 
 class Row(object):

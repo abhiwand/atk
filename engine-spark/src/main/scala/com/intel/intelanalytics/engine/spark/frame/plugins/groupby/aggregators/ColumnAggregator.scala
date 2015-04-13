@@ -48,7 +48,7 @@ object ColumnAggregator {
 
     val newColumnName = aggregationArgs.newColumnName.split("=")(0)
     val histogramAggregator = getHistogramAggregator(functionName.split("=")(1))
-    ColumnAggregator(Column(newColumnName, DataTypes.vector), columnIndex, histogramAggregator)
+    ColumnAggregator(Column(newColumnName, DataTypes.vector(histogramAggregator.cutoffs.length - 1)), columnIndex, histogramAggregator)
   }
 
   /**

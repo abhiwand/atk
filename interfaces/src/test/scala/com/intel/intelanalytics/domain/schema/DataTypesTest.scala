@@ -90,8 +90,8 @@ class DataTypesTest extends FlatSpec with Matchers {
     val v = Vector[Double](2.5, 3.6, 4.7)
     DataTypes.vector.typedJson(v).toString shouldBe "[2.5,3.6,4.7]"
   }
-  "vector" should "be a supported type" in {
-    DataTypes.supportedTypes.contains("vector") shouldBe true
+  "vector" should "be a supported primative type" in {
+    DataTypes.supportedPrimativeTypes.contains("vector") shouldBe false
   }
 
   "vector" should "compare with other vectors appropriately" in {
@@ -111,19 +111,22 @@ class DataTypesTest extends FlatSpec with Matchers {
   }
 
   "toVector" should "produce vectors" in {
-    DataTypes.toVector(null) shouldBe null
-    DataTypes.toVector(25) shouldBe Vector[Double](25)
-    DataTypes.toVector(123456789L) shouldBe Vector[Double](123456789L)
-    DataTypes.toVector(3.14F) shouldBe Vector[Double](3.14F)
-    DataTypes.toVector(3.14159) shouldBe Vector[Double](3.14159)
-    DataTypes.toVector(BigDecimal(867.5309)) shouldBe Vector[Double](867.5309)
-    DataTypes.toVector("[1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
-    DataTypes.toVector("  [1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
-    DataTypes.toVector("1.2, 777") shouldBe Vector[Double](1.2, 777)
-    DataTypes.toVector("1.2,777") shouldBe Vector[Double](1.2, 777)
-    DataTypes.toVector(Vector[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
-    DataTypes.toVector(ArrayBuffer[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
-    DataTypes.toVector(List[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector()(null) shouldBe null
+    DataTypes.toVector()(25) shouldBe Vector[Double](25)
+    DataTypes.toVector()(123456789L) shouldBe Vector[Double](123456789L)
+    DataTypes.toVector(1)(123456789L) shouldBe Vector[Double](123456789L)
+    DataTypes.toVector()(3.14F) shouldBe Vector[Double](3.14F)
+    DataTypes.toVector()(3.14159) shouldBe Vector[Double](3.14159)
+    DataTypes.toVector()(BigDecimal(867.5309)) shouldBe Vector[Double](867.5309)
+    DataTypes.toVector()("[1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
+    DataTypes.toVector()("  [1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
+    DataTypes.toVector(5)("  [1.2, 3.4, 5.6, 7.7,9]") shouldBe Vector[Double](1.2, 3.4, 5.6, 7.7, 9)
+    DataTypes.toVector()("1.2, 777") shouldBe Vector[Double](1.2, 777)
+    DataTypes.toVector()("1.2,777") shouldBe Vector[Double](1.2, 777)
+    DataTypes.toVector()(Vector[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector()(ArrayBuffer[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector()(List[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
+    DataTypes.toVector(2)(List[Double](9.9, 8)) shouldBe Vector[Double](9.9, 8)
   }
 
   "asString" should "handle vectors" in {
