@@ -30,25 +30,20 @@ from intelanalytics.core.iatypes import *
 
 class ValidDataTypes(unittest.TestCase):
 
-    def test_is_frozenset(self):
-        self.assertTrue(isinstance(valid_data_types, frozenset))
-
     def test_contains(self):
         self.assertTrue(int32 in valid_data_types)
         self.assertTrue(float64 in valid_data_types)
         self.assertFalse(dict in valid_data_types)  # not supported yet!
         self.assertFalse(list in valid_data_types)  # not supported yet!
-        self.assertFalse(int in valid_data_types)
-        self.assertFalse(float in valid_data_types)
+        self.assertTrue(int in valid_data_types)
+        self.assertTrue(float in valid_data_types)
         self.assertTrue(ignore in valid_data_types)
         self.assertFalse(unknown in valid_data_types)
 
     def test_repr(self):
         r = valid_data_types.__repr__()
-        self.assertTrue(len(valid_data_types) > 0)
-        lines = r.split('\n')
-        self.assertEqual(len(lines[0].split(',')), len(valid_data_types))
-        self.assertTrue(lines[1].startswith("(and aliases:"))
+        self.assertEqual("""float32, float64, ignore, int32, int64, unicode, vector(n)
+(and aliases: float->float64, int->int32, long->int64, str->unicode)""", r)
 
     def test_get_from_string(self):
         self.assertEqual(int64, valid_data_types.get_from_string("int64"))
@@ -88,6 +83,22 @@ class ValidDataTypes(unittest.TestCase):
             pass
         else:
             self.fail("Expected exception!")
+
+    def test_cast_vector(self):
+        v = valid_data_types.cast([2.0, 5.0], vector(2))
+        self.assertTrue(v[0] == 2.0)
+        self.assertTrue(v[1] == 5.0)
+        v = valid_data_types.cast(2.0, vector(1))
+        self.assertTrue(len(v) == 1)
+        self.assertEqual(2.0, v[0])
+        v = valid_data_types.cast("3.14, 6.28, 9.42", vector(3))
+        self.assertTrue(len(v) == 3)
+        self.assertEqual(3.14, v[0])
+        self.assertEqual(9.42, v[2])
+        v = valid_data_types.cast("[3.14, 6.28, 9.42]", vector(3))
+        self.assertTrue(len(v) == 3)
+        self.assertEqual(3.14, v[0])
+        self.assertEqual(9.42, v[2])
 
     def test_nan(self):
         import numpy as np

@@ -65,21 +65,27 @@ object CovarianceFunctions extends Serializable {
    *
    * @param frameRdd input rdd containing all columns
    * @param dataColumnNames column names for which we calculate the covariance matrix
-   * @param useVectorOutput If true, output results as a column of type 'vector'
+   * @param outputVectorLength If specified, output results as a column of type 'vector(vectorOutputLength)'
    * @return the covariance matrix in a RDD[Rows]
    */
   def covarianceMatrix(frameRdd: FrameRdd,
                        dataColumnNames: List[String],
-                       useVectorOutput: Boolean = false): RDD[sql.Row] = {
+                       outputVectorLength: Option[Long] = None): RDD[sql.Row] = {
 
     def rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(dataColumnNames))
 
     val covariance: Matrix = rowMatrix.computeCovariance()
     val vecArray = covariance.toArray.grouped(covariance.numCols).toArray
+    val formatter: Array[Any] => Array[Any] = outputVectorLength match {
+      case Some(length) =>
+        val vectorizer = DataTypes.toVector(length)_
+        x => Array(vectorizer(x))
+        case _ => identity
+    }
+
     val arrGenericRow = vecArray.map(row => {
-      val results: Array[Any] = row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x)
-      val tempRow: Array[Any] = if (useVectorOutput) Array(DataTypes.toVector(results)) else results
-      new GenericRow(tempRow)
+      val formattedRow: Array[Any] = formatter(row.map(x => if (x.isNaN || abs(x) < .000001) 0 else x))
+      new GenericRow(formattedRow)
     })
 
     frameRdd.sparkContext.parallelize(arrGenericRow)

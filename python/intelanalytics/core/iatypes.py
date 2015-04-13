@@ -30,22 +30,64 @@ intel_analytics definitions for Data Types
 __all__ = ['valid_data_types', 'ignore', 'unknown', 'float32', 'float64', 'int32', 'int64', 'vector']
 
 import numpy as np
+import json
+import re
 
 # alias numpy types
 float32 = np.float32
 float64 = np.float64
 int32 = np.int32
 int64 = np.int64
-vector = np.ndarray
 
 
-def vector_constructor(value):
-    return np.array(value, dtype=np.float64)  # ensures the array is entirely made of doubles
+class _Vector(object):
 
-# any special constructor mappings go here.  Most types are themselves constructors...
-_constructors = {
-    vector: vector_constructor  # http://stackoverflow.com/questions/15879315/what-is-the-difference-between-ndarray-and-array-in-numpy
-}
+    base_type = np.ndarray
+    re_pattern = re.compile(r"^vector\((\d+)\)$")
+
+    def __init__(self, length):
+        self.length = int(length)
+        self.is_complex_type = True
+        self.constructor = self._get_constructor()
+
+    def _get_constructor(self):
+        length = self.length
+
+        def constructor(value):
+            """
+            Creates a numpy array from a value, which can be one of many types
+            """
+            if value is None:
+                return None
+            try:
+                # first try numpy's constructor
+                array = np.array(value, dtype=np.float64)  # ensures the array is entirely made of doubles
+            except:
+                # also support json or comma-sep string
+                if valid_data_types.value_is_string(value):
+                    try:
+                        value = json.loads(value)
+                    except:
+                        value = [np.float64(item.strip()) for item in value.split(',') if item]
+                    array = np.array(value, dtype=np.float64)  # ensures the array is entirely made of doubles
+                else:
+                    raise
+
+            array = np.atleast_1d(array)  # numpy thing, so that vectors of size 1 will still have dimension and length
+            if len(array) != length:
+                raise ValueError("Could not construct vector in Python Client.  Expected vector of length %s, but received length %d" % (length, len(array)))
+            return array
+        return constructor
+
+    @staticmethod
+    def get_from_string(data_type_str):
+        return _Vector(_Vector.re_pattern.match(data_type_str).group(1))
+
+    def __repr__(self):
+        return "vector(%d)" % self.length
+
+
+vector = _Vector
 
 
 class _Ignore(object):
@@ -63,7 +105,7 @@ unknown = _Unknown
 
 
 # map types to their string identifier
-_types = {
+_primitive_type_to_str_table = {
     #bool: "bool", TODO
     #bytearray: "bytearray", TODO
     #dict: "dict", TODO
@@ -71,30 +113,58 @@ _types = {
     float64: "float64",
     int32: "int32",
     int64: "int64",
-    vector: "vector",
     #list: "list", TODO
     unicode: "unicode",
     ignore: "ignore"
 }
 
 # build reverse map string -> type
-_strings = dict([(s, t) for t, s in _types.iteritems()])
+_primitive_str_to_type_table = dict([(s, t) for t, s in _primitive_type_to_str_table.iteritems()])
 
-_alias_types = {
+_primitive_alias_type_to_type_table = {
     float: float64,
     int: int32,
     long: int64,
     str: unicode,
-    list: vector,
+    #list: vector,
 }
 
-_alias_strings = dict([(alias.__name__, t) for alias, t in _alias_types.iteritems()])
+_primitive_alias_str_to_type_table = dict([(alias.__name__, t) for alias, t in _primitive_alias_type_to_type_table.iteritems()])
 
 
-class _DataTypes(frozenset):
+class _DataTypes(object):
     """
-    Acts as frozenset of valid data types along with some conversion functions
+    Provides functions with define and operate on supported data types.
     """
+
+    def __contains__(self, item):
+        try:
+            self.validate(item)
+            return True
+        except ValueError:
+            return False
+
+    def __repr__(self):
+        aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _primitive_alias_type_to_type_table.iteritems()])))
+        return ", ".join(sorted(_primitive_str_to_type_table.keys() + ["vector(n)"])) + aliases
+
+    @staticmethod
+    def value_is_number(value):
+        """get bool indication that value is a number, like int, long, float"""
+        return isinstance(value, (int, long, float, int32, int64, float32, float64))   # not supporting complex
+
+    @staticmethod
+    def value_is_string(value):
+        """get bool indication that value is a string, whether str or unicode"""
+        return isinstance(value, basestring)
+
+    @staticmethod
+    def value_is_missing_value(value):
+        return value is None or (type(value) in [float32, float64, float] and (np.isnan(value) or value in [np.inf, -np.inf]))
+
+    @staticmethod
+    def get_primitive_data_types():
+        return _primitive_type_to_str_table.keys()
 
     @staticmethod
     def to_string(data_type):
@@ -116,10 +186,12 @@ class _DataTypes(frozenset):
         >>> valid_data_types.to_string(float32)
         'float32'
         """
+        valid_data_type = _DataTypes.get_from_type(data_type)
         try:
-            return _types[_DataTypes.get_from_type(data_type)]
-        except ValueError:
-            raise ValueError("Unsupported type %s" % data_type)
+            return _primitive_type_to_str_table[valid_data_type]
+        except KeyError:
+            # complex data types should use their repr
+            return repr(valid_data_type)
 
     @staticmethod
     def get_from_string(data_type_str):
@@ -142,12 +214,31 @@ class _DataTypes(frozenset):
         unicode
         """
         try:
-            return _strings[data_type_str]
+            return _primitive_str_to_type_table[data_type_str]
         except KeyError:
             try:
-                return _alias_strings[data_type_str]
+                return _primitive_alias_str_to_type_table[data_type_str]
             except KeyError:
-                raise ValueError("Unsupported type string '%s' " % data_type_str)
+                try:
+                   return vector.get_from_string(data_type_str)
+                except:
+                   raise ValueError("Unsupported type string '%s' " % data_type_str)
+
+
+    @staticmethod
+    def is_primitive_type(data_type):
+        return data_type in _primitive_type_to_str_table or data_type in _primitive_alias_type_to_type_table
+
+    @staticmethod
+    def is_complex_type(data_type):
+        try:
+            return data_type.is_complex_type
+        except AttributeError:
+            return False
+
+    @staticmethod
+    def is_primitive_alias_type(data_type):
+        return data_type in _primitive_alias_type_to_type_table
 
     @staticmethod
     def get_from_type(data_type):
@@ -170,12 +261,11 @@ class _DataTypes(frozenset):
         >>> valid_data_types.get_from_type(int)
         numpy.int32
         """
-        if data_type in _types:
+        if _DataTypes.is_primitive_alias_type(data_type):
+            return _primitive_alias_type_to_type_table[data_type]
+        if _DataTypes.is_primitive_type(data_type) or _DataTypes.is_complex_type(data_type):
             return data_type
-        try:
-            return _alias_types[data_type]
-        except KeyError:
-            raise ValueError("Unsupported type %s" % data_type)
+        raise ValueError("Unsupported type %s" % data_type)
 
     @staticmethod
     def validate(data_type):
@@ -183,15 +273,11 @@ class _DataTypes(frozenset):
         _DataTypes.get_from_type(data_type)
 
     @staticmethod
-    def is_missing_value(value):
-        return value is None or (type(value) in [float32, float64, float] and (np.isnan(value) or value in [np.inf, -np.inf]))
-
-    @staticmethod
     def get_constructor(to_type):
         """gets the constructor for the to_type"""
         try:
-            return _constructors[to_type]
-        except KeyError:
+            return to_type.constructor
+        except AttributeError:
             return to_type
 
     @staticmethod
@@ -223,24 +309,31 @@ class _DataTypes(frozenset):
         >>> valid_data_types.cast(np.inf, float32)
         None
         """
-        if _DataTypes.is_missing_value(value):  ## Special handling for missing values
+        if _DataTypes.value_is_missing_value(value):  # Special handling for missing values
             return None
-        elif type(value) is to_type:                  ## Optimization
+        elif _DataTypes.is_primitive_type(to_type) and type(value) is to_type:  # Optimization
             return value
         try:
             constructor = _DataTypes.get_constructor(to_type)
             result = constructor(value)
-            return None if _DataTypes.is_missing_value(result) else result
+            return None if _DataTypes.value_is_missing_value(result) else result
         except Exception as e:
             raise ValueError(("Unable to cast to type %s\n" % to_type) + str(e))
 
-    def __repr__(self):
-        aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _alias_types.iteritems()])))
-        return ", ".join(sorted(_strings.keys())) + aliases
+
+valid_data_types = _DataTypes()
 
 
-valid_data_types = _DataTypes(_types.keys())
-# Awkward passing of the _types.keys().  Encapsulating these values
-# inside _DataTypes requires overriding  __new__ because frozenset
-# is immutable.  Doing so broke execution in Spark.  An alternative
-# was to provide them in the constructor call here.  TODO - improve
+class NumpyJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSON Encoder to handle ia types
+    """
+    def default(self, obj):
+        if isinstance(obj, float32) or isinstance(obj, float64):
+            return float(obj)
+        if isinstance(obj, int32) or isinstance(obj, float64):
+            return int(obj)
+        if isinstance(obj, vector.base_type):
+            return obj.tolist()
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)

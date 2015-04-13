@@ -73,8 +73,8 @@ Sample Variance
 
     .. math::
 
-        \\left( \\frac{1}{W - 1} \\right) * sum_{i} \\
-        \\left(x_{i} - M \\right) ^{2}
+        \left( \frac{1}{W - 1} \right) * sum_{i} \
+        \left(x_{i} - M \right) ^{2}
 
     where :math:`W` is sum of weights over valid elements of positive
     weight, and :math:`M` is the weighted mean.
@@ -84,8 +84,8 @@ Population Variance
 
     .. math::
 
-        \\left( \\frac{1}{W} \\right) * sum_{i} \\
-        \\left(x_{i} - M \\right) ^{2}
+        \left( \frac{1}{W} \right) * sum_{i} \
+        \left(x_{i} - M \right) ^{2}
 
     where :math:`W` is sum of weights over valid elements of positive
     weight, and :math:`M` is the weighted mean.
