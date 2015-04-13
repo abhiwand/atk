@@ -81,6 +81,6 @@ case class HistogramAggregator(cutoffs: List[Double], includeLowest: Option[Bool
    */
   override def getResult(binArray: AggregateType): Any = {
     val total = binArray.sum
-    if (total > 0) DataTypes.toVector(binArray.map(_ / total)) else binArray
+    if (total > 0) DataTypes.toVector()(binArray.map(_ / total)) else binArray
   }
 }
