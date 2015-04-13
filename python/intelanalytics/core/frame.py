@@ -592,14 +592,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         import pandas as pd
-        from intelanalytics.core.iatypes import vector
         result = self._backend.take(self, count, offset, columns)
         headers, data_types = zip(*result.schema)
 
         pandas_df = pd.DataFrame(result.data, columns=headers)
 
         for i, dtype in enumerate(data_types):
-            dtype_str = valid_data_types.to_string(dtype) if dtype != vector else "object"
+            dtype_str = valid_data_types.to_string(dtype) if valid_data_types.is_primitive_type(dtype) else "object"
             pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(dtype_str)
         return pandas_df
 
