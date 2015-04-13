@@ -23,9 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
+import java.nio.file.{ Paths, Files }
+import java.nio.charset.StandardCharsets
+import scala.collection.JavaConversions._
+
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.event.EventLogging
@@ -98,28 +103,76 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     SparkCommandPlugin.stop(sparkInvocation.commandId)
   }
 
-  def serializePluginConfiguration(archiveName: String, path: String): Unit = withMyClassLoader {
+  /**
+   * Serializes the plugin configuration to a path given the archive name the plugin belongs to.
+   * Returns the jars and extra classpath needed to run this plugin by looking into its configuration and
+   * and archive's parent's configuration
+   * @param archiveName name of archive to serialize
+   * @param path path to serialize
+   * @return tuple of 2 lists corresponding to jars and extraClassPath needed to run this archive externally
+   */
+  def serializePluginConfiguration(archiveName: String, path: String): (List[String], List[String]) = withMyClassLoader {
 
     info(s"Serializing Plugin Configuration for archive $archiveName to path $path")
-    import scala.collection.JavaConversions._
-    import java.nio.file.{ Paths, Files }
-    import java.nio.charset.StandardCharsets
     val currentConfig = try {
       Archive.getAugmentedConfig(archiveName, Thread.currentThread().getContextClassLoader).entrySet()
     }
     catch {
       case _: Throwable => SparkEngineConfig.config.entrySet()
     }
-    val allEntries = for {
-      i <- currentConfig
-    } yield s"${i.getKey}=${i.getValue.render}"
-    Files.write(Paths.get(path), allEntries.mkString("\n").getBytes(StandardCharsets.UTF_8))
+
+    val allEntries = {
+      for {
+        i <- currentConfig
+      } yield i.getKey -> i.getValue
+    }.toMap
+
+    def getParentForArchive(archive: String, configMap: Map[String, ConfigValue]): Option[String] = {
+      val parent = for {
+        (k, v) <- configMap
+        if (k.contains(s"$archive.parent"))
+      } yield v
+      if (parent.iterator.hasNext)
+        Some(parent.head.render.replace("\"", ""))
+      else None
+    }
+
+    /* Get the plugin hirearchy by adding the plugin and its parents */
+    val jars = scala.collection.mutable.MutableList[String](archiveName)
+    var nextArchiveName = Option[String](archiveName)
+    while (nextArchiveName.isDefined) {
+      nextArchiveName = getParentForArchive(nextArchiveName.get, allEntries)
+      if (nextArchiveName.isDefined)
+        jars += nextArchiveName.get
+    }
+
+    /* Get extraClassPath for plugin including its parents' extra classpath */
+    val extraClassPath = scala.collection.mutable.MutableList[String]()
+    for {
+      i <- jars
+      (configKey, configValue) <- allEntries
+      if (configKey.contains(s"$i.extra-classpath"))
+    } extraClassPath ++= configValue.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+
+    /* Convert all configs to strings; override the archives entry with current plugin's archive name */
+    /* We always need engine-spark as in Engine.scala we add plugins via
+    registerCommand api which need engine-spark to be there in system archives list always */
+    val configEntriesInString = for {
+      (configKey, configValue) <- allEntries
+    } yield {
+      if (configKey == "intel.analytics.engine.plugin.command.archives")
+        s"""$configKey=[\"$archiveName\"]"""
+      else
+        s"$configKey=${configValue.render}"
+    }
+
+    Files.write(Paths.get(path), configEntriesInString.mkString("\n").getBytes(StandardCharsets.UTF_8))
+    (jars.toList, extraClassPath.distinct.toList)
   }
 
-  def getArchiveNameForPlugin(): String = withMyClassLoader {
+  def getArchiveName() = withMyClassLoader {
     Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
   }
-
 }
 
 object SparkCommandPlugin extends EventLogging {
