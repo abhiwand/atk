@@ -10,14 +10,14 @@ import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.user.UserStorage
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage, CommandPluginRegistry, CommandLoaderTrait }
+import com.intel.intelanalytics.engine.spark.command._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 
 /**
  * Class Responsible for creating all objects necessary for instantiating an instance of the SparkEngine.
  */
-abstract class AbstractEngineComponent(commandLoader: CommandLoaderTrait) extends EngineComponent
+abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends EngineComponent
     with FrameComponent
     with GraphComponent
     with ModelComponent
