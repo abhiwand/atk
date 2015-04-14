@@ -1212,8 +1212,30 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Examples
         --------
-        Given a frame with a single column, *col_1*, and a frame with two
-        columns, *col_1* and *col_2*.
+        Given a frame with a single column, *col_1*:
+        
+        .. code::
+        
+                >>> my_frame.inspect(4)
+                  col_1:str
+                /-----------/
+                  dog
+                  cat
+                  bear
+                  donkey
+                  
+          and a frame with two columns, *col_1* and *col_2*:
+
+          ..code::
+
+                >>> your_frame.inspect(4)
+                  col_1:str  col_qty:int32
+                /--------------------------/
+                  bear          15
+                  cat            2
+                  snake          8
+                  horse          5
+
         Column *col_1* means the same thing in both frames.
         The Frame *my_frame* points to the first frame and *your_frame* points
         to the second.
@@ -1222,6 +1244,17 @@ class Frame(DocStubsFrame, _BaseFrame):
         .. code::
 
             >>> my_frame.append(your_frame)
+            >>> my_frame.inspect(8)
+              col_1:str  col_2:int32
+            /------------------------/
+              dog           None
+              bear            15
+              bear          None
+              horse            5
+              cat           None
+              cat              2
+              donkey        None
+              snake            5
 
         Now the first frame has two columns, *col_1* and *col_2*.
         Column *col_1* has the data from *col_1* in both original frames.
