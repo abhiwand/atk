@@ -291,7 +291,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
           val executionParams = Array(
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-            "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
+            // lower #cores with more #executors often beats the other way around due to small JVMs having lower GC overhead
+            // "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
             "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
 
           // TODO: Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
