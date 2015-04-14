@@ -84,9 +84,7 @@ object EdgeDistance extends Serializable {
   }
 
   /**
-   * Sum (edgeDistance * SourceNodeWeight)
-   *  -------------------------------------
-   *  Sum (SourceNodeWeight)
+   * Sum (edgeDistance * SourceNodeWeight) / Sum (SourceNodeWeight)
    *
    * @param edges a list of active edges
    * @return the average distance, as per formula above
@@ -108,9 +106,7 @@ object EdgeDistance extends Serializable {
   }
 
   /**
-   * Sum (edgeDistance)
-   * -------------------
-   * Total edges in the Iterable
+   * Sum (edgeDistance) / (Total edges in the Iterable)
    *
    * @param edges a list of active edges
    * @return the head of the input list with the distance adjusted as per formula
