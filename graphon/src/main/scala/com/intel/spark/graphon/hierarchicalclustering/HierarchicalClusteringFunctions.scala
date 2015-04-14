@@ -247,14 +247,14 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
   private def createCollapsableEdges(graph: RDD[HierarchicalClusteringEdge]): RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] = {
 
     val edgesBySourceIdWithMinEdge = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
-      case (sourceNode, allEdges) => EdgeDistance.min(allEdges)
+      case (minEdge, allEdges) => EdgeDistance.min(allEdges)
     }.groupByKey().filter {
-      case (vertexId,
+      case (minEdge,
         pairedEdgeList: Iterable[VertexOutEdges]) => EdgeManager.canEdgeCollapse(pairedEdgeList)
     }
 
     edgesBySourceIdWithMinEdge.map {
-      case (vertexId, pairedEdgeList: Iterable[VertexOutEdges]) =>
+      case (minEdge, pairedEdgeList: Iterable[VertexOutEdges]) =>
         EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
     }.filter {
       case (collapsableEdge, outgoingEdgeList) => (collapsableEdge != null)
