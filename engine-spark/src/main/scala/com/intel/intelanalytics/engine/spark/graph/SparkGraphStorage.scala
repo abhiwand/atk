@@ -476,7 +476,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphReference: GraphReference)(implicit invocation: Invocation): TitanGraph = {
     val graph = expectGraph(graphReference)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.storage)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }
