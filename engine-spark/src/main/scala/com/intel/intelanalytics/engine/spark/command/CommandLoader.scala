@@ -27,31 +27,24 @@ import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.component.Boot
 
-trait CommandLoaderTrait {
-  def loadFromConfig(): Map[String, CommandPlugin[_, _]]
-}
-
 /**
  * Load command plugin
  */
-class CommandLoader extends CommandLoaderTrait {
+class CommandLoader {
   /**
    * Load plugins from the config
-   * @return mapping between name and plugin
+   * @return mapping between name and plugin, mapping between name and archive's name the plugin was loaded from
    */
-  def loadFromConfig(): Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
-    archive =>
-      Boot.getArchive(archive)
-        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-        .map(p => (p.name, p))
-  }.toMap
-}
-
-class PluginCommandLoader extends CommandLoaderTrait {
-  def loadFromConfig(): Map[String, CommandPlugin[_, _]] = List("engine-spark", "graphon").flatMap {
-    archive =>
-      Boot.getArchive(archive)
-        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-        .map(p => (p.name, p))
-  }.toMap
+  def loadFromConfig(): CommandPluginRegistryMaps = {
+    val commandPluginsWithArchiveName = SparkEngineConfig.archives.flatMap {
+      archive =>
+        Boot.getArchive(archive)
+          .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
+          .map(p => (p.name, p, archive))
+    }
+    CommandPluginRegistryMaps(
+      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> plugin }.toMap,
+      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> archive }.toMap
+    )
+  }
 }

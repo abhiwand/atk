@@ -80,6 +80,17 @@ class SchemaTest extends WordSpec with Matchers {
       abcSchema.columnDataType("c") shouldBe string
     }
 
+    "be able to require column types" in {
+      val schema = FrameSchema(List(Column("a", DataTypes.vector(2)), Column("b", DataTypes.float64)))
+      schema.requireColumnIsType("a", DataTypes.vector(2))
+    }
+    "be able to report bad vector type" in {
+      val schema = FrameSchema(List(Column("a", DataTypes.vector(2)), Column("b", DataTypes.float64)))
+      intercept[IllegalArgumentException] {
+        schema.requireColumnIsType("a", DataTypes.float64)
+      }
+    }
+
     "be able to add columns" in {
       val added = abcSchema.addColumn("str", string)
       added.columns.length shouldBe 4

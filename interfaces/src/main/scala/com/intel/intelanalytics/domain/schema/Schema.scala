@@ -214,7 +214,7 @@ trait Schema {
    * True if this schema contains the supplied columnName with the given dataType
    */
   def hasColumnWithType(columnName: String, dataType: DataType): Boolean = {
-    hasColumn(columnName) && column(columnName).dataType == dataType
+    hasColumn(columnName) && column(columnName).dataType.equalsDataType(dataType)
   }
 
   /**
@@ -240,8 +240,17 @@ trait Schema {
    * Validate that a column exists, and has the expected data type
    */
   def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
-    require(hasColumn(columnName), s"column ${columnName} was not found")
-    require(columnDataType(columnName) == dataType, s"column ${columnName} should be of type ${dataType}")
+    require(hasColumn(columnName), s"column $columnName was not found")
+    require(columnDataType(columnName).equalsDataType(dataType), s"column $columnName should be of type $dataType")
+  }
+
+  /**
+   * Validate that a column exists, and has the expected data type by supplying a custom checker, like isVectorDataType
+   */
+  def requireColumnIsType(columnName: String, dataTypeChecker: DataType => Boolean): Unit = {
+    require(hasColumn(columnName), s"column $columnName was not found")
+    val colDataType = columnDataType(columnName)
+    require(dataTypeChecker(colDataType), s"column $columnName has bad type $colDataType")
   }
 
   /**
@@ -448,7 +457,7 @@ trait Schema {
    * The ignore data type is a slight hack for ignoring some columns on import.
    */
   def dropIgnoreColumns(): Schema = {
-    dropColumns(columns.filter(col => col.dataType == DataTypes.ignore).map(col => col.name))
+    dropColumns(columns.filter(col => col.dataType.equalsDataType(DataTypes.ignore)).map(col => col.name))
   }
 
   /**
