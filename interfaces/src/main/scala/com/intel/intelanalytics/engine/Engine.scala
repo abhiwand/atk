@@ -124,7 +124,7 @@ trait Engine {
 
   def deleteModel(id: Identifier)(implicit invocation: Invocation): Future[Unit]
 
-  def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double]
+  def scoreModel(name: String, values: VectorValue): Future[Double]
 
   /**
    * Cancel a running command

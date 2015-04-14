@@ -67,4 +67,8 @@ object ApiServiceConfig {
 
   /** the URI of the UAA server */
   val uaaUri = config.getString("intel.analytics.component.archives.api-server.uaaUri")
+
+  /** Mode of invocation for api-server : normal or scoring engine mode */
+  val scoringEngineMode: Boolean = config.getBoolean("intel.analytics.api.scoring-engine")
+
 }

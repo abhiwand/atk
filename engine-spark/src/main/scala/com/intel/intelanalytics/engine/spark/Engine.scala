@@ -511,16 +511,16 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   /**
    * Score a vector on a model.
-   * @param id Model id
+   * @param name Model name
    */
-  override def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double] = {
-    withContext("se.scoremodel") {
-      future {
-        val model = models.expectModel(ModelReference(id))
+  override def scoreModel(name: String, values: VectorValue): Future[Double] = future {
+    val model = models.getModelByName(Some(name))
 
-        model.modelType match {
+    model match {
+      case Some(x) => {
+        x.modelType match {
           case "model:libsvm" => {
-            val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
+            val svmJsObject = x.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
             val libsvmData = svmJsObject.convertTo[LibSvmData]
             val libsvmModel = libsvmData.svmModel
             val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
@@ -529,6 +529,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
           case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
         }
       }
+      case None => throw new IllegalArgumentException(s"Model with the provided name '$name' does not exist in the metastore")
     }
   }
 
