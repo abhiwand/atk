@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.io.IOUtils
+import org.apache.hadoop.hbase.client.HBaseAdmin
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.util.{ Success, Failure }
@@ -52,51 +53,31 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    * @return
    */
   override def copyUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
-    //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
     val tableName: String = graphName
-    var outputStream: OutputStream = null
+    //    //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
+    //    var outputStream: OutputStream = null
     try {
       KerberosAuthenticator.loginWithKeyTabCLI()
       info(s"Trying to copy the HBase Table: $tableName")
-      val p = Runtime.getRuntime.exec("hbase shell -n")
-      outputStream = p.getOutputStream
+      val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
 
-      IOUtils.write(s"snapshot '${tableName}', '${tableName}-snapshot'\nclone_snapshot '${tableName}-snapshot', '${newName}'\ndelete_snapshot '${tableName}-snapshot'\n", outputStream)
-      outputStream.flush()
-      outputStream.close()
-
-      IOUtils.readLines(p.getInputStream).foreach(infoMsg => info(infoMsg))
-      IOUtils.readLines(p.getErrorStream).foreach(errorMsg => warn(errorMsg))
-
-      val exitValue = p.waitFor()
-      info(s"Hbase shell exited with Exit Value: $exitValue")
-
-      if (exitValue == 1) {
+      if (hbaseAdmin.tableExists(tableName)) {
+        info(s"Copying hbase table: $tableName to $newName")
+        hbaseAdmin.snapshot(tableName + "_copysnap", tableName)
+        hbaseAdmin.cloneSnapshot(tableName + "_copysnap", newName)
+      }
+      else {
+        error(s"HBase table $tableName requested for copy does not exist.")
         throw new IllegalArgumentException(
-          s"Unable to copy the requested HBase table $tableName. Verify there is no name conflict with existing HBase tables.")
+          s"HBase table $tableName requested for copy does not exist.")
       }
     }
     catch {
-      case ex: IllegalArgumentException => {
-        info(s"Unable to copy the requested HBase table: $tableName. Verify there is no name conflict with existing HBase tables. Exception: $ex")
-        val p = Runtime.getRuntime.exec("hbase shell -n")
-        outputStream = p.getOutputStream
-
-        IOUtils.write(s"delete_snapshot '${tableName}-snapshot'\n", outputStream)
-        outputStream.flush()
-        outputStream.close()
-
-        throw ex
-      }
       case ex: Exception => {
 
         info(s"Unable to copy the requested HBase table: $tableName.", exception = ex)
         throw new Exception(s"Unable to copy the requested HBase table $tableName.", ex)
       }
-    }
-    finally {
-      outputStream.flush()
-      outputStream.close()
     }
   }
 
@@ -123,42 +104,58 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
   }
 
   private def performDelete(graphName: String, quiet: Boolean): Unit = {
-    // TODO: To be deleted later. Workaround for TRIB: 4318.
     val tableName: String = graphName
-    var outputStream: OutputStream = null
+    //    var outputStream: OutputStream = null
     try {
-      //create a new process
       KerberosAuthenticator.loginWithKeyTabCLI()
-      val p = Runtime.getRuntime.exec("hbase shell -n")
-      outputStream = p.getOutputStream
+      val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
 
-      IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
-      outputStream.flush()
-      outputStream.close()
-
-      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
-      IOUtils.readLines(p.getErrorStream).map(errorMsg => error(errorMsg))
-
-      val exitValue = p.waitFor()
-      if (exitValue != 0) {
-        info(s"Hbase shell exited with Exit Value: $exitValue")
+      if (hbaseAdmin.tableExists(tableName)) {
+        if (hbaseAdmin.isTableEnabled(tableName)) {
+          info(s"disabling hbase table: $tableName")
+          hbaseAdmin.disableTable(tableName)
+        }
+        info(s"deleting hbase table: $tableName")
+        hbaseAdmin.deleteTable(tableName)
       }
+      else {
+        info(s"HBase table $tableName requested for deletion does not exist.")
+        if (!quiet) {
+          throw new IllegalArgumentException(
+            s"HBase table $tableName requested for deletion does not exist.")
+        }
+      }
+      //      //create a new process
+      //      val p = Runtime.getRuntime.exec("hbase shell -n")
+      //      outputStream = p.getOutputStream
+      //
+      //      IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
+      //      outputStream.flush()
+      //      outputStream.close()
+      //
+      //      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
+      //      IOUtils.readLines(p.getErrorStream).map(errorMsg => error(errorMsg))
+      //
+      //      val exitValue = p.waitFor()
+      //      if (exitValue != 0) {
+      //        info(s"Hbase shell exited with Exit Value: $exitValue")
+      //      }
     }
     catch {
-      case _ => {
-        info(s"Unable to delete the requested HBase table: $tableName.")
+      case e: Throwable => {
+        error(s"Unable to delete the requested HBase table: $tableName.", exception = e)
         if (!quiet) {
           throw new IllegalArgumentException(
             s"Unable to delete the requested HBase table: $tableName.")
         }
       }
     }
-    finally {
-      if (null != outputStream) {
-        outputStream.flush()
-        outputStream.close()
-      }
-    }
+    //    finally {
+    //      if (null != outputStream) {
+    //        outputStream.flush()
+    //        outputStream.close()
+    //      }
+    //    }
   }
 
 }
