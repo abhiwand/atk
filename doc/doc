@@ -240,13 +240,6 @@ function main() {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
-        # Start the server
-        pushd ../ > /dev/null
-        server_start $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        popd > /dev/null
-        if [ "$Return" != "0" ]; then return $Return; fi
-
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
@@ -353,6 +346,13 @@ function maven() {
     popd > /dev/null
     if [ "$Return" != "0" ]; then return $Return; fi
 
+    # Start the server
+    pushd ../ > /dev/null
+    server_start $1 $2 $3 $4
+    Return=$?
+    popd > /dev/null
+    if [ "$Return" != "0" ]; then return $Return; fi
+
     # debug: Update the additional python documentation files
     pushd ../python > /dev/null
     build_docstubs $1 $2 $3 $4
@@ -451,6 +451,8 @@ function server_start() {
         if [ "$Return" != "0" ]; then
             Err "nohup bin/api-server.sh" $1 $2 $3 $4
             Return=$?
+        else
+            sleep 10
         fi
     fi
     return $Return
