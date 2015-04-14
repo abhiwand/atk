@@ -54,8 +54,6 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
    */
   override def copyUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
     val tableName: String = graphName
-    //    //TODO: switch to HBaseAdmin instead of shelling out (doing it this way for now because of classloading bugs with HBaseAdmin) TRIB-4318
-    //    var outputStream: OutputStream = null
     try {
       KerberosAuthenticator.loginWithKeyTabCLI()
       info(s"Trying to copy the HBase Table: $tableName")
@@ -105,7 +103,6 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
 
   private def performDelete(graphName: String, quiet: Boolean): Unit = {
     val tableName: String = graphName
-    //    var outputStream: OutputStream = null
     try {
       KerberosAuthenticator.loginWithKeyTabCLI()
       val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
@@ -125,21 +122,6 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
             s"HBase table $tableName requested for deletion does not exist.")
         }
       }
-      //      //create a new process
-      //      val p = Runtime.getRuntime.exec("hbase shell -n")
-      //      outputStream = p.getOutputStream
-      //
-      //      IOUtils.write(s"disable '${tableName}'\ndrop '${tableName}'\n", outputStream)
-      //      outputStream.flush()
-      //      outputStream.close()
-      //
-      //      IOUtils.readLines(p.getInputStream).map(infoMsg => info(infoMsg))
-      //      IOUtils.readLines(p.getErrorStream).map(errorMsg => error(errorMsg))
-      //
-      //      val exitValue = p.waitFor()
-      //      if (exitValue != 0) {
-      //        info(s"Hbase shell exited with Exit Value: $exitValue")
-      //      }
     }
     catch {
       case e: Throwable => {
@@ -150,12 +132,5 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
         }
       }
     }
-    //    finally {
-    //      if (null != outputStream) {
-    //        outputStream.flush()
-    //        outputStream.close()
-    //      }
-    //    }
   }
-
 }
