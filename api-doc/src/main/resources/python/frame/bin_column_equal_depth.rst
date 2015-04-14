@@ -24,7 +24,7 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice:
-    ``math.floor(math.sqrt(frame.row_count))``.
+    :math:`\lfloor\sqrt{m}\rfloor`.
 bin_column_name : str (optional)
     The name for the new binned column.
     Default is '<column_name>_binned'.
@@ -35,9 +35,9 @@ Notes
     drop_frames() method (and others) to fail!
 2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
-    With equal depth binning, for example, if the column to be binned has 10
+    For example, if the column to be binned has a quantity of :math"`X`
     elements with only 2 distinct values and the *num_bins* parameter is
-    greater than 2, then the number of actual number of bins will only be 2.
+    greater than 2, then the actual number of bins will only be 2.
     This is due to a restriction that elements with an identical value must
     belong to the same bin.
 
@@ -80,17 +80,17 @@ possible):
 
       a:int32     aEDBinned:int32
     /-----------------------------/
-        1                 0
-        1                 0
-        2                 1
-        3                 1
-        5                 2
-        8                 2
-       13                 3
-       21                 3
-       34                 4
-       55                 4
-       89                 4
+          1                   0
+          1                   0
+          2                   1
+          3                   1
+          5                   2
+          8                   2
+         13                   3
+         21                   3
+         34                   4
+         55                   4
+         89                   4
 
     >>> print cutoffs
     [1.0, 2.0, 5.0, 13.0, 34.0, 89.0]
