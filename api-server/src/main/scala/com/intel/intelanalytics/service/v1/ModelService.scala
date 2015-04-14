@@ -155,17 +155,34 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                   uri =>
                     post {
                       import spray.httpx.SprayJsonSupport._
-                      implicit val format = DomainJsonProtocol.vectorValueFormat
-                      entity(as[VectorValue]) {
+                      implicit val format = DomainJsonProtocol.scoreValueFormat
+                      entity(as[ScoreValue]) {
                         observation =>
-                          onComplete(engine.scoreModel(id, observation)) {
-                            case Success(scored) => complete(scored.toString)
-                            case Failure(ex) => ctx => {
-                              ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                          {
+                            implicit val format = DomainJsonProtocol.vectorValueFormat
+                            onComplete(engine.scoreModel(observation.name, observation.obs)) {
+                              case Success(scored) => complete(scored.toString)
+                              case Failure(ex) => ctx => {
+                                ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                              }
                             }
                           }
+
                       }
                     }
+                  //                    post {
+                  //                      import spray.httpx.SprayJsonSupport._
+                  //                      implicit val format = DomainJsonProtocol.vectorValueFormat
+                  //                      entity(as[VectorValue]) {
+                  //                        observation =>
+                  //                          onComplete(engine.scoreModel(id, observation)) {
+                  //                            case Success(scored) => complete(scored.toString)
+                  //                            case Failure(ex) => ctx => {
+                  //                              ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                  //                            }
+                  //                          }
+                  //                      }
+                  //                    }
                 }
               }
           }
