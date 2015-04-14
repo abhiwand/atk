@@ -1,19 +1,20 @@
 package com.intel.spark.graphon.hierarchicalclustering
 
+import com.intel.event.EventLogging
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.rdd.RDD
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
-import java.io.{ Serializable, FileWriter }
+import java.io.{ Serializable }
 import org.apache.spark.SparkContext._
 import org.apache.spark.storage.StorageLevel
 
 /**
  * This is the main clustering class.
  */
-object HierarchicalClusteringFunctions extends Serializable {
+object HierarchicalClusteringFunctions extends Serializable with EventLogging {
 
   /**
    * Convert the storage graph into a hierarchical edge RDD
@@ -45,17 +46,13 @@ object HierarchicalClusteringFunctions extends Serializable {
   def mainLoop(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
-    val fileWriter = new FileWriter(HierarchicalClusteringConstants.OutputFilename, true)
-
     var iteration = 0
 
     configStorage(titanConfig)
     while (currentGraph != null) {
       iteration = iteration + 1
-      currentGraph = clusterNewLayer(currentGraph, fileWriter, iteration, titanConfig)
+      currentGraph = clusterNewLayer(currentGraph, iteration, titanConfig)
     }
-
-    fileWriter.close()
   }
 
   /**
@@ -72,13 +69,11 @@ object HierarchicalClusteringFunctions extends Serializable {
   /**
    * Creates a set of meta-node and a set of internal nodes and edges (saved to storage)
    * @param graph (n-1) in memory graph (as an RDD of hierarchical clustering edges)
-   * @param fileWriter testing purposes only, a text file writer
    * @param iteration current iteration, testing purposes only
    * @param titanConfig storage configuration file
    * @return (n) in memory graph (as an RDD of hierarchical clustering edges)
    */
   private def clusterNewLayer(graph: RDD[HierarchicalClusteringEdge],
-                              fileWriter: FileWriter,
                               iteration: Int,
                               titanConfig: SerializableBaseConfiguration): RDD[HierarchicalClusteringEdge] = {
 
@@ -92,40 +87,37 @@ object HierarchicalClusteringFunctions extends Serializable {
     nonSelectedEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     // the list of newly created active edges in the graph
-    val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges, fileWriter)
+    val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges)
     activeEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
-    fileWriter.write("-------------Iteration " + iteration + " ---------------\n")
+    info("-------------Iteration " + iteration + " ---------------\n")
 
     val collapsableEdgesCount = collapsableEdges.count()
     if (collapsableEdges.count() > 0) {
-      fileWriter.write("Collapsed edges " + collapsableEdgesCount + "\n")
+      info("Collapsed edges " + collapsableEdgesCount + "\n")
     }
     else {
-      fileWriter.write("No new collapsed edges\n")
+      info("No new collapsed edges\n")
       if (graph.count() > 0) {
-        fileWriter.write("Current graph edges\n")
-        graph.collect().foreach(e => fileWriter.write("\t" + e.toString() + "\n"))
-        fileWriter.write("current graph edges - done\n")
+        info("Current graph edges\n")
+        graph.collect().foreach(e => info("\t" + e.toString() + "\n"))
+        info("current graph edges - done\n")
       }
     }
-    fileWriter.flush()
 
     val internalEdgesCount = internalEdges.count()
     if (internalEdgesCount > 0) {
-      fileWriter.write("Internal edges " + internalEdgesCount + "\n")
+      info("Internal edges " + internalEdgesCount + "\n")
     }
     else {
-      fileWriter.write("No new internal edges\n")
+      info("No new internal edges\n")
     }
-    fileWriter.flush()
 
     val activeEdgesCount = activeEdges.count()
     if (activeEdges.count > 0) {
       internalEdges.unpersist()
 
-      fileWriter.write("Active edges " + activeEdgesCount + "\n")
-      fileWriter.flush()
+      info("Active edges " + activeEdgesCount + "\n")
 
       // create a key-value pair list of edges from the current graph (for subtractByKey)
       val currentGraphAsKVPair = graph.map((e: HierarchicalClusteringEdge) => (e.src, e))
@@ -155,15 +147,12 @@ object HierarchicalClusteringFunctions extends Serializable {
       distinctNewGraphWithoutInternalEdges.persist(StorageLevel.MEMORY_AND_DISK)
       collapsableEdges.unpersist()
 
-      fileWriter.write("Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count() + "\n")
-      fileWriter.flush()
+      info("Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count() + "\n")
 
       distinctNewGraphWithoutInternalEdges
     }
     else {
-      fileWriter.write("No new active edges - terminating...\n")
-      fileWriter.flush()
-
+      info("No new active edges - terminating...\n")
       null
     }
 
@@ -176,8 +165,7 @@ object HierarchicalClusteringFunctions extends Serializable {
    * @return a list of new edges (containing meta-nodes) to be added to the active graph. The edge distance is updated/calculated for the new edges
    */
   private def createActiveEdges(nonSelectedEdges: RDD[HierarchicalClusteringEdge],
-                                internalEdges: RDD[HierarchicalClusteringEdge],
-                                fileWriter: FileWriter): RDD[HierarchicalClusteringEdge] = {
+                                internalEdges: RDD[HierarchicalClusteringEdge]): RDD[HierarchicalClusteringEdge] = {
 
     val activeEdges = nonSelectedEdges.map {
       case (e) => ((e.src, e.dest, e.destNodeCount), e)
@@ -235,9 +223,9 @@ object HierarchicalClusteringFunctions extends Serializable {
         val titanConnector = TitanGraphConnector(titanConfig)
         val graph = titanConnector.connect()
         val result = edges.map {
-          case edge =>
-            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(edge._1, graph)
-            val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, edge._2).map(_._2)
+          case (minDistEdge, nonMinDistEdges) =>
+            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, graph)
+            val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, nonMinDistEdges).map(_._2)
             (metaEdges, replacedEdges)
         }.toList
 
