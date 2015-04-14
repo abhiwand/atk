@@ -24,12 +24,15 @@
 package com.intel.spark.graphon.pagerank
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
@@ -49,7 +52,6 @@ import java.util.UUID
  * Parameters for executing page rank.
  * @param graph Reference to the graph object on which to compute pagerank.
  * @param output_property Name of the property to which pagerank value will be stored on vertex and edge.
- * @param output_graph_name Name of output graph.
  * @param input_edge_labels List of edge labels to consider for pagerank computation. If None, all edges are considered.
  * @param max_iterations Optional Integer. The maximum number of iterations that will be invoked. Defaults to 20.
  * @param reset_probability Optional Double. Random reset probability
@@ -58,13 +60,11 @@ import java.util.UUID
  */
 case class PageRankArgs(graph: GraphReference,
                         output_property: String,
-                        output_graph_name: String,
                         input_edge_labels: Option[List[String]] = None,
                         max_iterations: Option[Int] = None,
                         reset_probability: Option[Double] = None,
                         convergence_tolerance: Option[Double] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
-  require(!output_graph_name.isEmpty, "Output graph name must be provided")
 }
 
 /**
@@ -76,16 +76,12 @@ object PageRankDefaults {
   val convergenceToleranceDefault = 0.001d
 }
 
-/**
- * The result object
- * @param graph Name of the output graph
- */
-case class PageRankResult(graph: String)
+case class PageRankResult(frameDictionaryOutput: Map[String, FrameEntity])
 
 /** Json conversion for arguments and return value case classes */
 object PageRankJsonFormat {
   import DomainJsonProtocol._
-  implicit val PRFormat = jsonFormat7(PageRankArgs)
+  implicit val PRFormat = jsonFormat6(PageRankArgs)
   implicit val PRResultFormat = jsonFormat1(PageRankResult)
 }
 
@@ -99,9 +95,9 @@ import PageRankJsonFormat._
  *
  * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
  */
-class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
+class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
-  override def name: String = "graph:titan/graphx_pagerank"
+  override def name: String = "graph/graphx_pagerank"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
@@ -128,20 +124,16 @@ class PageRank extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     // Call PageRankRunner to kick off PageRank computation on RDDs
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
-    val newGraphName = arguments.output_graph_name
-    val newGraph = engine.graphs.createGraph(GraphTemplate(Some(newGraphName), StorageFormats.HBaseTitan))
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
-    // create titan config copy for newGraph write-back
-    val newTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(newGraph)
-    writeToTitan(newTitanConfig, outVertices, outEdges)
+    new PageRankResult(frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap)
 
-    PageRankResult(newGraphName)
-  }
-
-  // Helper function to write rdds back to Titan
-  private def writeToTitan(titanConfig: SerializableBaseConfiguration, gbVertices: RDD[GBVertex], gbEdges: RDD[GBEdge], append: Boolean = false) = {
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append))
-    gb.buildGraphWithSpark(gbVertices, gbEdges)
   }
 
 }
