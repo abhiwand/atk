@@ -14,7 +14,7 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
-    :math:`math.floor(math.sqrt(frame.row_count))`.
+    :math:`\lfloor\sqrt{frame.row_count}\rfloor`.
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
@@ -25,7 +25,7 @@ Notes
     drop_frames() method (and others) to fail!
 2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
-    With equal depth binning, for example, if the column to be binned has 10
+    For example, if the column to be binned has 10
     elements with only 2 distinct values and the *num_bins* parameter is
     greater than 2, then the number of actual number of bins will only be 2.
     This is due to a restriction that elements with an identical value must

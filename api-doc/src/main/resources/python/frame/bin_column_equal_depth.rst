@@ -10,7 +10,7 @@ to identify grouping.
 
     .. math::
 
-        \lceil \left( n * \frac {f(C)}{m} \right) \rceil 
+        ceiling\left( n * \frac {f(C)}{m} \right)
 
     where :math:`f` is a tie-adjusted ranking function over values of
     :math:`C`.
@@ -43,7 +43,7 @@ Notes
 
 Returns
 -------
-array of floats | cutoffs
+array of floats : cutoffs
     A list containing the edges of each bin.
 
 Examples
