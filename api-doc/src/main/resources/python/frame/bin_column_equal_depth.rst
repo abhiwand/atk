@@ -10,7 +10,7 @@ to identify grouping.
 
     .. math::
 
-        ceiling \left( n * \frac {f(C)}{m} \right)
+        \lceil \left( n * \frac {f(C)}{m} \right) \rceil 
 
     where :math:`f` is a tie-adjusted ranking function over values of
     :math:`C`.
