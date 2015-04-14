@@ -4,8 +4,6 @@ import org.scalatest.{ Matchers, FlatSpec }
 
 class EdgeDistanceMinTest extends FlatSpec with Matchers {
 
-  trait EdgeDistanceMinClassTest {
-
     val nullEdgeList = null
 
     val emptyEdgeList = List()
@@ -20,30 +18,26 @@ class EdgeDistanceMinTest extends FlatSpec with Matchers {
       HierarchicalClusteringEdge(2,1,1,1,1.1f,false),
       HierarchicalClusteringEdge(2,1,3,1,1.2f,false)
     )
-  }
 
-  "edgeDistance::min" should "null" in new EdgeDistanceMinClassTest {
+  "edgeDistance::min" should "return null for null inputs" in {
     val (minEdge, list) = EdgeDistance.min(nullEdgeList)
     assert(minEdge == null)
     assert(list == VertexOutEdges(null,null))
-
   }
 
-  "edgeDistance::min" should "empty" in new EdgeDistanceMinClassTest {
+  "edgeDistance::min" should "return null for empty lists" in {
     val (minEdge, list) = EdgeDistance.min(emptyEdgeList)
     assert(minEdge == null)
     assert(list == VertexOutEdges(null,null))
-
   }
 
-  "edgeDistance::min" should "basic" in new EdgeDistanceMinClassTest {
+  "edgeDistance::min" should "return non null edge" in {
     val (minEdge, list) = EdgeDistance.min(basicEdgeList)
     assert(minEdge.src == 1)
     assert(minEdge.dest == 2)
-
   }
 
-  "edgeDistance::min" should "reversed" in new EdgeDistanceMinClassTest {
+  "edgeDistance::min" should "return non null edges" in {
     val (minEdge, list) = EdgeDistance.min(reversedEdgeList)
     assert(minEdge.src == 1)
     assert(minEdge.dest == 2)
