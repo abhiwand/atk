@@ -38,7 +38,8 @@ case class Profile(profile: JdbcProfile,
                    connectionString: String,
                    driver: String,
                    username: String = "",
-                   password: String = "") {
+                   password: String = "",
+                   poolMaxActive: Int = 100) {
 
   /**
    * True if database is H2, False otherwise.
