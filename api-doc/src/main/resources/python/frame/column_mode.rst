@@ -20,11 +20,10 @@ weights_column : str (optional)
     The name of the column that provides weights (frequencies) for the mode
     calculation.
     Must contain numerical data.
-    Uniform weights of 1 for all items will be used for the calculation
-    if this parameter is not provided.
+    Default is all items have weight of 1.
 max_modes_returned : int (optional)
     Maximum number of modes returned.
-    If this parameter is not provided, it defaults to 1.
+    Default is 1.
 
 Returns
 -------
