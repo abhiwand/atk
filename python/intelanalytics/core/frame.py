@@ -891,37 +891,36 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
         The frame on the 'right' is another frame.
-        This method takes a column in the left frame and matches it's values
+        This method takes a column in the left frame and matches its values
         with a column in the right frame.
         Using the default 'how' option ['inner'] will only allow data in the
         resultant frame if both the left and right frames have the same value
         in the matching column.
         Using the 'left' 'how' option will allow any data in the resultant
         frame if it exists in the left frame, but will allow any data from the
-        right frame if it has a value in it's column which matches the value in
+        right frame if it has a value in its column which matches the value in
         the left frame column.
         Using the 'right' option works similarly, except it keeps all the data
         from the right frame and only the data from the left frame when it
         matches.
+        The 'outer' option provides a frame with data from both frames where
+        the left and right frames did not have the same value in the matching
+        column.
 
         Parameters
         ----------
         right : Frame
             Another frame to join with.
-
         left_on : str
             Name of the column in the left frame used to match up the two
             frames.
-
         right_on : str (optional)
             Name of the column in the right frame used to match up the two
             frames.
             Default is the same as the left frame.
-
         how : str ['left' | 'right' | 'inner' | 'outer'] (optional)
             How to qualify the data to be joined together.
             Default is 'inner'.
-
         name : str (optional)
             Name for the resulting new joined frame.
             Default is None.
@@ -955,8 +954,22 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            >>> my_frame = Frame(schema1)
-            >>> your_frame = Frame(schema2)
+            >>> print my_frame.inspect(3)
+
+              a:str  b:str  c:str
+            /---------------------/
+                abc   bcd     cde
+                def   efg     fgh
+                ghi   hij     jkl
+
+            >>> print your_frame.inspect(3)
+
+              a:str  d:numpy.int32  e:numpy.int32
+            /-------------------------------------/
+                abc    1              2
+                def    3              4
+                b      5              6
+
             >>> joined_frame = my_frame.join(your_frame, 'a')
 
         Now, joined_frame is a Frame accessing a frame with the columns *a_L*,
@@ -964,25 +977,53 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         The data in the new frame will be from the rows where column 'a' was
         the same in both frames.
 
-        Now, using a single Frame *my_frame* accessing a frame with the columns
+        .. code::
+
+            >>> print joined_frame.inspect(3)
+
+              a_L:str  a_R:str  b:str  c:str  d:numpy.int32  e:numpy.int32
+            /--------------------------------------------------------------/
+                  abc      abc    bcd    cde    1              2
+                  def      def    efg    fgh    3              4
+
+        It is possible to use a single frame with two columns such as
         *b* and *book*.
-        Build a new frame, but remove any rows where the values in *b* and
-        *book* do not match:
+        Building a new frame, but remove any rows where the values in *b* and
+        *book* do not match, eliminates all rows where *b* is valid and *book*
+        is not, and vice versa:
         
         .. code::
 
-            >>> joined_frame = your_frame.join(your_frame, left_on='b',
-            ...     right_on='book', how='inner')
+            >>> print my_frame.inspect(4)
+
+              a:str  b:str  book:str other:str
+            /----------------------------------/
+                cat    abc       abc       red
+                doc    abc       cde       pur
+                dog    cde       cde       blk
+                ant    def       def       blk
+
+            >>> joined_frame = my_frame.join(my_frame, left_on='b',
+            ... right_on='book', how='inner')
 
         We end up with a new Frame *joined_frame* accessing a new frame with
         all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.
 
+        .. code::
+
+            >>> print joined_frame.inspect(4)
+
+              a:str  b:str  book:str  other:str
+            /-----------------------------------/
+                cat    abc       abc       red
+                dog    cde       cde       blk
+                ant    def       def       blk
+
         More examples can be found in the :ref:`user manual
         <example_frame.join>`.
 
         """
-        # For further examples, see :ref:`example_frame.join`.
         return self._backend.join(self, right, left_on, right_on, how, name)
 
     @api
