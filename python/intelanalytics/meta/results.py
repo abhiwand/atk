@@ -105,8 +105,17 @@ def return_lda_train(selfish, json_result):
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
-@postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_page_rank')
+@postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees')
 def return_connected_components(selfish, json_result):
     from intelanalytics.core.frame import get_frame
     dictionary = json_result["frame_dictionary_output"]
     return dict([(k,get_frame(v["id"])) for k,v in dictionary.items()])
+
+@postprocessor('graph/graphx_page_rank')
+def return_page_ank(selfish, json_result):
+    from intelanalytics.core.frame import get_frame
+    vertex_json = json_result["vertex_dictionary_output"]
+    edge_json = json_result["edge_dictionary_output"]
+    vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
+    edge_dictionary = dict([(k,get_frame(v["id"])) for k,v in edge_json.items()])
+    return {'vertex_dictionary': vertex_dictionary, 'edge_dictionary': edge_dictionary}
