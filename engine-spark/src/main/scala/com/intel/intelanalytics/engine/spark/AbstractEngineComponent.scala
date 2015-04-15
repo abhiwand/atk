@@ -60,7 +60,8 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
       connectionString = SparkEngineConfig.metaStoreConnectionUrl,
       driver,
       username = SparkEngineConfig.metaStoreConnectionUsername,
-      password = SparkEngineConfig.metaStoreConnectionPassword)
+      password = SparkEngineConfig.metaStoreConnectionPassword,
+      poolMaxActive = SparkEngineConfig.metaStorePoolMaxActive)
   }(startupCall.eventContext)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
