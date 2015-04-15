@@ -124,7 +124,7 @@ class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     // Call PageRankRunner to kick off PageRank computation on RDDs
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
-    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
+    val frameRddMap = FrameRdd.toFrameRddMap(outEdges, outVertices)
 
     new PageRankResult(frameRddMap.keys.map(label => {
       val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>

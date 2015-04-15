@@ -23,15 +23,15 @@
 
 package org.apache.spark.frame
 
-import com.intel.graphbuilder.elements.GBVertex
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
-import org.apache.spark.ia.graph.VertexWrapper
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan._
+import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
@@ -409,6 +409,60 @@ object FrameRdd {
 
       (schema.label, frameRdd)
     }).toMap
+  }
+
+  /**
+   * Convert an RDD of mixed vertex types into a map where the keys are labels and values are FrameRdd's
+   * @param gbEdgeRDD Graphbuilder Edge RDD
+   * @param gbVertexRDD Graphbuilder Vertex RDD
+   * @return  keys are labels and values are FrameRdd's
+   */
+  def toFrameRddMap(gbEdgeRDD: RDD[GBEdge], gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
+
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+
+    val edgesWithCorrectedLabels = correctEdgeLabels(gbVertexRDD, gbEdgeRDD)
+    val edgeSchemas = edgesWithCorrectedLabels.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
+
+    edgeSchemas.map(schema => {
+      val filteredEdges: RDD[GBEdge] = gbEdgeRDD.filter(e => {
+        e.getProperty("_label") match {
+          case Some(p) => p.value == schema.label
+          case _ => throw new RuntimeException(s"Vertex didn't have a label property $e")
+        }
+      })
+      val vertexWrapper = new EdgeWrapper(schema)
+      val rows = filteredEdges.map(gbEdge => vertexWrapper.create(gbEdge))
+      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
+
+      (schema.label, frameRdd)
+    }).toMap
+  }
+
+  def correctEdgeLabels(labeledVertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[EdgeHolder] = {
+
+    // Join edges with vertex labels so that we can find the source and target for each edge type
+    val vidsAndLabels = labeledVertices.map(vertex => (vertex.physicalId.asInstanceOf[Long], vertex.getProperty("_label").get.value.toString))
+    val edgesByHead = edges.map(edge => (edge.headPhysicalId.asInstanceOf[Long], EdgeHolder(edge, null, null)))
+    val edgesWithHeadLabels = edgesByHead.join(vidsAndLabels).values.map(pair => pair._1.copy(srcLabel = pair._2))
+    val joined = edgesWithHeadLabels.map(e => (e.edge.tailPhysicalId.asInstanceOf[Long], e)).join(vidsAndLabels).values.map(pair => pair._1.copy(destLabel = pair._2))
+    joined.cache()
+
+    // Edges in "Seamless Graph" have a source vertex label and destination vertex label.
+    // This is more restrictive than Titan so some edges from Titan might need to be re-labeled
+    val labels = joined.map(e => LabelTriplet(e.edge.label, e.srcLabel, e.destLabel)).distinct().collect()
+    val edgeLabelsMap = ExportToGraphPlugin.buildTargetMapping(labels)
+    val edgesWithCorrectedLabels = joined.map(edgeHolder => {
+      val targetLabel = edgeLabelsMap.get(LabelTriplet(edgeHolder.edge.label, edgeHolder.srcLabel, edgeHolder.destLabel))
+      if (targetLabel.isEmpty) {
+        throw new RuntimeException(s"targetLabel wasn't found in map $edgeLabelsMap")
+      }
+      EdgeHolder(edgeHolder.edge.copy(label = targetLabel.get), edgeHolder.srcLabel, edgeHolder.destLabel)
+    })
+
+    joined.unpersist()
+
+    edgesWithCorrectedLabels
   }
 
   /**
