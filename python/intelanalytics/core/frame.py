@@ -193,16 +193,15 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Create a Frame object from the data described by schema *my_csv*.
-        Get the column names:
+        Given a Frame object, *my_frame* accessing a frame.
+        To get the column names:
         
         .. code::
 
-            >>> my_frame = ia.Frame(source='my_csv')
             >>> my_columns = my_frame.column_names
             >>> print my_columns
 
-        Now, assuming the schema *my_csv* described three columns *col1*,
+        Now, given there are three columns *col1*,
         *col2*, and *col3*, the result is:
         
         .. code::
@@ -318,7 +317,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            [("col1", str), ("col1", numpy.int32)]
+            [("col1", str), ("col2", numpy.int32)]
 
         """
         return self._backend.get_schema(self)
@@ -719,11 +718,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         *   The column names created by aggregation functions in the new frame
             are the original column name appended with the '_' character and
             the aggregation function.
-            For example, if the original field is 'a' and the function is 'avg',
-            the resultant column is named 'a_avg'.
-        *   An aggregation argument of 'count' results in a column named
-            'count'.
-        *   The aggregation function `agg.count` is the only full row
+            For example, if the original field is *a* and the function is *avg*,
+            the resultant column is named *a_avg*.
+        *   An aggregation argument of *count* results in a column named
+            *count*.
+        *   The aggregation function *agg.count* is the only full row
             aggregation function supported at this time.
         *   Aggregation currently supports using the following functions:
 
@@ -745,14 +744,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-             a:str
-           /-------/
-             cat
-             apple
-             bat
-             cat
-             bat
-             cat
+              a:str
+            /-------/
+              cat
+              apple
+              bat
+              cat
+              bat
+              cat
 
         Create a new frame, combining similar values of column *a*,
         and count how many of each value is in the original frame:
@@ -762,11 +761,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by('a', agg.count)
             >>> new_frame.inspect()
 
-             a:str       count:int
-           /-----------------------/
-             cat             3
-             apple           1
-             bat             2
+              a:str       count:int
+            /-----------------------/
+              cat             3
+              apple           1
+              bat             2
 
         In this example, 'my_frame' is accessing a frame with three columns,
         *a*, *b*, and *c*:
@@ -775,13 +774,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-             a:int   b:str   c:float
-           /-------------------------/
-             1       alpha     3.0
-             1       bravo     5.0
-             1       alpha     5.0
-             2       bravo     8.0
-             2       bravo    12.0
+              a:int   b:str   c:float
+            /-------------------------/
+              1       alpha     3.0
+              1       bravo     5.0
+              1       alpha     5.0
+              2       bravo     8.0
+              2       bravo    12.0
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *b*.
@@ -792,12 +791,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             >>> new_frame.inspect()
 
-             a:int   b:str   c_avg:float
-           /-----------------------------/
-             1       alpha     4.0
-             1       bravo     5.0
-             2       bravo    10.0
-
+              a:int   b:str   c_avg:float
+            /-----------------------------/
+              1       alpha     4.0
+              1       bravo     5.0
+              2       bravo    10.0
+ 
         For this example, we use *my_frame* with columns *a*, *c*, *d*,
         and *e*:
 
@@ -805,13 +804,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-             a:str   c:int   d:float e:int
-           /-------------------------------/
-             ape     1       4.0     9
-             ape     1       8.0     8
-             big     1       5.0     7
-             big     1       6.0     6
-             big     1       8.0     5
+              a:str   c:int   d:float e:int
+            /-------------------------------/
+              ape     1       4.0     9
+              ape     1       8.0     8
+              big     1       5.0     7
+              big     1       6.0     6
+              big     1       8.0     5
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *c*.
@@ -821,17 +820,17 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         
         .. code::
 
-            >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d':
-            ...     [agg.avg, agg.sum, agg.min], 'e': agg.max})
+            >>> new_frame = my_frame.group_by(['a', 'c'], agg.count,
+            ... {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-             a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
-           /-------------------------------------------------------------------------------/
-             ape     1       2          6.0          12.0          4.0           9
-             big     1       3          6.333333     19.0          5.0           7
+              a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
+            /-------------------------------------------------------------------------------/
+              ape     1       2          6.0          12.0          4.0           9
+              big     1       3          6.333333     19.0          5.0           7
 
 
-        """
         # For further examples, see :ref:`example_frame.group_by`.
+        """
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
 

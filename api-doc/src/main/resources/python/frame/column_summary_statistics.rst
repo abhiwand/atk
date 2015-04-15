@@ -106,12 +106,13 @@ Logging Invalid Data
     valid_data_weight_pair_count.
 
 Equations
-    bad_row_count + good_row_count = # rows in the frame
-    positive_weight_count + non_positive_weight_count = good_row_count
+    ``bad_row_count + good_row_count = # rows in the frame``
+
+    ``positive_weight_count + non_positive_weight_count = good_row_count``
 
     In particular, when no weights column is provided and all weights
-    are 1.0, non_positive_weight_count = 0 and
-    positive_weight_count = good_row_count
+    are 1.0, ``non_positive_weight_count = 0`` and
+    ``positive_weight_count = good_row_count``
 
 Examples
 --------

@@ -37,14 +37,13 @@ histogram : Histogram
     A Histogram object containing the result set.
     It contains three attributes:
 
-    *   cutoffs |EM| array of type float
-        |EM| A list containing the edges of each bin.
-    *   hist |EM| array of type float
-        |EM| A list containing count of the weighted observations found in
-        each bin.
-    *   density |EM| array of type float
-        |EM| A list containing a decimal containing the percentage of
-        observations found in the total set per bin.
+array of type float : cutoffs
+    A list containing the edges of each bin.
+array of type float : hist
+    A list containing count of the weighted observations found in each bin.
+array of type float : density
+    A list containing a decimal containing the percentage of
+    observations found in the total set per bin.
 
 Examples
 --------
@@ -54,13 +53,13 @@ Consider the following sample data set:
 
     >>> frame.inspect()
 
-      a:unicode   b:int32
-    /-----------------------/
-        a           2
-        b           7
-        c           3
-        d           9
-        e           1
+      a:unicode  b:int32
+    /--------------------/
+        a          2
+        b          7
+        c          3
+        d          9
+        e          1
 
     >>> hist = frame.histogram("b")
     >>> print hist
@@ -78,3 +77,4 @@ Plot hist as a bar chart using matplotlib:
     >>> import matplotlib.pyplot as plt
 
     >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+

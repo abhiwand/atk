@@ -82,7 +82,7 @@ beta : double (optional)
 
 Notes
 -----
-**confusion_matrix** is not yet implemented for multi-class classifiers.
+The **confusion_matrix** is not yet implemented for multi-class classifiers.
 
 Returns
 -------
@@ -110,7 +110,8 @@ labels specified in the *labels* column and the predicted labels in the
         blue        1              0                  0
         green       0              1                  1
 
-    >>> cm = frame.classification_metrics('labels', 'predictions', 1, 1)
+    >>> cm = frame.classification_metrics(label_column='labels',
+    ... pred_column='predictions', pos_label=1, beta=1)
 
     >>> cm.f_measure
 

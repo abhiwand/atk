@@ -21,7 +21,7 @@ specified in the *labels* column and the predicted labels in the
 
 .. code::
 
-    >>> frame.inspect()
+    >>> my_frame.inspect()
 
       a:unicode   b:int32
     /---------------------/
@@ -30,7 +30,7 @@ specified in the *labels* column and the predicted labels in the
        blue        1
        green       0
 
-    >>> result = frame.ecdf('b')
+    >>> result = my_frame.ecdf('b')
     >>> result.inspect()
 
       b:int32   b_ECDF:float64

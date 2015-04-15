@@ -18,8 +18,7 @@ weights_column : str (optional)
     The column that provides weights (frequencies) for the median
     calculation.
     Must contain numerical data.
-    Uniform weights of 1 for all items will be used for the calculation
-    if this parameter is not provided.
+    Default is all items have a weight of 1.
 
 Returns
 -------
