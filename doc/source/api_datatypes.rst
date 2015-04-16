@@ -11,12 +11,12 @@ the supported Python data types.
 
     >>> ia.valid_data_types
 
-    float32, float64, ignore, int32, int64, unicode, vector
+    float32, float64, ignore, int32, int64, unicode, vector(n)
     (and aliases: float->float64, int->int32, list->vector, long->int64, str->unicode)
 
 |
 
-==============  ===============================================================
+==============  =========================================================================================
 **float32**     32-bit floating point number; equivalent to numpy.float32
 
 **float64**     64-bit floating point number; equivalent to numpy.float64
@@ -30,8 +30,8 @@ the supported Python data types.
 
 **unicode**     Python's unicode representation for strings.
 
-**vector**      |ALPHA|  Ordered List of float64; uses numpy.ndarray
-==============  ===============================================================
+**vector(n)**   |ALPHA|  Ordered list of n float64 numbers (array of fixed-length n); uses numpy.ndarray
+==============  =========================================================================================
 
 |
 |

@@ -44,8 +44,7 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
-from intelanalytics.core.row import NumpyJSONEncoder
-from intelanalytics.core.iatypes import valid_data_types
+from intelanalytics.core.iatypes import valid_data_types, NumpyJSONEncoder
 
 
 import json
@@ -149,9 +148,9 @@ def _wrap_row_function(frame, row_function, optional_schema=None):
     whatever raw form the engine is using.  Ideally, this belong in the engine
     """
     schema = optional_schema if optional_schema is not None else frame.schema  # must grab schema now so frame is not closed over
+    row_wrapper = RowWrapper(schema)
     def row_func(row):
         try:
-            row_wrapper = RowWrapper(schema)
             row_wrapper.load_row(row)
             return row_function(row_wrapper)
         except Exception as e:

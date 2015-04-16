@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.command._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
@@ -80,7 +80,8 @@ class FakeCommandStorage extends CommandStorage {
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val loader = mock[CommandLoader]
-  when(loader.loadFromConfig()).thenReturn(new HashMap[String, CommandPlugin[_, _]])
+  val commandRegistryMaps = CommandPluginRegistryMaps(new HashMap[String, CommandPlugin[_, _]], new HashMap[String, String])
+  when(loader.loadFromConfig()).thenReturn(commandRegistryMaps)
 
   val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {

@@ -76,13 +76,13 @@ object PageRankDefaults {
   val convergenceToleranceDefault = 0.001d
 }
 
-case class PageRankResult(frameDictionaryOutput: Map[String, FrameEntity])
+case class PageRankResult(vertexDictionaryOutput: Map[String, FrameEntity], edgeDictionaryOutput: Map[String, FrameEntity])
 
 /** Json conversion for arguments and return value case classes */
 object PageRankJsonFormat {
   import DomainJsonProtocol._
   implicit val PRFormat = jsonFormat6(PageRankArgs)
-  implicit val PRResultFormat = jsonFormat1(PageRankResult)
+  implicit val PRResultFormat = jsonFormat2(PageRankResult)
 }
 
 import PageRankJsonFormat._
@@ -124,15 +124,27 @@ class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     // Call PageRankRunner to kick off PageRank computation on RDDs
     val (outVertices, outEdges) = PageRankRunner.run(gbVertices, gbEdges, prRunnerArgs)
 
-    val frameRddMap = FrameRdd.toFrameRddMap(outEdges, outVertices)
+    val edgeFrameRddMap = FrameRdd.toFrameRddMap(outEdges, outVertices)
 
-    new PageRankResult(frameRddMap.keys.map(label => {
+    val x = edgeFrameRddMap.keys.map(label => {
       val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
-        val frameRdd = frameRddMap(label)
+        val frameRdd = edgeFrameRddMap(label)
         save(new SparkFrameData(newOutputFrame.meta, frameRdd))
       }.meta
       (label, result)
-    }).toMap)
+    }).toMap
+
+    val vertexFrameRddMap = FrameRdd.toFrameRddMap(outVertices)
+
+    val y = vertexFrameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = vertexFrameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap
+
+    new PageRankResult(y, x)
 
   }
 

@@ -9,9 +9,9 @@ If there are no data elements of finite weight > 0, then topK is empty.
 Parameters
 ----------
 data_column : str
-    The column whose top (or bottom) K distinct values are to be calculated
+    The column whose top (or bottom) K distinct values are to be calculated.
 k : int
-    Number of entries to return (If k is negative, return bottom k)
+    Number of entries to return (If k is negative, return bottom k).
 weights_column : str (optional)
     The column that provides weights (frequencies) for the topK calculation.
     Must contain numerical data.

@@ -40,8 +40,11 @@ edge_weight_default : double (optional)
 
 Returns
 -------
-dict(label, Frame) : Dictionary containing the vertex type as the key and the corresponding vertex's frame with a column containing the annotated weighted degree.
-    Call dictionary_name['label'] to get the handle to frame whose vertex type is label
+dict : dict(label, Frame)
+    Dictionary containing the vertex type as the key and the corresponding
+    vertex's frame with a column containing the annotated weighted degree.
+    Call dictionary_name['label'] to get the handle to frame whose vertex type
+    is label.
 
 Examples
 --------
@@ -52,42 +55,11 @@ Given a directed graph with three nodes and two edges like this:
     .. code::
 
         >>> g.query.gremlin('g.V')
-            Out[23]:
-            {u'results': [{u'_id': 28304,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 4,
-             u'source': 2},
-            {u'_id': 21152,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 1,
-             u'source': 1},
-            {u'_id': 28064,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 3,
-             u'source': 3}],
-             u'run_time_seconds': 1.245}
- 
+        Out[23]: {u'results': [{u'_id': 28304, u'_label': u'vertex', u'_type': u'vertex', u'_vid': 4, u'source': 2}, {u'_id': 21152, u'_label': u'vertex', u'_type': u'vertex', u'_vid': 1, u'source': 1}, {u'_id': 28064, u'_label': u'vertex', u'_type': u'vertex', u'_vid': 3, u'source': 3}], u'run_time_seconds': 1.245}
+
         >>> g.query.gremlin('g.E')
-            Out[24]:
-            {u'results': [{u'_eid': 3,
-             u'_id': u'34k-gbk-bth-lnk',
-             u'_inV': 28064,
-             u'_label': u'edge',
-             u'_outV': 21152,
-             u'_type': u'edge',
-             u'weight': 0.01},
-            {u'_eid': 4,
-             u'_id': u'1xw-gbk-bth-lu8',
-             u'_inV': 28304,
-             u'_label': u'edge',
-             u'_outV': 21152,
-             u'_type': u'edge',
-             u'weight': 0.1}],
-             u'run_time_seconds': 1.359}
- 
+        Out[24]: {u'results': [{u'_eid': 3, u'_id': u'34k-gbk-bth-lnk', u'_inV': 28064, u'_label': u'edge', u'_outV': 21152, u'_type': u'edge', u'weight': 0.01}, {u'_eid': 4, u'_id': u'1xw-gbk-bth-lu8', u'_inV': 28304, u'_label': u'edge', u'_outV': 21152, u'_type': u'edge', u'weight': 0.1}], u'run_time_seconds': 1.359}
+
         >>> h = g.annotate_weighted_degrees('weight',  edge_weight_property = 'weight')
 
 .. only:: latex
@@ -95,68 +67,43 @@ Given a directed graph with three nodes and two edges like this:
     .. code::
 
         >>> g.query.gremlin('g.V')
-            Out[23]:
-            {u'results': [{u'_id': 28304,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 4,
-             u'source': 2},
-            {u'_id': 21152,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 1,
-             u'source': 1},
-            {u'_id': 28064,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 3,
-             u'source': 3}],
-             u'run_time_seconds': 1.245}
- 
+        Out[23]:
+        {u'results': [{u'_id': 28304,
+         u'_label': u'vertex',
+         u'_type': u'vertex',
+         u'_vid': 4,
+         u'source': 2},
+        {u'_id': 21152,
+         u'_label': u'vertex',
+         u'_type': u'vertex',
+         u'_vid': 1,
+         u'source': 1},
+        {u'_id': 28064,
+         u'_label': u'vertex',
+         u'_type': u'vertex',
+         u'_vid': 3,
+         u'source': 3}],
+         u'run_time_seconds': 1.245}
+
         >>> g.query.gremlin('g.E')
-            Out[24]:
-            {u'results': [{u'_eid': 3,
-             u'_id': u'34k-gbk-bth-lnk',
-             u'_inV': 28064,
-             u'_label': u'edge',
-             u'_outV': 21152,
-             u'_type': u'edge',
-             u'weight': 0.01},
-            {u'_eid': 4,
-             u'_id': u'1xw-gbk-bth-lu8',
-             u'_inV': 28304,
-             u'_label': u'edge',
-             u'_outV': 21152,
-             u'_type': u'edge',
-             u'weight': 0.1}],
-             u'run_time_seconds': 1.359}
- 
+        Out[24]:
+        {u'results': [{u'_eid': 3,
+         u'_id': u'34k-gbk-bth-lnk',
+         u'_inV': 28064,
+         u'_label': u'edge',
+         u'_outV': 21152,
+         u'_type': u'edge',
+         u'weight': 0.01},
+        {u'_eid': 4,
+         u'_id': u'1xw-gbk-bth-lu8',
+         u'_inV': 28304,
+         u'_label': u'edge',
+         u'_outV': 21152,
+         u'_type': u'edge',
+         u'weight': 0.1}],
+         u'run_time_seconds': 1.359}
+
         >>> h = g.annotate_weighted_degrees(
         ...        'weight',
         ...        edge_weight_property = 'weight')
- 
-        >>> h.query.gremlin('g.V')
-            Out[26]:
-            {u'results': [{u'_id': 24112,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 4,
-             u'source': 2,
-             u'titanPhysicalId': 28304,
-             u'weight': 0},
-            {u'_id': 17648,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 1,
-             u'source': 1,
-             u'titanPhysicalId': 21152,
-             u'weight': 0.11},
-            {u'_id': 30568,
-             u'_label': u'vertex',
-             u'_type': u'vertex',
-             u'_vid': 3,
-             u'source': 3,
-             u'titanPhysicalId': 28064,
-             u'weight': 0}],
-             u'run_time_seconds': 1.326}
 

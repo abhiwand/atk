@@ -21,11 +21,11 @@ input_edge_labels : list of str (optional)
     In the default situation (when no list is provided), all edges will be used
     in the calculation, regardless of label.
     It is required that all edges that enter into the clustering coefficient
-    analysis  be undirected.
+    analysis be undirected.
 
 Returns
 -------
-global_clustering_coefficient : Double
+global_clustering_coefficient : double
     The global clustering coefficient of the graph.
 
 frame : Frame
@@ -35,7 +35,6 @@ frame : Frame
 
 Examples
 --------
-
 .. code::
 
     >>> results = g.clustering_coefficient('ccgraph', 'local_clustering_coefficient')
@@ -47,6 +46,3 @@ Examples
         frame: Frame
 
     >>> results.frame.inspect()
-
-
-

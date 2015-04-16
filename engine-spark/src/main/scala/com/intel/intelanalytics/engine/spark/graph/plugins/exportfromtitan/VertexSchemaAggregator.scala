@@ -42,7 +42,7 @@ class VertexSchemaAggregator(indexNames: List[String]) extends Serializable {
     val columnNames = vertex.properties.map(_.key)
     val indexedProperties = indexNames.intersect(columnNames.toSeq)
     val userDefinedColumn = if (indexedProperties.isEmpty) Some("titanPhysicalId") else Some(indexedProperties.head)
-    val label = vertex.getProperty("_label").get.value.toString
+    val label = vertex.getProperty(GraphSchema.labelProperty).get.value.toString
 
     val allColumns = schema.GraphSchema.vertexSystemColumns ++ columns.filterNot(col => GraphSchema.vertexSystemColumnNamesSet.contains(col.name))
 

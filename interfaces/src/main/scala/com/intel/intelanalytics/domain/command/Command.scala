@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.command
 
+import org.joda.time.format.DateTimeFormat
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.HasId
 import org.joda.time.DateTime
@@ -62,5 +63,7 @@ case class Command(id: Long,
    * Convenience method for getting the args as a String for logging/debugging
    */
   def compactArgs: String = arguments.map { _.compactPrint }.getOrElse("")
+
+  def getJobName: String = s"${this.id}_${this.name}_${DateTimeFormat.forPattern("yyyymmdd_kk:mm").print(this.createdOn)}"
 
 }
