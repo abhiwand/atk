@@ -21,16 +21,17 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
       List(EdgeLabelDef(HierarchicalClusteringConstants.LabelPropertyValue)),
       List(PropertyDef(PropertyType.Vertex, GraphSchema.labelProperty, classOf[String]),
         PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeCountProperty, classOf[Long]),
-        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeNameProperty, classOf[String]))
+        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeNameProperty, classOf[String]),
+        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexIterationProperty, classOf[Int]))
     )
     val schemaWriter = new TitanSchemaWriter(titanStorage)
 
     schemaWriter.write(schema)
   }
 
-  override def addVertexAndEdges(src: Long, dest: Long, count: Long, name: String): Long = {
+  override def addVertexAndEdges(src: Long, dest: Long, count: Long, name: String, iteration:Int): Long = {
 
-    val metaNodeVertex = addVertex(count, name)
+    val metaNodeVertex = addVertex(count, name, iteration)
     addEdge(metaNodeVertex, src)
     addEdge(metaNodeVertex, dest)
 
@@ -45,7 +46,7 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
     titanStorage.shutdown()
   }
 
-  private def addVertex(vertexCount: Long, vertexName: String): Vertex = {
+  private def addVertex(vertexCount: Long, vertexName: String, iteration: Int): Vertex = {
 
     val vertex = titanStorage.addVertex(null)
     vertex.setProperty(GraphSchema.labelProperty, HierarchicalClusteringConstants.LabelPropertyValue)
@@ -53,6 +54,7 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
 
     // TODO: this is testing only, remove later.
     vertex.setProperty(HierarchicalClusteringConstants.VertexNodeNameProperty, vertexName)
+    vertex.setProperty(HierarchicalClusteringConstants.VertexIterationProperty,iteration)
 
     vertex
   }
