@@ -371,4 +371,5 @@ trait SparkEngineConfig extends EventLogging {
   val enableKerberos: Boolean = config.getBoolean("intel.analytics.engine.hadoop.kerberos.enabled")
   val kerberosPrincipalName: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.principal-name")) else None
   val kerberosKeyTabPath: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.keytab-file")) else None
+
 }
