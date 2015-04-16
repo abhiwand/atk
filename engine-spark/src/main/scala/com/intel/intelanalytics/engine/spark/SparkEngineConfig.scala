@@ -351,6 +351,7 @@ trait SparkEngineConfig extends EventLogging {
   val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
   val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
   val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+  val metaStorePoolMaxActive: Int = config.getInt("intel.analytics.metastore.pool.max-active")
 
   /**
    * Get a String but throw Exception if it is empty
