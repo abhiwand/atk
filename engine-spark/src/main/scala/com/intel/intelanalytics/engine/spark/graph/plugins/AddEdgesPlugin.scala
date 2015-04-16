@@ -27,12 +27,11 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, EdgeSchema }
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.{ RowWrapper }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -96,12 +95,12 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     val sourceRdd = frames.loadFrameData(sc, sourceFrameMeta)
 
     // assign unique ids to source data
-    val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds("_eid", startId = graph.nextId())
+    val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds(GraphSchema.edgeProperty, startId = graph.nextId())
     edgeDataToAdd.cache()
     graphs.updateIdCounter(graphRef, edgeDataToAdd.count())
 
     // convert to appropriate schema, adding edge system columns
-    val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn("_src_vid", DataTypes.int64).addColumn("_dest_vid", DataTypes.int64))
+    val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn(GraphSchema.srcVidProperty, DataTypes.int64).addColumn(GraphSchema.destVidProperty, DataTypes.int64))
     edgesWithoutVids.cache()
     edgeDataToAdd.unpersist(blocking = false)
 
@@ -144,7 +143,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       val idMap = value._1
       val vid = idMap.head
       val edgeRows = value._2
-      edgeRows.map(e => edgesWithoutVids.rowWrapper(e).setValue("_dest_vid", vid))
+      edgeRows.map(e => edgesWithoutVids.rowWrapper(e).setValue(GraphSchema.destVidProperty, vid))
     }.values
 
     val edgesByHead = new FrameRdd(edgesWithoutVids.frameSchema, edgesWithTail).groupByRows(row => row.value(arguments.columnNameForSourceVertexId))
@@ -152,7 +151,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
       val idMap = value._1
       val vid = idMap.head
       val edges = value._2
-      edges.map(e => edgesWithoutVids.rowWrapper(e).setValue("_src_vid", vid))
+      edges.map(e => edgesWithoutVids.rowWrapper(e).setValue(GraphSchema.srcVidProperty, vid))
     }).values
 
     srcVertexIds.unpersist(blocking = false)

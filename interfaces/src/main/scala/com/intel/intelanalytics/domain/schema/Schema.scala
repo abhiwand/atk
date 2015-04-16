@@ -47,8 +47,8 @@ case class Column(name: String, dataType: DataType,
  * Extra schema if this is a vertex frame
  */
 case class VertexSchema(columns: List[Column] = List[Column](), label: String, idColumnName: Option[String] = None) extends GraphElementSchema {
-  require(hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + columns)
-  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  require(hasColumnWithType(GraphSchema.vidProperty, DataTypes.int64), "schema did not have int64 _vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have string _label column: " + columns)
   if (idColumnName != null) {
     //require(hasColumn(vertexSchema.get.idColumnName), s"schema must contain vertex id column ${vertexSchema.get.idColumnName}")
   }
@@ -89,10 +89,10 @@ case class VertexSchema(columns: List[Column] = List[Column](), label: String, i
  * @param directed true if edges are directed, false if they are undirected
  */
 case class EdgeSchema(columns: List[Column] = List[Column](), label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) extends GraphElementSchema {
-  require(hasColumnWithType("_eid", DataTypes.int64), "schema did not have int64 _eid column: " + columns)
-  require(hasColumnWithType("_src_vid", DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
-  require(hasColumnWithType("_dest_vid", DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
-  require(hasColumnWithType("_label", DataTypes.str), "schema did not have string _label column: " + columns)
+  require(hasColumnWithType(GraphSchema.edgeProperty, DataTypes.int64), "schema did not have int64 _eid column: " + columns)
+  require(hasColumnWithType(GraphSchema.srcVidProperty, DataTypes.int64), "schema did not have int64 _src_vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.destVidProperty, DataTypes.int64), "schema did not have int64 _dest_vid column: " + columns)
+  require(hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have string _label column: " + columns)
 
   override def copy(columns: List[Column]): EdgeSchema = {
     new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
@@ -214,7 +214,7 @@ trait Schema {
    * True if this schema contains the supplied columnName with the given dataType
    */
   def hasColumnWithType(columnName: String, dataType: DataType): Boolean = {
-    hasColumn(columnName) && column(columnName).dataType == dataType
+    hasColumn(columnName) && column(columnName).dataType.equalsDataType(dataType)
   }
 
   /**
@@ -240,8 +240,17 @@ trait Schema {
    * Validate that a column exists, and has the expected data type
    */
   def requireColumnIsType(columnName: String, dataType: DataType): Unit = {
-    require(hasColumn(columnName), s"column ${columnName} was not found")
-    require(columnDataType(columnName) == dataType, s"column ${columnName} should be of type ${dataType}")
+    require(hasColumn(columnName), s"column $columnName was not found")
+    require(columnDataType(columnName).equalsDataType(dataType), s"column $columnName should be of type $dataType")
+  }
+
+  /**
+   * Validate that a column exists, and has the expected data type by supplying a custom checker, like isVectorDataType
+   */
+  def requireColumnIsType(columnName: String, dataTypeChecker: DataType => Boolean): Unit = {
+    require(hasColumn(columnName), s"column $columnName was not found")
+    val colDataType = columnDataType(columnName)
+    require(dataTypeChecker(colDataType), s"column $columnName has bad type $colDataType")
   }
 
   /**
@@ -448,7 +457,7 @@ trait Schema {
    * The ignore data type is a slight hack for ignoring some columns on import.
    */
   def dropIgnoreColumns(): Schema = {
-    dropColumns(columns.filter(col => col.dataType == DataTypes.ignore).map(col => col.name))
+    dropColumns(columns.filter(col => col.dataType.equalsDataType(DataTypes.ignore)).map(col => col.name))
   }
 
   /**

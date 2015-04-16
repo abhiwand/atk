@@ -57,10 +57,27 @@ trait SparkEngineConfig extends EventLogging {
 
   // val's are not lazy because failing early is better
 
+  /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
+  val sparkMaster: String = {
+    val sparkMaster = config.getString("intel.analytics.engine.spark.master")
+    if (sparkMaster == "") {
+      "spark://" + hostname + ":7077"
+    }
+    else {
+      sparkMaster
+    }
+  }
+
+  val isLocalMaster: Boolean = {
+    (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
+  }
+
+  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
+
   /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
   val sparkHome: String = {
     val sparkHome = config.getString("intel.analytics.engine.spark.home")
-    if (sparkHome == "") {
+    if (sparkHome == "" && !isSparkOnYarnClusterMode) {
       info("Spark Home is NOT configured so guessing where it is")
       guessSparkHome
     }
@@ -83,23 +100,6 @@ trait SparkEngineConfig extends EventLogging {
     })
     throw new RuntimeException("sparkHome wasn't found at any of the expected locations, please set sparkHome in the config")
   }
-
-  /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
-  val sparkMaster: String = {
-    val sparkMaster = config.getString("intel.analytics.engine.spark.master")
-    if (sparkMaster == "") {
-      "spark://" + hostname + ":7077"
-    }
-    else {
-      sparkMaster
-    }
-  }
-
-  val isLocalMaster: Boolean = {
-    (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
-  }
-
-  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
 
   /**
    * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
@@ -310,7 +310,8 @@ trait SparkEngineConfig extends EventLogging {
    */
   val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
 
-  val sparkOnYarnNumExecutors = config.getString("intel.analytics.engine.spark.conf.properties.spark.yarnNumExecutors")
+  val sparkOnYarnNumExecutors = config.getInt("intel.analytics.engine.spark.conf.properties.spark.yarn.numExecutors")
+  val sparkOnYarnNumCoresPerExecutor = config.getInt("intel.analytics.engine.spark.conf.properties.spark.yarn.numCoresPerExecutor")
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
@@ -350,6 +351,7 @@ trait SparkEngineConfig extends EventLogging {
   val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
   val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
   val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+  val metaStorePoolMaxActive: Int = config.getInt("intel.analytics.metastore.pool.max-active")
 
   /**
    * Get a String but throw Exception if it is empty

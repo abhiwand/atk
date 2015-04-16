@@ -3,11 +3,11 @@ Calculate correlation matrix for two or more columns.
 Parameters
 ----------
 columns : [ str | list of str ]
-    The names of the column from which to compute the matrix
+    The names of the column from which to compute the matrix.
 
 Returns
 -------
-A matrix with the correlation values for the columns
+A matrix with the correlation values for the columns.
 
 Notes
 -----
@@ -21,6 +21,5 @@ column named *obs*:
 .. code::
 
     >>> cor_matirx = my_frame.correlation_matrix(['col_0', 'col_1', 'col_2'])
-
     >>> cor_matrix.inspect()
 

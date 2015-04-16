@@ -1,15 +1,15 @@
 Model statistics of accuracy, precision, and others.
 
 Calculate the accuracy, precision, confusion_matrix, recall and
-:math:`F_{\\beta}` measure for a classification model.
+:math:`F_{\beta}` measure for a classification model.
 
-*   The **f_measure** result is the :math:`F_{\\beta}` measure for a
+*   The **f_measure** result is the :math:`F_{\beta}` measure for a
     classification model.
-    The :math:`F_{\\beta}` measure of a binary classification model is the
+    The :math:`F_{\beta}` measure of a binary classification model is the
     harmonic mean of precision and recall.
     If we let:
 
-    * beta :math:`\\equiv \\beta`,
+    * beta :math:`\equiv \beta`,
     * :math:`T_{P}` denote the number of true positives,
     * :math:`F_{P}` denote the number of false positives, and
     * :math:`F_{N}` denote the number of false negatives
@@ -18,12 +18,12 @@ Calculate the accuracy, precision, confusion_matrix, recall and
 
     .. math::
 
-        F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + \\
-        F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
-        \\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}} }
+        F_{\beta} = (1 + \beta ^ 2) * \frac{\frac{T_{P}}{T_{P} + F_{P}} * \
+        \frac{T_{P}}{T_{P} + F_{N}}}{\beta ^ 2 * \frac{T_{P}}{T_{P} + F_{P}} \
+        + \frac{T_{P}}{T_{P} + F_{N}}}
 
-    The :math:`F_{\\beta}` measure for a multi-class classification model is
-    computed as the weighted average of the :math:`F_{\\beta}` measure for
+    The :math:`F_{\beta}` measure for a multi-class classification model is
+    computed as the weighted average of the :math:`F_{\beta}` measure for
     each label, where the weight is the number of instances of each label.
     The determination of binary vs. multi-class is automatically inferred
     from the data.
@@ -32,7 +32,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     of positive instances that are correctly identified.
     If we let :math:`T_{P}` denote the number of true positives and
     :math:`F_{N}` denote the number of false negatives, then the model
-    recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
+    recall is given by: :math:`\frac {T_{P}} {T_{P} + F_{N}}`.
 
     For multi-class classification models, the recall measure is computed as
     the weighted average of the recall for each label, where the weight is
@@ -44,7 +44,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     predicted positive instances that are correct.
     If we let :math:`T_{P}` denote the number of true positives and
     :math:`F_{P}` denote the number of false positives, then the model
-    precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
+    precision is given by: :math:`\frac {T_{P}} {T_{P} + F_{P}}`.
 
     For multi-class classification models, the precision measure is computed
     as the weighted average of the precision for each label, where the
@@ -57,7 +57,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     If we let :math:`T_{P}` denote the number of true positives,
     :math:`T_{N}` denote the number of true negatives, and :math:`K` denote
     the total number of classified instances, then the model accuracy is
-    given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
+    given by: :math:`\frac{T_{P} + T_{N}}{K}`.
 
     This measure applies to binary and multi-class classifiers.
 
@@ -68,17 +68,16 @@ Calculate the accuracy, precision, confusion_matrix, recall and
 Parameters
 ----------
 label_column : str
-    the name of the column containing the correct label for each
-    instance.
+    The name of the column containing the correct label for each instance.
 pred_column : str
-    the name of the column containing the predicted label for each
-    instance.
+    The name of the column containing the predicted label for each instance.
 pos_label : [ str | int | Null ] (optional)
-    str or int for binary classifiers, Null for multi-class classifiers.
+    This is a str or int for binary classifiers, and Null for multi-class
+    classifiers.
     The value to be interpreted as a positive instance.
 beta : double (optional)
-    beta value to use for :math:`F_{\\beta}` measure (default F1 measure
-    is computed); must be greater than zero.
+    This is the beta value to use for :math:`F_{\beta}` measure (default F1
+    measure is computed); must be greater than zero.
     Defaults to 1.
 
 Notes
@@ -93,7 +92,7 @@ object
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double
-    
+
 Examples
 --------
 Consider the following sample data set in *frame* with actual data

@@ -26,6 +26,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 import com.intel.graphbuilder.elements.{ Property, GbIdToPhysicalId, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.StringUtils
+import com.intel.intelanalytics.domain.schema.GraphSchema
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
@@ -58,8 +59,8 @@ class VertexRddFunctions(self: RDD[GBVertex]) {
       val indexedProperties = indexNames.intersect(columnNames.toSeq)
       val userDefinedColumn = if (indexedProperties.isEmpty) None else Some(indexedProperties.head)
 
-      val label = if (vertex.getProperty("_label").isDefined && vertex.getProperty("_label").get.value != null) {
-        vertex.getProperty("_label").get.value
+      val label = if (vertex.getProperty(GraphSchema.labelProperty).isDefined && vertex.getProperty(GraphSchema.labelProperty).get.value != null) {
+        vertex.getProperty(GraphSchema.labelProperty).get.value
       }
       else if (userDefinedColumn.isDefined) {
         userDefinedColumn.get
@@ -67,7 +68,7 @@ class VertexRddFunctions(self: RDD[GBVertex]) {
       else {
         "unlabeled"
       }
-      val props = vertex.properties.filter(_.key != "_label") + Property("_label", label)
+      val props = vertex.properties.filter(_.key != GraphSchema.labelProperty) + Property(GraphSchema.labelProperty, label)
       new GBVertex(vertex.physicalId, vertex.gbId, props)
     })
   }

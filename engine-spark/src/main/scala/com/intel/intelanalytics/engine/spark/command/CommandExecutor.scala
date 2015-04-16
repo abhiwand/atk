@@ -26,6 +26,11 @@ package com.intel.intelanalytics.engine.spark.command
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
+import com.intel.intelanalytics.engine.spark.hadoop.HadoopSupport
+
+import sys.process._
+import scala.collection.JavaConversions._
+
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
@@ -231,7 +236,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarnClusterMode) {
-      executeCommandOnYarn(commandContext.command, plugin)
+      val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
+      executeCommandOnYarn(commandContext.command, plugin, archiveName)
       /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
       val updatedCommand = commands.lookup(commandContext.command.id).get
       if (updatedCommand.error.isDefined)
@@ -257,22 +263,18 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     }
   }
 
-  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R])(implicit invocation: Invocation): Unit = {
+  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Unit = {
     withContext("executeCommandOnYarn") {
 
       val tempConfFileName = s"/tmp/application_${command.id}.conf"
-      /* Serialize current config for the plugin so as to pass to Spark Submit */
       val sparkCommandPlugin = plugin.asInstanceOf[SparkCommandPlugin[A, R]]
-      val pluginArchiveName = sparkCommandPlugin.getArchiveNameForPlugin()
-      sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
+      val pluginArchiveName = archiveName.getOrElse(sparkCommandPlugin.getArchiveName())
 
-      // TODO Plugin jars along with their parents should be passed in;
-      // TODO For convenience now we pass graphon and parse the same in CommandDriver
-      //      val pluginJarPath = pluginArchiveName match {
-      //        case "engine-spark" => "" /* Running as part of the spark internal jar; no need to put explicitly */
-      //        case plugin: String => s",${SparkContextFactory.jarPath(plugin)}"
-      //      }
-      val pluginJarPath = s",${SparkContextFactory.jarPath("graphon")}"
+      /* Serialize current config for the plugin so as to pass to Spark Submit */
+      val (pluginJarsList, pluginExtraClasspath) = sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
+
+      val pluginJarPath = pluginJarsList.filter(_ != "engine-spark")
+        .map(j => SparkContextFactory.jarPath(j)).mkString(",")
 
       try {
 
@@ -286,17 +288,20 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           }
 
           val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
+          val jobName = Array(s"--name", s"${command.getJobName}")
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
-          val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")}$pluginJarPath")
+          val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
           //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
-          val executionParams = Array("--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
+          val executionParams = Array(
+            "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
+            // lower #cores with more #executors often beats the other way around due to small JVMs having lower GC overhead
+            // "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
             "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
 
-          // TODO: 1. Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
-          // TODO: 2. This classpath should come from plugin's extra classpath in plugin's reference.conf
+          // TODO: Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
           val driver_classpath = SparkEngineConfig.sparkMaster match {
-            case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"/etc/hbase/conf:/etc/hadoop/conf")
+            case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"${pluginExtraClasspath.mkString(":")}")
             case _ => Array[String]()
           }
           val verbose = Array("--verbose")
@@ -306,6 +311,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           /* Prepare input arguments for Spark Submit; Do not change the order */
           val inputArgs = sparkMaster ++
+            jobName ++
             pluginExecutionDriverClass ++
             pluginDependencyJars ++
             pluginDependencyFiles ++
@@ -317,9 +323,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           /* Launch Spark Submit */
           info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-          import sys.process._
-          import scala.collection.JavaConversions._
-          val pluginDependencyJarsStr = "/usr/lib/intelanalytics/rest-server/lib/engine-spark.jar:/etc/hbase/conf:/etc/hadoop/conf"
+          val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-spark")}:${pluginExtraClasspath.mkString(":")}"
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
 
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)
@@ -443,21 +447,22 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
    * Cancel a command
    * @param commandId command id
    */
-  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = {
+  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = withMyClassLoader {
     /* This should be killing any yarn jobs running */
     val command = commands.lookup(commandId).getOrElse(throw new Exception(s"Command $commandId does not exist"))
     val commandPlugin = commandPluginRegistry.getCommandDefinition(command.name).get
     if (commandPlugin.isInstanceOf[SparkCommandPlugin[_, _]]) {
-      if (!SparkEngineConfig.sparkMaster.startsWith("yarn")) {
+      if (!SparkEngineConfig.isSparkOnYarnClusterMode) {
         /* SparkCommandPlugins which run on Standalone cluster mode */
         SparkCommandPlugin.stop(commandId)
       }
       else {
-        /* SparkCommandPlugns which run on Yarn. See TRIB-4661 */
+        HadoopSupport.killYarnJob(command.getJobName)
       }
     }
     else {
       /* Other plugins like Giraph etc which inherit from CommandPlugin, See TRIB-4661 */
+      // We need to rename all giraph jobs to use command.getJobName as yarn job name instead of hardcoded values like "iat_giraph_als"
     }
   }
 }

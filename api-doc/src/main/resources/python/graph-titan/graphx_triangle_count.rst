@@ -26,7 +26,6 @@ str : graph name
 
 Examples
 --------
-
 .. code::
 
     >>> g.graphx_triangle_count(output_property = "triangle_count",
@@ -38,10 +37,10 @@ The expected output is like this:
 
     {u'graph': u'tc_graph'}
 
+To query:
+
 .. only:: html
 
-    To query:
-    
     .. code::
 
         >>> tc_graph = get_graph('tc_graph')
@@ -51,8 +50,6 @@ The expected output is like this:
 
 .. only:: latex
 
-    To query:
-    
     .. code::
 
         >>> tc_graph = get_graph('tc_graph')

@@ -14,8 +14,7 @@ output_vertex_property : str
     each vertex.
 convergence_output_interval : int (optional)
     The convergence progress output interval.
-    Since convergence is a tricky notion for
-    The valid value range is [1, max_supersteps]
+    The valid value range is [1, max_supersteps].
     Default is 1 (output every superstep).
 
 Returns
@@ -30,7 +29,6 @@ bidirectional.
 
 Examples
 --------
-
 .. code::
 
     >>> g.connected_components(input_edge_label = "edge", output_vertex_property = "component_id")

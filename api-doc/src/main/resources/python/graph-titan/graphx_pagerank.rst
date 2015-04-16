@@ -16,7 +16,8 @@ input_edge_labels : list of str (optional)
 max_iterations : int (optional)
     The maximum number of iterations that the algorithm will execute.
     The valid range is all positive int.
-    Invalid value will terminate with vertex page rank set to reset_probability.
+    Invalid value will terminate with vertex page rank set to
+    reset_probability.
     Default is 20.
 convergence_tolerance : float (optional)
     The amount of change in cost function that will be tolerated at
@@ -38,7 +39,6 @@ str : Name of graph
 
 Examples
 --------
-
 .. code::
 
     >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
@@ -49,10 +49,10 @@ The expected output is like this:
 
     {u'graph': u'pr_graph'}
 
+To query:
+
 .. only:: html
 
-    To query:
-    
     .. code::
 
         >>> pr_graph = get_graph('pr_graph')
@@ -62,8 +62,6 @@ The expected output is like this:
 
 .. only:: latex
 
-    To query:
-    
     .. code::
 
         >>> pr_graph = get_graph('pr_graph')
@@ -101,7 +99,3 @@ The expected output is like this:
             u'user_id':3223,
             u'vertex_type':u'L'}],
            u'run_time_seconds':1.489}
-
-
-
-
