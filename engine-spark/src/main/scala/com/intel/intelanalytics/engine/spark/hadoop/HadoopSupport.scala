@@ -27,8 +27,11 @@ import com.typesafe.config.{ Config, ConfigFactory, ConfigObject, ConfigValue }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ LocalFileSystem, Path }
 import org.apache.hadoop.hdfs.DistributedFileSystem
+import org.apache.hadoop.yarn.client.api.YarnClient
+import org.apache.hadoop.yarn.conf.YarnConfiguration
 
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 import scala.reflect.io.Directory
 import com.intel.event.EventLogging
 
@@ -120,5 +123,23 @@ trait HadoopSupport extends EventLogging {
    */
   def set(hadoopConfiguration: Configuration, hadoopKey: String, arg: Option[Any]) = arg.foreach { value =>
     hadoopConfiguration.set(hadoopKey, value.toString)
+  }
+}
+
+object HadoopSupport extends EventLogging {
+  def killYarnJob(jobName: String): Unit = {
+    val yarnClient = YarnClient.createYarnClient
+    val yarnConf = new YarnConfiguration(new Configuration())
+    yarnClient.init(yarnConf)
+    yarnClient.start()
+    val app = yarnClient.getApplications.find(ap => ap.getName == jobName)
+    if (app.isDefined) {
+      info(s"Killing yarn application ${app.get.getApplicationId} which corresponds to command $jobName")
+      yarnClient.killApplication(app.get.getApplicationId)
+    }
+    else {
+      throw new Exception(s"Could not cancel command $jobName as application could not be found on yarn")
+    }
+    yarnClient.stop()
   }
 }

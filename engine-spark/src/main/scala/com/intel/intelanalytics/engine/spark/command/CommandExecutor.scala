@@ -25,6 +25,9 @@ package com.intel.intelanalytics.engine.spark.command
 
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
+
+import com.intel.intelanalytics.engine.spark.hadoop.HadoopSupport
+
 import sys.process._
 import scala.collection.JavaConversions._
 
@@ -285,6 +288,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           }
 
           val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
+          val jobName = Array(s"--name", s"${command.getJobName}")
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
           val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
@@ -307,6 +311,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           /* Prepare input arguments for Spark Submit; Do not change the order */
           val inputArgs = sparkMaster ++
+            jobName ++
             pluginExecutionDriverClass ++
             pluginDependencyJars ++
             pluginDependencyFiles ++
@@ -442,21 +447,22 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
    * Cancel a command
    * @param commandId command id
    */
-  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = {
+  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = withMyClassLoader {
     /* This should be killing any yarn jobs running */
     val command = commands.lookup(commandId).getOrElse(throw new Exception(s"Command $commandId does not exist"))
     val commandPlugin = commandPluginRegistry.getCommandDefinition(command.name).get
     if (commandPlugin.isInstanceOf[SparkCommandPlugin[_, _]]) {
-      if (!SparkEngineConfig.sparkMaster.startsWith("yarn")) {
+      if (!SparkEngineConfig.isSparkOnYarnClusterMode) {
         /* SparkCommandPlugins which run on Standalone cluster mode */
         SparkCommandPlugin.stop(commandId)
       }
       else {
-        /* SparkCommandPlugns which run on Yarn. See TRIB-4661 */
+        HadoopSupport.killYarnJob(command.getJobName)
       }
     }
     else {
       /* Other plugins like Giraph etc which inherit from CommandPlugin, See TRIB-4661 */
+      // We need to rename all giraph jobs to use command.getJobName as yarn job name instead of hardcoded values like "iat_giraph_als"
     }
   }
 }
