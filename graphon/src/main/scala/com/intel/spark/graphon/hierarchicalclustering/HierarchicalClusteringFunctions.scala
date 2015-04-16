@@ -83,7 +83,7 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
     collapsableEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     // the list of internal nodes connecting a newly created meta-node and the nodes of the collapsed edge
-    val (internalEdges, nonSelectedEdges) = createInternalEdges(collapsableEdges, dbConnectionConfig)
+    val (internalEdges, nonSelectedEdges) = createInternalEdges(collapsableEdges, dbConnectionConfig, iteration)
     internalEdges.persist(StorageLevel.MEMORY_AND_DISK)
     nonSelectedEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
@@ -212,7 +212,8 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
    *         to calculate the new active edges for the current iteration.
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
-                                  dbConnectionConfig: SerializableBaseConfiguration): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
+                                  dbConnectionConfig: SerializableBaseConfiguration, iteration:Int)
+  : (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
 
     val internalEdges = collapsedEdges.mapPartitions {
       case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {
@@ -220,7 +221,7 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
 
         val result = edges.map {
           case (minDistEdge, nonMinDistEdges) =>
-            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, hcStorage)
+            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, hcStorage, iteration)
             val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, nonMinDistEdges).map(_._2)
             (metaEdges, replacedEdges)
         }.toList

@@ -11,10 +11,10 @@ class EdgeManagerInternalEdgeTest extends FlatSpec with Matchers with MockitoSug
   val minEdge = HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false)
 
   val mockInstance = mock[HierarchicalClusteringStorageInterface]
-  when(mockInstance.addVertexAndEdges(1, 2, 2, "1_2")).thenReturn(mockNodeId)
+  when(mockInstance.addVertexAndEdges(1, 2, 2, "1_2", 1)).thenReturn(mockNodeId)
 
   "edgeManager::createInternalEdgesForMetaNode" should "return default internal edges on null" in {
-    val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(null, mockInstance)
+    val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(null, mockInstance, 1)
 
     assert(HierarchicalClusteringConstants.DefaultVertextId == metanode)
     assert(HierarchicalClusteringConstants.DefaultNodeCount == metanodeCount)
@@ -23,7 +23,7 @@ class EdgeManagerInternalEdgeTest extends FlatSpec with Matchers with MockitoSug
 
   "edgeManager::createInternalEdgesForMetaNode" should "return valid internal edge list" in {
 
-    val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minEdge, mockInstance)
+    val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minEdge, mockInstance, 1)
 
     assert(metanode == mockNodeId)
     assert(metanodeCount == 2)

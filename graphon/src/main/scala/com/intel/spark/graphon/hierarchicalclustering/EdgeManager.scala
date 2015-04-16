@@ -74,7 +74,8 @@ object EdgeManager extends Serializable {
    * @return 2 internal edges replacing the collapsed edge in the graph
    */
   def createInternalEdgesForMetaNode(edge: HierarchicalClusteringEdge,
-                                     storage: HierarchicalClusteringStorageInterface): (Long, Long, List[HierarchicalClusteringEdge]) = {
+                                     storage: HierarchicalClusteringStorageInterface,
+                                     iteration:Int): (Long, Long, List[HierarchicalClusteringEdge]) = {
 
     var edges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
 
@@ -83,7 +84,8 @@ object EdgeManager extends Serializable {
         edge.src,
         edge.dest,
         edge.getTotalNodeCount,
-        edge.src.toString + "_" + edge.dest.toString)
+        edge.src.toString + "_" + edge.dest.toString,
+        iteration)
 
       edges = edges :+ HierarchicalClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,
