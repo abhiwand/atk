@@ -85,7 +85,7 @@ List the files in the directory::
 Download the tar.gz file.
 In this case, it's 'IntelAnalytics-VM.tar.gz'::
 
-    $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz
+    $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz ./
 
 [:ref:`Skip section about Windows GUI Client <extract_archive>`].
 
