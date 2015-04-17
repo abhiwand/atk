@@ -132,4 +132,5 @@ trait Engine {
    * @return optional command instance
    */
   def cancelCommand(id: Identifier)(implicit invocation: Invocation): Future[Unit]
+
 }
