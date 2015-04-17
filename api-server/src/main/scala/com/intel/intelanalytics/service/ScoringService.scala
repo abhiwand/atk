@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.service
 
 import akka.actor.Actor
-import com.intel.intelanalytics.domain.{ VectorValue, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
@@ -98,6 +98,7 @@ class ScoringService(engine: Engine) extends Directives {
       get { homepage }
     } ~
       path("v1" / prefix / Segment / "score") { seg =>
+        //(pathPrefix("score") & pathEnd) {
         requestUri { uri =>
           get {
             parameters('data.?) {
