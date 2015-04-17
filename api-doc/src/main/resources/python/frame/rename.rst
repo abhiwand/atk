@@ -9,7 +9,6 @@ new_name : str
 
 Examples
 --------
-
 .. code::
 
     frame.rename("myFrame")

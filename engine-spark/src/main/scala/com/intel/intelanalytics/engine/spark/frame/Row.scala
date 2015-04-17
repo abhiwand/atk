@@ -280,18 +280,7 @@ trait AbstractRow {
 
     schema.columnIndices(names).map(i => {
       schema.column(i).dataType match {
-        case DataTypes.vector => if (flattenInputs) {
-          //TODO: Revisit handling of nulls when vector data type supports size
-          if (row(i) != null) {
-            arrayBuf ++= DataTypes.toVector(row(i))
-          }
-          else {
-            throw new RuntimeException(s"Vector data type should not be null in row:$row")
-          }
-        }
-        else {
-          arrayBuf += row(i)
-        }
+        case DataTypes.vector(length) => if (flattenInputs) arrayBuf ++= DataTypes.toVector(length)(row(i)) else arrayBuf += row(i)
         case _ => arrayBuf += row(i)
       }
     })
@@ -321,7 +310,7 @@ trait AbstractRow {
   def valuesForSchema(updatedSchema: Schema): Row = {
     val content = new Array[Any](updatedSchema.columnTuples.length)
     for (columnName <- updatedSchema.columnNames) {
-      if (columnName == "_label" && updatedSchema.isInstanceOf[GraphElementSchema]) {
+      if (columnName == GraphSchema.labelProperty && updatedSchema.isInstanceOf[GraphElementSchema]) {
         content(updatedSchema.columnIndex(columnName)) = updatedSchema.asInstanceOf[GraphElementSchema].label
       }
       else if (schema.hasColumnWithType(columnName, updatedSchema.columnDataType(columnName))) {

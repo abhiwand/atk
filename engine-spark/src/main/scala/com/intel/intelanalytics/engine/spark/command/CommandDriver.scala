@@ -10,7 +10,7 @@ import scala.reflect.io.Directory
 /**
  * Executes
  */
-class CommandDriver extends AbstractEngineComponent(new PluginCommandLoader) {
+class CommandDriver extends AbstractEngineComponent(new CommandLoader) {
 
   /**
    * Execute Command

@@ -26,8 +26,7 @@
         Example:  "frame/add_columns" plugin should have a file
 
         api-doc/src/main/resources/python/frame/add_columns.rst
-
-
+        
         test/entity/function.rst is used by unittests, and serves as an example
     </description>
     <parent>
@@ -36,5 +35,10 @@
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
-    
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+    </dependencies>
 </project>

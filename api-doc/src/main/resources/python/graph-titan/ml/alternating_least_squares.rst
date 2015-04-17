@@ -7,7 +7,7 @@ The algorithms presented in:
 1.  Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan.
     Large-Scale Parallel Collaborative Filtering for the Netflix Prize.
     2008.
-#.  Y. Koren.
+2.  Y. Koren.
     Factorization Meets the Neighborhood: a Multifaceted Collaborative
     Filtering Model.
     In ACM KDD 2008. (Equation 5)
@@ -109,12 +109,6 @@ a movie recommendation for user 1, the command to use is:
 
         >>> g.ml.alternating_least_squares(edge_value_property_list = "rating", vertex_type_property_key = "vertex_type", input_edge_label_list = "edge", output_vertex_property_list = "als_result", edge_type_property_key = "splits", vector_value = "true", als_lambda = 0.065, bias_on = False, min_value = 1, max_value = 5)::
 
-    The expected output is like this:
-    
-    .. code::
-
-        {u'value': u'======Graph Statistics======\\nNumber of vertices: 10070 (left: 9569, right: 501)\\nNumber of edges: 302008 (train: 145182, validate: 96640, test: 60186)\\n\\n======ALS Configuration======\\nmaxSupersteps: 20\\nfeatureDimension: 3\\nlambda: 0.065000\\nbiasOn: False\\nconvergenceThreshold: 0.000000\\nbidirectionalCheck: False\\nmaxVal: 5.000000\\nminVal: 1.000000\\nlearningCurveOutputInterval: 1\\n\\n======Learning Progress======\\nsuperstep = 2\\tcost(train) = 838.720244\\trmse(validate) = 1.220795\\trmse(test) = 1.226830\\nsuperstep = 4\\tcost(train) = 608.088979\\trmse(validate) = 1.174247\\trmse(test) = 1.180558\\nsuperstep = 6\\tcost(train) = 540.071050\\trmse(validate) = 1.166471\\trmse(test) = 1.172131\\nsuperstep = 8\\tcost(train) = 499.134869\\trmse(validate) = 1.164236\\trmse(test) = 1.169805\\nsuperstep = 10\\tcost(train) = 471.318913\\trmse(validate) = 1.163796\\trmse(test) = 1.169215\\nsuperstep = 12\\tcost(train) = 450.420300\\trmse(validate) = 1.163993\\trmse(test) = 1.169224\\nsuperstep = 14\\tcost(train) = 433.511180\\trmse(validate) = 1.164485\\trmse(test) = 1.169393\\nsuperstep = 16\\tcost(train) = 419.403410\\trmse(validate) = 1.165008\\trmse(test) = 1.169507\\nsuperstep = 18\\tcost(train) = 407.212140\\trmse(validate) = 1.165425\\trmse(test) = 1.169503\\nsuperstep = 20\\tcost(train) = 396.281966\\trmse(validate) = 1.165723\\trmse(test) = 1.169451'}
-
 .. only:: latex
 
     .. code::
@@ -131,8 +125,16 @@ a movie recommendation for user 1, the command to use is:
         ...     min_value = 1,
         ...     max_value = 5)
 
-    The expected output is like this:
-    
+The expected output is like this:
+
+.. only:: html
+
+    .. code::
+
+        {u'value': u'======Graph Statistics======\\nNumber of vertices: 10070 (left: 9569, right: 501)\\nNumber of edges: 302008 (train: 145182, validate: 96640, test: 60186)\\n\\n======ALS Configuration======\\nmaxSupersteps: 20\\nfeatureDimension: 3\\nlambda: 0.065000\\nbiasOn: False\\nconvergenceThreshold: 0.000000\\nbidirectionalCheck: False\\nmaxVal: 5.000000\\nminVal: 1.000000\\nlearningCurveOutputInterval: 1\\n\\n======Learning Progress======\\nsuperstep = 2\\tcost(train) = 838.720244\\trmse(validate) = 1.220795\\trmse(test) = 1.226830\\nsuperstep = 4\\tcost(train) = 608.088979\\trmse(validate) = 1.174247\\trmse(test) = 1.180558\\nsuperstep = 6\\tcost(train) = 540.071050\\trmse(validate) = 1.166471\\trmse(test) = 1.172131\\nsuperstep = 8\\tcost(train) = 499.134869\\trmse(validate) = 1.164236\\trmse(test) = 1.169805\\nsuperstep = 10\\tcost(train) = 471.318913\\trmse(validate) = 1.163796\\trmse(test) = 1.169215\\nsuperstep = 12\\tcost(train) = 450.420300\\trmse(validate) = 1.163993\\trmse(test) = 1.169224\\nsuperstep = 14\\tcost(train) = 433.511180\\trmse(validate) = 1.164485\\trmse(test) = 1.169393\\nsuperstep = 16\\tcost(train) = 419.403410\\trmse(validate) = 1.165008\\trmse(test) = 1.169507\\nsuperstep = 18\\tcost(train) = 407.212140\\trmse(validate) = 1.165425\\trmse(test) = 1.169503\\nsuperstep = 20\\tcost(train) = 396.281966\\trmse(validate) = 1.165723\\trmse(test) = 1.169451'}
+
+.. only:: latex
+
     .. code::
 
         {u'value': u'======Graph Statistics======\\n

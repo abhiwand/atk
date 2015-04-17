@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.service
 
 import akka.actor.Actor
-import com.intel.intelanalytics.domain.{ ScoreValue, VectorValue, DomainJsonProtocol }
+import com.intel.intelanalytics.domain.{ VectorValue, DomainJsonProtocol }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
@@ -97,29 +97,27 @@ class ScoringService(engine: Engine) extends Directives {
     path("") {
       get { homepage }
     } ~
-      pathPrefix("v1" / prefix / "score") {
-        pathEnd {
-          requestUri {
-            uri =>
-              post {
-                import spray.httpx.SprayJsonSupport._
-                implicit val format = DomainJsonProtocol.scoreValueFormat
-                entity(as[ScoreValue]) {
-                  observation =>
-                    {
-                      implicit val format = DomainJsonProtocol.vectorValueFormat
-                      onComplete(engine.scoreModel(observation.name, observation.obs)) {
-                        case Success(scored) => complete(scored.toString)
-                        case Failure(ex) => ctx => {
-                          ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
-                        }
-                      }
+      path("v1" / prefix / Segment / "score") { seg =>
+        requestUri { uri =>
+          get {
+            parameters('data.?) {
+              import spray.httpx.SprayJsonSupport._
+              implicit val format = DomainJsonProtocol.vectorValueFormat
+              (data) => data match {
+                case Some(x) => {
+                  onComplete(engine.scoreModel(seg, x)) {
+                    case Success(scored) => complete(scored.toString)
+                    case Failure(ex) => ctx => {
+                      ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
                     }
-
+                  }
                 }
+                case None => reject()
               }
+            }
           }
         }
+
       } ~
       path("info") {
         respondWithMediaType(`application/json`) {

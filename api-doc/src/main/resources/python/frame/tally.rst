@@ -7,13 +7,9 @@ values and keeping track of the the number of times the specified
 Parameters
 ----------
 sample_col : str
-    The name of the column from which to compute the cumulative count
+    The name of the column from which to compute the cumulative count.
 count_value : str
-    The column value to be used for the counts
-
-Returns
--------
-None
+    The column value to be used for the counts.
 
 Examples
 --------
