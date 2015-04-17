@@ -283,7 +283,8 @@ Glossary
 
         .. math::
 
-            \hat F_{n}(t) = \frac {x_{i} \le t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator\{x_{i} \le t\}.
+            \hat F_{n}(t) = \frac {x_{i} \le t}{n} = \frac {1}{n} \
+            \sum_{i=1}^{n} Indicator\{x_{i} \le t\}.
 
         where :math:`Indicator\{A\}` is the indicator of event :math:`A`.
         For a fixed :math:`t`, the indicator :math:`Indicator\{x_{i} \le t\}`
@@ -368,8 +369,8 @@ Glossary
 
         .. math::
 
-            f(x,\mu,\sigma) = \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{(x-\mu) \
-            ^{2}}{2\sigma^2}}
+            f(x, \mu, \sigma) = \frac{1}{ \sigma \sqrt{2 \pi}} \
+            e^{-i \frac{(x-i \mu)^{2}}{2i \sigma^2}}
 
         *   :math:`\mu` is the mean of the distribution.
         *   :math:`\sigma` is the standard deviation.

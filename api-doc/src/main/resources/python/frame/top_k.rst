@@ -15,12 +15,12 @@ k : int
 weights_column : str (optional)
     The column that provides weights (frequencies) for the topK calculation.
     Must contain numerical data.
-    Uniform weights of 1 for all items will be used for the calculation if
-    this parameter is not provided.
+    Default is 1 for all items.
 
 Returns
 -------
-Frame : An object with access to the frame
+Frame : New frame
+    An object with access to the frame
 
 Examples
 --------

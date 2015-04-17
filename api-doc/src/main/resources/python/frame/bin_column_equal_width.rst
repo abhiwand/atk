@@ -14,7 +14,7 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
-    :math:`\lfloor\sqrt{m}\rfloor`, where :math:`m` is the number of rows.
+    :math:`\lfloor \sqrt{m} \rfloor`, where :math:`m` is the number of rows.
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
