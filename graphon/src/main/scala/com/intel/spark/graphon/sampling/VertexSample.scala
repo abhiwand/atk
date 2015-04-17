@@ -113,7 +113,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val subgraph = engine.graphs.createGraph(GraphTemplate(subgraphName, StorageFormats.HBaseTitan))
 
     // create titan config copy for subgraph write-back
-    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.name.get)
+    val subgraphTitanConfig = GraphBuilderConfigFactory.getTitanConfiguration(subgraph.storage)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 

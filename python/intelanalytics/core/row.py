@@ -34,22 +34,28 @@ class Row(object):
         """
         Expects schema to as list of tuples
         """
-        self.__schema_dict = OrderedDict(schema)
+
+        # Can afford a richer object since it will be reused per row, with more init up front to save calculation
+        standardized_schema = [(name, valid_data_types.get_from_type(t)) for name, t in schema]
+        self.__schema_dict = OrderedDict(standardized_schema)
         self.__data = [] if data is None else data  # data is an array of strings right now
+        self.__dtypes = self.__schema_dict.values()
+        self.__indices_dict = dict([(k, i) for i, k, in enumerate(self.__schema_dict.keys())])
+        self.__dtype_constructors = [valid_data_types.get_constructor(t) for t in self.__dtypes]
 
     def __getattr__(self, name):
         if name != "_Row__schema_dict" and name in self.__schema_dict.keys():
-            return self[name]
+            return self._get_cell_value(name)
         return super(Row, self).__getattribute__(name)
 
     def __getitem__(self, key):
         try:
+            if isinstance(key, int):
+                return self._get_cell_value_by_index(key)
             if isinstance(key, slice):
                 raise TypeError("Index slicing a row is not supported")
             if isinstance(key, list):
                 return [self._get_cell_value(k) for k in key]
-            if isinstance(key, int):
-                return self._get_cell_value_by_index(key)
             return self._get_cell_value(key)
         except KeyError:
             raise KeyError("Column name " + str(key) + " not present.")
@@ -89,20 +95,13 @@ class Row(object):
 
     def _get_cell_value(self, key):
         try:
-            index = self.__schema_dict.keys().index(key)  # could improve speed here...
+            index = self.__indices_dict[key]
         except ValueError:
             raise KeyError(key)
         return self._get_cell_value_by_index(index)
 
     def _get_cell_value_by_index(self, index):
-        # converts the value into the proper data type
         try:
-            dtype = self.__schema_dict.values()[index]
+            return self.__dtype_constructors[index](self.__data[index])
         except IndexError:
-            raise IndexError("Internal Error: improper index %d used in schema with %d columns"
-                             % (index, len(self.__schema_dict)))
-        try:
-            return valid_data_types.cast(self.__data[index], dtype)
-        except IndexError:
-            raise IndexError("Internal Error: improper index %d used in row data with %d columns"
-                             % (index, len(self.__data)))
+            raise IndexError("Internal Error: improper index %d used in schema with %d columns" % (index, len(self.__schema_dict)))

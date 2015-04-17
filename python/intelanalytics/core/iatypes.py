@@ -132,6 +132,18 @@ _primitive_alias_type_to_type_table = {
 _primitive_alias_str_to_type_table = dict([(alias.__name__, t) for alias, t in _primitive_alias_type_to_type_table.iteritems()])
 
 
+def get_float_constructor(float_type):
+    """Creates special constructor for floating point types which handles nan, inf, -inf"""
+    ft = float_type
+
+    def float_constructor(value):
+        result = ft(value)
+        if np.isnan(result) or result == np.inf or result == -np.inf:  # this is 5x faster than calling np.isfinite()
+            return None
+        return ft(value)
+    return float_constructor
+
+
 class _DataTypes(object):
     """
     Provides functions with define and operate on supported data types.
@@ -278,7 +290,14 @@ class _DataTypes(object):
         try:
             return to_type.constructor
         except AttributeError:
-            return to_type
+            if to_type == float64 or to_type == float32:
+                return get_float_constructor(to_type)
+
+            def constructor(value):
+                if value is None:
+                    return None
+                return to_type(value)
+            return constructor
 
     @staticmethod
     def cast(value, to_type):
