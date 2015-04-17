@@ -14,7 +14,7 @@ trait HierarchicalClusteringStorageInterface extends Serializable {
 
   def addSchema(): Unit
 
-  def addVertexAndEdges(src: Long, dest: Long, metaNodeCount: Long, metaNodeName: String, iteration:Int): Long
+  def addVertexAndEdges(src: Long, dest: Long, metaNodeCount: Long, metaNodeName: String, iteration: Int): Long
 
   def commit(): Unit
 
