@@ -274,9 +274,18 @@ class EdgeRule(Rule):
     Examples
     --------
 
-    .. code::
+    .. only:: html
 
-        >>> rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+        .. code::
+
+            >>> rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+
+    .. only:: latex
+
+        .. code::
+
+            >>> rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex,
+            ... {'weight': my_frame['score']})
 
     """
     def __init__(self, label, tail, head, properties=None, bidirectional=True, is_directed=None):
@@ -321,7 +330,7 @@ class EdgeRule(Rule):
 
         Examples
         --------
-        
+
         .. code::
 
             Example
@@ -411,7 +420,7 @@ class Graph(DocStubsGraph, _BaseGraph):
     and 'movie' vertices connected by 'rating' edges.
 
     Create a frame as the source for a graph:
-    
+
     .. code::
 
         >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
@@ -422,13 +431,13 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> frame = ia.Frame(csv)
 
     Create a graph:
-    
+
     .. code::
 
         >>> graph = ia.Graph()
 
     Define the types of vertices and edges this graph will be made of:
-    
+
     .. code::
 
         >>> graph.define_vertex_type('users')
@@ -436,32 +445,54 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> graph.define_edge_type('ratings','users','movies',directed=True)
 
     Add data to the graph:
-    
-    .. code::
 
-        >>> graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name'])
-        >>> graph.vertices['movies].add_vertices(frame, 'movie_id', ['movie_title])
-        >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+    .. only:: html
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name'])
+            >>> graph.vertices['movies].add_vertices(frame, 'movie_id', ['movie_title])
+            >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating']
+
+    .. only:: latex
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(frame, 'user_id',
+            ... ['user_name'])
+            >>> graph.vertices['movies].add_vertices(frame, 'movie_id',
+            ... ['movie_title])
+            >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id',
+            ... ['rating']
 
     Append additional data to the graph from another frame:
-    
-    .. code::
 
-        >>> graph.vertices['users'].add_vertices(frame2, 'user_id', ['user_name'])
+    .. only:: html
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(frame2, 'user_id', ['user_name'])
+
+    .. only:: latex
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(frame2, 'user_id',
+            ... ['user_name'])
 
     Get basic information about the graph:
-    
+
     .. code::
 
         >>> graph.vertex_count
         >>> graph.edge_count
         >>> graph.vertices['users'].inspect(20)
 
-    This example uses a multiple source data frames and creates a graph of 'user' and 'movie' vertices
-    connected by 'rating' edges.
+    This example uses a multiple source data frames and creates a graph of
+    'user' and 'movie' vertices connected by 'rating' edges.
 
     Create a frame as the source for a graph:
-    
+
     .. code::
 
         >>> userFrame = ia.Frame(ia.CsvFile("/users.csv",
@@ -480,13 +511,13 @@ class Graph(DocStubsGraph, _BaseGraph):
         ...                                         ('rating', str)]))
 
     Create a graph:
-    
+
     .. code::
 
         >>> graph = ia.Graph()
 
     Define the types of vertices and edges this graph will be made of:
-    
+
     .. code::
 
         >>> graph.define_vertex_type('users')
@@ -494,24 +525,48 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> graph.define_edge_type('ratings','users','movies',directed=True)
 
     Add data to the graph:
-    
-    .. code::
 
-        >>> graph.vertices['users'].add_vertices(userFrame, 'user_id', ['user_name', 'age'])
-        >>> graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
-        >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
+    .. only:: html
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(userFrame, 'user_id', ['user_name', 'age'])
+            >>> graph.vertices['movies].add_vertices(movieFrame, 'movie_id') # all columns automatically added as properties
+            >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
+
+    .. only:: latex
+
+        .. code::
+
+            >>> graph.vertices['users'].add_vertices(userFrame, 'user_id',
+            ... ['user_name', 'age'])
+            >>> graph.vertices['movies].add_vertices(movieFrame, 'movie_id')
+            ... # all columns automatically added as properties
+            >>> graph.edges['ratings'].add_edges(frame, 'user_id', 'movie_id',
+            ... ['rating'])
 
     This example shows edges between vertices of the same type.
     In this example, "employees work under other employees".
 
     Create a frame to use as the source for the graph data:
-    
-    .. code::
 
-        >>> employees_frame = ia.Frame(ia.CsvFile("employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+    .. only:: html
+
+        .. code::
+
+            >>> employees_frame = ia.Frame(ia.CsvFile("employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+
+    .. only:: latex
+
+        .. code::
+
+            >>> employees_frame = ia.Frame(ia.CsvFile("employees.csv",
+            ... schema = [('Employee', str), ('Manager', str),
+            ... ('Title', str), ('Years', ia.int64)], skip_header_lines=1),
+            ... 'employees_frame')
 
     Define a graph:
-    
+
     .. code::
 
         >>> graph = ia.Graph()
@@ -519,14 +574,26 @@ class Graph(DocStubsGraph, _BaseGraph):
         >>> graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=True)
 
     Add data:
-    
-    .. code::
 
-        >>> graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
-        >>> graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
+    .. only:: html
+
+        .. code::
+
+            >>> graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
+            >>> graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
+
+    .. only:: latex
+
+        .. code::
+
+            >>> graph.vertices['Employee'].add_vertices(employees_frame,
+            ... 'Employee', ['Title'])
+            >>> graph.edges['worksunder'].add_edges(employees_frame,
+            ... 'Employee', 'Manager', ['Years'],
+            ... create_missing_vertices = True)
 
     Inspect the graph:
-    
+
     .. code::
 
         >>> graph.vertex_count
@@ -592,7 +659,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         Examples
         --------
         Inspect vertices with the supplied label:
-        
+
         .. code::
 
             >>> graph.vertices['label'].inspect()
@@ -609,7 +676,7 @@ class Graph(DocStubsGraph, _BaseGraph):
         Examples
         --------
         Inspect edges with the supplied label:
-        
+
         .. code::
 
             >>> graph.edges['label'].inspect()
@@ -631,7 +698,7 @@ class Graph(DocStubsGraph, _BaseGraph):
             >>> graph.vertex_count
 
         The result given is:
-        
+
         .. code::
 
             1194
@@ -653,7 +720,7 @@ class Graph(DocStubsGraph, _BaseGraph):
             >>> graph.edge_count
 
         The result given is:
-        
+
         .. code::
 
             1194
@@ -670,8 +737,10 @@ class GraphFrameCollection(object):
 
     def __init__(self, get_frame_func, get_frames_func):
         """
-        :param get_frame_func: method to call to return a single frame in the collection
-        :param get_frames_func: method to call to return all of the frames in the collection
+        :param get_frame_func: method to call to return a single frame in
+            the collection
+        :param get_frames_func: method to call to return all of the frames
+            in the collection
         """
         self.get_frame_func = get_frame_func
         self.get_frames_func = get_frames_func
@@ -705,9 +774,8 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     Parameters
     ----------
     rules : list of rule (optional)
-         list of rules which specify how the graph will be created.
+         List of rules which specify how the graph will be created.
          Default is an empty graph will be created.
-
     name : str (optional)
          Name for the new graph.
          Default is a unique name is generated.
@@ -718,7 +786,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     and 'movie' vertices connected by 'rating' edges.
 
     Create a frame as the source for a graph:
-    
+
     .. code::
 
         >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
@@ -728,15 +796,17 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         >>> my_frame = ia.Frame(csv)
 
     Define graph parsing rules:
-    
+
     .. code::
 
-        >>> user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        >>> user = ia.VertexRule("user", frame.user,
+        ... {"vertexType": frame.vertexType})
         >>> movie = ia.VertexRule("movie", frame.movie)
-        >>> rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
+        >>> rates = ia.EdgeRule("rating", user, movie,
+        ... {"rating": frame.rating}, bidirectional = True)
 
     Create graph:
-    
+
     .. code::
 
         >>> my_graph = ia.TitanGraph([user, movie, rates])
@@ -747,7 +817,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     .. only:: html
 
         Define the rules:
-        
+
         .. code::
 
             >>> srcips = ia.VertexRule("srcip", f.srcip,{"vertex_type": "L"})
@@ -760,7 +830,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
      .. only:: latex
 
         Define the rules:
-        
+
         .. code::
 
             >>> srcips = ia.VertexRule("srcip", f.srcip,{"vertex_type": "L"})
@@ -773,9 +843,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             >>> to_edges = ia.EdgeRule("to_port", dstips, dports,
             ...     {"fs_dstbyte": f.fs_dstbyte,"tot_dstbyte": f.tot_dstbyte,
             ...     "fs_dstpkt": f.fs_dstpkt},bidirectional=True)
-    
+
     Define the graph name:
-    
+
     .. code::
 
         >>> gname = 'vast_netflow_topic_9'
@@ -783,7 +853,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     .. only:: html
 
         Create the graph:
-        
+
         .. code::
 
             >>> my_graph = ia.TitanGraph([srcips,sports,from_edges, dstips,dports,to_edges] ,gname)
@@ -791,7 +861,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
     .. only:: latex
 
         Create the graph:
-        
+
         .. code::
 
             >>> my_graph = ia.TitanGraph([srcips,sports,from_edges,
@@ -827,7 +897,8 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
         Append updates existing edges and vertices or creates new ones if they
         do not exist.
-        Vertices are considered the same if their id_key's and id_value's match.
+        Vertices are considered the same if their id_key's and id_value's
+        match.
         Edges are considered the same if they have the same source vertex,
         destination vertex, and label.
 
@@ -843,7 +914,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         graph.
 
         Create a frame as the source for additional data:
-        
+
         .. code::
 
             >>> csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
@@ -854,15 +925,27 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             >>> frame = ia.Frame(csv)
 
         Define graph parsing rules:
-        
-        .. code::
 
-            >>> user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-            >>> movie = ia.VertexRule("movie", frame.movie)
-            >>> rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
+        .. only:: html
+
+            .. code::
+
+                >>> user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+                >>> movie = ia.VertexRule("movie", frame.movie)
+                >>> rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
+
+        .. only:: latex
+
+            .. code::
+
+                >>> user = ia.VertexRule("user", frame.user,
+                ... {"vertexType": frame.vertexType})
+                >>> movie = ia.VertexRule("movie", frame.movie)
+                >>> rates = ia.EdgeRule("rating", user, movie,
+                ... { "rating": frame.rating }, bidirectional = True)
 
         Append data from the frame to an existing graph:
-        
+
         .. code::
 
             >>> graph.append([user, movie, rates])
@@ -871,7 +954,7 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
         to it from other frames.
 
         Create a frame as the source for a graph:
-        
+
         .. code::
 
             >>> ratingsFrame = ia.Frame(ia.CsvFile("/ratings.csv",
@@ -880,34 +963,72 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
             ...                                   ('rating', str)]))
 
         Define graph parsing rules:
-        
-        .. code::
 
-            >>> user = ia.VertexRule("user", ratingsFrame.userId)
-            >>> movie = ia.VertexRule("movie", ratingsFrame.movieId)
-            >>> rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, bidirectional = True)
+        .. only:: html
+
+            .. code::
+
+                >>> user = ia.VertexRule("user", ratingsFrame.userId)
+                >>> movie = ia.VertexRule("movie", ratingsFrame.movieId)
+                >>> rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, bidirectional = True)
+
+        .. only:: latex
+
+            .. code::
+
+                >>> user = ia.VertexRule("user", ratingsFrame.userId)
+                >>> movie = ia.VertexRule("movie", ratingsFrame.movieId)
+                >>> rates = ia.EdgeRule("rating", user, movie,
+                ... { "rating": ratingsFrame.rating }, bidirectional = True)
 
         Create graph:
-        
+
         .. code::
 
             >>> graph = ia.Graph([user, movie, rates])
 
         Load additional properties onto the user vertices:
-        
-        .. code::
 
-            >>> usersFrame = ia.Frame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
-            >>> userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
-            >>> graph.append([userAdditional])
+        .. only:: html
+
+            .. code::
+
+                >>> usersFrame = ia.Frame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+                >>> userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+                >>> graph.append([userAdditional])
+
+        .. only:: latex
+
+            .. code::
+
+                >>> usersFrame = ia.Frame(ia.CsvFile("/users.csv",
+                ... schema= [('userId', int32), ('name', str),
+                ... ('age', int32)]))
+                >>> userAdditional = ia.VertexRule("user", usersFrame.userId,
+                ... {"userName": usersFrame.name, "age": usersFrame.age })
+                >>> graph.append([userAdditional])
 
         Load additional properties onto the movie vertices:
-        
-        .. code::
 
-            >>> movieFrame = ia.Frame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
-            >>> movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
-            >>> graph.append([movieAdditional])
+        .. only:: html
+
+            .. code::
+
+                >>> movieFrame = ia.Frame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+                >>> movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+                >>> graph.append([movieAdditional])
+
+        .. only:: latex
+
+            .. code::
+
+                >>> movieFrame = ia.Frame(ia.CsvFile("/movies.csv",
+                ... schema= [('movieId', int32),
+                ... ('title', str), ('year', int32)]))
+                >>> movieAdditional = ia.VertexRule("movie",
+                ... movieFrame.movieId,
+                ... {"title": movieFrame.title, "year": movieFrame.year })
+                >>> graph.append([movieAdditional])
 
         """
         self._backend.append(self, rules)

@@ -10,7 +10,7 @@ to identify grouping.
 
     .. math::
 
-        ceiling\left( n * \frac {f(C)}{m} \right)
+        ceiling \left( n * \frac {f(C)}{m} \right)
 
     where :math:`f` is a tie-adjusted ranking function over values of
     :math:`C`.
@@ -24,7 +24,7 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice:
-    :math:`\lfloor\sqrt{m}\rfloor`.
+    :math:`\lfloor \sqrt{m} \rfloor`.
 bin_column_name : str (optional)
     The name for the new binned column.
     Default is '<column_name>_binned'.

@@ -13,6 +13,15 @@ Global Methods
 
 .. autofunction:: intelanalytics.drop_graphs
 
+Rules
+-----
+.. autoclass:: intelanalytics.EdgeRule
+    :members:
+    :inherited-members:
+
+.. autoclass:: intelanalytics.VertexRule
+    :members:
+    :inherited-members:
 
 Graph
 -----
