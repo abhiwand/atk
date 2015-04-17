@@ -75,7 +75,7 @@ object EdgeManager extends Serializable {
    */
   def createInternalEdgesForMetaNode(edge: HierarchicalClusteringEdge,
                                      storage: HierarchicalClusteringStorageInterface,
-                                     iteration:Int): (Long, Long, List[HierarchicalClusteringEdge]) = {
+                                     iteration: Int): (Long, Long, List[HierarchicalClusteringEdge]) = {
 
     var edges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
 

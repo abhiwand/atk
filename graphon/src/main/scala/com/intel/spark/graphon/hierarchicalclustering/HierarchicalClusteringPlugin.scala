@@ -41,12 +41,12 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  *
  * @param graph
  */
-case class HierarchicalClusteringArgs(graph: GraphReference)
+case class HierarchicalClusteringArgs(graph: GraphReference, edgeDistance: String)
 
 /** Json conversion for arguments and return value case classes */
 object HierarchicalClusteringFormat {
   import DomainJsonProtocol._
-  implicit val hFormat = jsonFormat1(HierarchicalClusteringArgs)
+  implicit val hFormat = jsonFormat2(HierarchicalClusteringArgs)
 }
 
 import HierarchicalClusteringFormat._
@@ -54,20 +54,19 @@ import HierarchicalClusteringFormat._
 /**
  * HierarchicalClusteringPlugin implements the hierarchical clustering algorithm on a graph.
  */
-class HierarchicalClusteringPlugin extends SparkCommandPlugin[GraphNoArgs, UnitReturn] {
+class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
 
   override def name: String = "graph:titan/hierarchical_clustering"
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
     sc.addJar(SparkContextFactory.jarPath("graphon"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig)
-
+    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig, arguments.edgeDistance)
     new UnitReturn
   }
 }
