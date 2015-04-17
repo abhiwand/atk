@@ -592,14 +592,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         import pandas as pd
-        from intelanalytics.core.iatypes import vector
         result = self._backend.take(self, count, offset, columns)
         headers, data_types = zip(*result.schema)
 
         pandas_df = pd.DataFrame(result.data, columns=headers)
 
         for i, dtype in enumerate(data_types):
-            dtype_str = valid_data_types.to_string(dtype) if dtype != vector else "object"
+            dtype_str = valid_data_types.to_string(dtype) if valid_data_types.is_primitive_type(dtype) else "object"
             pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(dtype_str)
         return pandas_df
 
@@ -1213,12 +1212,12 @@ class Frame(DocStubsFrame, _BaseFrame):
 
         Examples
         --------
-        Given a frame with a single column *col_1* and a frame with two columns
-        *col_1* and *col_2*.
+        Given a frame with a single column, *col_1*, and a frame with two
+        columns, *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
         The Frame *my_frame* points to the first frame and *your_frame* points
         to the second.
-        Add the contents of *your_frame* to *my_frame*:
+        To add the contents of *your_frame* to *my_frame*:
         
         .. code::
 
@@ -1227,13 +1226,13 @@ class Frame(DocStubsFrame, _BaseFrame):
         Now the first frame has two columns, *col_1* and *col_2*.
         Column *col_1* has the data from *col_1* in both original frames.
         Column *col_2* has None (undefined) in all of the rows in the original
-        first frame, and has the value of the second frame column *col_2* in
+        first frame, and has the value of the second frame column, *col_2*, in
         the rows matching the new data in *col_1*.
 
         Breaking it down differently, the original rows referred to by
-        *my_frame* have a new column *col_2* and this new column is filled with
-        non-defined data.
-        The frame referred to by *your_frame* is then added to the bottom.
+        *my_frame* have a new column, *col_2*, and this new column is filled
+        with non-defined data.
+        The frame referred to by *your_frame*, is then added to the bottom.
 
         """
         self._backend.append(self, data)

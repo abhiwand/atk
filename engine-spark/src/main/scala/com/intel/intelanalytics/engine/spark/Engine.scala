@@ -135,6 +135,7 @@ import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPre
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import scala.util.{ Try, Success, Failure }
+import java.util.StringTokenizer
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -513,9 +514,13 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    * Score a vector on a model.
    * @param name Model name
    */
-  override def scoreModel(name: String, values: VectorValue): Future[Double] = future {
+  override def scoreModel(name: String, values: String): Future[Double] = future {
+    val splitObs: StringTokenizer = new StringTokenizer(values, ",")
+    var vector = Vector.empty[Double]
+    while (splitObs.hasMoreTokens) {
+      vector = vector :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
+    }
     val model = models.getModelByName(Some(name))
-
     model match {
       case Some(x) => {
         x.modelType match {
@@ -523,7 +528,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
             val svmJsObject = x.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
             val libsvmData = svmJsObject.convertTo[LibSvmData]
             val libsvmModel = libsvmData.svmModel
-            val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
+            val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
             predictionLabel.value
           }
           case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")

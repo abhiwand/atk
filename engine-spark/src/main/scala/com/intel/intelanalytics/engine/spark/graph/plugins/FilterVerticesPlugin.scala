@@ -28,10 +28,9 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, LegacyFrameRdd, PythonRddStorage }
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema, Schema, DataTypes }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -113,18 +112,18 @@ object FilterVerticesFunctions {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
     val vertexFrameSchema = vertexFrame.schema
 
-    val originalVertexIds = frameStorage.loadFrameData(sc, vertexFrame).mapRows(_.value("_vid"))
-    val filteredVertexIds = filteredRdd.mapRows(_.value("_vid"))
+    val originalVertexIds = frameStorage.loadFrameData(sc, vertexFrame).mapRows(_.value(GraphSchema.vidProperty))
+    val filteredVertexIds = filteredRdd.mapRows(_.value(GraphSchema.vidProperty))
     val droppedVertexIdsRdd = originalVertexIds.subtract(filteredVertexIds)
 
     // drop edges connected to the vertices
     seamlessGraph.edgeFrames.map(frame => {
       val edgeSchema = frame.schema.asInstanceOf[EdgeSchema]
       if (edgeSchema.srcVertexLabel.equals(vertexLabel)) {
-        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, sc, droppedVertexIdsRdd, frame, "_src_vid")
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, sc, droppedVertexIdsRdd, frame, GraphSchema.srcVidProperty)
       }
       else if (edgeSchema.destVertexLabel.equals(vertexLabel)) {
-        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, sc, droppedVertexIdsRdd, frame, "_dest_vid")
+        FilterVerticesFunctions.dropDanglingEdgesAndSave(frameStorage, sc, droppedVertexIdsRdd, frame, GraphSchema.destVidProperty)
       }
     })
   }

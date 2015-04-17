@@ -66,18 +66,37 @@ Modify the frame by computing the dot product for a sequence of columns:
 
 Modify the frame by computing the dot product with default values for nulls:
 
-.. code::
+.. only:: html
 
-     >>> my_frame.dot_product(['col_0','col_1'], ['col_2', 'col_3'], 'dot_product_2', [0.1, 0.2], [0.3, 0.4])
-     >>> my_frame.inspect()
+    .. code::
 
-     col_0:int32  col_1:float64 col_2:int32 col3:int32  dot_product:float64  dot_product_2:float64
-     /--------------------------------------------------------------------------------------------/
-      1            0.2           -2          5            -1.0               -1.0
-      2            0.4           -1          6             0.4                0.4
-      3            0.6            0          7             4.2                4.2
-      4            0.8            1          8            10.4                10.4
-      5            None           2          None         10.0                10.08
+         >>> my_frame.dot_product(['col_0','col_1'], ['col_2', 'col_3'], 'dot_product_2', [0.1, 0.2], [0.3, 0.4])
+         >>> my_frame.inspect()
+
+           col_0:int32  col_1:float64 col_2:int32 col3:int32  dot_product:float64  dot_product_2:float64
+         /--------------------------------------------------------------------------------------------/
+            1            0.2           -2          5            -1.0               -1.0
+            2            0.4           -1          6             0.4                0.4
+            3            0.6            0          7             4.2                4.2
+            4            0.8            1          8            10.4                10.4
+            5            None           2          None         10.0                10.08
+
+.. only:: latex
+
+    .. code::
+
+         >>> my_frame.dot_product(['col_0','col_1'], ['col_2', 'col_3'],
+         ... 'dot_product_2', [0.1, 0.2], [0.3, 0.4])
+         >>> my_frame.inspect()
+
+           col_0  col_1    col_2  col3   dot_product  dot_product_2
+           int32  float64  int32  int32  float64      float64
+         /----------------------------------------------------------/
+            1     0.2      -2     5         -1.0         -1.0
+            2     0.4      -1     6          0.4          0.4
+            3     0.6       0     7          4.2          4.2
+            4     0.8       1     8         10.4          10.4
+            5     None      2     None      10.0          10.08
 
 Calculate the dot product for columns of vectors in Frame object *my_frame*:
 

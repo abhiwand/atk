@@ -67,5 +67,3 @@ case class SingletonOrListValue[T](value: List[T])
  * @param value "value" is a special string meaning don't treat this return type like a dictionary
  */
 case class VectorValue(value: Vector[Double])
-
-case class ScoreValue(name: String, obs: VectorValue)

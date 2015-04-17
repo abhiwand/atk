@@ -80,6 +80,17 @@ class SchemaTest extends WordSpec with Matchers {
       abcSchema.columnDataType("c") shouldBe string
     }
 
+    "be able to require column types" in {
+      val schema = FrameSchema(List(Column("a", DataTypes.vector(2)), Column("b", DataTypes.float64)))
+      schema.requireColumnIsType("a", DataTypes.vector(2))
+    }
+    "be able to report bad vector type" in {
+      val schema = FrameSchema(List(Column("a", DataTypes.vector(2)), Column("b", DataTypes.float64)))
+      intercept[IllegalArgumentException] {
+        schema.requireColumnIsType("a", DataTypes.float64)
+      }
+    }
+
     "be able to add columns" in {
       val added = abcSchema.addColumn("str", string)
       added.columns.length shouldBe 4
@@ -362,20 +373,20 @@ class SchemaTest extends WordSpec with Matchers {
 
   }
 
-  val vertexColumns = List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64), Column("name", str))
+  val vertexColumns = List(Column(GraphSchema.vidProperty, int64), Column(GraphSchema.labelProperty, str), Column("movie_id", int64), Column("name", str))
   val vertexSchema = VertexSchema(vertexColumns, "movies", Some("movie_id"))
 
   "VertexSchema" should {
 
     "find correct column index for single column" in {
-      vertexSchema.columnIndex("_vid") shouldBe 0
-      vertexSchema.columnIndex("_label") shouldBe 1
+      vertexSchema.columnIndex(GraphSchema.vidProperty) shouldBe 0
+      vertexSchema.columnIndex(GraphSchema.labelProperty) shouldBe 1
       vertexSchema.columnIndex("movie_id") shouldBe 2
     }
 
     "find correct column index for two column" in {
-      vertexSchema.columnIndices(Seq("_vid", "_label")) shouldBe List(0, 1)
-      vertexSchema.columnIndices(Seq("_vid", "movie_id")) shouldBe List(0, 2)
+      vertexSchema.columnIndices(Seq(GraphSchema.vidProperty, GraphSchema.labelProperty)) shouldBe List(0, 1)
+      vertexSchema.columnIndices(Seq(GraphSchema.vidProperty, "movie_id")) shouldBe List(0, 2)
     }
 
     "find correct column index for all columns when input columns is empty" in {
@@ -383,7 +394,7 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to report column data types for first column" in {
-      vertexSchema.columnDataType("_vid") shouldBe int64
+      vertexSchema.columnDataType(GraphSchema.vidProperty) shouldBe int64
     }
 
     "be able to report column data types for last column" in {
@@ -398,8 +409,8 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to validate a column has a given type" in {
-      vertexSchema.hasColumnWithType("_vid", int64) shouldBe true
-      vertexSchema.hasColumnWithType("_vid", string) shouldBe false
+      vertexSchema.hasColumnWithType(GraphSchema.vidProperty, int64) shouldBe true
+      vertexSchema.hasColumnWithType(GraphSchema.vidProperty, string) shouldBe false
 
     }
 
@@ -412,13 +423,13 @@ class SchemaTest extends WordSpec with Matchers {
 
     "not be able to drop _vid column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_vid")
+        testDropColumn(GraphSchema.vidProperty)
       }
     }
 
     "not be able to drop _label column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_label")
+        testDropColumn(GraphSchema.labelProperty)
       }
     }
 
@@ -431,22 +442,22 @@ class SchemaTest extends WordSpec with Matchers {
     "be able to drop multiple columns" in {
       val result = vertexSchema.dropColumns(List("name"))
       assert(result.columns.length == 3)
-      assert(result.hasColumn("_vid"))
-      assert(result.hasColumn("_label"))
+      assert(result.hasColumn(GraphSchema.vidProperty))
+      assert(result.hasColumn(GraphSchema.labelProperty))
       assert(result.hasColumn("movie_id"))
       assert(result.isInstanceOf[VertexSchema])
       assert(result.isInstanceOf[VertexSchema])
     }
 
     "be able to copy a subset of columns" in {
-      vertexSchema.copySubset(Seq("_vid", "_label", "movie_id")).columns.length shouldBe 3
+      vertexSchema.copySubset(Seq(GraphSchema.vidProperty, GraphSchema.labelProperty, "movie_id")).columns.length shouldBe 3
     }
 
     "be able to rename columns" in {
       val renamed = vertexSchema.renameColumn("name", "title")
       renamed.hasColumn("name") shouldBe false
       renamed.hasColumn("title") shouldBe true
-      renamed.columnNames shouldBe List("_vid", "_label", "movie_id", "title")
+      renamed.columnNames shouldBe List(GraphSchema.vidProperty, GraphSchema.labelProperty, "movie_id", "title")
       assert(renamed.isInstanceOf[VertexSchema])
     }
 
@@ -460,13 +471,13 @@ class SchemaTest extends WordSpec with Matchers {
 
     "not be able to rename _vid column" in {
       intercept[IllegalArgumentException] {
-        vertexSchema.renameColumn("_vid", "other")
+        vertexSchema.renameColumn(GraphSchema.vidProperty, "other")
       }
     }
 
     "not be able to rename _label column" in {
       intercept[IllegalArgumentException] {
-        vertexSchema.renameColumn("_label", "other")
+        vertexSchema.renameColumn(GraphSchema.labelProperty, "other")
       }
     }
 
@@ -476,7 +487,7 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to select a subset and rename" in {
-      val schema = vertexSchema.copySubsetWithRename(Map(("_vid", "_vid"), ("_label", "_label"), ("movie_id", "m_id")))
+      val schema = vertexSchema.copySubsetWithRename(Map((GraphSchema.vidProperty, GraphSchema.vidProperty), (GraphSchema.labelProperty, GraphSchema.labelProperty), ("movie_id", "m_id")))
       assert(schema.columns.length == 3)
       assert(schema.column(2).name == "m_id")
       assert(schema.isInstanceOf[VertexSchema])
@@ -495,19 +506,19 @@ class SchemaTest extends WordSpec with Matchers {
 
     "require a _vid column" in {
       intercept[IllegalArgumentException] {
-        new VertexSchema(List(Column("_label", str)), "movies", None)
+        new VertexSchema(List(Column(GraphSchema.labelProperty, str)), "movies", None)
       }
     }
 
     "require a _label column" in {
       intercept[IllegalArgumentException] {
-        new VertexSchema(List(Column("_vid", int64)), "movies", None)
+        new VertexSchema(List(Column(GraphSchema.vidProperty, int64)), "movies", None)
       }
     }
 
     "require a _vid column to be int64" in {
       intercept[IllegalArgumentException] {
-        new VertexSchema(List(Column("_vid", str), Column("_label", str)), "movies", None)
+        new VertexSchema(List(Column(GraphSchema.vidProperty, str), Column(GraphSchema.labelProperty, str)), "movies", None)
       }
     }
 
@@ -516,32 +527,32 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "determine id column name when not already defined" in {
-      val v2 = new VertexSchema(List(Column("_vid", int64), Column("_label", str)), "movies", None)
+      val v2 = new VertexSchema(List(Column(GraphSchema.vidProperty, int64), Column(GraphSchema.labelProperty, str)), "movies", None)
       assert(v2.determineIdColumnName("other_name") == "other_name")
     }
 
     "be able to reassign idColumnName in copy" in {
-      val v1 = new VertexSchema(List(Column("_vid", int64), Column("_label", str), Column("movie_id", int64)), "movies", None)
+      val v1 = new VertexSchema(List(Column(GraphSchema.vidProperty, int64), Column(GraphSchema.labelProperty, str), Column("movie_id", int64)), "movies", None)
       val v2 = v1.copy(idColumnName = Some("movie_id"))
       assert(v1.columns == v2.columns)
       assert(v2.idColumnName == Some("movie_id"))
     }
   }
 
-  val edgeColumns = List(Column("_eid", int64), Column("_label", str), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str))
+  val edgeColumns = List(Column(GraphSchema.edgeProperty, int64), Column(GraphSchema.labelProperty, str), Column(GraphSchema.srcVidProperty, int64), Column(GraphSchema.destVidProperty, int64), Column("rating", str))
   val edgeSchema = EdgeSchema(edgeColumns, "ratings", "users", "movies", directed = true)
 
   "EdgeSchema" should {
 
     "find correct column index for single column" in {
-      edgeSchema.columnIndex("_eid") shouldBe 0
-      edgeSchema.columnIndex("_label") shouldBe 1
+      edgeSchema.columnIndex(GraphSchema.edgeProperty) shouldBe 0
+      edgeSchema.columnIndex(GraphSchema.labelProperty) shouldBe 1
       edgeSchema.columnIndex("rating") shouldBe 4
     }
 
     "find correct column index for two column" in {
-      edgeSchema.columnIndices(Seq("_eid", "_label")) shouldBe List(0, 1)
-      edgeSchema.columnIndices(Seq("_eid", "rating")) shouldBe List(0, 4)
+      edgeSchema.columnIndices(Seq(GraphSchema.edgeProperty, GraphSchema.labelProperty)) shouldBe List(0, 1)
+      edgeSchema.columnIndices(Seq(GraphSchema.edgeProperty, "rating")) shouldBe List(0, 4)
     }
 
     "find correct column index for all columns when input columns is empty" in {
@@ -549,7 +560,7 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to report column data types for first column" in {
-      edgeSchema.columnDataType("_eid") shouldBe int64
+      edgeSchema.columnDataType(GraphSchema.edgeProperty) shouldBe int64
     }
 
     "be able to report column data types for last column" in {
@@ -563,8 +574,8 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to validate a column has a given type" in {
-      edgeSchema.hasColumnWithType("_eid", int64) shouldBe true
-      edgeSchema.hasColumnWithType("_eid", string) shouldBe false
+      edgeSchema.hasColumnWithType(GraphSchema.edgeProperty, int64) shouldBe true
+      edgeSchema.hasColumnWithType(GraphSchema.edgeProperty, string) shouldBe false
 
     }
 
@@ -576,33 +587,33 @@ class SchemaTest extends WordSpec with Matchers {
 
     "not be able to drop _eid column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_eid")
+        testDropColumn(GraphSchema.edgeProperty)
       }
     }
 
     "not be able to drop _label column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_label")
+        testDropColumn(GraphSchema.labelProperty)
       }
     }
 
     "not be able to drop _src_vid column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_src_vid")
+        testDropColumn(GraphSchema.srcVidProperty)
       }
     }
 
     "not be able to drop _dest_vid column" in {
       intercept[IllegalArgumentException] {
-        testDropColumn("_dest_vid")
+        testDropColumn(GraphSchema.destVidProperty)
       }
     }
 
     "be able to drop multiple columns" in {
       val result = edgeSchema.dropColumns(List("rating"))
       assert(result.columns.length == 4)
-      assert(result.hasColumn("_eid"))
-      assert(result.hasColumn("_label"))
+      assert(result.hasColumn(GraphSchema.edgeProperty))
+      assert(result.hasColumn(GraphSchema.labelProperty))
     }
 
     "be able to rename columns" in {
@@ -613,13 +624,13 @@ class SchemaTest extends WordSpec with Matchers {
 
     "not be able to rename _eid column" in {
       intercept[IllegalArgumentException] {
-        edgeSchema.renameColumn("_eid", "other")
+        edgeSchema.renameColumn(GraphSchema.edgeProperty, "other")
       }
     }
 
     "not be able to rename _label column" in {
       intercept[IllegalArgumentException] {
-        edgeSchema.renameColumn("_label", "other")
+        edgeSchema.renameColumn(GraphSchema.labelProperty, "other")
       }
     }
 
@@ -629,10 +640,14 @@ class SchemaTest extends WordSpec with Matchers {
     }
 
     "be able to select a subset and rename" in {
-      val schema = edgeSchema.copySubsetWithRename(Map(("_eid", "_eid"), ("_label", "_label"), ("_src_vid", "_src_vid"), ("_dest_vid", "_dest_vid"), ("rating", "stars")))
+      val schema = edgeSchema.copySubsetWithRename(Map((GraphSchema.edgeProperty, GraphSchema.edgeProperty),
+        (GraphSchema.labelProperty, GraphSchema.labelProperty),
+        (GraphSchema.srcVidProperty, GraphSchema.srcVidProperty),
+        (GraphSchema.destVidProperty, GraphSchema.destVidProperty),
+        ("rating", "stars")))
       assert(schema.columns.length == 5)
-      assert(schema.hasColumn("_eid"))
-      assert(schema.hasColumn("_label"))
+      assert(schema.hasColumn(GraphSchema.edgeProperty))
+      assert(schema.hasColumn(GraphSchema.labelProperty))
       assert(schema.hasColumn("stars"))
       assert(!schema.hasColumn("rating"))
     }
@@ -644,31 +659,31 @@ class SchemaTest extends WordSpec with Matchers {
 
     "require a _eid column" in {
       intercept[IllegalArgumentException] {
-        new EdgeSchema(List(Column("_label", str), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
+        new EdgeSchema(List(Column(GraphSchema.labelProperty, str), Column(GraphSchema.srcVidProperty, int64), Column(GraphSchema.destVidProperty, int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
     "require a _label column" in {
       intercept[IllegalArgumentException] {
-        new EdgeSchema(List(Column("_eid", int64), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
+        new EdgeSchema(List(Column(GraphSchema.edgeProperty, int64), Column(GraphSchema.srcVidProperty, int64), Column(GraphSchema.destVidProperty, int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
     "require a _src_vid column" in {
       intercept[IllegalArgumentException] {
-        new EdgeSchema(List(Column("_eid", int64), Column("_label", str), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
+        new EdgeSchema(List(Column(GraphSchema.edgeProperty, int64), Column(GraphSchema.labelProperty, str), Column(GraphSchema.destVidProperty, int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
     "require a _dest_vid column" in {
       intercept[IllegalArgumentException] {
-        new EdgeSchema(List(Column("_eid", int64), Column("_label", str), Column("_src_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
+        new EdgeSchema(List(Column(GraphSchema.edgeProperty, int64), Column(GraphSchema.labelProperty, str), Column(GraphSchema.srcVidProperty, int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 
     "require a _eid column to be int64" in {
       intercept[IllegalArgumentException] {
-        new EdgeSchema(List(Column("_eid", str), Column("_label", str), Column("_src_vid", int64), Column("_dest_vid", int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
+        new EdgeSchema(List(Column(GraphSchema.edgeProperty, str), Column(GraphSchema.labelProperty, str), Column(GraphSchema.srcVidProperty, int64), Column(GraphSchema.destVidProperty, int64), Column("rating", str)), "ratings", "users", "movies", directed = true)
       }
     }
 

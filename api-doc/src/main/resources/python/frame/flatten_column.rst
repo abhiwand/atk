@@ -14,10 +14,6 @@ delimiter : str (optional)
     The delimiter string.
     Default is comma (,).
 
-Returns
--------
-None
-
 Examples
 --------
 Given that I have a frame accessed by Frame *my_frame* and the frame has two
@@ -30,7 +26,7 @@ The "original_data"::
 .. only:: html
 
     I run my commands to bring the data in where I can work on it:
-    
+
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', str)], delimiter='-')
@@ -39,7 +35,7 @@ The "original_data"::
 .. only:: latex
 
     I run my commands to bring the data in where I can work on it:
-    
+
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),

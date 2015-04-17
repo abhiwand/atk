@@ -25,24 +25,20 @@ initializationMode : str (Optional)
     The initialization technique for the algorithm.
     It could be either "random" or "k-means||".
     Default is "k-means||".
-       
+
 Returns
 -------
-results: dict
-    Contains with keys
-
-    cluster_size: dict
-        Contains with keys
-
-        ClusterId : Int
-            Number of elements in the cluster 'ClusterId'
-
-    within_set_sum_of_squared_error: Double
-        The set of sum of squared error for the model
+dict : results
+    Contains with keys.
+dict : cluster_size
+    Contains with keys.
+int : ClusterId
+    Number of elements in the cluster 'ClusterId'.
+double : within_set_sum_of_squared_error
+    The set of sum of squared error for the model.
 
 Examples
 --------
-
 .. only:: html
 
     .. code::
@@ -50,7 +46,7 @@ Examples
         >>> my_model = ia.KMeansModel(name='MyKMeansModel')
         >>> my_model.train(train_frame, ['name_of_observation_column1', 'name_of_observation_column2'],[1.0,2.0] 3, 10, 0.0002, "random")
 
-.. only:: html
+.. only:: latex
 
     .. code::
 

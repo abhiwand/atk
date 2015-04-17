@@ -5,14 +5,64 @@
 
 # Subroutines:
 
+#############################################################################################################
+function build_docstubs() {
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = TempFile
+    # $4 = LogFile
+
+    # debug: Update the additional python documentation files
+    RunCommand="which python2.7"
+    do_this "$RunCommand" $1 "No" $3 $4
+    Return=$?
+    if [ "$Return" != "0" ]; then return $Return; fi
+    if [[ -f cmdgen.py ]]; then
+        export INTELANALYTICS_AUTOCONNECT=1
+        do_this "python2.7 cmdgen.py" $1 $2 $3 $4
+        return $?
+    else
+        echo "The python script cmdgen.py seems to be missing."
+        read -p "Abort? [Y/n] "
+        if [ -z $UserResponse ];then
+            UserResponse='y'
+        fi
+        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+            return 1
+        fi
+    fi
+    return 0
+}
+
+###########################################################################################################
+function compile_jars() {
+    # $1 = AskThem
+    # $2 = DisplayStatus 
+    # $3 = TempFile
+    # $4 = LogFile
+
+    # debug: run maven
+    which mvn > /dev/null
+    if [ "$?" == "0" ]; then
+        RunCommand="mvn install -DskipTests"
+        do_this "$RunCommand" $1 $2 $3 $4
+        return $?
+    else
+        Err "Maven does not appear to be installed." $1 $2 $3 $4
+        if [ "$?" == "1" ]; then return 1; fi
+    fi
+    return 0
+}
+
 ############################################################################################################
-function delete_previous {
+function delete_previous() {
     # $1 = Directory
     # $2 = AskThem
     # $3 = DisplayStatus
     # $4 = Temporary file
     # $5 = LogFile
 
+    # debug: function delete_previous
     CommandLine="rm -rf $1"
     if [ -d $1 ]; then
         log_step "$CommandLine" $3 $5
@@ -28,14 +78,16 @@ function delete_previous {
     fi
     return 0
 }
+
 ############################################################################################################
-function do_this {
+function do_this() {
     # $1 = RunCommand
     # $2 = AskThem
     # $3 = DisplayStatus
     # $4 = TempFile
     # $5 = LogFile
 
+    # debug: function do_this
     log_step "$1" $3 $5
     ($1) > $4 2>&1
     if [ "$?" == "1" ]; then
@@ -46,8 +98,10 @@ function do_this {
     fi
     return 0
 }
+
 ############################################################################################################
-function doc_help {
+function doc_help() {
+    # debug: function doc_help
     echo
     echo "$0 $1"
     echo
@@ -72,14 +126,16 @@ function doc_help {
     echo
     return 0
 }
+
 ############################################################################################################
-function Err {
+function Err() {
     # $1 = Failure description, usually the command line
     # $2 = AskThem
     # $3 = DisplayStatus
     # $4 = TempFile
     # $5 = LogFile
 
+    # debug: function Err
     if [[ -e "$4" ]]; then
         cat "$4" >> $5
         rm "$4"
@@ -107,12 +163,14 @@ function Err {
     fi
     return 0
 }
+
 ############################################################################################################
-function log_step {
+function log_step() {
     # $1 = step description, usually the full command
     # $2 = DisplayStatus
     # $3 = LogFile
 
+    # debug: function log_step
     if [ "$2" == "Yes" ]; then
         echo "$1"
     fi
@@ -121,8 +179,10 @@ function log_step {
     echo "$1" >> $3
     return 0
 }
+
 ############################################################################################################
-function main {
+function main() {
+    # debug: function main
     # debug: $1 = Modified Arguments
 
     echo
@@ -180,6 +240,13 @@ function main {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
+        # Start the server
+        pushd ../ > /dev/null
+        server_start $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then return $Return; fi
+
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
@@ -196,52 +263,48 @@ function main {
         fi
 
         # debug: Look for sphinx build types
+        RunCommand="which sphinx-build"
+        do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
+        if [ "$?" != "0" ]; then return 1; fi
         SphinxFormats="latex text html"
         SphinxFlag=OK
         for Format in $SphinxFormats
         do
-            if [ "$SphinxFlag" == "OK" ]; then
-                echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
-                if [ "$?" == "0" ]; then
-                    which sphinx-build > /dev/null
-                    if [ "$?" == "0" ]; then
-                        sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
-                        if [ "$?" == "1" ]; then return 1; fi
-                    else
-                        echo "The sphinx documentation system does not seem to be present."
-                        read -p "Abort? [Y/n] "
-                        if [ -z $UserResponse ];then
-                            UserResponse='y'
-                        fi
-                        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                            return 1
-                        fi
-                        SphinxFlag=No
-                    fi
-                fi
+            echo $ModifiedArguments | grep -i -e "/$Format/" > /dev/null
+            if [ "$?" == "0" ]; then
+                sphinx_build "$Format" $AskThem $DisplayStatus $TempFile $LogFile $ModifiedArguments
+                if [ "$?" == "1" ]; then return 1; fi
             fi
         done
 
         # debug: Look for pdf building
         echo $ModifiedArguments | grep -i -e "/pdf/" > /dev/null
         if [ $? == 0 ]; then
-            which pdflatex > /dev/null
-            if [ "$?" == "0" ]; then
-                pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
-                if [ "$?" == "1" ]; then return 1; fi
-                if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+            RunCommand="which pdflatex"
+            do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
+            if [ "$?" != "0" ]; then return 1; fi
+            pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
+            if [ "$?" != "0" ]; then return 1; fi
+            if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+                let Count=6
+                while [ $Count -gt 0 ]
+                do
+                    if [ -s build/latex/IntelAnalytics.pdf ]; then
+                        let Count=-1
+                    else
+                        sleep 10s
+                        let Count-=1
+                    fi
+                done
+                if [ $Count -eq 0 ]; then
+                    Err "PDF too short to copy" $AskThem $DisplayStatus $TempFile $LogFile
+                    if [ "$?" != "0" ]; then
+                        return 1
+                    fi
+                else
                     RunCommand="cp build/latex/IntelAnalytics.pdf build/html/_downloads/"
                     do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-                    if [ "$?" == "1" ]; then return 1; fi
-                fi
-            else
-                echo "The latex to pdf convert does not seem to be present."
-                read -p "Abort? [Y/n] "
-                if [ -z $UserResponse ];then
-                    UserResponse='y'
-                fi
-                if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                    return 1
+                    if [ "$?" != "0" ]; then return 1; fi
                 fi
             fi
         fi
@@ -250,85 +313,58 @@ function main {
     # debug: Test the examples
     echo $ModifiedArguments | grep -i -e "/test/" > /dev/null
     if [ $? == 0 ]; then
-        PYTHONPATH="$PYTHONPATH;../python"
-        export PYTHONPATH
-        for FILE in $(ls -1a source/*.rst)
+        export PYTHONPATH="$PYTHONPATH;../python"
+        for File in $(ls -1a source/*.rst)
         do
-            echo $FILE
+            echo $File
         done
     fi
 
     # debug: Compress the results into a single file
     echo $ModifiedArguments | grep -i -e "/zip/" > /dev/null
     if [ $? == 0 ]; then
-        which zip > /dev/null
+        RunCommand="which zip"
+        do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
         if [ "$?" == "0" ]; then
             if [[ -e intel_analytics_docs.zip ]]; then
                 rm intel_analytics_docs.zip
             fi
-            
             RunCommand="zip -q -9 -r intel_analytics_docs build"
             do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-        else
-            echo "The zip utility does not seem to be present."
-            read -p "Abort? [Y/n] "
-            if [ -z $UserResponse ];then
-                UserResponse='y'
-            fi
-            if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                return 1
-            fi
         fi
     fi
+    # debug: Delete doc file
     if [ -e doc.log ]; then
         rm doc.log
     fi
 }
+
 ############################################################################################################
-function maven(){
+function maven() {
     # $1 = AskThem
     # $2 = DisplayStatus
     # $3 = Temporary file
     # $4 = LogFile
 
-    # debug: Update scala server
+    # debug: Compile jars
     pushd ../ > /dev/null
-    update_scala $1 $2 $3 $4
-    if [ "$?" != "0" ]; then
-        pkill -9 -f java
-        popd
-        return 1
-    fi
+    compile_jars $1 $2 $3 $4
+    Return=$?
     popd > /dev/null
-
-    # Start the server
-    pushd ../ > /dev/null
-    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-    do_this "$RunCommand" $1 $2 $3 $4
-    if [ "$?" == "1" ]; then return 1; fi
-    log_step "nohup bin/api-server.sh" $2 $4
-    nohup bin/api-server.sh > $3 2>&1&
-    if [ "$?" == "1" ]; then
-        Err "nohup bin/api-server.sh" $1 $2 $3 $4
-        ABORT_QUESTION=$?
-        popd
-        return ABORT_QUESTION;
-    fi
-    popd > /dev/null
+    if [ "$Return" != "0" ]; then return $Return; fi
 
     # debug: Update the additional python documentation files
     pushd ../python > /dev/null
-    update_python $1 $2 $3 $4
-    if [ "$?" == "1" ]; then
-        pkill -9 -f java
-        popd
-        return 1
-    fi
+    build_docstubs $1 $2 $3 $4
+    Return=$?
     popd > /dev/null
 
+    return $Return
+
 }
+
 ############################################################################################################
-function packages {
+function packages() {
     # $1 = User id name
     # $2 = ScriptPath
 
@@ -345,8 +381,9 @@ function packages {
     fi
     return 0
 }
+
 ############################################################################################################
-function parameters {
+function parameters() {
     e=""
     for p in $1
     do
@@ -355,8 +392,9 @@ function parameters {
     if [ "$e" != "" ]; then e=$e"/"; fi
     echo "$e"
 }
+
 ############################################################################################################
-function pdf_build {
+function pdf_build() {
     # $1 = Source Format
     # $2 = Source Document(s)
     # $3 = AskThem
@@ -369,6 +407,7 @@ function pdf_build {
     BuildDirectory="build/$1"
     Extension="tex"
 
+    log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     if [[ -f "$BuildDirectory/$2.$Extension" ]]; then
         pushd $BuildDirectory > /dev/null
@@ -393,8 +432,44 @@ function pdf_build {
     fi
     return 0
 }
+
 ############################################################################################################
-function sphinx_build {
+function server_start() {
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = Temporary file
+    # $4 = LogFile
+
+    # Start the server
+    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+    do_this "$RunCommand" $1 $2 $3 $4
+    Return=$?
+    if [ "$Return" == "0" ]; then
+        log_step "nohup bin/api-server.sh" $2 $4
+        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+        Return=$?
+        if [ "$Return" != "0" ]; then
+            Err "nohup bin/api-server.sh" $1 $2 $3 $4
+            Return=$?
+        fi
+    fi
+    return $Return
+}
+
+############################################################################################################
+function server_stop() {
+
+    # Stop the server
+    pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
+    ps|grep $pid > /dev/null
+    if [ "$?" == "0" ]; then
+        kill $pid 2>&1 > /dev/null
+    fi
+    return
+}
+
+############################################################################################################
+function sphinx_build() {
     # $1 = Format
     # $2 = AskThem
     # $3 = DisplayStatus
@@ -413,63 +488,7 @@ function sphinx_build {
     do_this "$RunCommand" $2 $3 $4 $5
     return $?
 }
-############################################################################################################
-function update_python {
-    # $1 = AskThem
-    # $2 = DisplayStatus
-    # $3 = TempFile
-    # $4 = LogFile
 
-# Update the additional python documentation files
-    which python2.7 > /dev/null
-    if [ "$?" == "0" ]; then
-        if [[ -f cmdgen.py ]]; then
-            do_this "python2.7 cmdgen.py" $1 $2 $3 $4
-            return $?
-        else
-            echo "The python script cmdgen.py seems to be missing."
-            read -p "Abort? [Y/n] "
-            if [ -z $UserResponse ];then
-                UserResponse='y'
-            fi
-            if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-                return 1
-            fi
-        fi
-    else
-        echo "Python 2.7 seems to be missing."
-        read -p "Abort? [Y/n] "
-        if [ -z $UserResponse ];then
-            UserResponse='y'
-        fi
-        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-            return 1
-        fi
-    fi
-    return 0
-}
-############################################################################################################
-function update_scala {
-    # $1 = AskThem
-    # $2 = DisplayStatus 
-    # $3 = TempFile
-    # $4 = LogFile
-
-    # Update scala server
-    which mvn > /dev/null
-    if [ "$?" == "0" ]; then
-        RunCommand="mvn install -DskipTests"
-        do_this "$RunCommand" $1 $2 $3 $4
-        return $?
-    else
-        Err "Maven does not appear to be installed." $1 $2 $3 $4
-        if [ "$?" == "1" ]; then return 1; fi
-    fi
-    return 0
-}
 #==========================================================================================================#
 main $(parameters "$*")
-
-# debug: Return to original directory to continue
-pkill -9 -f java
-
+server_stop

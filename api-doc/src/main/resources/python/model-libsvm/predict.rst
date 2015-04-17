@@ -10,13 +10,14 @@ predict_frame : Frame
 
 observation_column : list of str (Optional)
     Column(s) containing the observations whose labels are to be predicted.
-    By default, we predict the labels over columns the LibsvmModel was trained on.
+    By default, we predict the labels over columns the LibsvmModel was trained
+    on.
 
 Returns
 -------
 Frame
-    Frame containing the original frame's columns and a column with the
-    predicted label
+    A new frame containing the original frame's columns and a column with the
+    predicted label.
 
 Examples
 --------

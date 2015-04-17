@@ -27,7 +27,7 @@ import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
@@ -398,7 +398,7 @@ object FrameRdd {
 
     vertexSchemas.map(schema => {
       val filteredVertices: RDD[GBVertex] = labeledVertices.filter(v => {
-        v.getProperty("_label") match {
+        v.getProperty(GraphSchema.labelProperty) match {
           case Some(p) => p.value == schema.label
           case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
         }
@@ -467,7 +467,7 @@ object FrameRdd {
           case x if x.equals(DataTypes.float32) => FloatType
           case x if x.equals(DataTypes.float64) => DoubleType
           case x if x.equals(DataTypes.string) => StringType
-          case x if x.equals(DataTypes.vector) => VectorType
+          case x if x.isVector => VectorType
           case x if x.equals(DataTypes.ignore) => StringType
         }, nullable = true)
     }

@@ -26,7 +26,6 @@ mini_batch_fraction : double (Optional)
 
 Examples
 --------
-
 .. only:: html
 
     .. code::

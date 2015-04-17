@@ -148,45 +148,28 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 }
               }
           } ~
-          pathPrefix(prefix / LongNumber / "score") {
-            id =>
-              pathEnd {
-                requestUri {
-                  uri =>
-                    post {
-                      import spray.httpx.SprayJsonSupport._
-                      implicit val format = DomainJsonProtocol.scoreValueFormat
-                      entity(as[ScoreValue]) {
-                        observation =>
-                          {
-                            implicit val format = DomainJsonProtocol.vectorValueFormat
-                            onComplete(engine.scoreModel(observation.name, observation.obs)) {
-                              case Success(scored) => complete(scored.toString)
-                              case Failure(ex) => ctx => {
-                                ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
-                              }
-                            }
-                          }
-
+          path("v1" / prefix / Segment / "score") { seg =>
+            requestUri { uri =>
+              get {
+                parameters('data.?) {
+                  import spray.httpx.SprayJsonSupport._
+                  implicit val format = DomainJsonProtocol.vectorValueFormat
+                  (data) => data match {
+                    case Some(x) => {
+                      onComplete(engine.scoreModel(seg, x)) {
+                        case Success(scored) => complete(scored.toString)
+                        case Failure(ex) => ctx => {
+                          ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                        }
                       }
                     }
-                  //                    post {
-                  //                      import spray.httpx.SprayJsonSupport._
-                  //                      implicit val format = DomainJsonProtocol.vectorValueFormat
-                  //                      entity(as[VectorValue]) {
-                  //                        observation =>
-                  //                          onComplete(engine.scoreModel(id, observation)) {
-                  //                            case Success(scored) => complete(scored.toString)
-                  //                            case Failure(ex) => ctx => {
-                  //                              ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
-                  //                            }
-                  //                          }
-                  //                      }
-                  //                    }
+                    case None => reject()
+                  }
                 }
               }
+            }
+
           }
     }
-
   }
 }

@@ -5,13 +5,14 @@ Calculate quantiles on the given column.
 Parameters
 ----------
 column_name : str
-    The column to calculate quantiles
+    The column to calculate quantiles.
 quantiles : [ float | list of float ]
+    What is being requested.
 
 Returns
 -------
 Frame
-    A new Frame with two columns (float64): requested Quantiles and their
+    A new frame with two columns (float64): requested Quantiles and their
     respective values
 
 Examples
@@ -35,7 +36,7 @@ column *final_sale_price*:
                 420
                 250
                 335
-                
+
 To calculate 10th, 50th, and 100th quantile:
 
 .. code::

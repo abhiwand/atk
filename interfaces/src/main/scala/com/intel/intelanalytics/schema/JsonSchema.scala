@@ -70,7 +70,7 @@ object JsonSchema {
 
   val model = StringSchema(format = Some("uri/ia-model"))
 
-  val vector = ArraySchema(`type` = Some("ia:vector"))
+  def vector(length: Long) = ArraySchema(`type` = Some(s"ia:vector($length)"))
 }
 
 sealed trait Primitive extends JsonSchema {
