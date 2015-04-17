@@ -23,7 +23,7 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
    * @param edges the list of edges for the initial graph
    * @param dbConnectionConfig serializable configuration file
    */
-  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], dbConnectionConfig: SerializableBaseConfiguration, edgeDistanceProperty:String): Unit = {
+  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], dbConnectionConfig: SerializableBaseConfiguration, edgeDistanceProperty: String): Unit = {
 
     val graphAdRdd: RDD[HierarchicalClusteringEdge] = edges.map {
       case e =>
@@ -212,8 +212,7 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
    *         to calculate the new active edges for the current iteration.
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
-                                  dbConnectionConfig: SerializableBaseConfiguration, iteration:Int)
-  : (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
+                                  dbConnectionConfig: SerializableBaseConfiguration, iteration: Int): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
 
     val internalEdges = collapsedEdges.mapPartitions {
       case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {

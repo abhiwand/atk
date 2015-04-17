@@ -29,7 +29,7 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
     schemaWriter.write(schema)
   }
 
-  override def addVertexAndEdges(src: Long, dest: Long, count: Long, name: String, iteration:Int): Long = {
+  override def addVertexAndEdges(src: Long, dest: Long, count: Long, name: String, iteration: Int): Long = {
 
     val metaNodeVertex = addVertex(count, name, iteration)
     addEdge(metaNodeVertex, src)
@@ -54,7 +54,7 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
 
     // TODO: this is testing only, remove later.
     vertex.setProperty(HierarchicalClusteringConstants.VertexNodeNameProperty, vertexName)
-    vertex.setProperty(HierarchicalClusteringConstants.VertexIterationProperty,iteration)
+    vertex.setProperty(HierarchicalClusteringConstants.VertexIterationProperty, iteration)
 
     vertex
   }
