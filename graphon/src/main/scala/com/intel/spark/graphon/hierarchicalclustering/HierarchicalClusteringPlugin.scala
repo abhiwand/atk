@@ -41,13 +41,15 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  *
  * @param graph
  */
-case class HierarchicalClusteringArgs(graph: GraphReference, edgeDistanceProperty: String)
+case class HierarchicalClusteringArgs(graph: GraphReference, edgeDistance: String)
 
 /** Json conversion for arguments and return value case classes */
 object HierarchicalClusteringFormat {
   import DomainJsonProtocol._
   implicit val hFormat = jsonFormat2(HierarchicalClusteringArgs)
 }
+
+import HierarchicalClusteringFormat._
 
 /**
  * HierarchicalClusteringPlugin implements the hierarchical clustering algorithm on a graph.
@@ -64,7 +66,7 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig, arguments.edgeDistanceProperty)
+    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig, arguments.edgeDistance)
     new UnitReturn
   }
 }
