@@ -6,6 +6,7 @@ object HierarchicalClusteringConstants {
   val OutputFilename = "/tmp/test.txt"
   val VertexNodeCountProperty = "count"
   val VertexNodeNameProperty = "name"
+  val VertexIterationProperty = "iteration"
   val LabelPropertyValue = "cluster"
   val EdgeDistanceProperty = "dist"
 }

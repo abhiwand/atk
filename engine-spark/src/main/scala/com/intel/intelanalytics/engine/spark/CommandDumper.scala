@@ -61,7 +61,8 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
         connectionString = CommandDumperConfig.metaStoreConnectionUrl,
         driver,
         username = CommandDumperConfig.metaStoreConnectionUsername,
-        password = CommandDumperConfig.metaStoreConnectionPassword)
+        password = CommandDumperConfig.metaStoreConnectionPassword,
+        poolMaxActive = 100)
     }
   }
 
