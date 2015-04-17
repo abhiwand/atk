@@ -23,12 +23,12 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
    * @param edges the list of edges for the initial graph
    * @param dbConnectionConfig serializable configuration file
    */
-  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], dbConnectionConfig: SerializableBaseConfiguration): Unit = {
+  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], dbConnectionConfig: SerializableBaseConfiguration, edgeDistanceProperty:String): Unit = {
 
     val graphAdRdd: RDD[HierarchicalClusteringEdge] = edges.map {
       case e =>
-        val edgeDistProperty = e.getProperty(HierarchicalClusteringConstants.EdgeDistanceProperty)
-          .getOrElse(throw new Exception(s"Edge does not have ${HierarchicalClusteringConstants.EdgeDistanceProperty} property"))
+        val edgeDistProperty = e.getProperty(edgeDistanceProperty)
+          .getOrElse(throw new Exception(s"Edge does not have ${edgeDistanceProperty} property"))
         HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
           HierarchicalClusteringConstants.DefaultNodeCount,
           e.tailPhysicalId.asInstanceOf[Number].longValue,
