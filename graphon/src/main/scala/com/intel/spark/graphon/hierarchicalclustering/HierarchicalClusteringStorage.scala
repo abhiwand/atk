@@ -2,18 +2,14 @@ package com.intel.spark.graphon.hierarchicalclustering
 
 import java.io.Serializable
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
 import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }
 
-case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfiguration)
+case class HierarchicalClusteringStorage(titanStorage: TitanGraph)
     extends HierarchicalClusteringStorageInterface {
-
-  private val titanStorage = connect(titanConfig)
 
   override def addSchema(): Unit = {
 
@@ -63,8 +59,4 @@ case class HierarchicalClusteringStorage(titanConfig: SerializableBaseConfigurat
     titanStorage.addEdge(null, src, titanStorage.getVertex(dest), HierarchicalClusteringConstants.LabelPropertyValue)
   }
 
-  private def connect(serializableConfig: SerializableBaseConfiguration): TitanGraph = {
-    val titanConnector = new TitanGraphConnector(serializableConfig)
-    titanConnector.connect()
-  }
 }
