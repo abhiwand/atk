@@ -19,7 +19,6 @@ import org.apache.spark.storage.StorageLevel
 class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) extends Serializable with EventLogging {
 
   private val hierarchicalClusteringReport = new StringBuilder
-  private val hierarchicalClusteringFactory: HierarchicalClusteringStorageFactoryInterface = HierarchicalClusteringStorageFactory(dbConnectionConfig)
 
   /**
    * Convert the storage graph into a hierarchical edge RDD
@@ -28,14 +27,15 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    */
   def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], edgeDistanceProperty: String): String = {
 
+    val hierarchicalClusteringFactory: HierarchicalClusteringStorageFactoryInterface = HierarchicalClusteringStorageFactory(dbConnectionConfig)
     val hcRdd: RDD[HierarchicalClusteringEdge] = edges.map {
-      case e =>
-        val edgeDistProperty = e.getProperty(edgeDistanceProperty)
+      case edge =>
+        val edgeDistProperty = edge.getProperty(edgeDistanceProperty)
           .getOrElse(throw new Exception(s"Edge does not have ${edgeDistanceProperty} property"))
 
-        HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
+        HierarchicalClusteringEdge(edge.headPhysicalId.asInstanceOf[Number].longValue,
           HierarchicalClusteringConstants.DefaultNodeCount,
-          e.tailPhysicalId.asInstanceOf[Number].longValue,
+          edge.tailPhysicalId.asInstanceOf[Number].longValue,
           HierarchicalClusteringConstants.DefaultNodeCount,
           1 - edgeDistProperty.value.asInstanceOf[Float], false)
     }.distinct()
@@ -50,7 +50,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * @param graph initial in memory graph as RDD of hierarchical clustering edges
    */
   def mainLoop(graph: RDD[HierarchicalClusteringEdge],
-               hcFactory: HierarchicalClusteringStorageFactoryInterface): Unit = {
+               hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
     var iteration = 0
@@ -59,6 +59,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       iteration = iteration + 1
       currentGraph = clusterNewLayer(currentGraph, iteration, hcFactory)
     }
+    hierarchicalClusteringReport.toString()
   }
 
   /**
@@ -94,31 +95,31 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
     val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges)
     activeEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
-    val iterationCountLog = "-------------Iteration " + iteration + " ---------------"
-    hierarchicalClusteringReport.append(iterationCountLog)
+    val iterationCountLog = HierarchicalClusteringConstants.IterationMarker + " " + iteration
+    hierarchicalClusteringReport.append(iterationCountLog + "\n")
     info(iterationCountLog)
 
     val collapsableEdgesCount = collapsableEdges.count()
     if (collapsableEdges.count() > 0) {
       val log = "Collapsed edges " + collapsableEdgesCount
-      hierarchicalClusteringReport.append(log)
+      hierarchicalClusteringReport.append(log + "\n")
       info(log)
     }
     else {
       val log = "No new collapsed edges"
-      hierarchicalClusteringReport.append(log)
+      hierarchicalClusteringReport.append(log + "\n")
       info(log)
     }
 
     val internalEdgesCount = internalEdges.count()
     if (internalEdgesCount > 0) {
       val log = "Internal edges " + internalEdgesCount
-      hierarchicalClusteringReport.append(log)
+      hierarchicalClusteringReport.append(log + "\n")
       info(log)
     }
     else {
       val log = "No new internal edges"
-      hierarchicalClusteringReport.append(log)
+      hierarchicalClusteringReport.append(log + "\n")
       info(log)
     }
 
@@ -127,7 +128,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       internalEdges.unpersist()
 
       val activeEdgesLog = "Active edges " + activeEdgesCount
-      hierarchicalClusteringReport.append(activeEdgesLog)
+      hierarchicalClusteringReport.append(activeEdgesLog + "\n")
       info(activeEdgesLog)
 
       // create a key-value pair list of edges from the current graph (for subtractByKey)
@@ -159,14 +160,14 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       collapsableEdges.unpersist()
 
       val nextItLog = "Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count()
-      hierarchicalClusteringReport.append(nextItLog)
+      hierarchicalClusteringReport.append(nextItLog + "\n")
       info(nextItLog)
 
       distinctNewGraphWithoutInternalEdges
     }
     else {
       val log = "No new active edges - terminating..."
-      hierarchicalClusteringReport.append(log)
+      hierarchicalClusteringReport.append(log + "\n")
       info(log)
 
       null
