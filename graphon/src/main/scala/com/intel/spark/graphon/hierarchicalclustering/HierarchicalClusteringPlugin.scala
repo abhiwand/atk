@@ -66,7 +66,7 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    HierarchicalClusteringFunctions.execute(vertices, edges, titanConfig, arguments.edgeDistance)
+    new HierarchicalClusteringWorker(titanConfig).execute(vertices, edges, arguments.edgeDistance)
     new UnitReturn
   }
 }
