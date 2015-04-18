@@ -64,12 +64,10 @@ object EdgeDistance extends Serializable {
       if (null != edgeWithMinDist) {
 
         // edgeWithMinDist can be null in rare cases. We need to test for null
-        if (edgeWithMinDist.dest.toString < edgeWithMinDist.src.toString) {
+        if (edgeWithMinDist.dest < edgeWithMinDist.src) {
 
           // swap the node ids so the smaller node is always source
-          val temp = edgeWithMinDist.src
-          edgeWithMinDist.src = edgeWithMinDist.dest
-          edgeWithMinDist.dest = temp
+          swapEdgeInfo(edgeWithMinDist)
         }
 
         (edgeWithMinDist, VertexOutEdges(edgeWithMinDist, nonMinDistEdges))
