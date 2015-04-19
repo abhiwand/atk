@@ -58,8 +58,8 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
   "ExportToTitanGraph" should {
     "create an expected graphbuilder config " in {
       val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
-      val config = plugin.createGraphBuilderConfig(Some("graphName"))
-      config.titanConfig.getProperty("storage.hbase.table").toString should include("graphName")
+      val config = plugin.createGraphBuilderConfig("backendName")
+      config.titanConfig.getProperty("storage.hbase.table").toString should include("backendName")
       config.append should be(false)
       config.edgeRules.size should be(0)
       config.vertexRules.size should be(0)

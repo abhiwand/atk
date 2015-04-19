@@ -91,7 +91,7 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
     val titanGraph: GraphEntity = graphs.createGraph(
       new GraphTemplate(arguments.newGraphName, StorageFormats.HBaseTitan))
     val graph = graphs.expectGraph(seamlessGraph.graphReference)
-    loadTitanGraph(createGraphBuilderConfig(Some(titanGraph.storage)),
+    loadTitanGraph(createGraphBuilderConfig(titanGraph.storage),
       graphs.loadGbVertices(sc, graph),
       graphs.loadGbEdges(sc, graph))
 
@@ -111,14 +111,14 @@ class ExportToTitanGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStor
 
   /**
    * Create GraphBuilderConfig object that corresponds to the required graphName
-   * @param graphName: Name of titan graph to write to.
+   * @param backendStorageName: Name of titan graph to write to.
    * @return
    */
-  def createGraphBuilderConfig(graphName: Option[String]): GraphBuilderConfig = {
+  def createGraphBuilderConfig(backendStorageName: String): GraphBuilderConfig = {
     new GraphBuilderConfig(new InputSchema(List()),
       List(),
       List(),
-      GraphBuilderConfigFactory.getTitanConfiguration(graphName.get))
+      GraphBuilderConfigFactory.getTitanConfiguration(backendStorageName))
   }
 
   def validateLabelNames(edgeFrames: List[FrameEntity], edgeLabels: List[String]) = {

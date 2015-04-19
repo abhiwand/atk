@@ -74,19 +74,18 @@ object EdgeManager extends Serializable {
    * @return 2 internal edges replacing the collapsed edge in the graph
    */
   def createInternalEdgesForMetaNode(edge: HierarchicalClusteringEdge,
-                                     graph: TitanGraph): (Long, Long, List[HierarchicalClusteringEdge]) = {
+                                     storage: HierarchicalClusteringStorageInterface,
+                                     iteration: Int): (Long, Long, List[HierarchicalClusteringEdge]) = {
+
     var edges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
-    var metaNodeVertexId: Long = HierarchicalClusteringConstants.DefaultVertextId
 
     if (null != edge) {
-
-      val metaNodeVertex = TitanStorage.addVertexToTitan(edge.getTotalNodeCount,
-        TitanStorage.getInMemoryVertextName(edge),
-        graph)
-      metaNodeVertexId = metaNodeVertex.getId.asInstanceOf[Long]
-
-      TitanStorage.addEdgeToTitan(metaNodeVertex, graph.getVertex(edge.src), graph)
-      TitanStorage.addEdgeToTitan(metaNodeVertex, graph.getVertex(edge.dest), graph)
+      val metaNodeVertexId = storage.addVertexAndEdges(
+        edge.src,
+        edge.dest,
+        edge.getTotalNodeCount,
+        edge.src.toString + "_" + edge.dest.toString,
+        iteration)
 
       edges = edges :+ HierarchicalClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,

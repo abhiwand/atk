@@ -12,7 +12,7 @@ object EdgeDistance extends Serializable {
    * @param edgeList a list of active edges
    * @return a vertex distance class (vertex id, min distance edge, non-min distance edges)
    */
-  def min(edgeList: Iterable[HierarchicalClusteringEdge]): (Long, VertexOutEdges) = {
+  def min(edgeList: Iterable[HierarchicalClusteringEdge]): (HierarchicalClusteringEdge, VertexOutEdges) = {
 
     var dist: Float = Int.MaxValue
     var edgeWithMinDist: HierarchicalClusteringEdge = null
@@ -72,22 +72,19 @@ object EdgeDistance extends Serializable {
           edgeWithMinDist.dest = temp
         }
 
-        //BUG HERE - uniqueness was lost (was ok for strings)
-        (edgeWithMinDist.src + edgeWithMinDist.dest, VertexOutEdges(edgeWithMinDist, nonMinDistEdges))
+        (edgeWithMinDist, VertexOutEdges(edgeWithMinDist, nonMinDistEdges))
       }
       else {
-        (0, VertexOutEdges(null, null))
+        (null, VertexOutEdges(null, null))
       }
     }
     else {
-      (0, VertexOutEdges(null, null))
+      (null, VertexOutEdges(null, null))
     }
   }
 
   /**
-   * Sum (edgeDistance * SourceNodeWeight)
-   *  -------------------------------------
-   *  Sum (SourceNodeWeight)
+   * Sum (edgeDistance * SourceNodeWeight) / Sum (SourceNodeWeight)
    *
    * @param edges a list of active edges
    * @return the average distance, as per formula above
@@ -109,9 +106,7 @@ object EdgeDistance extends Serializable {
   }
 
   /**
-   * Sum (edgeDistance)
-   * -------------------
-   * Total edges in the Iterable
+   * Sum (edgeDistance) / (Total edges in the Iterable)
    *
    * @param edges a list of active edges
    * @return the head of the input list with the distance adjusted as per formula
@@ -134,7 +129,13 @@ object EdgeDistance extends Serializable {
       }
     }
 
-    edges.head
+    if (!edges.isEmpty) {
+      edges.head
+    }
+    else {
+      null
+    }
+
   }
 
   def swapEdgeInfo(edge: HierarchicalClusteringEdge): Unit = {
