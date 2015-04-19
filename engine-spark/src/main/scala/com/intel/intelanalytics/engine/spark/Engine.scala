@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.util.concurrent.TimeUnit
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.event.{ EventContext, EventLogging }
@@ -32,7 +33,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
@@ -64,6 +65,7 @@ import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.spark.broadcast.Broadcast
@@ -243,6 +245,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
+
+  // Administrative Plugins
+  commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -568,4 +573,5 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       seamless.edgeFrames
     }
   }
+
 }

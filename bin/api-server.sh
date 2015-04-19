@@ -58,7 +58,7 @@ echo "##########################################################"
 # -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005
 
 PROXY_GOO="-Dhttp.proxyHost=proxy.jf.intel.com -Dhttp.proxyPort=911 -Dhttps.proxyHost=proxy.jf.intel.com -Dhttps.proxyPort=912"
-echo java $@ -XX:MaxPermSize=256m $PROXY_GOO -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
-java $@ -XX:MaxPermSize=256m $PROXY_GOO -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
+echo java $@ -XX:MaxPermSize=256m -Xmx1g $PROXY_GOO -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
+java $@ -XX:MaxPermSize=256m -Xmx1g $PROXY_GOO -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot api-server
 
 popd

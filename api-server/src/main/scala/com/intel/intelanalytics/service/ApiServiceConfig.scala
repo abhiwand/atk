@@ -67,4 +67,10 @@ object ApiServiceConfig {
 
   /** the URI of the UAA server */
   val uaaUri = config.getString("intel.analytics.component.archives.api-server.uaaUri")
+
+  /** How many seconds to cache user principals, helpful for high request volume (e.g. QA parallel testing) */
+  val userPrincipalCacheTimeoutSeconds = config.getInt("intel.analytics.component.archives.api-server.user-principal-cache.timeout-seconds")
+
+  /** Max size of user principals cache */
+  val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.api-server.user-principal-cache.max-size")
 }
