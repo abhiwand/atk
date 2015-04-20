@@ -46,7 +46,7 @@ setup(
 
     #
     license="LICENSE.txt",
-    description="Intel Analytics Toolkit build ID BUILD_NUMBER",
+    description="Intel Analytics Toolkit build ID #BUILD_NUMBER#",
 
     long_description=open("README").read(),
 
