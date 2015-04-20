@@ -70,14 +70,23 @@ class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: C
    */
   override def start() = {
     implicit val call = Call(null)
-    val apiService = initializeDependencies()
-    createActorSystemAndBindToHttp(apiService)
+    val engine = initializeEngine()
+
+    if (ApiServiceConfig.scoringEngineMode) {
+      val service = initializeScoringServiceDependencies(engine)
+      createActorSystemAndBindToHttp(service)
+    }
+    else {
+      val service = initializeApiServiceDependencies(engine)
+      createActorSystemAndBindToHttp(service)
+    }
+
   }
 
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
-  private def initializeDependencies()(implicit invocation: Invocation): ApiService = {
+  private def initializeEngine()(implicit invocation: Invocation): Engine = {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
@@ -85,7 +94,10 @@ class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: C
 
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
+    engine
+  }
 
+  private def initializeApiServiceDependencies(engine: Engine)(implicit invocation: Invocation): ApiService = {
     // setup common directives
     val serviceAuthentication = new AuthenticationDirective(engine)
     val commonDirectives = new CommonDirectives(serviceAuthentication)
@@ -102,6 +114,11 @@ class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: C
     new ApiService(commonDirectives, apiV1Service)
   }
 
+  private def initializeScoringServiceDependencies(engine: Engine)(implicit invocation: Invocation): ScoringService = {
+    // setup main entry point
+    new ScoringService(engine)
+  }
+
   /**
    * We need an ActorSystem to host our application in and to bind it to an HTTP port
    */
@@ -111,6 +128,21 @@ class ApiServiceApplication(archiveDefinition: ArchiveDefinition, classLoader: C
     implicit val timeout = Timeout(5.seconds)
 
     val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
+
+    // Bind the Spray Actor to an HTTP Port
+    // start a new HTTP server with our service actor as the handler
+    IO(Http) ? Http.Bind(service, interface = ApiServiceConfig.host, port = ApiServiceConfig.port)
+  }
+
+  /**
+   * We need an ActorSystem to host our application in and to bind it to an HTTP port
+   */
+  private def createActorSystemAndBindToHttp(scoringService: ScoringService): Unit = {
+    // create the system
+    implicit val system = ActorSystem("intelanalytics-api")
+    implicit val timeout = Timeout(5.seconds)
+
+    val service = system.actorOf(Props(new ScoringServiceActor(scoringService)), "scoring-service")
 
     // Bind the Spray Actor to an HTTP Port
     // start a new HTTP server with our service actor as the handler

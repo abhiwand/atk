@@ -24,10 +24,6 @@
 from collections import OrderedDict
 from intelanalytics.core.iatypes import valid_data_types
 
-import json
-from intelanalytics.core.iatypes import NumpyJSONEncoder
-
-
 class Row(object):
 
     def __init__(self, schema, data=None):
@@ -65,9 +61,6 @@ class Row(object):
 
     def __iter__(self):
         return self.items().__iter__()
-
-    def json_dumps(self):
-        return json.dumps(self.__data, cls=NumpyJSONEncoder)
 
     def _get_data(self):
         return self.__data
