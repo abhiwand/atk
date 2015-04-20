@@ -50,7 +50,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * @param graph initial in memory graph as RDD of hierarchical clustering edges
    */
   def clusterGraph(graph: RDD[HierarchicalClusteringEdge],
-               hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
+                   hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
     var iteration = 0
