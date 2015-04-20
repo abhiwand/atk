@@ -18,7 +18,7 @@ if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 eval set -- "$TEMP"
 echo "$@"
 config="config"
-packages="deb rpm pypi csd parcel"
+packages="pypi"
 #version="0.8.0"
 build="1"
 buildDir=${SCRIPTPATH}/tarballs
