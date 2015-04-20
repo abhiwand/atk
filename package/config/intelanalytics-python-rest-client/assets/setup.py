@@ -29,7 +29,7 @@ setup(
     name="intelanalytics",
 
     # Version number (initial):
-    version=u"VERSION",
+    version=u"#VERSION#b#BUILD_NUMBER#",
 
     # Application author details:
     author="Intel",
@@ -58,5 +58,6 @@ setup(
         'ordereddict >= 1.1',
         'decorator >= 3.4.0',
         'pandas >= 0.15.0',
+        'pymongo >= 3.0',
     ],
 )
