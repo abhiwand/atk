@@ -212,6 +212,7 @@ class BatchedSerializer(Serializer):
             items = []
             count = 0
             for item in iterator:
+                # yield item
                 items.append(item)
                 count += 1
                 if count == self.batchSize:
@@ -225,6 +226,7 @@ class BatchedSerializer(Serializer):
         self.serializer.dump_stream(self._batched(iterator), stream)
 
     def load_stream(self, stream):
+
         return chain.from_iterable(self._load_stream_without_unbatching(stream))
 
     def _load_stream_without_unbatching(self, stream):

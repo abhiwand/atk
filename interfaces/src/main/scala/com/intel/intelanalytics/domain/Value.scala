@@ -62,4 +62,8 @@ case class BoolValue(value: Boolean)
  */
 case class SingletonOrListValue[T](value: List[T])
 
+/**
+ * Generic double value that can be used by plugins that return a Double
+ * @param value "value" is a special string meaning don't treat this return type like a dictionary
+ */
 case class VectorValue(value: Vector[Double])
