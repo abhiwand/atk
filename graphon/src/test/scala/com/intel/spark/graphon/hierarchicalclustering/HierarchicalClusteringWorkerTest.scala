@@ -76,7 +76,7 @@ class HierarchicalClusteringWorkerTest extends FlatSpec with Matchers with Testi
     val worker = new HierarchicalClusteringWorker(null)
     val hcFactoryMock = new HierarchicalClusteringStorageFactoryMock(null)
 
-    val report = worker.mainLoop(sparkContext.parallelize(edgeList), hcFactoryMock)
+    val report = worker.clusterGraph(sparkContext.parallelize(edgeList), hcFactoryMock)
     val iterations = HierarchicalClusteringConstants.IterationMarker.r.findAllMatchIn(report).length
 
     assert(iterations == iterationsToComplete)
