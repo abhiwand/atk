@@ -10,8 +10,11 @@ output_property : str
 
 Returns
 -------
-dict(label, Frame) : Dictionary containing the vertex type as the key and the corresponding vertex's frame with a connected component column.
-    Call dictionary_name['label'] to get the handle to frame whose vertex type is label
+dict : dict(label, Frame)
+    Dictionary containing the vertex type as the key and the corresponding
+    vertex's frame with a connected component column.
+    Call dictionary_name['label'] to get the handle to frame whose vertex type
+    is label.
 
 Examples
 --------
@@ -41,13 +44,12 @@ Examples
             user:int32
             Con_Com:int64}
 
+To query:
 
-    To query:
-    
-    .. code::
+.. code::
 
-        >>> movie_frame = f['movie']
-        >>> user_frame = f['user']
+    >>> movie_frame = f['movie']
+    >>> user_frame = f['user']
 
 .. only:: latex
 

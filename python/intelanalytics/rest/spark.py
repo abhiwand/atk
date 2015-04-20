@@ -44,13 +44,12 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
-from intelanalytics.core.row import NumpyJSONEncoder
-from intelanalytics.core.iatypes import valid_data_types
+from intelanalytics.core.iatypes import valid_data_types, numpy_to_bson_friendly
 
-
-import json
+import bson
 
 UdfDependencies = []
+
 
 def get_file_content_as_str(filename):
     # If the filename is a directory, zip the contents first, else fileToSerialize is same as the python file
@@ -79,13 +78,22 @@ def ifiltermap(predicate, function, iterable):
     """creates a generator than combines filter and map"""
     return (function(item) for item in iterable if predicate(item))
 
+def ifilter(predicate, iterable):
+    """Filter records and return decoded object so that batch processing can work correctly"""
+    return (numpy_to_bson_friendly(bson.decode_all(item)[0]["array"]) for item in iterable if predicate(item))
+
+def ifilterfalse(predicate, iterable):
+    """Filter records that do not match predicate and return decoded object so that batch processing can encode"""
+    return (numpy_to_bson_friendly(bson.decode_all(item)[0]["array"]) for item in iterable if not predicate(item))
+
 
 def get_add_one_column_function(row_function, data_type):
     """Returns a function which adds a column to a row based on given row function"""
     def add_one_column(row):
         result = row_function(row)
         cast_value = valid_data_types.cast(result, data_type)
-        return json.dumps([cast_value], cls=NumpyJSONEncoder)
+        return [numpy_to_bson_friendly(cast_value)]
+
     return add_one_column
 
 
@@ -96,8 +104,10 @@ def get_add_many_columns_function(row_function, data_types):
         data = []
         for i, data_type in enumerate(data_types):
             cast_value = valid_data_types.cast(result[i], data_type)
-            data.append(cast_value)
-        return json.dumps(data, cls=NumpyJSONEncoder)
+            data.append(numpy_to_bson_friendly(cast_value))
+        # return json.dumps(data, cls=NumpyJSONEncoder)
+        return data
+        # return bson.binary.Binary(bson.BSON.encode({"array": data}))
     return add_many_columns
 
 
@@ -106,8 +116,7 @@ def get_copy_columns_function(column_names, from_schema):
     indices = [i for i, column in enumerate(from_schema) if column[0] in column_names]
 
     def project_columns(row):
-        from intelanalytics.core.row import NumpyJSONEncoder
-        return json.dumps([row[index] for index in indices], cls=NumpyJSONEncoder)
+        return [numpy_to_bson_friendly(row[index]) for index in indices]
     return project_columns
 
 
@@ -124,7 +133,7 @@ class RowWrapper(Row):
     """
 
     def load_row(self, s):
-        self._set_data(json.loads(s))
+        self._set_data(bson.decode_all(s)[0]['array'])
 
 
 def pickle_function(func):
@@ -149,9 +158,9 @@ def _wrap_row_function(frame, row_function, optional_schema=None):
     whatever raw form the engine is using.  Ideally, this belong in the engine
     """
     schema = optional_schema if optional_schema is not None else frame.schema  # must grab schema now so frame is not closed over
+    row_wrapper = RowWrapper(schema)
     def row_func(row):
         try:
-            row_wrapper = RowWrapper(schema)
             row_wrapper.load_row(row)
             return row_function(row_wrapper)
         except Exception as e:
@@ -198,15 +207,15 @@ class IaBatchedSerializer(BatchedSerializer):
         super(IaBatchedSerializer,self).__init__(PickleSerializer(), 1000)
 
     def dump_stream(self, iterator, stream):
-        self.dump_stream_as_json(self._batched(iterator), stream)
+        self.dump_stream_as_bson(self._batched(iterator), stream)
 
-    def dump_stream_as_json(self, iterator, stream):
+    def dump_stream_as_bson(self, iterator, stream):
+        """write objects in iterator back to Scala as a byte array of bson objects"""
         for obj in iterator:
             if len(obj) > 0:
-                serialized = '[%s]' % ','.join(obj)
-                try:
-                    s = str(serialized)
-                except:
-                    s = serialized.encode('utf-8')
-                write_int(len(s), stream)
-                stream.write(s)
+                serialized = bson.binary.Binary(bson.BSON.encode({"array": obj}))
+                write_int(len(serialized), stream)
+                stream.write(serialized)
+
+
+

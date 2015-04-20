@@ -32,7 +32,7 @@ class ColumnAggregatorTest extends FlatSpec with Matchers {
     val groupByArguments = GroupByAggregationArgs("HISTOGRAM={\"cutoffs\": [0,2,4] }", "col_2", "col_histogram")
 
     val columnAggregator = ColumnAggregator.getHistogramColumnAggregator(groupByArguments, 5)
-    val expectedResults = ColumnAggregator(Column("col_histogram", DataTypes.vector), 5, HistogramAggregator(List(0d, 2d, 4d)))
+    val expectedResults = ColumnAggregator(Column("col_histogram", DataTypes.vector(2)), 5, HistogramAggregator(List(0d, 2d, 4d)))
 
     columnAggregator should equal(expectedResults)
   }

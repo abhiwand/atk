@@ -23,11 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, Schema }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
+import org.bson.types.BasicBSONList
+import org.bson.{ BSON, BasicBSONObject }
 import org.scalatest.Matchers
 import org.apache.spark.frame.FrameRdd
+
+import scala.collection.JavaConversions._
 
 class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
   "FrameRdd" should {
@@ -65,7 +69,7 @@ class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
       val schema = Schema.fromTuples(List(("num", DataTypes.int64), ("name", DataTypes.string)))
       val rdd = FrameRdd.toFrameRdd(schema, rows)
 
-      val rddWithUniqueIds = rdd.assignUniqueIds("_vid")
+      val rddWithUniqueIds = rdd.assignUniqueIds(GraphSchema.vidProperty)
       rddWithUniqueIds.frameSchema.columnTuples.size should be(3)
       val ids = rddWithUniqueIds.map(x => x(2)).collect
 

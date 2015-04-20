@@ -45,8 +45,21 @@ json_type_id_to_data_type  = {
     "ia:long": int64,
     "ia:float": float32,
     "ia:double": float64,
-    "ia:vector": vector,
 }
+
+_unspecified = object()
+
+
+def get_data_type_from_json_type_id(json_type_str, default=_unspecified):
+    try:
+        if json_type_str.startswith("ia:vector"):
+            return vector.get_from_string(json_type_str[3:])
+        return json_type_id_to_data_type[json_type_str]
+    except:
+        if default is _unspecified:
+            raise ValueError("Unsupported JSON string for data type: %s" % json_type_str)
+        return default
+
 
 json_str_formats_to_data_type = {
     "uri/ia-frame": Frame,
@@ -62,7 +75,7 @@ def get_data_type(json_schema):
         data_type = None
         # first try from id
         if 'id' in json_schema:
-            data_type = json_type_id_to_data_type.get(json_schema['id'], None)
+            data_type = get_data_type_from_json_type_id(json_schema['id'], None)
         # next try from type
         if not data_type:
             if 'type' not in json_schema:

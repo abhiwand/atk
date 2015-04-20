@@ -101,8 +101,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     dataSource.setUrl(profile.connectionString)
     dataSource.setUsername(profile.username)
     dataSource.setPassword(profile.password)
-    // TODO: expose setting in config files
-    dataSource.setMaxActive(100)
+    dataSource.setMaxActive(profile.poolMaxActive)
     info(s"JDBC minIdle: ${dataSource.getMinIdle}, maxTotal: ${dataSource.getMaxActive}")
     Database.forDataSource(dataSource)
   }(null)

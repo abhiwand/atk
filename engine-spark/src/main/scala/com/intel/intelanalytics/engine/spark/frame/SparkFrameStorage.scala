@@ -187,8 +187,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(sc)
         val rows = sqlContext.parquetFile(absPath.toString)
-        //ctx.hadoopFile[OrderedParquetInputFormat](absPath.toString)
-        //val partitions = new FrameRDD(frame.schema, rows).getPartitions()
         val frameRdd = new FrameRdd(frame.schema, rows)
         sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some("file/sequence"), Some(absPath)) =>

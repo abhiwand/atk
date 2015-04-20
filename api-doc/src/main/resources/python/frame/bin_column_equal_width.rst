@@ -14,7 +14,7 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
-    :math:`math.floor(math.sqrt(frame.row_count))`
+    :math:`math.floor(math.sqrt(frame.row_count))`.
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
@@ -59,7 +59,7 @@ Given a frame with column *a* accessed by a Frame object *my_frame*:
        89
 
 Modify the frame, adding a column showing what bin the data is in.
-The data should be separated into a maximum of five bins and the bin cutoffs 
+The data should be separated into a maximum of five bins and the bin cutoffs
 should be evenly spaced.
 Note that there may be bins with no members:
 
@@ -83,7 +83,8 @@ Note that there may be bins with no members:
        89                 4
 
 The method returns a list of 6 cutoff values that define the edges of each
-bin. Note that difference between the cutoff values is constant:
+bin.
+Note that difference between the cutoff values is constant:
 
 .. code::
 

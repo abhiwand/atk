@@ -368,5 +368,14 @@
             <groupId>tw.edu.ntu.csie</groupId>
             <artifactId>libsvm</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+            <version>2.5.1</version>
+        </dependency>
     </dependencies>
 </project>

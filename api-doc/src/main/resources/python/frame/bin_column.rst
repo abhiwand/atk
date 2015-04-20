@@ -20,10 +20,11 @@ include_lowest : bool (optional)
     Default is True.
 strict_binning : bool (optional)
     Specify how values outside of the cutoffs array should be binned.
-    If set to True, each value less than cutoffs[0] or greater than cutoffs[-1]
-    will be assigned a bin value of -1.
+    If set to True, each value less than cutoffs[0] or greater than
+    cutoffs[-1] will be assigned a bin value of -1.
     If set to False, values less than cutoffs[0] will be included in the first
-    bin while values greater than cutoffs[-1] will be included in the final bin.
+    bin while values greater than cutoffs[-1] will be included in the final
+    bin.
     Default is False.
 bin_column_name : str (optional)
     The name for the new binned column.
@@ -42,7 +43,8 @@ Notes
 
 Examples
 --------
-For this example, we will use a frame with column *a* accessed by a Frame object *my_frame*:
+For this example, we will use a frame with column *a* accessed by a Frame
+object *my_frame*:
 
 .. code::
 
@@ -62,7 +64,7 @@ For this example, we will use a frame with column *a* accessed by a Frame object
        55
        89
 
-Modify the frame with a column showing what bin the data is in
+Modify the frame with a column showing what bin the data is in.
 The data values should use strict_binning:
 
 .. code::

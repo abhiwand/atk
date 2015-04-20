@@ -114,7 +114,7 @@ intel.analytics {
         # use broadcast join if file size is lower than threshold. zero disables broadcast joins.
         # this threshold should be less than the maximum size of results returned to Spark driver (i.e., spark.driver.maxResultSize).
         # to increase Spark driver memory, edit java options (IA_JVM_OPT) in /etc/default/intelanalytics-rest-server
-        broadcast-join-threshold = "1GB"
+        broadcast-join-threshold = "512MB"
     }
   }
 
@@ -148,6 +148,7 @@ intel.analytics {
       # home = "/opt/cloudera/parcels/CDH/lib/spark"
 
       # When home is empty the system will check expected locations on the local system and use the first one it finds
+      # If spark is running in yarn-cluster mode (spark.master = "yarn-cluster"), spark.home needs to be set to the spark directory on CDH cluster
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 

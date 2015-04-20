@@ -7,7 +7,7 @@ data_column : str
     Must contain numerical data; all NaNs and infinite values are excluded
     from the calculation.
 weights_column_name : str (optional)
-    Name of column holding weights of column values
+    Name of column holding weights of column values.
 use_population_variance : bool (optional)
     If true, the variance is calculated as the population variance.
     If false, the variance calculated as the sample variance.
@@ -73,8 +73,8 @@ Sample Variance
 
     .. math::
 
-        \\left( \\frac{1}{W - 1} \\right) * sum_{i} \\
-        \\left(x_{i} - M \\right) ^{2}
+        \left( \frac{1}{W - 1} \right) * sum_{i} \
+        \left(x_{i} - M \right) ^{2}
 
     where :math:`W` is sum of weights over valid elements of positive
     weight, and :math:`M` is the weighted mean.
@@ -84,8 +84,8 @@ Population Variance
 
     .. math::
 
-        \\left( \\frac{1}{W} \\right) * sum_{i} \\
-        \\left(x_{i} - M \\right) ^{2}
+        \left( \frac{1}{W} \right) * sum_{i} \
+        \left(x_{i} - M \right) ^{2}
 
     where :math:`W` is sum of weights over valid elements of positive
     weight, and :math:`M` is the weighted mean.
@@ -99,7 +99,7 @@ Logging Invalid Data
     In this case, it contributes to bad_row_count; otherwise it
     contributes to good row count.
 
-    A good row can be skipped because the value in its weight 
+    A good row can be skipped because the value in its weight
     column is less than or equal to 0.
     In this case, it contributes to non_positive_weight_count, otherwise
     (when the weight is greater than 0) it contributes to
@@ -115,7 +115,6 @@ Equations
 
 Examples
 --------
-
 .. code::
 
     >>> stats = frame.column_summary_statistics('data column', 'weight column')

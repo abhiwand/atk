@@ -143,7 +143,7 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
   def correctEdgeLabels(labeledVertices: RDD[GBVertex], edges: RDD[GBEdge]): RDD[EdgeHolder] = {
 
     // Join edges with vertex labels so that we can find the source and target for each edge type
-    val vidsAndLabels = labeledVertices.map(vertex => (vertex.physicalId.asInstanceOf[Long], vertex.getProperty("_label").get.value.toString))
+    val vidsAndLabels = labeledVertices.map(vertex => (vertex.physicalId.asInstanceOf[Long], vertex.getProperty(GraphSchema.labelProperty).get.value.toString))
     val edgesByHead = edges.map(edge => (edge.headPhysicalId.asInstanceOf[Long], EdgeHolder(edge, null, null)))
     val edgesWithHeadLabels = edgesByHead.join(vidsAndLabels).values.map(pair => pair._1.copy(srcLabel = pair._2))
     val joined = edgesWithHeadLabels.map(e => (e.edge.tailPhysicalId.asInstanceOf[Long], e)).join(vidsAndLabels).values.map(pair => pair._1.copy(destLabel = pair._2))
@@ -193,7 +193,7 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
       val schema = vertexFrame.schema.asInstanceOf[VertexSchema]
 
       val filteredVertices: RDD[GBVertex] = vertices.filter(v => {
-        v.getProperty("_label") match {
+        v.getProperty(GraphSchema.labelProperty) match {
           case Some(p) => p.value == schema.label
           case _ => throw new RuntimeException(s"Vertex didn't have a label property $v")
         }
