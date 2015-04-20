@@ -158,8 +158,7 @@ object LibSvmJsonProtocol {
     /**
      * The read method reads a JsValue to LibSVMModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format SVMModel(val weights: Vector,val intercept: Double)
-     *         and the weights Vector could be either a SparseVector or DenseVector
+     * @return LibSvmModel
      */
     override def read(json: JsValue): svm_model = {
       val fields = json.asJsObject.fields
