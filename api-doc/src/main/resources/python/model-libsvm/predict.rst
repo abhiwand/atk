@@ -7,9 +7,7 @@ Parameters
 ----------
 predict_frame : Frame
     A frame whose labels are to be predicted.
-    By default, predict is run on the same columns over which the model is
-    trained.
-    The user could specify column names too if needed.
+
 observation_column : list of str (Optional)
     Column(s) containing the observations whose labels are to be predicted.
     By default, we predict the labels over columns the LibsvmModel was trained
@@ -19,7 +17,7 @@ Returns
 -------
 Frame
     A new frame containing the original frame's columns and a column with the
-    predicted label.
+    predicted_label containing the score calculated for each observation.
 
 Examples
 --------

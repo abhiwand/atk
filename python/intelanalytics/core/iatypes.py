@@ -342,17 +342,13 @@ class _DataTypes(object):
 
 valid_data_types = _DataTypes()
 
-
-class NumpyJSONEncoder(json.JSONEncoder):
-    """
-    Custom JSON Encoder to handle ia types
-    """
-    def default(self, obj):
-        if isinstance(obj, float32) or isinstance(obj, float64):
-            return float(obj)
-        if isinstance(obj, int32) or isinstance(obj, float64):
-            return int(obj)
-        if isinstance(obj, vector.base_type):
-            return obj.tolist()
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+def numpy_to_bson_friendly(obj):
+    """take an object and convert it to a type that can be serialized to bson if neccessary."""
+    if isinstance(obj, float32) or isinstance(obj, float64):
+        return float(obj)
+    if isinstance(obj, int32):
+        return int(obj)
+    if isinstance(obj, vector.base_type):
+        return obj.tolist()
+    # Let the base class default method raise the TypeError
+    return obj
