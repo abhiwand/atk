@@ -82,10 +82,8 @@ import TriangleCountJsonFormat._
 /**
  * TriangleCount plugin implements the triangle count computation on a graph by invoking graphx TriangleCount.
  *
- * Pulls graph from underlying store, sends it off to the TriangleCountRunner, and then writes the output graph
- * back to the underlying store.
+ * Pulls graph from underlying store, sends it off to the TriangleCountRunner, and then writes the output as a dictionary of vertex label and frame
  *
- * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
  */
 class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
@@ -93,6 +91,8 @@ class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, Triangle
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
+
+  override def numberOfJobs(arguments: TriangleCountArgs)(implicit invocation: Invocation) = 2
 
   override def execute(arguments: TriangleCountArgs)(implicit invocation: Invocation): TriangleCountResult = {
 
