@@ -17,7 +17,7 @@ Returns
 -------
 Frame
     A new frame containing the original frame's columns and a column with the
-    predicted label.
+    predicted_label containing the score calculated for each observation.
 
 Examples
 --------
