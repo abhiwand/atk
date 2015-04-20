@@ -313,20 +313,20 @@ class FrameBackendRest(object):
             self._handle_error(result)
 
     def drop(self, frame, predicate):
-        from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
+        from intelanalytics.rest.spark import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilterfalse)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
-        from itertools import ifilter
+        from intelanalytics.rest.spark import ifilter
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilter)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
-        from itertools import ifilter
-        from itertools import ifilterfalse
+        from intelanalytics.rest.spark import ifilter
+        from intelanalytics.rest.spark import ifilterfalse
 
         if keep_matching_vertices:
             arguments = {'frame': self.get_ia_uri(frame),
