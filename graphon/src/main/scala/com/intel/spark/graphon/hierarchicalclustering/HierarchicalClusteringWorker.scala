@@ -41,7 +41,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
     }.distinct()
 
     configStorage(hierarchicalClusteringFactory)
-    mainLoop(hcRdd, hierarchicalClusteringFactory)
+    clusterGraph(hcRdd, hierarchicalClusteringFactory)
     hierarchicalClusteringReport.toString()
   }
 
@@ -49,7 +49,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * This is the main loop of the algorithm
    * @param graph initial in memory graph as RDD of hierarchical clustering edges
    */
-  def mainLoop(graph: RDD[HierarchicalClusteringEdge],
+  def clusterGraph(graph: RDD[HierarchicalClusteringEdge],
                hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
