@@ -25,7 +25,7 @@ package com.intel.giraph.algorithms.lbp;
 
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
-import com.intel.mahout.math.IdWithVectorMessage;
+import com.intel.giraph.io.IdWithVectorMessage;
 
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
