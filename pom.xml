@@ -135,7 +135,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <akka.version>2.3.2</akka.version>
 
-        <scoverage-plugin.version>0.99.2</scoverage-plugin.version>
+        <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
     <modules>
 
@@ -229,7 +229,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
-								<module>deploy</module>
+                <module>deploy</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -391,80 +391,46 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </profile>
         <profile>
             <id>scala-coverage</id>
-            <!--
-                 Scoverage is should only be used on a single module at a time or it produces inaccurate results.
-
-                 The right way to use it is to run "mvn install" on the full project.  Change directory to the
-                 submodule and run "mvn -Pscala-coverage clean test scoverage:report".
-            -->
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <pluginManagement>
                     <plugins>
-                        <!--START DO NOT TOUCH-->
                         <plugin>
-                            <inherited>true</inherited>
-                            <groupId>net.alchim31.maven</groupId>
-                            <artifactId>scala-maven-plugin</artifactId>
-                            <version>3.1.6</version>
-                            <executions>
-                                <execution>
-                                    <id>compile</id>
-                                    <goals>
-                                        <goal>add-source</goal>
-                                        <goal>compile</goal>
-                                    </goals>
-                                    <configuration>
-                                        <dependencies>
-                                            <dependency>
-                                                <groupId>org.scoverage</groupId>
-                                                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                                <version>${scoverage-plugin.version}</version>
-                                            </dependency>
-                                        </dependencies>
-                                        <compilerPlugins>
-                                            <compilerPlugin>
-                                                <groupId>org.scoverage</groupId>
-                                                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                                <version>${scoverage-plugin.version}</version>
-                                            </compilerPlugin>
-                                        </compilerPlugins>
-                                        <args>
-                                            <arg>-g:vars</arg>
-                                            <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
-                                        </args>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>test</id>
-                                    <goals>
-                                        <goal>add-source</goal>
-                                        <goal>testCompile</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
+                            <groupId>org.scoverage</groupId>
+                            <artifactId>scoverage-maven-plugin</artifactId>
+                            <version>${scoverage-plugin.version}</version>
+                            <configuration>
+                                <scalaVersion>${scala.long.version}</scalaVersion>
+                            </configuration>
                         </plugin>
-                        <!--END DO NOT TOUCH-->
                     </plugins>
                 </pluginManagement>
-            </build>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
+                <plugins>
+                    <plugin>
                         <groupId>org.scoverage</groupId>
-                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                        <artifactId>scoverage-maven-plugin</artifactId>
                         <version>${scoverage-plugin.version}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-            <dependencies>
-                <dependency>
-                    <groupId>org.scoverage</groupId>
-                    <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                </dependency>
-            </dependencies>
+                        <configuration>
+                            <!--
+                                If you are using Scala 2.11.1 or less,
+                                then highlighting will not work (due to this bug which was fixed in 2.11.2
+                            -->
+                            <highlighting>false</highlighting>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.scoverage</groupId>
+                        <artifactId>scoverage-maven-plugin</artifactId>
+                        <version>${scoverage-plugin.version}</version>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
     </profiles>
     <build>
@@ -1504,10 +1470,4 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <!--<dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-        </dependency>-->
-    </dependencies>
 </project>

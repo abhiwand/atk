@@ -26,6 +26,7 @@ intelanalytics frame aggregation functions
 """
 import json
 
+from intelanalytics.core.iatypes import valid_data_types
 
 class AggregationFunctions(object):
 

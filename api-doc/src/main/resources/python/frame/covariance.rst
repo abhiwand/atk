@@ -3,11 +3,11 @@ Calculate covariance for exactly two columns.
 Parameters
 ----------
 columns : [ str | list of str ]
-    The names 2 columns from which to compute the covariance
+    The names 2 columns from which to compute the covariance.
 
 Returns
 -------
-Covariance of the two columns
+Covariance of the two columns.
 
 Notes
 -----
@@ -21,6 +21,5 @@ column named *obs*:
 .. code::
 
     >>> cov = my_frame.covariance(['col_0', 'col_1'])
-
     >>> print(cov)
 

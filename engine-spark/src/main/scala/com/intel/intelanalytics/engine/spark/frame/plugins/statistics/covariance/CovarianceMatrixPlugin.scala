@@ -34,6 +34,7 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.Column
+import com.intel.intelanalytics.domain.schema.DataTypes.vector
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -73,10 +74,14 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
     validateCovarianceArgs(frameSchema, arguments)
 
     // compute covariance
-    val useVectorOutput = frameSchema.columnDataType(arguments.dataColumnNames(0)) == DataTypes.vector
-    val covarianceRdd = CovarianceFunctions.covarianceMatrix(frameRdd, arguments.dataColumnNames, useVectorOutput)
+    val outputColumnDataType = frameSchema.columnDataType(arguments.dataColumnNames(0))
+    val outputVectorLength: Option[Long] = outputColumnDataType match {
+      case vector(length) => Some(length)
+      case _ => None
+    }
+    val covarianceRdd = CovarianceFunctions.covarianceMatrix(frameRdd, arguments.dataColumnNames, outputVectorLength)
 
-    val outputSchema = getOutputSchema(arguments.dataColumnNames, useVectorOutput)
+    val outputSchema = getOutputSchema(arguments.dataColumnNames, outputVectorLength)
     tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
       if (arguments.matrixName.isDefined) {
         engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
@@ -89,7 +94,7 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
   private def validateCovarianceArgs(frameSchema: Schema, arguments: CovarianceMatrixArgs): Unit = {
     val dataColumnNames = arguments.dataColumnNames
     if (dataColumnNames.size == 1) {
-      frameSchema.requireColumnIsType(dataColumnNames.toList(0), DataTypes.vector)
+      frameSchema.requireColumnIsType(dataColumnNames.toList(0), DataTypes.isVectorDataType)
     }
     else {
       require(dataColumnNames.size >= 2, "single vector column, or two or more numeric columns required")
@@ -98,12 +103,10 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
   }
 
   // Get output schema for covariance matrix
-  private def getOutputSchema(dataColumnNames: List[String], useVectorOutput: Boolean = false): FrameSchema = {
-    val outputColumns = if (useVectorOutput) {
-      List(Column(dataColumnNames(0), DataTypes.vector))
-    }
-    else {
-      dataColumnNames.map(name => Column(name, DataTypes.float64))
+  private def getOutputSchema(dataColumnNames: List[String], outputVectorLength: Option[Long] = None): FrameSchema = {
+    val outputColumns = outputVectorLength match {
+      case Some(length) => List(Column(dataColumnNames(0), DataTypes.vector(length)))
+      case _ => dataColumnNames.map(name => Column(name, DataTypes.float64)).toList
     }
     FrameSchema(outputColumns)
   }

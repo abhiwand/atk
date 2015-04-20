@@ -64,8 +64,8 @@ object DotProductFunctions extends Serializable {
       "size of default right values should match number of elements in right columns")
 
     frameRdd.mapRows(row => {
-      val leftVector = createVector(row, leftColumnNames, leftVectorSize, defaultLeftValues)
-      val rightVector = createVector(row, rightColumnNames, rightVectorSize, defaultRightValues)
+      val leftVector = createVector(row, leftColumnNames, defaultLeftValues)
+      val rightVector = createVector(row, rightColumnNames, defaultRightValues)
       val dotProduct = computeDotProduct(leftVector, rightVector)
       new GenericRow(row.valuesAsArray() :+ dotProduct)
     })
@@ -83,20 +83,18 @@ object DotProductFunctions extends Serializable {
    */
   def createVector(row: RowWrapper,
                    columnNames: List[String],
-                   vectorSize: Int,
                    defaultValues: Option[List[Double]]): Vector[Double] = {
     val vector = columnNames.flatMap(columnName => {
       val value = row.value(columnName)
 
       row.schema.columnDataType(columnName) match {
-        case DataTypes.vector => {
+        case DataTypes.vector(length) =>
           if (value == null) {
-            Array.fill[Double](vectorSize)(Double.NaN)
+            Array.fill[Double](length.toInt)(Double.NaN)
           }
           else {
-            DataTypes.toVector(value)
+            DataTypes.toVector(length)(value)
           }
-        }
         case _ => if (value == null) Array(Double.NaN) else Array(DataTypes.toDouble(value))
       }
     }).toVector
@@ -133,7 +131,7 @@ object DotProductFunctions extends Serializable {
    * @return Dot product
    */
   def computeDotProduct(leftVector: Vector[Double], rightVector: Vector[Double]): Double = {
-    require(!leftVector.isEmpty, "left vector should not be empty")
+    require(leftVector.nonEmpty, "left vector should not be empty")
     require(leftVector.size == rightVector.size, "size of left vector should equal size of right vector")
 
     var dotProduct = 0d
@@ -143,15 +141,12 @@ object DotProductFunctions extends Serializable {
     dotProduct
   }
 
-  //TODO: Remove once vector data type supports size
   private def getVectorSize(frameRdd: FrameRdd, columnNames: List[String]): Int = {
     val frameSchema = frameRdd.frameSchema
-    if (columnNames.size == 1 && frameSchema.columnDataType(columnNames(0)) == DataTypes.vector) {
-      val firstDefinedValue = frameRdd.mapRows(row => row.value(columnNames(0))).filter(_ != null).take(1)
-      if (firstDefinedValue.nonEmpty) DataTypes.toVector(firstDefinedValue(0)).size else 1
-    }
-    else {
-      columnNames.size
-    }
+    columnNames.map(name =>
+      frameSchema.columnDataType(name) match {
+        case DataTypes.vector(length) => length
+        case _ => 1
+      }).sum.toInt
   }
 }

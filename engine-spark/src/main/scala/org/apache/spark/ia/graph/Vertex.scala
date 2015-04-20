@@ -24,7 +24,7 @@
 package org.apache.spark.ia.graph
 
 import com.intel.graphbuilder.elements.{ GBVertex, Property => GBProperty }
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, DataTypes }
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema, DataTypes }
 import com.intel.intelanalytics.engine.spark.frame.AbstractRow
 import org.apache.spark.sql.Row
 
@@ -74,20 +74,20 @@ class VertexWrapper(override val schema: VertexSchema) extends AbstractVertex wi
  */
 trait AbstractVertex extends AbstractRow {
   require(schema.isInstanceOf[VertexSchema], "schema should be for vertices, vertexSchema was not define")
-  require(schema.hasColumnWithType("_vid", DataTypes.int64), "schema did not have int64 _vid column: " + schema.columnTuples)
-  require(schema.hasColumnWithType("_label", DataTypes.str), "schema did not have int64 _label column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.vidProperty, DataTypes.int64), "schema did not have int64 _vid column: " + schema.columnTuples)
+  require(schema.hasColumnWithType(GraphSchema.labelProperty, DataTypes.str), "schema did not have int64 _label column: " + schema.columnTuples)
 
   /**
    * Return id of the edge
    * @return edge id
    */
-  def vid: Long = longValue("_vid")
+  def vid: Long = longValue(GraphSchema.vidProperty)
 
   /**
    * Return label of the edge
    * @return label of the edge
    */
-  def label: String = stringValue("_label")
+  def label: String = stringValue(GraphSchema.labelProperty)
 
   /**
    * The value for the user defined ID column
@@ -95,14 +95,14 @@ trait AbstractVertex extends AbstractRow {
   def idValue: Any = value(schema.asInstanceOf[VertexSchema].idColumnName.getOrElse(throw new RuntimeException("id column has not yet been defined in schema: " + schema)))
 
   def setVid(vid: Long): Row = {
-    setValue("_vid", vid)
+    setValue(GraphSchema.vidProperty, vid)
   }
 
   /**
    * Set the label on this vertex
    */
   def setLabel(label: String): Row = {
-    setValue("_label", label)
+    setValue(GraphSchema.labelProperty, label)
   }
 
   override def create(vertex: GBVertex): Row = {
@@ -116,8 +116,8 @@ trait AbstractVertex extends AbstractRow {
    * Convert this row to a GbVertex
    */
   def toGbVertex: GBVertex = {
-    val properties = schema.columnsExcept(List("_vid")).map(column => GBProperty(column.name, value(column.name)))
-    GBVertex(null, GBProperty("_vid", vid), properties.toSet)
+    val properties = schema.columnsExcept(List(GraphSchema.vidProperty)).map(column => GBProperty(column.name, value(column.name)))
+    GBVertex(null, GBProperty(GraphSchema.vidProperty, vid), properties.toSet)
   }
 
   /**
@@ -128,7 +128,7 @@ trait AbstractVertex extends AbstractRow {
   // TODO: weird compile issues with this, delete or fix
   //  def merge(otherRow: Row): Row = {
   //    val idIndex = schema.columnIndex(schema.vertexSchema.get.idColumnName)
-  //    val labelIndex = schema.columnIndex("_label")
+  //    val labelIndex = schema.columnIndex(GraphSchema.labelProperty)
   //    require(row(idIndex) == otherRow(idIndex), "vertices with different ids can't be merged")
   //    require(row(labelIndex) == otherRow(labelIndex), "vertices with different labels can't be merged")
   //    val content = row.toArray.zip(otherRow.toArray).map {

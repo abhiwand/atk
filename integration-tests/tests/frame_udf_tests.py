@@ -66,7 +66,7 @@ class FrameUdfTests(unittest.TestCase):
         self.assertEquals(frame.row_count, 20, "frame should have 20 rows")
         frame.add_columns(lambda row: [float(row['pop_2010'].translate({ord(','): None})),
                                        float(row['population_2013'].translate({ord(','): None}))],
-                          ("vpops", ia.vector))
+                          ("vpops", ia.vector(2)))
         self.assertEquals(frame.row_count, 20, "frame should have 20 rows")
         self.assertEquals(frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county', 'vpops'])
         frame.add_columns(lambda row: (row.vpops[1] - row.vpops[0])/row.vpops[0], ("comp_change", ia.float64))

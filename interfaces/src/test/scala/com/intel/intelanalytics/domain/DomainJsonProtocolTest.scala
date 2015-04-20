@@ -59,12 +59,12 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
     }
 
     "be able to handle vertex schemas" in {
-      val schema = new VertexSchema(List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("id", DataTypes.string)), "mylabel", Some("id"))
+      val schema = new VertexSchema(List(Column(GraphSchema.vidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("id", DataTypes.string)), "mylabel", Some("id"))
       assert(schema.toJson.compactPrint == """{"columns":[{"name":"_vid","data_type":"int64","index":0},{"name":"_label","data_type":"string","index":1},{"name":"id","data_type":"string","index":2}],"label":"mylabel","id_column_name":"id"}""")
     }
 
     "be able to handle edge schemas" in {
-      val schema = new EdgeSchema(List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string)), "mylabel", "src", "dest", directed = true)
+      val schema = new EdgeSchema(List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string)), "mylabel", "src", "dest", directed = true)
       assert(schema.toJson.compactPrint == """{"columns":[{"name":"_eid","data_type":"int64","index":0},{"name":"_src_vid","data_type":"int64","index":1},{"name":"_dest_vid","data_type":"int64","index":2},{"name":"_label","data_type":"string","index":3}],"label":"mylabel","src_vertex_label":"src","dest_vertex_label":"dest","directed":true}""")
     }
 
@@ -105,9 +105,9 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val json = JsonParser(string).asJsObject
       val schema = json.convertTo[Schema]
       assert(schema.columnNames.length == 3)
-      assert(schema.columnDataType("_label") == DataTypes.string)
+      assert(schema.columnDataType(GraphSchema.labelProperty) == DataTypes.string)
       assert(schema.isInstanceOf[VertexSchema])
-      val expectedSchema = new VertexSchema(List(Column("_vid", DataTypes.int64), Column("_label", DataTypes.string), Column("id", DataTypes.string)), "mylabel", Some("id"))
+      val expectedSchema = new VertexSchema(List(Column(GraphSchema.vidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("id", DataTypes.string)), "mylabel", Some("id"))
       assert(schema == expectedSchema)
     }
 
@@ -116,9 +116,9 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val json = JsonParser(string).asJsObject
       val schema = json.convertTo[Schema]
       assert(schema.columnNames.length == 4)
-      assert(schema.columnDataType("_label") == DataTypes.string)
+      assert(schema.columnDataType(GraphSchema.labelProperty) == DataTypes.string)
       assert(schema.isInstanceOf[EdgeSchema])
-      val expectedSchema = new EdgeSchema(List(Column("_eid", DataTypes.int64), Column("_src_vid", DataTypes.int64), Column("_dest_vid", DataTypes.int64), Column("_label", DataTypes.string)), "mylabel", "src", "dest", directed = true)
+      val expectedSchema = new EdgeSchema(List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string)), "mylabel", "src", "dest", directed = true)
       assert(schema == expectedSchema)
     }
   }

@@ -25,8 +25,10 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
+import java.util.concurrent.{ Callable, TimeUnit }
+
+import com.google.common.cache.CacheBuilder
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import org.springframework.security.jwt._
 import org.springframework.security.jwt.crypto.sign.RsaVerifier
@@ -55,6 +57,16 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
   private lazy val shortCircuitApiKey = ApiServiceConfig.shortCircuitApiKey
 
   /**
+   * Caches user principals so that they don't have to be looked up every time.
+   *
+   * (This was originally added for QA parallel testing)
+   */
+  private lazy val cache = CacheBuilder.newBuilder()
+    .expireAfterWrite(ApiServiceConfig.userPrincipalCacheTimeoutSeconds, TimeUnit.SECONDS)
+    .maximumSize(ApiServiceConfig.userPrincipalCacheMaxSize)
+    .build[String, UserPrincipal]()
+
+  /**
    * Gets authorization header and authenticates a user
    * @return the authenticated user
    */
@@ -67,10 +79,19 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
 
   protected def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
     condOpt(header) {
-      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value)(Call(null)), ApiServiceConfig.defaultTimeout)
+      case h if h.is("authorization") => getUserPrincipal(h.value)
     }
 
-  protected def getUserPrincipal(apiKey: String)(implicit invocation: Invocation): Future[UserPrincipal] = {
+  protected def getUserPrincipal(apiKey: String): UserPrincipal = {
+    cache.get(apiKey, new Callable[UserPrincipal]() {
+      override def call(): UserPrincipal = {
+        // cache miss, look it up
+        Await.result(lookupUserPrincipal(apiKey)(Call(null)), ApiServiceConfig.defaultTimeout)
+      }
+    })
+  }
+
+  protected def lookupUserPrincipal(apiKey: String)(implicit invocation: Invocation): Future[UserPrincipal] = {
     withContext("AuthenticationDirective") {
       if (StringUtils.isBlank(apiKey)) {
         warn("Api key was not provided")

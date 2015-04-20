@@ -14,20 +14,32 @@ Global Methods
 
 .. autofunction:: intelanalytics.drop_models
 
-KMeansModel
------------
+K-Means Model
+-------------
 .. autoclass:: intelanalytics.KMeansModel
     :members:
     :inherited-members:
 
-LogisticRegressionModel
------------------------
+LDA Model
+---------
+.. autoclass:: intelanalytics.LdaModel
+    :members:
+    :inherited-members:
+
+Lib Svm Model
+-------------
+.. autoclass:: intelanalytics.LibsvmModel
+    :members:
+    :inherited-members:
+
+Logistic Regression Model
+-------------------------
 .. autoclass:: intelanalytics.LogisticRegressionModel
     :members:
     :inherited-members:
 
-SvmModel
---------
+Svm Model
+---------
 .. autoclass:: intelanalytics.SvmModel
     :members:
     :inherited-members:

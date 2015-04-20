@@ -251,9 +251,6 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Rename aborted.")
           }
-          if (graph.isTitan) {
-            backendStorage.renameUnderlyingTable(graph.storage, newName)
-          }
           val newGraph = graph.copy(name = Some(newName))
           metaStore.graphRepo.update(newGraph).get
         }
@@ -479,7 +476,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   def getTitanGraph(graphReference: GraphReference)(implicit invocation: Invocation): TitanGraph = {
     val graph = expectGraph(graphReference)
 
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.name.get)
+    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph.storage)
     val titanConnector = new TitanGraphConnector(titanConfig)
     titanConnector.connect()
   }

@@ -7,6 +7,7 @@ export KEYTAB=$DIR/../atk.keytab
 export PRINCIPAL="atk-user@US-WEST-2.COMPUTE.INTERNAL"
 #echo "Creating /opt/cloudera/parcels"
 #mkdir -p /opt/cloudera/parcels
+export YARN_CONF_DIR="$DIR/../conf"
 
 #echo "Copying CDH installation"
 #cp -R $DIR/../CDH /opt/cloudera/parcels/.

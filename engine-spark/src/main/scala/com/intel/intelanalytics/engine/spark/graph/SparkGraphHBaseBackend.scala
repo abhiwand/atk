@@ -154,27 +154,10 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       }
     }
     finally {
-      outputStream.flush()
-      outputStream.close()
-    }
-  }
-
-  override def renameUnderlyingTable(graphName: String, newName: String)(implicit invocation: Invocation): Unit = {
-    val tableName: String = graphName
-    val newTableName: String = newName
-    val snapShotName: String = graphName.concat("_SnapShot")
-
-    val hbaseAdmin = hbaseAdminFactory.createHBaseAdmin()
-    if (hbaseAdmin.tableExists(tableName)) {
-      if (hbaseAdmin.tableExists(newTableName)) {
-        hbaseAdmin.disableTable(newTableName)
-        hbaseAdmin.deleteTable(newTableName)
+      if (null != outputStream) {
+        outputStream.flush()
+        outputStream.close()
       }
-      hbaseAdmin.disableTable(tableName)
-      hbaseAdmin.snapshot(snapShotName, tableName)
-      hbaseAdmin.cloneSnapshot(snapShotName, newTableName)
-      hbaseAdmin.deleteSnapshot(snapShotName)
-      hbaseAdmin.deleteTable(tableName)
     }
   }
 

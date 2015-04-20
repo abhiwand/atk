@@ -25,10 +25,9 @@ package com.intel.intelanalytics.engine.plugin
 
 import com.intel.event.{ EventContext, EventLogger, EventLogging }
 import com.intel.intelanalytics.NotNothing
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
+import com.intel.intelanalytics.component._
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ CommandDocLoader, CommandDoc }
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 import spray.json._
