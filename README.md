@@ -22,11 +22,11 @@ Intel Analytics Toolkit (ATK)
 * launcher/ - starts up our application, launches parts of our app
 * package/ - packaging for VM's, RPM's
 * python/ - python client code
-* scala-coverage/ - some scripts for getting scala code coverage numbers
 * scripts/ - RPM packaging
 * shared/ - mostly code for our meta-data repository, SQL scripts for our meta-data repository
 * testutils/ - some test utility code that get re-used between tests in different modules
 * tools/ - tools that aren't really part of our product
+* tools/scala-coverage/ - some scripts for getting scala code coverage numbers
 
 
 # Links
