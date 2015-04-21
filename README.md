@@ -11,7 +11,6 @@ Intel Analytics Toolkit (ATK)
 * engine-spark - majority of the engine code
 * event/ - logging framework
 * event-api/ - logging framework
-* examples/ - internal example code, add examples here so we don't have to email scripts around
 * graphbuilder-3 - Titan graph construction and reading
 * graphon/ - some graph related plugins that run on Spark and GraphX
 * igiraph/ - a few graph algorithms that run on Giraph
@@ -22,6 +21,7 @@ Intel Analytics Toolkit (ATK)
 * launcher/ - starts up our application, launches parts of our app
 * package/ - packaging for VM's, RPM's
 * python/ - python client code
+* python-examples/ - internal example code, add examples here so we don't have to email scripts around
 * scripts/ - RPM packaging
 * shared/ - mostly code for our meta-data repository, SQL scripts for our meta-data repository
 * testutils/ - some test utility code that get re-used between tests in different modules
