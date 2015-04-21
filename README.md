@@ -16,7 +16,6 @@ Intel Analytics Toolkit (ATK)
 * igiraph/ - a few graph algorithms that run on Giraph
 * integration-tests/ - developer written, build time integration tests in python, these run against a minimal version of our product
 * interfaces/ - interfaces shared between api-server and engine-spark (we should move plugin args/return values out of here)
-* ispark-deps/ - was needed for getting around some classloader issues - module can probably be deleted
 * ititan/ - repackaging of Titan to get around classloader issues
 * launcher/ - starts up our application, launches parts of our app
 * package/ - packaging for VM's, RPM's
