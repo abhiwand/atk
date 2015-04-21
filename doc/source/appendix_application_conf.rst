@@ -18,12 +18,17 @@ Appendix A
     metastore.connection-postgresql.database = "ia_metastore"
     metastore.connection-postgresql.username = "iauser"
     metastore.connection-postgresql.password = "MyPassword"
-    metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+    metastore.connection-postgresql.url = 
+        "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":
+        "${intel.analytics.metastore.connection-postgresql.port}"/
+        "${intel.analytics.metastore.connection-postgresql.database}
 
-    # This allows for the use of postgres for a metastore. Service restarts will not affect the data stored in postgres
+    # This allows for the use of postgres for a metastore.
+    # Service restarts will not affect the data stored in postgres.
     metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
-    # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
+    # This allows the use of an in memory data store.
+    # Restarting the rest server will create a fresh database and any
     # data in the h2 DB will be lost
     //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
@@ -37,10 +42,13 @@ Appendix A
         # Comma separated list of host names with zookeeper role assigned
         titan.load.storage.hostname = "node01, node02, node01"
 
-        # Titan storage backend. Available options are hbase and cassandra. The default is hbase
+        # Titan storage backend.
+        # Available options are hbase and cassandra.
+        # The default is hbase.
         //titan.load.storage.backend = "hbase"
 
-        # Titan storage port, defaults to 2181 for HBase ZooKeeper. Use 9160 for Cassandra
+        # Titan storage port, defaults to 2181 for HBase ZooKeeper.
+        # Use 9160 for Cassandra.
         titan.load.storage.port = "2181"
 
         # The URL for connecting to the Spark master server
@@ -49,8 +57,9 @@ Appendix A
 
 
         spark.conf.properties {
-            # Memory should be same or lower than what is listed as available in Cloudera Manager.
-            # Values should generally be in gigabytes, e.g. "64g"
+            # Memory should be same or lower than what is listed as available
+            # in Cloudera Manager.
+            # Values should generally be in gigabytes, e.g. "64g".
             spark.executor.memory = "103079215104"
         }
     }
@@ -58,7 +67,8 @@ Appendix A
     }
     # END REQUIRED SETTINGS
 
-    # The settings below are all optional. Some may need to be configured depending on the
+    # The settings below are all optional.
+    # Some may need to be configured depending on the
     # specifics of your cluster and workload.
 
     intel.analytics {
@@ -84,8 +94,8 @@ Appendix A
 
         # Configuration for the Intel Analytics REST API server
         api {
-          #this is reported by the API server in the /info results - it can be used to identify
-          #a particular server or cluster
+          # this is reported by the API server in the /info results -
+          # it can be used to identify a particular server or cluster.
           //identifier = "ia"
 
           #The default page size for result pagination
@@ -105,27 +115,33 @@ Appendix A
 
         spark {
 
-          # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
+          # When master is empty the system defaults to spark://`hostname`:7070
+          # where hostname is calculated from the current system.
           # For local mode (useful only for development testing) set master = "local[4]"
           # in cluster mode, set master and home like the example
           # master = "spark://MASTER_HOSTNAME:7077"
           # home = "/opt/cloudera/parcels/CDH/lib/spark"
 
-          # When home is empty the system will check expected locations on the local system and use the first one it finds
-          # If spark is running in yarn-cluster mode (spark.master = "yarn-cluster"), spark.home needs to be set to the spark directory on CDH cluster
+          # When home is empty the system will check expected locations on the
+          # local system and use the first one it finds.
+          # If spark is running in yarn-cluster mode (spark.master = "yarn-cluster"),
+          # spark.home needs to be set to the spark directory on CDH cluster
           # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
           //home = ""
 
           conf {
             properties {
-              # These key/value pairs will be parsed dynamically and provided to SparkConf()
-              # See Spark docs for possible values http://spark.apache.org/docs/0.9.0/configuration.html
-              # All values should be convertible to Strings
+              # These key/value pairs will be parsed dynamically and provided
+              # to SparkConf().
+              # See Spark docs for possible values
+              # http://spark.apache.org/docs/0.9.0/configuration.html.
+              # All values should be convertible to Strings.
 
               #Examples of other useful properties to edit for performance tuning:
 
-              # Increased Akka frame size from default of 10MB to 100MB to allow tasks to send large results to Spark driver
-              # (e.g., using collect() on large datasets)
+              # Increased Akka frame size from default of 10MB to 100MB to
+              # allow tasks to send large results to Spark driver
+              # (e.g., using collect() on large datasets).
               //spark.akka.frameSize=100
 
               #spark.akka.retry.wait=30000
@@ -145,7 +161,8 @@ Appendix A
               #spark.worker.timeout=600
               #spark.worker.timeout=30000
               spark.eventLog.enabled=true
-              spark.eventLog.dir="hdfs://master.silvern.gao.cluster:8020/user/spark/applicationHistory"
+              spark.eventLog.dir=
+              "hdfs://master.silvern.gao.cluster:8020/user/spark/applicationHistory"
             }
 
           }
@@ -168,17 +185,20 @@ Appendix A
             # http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html
             storage {
 
-              # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
+              # Whether to enable batch loading into the storage backend.
+              # Set to true for bulk loads.
               //batch-loading = true
 
-              # Size of the batch in which mutations are persisted
+              # Size of the batch in which mutations are persisted.
               //buffer-size = 2048
 
               lock {
-                #Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend
+                # Number of milliseconds the system waits for a lock application
+                # to be acknowledged by the storage backend.
                 //wait-time = 400
 
-                #Number of times the system attempts to acquire a lock before giving up and throwing an exception
+                # Number of times the system attempts to acquire a lock before
+                # giving up and throwing an exception.
                 //retries = 15
               }
 
@@ -194,36 +214,48 @@ Appendix A
             }
 
             ids {
-              #Globally reserve graph element IDs in chunks of this size. Setting this too low will make commits
-              #frequently block on slow reservation requests. Setting it too high will result in IDs wasted when a
-              #graph instance shuts down with reserved but mostly-unused blocks.
+              # Globally reserve graph element IDs in chunks of this size.
+              # Setting this too low will make commits
+              # frequently block on slow reservation requests.
+              # Setting it too high will result in IDs wasted when a graph
+              # instance shuts down with reserved but mostly-unused blocks.
               //block-size = 300000
 
-              #Number of partition block to allocate for placement of vertices
+              # Number of partition block to allocate for placement of vertices.
               //num-partitions = 10
 
-              #The number of milliseconds that the Titan id pool manager will wait before giving up on allocating a new block of ids
+              # The number of milliseconds that the Titan id pool manager will
+              # wait before giving up on allocating a new block of ids.
               //renew-timeout = 150000
 
-              #When true, vertices and edges are assigned IDs immediately upon creation. When false, IDs are assigned
-              #only when the transaction commits. Must be disabled for graph partitioning to work.
+              # When true, vertices and edges are assigned IDs immediately upon
+              # creation.
+              # When false, IDs are assigned only when the transaction commits.
+              # Must be disabled for graph partitioning to work.
               //flush = true
 
               authority {
-                #This setting helps separate Titan instances sharing a single graph storage
-                #backend avoid contention when reserving ID blocks, increasing overall throughput.
+                # This setting helps separate Titan instances sharing a single
+                # graph storage backend avoid contention when reserving ID
+                # blocks, increasing overall throughput.
                 # The options available are:
-                #NONE = Default in Titan
-                #LOCAL_MANUAL = Expert feature: user manually assigns each Titan instance a unique conflict avoidance tag in its local graph configuration
-                #GLOBAL_MANUAL = User assigns a tag to each Titan instance. The tags should be globally unique for optimal performance,
-                #                but duplicates will not compromise correctness
-                #GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations.
+                # NONE = Default in Titan
+                # LOCAL_MANUAL = Expert feature: user manually assigns each
+                # Titan instance a unique conflict avoidance tag in its local
+                # graph configuration.
+                # GLOBAL_MANUAL = User assigns a tag to each Titan instance.
+                # The tags should be globally unique for optimal performance,
+                # but duplicates will not compromise correctness
+                # GLOBAL_AUTO = Titan randomly selects a tag from the space of
+                # all possible tags when performing allocations.
                 //conflict-avoidance-mode = "GLOBAL_AUTO"
 
-                #The number of milliseconds the system waits for an ID block reservation to be acknowledged by the storage backend
+                # The number of milliseconds the system waits for an ID block
+                # reservation to be acknowledged by the storage backend.
                 //wait-time = 300
 
-                # Number of times the system attempts ID block reservations with random conflict avoidance tags
+                # Number of times the system attempts ID block reservations
+                # with random conflict avoidance tags
                 # before giving up and throwing an exception
                 //randomized-conflict-avoidance-retries = 10
               }
@@ -231,12 +263,14 @@ Appendix A
 
             auto-partitioner {
               hbase {
-                # Number of regions per regionserver to set when creating Titan/HBase table
+                # Number of regions per regionserver to set when creating
+                # Titan/HBase table.
                 regions-per-server = 2
 
-                # Number of input splits for Titan reader is based on number of available cores
-                # and minimum split size as follows: Number of splits = Minimum(input-splits-per-spark-core * spark-cores,
-                #     graph size in HBase/minimum-input-splits-size-mb)
+                # Number of input splits for Titan reader is based on number of
+                # available cores and minimum split size as follows: Number of
+                # splits = Minimum(input-splits-per-spark-core * spark-cores,
+                # graph size in HBase/minimum-input-splits-size-mb).
                 input-splits-per-spark-core = 20
               }
 
@@ -252,9 +286,12 @@ Appendix A
               port =  ${intel.analytics.engine.titan.load.storage.port}
             }
             cache {
-              # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
-              # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
-              # Reducing db-cache will result in cache misses and increased reads from disk
+              # Adjust cache size parameters if you experience OutOfMemory
+              # errors during Titan queries.
+              # Either increase heap allocation for IntelAnalytics Engine, or
+              # reduce db-cache-size.
+              # Reducing db-cache will result in cache misses and increased
+              # reads from disk.
               //db-cache = true
               //db-cache-clean-wait = 20
               //db-cache-time = 180000

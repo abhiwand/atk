@@ -1,4 +1,4 @@
-New frame with requested Quantiles and their respective values.
+New frame with Quantiles and their values.
 
 Calculate quantiles on the given column.
 

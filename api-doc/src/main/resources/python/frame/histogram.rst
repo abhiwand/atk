@@ -72,9 +72,20 @@ Consider the following sample data set:
 
 Plot hist as a bar chart using matplotlib:
 
-.. code::
+.. only:: html
 
-    >>> import matplotlib.pyplot as plt
+    .. code::
 
-    >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+        >>> import matplotlib.pyplot as plt
+
+        >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+
+.. only:: latex
+
+    .. code::
+
+        >>> import matplotlib.pyplot as plt
+
+        >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - 
+        ... hist.cutoffs[0])
 

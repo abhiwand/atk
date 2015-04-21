@@ -21,7 +21,7 @@ Given a data file::
     1-"solo,mono,single"
     2-"duo,double"
 
-    The commands to bring the data into a frame, where it can be worked on:
+The commands to bring the data into a frame, where it can be worked on:
 
 .. only:: html
 
@@ -35,7 +35,7 @@ Given a data file::
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),
-        ...    ('b', str)], delimiter='-')
+        ... ('b', str)], delimiter='-')
         >>> my_frame = Frame(source=my_csv)
 
 Looking at it:

@@ -1,4 +1,4 @@
-Creating a KMeans Model using the observation columns of a train frame.
+Creates KMeans Model from train frame.
 
 Upon training the 'k' cluster centers are computed.
 

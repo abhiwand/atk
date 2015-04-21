@@ -1,3 +1,5 @@
+Creates Latent Dirichlet Allocation model.
+
 The `Latent Dirichlet Allocation <http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation>`
 
 Parameters

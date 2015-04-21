@@ -1,4 +1,4 @@
-Builds new column in current frame with a cumulative percent sum.
+Add column to frame with cumulative percent sum.
 
 A cumulative percent sum is computed by sequentially stepping through the
 column values and keeping track of the current percentage of the total sum

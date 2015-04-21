@@ -1,4 +1,4 @@
-Classify a particular column into same-width groups.
+Classify column into same-width groups.
 
 Group rows of data based on the value in a single column and add a label
 to identify grouping.

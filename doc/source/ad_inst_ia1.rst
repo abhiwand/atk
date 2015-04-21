@@ -769,10 +769,21 @@ Switch databases:
 
 Then insert into the users table:
 
-.. code::
+.. only:: html
 
-    postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
-    INSERT 0 1
+    .. code::
+
+        postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
+        INSERT 0 1
+
+.. only:: latex
+
+    .. code::
+
+        postgres=# insert into users (username, api_key, created_on,
+            modified_on) values( 'metastore', 'test_api_key_1', now(),
+            now() );
+        INSERT 0 1
 
 View the insertion by doing a select on the users table:
 
@@ -785,9 +796,9 @@ There should only be a single row per api_key:
 .. code::
 
 
-     user_id | username  |    api_key     |         created_on         |        modified_on
-    ---------+-----------+----------------+----------------------------+----------------------------
-           1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
+     user_id | username  |  api_key  |      created_on     |     modified_on
+    ---------+-----------+-----------+---------------------+---------------------
+           1 | metastore | api_key_1 | 2014-11-20 12:37:16 | 2014-11-20 12:37:16
        (1 row)
 
 If there is more than one row for a single api key, remove one of them or
