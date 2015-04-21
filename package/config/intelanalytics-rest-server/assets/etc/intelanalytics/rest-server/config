@@ -111,7 +111,6 @@ parser.add_argument("--db-password", type=str, help="Database password")
 parser.add_argument("--db-reconfig", type=str, help="Should i re-configure the Database? 'no' to skip.")
 args = parser.parse_args()
 
-LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 IAUSER = "iauser"
 SPARK_USER = "spark"
 IA_LOG_PATH = "/var/log/intelanalytics/rest-server/output.log"

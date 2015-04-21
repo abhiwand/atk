@@ -23,14 +23,6 @@ echo "$SCRIPTPATH"
 pwd
 
 mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib
-jars="ispark-deps.jar"
-for jar in $jars
-do
-	jarPath=$(find ..  -path ../package -prune -o -name $jar -print)
-	echo $jarPath
-    cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib/
-done
-
 
 #excluded jars are now combined in deploy.jar
 #engine-spark.jar igiraph-titan.jar graphon.jar

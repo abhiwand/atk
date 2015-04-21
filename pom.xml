@@ -166,7 +166,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>api-doc</module>
                 <module>event-api</module>
                 <module>event</module>
-                <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module>
                 <module>graphon</module>
@@ -207,12 +206,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <!--<module>ititan</module>-->
                 <module>api-doc</module>
                 <module>event-api</module>
                 <module>event</module>
-                <!--module>python</module-->
-                <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module>
                 <module>graphon</module>
@@ -654,11 +650,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>event</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>ispark-deps</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

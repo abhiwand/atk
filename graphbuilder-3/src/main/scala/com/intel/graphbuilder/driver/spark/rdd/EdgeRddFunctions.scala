@@ -145,8 +145,6 @@ class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
 
     self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
 
-      EnvironmentValidator.validateISparkDepsAvailable
-
       val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)

@@ -503,8 +503,6 @@ If it isn't already set, add:
 
 .. code::
 
-    SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
-
 .. _ad_inst_ia_02:
 
 .. figure:: ad_inst_ia_02.*
