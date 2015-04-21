@@ -26,10 +26,18 @@ str : graph name
 
 Examples
 --------
-.. code::
+.. only:: html
+   
+    .. code::
 
-    >>> g.graphx_triangle_count(output_property = "triangle_count",
-                               output_graph_name = "tc_graph")
+        >>> g.graphx_triangle_count(output_property = "triangle_count", output_graph_name = "tc_graph")
+
+.. only:: latex
+   
+    .. code::
+
+        >>> g.graphx_triangle_count(output_property = "triangle_count",
+        ... output_graph_name = "tc_graph")
 
 The expected output is like this:
 

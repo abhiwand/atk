@@ -1285,25 +1285,57 @@ a frame.
 The first step is to define the rules that dictate how the frame data should
 be associated to vertices and edges:
 
-.. code::
+.. only:: html
 
-    >>> employee_vertex = ia.VertexRule(id_key = "employee", id_value = my_frame.employee, properties = {'vertex_type': 'L', title:my_frame.title})
-    >>> manager_vertex = ia.VertexRule(id_key = "managers", id_value = my_frame.manager, properties = {'vertex_type": "R"})
+    .. code::
+
+        >>> employee_vertex = ia.VertexRule(id_key = "employee", id_value = my_frame.employee, properties = {'vertex_type': 'L', title:my_frame.title})
+        >>> manager_vertex = ia.VertexRule(id_key = "managers", id_value = my_frame.manager, properties = {'vertex_type": "R"})
+
+.. only:: latex
+
+    .. code::
+
+        >>> employee_vertex = ia.VertexRule(id_key = "employee",
+        ... id_value = my_frame.employee,
+        ... properties = {'vertex_type': 'L', title:my_frame.title})
+        >>> manager_vertex = ia.VertexRule(id_key = "managers",
+        ... id_value = my_frame.manager,
+        ... properties = {'vertex_type": "R"})
 
 Define the edge rule:
 
-.. code::
+.. only:: html
 
-    >>> worksunder_edge = ia.EdgeRule("worksunder", my_frame.employee, my_frame.manager, properties = {"years":my_frame.years})
+    .. code::
+
+        >>> worksunder_edge = ia.EdgeRule("worksunder", my_frame.employee, my_frame.manager, properties = {"years":my_frame.years})
+
+.. only:: latex
+
+    .. code::
+
+        >>> worksunder_edge = ia.EdgeRule("worksunder",
+        ... my_frame.employee, my_frame.manager,
+        ... properties = {"years":my_frame.years})
 
 For more information about rules, see the API section on
 :ref:`titan_graph_rules`.
 
 Build the graph:
 
-.. code::
+.. only:: html
 
-    >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex, worksunder_edge], name = "personnel")
+    .. code::
+
+        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex, worksunder_edge], name = "personnel")
+
+.. only:: latex
+
+    .. code::
+
+        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex,
+        ... worksunder_edge], name = "personnel")
 
 For futher information, as well as Titan graph attributes and methods, see the
 API section on :ref:`titan_graph`.

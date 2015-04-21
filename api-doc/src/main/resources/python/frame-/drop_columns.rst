@@ -18,10 +18,20 @@ Examples
 For this example, Frame object *my_frame* accesses a frame with
 columns *column_a*, *column_b*, *column_c* and *column_d*.
 
-.. code::
+.. only:: html
 
-    >>> print my_frame.schema
-    [("column_a", str), ("column_b", numpy.int32), ("column_c", str), ("column_d", numpy.int32)]
+    .. code::
+
+        >>> print my_frame.schema
+        [("column_a", str), ("column_b", numpy.int32), ("column_c", str), ("column_d", numpy.int32)]
+
+.. only:: latex
+
+    .. code::
+
+        >>> print my_frame.schema
+        [("column_a", str), ("column_b", numpy.int32), ("column_c", str),
+        ("column_d", numpy.int32)]
 
 Eliminate columns *column_b* and *column_d*:
 

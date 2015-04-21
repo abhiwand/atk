@@ -192,9 +192,9 @@ class VertexRule(Rule):
         .. code::
 
             >>> movie_vertex = ia.VertexRule('movie', my_frame['movie'],
-            ...     {'genre': my_frame['genre'], 'vertex_type':'L'})
+            ... {'genre': my_frame['genre'], 'vertex_type':'L'})
             >>> user_vertex = ia.VertexRule('user', my_frame['user'],
-            ...     {'age': my_frame['age_1'], 'vertex_type':'R'})
+            ... {'age': my_frame['age_1'], 'vertex_type':'R'})
 
     """
     def __init__(self, id_key, id_value, properties=None):
@@ -428,7 +428,7 @@ class Graph(DocStubsGraph, _BaseGraph):
 
         .. code::
 
-            >>> my_schema = [('user_id', int32), ('user_name', str), \
+            >>> my_schema = [('user_id', int32), ('user_name', str),
             ... ('movie_id', int32), ('movie_title', str), ('rating', str)]
             >>> my_csv = ia.CsvFile("/movie.csv", my_schema)
             >>> my_frame = ia.Frame(my_csv)
@@ -449,11 +449,24 @@ class Graph(DocStubsGraph, _BaseGraph):
 
     And finally, add the data to the graph:
 
-    .. code::
+    .. only:: latex
 
-        >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
-        >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
-        >>> my_graph.edges['ratings'].add_edges(my_frame, 'user_id', 'movie_id', ['rating']
+        .. code::
+
+            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+            >>> my_graph.edges['ratings'].add_edges(my_frame, 'user_id', 'movie_id', ['rating']
+
+    .. only:: html
+
+        .. code::
+
+            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id',
+            ... ['user_name'])
+            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id',
+            ... ['movie_title])
+            >>> my_graph.edges['ratings'].add_edges(my_frame, 'user_id',
+            ... 'movie_id', ['rating'])
 
     |
     

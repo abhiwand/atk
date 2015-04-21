@@ -1,4 +1,4 @@
-Classify column into discrete groups with the same frequency.
+Classify column into groups with the same frequency.
 
 Group rows of data based on the value in a single column and add a label
 to identify grouping.

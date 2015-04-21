@@ -39,9 +39,18 @@ str : Name of graph
 
 Examples
 --------
-.. code::
+.. only:: html
 
-    >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+    .. code::
+
+        >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+
+.. only:: latex
+
+    .. code::
+
+        >>> g.graphx_pagerank(output_property = "pr_result",
+        ... output_graph_name = "pr_graph")
 
 The expected output is like this:
 

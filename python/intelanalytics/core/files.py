@@ -396,7 +396,8 @@ class JsonFile(MultiLineFile):
         ...     obj = my_json['obj']
         ...     return (obj['color'], obj['size'], obj['shape'])
 
-        >>> my_frame.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
+        >>> my_frame.add_columns(parse_my_json, [("color", str), ("size", str),
+        ... ("shape", str)])
 
     Original XML column is no longer necessary:
 
