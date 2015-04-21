@@ -646,7 +646,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
     <dependencyManagement>
         <dependencies>
-            <!--START bda dependencies-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>event-api</artifactId>
@@ -734,7 +733,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>igiraph</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--END bda dependencies-->
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
