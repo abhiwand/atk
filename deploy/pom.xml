@@ -38,7 +38,6 @@
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                     <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                     <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
-																		<exclude>com.google.common.guava14:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -60,16 +59,16 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-														<!--<relocations>
-															<relocation>
-																<pattern>org.codehaus.plexus.util</pattern>
-																<shadedPattern>org.shaded.plexus.util</shadedPattern>
-																<excludes>
-																	<exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>
-																	<exclude>org.codehaus.plexus.util.xml.pull.*</exclude>
-																</excludes>
-															</relocation>
-														</relocations>-->
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.guava</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -128,7 +127,7 @@
             </exclusions>
         </dependency>
 				
-				<dependency>
+		<dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
