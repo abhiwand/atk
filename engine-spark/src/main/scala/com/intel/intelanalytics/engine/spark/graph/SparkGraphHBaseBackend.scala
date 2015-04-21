@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import java.io.OutputStream
+import java.util.UUID
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
@@ -61,8 +62,9 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
 
       if (hbaseAdmin.tableExists(tableName)) {
         info(s"Copying hbase table: $tableName to $newName")
-        hbaseAdmin.snapshot(tableName + "_copysnap", tableName)
-        hbaseAdmin.cloneSnapshot(tableName + "_copysnap", newName)
+        val snapshotName = tableName + "_copysnap_" + UUID.randomUUID().toString.replace("-", "")
+        hbaseAdmin.snapshot(snapshotName, tableName)
+        hbaseAdmin.cloneSnapshot(snapshotName, newName)
       }
       else {
         error(s"HBase table $tableName requested for copy does not exist.")
