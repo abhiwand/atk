@@ -149,10 +149,20 @@ class CsvFile(DataFile):
         Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
         and *col2* (*float32*):
 
-        .. code::
+        .. only:: html
 
-            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            >>> print(csv_class.field_names())
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_names())
+
+        .. only:: latex
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv",
+                ... schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_names())
 
         Results:
 
@@ -179,10 +189,20 @@ class CsvFile(DataFile):
         Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
         and *col2* (*float32*):
 
-        .. code::
+        .. only:: html
 
-            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            >>> print(csv_class.field_types())
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_types())
+
+        .. only:: html
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv",
+                ... schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_types())
 
         Results:
 

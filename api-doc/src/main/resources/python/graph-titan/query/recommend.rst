@@ -48,7 +48,7 @@ right_vertex_name : str (optional)
 
 Returns
 -------
-List of rank and corresponding recommendation
+list : List of rank and corresponding recommendation
     Recommendations for the input vertex
 
 Notes

@@ -13,7 +13,7 @@ gremlin : str
 
 Returns
 -------
-Dictionary
+dict : Dictionary
     Query results and runtime in seconds.
 
 Notes
