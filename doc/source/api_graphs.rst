@@ -13,8 +13,18 @@ Global Methods
 
 .. autofunction:: intelanalytics.drop_graphs
 
-Rules
------
+.. _seamless_graph:
+
+Seamless Graph
+--------------
+.. autoclass:: intelanalytics.Graph
+    :members:
+    :inherited-members:
+
+.. _titan_graph_rules:
+
+Titan Graph Rules
+-----------------
 .. autoclass:: intelanalytics.EdgeRule
     :members:
     :inherited-members:
@@ -23,34 +33,30 @@ Rules
     :members:
     :inherited-members:
 
-Graph
------
-.. autoclass:: intelanalytics.Graph
-    :members:
-    :inherited-members:
+.. _titan_graph:
 
-TitanGraph
-----------
+Titan Graph
+-----------
 .. autoclass:: intelanalytics.TitanGraph
     :members:
     :inherited-members:
 
 .. currentmodule:: intelanalytics.core.docstubs
 
-TitanGraphML
-------------
+Titan Graph ML
+--------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphMl
     :members:
     :inherited-members:
 
-TitanGraphQuery
----------------
+Titan Graph Query
+-----------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphQuery
     :members:
     :inherited-members:
 
-TitanGraphSampling
-------------------
+Titan Graph Sampling
+--------------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphSampling
     :members:
     :inherited-members:

@@ -25,9 +25,8 @@ input_edge_labels : list of str (optional)
 
 Returns
 -------
-global_clustering_coefficient : double
+double : global_clustering_coefficient
     The global clustering coefficient of the graph.
-
 frame : Frame
     A Frame is only returned if ``output_property_name`` is provided.
     The frame contains data from every vertex of the graph with its

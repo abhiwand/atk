@@ -59,14 +59,13 @@ Returns
 -------
 dict : results dictionary
     Contains three keys |EM|
-
-    Frame : doc_results
-        Frame with LDA results.
-    Frame : word_results
-        Frame with LDA results.
-    str : report
-       The configuration and learning curve report for Latent Dirichlet
-       Allocation as a multiple line str.
+Frame : doc_results
+    Frame with LDA results.
+Frame : word_results
+    Frame with LDA results.
+str : report
+   The configuration and learning curve report for Latent Dirichlet
+   Allocation as a multiple line str.
 
 Examples
 --------

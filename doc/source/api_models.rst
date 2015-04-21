@@ -26,8 +26,8 @@ LDA Model
     :members:
     :inherited-members:
 
-Lib Svm Model
--------------
+LibSVM Model
+------------
 .. autoclass:: intelanalytics.LibsvmModel
     :members:
     :inherited-members:
@@ -38,10 +38,8 @@ Logistic Regression Model
     :members:
     :inherited-members:
 
-Svm Model
+SVM Model
 ---------
 .. autoclass:: intelanalytics.SvmModel
     :members:
     :inherited-members:
-
-

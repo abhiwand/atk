@@ -17,7 +17,7 @@ observation_column : list of str (Optional)
 
 Returns
 -------
-Frame
+Frame : Enhanced frame
     A new frame containing the original frame's columns and a column with the
     predicted label.
 

@@ -16,17 +16,17 @@ observation_column : list of str (Optional)
 
 Returns
 -------
-An object with binary classification metrics.
+Object : object with binary classification metrics
 
-  <object>.accuracy : double
+<object>.accuracy : double
 
-  <object>.confusion_matrix : table
+<object>.confusion_matrix : table
 
-  <object>.f_measure : double
+<object>.f_measure : double
 
-  <object>.precision : double
+<object>.precision : double
 
-  <object>.recall : double
+<object>.recall : double
 
 Examples
 --------
