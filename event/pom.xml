@@ -6,7 +6,7 @@
     <artifactId>event</artifactId>
     <packaging>jar</packaging>
     <name>event (logging)</name>
-  
+       
     <description>
         The event module provides logging including more advanced features not usually seen in logging frameworks.
 
