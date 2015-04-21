@@ -41,7 +41,7 @@ trait ModelStorage {
 
   def getModels()(implicit invocation: Invocation): Seq[ModelEntity]
 
-  def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity]
+  def getModelByName(name: Option[String]): Option[ModelEntity]
 
   def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity
 

@@ -73,4 +73,8 @@ object ApiServiceConfig {
 
   /** Max size of user principals cache */
   val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.api-server.user-principal-cache.max-size")
+
+  /** Mode of invocation for api-server : normal or scoring engine mode */
+  val scoringEngineMode: Boolean = config.getBoolean("intel.analytics.api.scoring-engine")
+
 }
