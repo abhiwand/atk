@@ -5,9 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>event-api</artifactId>
     <packaging>jar</packaging>
-    <name>event (logging)</name>
+    <name>event-api (logging)</name>
 
     <description>
+        event-api provides the interfaces and event provides the implementation.
+
         The event module provides logging including more advanced features not usually seen in logging frameworks.
 
         Unlike other logging frameworks it supports rich event data including nested execution contexts, and delayed
