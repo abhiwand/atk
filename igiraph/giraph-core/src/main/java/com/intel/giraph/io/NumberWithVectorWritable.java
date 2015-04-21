@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.mahout.math;
+package com.intel.giraph.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.Vector;

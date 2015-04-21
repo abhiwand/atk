@@ -326,6 +326,12 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-spark")}:${pluginExtraClasspath.mkString(":")}"
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
 
+          // We were initially invoking SparkSubmit main method directly (i.e. inside our JVM). However, only one
+          // ApplicationMaster can exist at a time inside a single JVM. All further calls to SparkSubmit fail to
+          // create an instance of ApplicationMaster due to current spark design. We took the approach of invoking
+          // SparkSubmit as a standalone process (using engine-spark.jar) for every command to get the parallel
+          // execution in yarn-cluster mode.
+
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)
           val result = (pb.inheritIO() !)
           info(s"Command ${command.id} complete with result: $result")

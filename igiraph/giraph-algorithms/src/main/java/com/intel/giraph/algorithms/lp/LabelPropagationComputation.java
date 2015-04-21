@@ -24,7 +24,7 @@
 package com.intel.giraph.algorithms.lp;
 
 import com.intel.giraph.io.VertexData4LPWritable;
-import com.intel.mahout.math.IdWithVectorMessage;
+import com.intel.giraph.io.IdWithVectorMessage;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
