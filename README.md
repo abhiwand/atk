@@ -15,7 +15,6 @@ Intel Analytics Toolkit (ATK)
 * graphbuilder-3 - Titan graph construction and reading
 * graphon/ - some graph related plugins that run on Spark and GraphX
 * igiraph/ - a few graph algorithms that run on Giraph
-* imahout/ - a couple of files someone thought we might contribute to mahout - module should be deleted
 * integration-tests/ - developer written, build time integration tests in python, these run against a minimal version of our product
 * interfaces/ - interfaces shared between api-server and engine-spark (we should move plugin args/return values out of here)
 * ispark-deps/ - was needed for getting around some classloader issues - module can probably be deleted

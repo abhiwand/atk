@@ -26,8 +26,12 @@ package com.intel.intelanalytics.engine.spark.frame
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, Schema }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
+import org.bson.types.BasicBSONList
+import org.bson.{ BSON, BasicBSONObject }
 import org.scalatest.Matchers
 import org.apache.spark.frame.FrameRdd
+
+import scala.collection.JavaConversions._
 
 class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
   "FrameRdd" should {
