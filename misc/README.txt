@@ -1,5 +1,5 @@
 
-This folder is for tools that aren't really part of our product:
+This folder is for miscellaneous items that aren't really part of our product.
 
 bipartite-graph-generator/ - spark shell script for generating graph data
 header-processor/ - utility for updating header files in the source code

@@ -19,13 +19,13 @@ Intel Analytics Toolkit (ATK)
 * ispark-deps/ - was needed for getting around some classloader issues - module can probably be deleted
 * ititan/ - repackaging of Titan to get around classloader issues
 * launcher/ - starts up our application, launches parts of our app
+* misc/ - miscellaneous items that aren't really part of our product
 * package/ - packaging for VM's, RPM's
 * python/ - python client code
 * python-examples/ - internal example code, add examples here so we don't have to email scripts around
 * scripts/ - RPM packaging
 * shared/ - mostly code for our meta-data repository, SQL scripts for our meta-data repository
 * testutils/ - some test utility code that get re-used between tests in different modules
-* tools/ - tools that aren't really part of our product
 
 
 # Links
