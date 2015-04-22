@@ -139,7 +139,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                 </configuration>
                             </execution>
 
-                            <execution>
+                           <!-- <execution>
                                 <id>package-spark-deps</id>
                                 <phase>package</phase>
                                 <goals>
@@ -158,11 +158,11 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
-                                        <argument>--tar</argument>
+                                        <argument>tar</argument>
                                         <argument>${basedir}/intelanalytics-spark-deps-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
-                            </execution>
+                            </execution>-->
 
                             <execution>
                                 <id>package-intelanalytics-parcel</id>
