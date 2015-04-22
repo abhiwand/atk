@@ -77,10 +77,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>imahout</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>
         </dependency>

@@ -177,7 +177,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine-spark</module>
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
-                <!--<module>imahout</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -192,7 +191,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>event-api</module>
                 <module>event</module>
-                <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -224,7 +222,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine</module>
                 <module>engine-spark</module>
                 <module>api-server</module>
-                <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -649,7 +646,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
     <dependencyManagement>
         <dependencies>
-            <!--START bda dependencies-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>event-api</artifactId>
@@ -719,11 +715,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>imahout</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
                 <artifactId>igiraph-algorithms</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -742,7 +733,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>igiraph</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--END bda dependencies-->
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>

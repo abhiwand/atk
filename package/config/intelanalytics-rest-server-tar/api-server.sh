@@ -16,6 +16,7 @@ echo $DIR
 
 #. ../env
 LAUNCHER=$DIR/../launcher.jar
+LAUNCHER=$DIR/../conf/logback.xml:$LAUNCHER
 jq=$DIR/../jq
 
 echo "Setting environment variables"

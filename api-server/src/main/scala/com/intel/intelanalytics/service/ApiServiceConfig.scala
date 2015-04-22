@@ -74,7 +74,13 @@ object ApiServiceConfig {
   /** Max size of user principals cache */
   val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.api-server.user-principal-cache.max-size")
 
-  /** Mode of invocation for api-server : normal or scoring engine mode */
+  /**
+   * Mode of invocation for api-server : normal or scoring engine mode
+   * The ATK API-Server can be run in two different modes:
+   * 1) the Normal mode where all the services(excluding scoring-service) for models, frames, queries, graphs are available
+   * 2) scoring engine mode where ONLY scoring service is available
+   * True means scoring engine mode.
+   */
   val scoringEngineMode: Boolean = config.getBoolean("intel.analytics.api.scoring-engine")
 
 }
