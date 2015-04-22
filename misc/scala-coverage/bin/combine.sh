@@ -20,7 +20,7 @@ rm -rf ${report_target}
 mkdir -p ${report_target}
 
 # copy resources into report
-cp -r tools/scala-coverage/src/main/resources/* ${report_target}
+cp -r misc/scala-coverage/src/main/resources/* ${report_target}
 
 for module in `echo $scala_coverage_modules`
 do
