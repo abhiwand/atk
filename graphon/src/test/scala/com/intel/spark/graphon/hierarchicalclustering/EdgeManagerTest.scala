@@ -67,7 +67,7 @@ class EdgeManagerTest extends FlatSpec with Matchers {
   }
 
   "edgeManager::canEdgeCollapse" should "return true" in {
-    assert(EdgeManager.canEdgeCollapse(outgoingEdgeList) == true)
+    assert(EdgeManager.canEdgeCollapse(outgoingEdgeList))
   }
 
   "edgeManager::canEdgeCollapse" should "return false" in {

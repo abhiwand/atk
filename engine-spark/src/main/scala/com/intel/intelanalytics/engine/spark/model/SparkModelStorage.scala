@@ -162,7 +162,7 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
-  override def getModelByName(name: Option[String])(implicit invocation: Invocation): Option[ModelEntity] = {
+  override def getModelByName(name: Option[String]): Option[ModelEntity] = {
     metaStore.withSession("spark.modelstorage.getModelByName") {
       implicit session =>
         {

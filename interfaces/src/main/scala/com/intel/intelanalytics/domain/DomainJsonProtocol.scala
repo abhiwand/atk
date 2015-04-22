@@ -40,6 +40,7 @@ import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
+import com.intel.intelanalytics.engine.spark.gc.GarbageCollectionArgs
 import com.intel.intelanalytics.schema._
 import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.intelanalytics.engine.plugin.ApiMaturityTag
@@ -567,5 +568,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val seamlessGraphMetaFormat = jsonFormat2(SeamlessGraphMeta)
 
   implicit val binColumnResultFormat = jsonFormat2(BinColumnResults)
+
+  implicit val garbageCollectionArgsFormat = jsonFormat2(GarbageCollectionArgs)
 
 }

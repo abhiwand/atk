@@ -21,7 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
+package com.intel.intelanalytics.engine.spark.gc
+
 /**
- * Package of imahout data structures
+ * Arguments used for a single execution of garbage collection
+ * @param ageToDeleteData minimum age of entity for data deletion. defaults to server config
+ * @param ageToDeleteMetaData minimum age of entity for meta data deletion. defaults to server config
  */
-package com.intel.mahout.math;
+case class GarbageCollectionArgs(ageToDeleteData: Option[String], ageToDeleteMetaData: Option[String])
