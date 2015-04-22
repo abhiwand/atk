@@ -240,6 +240,14 @@ function main() {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
+        # debug: Start the server
+        pushd ../ > /dev/null
+        server_start $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then return $Return; fi
+
+
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
@@ -254,6 +262,13 @@ function main() {
             maven $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then return 1; fi
         fi
+
+        # debug: Update the additional python documentation files
+        pushd ../python > /dev/null
+        build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then return $Return; fi
 
         # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
@@ -339,6 +354,9 @@ function maven() {
     # $3 = Temporary file
     # $4 = LogFile
 
+    # debug: Stop the server
+    server_stop
+
     # debug: Compile jars
     pushd ../ > /dev/null
     compile_jars $1 $2 $3 $4
@@ -346,7 +364,7 @@ function maven() {
     popd > /dev/null
     if [ "$Return" != "0" ]; then return $Return; fi
 
-    # Start the server
+    # debug: Start the server
     pushd ../ > /dev/null
     server_start $1 $2 $3 $4
     Return=$?
@@ -354,10 +372,10 @@ function maven() {
     if [ "$Return" != "0" ]; then return $Return; fi
 
     # debug: Update the additional python documentation files
-    pushd ../python > /dev/null
-    build_docstubs $1 $2 $3 $4
-    Return=$?
-    popd > /dev/null
+#   pushd ../python > /dev/null
+#   build_docstubs $1 $2 $3 $4
+#   Return=$?
+#   popd > /dev/null
 
     return $Return
 
@@ -407,7 +425,6 @@ function pdf_build() {
     BuildDirectory="build/$1"
     Extension="tex"
 
-    log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     if [[ -f "$BuildDirectory/$2.$Extension" ]]; then
         pushd $BuildDirectory > /dev/null
