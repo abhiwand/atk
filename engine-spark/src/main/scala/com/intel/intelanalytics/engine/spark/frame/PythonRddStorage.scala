@@ -42,10 +42,14 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
+import org.bson.types.BasicBSONList
+import org.bson.{ BSON, BasicBSONObject }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import scala.collection.mutable.ArrayBuffer
 import com.google.common.io.Files
+
+import scala.collection.JavaConversions._
 
 import scala.reflect.io.{ Directory, Path }
 
@@ -101,16 +105,35 @@ object PythonRddStorage {
     pythonIncludes
   }
 
-  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, sc: SparkContext): EnginePythonRdd[String] = {
+  /**
+   * Convert an iterable into a BasicBSONList for serialiation purposes
+   * @param iterable vector object
+   */
+  def iterableToBsonList(iterable: Iterable[Any]): BasicBSONList = {
+    val bsonList = new BasicBSONList
+    // BasicBSONList only supports the put operation with a numeric value as the key.
+    iterable.zipWithIndex.foreach {
+      case (obj: Any, index: Int) => bsonList.put(index, obj)
+    }
+    bsonList
+  }
+
+  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, sc: SparkContext): EnginePythonRdd[Array[Byte]] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
-    val baseRdd: RDD[String] = rdd
-      .map(x => x.map {
-        case null => JsNull
-        case ab: ArrayBuffer[Double] => ab.toList.toJson
-        case v: Vector[Double] => v.toList.toJson
-        case a => a.toJson
-      }.toJson.toString())
+    // Create an RDD of byte arrays representing bson objects
+    val baseRdd: RDD[Array[Byte]] = rdd.map(
+      x => {
+
+        val obj = new BasicBSONObject()
+        obj.put("array", x.map(value => value match {
+          case y: ArrayBuffer[Double] => iterableToBsonList(y)
+          case y: Vector[Double] => iterableToBsonList(y)
+          case _ => value
+        }))
+        BSON.encode(obj)
+      }
+    )
 
     val pythonExec = SparkEngineConfig.pythonWorkerExec
     val environment = new util.HashMap[String, String]()
@@ -139,7 +162,7 @@ object PythonRddStorage {
       pyIncludes = uploadFilesToSpark(includes, sc)
     }
 
-    val pyRdd = new EnginePythonRdd[String](
+    val pyRdd = new EnginePythonRdd[Array[Byte]](
       baseRdd, predicateInBytes, environment,
       pyIncludes, preservePartitioning = true,
       pythonExec = pythonExec,
@@ -147,16 +170,20 @@ object PythonRddStorage {
     pyRdd
   }
 
-  def getRddFromPythonRdd(pyRdd: EnginePythonRdd[String], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
-    val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
-      case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
-      case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].value
-      case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
-      case x if x.isInstanceOf[JsArray] => x.asInstanceOf[JsArray].elements.map(d => d.asInstanceOf[JsNumber].value.toDouble).toVector
-      case _ => null
-    }).toArray.asInstanceOf[Array[Any]]))
-      .flatMap(identity)
-      .map(converter)
+  def getRddFromPythonRdd(pyRdd: EnginePythonRdd[Array[Byte]], converter: (Array[Any] => Array[Any]) = null): RDD[Array[Any]] = {
+    val resultRdd = pyRdd.flatMap(s => {
+      //should be BasicBSONList containing only BasicBSONList objects
+      val bson = BSON.decode(s)
+      val asList = bson.get("array").asInstanceOf[BasicBSONList]
+      asList.map(innerList => {
+        val asBsonList = innerList.asInstanceOf[BasicBSONList]
+        asBsonList.map(value => value match {
+          case x: BasicBSONList => x.toArray
+          case _ => value
+        }).toArray.asInstanceOf[Array[Any]]
+      })
+    }).map(converter)
+
     resultRdd
   }
 }
@@ -172,7 +199,7 @@ class PythonRddStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
    * @return the RDD
    */
-  def createPythonRDD(frameRef: FrameReference, py_expression: String, sc: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[String] = {
+  def createPythonRDD(frameRef: FrameReference, py_expression: String, sc: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[Array[Byte]] = {
     withMyClassLoader {
 
       val rdd: LegacyFrameRdd = frames.loadLegacyFrameRdd(sc, frameRef)

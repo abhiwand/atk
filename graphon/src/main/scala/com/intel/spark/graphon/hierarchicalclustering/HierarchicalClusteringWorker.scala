@@ -2,6 +2,7 @@ package com.intel.spark.graphon.hierarchicalclustering
 
 import com.intel.event.EventLogging
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.spark.graphon.hierarchicalclustering.HierarchicalClusteringStorage
 import org.apache.spark.rdd.RDD
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -13,76 +14,80 @@ import org.apache.spark.storage.StorageLevel
 
 /**
  * This is the main clustering class.
+ * @param dbConnectionConfig serializable configuration file
  */
-object HierarchicalClusteringFunctions extends Serializable with EventLogging {
+class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) extends Serializable with EventLogging {
+
+  private val hierarchicalClusteringReport = new StringBuilder
 
   /**
    * Convert the storage graph into a hierarchical edge RDD
    * @param vertices the list of vertices for the initial graph
    * @param edges the list of edges for the initial graph
-   * @param titanConfig titan configuration file
    */
-  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], titanConfig: SerializableBaseConfiguration): Unit = {
+  def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], edgeDistanceProperty: String): String = {
 
-    val graphAdRdd: RDD[HierarchicalClusteringEdge] = edges.map {
-      case e =>
-        val edgeDistProperty = e.getProperty(HierarchicalClusteringConstants.EdgeDistanceProperty)
-          .getOrElse(throw new Exception(s"Edge does not have ${HierarchicalClusteringConstants.EdgeDistanceProperty} property"))
-        HierarchicalClusteringEdge(e.headPhysicalId.asInstanceOf[Number].longValue,
+    val hierarchicalClusteringFactory: HierarchicalClusteringStorageFactoryInterface = HierarchicalClusteringStorageFactory(dbConnectionConfig)
+    val hcRdd: RDD[HierarchicalClusteringEdge] = edges.map {
+      case edge =>
+        val edgeDistProperty = edge.getProperty(edgeDistanceProperty)
+          .getOrElse(throw new Exception(s"Edge does not have ${edgeDistanceProperty} property"))
+
+        HierarchicalClusteringEdge(edge.headPhysicalId.asInstanceOf[Number].longValue,
           HierarchicalClusteringConstants.DefaultNodeCount,
-          e.tailPhysicalId.asInstanceOf[Number].longValue,
+          edge.tailPhysicalId.asInstanceOf[Number].longValue,
           HierarchicalClusteringConstants.DefaultNodeCount,
           1 - edgeDistProperty.value.asInstanceOf[Float], false)
     }.distinct()
 
-    mainLoop(graphAdRdd, titanConfig)
+    configStorage(hierarchicalClusteringFactory)
+    clusterGraph(hcRdd, hierarchicalClusteringFactory)
+    hierarchicalClusteringReport.toString()
   }
 
   /**
    * This is the main loop of the algorithm
    * @param graph initial in memory graph as RDD of hierarchical clustering edges
-   * @param titanConfig the config for storage
    */
-  def mainLoop(graph: RDD[HierarchicalClusteringEdge], titanConfig: SerializableBaseConfiguration): Unit = {
+  def clusterGraph(graph: RDD[HierarchicalClusteringEdge],
+                   hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
 
     var currentGraph: RDD[HierarchicalClusteringEdge] = graph
     var iteration = 0
 
-    configStorage(titanConfig)
     while (currentGraph != null) {
       iteration = iteration + 1
-      currentGraph = clusterNewLayer(currentGraph, iteration, titanConfig)
+      currentGraph = clusterNewLayer(currentGraph, iteration, hcFactory)
     }
+    hierarchicalClusteringReport.toString()
   }
 
   /**
    * Add schema to the storage configuration
-   * @param titanConfig the initial/default configuration
    */
-  private def configStorage(titanConfig: SerializableBaseConfiguration): Unit = {
+  private def configStorage(hcFactory: HierarchicalClusteringStorageFactoryInterface): Unit = {
 
-    val graphStorage = TitanStorage.connectToTitan(titanConfig)
-    TitanStorage.addSchemaToTitan(graphStorage)
-    graphStorage.shutdown()
+    val storage = hcFactory.newStorage()
+    storage.addSchema()
+    storage.shutdown()
   }
 
   /**
    * Creates a set of meta-node and a set of internal nodes and edges (saved to storage)
    * @param graph (n-1) in memory graph (as an RDD of hierarchical clustering edges)
    * @param iteration current iteration, testing purposes only
-   * @param titanConfig storage configuration file
    * @return (n) in memory graph (as an RDD of hierarchical clustering edges)
    */
   private def clusterNewLayer(graph: RDD[HierarchicalClusteringEdge],
                               iteration: Int,
-                              titanConfig: SerializableBaseConfiguration): RDD[HierarchicalClusteringEdge] = {
+                              hcFactory: HierarchicalClusteringStorageFactoryInterface): RDD[HierarchicalClusteringEdge] = {
 
     // the list of edges to be collapsed and removed from the active graph
     val collapsableEdges = createCollapsableEdges(graph)
     collapsableEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
     // the list of internal nodes connecting a newly created meta-node and the nodes of the collapsed edge
-    val (internalEdges, nonSelectedEdges) = createInternalEdges(collapsableEdges, titanConfig)
+    val (internalEdges, nonSelectedEdges) = createInternalEdges(collapsableEdges, iteration, hcFactory)
     internalEdges.persist(StorageLevel.MEMORY_AND_DISK)
     nonSelectedEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
@@ -90,34 +95,41 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
     val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges)
     activeEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
-    info("-------------Iteration " + iteration + " ---------------\n")
+    val iterationCountLog = HierarchicalClusteringConstants.IterationMarker + " " + iteration
+    hierarchicalClusteringReport.append(iterationCountLog + "\n")
+    info(iterationCountLog)
 
     val collapsableEdgesCount = collapsableEdges.count()
     if (collapsableEdges.count() > 0) {
-      info("Collapsed edges " + collapsableEdgesCount + "\n")
+      val log = "Collapsed edges " + collapsableEdgesCount
+      hierarchicalClusteringReport.append(log + "\n")
+      info(log)
     }
     else {
-      info("No new collapsed edges\n")
-      if (graph.count() > 0) {
-        info("Current graph edges\n")
-        graph.collect().foreach(e => info("\t" + e.toString() + "\n"))
-        info("current graph edges - done\n")
-      }
+      val log = "No new collapsed edges"
+      hierarchicalClusteringReport.append(log + "\n")
+      info(log)
     }
 
     val internalEdgesCount = internalEdges.count()
     if (internalEdgesCount > 0) {
-      info("Internal edges " + internalEdgesCount + "\n")
+      val log = "Internal edges " + internalEdgesCount
+      hierarchicalClusteringReport.append(log + "\n")
+      info(log)
     }
     else {
-      info("No new internal edges\n")
+      val log = "No new internal edges"
+      hierarchicalClusteringReport.append(log + "\n")
+      info(log)
     }
 
     val activeEdgesCount = activeEdges.count()
     if (activeEdges.count > 0) {
       internalEdges.unpersist()
 
-      info("Active edges " + activeEdgesCount + "\n")
+      val activeEdgesLog = "Active edges " + activeEdgesCount
+      hierarchicalClusteringReport.append(activeEdgesLog + "\n")
+      info(activeEdgesLog)
 
       // create a key-value pair list of edges from the current graph (for subtractByKey)
       val currentGraphAsKVPair = graph.map((e: HierarchicalClusteringEdge) => (e.src, e))
@@ -147,12 +159,17 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
       distinctNewGraphWithoutInternalEdges.persist(StorageLevel.MEMORY_AND_DISK)
       collapsableEdges.unpersist()
 
-      info("Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count() + "\n")
+      val nextItLog = "Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count()
+      hierarchicalClusteringReport.append(nextItLog + "\n")
+      info(nextItLog)
 
       distinctNewGraphWithoutInternalEdges
     }
     else {
-      info("No new active edges - terminating...\n")
+      val log = "No new active edges - terminating..."
+      hierarchicalClusteringReport.append(log + "\n")
+      info(log)
+
       null
     }
 
@@ -211,26 +228,26 @@ object HierarchicalClusteringFunctions extends Serializable with EventLogging {
   /**
    * Create internal edges for all collapsed edges of the graph
    * @param collapsedEdges a list of edges to be collapsed
-   * @param titanConfig titan configuration for writing to storage
    * @return 2 RDDs - one with internal edges and a second with non-minimal distance edges. The RDDs will be used
    *         to calculate the new active edges for the current iteration.
    */
   private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
-                                  titanConfig: SerializableBaseConfiguration): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
+                                  iteration: Int,
+                                  hcFactory: HierarchicalClusteringStorageFactoryInterface): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
 
     val internalEdges = collapsedEdges.mapPartitions {
       case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {
-        val titanConnector = TitanGraphConnector(titanConfig)
-        val graph = titanConnector.connect()
+        val hcStorage = hcFactory.newStorage()
+
         val result = edges.map {
           case (minDistEdge, nonMinDistEdges) =>
-            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, graph)
+            val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(minDistEdge, hcStorage, iteration)
             val replacedEdges = EdgeManager.createActiveEdgesForMetaNode(metanode, metanodeCount, nonMinDistEdges).map(_._2)
             (metaEdges, replacedEdges)
         }.toList
 
-        graph.commit()
-        graph.shutdown()
+        hcStorage.commit()
+        hcStorage.shutdown()
 
         result.toIterator
       }

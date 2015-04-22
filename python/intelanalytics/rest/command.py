@@ -39,6 +39,17 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.iaserver import server
 from collections import namedtuple
 
+def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):
+    """
+    Execute garbage collection out of cycle age ranges specified using the typesafe config duration format.
+    :param age_to_delete_data: Minimum age for data deletion. Defaults to server config.
+    :param age_to_delete_meta_data: Minimum age for meta data deletion. Defaults to server config.
+    """
+    execute_command("_admin:/_explicit_garbage_collection", None,
+                    age_to_delete_data=age_to_delete_data,
+                    age_to_delete_meta_data=age_to_delete_meta_data)
+
+
 def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output."""
     command_request = CommandRequest(command_name, arguments)
