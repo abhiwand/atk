@@ -23,14 +23,12 @@
 
 package com.intel.spark.graphon.sampling
 
-import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 import com.intel.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 import com.intel.testutils.{ TestingSparkContextWordSpec, TestingTitan }
 
 class AssignSampleITest extends TestingSparkContextWordSpec with Matchers {
-  EnvironmentValidator.skipEnvironmentValidation = true
 
   val gbIds = Map((1, new Property("gbId", 1)),
     (2, new Property("gbId", 2)),

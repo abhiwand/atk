@@ -31,7 +31,6 @@ do
     cp -v $jarPath ${BUILD_DIR}/usr/lib/intelanalytics/graphbuilder/lib/
 done
 
-
 #excluded jars are now combined in deploy.jar
 #engine-spark.jar igiraph-titan.jar graphon.jar
 
