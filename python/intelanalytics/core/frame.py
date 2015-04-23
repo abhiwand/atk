@@ -848,7 +848,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
                   big  1    3      6.333  19.0   5.0    7
 
 
-        # For further examples, see :ref:`example_frame.group_by`.
+        For further examples, see :ref:`example_frame.group_by`.
         """
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
