@@ -6,6 +6,12 @@
     <artifactId>deploy</artifactId>
     <packaging>jar</packaging>
 
+    <description>
+        This module is for creating the uber-jar needed for deployment on DP2.
+
+        The uber jar contains all of our code and our depedencies.
+    </description>
+
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>

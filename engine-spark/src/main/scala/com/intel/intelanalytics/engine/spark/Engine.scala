@@ -93,7 +93,7 @@ import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.frame.TopKArgs
 import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
 import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
@@ -520,11 +520,13 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    * @param name Model name
    */
   override def scoreModel(name: String, values: String): Future[Double] = future {
-    val splitObs: StringTokenizer = new StringTokenizer(values, ",")
-    var vector = Vector.empty[Double]
-    while (splitObs.hasMoreTokens) {
-      vector = vector :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
-    }
+    //    val splitObs: StringTokenizer = new StringTokenizer(values, ",")
+    //    var vector = Vector.empty[Double]
+    //    while (splitObs.hasMoreTokens) {
+    //      vector = vector :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
+    //    }
+
+    val vector = DataTypes.toVector(-1)(values)
     val model = models.getModelByName(Some(name))
     model match {
       case Some(x) => {

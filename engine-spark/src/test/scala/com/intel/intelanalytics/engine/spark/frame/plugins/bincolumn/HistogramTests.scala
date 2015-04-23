@@ -161,5 +161,20 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
       hist.density should be(Array(3 / 5.0, 0, 2 / 5.0))
     }
 
+    "decimal datasets should always include the max value as the upper end" in {
+      val data = List(
+        Array[Any]("A", 1.000001),
+        Array[Any]("B", 1.999999),
+        Array[Any]("C", 3.000001),
+        Array[Any]("D", 10.00001))
+      val rdd: RDD[Row] = sparkContext.parallelize(data).map(row => new GenericRow(row))
+      val numBins = 2
+      val hist = plugin.computeHistogram(rdd, 1, None, numBins)
+      hist.cutoffs(0) should be(1.000001)
+      hist.cutoffs.last should be(10.00001)
+      hist.hist should be(Array(3.0, 1.0))
+      hist.density should be(Array(3 / 4.0, 1 / 4.0))
+    }
+
   }
 }

@@ -5,11 +5,13 @@
 # Scoverage does NOT aggregate reports for multi-module projects so we aggregate ourselves here.
 #
 
+echo "assuming combine.sh is being ran from source_code"
+
 # list of modules we want coverage for
 scala_coverage_modules="interfaces shared engine-spark graphbuilder-3 graphon api-server launcher imllib"
 
 # target directory to generate report
-report_target=scala-coverage/target/scala-coverage-report
+report_target=misc/scala-coverage/target/scala-coverage-report
 
 # make sure old folder is gone
 rm -rf ${report_target}
@@ -18,7 +20,7 @@ rm -rf ${report_target}
 mkdir -p ${report_target}
 
 # copy resources into report
-cp -r scala-coverage/src/main/resources/* ${report_target}
+cp -r misc/scala-coverage/src/main/resources/* ${report_target}
 
 for module in `echo $scala_coverage_modules`
 do

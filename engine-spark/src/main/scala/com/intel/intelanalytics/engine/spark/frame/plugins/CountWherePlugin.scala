@@ -26,6 +26,8 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.domain.frame.CountWhereArgs
+import org.bson.BSON
+import org.bson.types.BasicBSONList
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -56,6 +58,6 @@ class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
     val sourceFrame = engine.frames.expectFrame(arguments.frame)
     val pythonRDDStorage = new PythonRddStorage(engine.frames)
     val pyRdd = pythonRDDStorage.createPythonRDD(sourceFrame.toReference, arguments.udf.function, sc)
-    LongValue(pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]]).flatMap(identity).count())
+    LongValue(pyRdd.map(s => BSON.decode(s).get("array").asInstanceOf[BasicBSONList].size()).reduce(_ + _))
   }
 }
