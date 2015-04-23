@@ -193,7 +193,13 @@ object DiscretizationFunctions extends Serializable {
     val binWidth = (max - min) / numBins.toDouble
 
     if (binWidth != 0) {
-      (min to max by binWidth).toArray
+      val cutoffs = (min to max by binWidth).toArray
+      // if the bin width is rounded in such a way that max < min + (binWidth * numBins)
+      // than the max value will not be included in the cutoffs list
+      if (cutoffs.last < max)
+        cutoffs :+ max
+      else
+        cutoffs
     }
     else {
       List(min, min).toArray
