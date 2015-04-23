@@ -11,7 +11,7 @@ echo "assuming combine.sh is being ran from source_code"
 scala_coverage_modules="interfaces shared engine-spark graphbuilder-3 graphon api-server launcher imllib"
 
 # target directory to generate report
-report_target=scala-coverage/target/scala-coverage-report
+report_target=misc/scala-coverage/target/scala-coverage-report
 
 # make sure old folder is gone
 rm -rf ${report_target}
