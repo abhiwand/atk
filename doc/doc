@@ -191,12 +191,15 @@ function main() {
     ScriptPath=$(dirname "$(readlink -f "$0")")
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
+    export INTELANALYTICS_AUTOCONNECT=1
 
     # debug: Start the log file
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../core/*.pyc ]]; then rm ../core/*.pyc; fi
+    if [[ -f ../python/intelanalytics/core/*.pyc ]]; then
+        rm ../python/intelanalytics/core/*.pyc
+    fi
 
     # debug: Check on quiet mode
     echo $ModifiedArguments | grep -i -e "/-q/" -e "/-qq/" > /dev/null
@@ -242,11 +245,14 @@ function main() {
 
         # debug: Start the server
         pushd ../ > /dev/null
+        RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        if [ "$Return" != "0" ]; then return $Return; fi
         server_start $AskThem $DisplayStatus $TempFile $LogFile
         Return=$?
         popd > /dev/null
         if [ "$Return" != "0" ]; then return $Return; fi
-
 
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
@@ -264,11 +270,11 @@ function main() {
         fi
 
         # debug: Update the additional python documentation files
-        pushd ../python > /dev/null
-        build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        popd > /dev/null
-        if [ "$Return" != "0" ]; then return $Return; fi
+#       pushd ../python > /dev/null
+#       build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+#       Return=$?
+#       popd > /dev/null
+#       if [ "$Return" != "0" ]; then return $Return; fi
 
         # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
@@ -458,19 +464,14 @@ function server_start() {
     # $4 = LogFile
 
     # Start the server
-    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-    do_this "$RunCommand" $1 $2 $3 $4
+    log_step "nohup bin/api-server.sh" $2 $4
+    nohup bin/api-server.sh < /dev/null > $3 2>&1 &
     Return=$?
-    if [ "$Return" == "0" ]; then
-        log_step "nohup bin/api-server.sh" $2 $4
-        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+    if [ "$Return" != "0" ]; then
+        Err "nohup bin/api-server.sh" $1 $2 $3 $4
         Return=$?
-        if [ "$Return" != "0" ]; then
-            Err "nohup bin/api-server.sh" $1 $2 $3 $4
-            Return=$?
-        else
-            sleep 10
-        fi
+    else
+        sleep 10
     fi
     return $Return
 }
