@@ -471,16 +471,16 @@ Becomes:
 
 Click on the Spark service then configuration in Cloudera Manager to get
 executor memory.
-See :ref:`Spark Executor Memory figure <ad_inst_ia1_01>`.
+See :ref:`Fig. 12.1 <fig_12_01>`.
 
-.. _ad_inst_ia1_01:
+.. _fig_12_01:
 
 .. only:: html
 
     .. figure:: ad_inst_ia1_spark_executor_memory.*
         :align: center
 
-        Figure 1
+        Fig. 12.1
         Spark Executor Memory
 
 .. only:: latex
@@ -508,21 +508,21 @@ Updating the Spark Class Path
 The automatic configuration script updates the classpath in Cloudera Manager.
 The spark class path can also be configured through Cloudera Manager under the
 spark configuration / Worker Environment Advanced Configuration Snippet.
-See :ref:`Spark Class Path figure <ad_inst_ia1_02>`.
+See :ref:`Fig 12.2 <fig_12_02>`.
 If it isn't already set, add:
 
 .. code::
 
     SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-.. _ad_inst_ia1_02:
+.. _fig_12_02:
 
 .. only:: html
 
     .. figure:: ad_inst_ia1_spark_class_path.*
         :align: center
 
-        Figure 2
+        Fig. 12.2
         Spark Class Path
 
 .. only:: latex
@@ -537,16 +537,16 @@ If it isn't already set, add:
 **End of manual configuration**
 
 Restart the Spark service.
-See :ref:`Restart Spark figure <ad_inst_ia1_03>`.
+See :ref:`Fig. 13.3 <fig_13_03>`.
 
-.. _ad_inst_ia1_03:
+.. _fig_13_03:
 
 .. only:: html
 
     .. figure:: ad_inst_ia1_restart_spark.*
         :align: center
 
-        Figure 3
+        Fig. 13.3
         Restart Spark
 
 .. only:: latex

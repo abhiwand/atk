@@ -108,9 +108,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
         or press **Ctrl** + **Shift** + **A**.
 
-        See :ref:`Add New Account figure <ad_inst_vm_01>`.
+        See :ref:`Fig. 15.1 <fig_15_01>`.
 
-        .. _ad_inst_vm_01:
+        .. _fig_15_01:
 
         .. only:: html
 
@@ -118,7 +118,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
                 :width: 60%
                 :align: center
 
-                Figure 1
+                Fig. 15.1
                 Add New Account
 
         .. only:: latex
@@ -133,9 +133,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
         1)  Add your access and secret keys
         #)  Give the account a name
 
-        See :ref:`New Account Information figure <ad_inst_vm_02>`.
+        See :ref:`Fig. 15.2 <fig_15_02>`.
 
-        .. _ad_inst_vm_02:
+        .. _fig_15_02:
 
         .. only:: html
 
@@ -143,7 +143,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
                 :width: 60%
                 :align: center
 
-                Figure 2
+                Fig. 15.2
                 New Account Information
 
         .. only:: latex
@@ -160,9 +160,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
     or press **Ctrl** + **E**.
 
-    See :ref:`Add External Bucket figure <ad_inst_vm_03>`.
+    See :ref:`Fig. 15.3 <fig_15_03>`.
 
-    .. _ad_inst_vm_03:
+    .. _fig_15_03:
 
     .. only:: html
 
@@ -170,7 +170,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
             :width: 60%
             :align: center
 
-            Figure 3
+            Fig. 15.3
             Add External Bucket
 
     .. only:: latex
@@ -182,9 +182,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
 #)  Add the bucket url "intel-analytics-repo/release",
     then click **Add External bucket**.
-    See :ref:`Give Bucket Name figure <ad_inst_vm_04>`.
+    See :ref:`Fig. 15.4 <fig_15_04>`.
 
-    .. _ad_inst_vm_04:
+    .. _fig_15_04:
 
     .. only:: html
 
@@ -192,7 +192,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
             :width: 60%
             :align: center
 
-            Figure 4
+            Fig. 15.4
             Give Bucket Name
 
     .. only:: latex
@@ -203,9 +203,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
             Give Bucket Name
 
 #)  After adding the bucket, a list of folders shows up on the right.
-    See :ref:`Check Folder List figure <ad_inst_vm_05>`.
+    See :ref:`Fig. 15.5 <fig_15_05>`.
 
-    .. _ad_inst_vm_05:
+    .. _fig_15_05:
 
     .. only:: html
 
@@ -213,7 +213,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
             :width: 60%
             :align: center
 
-            Figure 5
+            Fig. 15.5
             Check Folder List
 
     .. only:: latex
@@ -225,9 +225,9 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
 #)  Select the appropriate version, and navigate to the |VM| folder,
     then right click and download the "tar.gz" file.
-    See :ref:`Download File figure <ad_inst_vm_06>`.
+    See :ref:`Fig. 15.6 <fig_15_06>`.
 
-    .. _ad_inst_vm_06:
+    .. _fig_15_06:
 
     .. only:: html
 
@@ -235,7 +235,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
             :width: 60%
             :align: center
 
-            Figure 6
+            Fig. 15.6
             Download File
 
     .. only:: latex
@@ -271,9 +271,9 @@ Import Image
 To import the |VM| image, do the following steps in Virtual Box.
 
 1)  Go to the **File** menu, then **Import Appliance**.
-    See :ref:`File -> Import Appliance figure <ad_inst_vm_07>`.
+    See :ref:`Fig. 15.7 <fig_15_07>`.
 
-    .. _ad_inst_vm_07:
+    .. _fig_15_07:
 
     .. only:: html
 
@@ -281,7 +281,7 @@ To import the |VM| image, do the following steps in Virtual Box.
             :width: 60%
             :align: center
 
-            Figure 7
+            Fig. 15.7
             File -> Import Appliance
 
     .. only:: latex
@@ -293,9 +293,9 @@ To import the |VM| image, do the following steps in Virtual Box.
 
 #)  Select the file with the extension 'ovf', which was extracted earlier from
     the |VM| image.
-    See :ref:`Appliance to Import figure <ad_inst_vm_08>`.
+    See :ref:`Fig. 15.8 <fig_15_08>`.
 
-    .. _ad_inst_vm_08:
+    .. _fig_15_08:
 
     .. only:: html
 
@@ -303,7 +303,7 @@ To import the |VM| image, do the following steps in Virtual Box.
             :width: 60%
             :align: center
 
-            Figure 8
+            Fig. 15.8
             Appliance to Import
 
     .. only:: latex
@@ -314,9 +314,9 @@ To import the |VM| image, do the following steps in Virtual Box.
             Appliance to Import
 
 #)  Import the |IAT| |VM|.
-    See :ref:`Appliance Settings figure <ad_inst_vm_09>`.
+    See :ref:`Fig. 15.9 <fig_15_09>`.
 
-    .. _ad_inst_vm_09:
+    .. _fig_15_09:
 
     .. only:: html
 
@@ -324,7 +324,7 @@ To import the |VM| image, do the following steps in Virtual Box.
             :width: 60%
             :align: center
 
-            Figure 9
+            Fig. 15.9
             Appliance Settings
 
     .. only:: latex
@@ -335,9 +335,9 @@ To import the |VM| image, do the following steps in Virtual Box.
             Appliance Settings
 
 #)  After clicking **Import**, wait for the |VM| to be imported.
-    See :ref:`Watching Appliance Import figure <ad_inst_vm_10>`.
+    See :ref:`Fig. 15.10 <fig_15_10>`.
 
-    .. _ad_inst_vm_10:
+    .. _fig_15_10:
 
     .. only:: html
 
@@ -345,7 +345,7 @@ To import the |VM| image, do the following steps in Virtual Box.
             :width: 60%
             :align: center
 
-            Figure 10
+            Fig. 15.10
             Watching Appliance Import
 
     .. only:: latex
@@ -357,9 +357,9 @@ To import the |VM| image, do the following steps in Virtual Box.
 
 #)  Once the |VM| is imported, boot the |VM| by selecting the |VM| and
     clicking **Start**.
-    See :ref:`Boot the VM figure <ad_inst_vm_11>`.
+    See :ref:`Fig. 15.11 <fig_15_11>`.
 
-    .. _ad_inst_vm_11:
+    .. _fig_15_11:
 
     .. only:: html
 
@@ -367,7 +367,7 @@ To import the |VM| image, do the following steps in Virtual Box.
             :width: 60%
             :align: center
 
-            Figure 11
+            Fig. 15.11
             Boot the VM
 
     .. only:: latex
@@ -451,9 +451,9 @@ Importing the example scripts is easy.
 1.  Go to the desktop, and double-click on the Eclipse icon.
 #.  Go to **File** menu, and select **New** and then **Other**.
 
-    See :ref:`Starting Eclipse figure <ad_inst_vm_12>`.
+    See :ref:`Fig. 15.12 <fig_15_12>`.
 
-    .. _ad_inst_vm_12:
+    .. _fig_15_12:
 
     .. only:: html
 
@@ -461,7 +461,7 @@ Importing the example scripts is easy.
             :width: 60%
             :align: center
 
-            Figure 12
+            Fig. 15.12
             Starting Eclipse
 
     .. only:: latex
@@ -473,9 +473,9 @@ Importing the example scripts is easy.
 
 #.  After selecting **File**->**New**->**Other**, look for the PyDev folder
     and expand the list, then select **PyDev Project** then click **Next**.
-    See :ref:`New PyDev Project figure <ad_inst_vm_13>`.
+    See :ref:`Fig. 15.13 <fig_15_13>`.
 
-    .. _ad_inst_vm_13:
+    .. _fig_15_13:
 
     .. only:: html
 
@@ -483,7 +483,7 @@ Importing the example scripts is easy.
             :width: 60%
             :align: center
 
-            Figure 13
+            Fig. 15.13
             New PyDev Project
 
     .. only:: latex
@@ -499,9 +499,9 @@ Importing the example scripts is easy.
     '/home/cloudera/examples'.
     Everything else can be left with the default values.
     Click **Next** when you are done.
-    See :ref:`Enter Working Path figure <ad_inst_vm_14>`.
+    See :ref:`Fig. 15.14 <fig_15_14>`.
 
-    .. _ad_inst_vm_14:
+    .. _fig_15_14:
 
     .. only:: html
 
@@ -509,7 +509,7 @@ Importing the example scripts is easy.
             :width: 60%
             :align: center
 
-            Figure 14
+            Fig. 15.14
             Enter Working Path
 
     .. only:: latex
@@ -521,9 +521,9 @@ Importing the example scripts is easy.
 
 #.  You should now be able to see all the example scripts on the left hand
     pane.
-    See :ref:`Examining Example Scripts figure <ad_inst_vm_15>`.
+    See :ref:`Fig. 15.15 <fig_15_15>`.
 
-    .. _ad_inst_vm_15:
+    .. _fig_15_15:
 
     .. only:: html
 
@@ -531,7 +531,7 @@ Importing the example scripts is easy.
             :width: 60%
             :align: center
 
-            Figure 15
+            Fig. 15.15
             Examining Example Scripts
 
     .. only:: latex

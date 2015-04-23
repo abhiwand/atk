@@ -1,5 +1,6 @@
 .. index::
-    single: K-clique percolation, community detection
+    single: k-clique percolation
+    single: community detection
 
 ====================
 K-Clique Percolation
@@ -25,6 +26,9 @@ percolation method first proposed by Palla et. al. [1]_ that has been widely
 used in many contexts.
 Other community detection algorithms may be offered in future releases of the
 |IAT|.
+
+.. index::
+    pair: algorithm; k-clique percolation
 
 K-Clique Percolation
 ====================

@@ -1342,14 +1342,16 @@ API section on :ref:`titan_graph`.
 
 .. _Graph_Analytics:
 
+.. index::
+    pair: analytics; graph
 ---------------
 Graph Analytics
 ---------------
 
-* `ClCo`_
-* `CC`_
-* `DC`_
-* `PR`_
+*   `Clustering Coefficients <ClCo>`_
+*   `Connected Components <CC>`_
+*   `Degree Calculation <DC>`_
+*   `PageRank <PR>`_
 
 .. _ClCo:
 .. include:: ds_gaal_clco.inc

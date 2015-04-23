@@ -1,5 +1,7 @@
 .. index::
-    single: matrix factorization, CGD, conjugate gradient descent
+    single: matrix factorization
+    single: CGD
+    single: conjugate gradient descent
 
 Matrix Factorization based on Conjugate Gradient Descent (CGD)
 ==============================================================
@@ -27,6 +29,9 @@ This factorization method uses the conjugate gradient method for its
 optimization subroutine.
 For more on conjugate gradient descent in general, see:
 http://en.wikipedia.org/wiki/Conjugate_gradient_method.
+
+.. index::
+    pair: algorithm; Conjugate Gradient Descent
 
 The Mathematics of Matrix Factorization via CGD
 -----------------------------------------------

@@ -1,5 +1,7 @@
 .. index::
-    single: topic modeling, latent dirichlet allocation, LDA
+    single: topic modeling
+    single: latent dirichlet allocation
+    single: LDA
 
 Topic Modeling with Latent Dirichlet Allocation
 ===============================================
@@ -14,6 +16,9 @@ work of David Blei and Michael Jordan, who are credited with creating and
 popularizing topic modeling in the machine learning community.
 In particular, Blei's 2011 paper provides a nice introduction,
 and is freely-available online [#LDA1]_ .
+
+.. index::
+    pair: algorithm; LDA
 
 |LDA| is a commonly-used algorithm for topic modeling, but, more broadly,
 is considered a dimensionality reduction technique.
