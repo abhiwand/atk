@@ -1,5 +1,8 @@
 .. index::
-    single: loopy belief propagation, LBP, belief propagation, message passing
+    single: loopy belief propagation
+    single: LBP
+    single: belief propagation
+    single: message passing
 
 Loopy Belief Propagation (LBP)
 ==============================

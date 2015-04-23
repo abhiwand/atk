@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.component.{Archive, Boot}
+import com.intel.intelanalytics.component.{ Archive, Boot }
 
 /**
  * Load command plugin

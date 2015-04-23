@@ -81,11 +81,11 @@ of slave nodes in the cluster (``[01-07]`` for an 8 node cluster,
 
 Hit *Search*, and make sure that the computer detects as many hosts as there
 are nodes in the cluster.
-See :ref:`Figure "Specify hosts" <ad_inst_cloudera_04>` for examples.
+See :ref:`Fig. 11.1 <fig_11_01>` for examples.
 If all correct hosts are selected, hit *Continue*.
 Otherwise, click *New Search*.
 
-.. _ad_inst_cloudera_04:
+.. _fig_11_01:
 
 .. only:: html
 
@@ -93,7 +93,7 @@ Otherwise, click *New Search*.
         :width: 60%
         :align: center
 
-        Figure 1
+        Fig. 11.1
         Specify hosts for your CDH cluster installation.
 
 .. only:: latex
@@ -114,10 +114,10 @@ Otherwise, click *New Search*.
 The repository/proxy information should populate the parcel list in a minute.
 If not, click on *More Options* field to reconfigure.
 Make sure ``CDH-5.3.1-1.cdh5.3.1.p).3`` is selected under *Remote Parcel
-Repository* (see :ref:`Select Repository <ad_inst_cloudera_05>`) and then hit
+Repository* (see :ref:`Fig. 11.2 <fig_11_02>`) and then hit
 *Continue*.
 
-.. _ad_inst_cloudera_05:
+.. _fig_11_02:
 
 .. only:: html
 
@@ -125,7 +125,7 @@ Repository* (see :ref:`Select Repository <ad_inst_cloudera_05>`) and then hit
         :width: 60%
         :align: center
 
-        Figure 2
+        Fig. 11.2
         Select Repository
 
 .. only:: latex
@@ -156,13 +156,13 @@ Cluster Installation
 --------------------
 The next couple of windows are just progress bars.
 If any of them fail and turn red, sometimes just hitting *Retry* will fix the
-problem nodes. See :ref:`Cluster Installation Figure <ad_inst_cloudera_07>`.
+problem nodes. See :ref:`Fig 11.3 <fig_11_03>`.
 
 Hit *Continue* button when it lights up after the progress bar fills.
 You will be greeted by more progress bars.
 Wait and hit *Continue* when they finish too.
 
-.. _ad_inst_cloudera_07:
+.. _fig_11_03:
 
 .. only:: html
 
@@ -170,7 +170,7 @@ Wait and hit *Continue* when they finish too.
         :width: 60%
         :align: center
 
-        Figure 3
+        Fig. 11.3
         Cluster Installation
 
 .. only:: latex
@@ -188,11 +188,11 @@ Host Configuration
 ------------------
 When the cluster installation finishes, look for any critical errors.
 Take note of anything that doesn't have a green check mark next to it and
-resolve the issue. See :ref:`Host Configuration Figure <ad_inst_cloudera_08>`.
+resolve the issue. See :ref:`Fig. 11.4 <fig_11_4>`.
 
 Click *Finish*
 
-.. _ad_inst_cloudera_08:
+.. _fig_11_4:
 
 .. only:: html
 
@@ -200,7 +200,7 @@ Click *Finish*
         :width: 60%
         :align: center
 
-        Figure 4
+        Fig. 11.4
         Host Configuration
 
 .. only:: latex
@@ -232,10 +232,10 @@ In the drop-down menu, mark the following boxes:
 * YARN (MR2 Included)
 * ZooKeeper
 
-See :ref:`ad_inst_cloudera_09`.
+See :ref:`Fig. 11.5 <fig_11_05>`.
 Click *Continue*.
 
-.. _ad_inst_cloudera_09:
+.. _fig_11_05:
 
 .. only:: html
 
@@ -243,7 +243,7 @@ Click *Continue*.
         :width: 60%
         :align: center
 
-        Figure 5
+        Fig. 11.5
         Custom CDH Services
 
 .. only:: latex
@@ -275,7 +275,7 @@ but there are four that need to be changed.
 
 Leave all other fields in their default values and click *Continue*.
 
-Changes to make near the top:
+See :ref:`Fig. 11.6 <fig_11_06>` for changes to make near the top:
 
 .. only:: html
 
@@ -283,7 +283,7 @@ Changes to make near the top:
         :width: 60%
         :align: center
 
-        Figure 6
+        Fig. 11.6
         Hbase
 
 .. only:: latex
@@ -293,7 +293,7 @@ Changes to make near the top:
 
         Hbase
 
-Changes to make near the bottom:
+See :ref:`Fig. 11.7 <fig_11_07>` for changes to make near the bottom:
 
 .. only:: html
 
@@ -301,7 +301,7 @@ Changes to make near the bottom:
         :width: 40%
         :align: center
 
-        Figure 7
+        Fig. 11.7
         Yarn
 
 .. only:: latex
@@ -323,10 +323,10 @@ system on which Cloudera Manager is installed.
 If not, fill that in.
 
 Click *Test Connection*.
-See :ref:`ad_inst_cloudera_11`.
+See :ref:`Fig 11.8 <fig_11_08>`.
 If successful, click *Continue*.
 
-.. _ad_inst_cloudera_11:
+.. _fig_11_08:
 
 .. only:: html
 
@@ -334,7 +334,7 @@ If successful, click *Continue*.
         :width: 60%
         :align: center
 
-        Figure 8
+        Fig. 11.8
         Database Setup
 
 .. only:: latex
@@ -366,7 +366,7 @@ The next page requires no interaction. Just more loading bars.
 #.  In the Cloudera Manager page, change the name of the cluster by hitting the
     drop down arrow to the right of the *Cluster 1* heading then clicking
     *Rename Cluster*.
-    See :ref:`Finishing up figure <ad_inst_cloudera_13>`.
+    See :ref:`Fig. 11.9 <fig_11_09>`.
 #.  In the Cloudera Manager, hit the admin drop-down at the top right corner of
     the screen and select *Change Password*.
     Change the password as desired.
@@ -378,7 +378,7 @@ The next page requires no interaction. Just more loading bars.
         with the capacity to store lots of temporaty data (the /mnt directory
         for virtual clusers).
 
-.. _ad_inst_cloudera_13:
+.. _fig_11_09:
 
 .. only:: html
 
@@ -386,7 +386,7 @@ The next page requires no interaction. Just more loading bars.
         :width: 40%
         :align: center
 
-        Figure 9
+        Fig. 11.9
         Finishing Up In Cloudera Manager
 
 .. only:: latex
