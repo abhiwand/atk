@@ -1348,21 +1348,21 @@ API section on :ref:`titan_graph`.
 Graph Analytics
 ---------------
 
-*   `Clustering Coefficients <ClCo>`_
-*   `Connected Components <CC>`_
-*   `Degree Calculation <DC>`_
-*   `PageRank <PR>`_
+*   `Clustering Coefficients`_
+*   `Connected Components (CC)`_
+*   `Degree Calculation`_
+*   `PageRank (PR)`_
 
-.. _ClCo:
+.. _Clustering Coefficients:
 .. include:: ds_gaal_clco.inc
 
-.. _CC:
+.. _Connected Components (CC):
 .. include:: ds_gaal_cc.inc
 
-.. _DC:
+.. _Degree Calculation:
 .. include:: ds_gaal_dc.inc
 
-.. _PR:
+.. _PageRank (PR):
 .. include:: ds_gaal_pr.inc
 
 .. toctree::
