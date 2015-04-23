@@ -7,6 +7,7 @@ Package Installation
 
 .. contents::
     :local:
+    :backlinks: none
 
 ------------
 Introduction

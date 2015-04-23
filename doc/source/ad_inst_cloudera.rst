@@ -4,6 +4,7 @@ Cloudera Hadoop 5 Configuration
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 This guide discusses the process of configuring Cloudera Hadoop 5
 on a physical or virtual cluster.

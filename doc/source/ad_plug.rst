@@ -10,6 +10,7 @@ Plugin Authoring Guide
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 ------------
 Introduction

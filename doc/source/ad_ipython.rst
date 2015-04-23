@@ -6,6 +6,7 @@ IPython Setup Instructions
 
 .. contents:: Table Of Contents
     :local:
+    :backlinks: none
 
 ------------
 Introduction

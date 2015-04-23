@@ -4,6 +4,7 @@ Models
 ======
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 
 Global Methods

@@ -4,6 +4,7 @@ Technical Summary
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 --------
 Overview
