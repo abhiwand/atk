@@ -34,5 +34,3 @@ commit 06aee68eee188e14b34c781b828307450130f5d0 Merge: 5db0b28 2165283 Author: r
 %files
 
 /usr/lib/intelanalytics/graphbuilder/lib
-
-/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar
