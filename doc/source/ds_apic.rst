@@ -6,6 +6,7 @@ Python API
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 .. toctree::
     :maxdepth: 3

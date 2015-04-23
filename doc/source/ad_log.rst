@@ -6,6 +6,7 @@
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 ------------
 Introduction

@@ -7,6 +7,7 @@ Virtual Machines
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 ------------
 Introduction
