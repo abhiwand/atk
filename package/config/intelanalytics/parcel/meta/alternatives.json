@@ -11,12 +11,6 @@
       "priority": 10,
       "isDirectory": false
     },
-    "intel-analytics-graphbuilder-lib": {
-      "destination": "/usr/lib/atk/ispark-deps.jar",
-      "source": "usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar",
-      "priority": 10,
-      "isDirectory": false
-    },
     "intel-analytics-logs": {
       "destination": "/var/log/atk",
       "source": "log",

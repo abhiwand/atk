@@ -55,8 +55,6 @@ class TitanVertexWriterRdd(prev: RDD[GBVertex],
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GbIdToPhysicalId] = {
 
-    EnvironmentValidator.validateISparkDepsAvailable
-
     val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
