@@ -6,10 +6,7 @@ The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 Parameters
 ----------
 output_property : str
-    The name of output property to be added to vertex/edge upon completion.
-output_graph_name : str
-    The name of output graph to be created (original graph will be left
-    unmodified).
+    The name of output property to be added to the frame upon completion.
 input_edge_labels : list of str (optional)
     The name of edge labels to be considered for pagerank.
     Default is all edges are considered.
@@ -33,9 +30,17 @@ reset_probability : float (optional)
 
 Returns
 -------
-str : Name of graph
-    Name of the output graph.
-    Call get_graph(graph) to get the handle to the new graph.
+dict : Edge & vertex dictionary
+    dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame)))
+    Dictionary containing a dictionary of labeled vertices and labeled edges.
+    For the vertex_dictionary the vertex type is the key and the corresponding
+    vertex's frame with a new column storing the page rank value for the vertex
+    Call vertex_dictionary['label'] to get the handle to frame whose vertex type
+    is label.
+    For the edge_dictionary the edge type is the key and the corresponding
+    edge's frame with a new column storing the page rank value for the edge
+    Call edge_dictionary['label'] to get the handle to frame whose edge type
+    is label.
 
 Examples
 --------
@@ -43,20 +48,56 @@ Examples
 
     .. code::
 
-        >>> g.graphx_pagerank(output_property = "pr_result", output_graph_name = "pr_graph")
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR", max_iterations = 1, convergence_tolerance = 0.001)
 
 .. only:: latex
 
     .. code::
 
-        >>> g.graphx_pagerank(output_property = "pr_result",
-        ... output_graph_name = "pr_graph")
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR",
+        ... max_iterations = 1, convergence_tolerance = 0.001)
 
 The expected output is like this:
 
 .. code::
 
-    {u'graph': u'pr_graph'}
+    {'vertex_dictionary': {u'a': Frame "None"
+    row_count = 29
+    schema =
+      _vid:int64
+      _label:unicode
+      node:int32
+      PR:float64, u'b': Frame "None"
+    row_count = 17437
+    schema =
+      _vid:int64
+      _label:unicode
+      node:int32
+      PR:float64}, 'edge_dictionary': {u'e1': Frame "None"
+    row_count = 19265
+    schema =
+      _eid:int64
+      _src_vid:int64
+      _dest_vid:int64
+      _label:unicode
+      PR:float64, u'e2': Frame "None"
+    row_count = 19265
+    schema =
+      _eid:int64
+      _src_vid:int64
+      _dest_vid:int64
+      _label:unicode
+      PR:float64}}
 
 To query:
 
@@ -64,47 +105,78 @@ To query:
 
     .. code::
 
-        >>> pr_graph = get_graph('pr_graph')
-        >>> pr_graph.query.gremlin("g.V [0..4]")
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR", max_iterations = 1, convergence_tolerance = 0.001)
 
-        {u'results':[{u'_id':4,u'_type':u'vertex',u'pr_result':0.787226,u'titanPhysicalId':133200148,u'user_id':7665,u'vertex_type':u'L'},{u'_id':8,u'_type':u'vertex',u'pr_result':1.284043,u'movie_id':7080,u'titanPhysicalId':85200356,u'vertex_type':u'R'},{u'_id':12,u'_type':u'vertex',u'pr_result':0.186911,u'movie_id':8904,u'titanPhysicalId':15600404,u'vertex_type':u'R'},{u'_id':16,u'_type':u'vertex',u'pr_result':0.384138,u'movie_id':6836,u'titanPhysicalId':105600396,u'vertex_type': u'R'},{u'_id':20,u'_type':u'vertex',u'pr_result':0.822977,u'titanPhysicalId':68400136,u'user_id':3223,u'vertex_type':u'L'}],u'run_time_seconds':1.489}
+        {'vertex_dictionary': {u'a': Frame "None"
+        row_count = 29
+        schema =
+          _vid:int64
+          _label:unicode
+          node:int32
+          PR:float64, u'b': Frame "None"
+        row_count = 17437
+        schema =
+          _vid:int64
+          _label:unicode
+          node:int32
+          PR:float64}, 'edge_dictionary': {u'e1': Frame "None"
+        row_count = 19265
+        schema =
+          _eid:int64
+          _src_vid:int64
+          _dest_vid:int64
+          _label:unicode
+          PR:float64, u'e2': Frame "None"
+        row_count = 19265
+        schema =
+          _eid:int64
+          _src_vid:int64
+          _dest_vid:int64
+          _label:unicode
+          PR:float64}}
 
 .. only:: latex
 
     .. code::
 
-        >>> pr_graph = get_graph('pr_graph')
-        >>> pr_graph.query.gremlin("g.V [0..4]")
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR",
+        ... max_iterations = 1, convergence_tolerance = 0.001)
 
-        {u'results':[
-           {u'_id':4,
-            u'_type':u'vertex',
-            u'pr_result':0.787226,
-            u'titanPhysicalId':133200148,
-            u'user_id':7665,
-            u'vertex_type':u'L'},
-           {u'_id':8,
-            u'_type':u'vertex',
-            u'pr_result':1.284043,
-            u'movie_id':7080,
-            u'titanPhysicalId':85200356,
-            u'vertex_type':u'R'},
-           {u'_id':12,
-            u'_type':u'vertex',
-            u'pr_result':0.186911,
-            u'movie_id':8904,
-            u'titanPhysicalId':15600404,
-            u'vertex_type':u'R'},
-           {u'_id':16,
-            u'_type':u'vertex',
-            u'pr_result':0.384138,
-            u'movie_id':6836,
-            u'titanPhysicalId':105600396,
-            u'vertex_type': u'R'},
-           {u'_id':20,
-            u'_type':u'vertex',
-            u'pr_result':0.822977,
-            u'titanPhysicalId':68400136,
-            u'user_id':3223,
-            u'vertex_type':u'L'}],
-           u'run_time_seconds':1.489}
+
+        {'vertex_dictionary': {u'a': Frame "None"
+        row_count = 29
+        schema =
+          _vid:int64
+          _label:unicode
+          node:int32
+          PR:float64, u'b': Frame "None"
+        row_count = 17437
+        schema =
+          _vid:int64
+          _label:unicode
+          node:int32
+          PR:float64}, 'edge_dictionary': {u'e1': Frame "None"
+        row_count = 19265
+        schema =
+          _eid:int64
+          _src_vid:int64
+          _dest_vid:int64
+          _label:unicode
+          PR:float64, u'e2': Frame "None"
+        row_count = 19265
+        schema =
+          _eid:int64
+          _src_vid:int64
+          _dest_vid:int64
+          _label:unicode
+          PR:float64}}
