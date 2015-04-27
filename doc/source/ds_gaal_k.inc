@@ -2,7 +2,6 @@
     single: k-clique percolation
     single: community detection
 
-====================
 K-Clique Percolation
 ====================
 
@@ -22,7 +21,7 @@ other – for example, a community of friends in a social network or the
 “community” of highly interacting proteins of a cellular process.
 
 The |IAT| version |version| provides community detection using the k-Clique
-percolation method first proposed by Palla et. al. [1]_ that has been widely
+percolation method first proposed by Palla et. al. [K1]_ that has been widely
 used in many contexts.
 Other community detection algorithms may be offered in future releases of the
 |IAT|.
@@ -58,7 +57,7 @@ Distributed Implementation of K-Clique Community Detection
 
 The implementation of k-clique community detection in |IAT| is a fully
 distributed Apache Spark based implementation that follows the map-reduce
-algorithm proposed in Varamesh et. al. [2]_ .
+algorithm proposed in Varamesh et. al. [K2]_ .
 
 It has the following steps:
 
@@ -73,68 +72,6 @@ It has the following steps:
     down to the base graph, providing each vertex with the set of k-clique
     communities to which it belongs.
 
-Usage:
-    Syntax::
+See :ref:`API <api_kmeans>` for implementation details.
 
-        graph.ml.kclique_percolation (
-                                     cliqueSize,
-                                     communityPropertyDefaultLabel
-                                     )
-
-    Arguments:
-
-        cliqueSize
-
-            Parameter determining clique-size (the number :math:`k`) used to
-            determine communities.
-            Must be at least 1.
-            Large values of cliqueSize result in fewer, smaller communities
-            that are more connected.
-
-        communityPropertyDefaultLabel
-
-            Name of the community property of vertex that will be
-            updated/created in the input graph.
-
-The algorithm updates the input graph vertex with updated property named in
-“communityPropertyDefaultLabel”, mentioned in the argument list.
-
-    Example::
-
-        import intelanalytics as ia
-        ia.connect()
-        dataset = r"datasets/kclique_edges.csv"
-        schema = [("source", int64), ("target", int64)]
-        csvfile = ia.CsvFile(dataset, schema)
-        my_frame = ia.Frame(csvfile)
-
-        my_graph = ia.Graph())
-        my_graph.name = "mygraph"
-        source_vertex_type = my_graph.define_vertex_type("source")
-        target_vertex_type = my_graph.define_vertex_type("target")
-        direction_edge_type = my_graph.define_edge_type("direction", \
-            "source", "target", directed=True)
-
-        my_graph.vertices['source'].add_vertices(my_frame, 'source')
-        my_graph.vertices['target'].add_vertices(my_frame, 'target')
-        my_graph.edges['direction'].add_edges(my_frame, 'source', 'target', \
-            is_directed=True)
-        my_titan_graph = my_graph.export_to_titan("mytitangraph"))
-        my_titan_graph.ml.kclique_percolation(cliqueSize = 3, \
-            communityPropertyDefaultLabel = "Community")
-
-.. rubric:: Footnotes
-
-.. [1]
-    G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
-    community structure of complex networks in nature and society”.
-    Nature, 435:814, 2005 (
-    See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
-
-.. [2]
-    Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
-    "Distributed Clique Percolation based community detection on social
-    networks using MapReduce,"
-    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol.,
-    no., pp.478,483, 28-30 May 2013
 
