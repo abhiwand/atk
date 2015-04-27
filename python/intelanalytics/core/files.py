@@ -32,34 +32,49 @@ class CsvFile(DataFile):
     """
     Define a CSV file.
 
+
     Parameters
     ----------
     file_name : str
-        Name of data input file.
-        File must be in the Hadoop file system.
-        Relative paths are interpreted relative to the path set in
-        ``intel.analytics.engine.fs.root`` configuration.
-        Absolute paths (beginning with ``hdfs://...``, for example) are also
-        supported.
+        The name of the file containing data in a CSV format.
+        The file must be in the Hadoop file system.
+        Relative paths are interpreted as being relative to the path set in
+        the application configuration file.
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
     schema : list of tuples of the form (string, type)
-        Description of the fields of data.
-        It is a list of tuples which describe each field, (field name, field
-        type), where the field name is a string, and file is a supported type,
-        (See data_types from the iatypes module).
-        Unicode characters should not be used in the column name.
+        A description of the fields of data in the form of a list of tuples,
+        which describe each field.
+        Each tuple is in the form (name, type), where the name is a string,
+        and type is a supported data type,
+        Upon import of the data, the name becomes the name of a column, so the
+        names must be unique and follow column naming rules.
+        For a list of valid data types, see :ref:`api_datatypes`.
         The type ``ignore`` may also be used if the field should be ignored on
         loads.
     delimiter : str (optional)
-        String indicator of the delimiter for the fields
+        A string which indicates the separation of the data fields.
+        This is usually a single character and could be a non-visible character
+        such as a tab.
+        This string must be enclosed by quotes in the command declaration, for
+        example ``","``.
     skip_header_lines : int (optional)
-        Indicates numbers of lines to skip before parsing records.
+        An integer for the numbers of lines to skip before parsing records.
+
 
     Returns
     -------
     class : CsvFile object
         A class which holds both the name and schema of a CSV file.
+
+
+    Notes
+    -----
+    Unicode characters should not be used in the column name, because some
+    functions do not support them and will not operate properly.
+
 
     Examples
     --------
