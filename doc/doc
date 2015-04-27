@@ -464,14 +464,22 @@ function server_start() {
     # $4 = LogFile
 
     # Start the server
-    log_step "nohup bin/api-server.sh" $2 $4
+    echo -n "nohup bin/api-server.sh"
+    log_step "nohup bin/api-server.sh" "No" $4
     nohup bin/api-server.sh < /dev/null > $3 2>&1 &
     Return=$?
     if [ "$Return" != "0" ]; then
+        echo
         Err "nohup bin/api-server.sh" $1 $2 $3 $4
         Return=$?
     else
-        sleep 10
+        let "DURATION = 10"
+        until [[ $DURATION -lt 0 ]]; do
+            sleep 1
+            echo -n "."
+            let "DURATION -= 1"
+        done
+        echo
     fi
     return $Return
 }
