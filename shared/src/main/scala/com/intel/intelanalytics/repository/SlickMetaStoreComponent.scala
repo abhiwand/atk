@@ -373,14 +373,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     /** Initialize this reference table with all possible values */
     def initializeValues(implicit session: Session) = {
-      insert(Status(1, "INIT", "Initial Status: currently building or initializing", new DateTime(), new DateTime()))
-      insert(Status(2, "ACTIVE", "Active and can be interacted with", new DateTime(), new DateTime()))
-      insert(Status(3, "INCOMPLETE", "Partially created: failure occurred during construction.", new DateTime(), new DateTime()))
-      insert(Status(4, "DELETED", "Deleted but can still be un-deleted, no action has yet been taken on disk", new DateTime(), new DateTime()))
-      insert(Status(5, "DELETE_FINAL", "Underlying storage has been reclaimed, no un-delete is possible", new DateTime(), new DateTime()))
-      insert(Status(6, "LIVE", "Active and used.", new DateTime(), new DateTime()))
-      insert(Status(7, "WEAKLY_LIVE", "Active but unused. The data on disk may be deleted but can be recreated", new DateTime(), new DateTime()))
-      insert(Status(8, "DEAD", "INACTIVE AND UNUSED, the data on disk will be deleted but can be recreated", new DateTime(), new DateTime()))
+      insert(Status(1, "ACTIVE", "Active and can be interacted with", new DateTime(), new DateTime()))
+      insert(Status(2, "DELETED",
+        "User has marked as Deleted but can still be un-deleted by interacting with, no action has yet been taken on disk",
+        new DateTime(), new DateTime()))
+      insert(Status(3, "DELETED_FINAL", "Underlying storage has been reclaimed, no un-delete is possible", new DateTime(), new DateTime()))
     }
 
     /** execute DDL to drop the underlying table - for unit testing */
@@ -585,8 +582,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @return the entity
      */
     override def updateDataDeleted(frame: FrameEntity)(implicit session: Session): Try[FrameEntity] = Try {
-      val cols = frames.filter(_.id === frame.id).map(f => (f.statusId, f.materializedOn, f.materializationComplete, f.modifiedOn))
-      cols.update((Status.Dead, None, None, new DateTime))
+      val cols = frames.filter(_.id === frame.id).map(f => (f.name, f.statusId, f.materializedOn, f.materializationComplete, f.modifiedOn))
+      cols.update((None, Status.Deleted_Final, None, None, new DateTime))
       frames.where(_.id === frame.id).firstOption.get
     }
 
@@ -598,10 +595,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[FrameEntity] = {
       val oldestDate = DateTime.now.minus(age)
       val list = (for (
-        f <- frames; if f.name.isNull &&
-          f.statusId =!= Status.Dead &&
-          f.statusId =!= Status.Deleted &&
-          f.lastReadDate < oldestDate
+        f <- frames; if (f.name.isNull &&
+          f.statusId =!= Status.Deleted_Final &&
+          f.lastReadDate < oldestDate) || f.statusId === Status.Deleted
       ) yield f).list
       list.filter(f => !inLiveGraph(f))
     }
@@ -626,18 +622,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param frame frame in question
      */
     override def isLive(frame: FrameEntity): Boolean = {
-      frame.name.isDefined && frame.status != Status.Dead && frame.status != Status.Deleted
-    }
-
-    /**
-     * Return a list of entities ready to delete metadata
-     * @param age the length of time in milliseconds for the newest possible record to be deleted
-     * @param session current session
-     */
-    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[FrameEntity] = {
-      val oldestDate = DateTime.now.minus(age)
-      val list = (for (f <- frames; if f.name.isNull && f.statusId === Status.Dead && f.lastReadDate < oldestDate) yield f).list
-      list.filter(f => !inLiveGraph(f) && !hasLiveChildren(f.id))
+      frame.name.isDefined && frame.status == Status.Active
     }
 
     /**
@@ -647,21 +632,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     def hasLiveChildren(id: Long)(implicit session: Session): Boolean = {
       val list = frames.where(f => f.parentId === id &&
-        f.statusId =!= Status.Dead &&
-        f.statusId =!= Status.Deleted).list
+        f.statusId =!= Status.Deleted_Final).list
       list.filter(f => !hasLiveChildren(f.id)).length > 0
-    }
-
-    /**
-     * update and mark an entity as having it's metadata deleted
-     * @param frame entity to be deleted
-     * @param session the user session
-     * @return the entity marked as deleted
-     */
-    override def updateMetaDataDeleted(frame: FrameEntity)(implicit session: Session): Try[FrameEntity] = Try {
-      val cols = frames.filter(_.id === frame.id).map(f => (f.statusId, f.materializedOn, f.materializationComplete, f.modifiedOn))
-      cols.update((Status.Deleted, None, None, new DateTime))
-      frames.where(_.id === frame.id).firstOption.get
     }
 
     /**
@@ -681,6 +653,17 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def updateLastReadDate(entity: FrameEntity)(implicit session: Session): Try[FrameEntity] = Try {
       val columns = frames.filter(_.id === entity.id).map(f => (f.lastReadDate, f.statusId, f.modifiedOn))
       columns.update((new DateTime, Status.getNewStatusForRead(entity.status), new DateTime))
+      frames.where(_.id === entity.id).firstOption.get
+    }
+
+    /**
+     * update and mark an entity as being ready to delete in the next garbage collection execution
+     * @param entity enity that will be marked as deleted
+     * @param session user session
+     */
+    override def updateReadyToDelete(entity: FrameEntity)(implicit session: SlickMetaStoreComponent.this.type#Session): Try[FrameEntity] = Try {
+      val cols = frames.filter(_.id === entity.id).map(f => (f.name, f.statusId, f.modifiedOn))
+      cols.update((None, Status.Deleted, new DateTime))
       frames.where(_.id === entity.id).firstOption.get
     }
   }
@@ -1014,7 +997,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param g the graph in question
      */
     override def isLive(g: GraphEntity)(implicit session: Session): Boolean = {
-      val live = g.name.isDefined && g.statusId != Status.Dead && g.statusId != Status.Deleted
+      val live = g.name.isDefined && g.statusId == Status.Active
       if (live) {
         true
       }
@@ -1032,35 +1015,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[GraphEntity] = {
       val oldestDate = DateTime.now.minus(age)
       val list = (for (
-        g <- graphs; if g.name.isNull &&
-          g.statusId =!= Status.Dead &&
-          g.statusId =!= Status.Deleted &&
-          g.lastReadDate < oldestDate
+        g <- graphs; if (g.name.isNull &&
+          g.statusId =!= Status.Deleted_Final &&
+          g.lastReadDate < oldestDate) || g.statusId === Status.Deleted
       ) yield g).list
       list.filter(g => !isLive(g))
-    }
-
-    /**
-     * update and mark an entity as having it's metadata deleted
-     * @param entity entity to be deleted
-     * @param session the user session
-     * @return the entity marked as deleted
-     */
-    override def updateMetaDataDeleted(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
-      graphs.filter(_.id === entity.id)
-        .map(g => (g.statusId, g.modifiedOn))
-        .update((Status.Deleted, new DateTime))
-      graphs.where(_.id === entity.id).firstOption.get
-    }
-
-    /**
-     * Return a list of entities ready to delete metadata
-     * @param age the length of time in milliseconds for the newest possible record to be deleted
-     * @param session current session
-     */
-    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[GraphEntity] = {
-      val oldestDate = DateTime.now.minus(age)
-      (for (g <- graphs; if g.name.isNull && g.statusId === Status.Dead && g.lastReadDate < oldestDate) yield g).list
     }
 
     /**
@@ -1071,8 +1030,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def updateDataDeleted(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
       graphs.filter(_.id === entity.id)
-        .map(g => (g.statusId, g.modifiedOn))
-        .update((Status.Dead, new DateTime))
+        .map(g => (g.name, g.statusId, g.modifiedOn))
+        .update((None, Status.Deleted_Final, new DateTime))
       graphs.where(_.id === entity.id).firstOption.get
     }
 
@@ -1085,6 +1044,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.filter(_.id === entity.id)
         .map(g => (g.lastReadDate, g.statusId, g.modifiedOn))
         .update((new DateTime, Status.getNewStatusForRead(entity.statusId), new DateTime))
+      graphs.where(_.id === entity.id).firstOption.get
+    }
+
+    /**
+     * update and mark an entity as being ready to delete in the next garbage collection execution
+     * @param entity entity that will be marked as deleted
+     * @param session user session
+     */
+    override def updateReadyToDelete(entity: GraphEntity)(implicit session: Session): Try[GraphEntity] = Try {
+      graphs.filter(_.id === entity.id)
+        .map(g => (g.name, g.statusId, g.modifiedOn))
+        .update((None, Status.Deleted, new DateTime))
       graphs.where(_.id === entity.id).firstOption.get
     }
   }
@@ -1181,34 +1152,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def listReadyForDeletion(age: Long)(implicit session: Session): Seq[ModelEntity] = {
       val oldestDate = DateTime.now.minus(age)
       (for (
-        m <- models; if m.name.isNull &&
-          m.statusId =!= Status.Dead &&
-          m.statusId =!= Status.Deleted &&
-          m.lastReadDate < oldestDate
+        m <- models; if (m.name.isNull &&
+          m.statusId =!= Status.Deleted_Final &&
+          m.lastReadDate < oldestDate) || m.statusId === Status.Deleted
       ) yield m).list
-    }
-
-    /**
-     * update and mark an entity as having it's metadata deleted
-     * @param entity entity to be deleted
-     * @param session the user session
-     * @return the entity marked as deleted
-     */
-    override def updateMetaDataDeleted(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
-      models.filter(_.id === entity.id)
-        .map(m => (m.statusId, m.modifiedOn))
-        .update((Status.Deleted, new DateTime))
-      models.where(_.id === entity.id).firstOption.get
-    }
-
-    /**
-     * Return a list of entities ready to delete metadata
-     * @param age the length of time in milliseconds for the newest possible record to be deleted
-     * @param session current session
-     */
-    override def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[ModelEntity] = {
-      val oldestDate = DateTime.now.minus(age)
-      (for (m <- models; if m.name.isNull && m.statusId === Status.Dead && m.lastReadDate < oldestDate) yield m).list
     }
 
     /**
@@ -1219,8 +1166,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def updateDataDeleted(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
       models.filter(_.id === entity.id)
-        .map(m => (m.statusId, m.modifiedOn))
-        .update((Status.Dead, new DateTime))
+        .map(m => (m.name, m.statusId, m.modifiedOn))
+        .update((None, Status.Deleted_Final, new DateTime))
       models.where(_.id === entity.id).firstOption.get
     }
 
@@ -1233,6 +1180,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       models.filter(_.id === entity.id)
         .map(m => (m.lastReadDate, m.statusId, m.modifiedOn))
         .update((new DateTime, Status.getNewStatusForRead(entity.statusId), new DateTime))
+      models.where(_.id === entity.id).firstOption.get
+    }
+
+    /**
+     * update and mark an entity as being ready to delete in the next garbage collection execution
+     * @param entity entity that will be marked as deleted
+     * @param session user session
+     */
+    override def updateReadyToDelete(entity: ModelEntity)(implicit session: Session): Try[ModelEntity] = Try {
+      models.filter(_.id === entity.id)
+        .map(m => (m.name, m.statusId, m.modifiedOn))
+        .update((None, Status.Deleted, new DateTime))
       models.where(_.id === entity.id).firstOption.get
     }
   }

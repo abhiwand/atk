@@ -51,7 +51,7 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         frame2.get should not be null
         frame2.get.name shouldBe frameName
         frame2.get.description.get shouldBe frameDescription
-        frame2.get.status shouldBe 1
+        frame2.get.status shouldBe ActiveStatus
         frame2.get.createdOn should not be null
         frame2.get.modifiedOn should not be null
     }
@@ -120,69 +120,21 @@ class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame7 = frameRepo.insert(new DataFrameTemplate(None, None)).get
         frameRepo.update(frame7.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(seamlessLive.id)))
 
+        //should be in list. User has marked as ready to delete
+        val frame8 = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
+        frameRepo.update(frame8.copy(status = DeletedStatus))
+
+        // should not be in list. Has already been deleted
+        val frame9 = frameRepo.insert(new DataFrameTemplate(None, None)).get
+        frameRepo.update(frame9.copy(status = DeletedFinalStatus))
+
         val readyForDeletion = frameRepo.listReadyForDeletion(age)
         val idList = readyForDeletion.map(f => f.id).toList
         idList should contain(frame2.id)
         idList should contain(frame3.id)
         idList should contain(frame6.id)
-        readyForDeletion.length should be(3)
-    }
-  }
-
-  it should "return a list of frames ready to have their metadata deleted" in {
-    val frameRepo = slickMetaStoreComponent.metaStore.frameRepo
-    val graphRepo = slickMetaStoreComponent.metaStore.graphRepo
-    slickMetaStoreComponent.metaStore.withSession("frame-test") {
-      implicit session =>
-        val age = 10 * 24 * 60 * 60 * 1000 //10 days
-
-        val frameName = Some("frame_name")
-
-        // create the frames
-        // should not be in list too new
-        val frame = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame.copy(lastReadDate = new DateTime, status = 8))
-
-        //should not be in list old and wrong status
-        val frame2 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame2.copy(lastReadDate = new DateTime().minus(age * 2), status = 7))
-
-        //should be in list old and right status
-        val frame3 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame3.copy(lastReadDate = new DateTime().minus(age * 2), status = 8))
-
-        //should not be in list. it is already deleted
-        val frame4 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame4.copy(lastReadDate = new DateTime().minus(age * 2), status = 4))
-
-        //should not be in list. it is a parent of a living frame. see below
-        val frame5 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame5.copy(lastReadDate = new DateTime().minus(age * 2)))
-
-        //should not be in list. it is live
-        val frame6 = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
-        frameRepo.update(frame6.copy(lastReadDate = new DateTime().minus(age * 2), parent = Some(frame5.id)))
-
-        val seamlessWeak: GraphEntity = graphRepo.insert(new GraphTemplate(None)).get
-        val seamlessLive: GraphEntity = graphRepo.insert(new GraphTemplate(Some("liveGraph"))).get
-
-        //should not be in list. it is too new
-        val frame7 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame7.copy(lastReadDate = new DateTime(), graphId = Some(seamlessWeak.id), status = 8))
-
-        //should be in list. it is old and referenced by a weakly live graph
-        val frame8 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame8.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(seamlessWeak.id), status = 8))
-
-        //should not be in list. it is old but referenced by a live graph
-        val frame9 = frameRepo.insert(new DataFrameTemplate(None, None)).get
-        frameRepo.update(frame9.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(seamlessLive.id), status = 8))
-
-        val readyForDeletion = frameRepo.listReadyForMetaDataDeletion(age)
-        val idList = readyForDeletion.map(f => f.id).toList
-        idList should contain(frame3.id)
         idList should contain(frame8.id)
-        readyForDeletion.length should be(2)
+        readyForDeletion.length should be(4)
     }
   }
 }

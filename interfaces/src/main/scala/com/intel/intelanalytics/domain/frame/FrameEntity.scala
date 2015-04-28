@@ -136,7 +136,7 @@ case class FrameEntity(id: Long,
     // id will be auto-assigned on insert, initialize to zero
     copy(id = 0,
       name = None,
-      status = Status.Init,
+      status = Status.Active,
       schema = schema,
       rowCount = None,
       createdOn = new DateTime,

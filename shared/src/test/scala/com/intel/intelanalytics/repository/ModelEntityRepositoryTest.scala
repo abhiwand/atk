@@ -75,46 +75,19 @@ class ModelEntityRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val model3 = modelRepo.insert(new ModelTemplate(None, modelType)).get
         modelRepo.update(model3.copy(lastReadDate = new DateTime()))
 
+        //should  be in list as user marked it as deleted
+        val model5 = modelRepo.insert(new ModelTemplate(name, modelType)).get
+        modelRepo.update(model5.copy(statusId = DeletedStatus))
+
+        //should not be in list it has already been deleted
+        val model6 = modelRepo.insert(new ModelTemplate(name, modelType)).get
+        modelRepo.update(model6.copy(statusId = DeletedFinalStatus))
+
         val readyForDeletion = modelRepo.listReadyForDeletion(age)
-        readyForDeletion.length should be(1)
+        readyForDeletion.length should be(2)
         val idList = readyForDeletion.map(m => m.id).toList
         idList should contain(model1.id)
     }
-  }
-
-  it should "return a list of graphs ready to have their metadata deleted" in {
-    val modelRepo = slickMetaStoreComponent.metaStore.modelRepo
-    slickMetaStoreComponent.metaStore.withSession("model-test") {
-      implicit session =>
-        val age = 10 * 24 * 60 * 60 * 1000 //10 days
-
-        val name = Some("my_model")
-        val modelType = "model:logistic_regression"
-
-        // create graphs
-
-        //should be in list old and unnamed
-        val model1 = modelRepo.insert(new ModelTemplate(None, modelType)).get
-        modelRepo.update(model1.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 8))
-
-        //should not be in list. it is named
-        val model2 = modelRepo.insert(new ModelTemplate(name, modelType)).get
-        modelRepo.update(model2.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 8))
-
-        //should not be in list. it is too new
-        val model3 = modelRepo.insert(new ModelTemplate(None, modelType)).get
-        modelRepo.update(model3.copy(lastReadDate = new DateTime(), statusId = 8))
-
-        //should not be in list wrong status type
-        val model4 = modelRepo.insert(new ModelTemplate(None, modelType)).get
-        modelRepo.update(model4.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 4))
-
-        val readyForDeletion = modelRepo.listReadyForMetaDataDeletion(age)
-        readyForDeletion.length should be(1)
-        val idList = readyForDeletion.map(m => m.id).toList
-        idList should contain(model1.id)
-    }
-
   }
 
 }

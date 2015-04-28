@@ -46,25 +46,18 @@ trait GarbageCollectableRepository[Session, Entity <: HasId] extends ReadReposit
   def updateDataDeleted(entity: Entity)(implicit session: Session): Try[Entity]
 
   /**
-   * Return a list of entities ready to delete metadata
-   * @param age the length of time in milliseconds for the newest possible record to be deleted
-   * @param session current session
-   */
-  def listReadyForMetaDataDeletion(age: Long)(implicit session: Session): Seq[Entity]
-
-  /**
-   * update and mark an entity as having it's metadata deleted
-   * @param entity entity to be deleted
-   * @param session the user session
-   * @return the entity marked as deleted
-   */
-  def updateMetaDataDeleted(entity: Entity)(implicit session: Session): Try[Entity]
-
-  /**
    * update the last read data of an entity if it has been marked as deleted change it's status
    * @param entity entity to be updated
    * @param session the user session
    */
   def updateLastReadDate(entity: Entity)(implicit session: Session): Try[Entity]
+
+  /**
+   * update and mark an entity as being ready to delete in the next garbage collection execution
+   * @param entity
+   * @param session
+   * @return
+   */
+  def updateReadyToDelete(entity: Entity)(implicit session: Session): Try[Entity]
 
 }
