@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
+import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.domain.schema.{ Schema, FrameSchema }
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.component.ClassLoaderAware
@@ -550,7 +551,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
-          metaStore.frameRepo.scanAll().filter(f => f.status != Status.Deleted && f.status != Status.Dead && f.name.isDefined)
+          metaStore.frameRepo.scanAll().filter(f => f.status != Status.Deleted && f.status != Status.Deleted_Final && f.name.isDefined)
         }
     }
   }
@@ -654,6 +655,21 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
             metaStore.graphRepo.updateLastReadDate(graph)
           }
           metaStore.frameRepo.updateLastReadDate(frame).toOption
+        }
+    }
+  }
+
+  /**
+   * Set a frame to be deleted on the next execution of garbage collection
+   * @param frame frame to delete
+   * @param invocation current invocation
+   */
+  override def scheduleDeletion(frame: FrameEntity)(implicit invocation: Invocation): Unit = {
+    metaStore.withSession("spark.framestorage.scheduleDeletion") {
+      implicit session =>
+        {
+          info(s"marking as ready to delete: frame id:${frame.id}, name:${frame.name}")
+          metaStore.frameRepo.updateReadyToDelete(frame)
         }
     }
   }

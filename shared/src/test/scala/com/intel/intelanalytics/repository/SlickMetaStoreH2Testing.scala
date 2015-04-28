@@ -36,6 +36,10 @@ import scala.util.Random
  */
 trait SlickMetaStoreH2Testing extends FlatSpec with BeforeAndAfter {
 
+  val ActiveStatus: Long = 1
+  val DeletedStatus: Long = 2
+  val DeletedFinalStatus: Long = 3
+
   implicit val rootEc = EventContext.enter("root")
 
   lazy val slickMetaStoreComponent: SlickMetaStoreComponent = new SlickMetaStoreComponent with DbProfileComponent {

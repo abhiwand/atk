@@ -81,44 +81,19 @@ class GraphRepositoryTest extends SlickMetaStoreH2Testing with Matchers {
         val frame = frameRepo.insert(new DataFrameTemplate(Some("namedFrame"), None)).get
         frameRepo.update(frame.copy(lastReadDate = new DateTime().minus(age * 2), graphId = Some(graph4.id)))
 
+        //should be in list. user has marked as ready to delete
+        val graph5 = graphRepo.insert(new GraphTemplate(name)).get
+        graphRepo.update(graph5.copy(statusId = DeletedStatus))
+
+        //should not be in list. Has already been deleted
+        val graph6 = graphRepo.insert(new GraphTemplate(name)).get
+        graphRepo.update(graph6.copy(statusId = DeletedFinalStatus))
+
         val readyForDeletion = graphRepo.listReadyForDeletion(age)
         val idList = readyForDeletion.map(g => g.id).toList
         idList should contain(graph1.id)
-        println(idList)
-        readyForDeletion.length should be(1)
-    }
-  }
-
-  it should "return a list of graphs ready to have their metadata deleted" in {
-    val graphRepo = slickMetaStoreComponent.metaStore.graphRepo
-    slickMetaStoreComponent.metaStore.withSession("graph-test") {
-      implicit session =>
-        val age = 10 * 24 * 60 * 60 * 1000 //10 days
-
-        val name = Some("my_name")
-
-        // create graphs
-
-        //should be in list old and unnamed
-        val graph1 = graphRepo.insert(new GraphTemplate(None)).get
-        graphRepo.update(graph1.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 8))
-
-        //should not be in list. it is named
-        val graph2 = graphRepo.insert(new GraphTemplate(name)).get
-        graphRepo.update(graph2.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 8))
-
-        //should not be in list. it is too new
-        val graph3 = graphRepo.insert(new GraphTemplate(None)).get
-        graphRepo.update(graph3.copy(lastReadDate = new DateTime(), statusId = 8))
-
-        //should be in list wrong status type
-        val graph4 = graphRepo.insert(new GraphTemplate(None)).get
-        graphRepo.update(graph4.copy(lastReadDate = new DateTime().minus(age * 2), statusId = 4))
-
-        val readyForDeletion = graphRepo.listReadyForMetaDataDeletion(age)
-        val idList = readyForDeletion.map(g => g.id).toList
-        idList should contain(graph1.id)
-        readyForDeletion.length should be(1)
+        idList should contain(graph5.id)
+        readyForDeletion.length should be(2)
     }
   }
 
