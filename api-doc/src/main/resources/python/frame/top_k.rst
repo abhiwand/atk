@@ -6,6 +6,7 @@ All data elements of weight <= 0 are excluded from the calculation, as are
 all data elements whose weight is NaN or infinite.
 If there are no data elements of finite weight > 0, then topK is empty.
 
+
 Parameters
 ----------
 data_column : str
@@ -17,10 +18,12 @@ weights_column : str (optional)
     Must contain numerical data.
     Default is 1 for all items.
 
+
 Returns
 -------
-Frame : New frame
-    An object with access to the frame
+Frame
+    An object with access to the frame of data.
+
 
 Examples
 --------

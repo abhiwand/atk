@@ -5,11 +5,13 @@ The entire row can be checked for duplication, or the search for duplicates
 can be limited to one or more columns.
 This modifies the current frame.
 
+
 Parameters
 ----------
 columns : [str | list of str] (optional)
     Column name(s) to identify duplicates.
     Default is the entire row is compared.
+
 
 Examples
 --------

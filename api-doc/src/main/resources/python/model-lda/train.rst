@@ -59,13 +59,13 @@ num_topics : int (optional)
 
 Returns
 -------
-dict : results dictionary
-    Contains three keys |EM|
-Frame : doc_results
+dict
+    The data returned is composed of multiple components:
+doc_results : Frame
     Frame with LDA results.
-Frame : word_results
+word_results : Frame
     Frame with LDA results.
-str : report
+report : str
    The configuration and learning curve report for Latent Dirichlet
    Allocation as a multiple line str.
 
@@ -98,8 +98,6 @@ View the report:
 .. code::
 
     >>> print report
-
-The expected output of ``results['report']`` is similar to:
 
 .. only:: html
 

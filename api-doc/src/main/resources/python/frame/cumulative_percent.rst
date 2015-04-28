@@ -4,10 +4,12 @@ A cumulative percent sum is computed by sequentially stepping through the
 column values and keeping track of the current percentage of the total sum
 accounted for at the current value.
 
+
 Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative percent sum.
+
 
 Notes
 -----
@@ -15,6 +17,7 @@ This method applies only to columns containing numerical data.
 Although this method will execute for columns containing negative
 values, the interpretation of the result will change (for example,
 negative percentages).
+
 
 Examples
 --------

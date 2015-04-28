@@ -3,6 +3,7 @@ Make new frame with additional column for predicted label.
 Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.
 
+
 Parameters
 ----------
 predict_frame : Frame
@@ -14,15 +15,16 @@ observation_column : list of str (Optional)
     Column(s) containing the observations whose labels are to be predicted.
     By default, we predict the labels over columns the SvmModel was trained on.
 
+
 Returns
 -------
 Frame
-    Frame containing the original frame's columns and a column with the
+    A frame containing the original frame's columns and a column with the
     predicted label
+
 
 Examples
 --------
-
 .. only:: html
 
     .. code::

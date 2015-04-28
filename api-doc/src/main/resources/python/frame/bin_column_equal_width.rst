@@ -7,6 +7,7 @@ Equal width binning places column values into groups such that the values
 in each group fall within the same interval and the interval width for each
 group is equal.
 
+
 Parameters
 ----------
 column_name : str
@@ -18,6 +19,13 @@ num_bins : int (optional)
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
+
+
+Returns
+-------
+array of floats
+   A list of the edges of each bin.
+
 
 Notes
 -----
@@ -31,10 +39,6 @@ Notes
     This is due to a restriction that elements with an identical value must
     belong to the same bin.
 
-Returns
--------
-array of floats : cutoffs
-   A list of the edges of each bin.
 
 Examples
 --------

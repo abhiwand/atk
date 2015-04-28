@@ -7,6 +7,7 @@ If an edge is marked bidirectional, the implementation opts for canonical
 orientation of edges hence counting it only once (similar to an
 undirected graph).
 
+
 Parameters
 ----------
 output_property : str
@@ -15,14 +16,16 @@ input_edge_labels : list of str (optional)
     The name of edge labels to be considered for triangle count.
     Default is all edges are considered.
 
+
 Returns
 -------
-dict : Dictionary
-    dict(label, Frame)
+dict
+    dict(label, Frame).
     Dictionary containing the vertex type as the key and the corresponding
     vertex's frame with a triangle_count column.
     Call dictionary_name['label'] to get the handle to frame whose vertex
     type is label.
+
 
 Examples
 --------

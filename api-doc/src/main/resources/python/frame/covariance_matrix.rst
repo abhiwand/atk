@@ -1,5 +1,6 @@
 Calculate covariance matrix for two or more columns.
 
+
 Parameters
 ----------
 columns : [ str | list of str ]
@@ -7,13 +8,17 @@ columns : [ str | list of str ]
     Names should refer to a single column of type vector, or two or more
     columns of numeric scalars.
 
+
 Returns
 -------
-A matrix with the covariance values for the columns.
+matrix
+    A matrix with the covariance values for the columns.
+
 
 Notes
 -----
 This function applies only to columns containing numerical data.
+
 
 Examples
 --------

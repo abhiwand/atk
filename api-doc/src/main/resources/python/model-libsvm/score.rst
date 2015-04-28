@@ -8,7 +8,7 @@ observation : Vector
 Returns
 -------
 int
-    predicted label
+    Predicted label.
 
 Examples
 --------

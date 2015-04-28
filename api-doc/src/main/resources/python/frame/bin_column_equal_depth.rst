@@ -17,6 +17,7 @@ to identify grouping.
     If there are multiples of the same value in :math:`C`, then their
     tie-adjusted rank is the average of their ordered rank values.
 
+
 Parameters
 ----------
 column_name : str
@@ -28,6 +29,13 @@ num_bins : int (optional)
 bin_column_name : str (optional)
     The name for the new binned column.
     Default is '<column_name>_binned'.
+
+
+Returns
+-------
+array of float
+    A list containing the edges of each bin.
+
 
 Notes
 -----
@@ -41,10 +49,6 @@ Notes
     This is due to a restriction that elements with an identical value must
     belong to the same bin.
 
-Returns
--------
-array of floats : cutoffs
-    A list containing the edges of each bin.
 
 Examples
 --------
