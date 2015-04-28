@@ -36,7 +36,7 @@ class ModelLinearRegressionTest(unittest.TestCase):
     def testLinearRegression(self):
         print "define csv file"
         csv = ia.CsvFile("/datasets/SvmTestFile.csv", schema= [('data', ia.float64),
-                                                               ('label', str)], skip_header_lines=1)
+                                                               ('label', ia.float64)], skip_header_lines=1)
 
         print "create frame"
         frame = ia.Frame(csv)
@@ -50,7 +50,7 @@ class ModelLinearRegressionTest(unittest.TestCase):
         print "Predicting on the Frame"
         m = k.predict(frame)
 
-        self.assertEqual(m.column_names, ['data', 'label', 'predicted_label'])
+        self.assertEqual(m.column_names, ['data', 'label', 'predicted_value'])
 
 
 if __name__ == "__main__":
