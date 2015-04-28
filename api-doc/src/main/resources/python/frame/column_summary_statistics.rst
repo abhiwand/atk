@@ -1,5 +1,6 @@
 Calculate multiple statistics for a column.
 
+
 Parameters
 ----------
 data_column : str
@@ -16,10 +17,12 @@ use_population_variance : bool (optional)
     This option is False by default, so that sample variance is the default
     form of variance calculated.
 
+
 Returns
 -------
 dict
-    Dictionary containing summary statistics in the following entries:
+    Dictionary containing summary statistics.
+    The data returned is composed of multiple components:
 mean : [ double | None ]
     Arithmetic mean of the data.
 geometric_mean : [ double | None ]
@@ -65,6 +68,7 @@ positive_weight_count : [ double | None ]
     This is the number of entries used in the statistical calculation.
 non_positive_weight_count : [ double | None ]
     The number valid data elements with finite weight <= 0.
+
 
 Notes
 -----
@@ -113,6 +117,7 @@ Equations
     In particular, when no weights column is provided and all weights
     are 1.0, ``non_positive_weight_count = 0`` and
     ``positive_weight_count = good_row_count``
+
 
 Examples
 --------

@@ -10,6 +10,7 @@ The labels are non-negative integers drawn from the range
 Optionally, the user can specify a list of strings to be used as the labels.
 If the number of labels is 3, the labels will default to "TR", "TE" and "VA".
 
+
 Parameters
 ----------
 sample_percentages : list of float
@@ -27,6 +28,7 @@ output_property: str (optional)
 random_seed : int (optional)
     Random seed used to generate the labels.
     Defaults to 0.
+
 
 Examples
 --------

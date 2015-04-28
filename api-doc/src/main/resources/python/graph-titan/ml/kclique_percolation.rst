@@ -1,5 +1,6 @@
 Find groups of vertices with similar attributes.
 
+
 Parameters
 ----------
 clique_size : int
@@ -12,6 +13,7 @@ community_property_label : str
     the graph.
     This property will contain for each vertex the set of communities that
     contain that vertex.
+
 
 Notes
 -----

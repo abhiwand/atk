@@ -38,13 +38,15 @@ edge_weight_default : double (optional)
     of key edge_weight_property.
     Default is 1.0D.
 
+
 Returns
 -------
-dict : dict(label, Frame)
+dict
     Dictionary containing the vertex type as the key and the corresponding
     vertex's frame with a column containing the annotated weighted degree.
     Call dictionary_name['label'] to get the handle to frame whose vertex type
     is label.
+
 
 Examples
 --------
