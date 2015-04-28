@@ -5,7 +5,7 @@ Intel Analytics Toolkit
 .. toctree::
     :maxdepth: 2
 
-    ia_intro
+    ia_over
     ds_over
     ds_apic
     ad_over

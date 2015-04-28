@@ -7,6 +7,7 @@ Process Flow Examples
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 .. index::
     single: Python
@@ -68,21 +69,6 @@ Connect to the server:
     .. code::
 
         >>> ia.errors.show_details = True
-
-.. TODO:: Move these to a new section discussing "clean up" or object life time
-    section
-
-    Clean up any previous frames (optional)::
-
-        for name in ia.get_frame_names():
-            print 'deleting frame: %s' %name
-            ia.drop_frames(name)
-
-    Clean up any previous graphs (optional)::
-
-        for name in ia.get_graph_names():
-            print 'deleting graph: %s' %name
-            ia.drop_graphs(name)
 
 To see the data types supported:
 
@@ -1146,59 +1132,38 @@ Seamless Graph
 --------------
 
 For the examples below, we will use a Frame *my_frame*, which accesses an
-arbitrary frame of data consisting of the following columns:
+arbitrary frame of data consisting of the :download:`following
+<_downloads/employees.csv>`:
 
-    +----------+---------+-------------------+-------+
-    | Employee | Manager | Title             | Years |
-    +==========+=========+===================+=======+
-    | Bob      | Steve   | Associate         | 1     |
-    +----------+---------+-------------------+-------+
-    | Jane     | Steve   | Sn Associate      | 3     |
-    +----------+---------+-------------------+-------+
-    | Anup     | Steve   | Associate         | 3     |
-    +----------+---------+-------------------+-------+
-    | Sue      | Steve   | Market Analyst    | 1     |
-    +----------+---------+-------------------+-------+
-    | Mohit    | Steve   | Associate         | 2     |
-    +----------+---------+-------------------+-------+
-    | Steve    | David   | Marketing Manager | 5     |
-    +----------+---------+-------------------+-------+
-    | Larry    | David   | Product Manager   | 3     |
-    +----------+---------+-------------------+-------+
-    | David    | Rob     | VP of Sales       | 7     |
-    +----------+---------+-------------------+-------+
++----------+---------+-------------------+-------+
+| Employee | Manager | Title             | Years |
++==========+=========+===================+=======+
+| Bob      | Steve   | Associate         | 1     |
++----------+---------+-------------------+-------+
+| Jane     | Steve   | Sn Associate      | 3     |
++----------+---------+-------------------+-------+
+| Anup     | Steve   | Associate         | 3     |
++----------+---------+-------------------+-------+
+| Sue      | Steve   | Market Analyst    | 1     |
++----------+---------+-------------------+-------+
+| Mohit    | Steve   | Associate         | 2     |
++----------+---------+-------------------+-------+
+| Steve    | David   | Marketing Manager | 5     |
++----------+---------+-------------------+-------+
+| Larry    | David   | Product Manager   | 3     |
++----------+---------+-------------------+-------+
+| David    | Rob     | VP of Sales       | 7     |
++----------+---------+-------------------+-------+
 
-    download :download:`here <_downloads/employees.csv>`
-
-Fill the Frame
-==============
-We need to bring the data into a frame:
-
-.. only:: html
-
-    .. code::
-
-        >>> employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
-        >>> employees_frame.inspect()
-
-.. only:: latex
-
-    .. code::
-
-        >>> employees_frame = ia.Frame(ia.CsvFile("datasets/employees.csv",
-        ... schema = [('Employee', str), ('Manager', str), ('Title', str),
-        ... ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
-        >>> employees_frame.inspect()
-
-Build a Graph
-=============
+Build the Graph
+===============
 
 Make an empty graph and give it a name:
 
 .. code::
 
     >>> my_graph = ia.graph()
-    >>> my_graph.name = "eat_at_joes"
+    >>> my_graph.name = "personnel"
 
 Define the vertex types:
 
@@ -1215,21 +1180,23 @@ Define the edge type:
 
     >>> my_graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=True)
 
-Add data:
+Add the data:
 
-.. code::
+.. only:: html
 
-    >>> my_graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
-    >>> my_graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
+    .. code::
 
-Inspect the graph:
+        >>> my_graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])
+        >>> my_graph.edges['worksunder'].add_edges(employees_frame, 'Employee', 'Manager', ['Years'], create_missing_vertices = True)
 
-.. code::
+.. only:: latex
 
-    >>> my_graph.vertex_count
-    >>> my_graph.edge_count
-    >>> my_graph.vertices['Employee'].inspect(20)
-    >>> my_graph.edges['worksunder'].inspect(20)
+    .. code::
+
+        >>> my_graph.vertices['Employee'].add_vertices(employees_frame,
+        ... 'Employee', ['Title'])
+        >>> my_graph.edges['worksunder'].add_edges(employees_frame, 'Employee',
+        ... 'Manager', ['Years'], create_missing_vertices = True)
 
 .. warning::
 
@@ -1248,6 +1215,19 @@ Inspect the graph:
 Other Graph Options
 ===================
 
+Inspect the graph:
+
+.. code::
+
+    >>> my_graph.vertex_count
+    >>> my_graph.edge_count
+    >>> my_graph.vertices['Employee'].inspect(20)
+    >>> my_graph.edges['worksunder'].inspect(20)
+
+For further information, see the API section on :ref:`seamless_graph`.
+
+.. _export_to_titan:
+
 Export the graph to a TitanGraph:
 
 .. code::
@@ -1260,42 +1240,153 @@ Make a VertexFrame:
 
     >>> my_vertex_frame = my_graph.vertices("employee")
 
-Make a EdgeFrame:
+Make an EdgeFrame:
 
 .. code::
 
     >>> my_edge_frame = my_graph.edges("worksunder")
 
+-----------
+Titan Graph
+-----------
+
+For the examples below, we will use a Frame *my_frame*, which accesses an
+arbitrary frame of data consisting of the :download:`following
+<_downloads/employees.csv>`:
+
++----------+---------+-------------------+-------+
+| Employee | Manager | Title             | Years |
++==========+=========+===================+=======+
+| Bob      | Steve   | Associate         | 1     |
++----------+---------+-------------------+-------+
+| Jane     | Steve   | Sn Associate      | 3     |
++----------+---------+-------------------+-------+
+| Anup     | Steve   | Associate         | 3     |
++----------+---------+-------------------+-------+
+| Sue      | Steve   | Market Analyst    | 1     |
++----------+---------+-------------------+-------+
+| Mohit    | Steve   | Associate         | 2     |
++----------+---------+-------------------+-------+
+| Steve    | David   | Marketing Manager | 5     |
++----------+---------+-------------------+-------+
+| Larry    | David   | Product Manager   | 3     |
++----------+---------+-------------------+-------+
+| David    | Rob     | VP of Sales       | 7     |
++----------+---------+-------------------+-------+
+
+Build the Graph
+===============
+
+There are two methods of building a Titan graph, exporting it from a seamless
+graph, or building it directly from a frame.
+Since exporting it from a seamless graph is discussed :ref:`above
+<export_to_titan>`, this section will concentrate on building one directly from
+a frame.
+
+The first step is to define the rules that dictate how the frame data should
+be associated to vertices and edges:
+
+.. only:: html
+
+    .. code::
+
+        >>> employee_vertex = ia.VertexRule(id_key = "employee", id_value = my_frame.employee, properties = {'vertex_type': 'L', title:my_frame.title})
+        >>> manager_vertex = ia.VertexRule(id_key = "managers", id_value = my_frame.manager, properties = {'vertex_type": "R"})
+
+.. only:: latex
+
+    .. code::
+
+        >>> employee_vertex = ia.VertexRule(id_key = "employee",
+        ... id_value = my_frame.employee,
+        ... properties = {'vertex_type': 'L', title:my_frame.title})
+        >>> manager_vertex = ia.VertexRule(id_key = "managers",
+        ... id_value = my_frame.manager,
+        ... properties = {'vertex_type": "R"})
+
+Define the edge rule:
+
+.. only:: html
+
+    .. code::
+
+        >>> worksunder_edge = ia.EdgeRule("worksunder", my_frame.employee, my_frame.manager, properties = {"years":my_frame.years})
+
+.. only:: latex
+
+    .. code::
+
+        >>> worksunder_edge = ia.EdgeRule("worksunder",
+        ... my_frame.employee, my_frame.manager,
+        ... properties = {"years":my_frame.years})
+
+For more information about rules, see the API section on
+:ref:`titan_graph_rules`.
+
+Build the graph:
+
+.. only:: html
+
+    .. code::
+
+        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex, worksunder_edge], name = "personnel")
+
+.. only:: latex
+
+    .. code::
+
+        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex,
+        ... worksunder_edge], name = "personnel")
+
+For futher information, as well as Titan graph attributes and methods, see the
+API section on :ref:`titan_graph`.
+
 .. _Graph_Analytics:
 
+.. index::
+    pair: analytics; graph
 ---------------
 Graph Analytics
 ---------------
 
-* `ClCo`_
-* `CC`_
-* `DC`_
-* `PR`_
+*   `Clustering Coefficients`_
+*   `Connected Components (CC)`_
+*   `Degree Calculation`_
+*   `K-Clique Percolation`_
+*   `PageRank (PR)`_
 
-.. TODO::
-
-    * ref:`APL`
-
-    Add these to the toctree above.
-
-.. _ClCo:
+.. _Clustering Coefficients:
 .. include:: ds_gaal_clco.inc
 
-.. _CC:
+.. _Connected Components (CC):
 .. include:: ds_gaal_cc.inc
 
-.. _DC:
+.. _Degree Calculation:
 .. include:: ds_gaal_dc.inc
 
-.. _PR:
+.. _K-Clique Percolation:
+.. include:: ds_gaal_k.inc
+
+.. _PageRank (PR):
 .. include:: ds_gaal_pr.inc
 
 .. toctree::
     :hidden:
 
     ds_apir
+
+.. rubric:: Footnotes
+
+.. [K1]
+    G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
+    community structure of complex networks in nature and society”.
+    Nature, 435:814, 2005 (
+    See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
+
+.. [K2]
+    Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
+    "Distributed Clique Percolation based community detection on social
+    networks using MapReduce,"
+    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol.,
+    no., pp.478,483, 28-30 May 2013
+

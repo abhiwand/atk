@@ -32,33 +32,49 @@ class CsvFile(DataFile):
     """
     Define a CSV file.
 
+
     Parameters
     ----------
     file_name : str
-        Name of data input file.
-        File must be in the Hadoop file system.
-        Relative paths are interpreted relative to the path set in
-        ``intel.analytics.engine.fs.root`` configuration.
-        Absolute paths (beginning with ``hdfs://...``, for example) are also
-        supported.
+        The name of the file containing data in a CSV format.
+        The file must be in the Hadoop file system.
+        Relative paths are interpreted as being relative to the path set in
+        the application configuration file.
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
+        Absolute paths (beginning with ``hdfs://...``, for example) are also
+        supported.
     schema : list of tuples of the form (string, type)
-        Description of the fields of data.
-        It is a list of tuples which describe each field, (field name, field
-        type), where the field name is a string, and file is a supported type,
-        (See data_types from the iatypes module).
-        Unicode characters should not be used in the column name.
-        The type ``ignore`` may also be used if the field should be ignored on loads.
+        A description of the fields of data in the form of a list of tuples,
+        which describe each field.
+        Each tuple is in the form (name, type), where the name is a string,
+        and type is a supported data type,
+        Upon import of the data, the name becomes the name of a column, so the
+        names must be unique and follow column naming rules.
+        For a list of valid data types, see :ref:`api_datatypes`.
+        The type ``ignore`` may also be used if the field should be ignored on
+        loads.
     delimiter : str (optional)
-        String indicator of the delimiter for the fields
+        A string which indicates the separation of the data fields.
+        This is usually a single character and could be a non-visible character
+        such as a tab.
+        This string must be enclosed by quotes in the command declaration, for
+        example ``","``.
     skip_header_lines : int (optional)
-        Indicates numbers of lines to skip before parsing records.
+        An integer for the numbers of lines to skip before parsing records.
+
 
     Returns
     -------
     class : CsvFile object
         A class which holds both the name and schema of a CSV file.
+
+
+    Notes
+    -----
+    Unicode characters should not be used in the column name, because some
+    functions do not support them and will not operate properly.
+
 
     Examples
     --------
@@ -70,19 +86,19 @@ class CsvFile(DataFile):
     There is no header to the file.
 
     Import the |IAT|:
-    
+
     .. code::
 
         >>> import intelanalytics as ia
 
     Define the data:
-    
+
     .. code::
 
         >>> csv_schema = [("a", int32), ("b", int32), ("c", str)]
 
     Create a CsvFile object with this schema:
-    
+
     .. code::
 
         >>> csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
@@ -93,14 +109,14 @@ class CsvFile(DataFile):
     appropriate delimiter would be specified.
     For example if the data columns were separated by the colon character, the
     instruction would be:
-    
+
     .. code::
 
         >>> ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
 
     If the data had some lines of header at the beginning of the file, the
     lines should be skipped:
-    
+
     .. code::
 
         >>> csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
@@ -147,14 +163,24 @@ class CsvFile(DataFile):
         --------
         Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
         and *col2* (*float32*):
-        
-        .. code::
 
-            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            >>> print(csv_class.field_names())
+        .. only:: html
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_names())
+
+        .. only:: latex
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv",
+                ... schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_names())
 
         Results:
-        
+
         .. code::
 
             ["col1", "col2"]
@@ -177,14 +203,24 @@ class CsvFile(DataFile):
         --------
         Given a raw data file 'raw_data.csv' with columns *col1* (*int32*)
         and *col2* (*float32*):
-        
-        .. code::
 
-            >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
-            >>> print(csv_class.field_types())
+        .. only:: html
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_types())
+
+        .. only:: html
+
+            .. code::
+
+                >>> csv_class = ia.CsvFile("raw_data.csv",
+                ... schema=[("col1", int32), ("col2", float32)])
+                >>> print(csv_class.field_types())
 
         Results:
-        
+
         .. code::
 
             [numpy.int32, numpy.float32]
@@ -235,14 +271,14 @@ class LineFile(DataFile):
     It consists of multiple lines separated by new line character.
 
     Import the |IAT|:
-    
+
     .. code::
 
         >>> import intelanalytics as ia
         >>> ia.connect()
 
     Define the data:
-    
+
     .. code::
 
         >>> linefile_class = ia.LineFile("data/rawline_data.txt")
@@ -325,26 +361,26 @@ class JsonFile(MultiLineFile):
         }
 
     Import the |IAT|:
-    
+
     .. code::
 
         >>> import intelanalytics as ia
         >>> ia.connect()
 
     Define the data:
-    
+
     .. code::
 
         >>> json_file = ia.JsonFile("data/raw_data.json")
 
     Create a frame using this JsonFile:
-    
+
     .. code::
 
         >>> my_frame = ia.Frame(json_file)
 
     The frame looks like:
-    
+
     .. code::
 
          data_lines
@@ -366,7 +402,7 @@ class JsonFile(MultiLineFile):
         }'
 
     Parse values out of the XML column using the add_columns method:
-    
+
     .. code::
 
         >>> def parse_my_json(row):
@@ -375,16 +411,17 @@ class JsonFile(MultiLineFile):
         ...     obj = my_json['obj']
         ...     return (obj['color'], obj['size'], obj['shape'])
 
-        >>> my_frame.add_columns(parse_my_json, [("color", str), ("size", str), ("shape", str)])
+        >>> my_frame.add_columns(parse_my_json, [("color", str), ("size", str),
+        ... ("shape", str)])
 
     Original XML column is no longer necessary:
-    
+
     .. code::
 
         >>> my_frame.drop_columns(['data_lines'])
 
     Result:
-    
+
     .. code::
 
         >>> my_frame.inspect()
@@ -411,7 +448,7 @@ class JsonFile(MultiLineFile):
 class XmlFile(MultiLineFile):
     """
     Define an file as having data in XML format.
-    
+
     When XML files are loaded into the system individual records are separated
     into the highest level elements found with the specified tag name and
     places them into a column called data_lines.
@@ -465,26 +502,26 @@ class XmlFile(MultiLineFile):
         </shapes>
 
     Import the |IAT|:
-    
+
     .. code::
 
         >>> import intelanalytics as ia
         >>> ia.connect()
 
     Define the data:
-    
+
     .. code::
 
         >>> xml_file = ia.XmlFile("data/raw_data.xml", "square")
 
     Create a frame using this XmlFile:
-    
+
     .. code::
 
         >>> my_frame = ia.Frame(xml_file)
 
     The frame looks like:
-    
+
     .. code::
 
          data_lines
@@ -499,7 +536,7 @@ class XmlFile(MultiLineFile):
             </square>'
 
     Parse values out of the XML column using the add_columns method:
-    
+
     .. code::
 
         >>> def parse_my_xml(row):
@@ -510,13 +547,13 @@ class XmlFile(MultiLineFile):
         >>> my_frame.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
     Original XML column is no longer necessary:
-    
+
     .. code::
 
         >>> my_frame.drop_columns(['data_lines'])
 
     Result:
-    
+
     .. code::
 
         >>> my_frame.inspect()

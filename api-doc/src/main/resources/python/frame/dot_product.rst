@@ -9,6 +9,7 @@ The dot product of two vectors ``A=[a_1, a_2, ..., a_n]`` and
 ``B =[b_1, b_2, ..., b_n]`` is ``a_1*b_1 + a_2*b_2 + ...+ a_n*b_n``.
 The dot product for each row is stored in a new column in the existing frame.
 
+
 Parameters
 ----------
 left_column_names : [ str | list of str ]
@@ -28,10 +29,12 @@ default_right_values : list of double (optional)
     Default values used to substitute null values in right vector.
     Default is None.
 
+
 Notes
 -----
 If default_left_values or default_right_values are not specified, any null
 values will be replaced by zeros.
+
 
 Examples
 --------
@@ -42,7 +45,7 @@ Calculate the dot product for a sequence of columns in Frame object *my_frame*:
      >>> my_frame.inspect()
 
        col_0:int32  col_1:float64  col_2:int32  col3:int32
-     /---------------------------------------------------/
+     /-----------------------------------------------------/
        1            0.2            -2           5
        2            0.4            -1           6
        3            0.6             0           7

@@ -9,6 +9,10 @@ clustered an undirected graph is.
 Informally, if the edge relation denotes "friendship", the clustering
 coefficient of the graph is the probability that two people are friends given
 that they share a common friend.
+
+.. index::
+    pair: algorithm; clustering coefficients
+
 More formally:
 
 .. math::

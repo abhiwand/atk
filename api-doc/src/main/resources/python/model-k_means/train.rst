@@ -1,6 +1,7 @@
-Creating a KMeans Model using the observation columns of a train frame.
+Creates KMeans Model from train frame.
 
 Upon training the 'k' cluster centers are computed.
+
 
 Parameters
 ----------
@@ -26,16 +27,19 @@ initializationMode : str (Optional)
     It could be either "random" or "k-means||".
     Default is "k-means||".
 
+
 Returns
 -------
-dict : results
-    Contains with keys.
-dict : cluster_size
-    Contains with keys.
-int : ClusterId
+dict
+    Results.
+    The data returned is composed of multiple components:
+cluster_size : dict
+    Cluster size
+ClusterId : int
     Number of elements in the cluster 'ClusterId'.
-double : within_set_sum_of_squared_error
+within_set_sum_of_squared_error : double
     The set of sum of squared error for the model.
+
 
 Examples
 --------

@@ -4,6 +4,7 @@ Models
 ======
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 
 Global Methods
@@ -13,6 +14,8 @@ Global Methods
 .. autofunction:: intelanalytics.get_model_names
 
 .. autofunction:: intelanalytics.drop_models
+
+.. _api_kmeans:
 
 K-Means Model
 -------------
@@ -26,8 +29,8 @@ LDA Model
     :members:
     :inherited-members:
 
-Lib Svm Model
--------------
+LibSVM Model
+------------
 .. autoclass:: intelanalytics.LibsvmModel
     :members:
     :inherited-members:
@@ -38,10 +41,8 @@ Logistic Regression Model
     :members:
     :inherited-members:
 
-Svm Model
+SVM Model
 ---------
 .. autoclass:: intelanalytics.SvmModel
     :members:
     :inherited-members:
-
-

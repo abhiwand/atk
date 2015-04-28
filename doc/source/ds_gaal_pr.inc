@@ -32,6 +32,9 @@ Background references:
 *   Applications to food web analysis: `Stanford\: Applications of PageRank`_
 *   Applications to recommendation systems: `PLoS\: Computational Biology`_
 
+.. index::
+    pair: PageRank; algorithm
+
 Mathematical Details of PageRank Implementation
 -----------------------------------------------
 
@@ -40,8 +43,8 @@ vertex :math:`v` of the graph:
 
 .. math::
 
-    PR(v) = \frac {\rho}{n} + \rho \left (\sum_{u\in InSet(v)} \frac \
-    {PR(u)}{L(u)} \right )
+    PR(v) = \frac {\rho}{n} + \rho \left( \sum_{u\in InSet(v)} \
+    \frac {PR(u)}{L(u)} \right)
 
 Where:
     |   :math:`v` – a vertex

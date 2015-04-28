@@ -1,5 +1,6 @@
 .. index::
     single: label propagation
+    single: LP
 
 Label Propagation (LP)
 ======================
@@ -17,6 +18,9 @@ LP has been used for many problems, particularly those involving a similarity
 measure between data points.
 Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from
 labeled and unlabeled data" [#LP1]_.
+
+.. index::
+    pair: algorithm; label propagation
 
 The Label Propagation Algorithm:
 --------------------------------

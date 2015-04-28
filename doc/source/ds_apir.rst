@@ -7,6 +7,7 @@ Python User Functions
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 A :term:`UDF` is a Python function written by the user on the client-side which
 can execute in a distributed fashion on the cluster.

@@ -7,6 +7,7 @@ Virtual Machines
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 ------------
 Introduction
@@ -85,7 +86,7 @@ List the files in the directory::
 Download the tar.gz file.
 In this case, it's 'IntelAnalytics-VM.tar.gz'::
 
-    $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz
+    $ aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-VM.tar.gz ./
 
 [:ref:`Skip section about Windows GUI Client <extract_archive>`].
 
@@ -108,30 +109,50 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
         or press **Ctrl** + **Shift** + **A**.
 
-        See :ref:`ad_inst_vm_01`.
+        See :ref:`Fig. 15.1 <fig_15_01>`.
 
-        .. _ad_inst_vm_01:
+        .. _fig_15_01:
 
-        .. figure:: ad_inst_vm_01.*
-            :width: 60%
-            :align: center
+        .. only:: html
 
-            Figure 1
+            .. figure:: ad_inst_vm_add_new_acct.*
+                :width: 60%
+                :align: center
+
+                Fig. 15.1
+                Add New Account
+
+        .. only:: latex
+
+            .. figure:: ad_inst_vm_add_new_acct.*
+                :align: center
+
+                Add New Account
 
     #)  In the account creation window:
 
         1)  Add your access and secret keys
         #)  Give the account a name
 
-        See :ref:`ad_inst_vm_02`.
+        See :ref:`Fig. 15.2 <fig_15_02>`.
 
-        .. _ad_inst_vm_02:
+        .. _fig_15_02:
 
-        .. figure:: ad_inst_vm_02.*
-            :width: 60%
-            :align: center
+        .. only:: html
 
-            Figure 2
+            .. figure:: ad_inst_vm_new_acct_info.*
+                :width: 60%
+                :align: center
+
+                Fig. 15.2
+                New Account Information
+
+        .. only:: latex
+
+            .. figure:: ad_inst_vm_new_acct_info.*
+                :align: center
+
+                New Account Information
 
 #)  Navigate to:
 
@@ -140,50 +161,90 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
     or press **Ctrl** + **E**.
 
-    See :ref:`ad_inst_vm_03`.
+    See :ref:`Fig. 15.3 <fig_15_03>`.
 
-    .. _ad_inst_vm_03:
+    .. _fig_15_03:
 
-    .. figure:: ad_inst_vm_03.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 3
+        .. figure:: ad_inst_vm_add_bucket.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.3
+            Add External Bucket
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_add_bucket.*
+            :align: center
+
+            Add External Bucket
 
 #)  Add the bucket url "intel-analytics-repo/release",
     then click **Add External bucket**.
-    See :ref:`ad_inst_vm_04`.
+    See :ref:`Fig. 15.4 <fig_15_04>`.
 
-    .. _ad_inst_vm_04:
+    .. _fig_15_04:
 
-    .. figure:: ad_inst_vm_04.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 4
+        .. figure:: ad_inst_vm_bucket_name.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.4
+            Give Bucket Name
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_bucket_name.*
+            :align: center
+
+            Give Bucket Name
 
 #)  After adding the bucket, a list of folders shows up on the right.
-    See :ref:`ad_inst_vm_05`.
+    See :ref:`Fig. 15.5 <fig_15_05>`.
 
-    .. _ad_inst_vm_05:
+    .. _fig_15_05:
 
-    .. figure:: ad_inst_vm_05.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 5
+        .. figure:: ad_inst_vm_check_folder_list.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.5
+            Check Folder List
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_check_folder_list.*
+            :align: center
+
+            Check Folder List
 
 #)  Select the appropriate version, and navigate to the |VM| folder,
     then right click and download the "tar.gz" file.
-    See :ref:`ad_inst_vm_06`.
+    See :ref:`Fig. 15.6 <fig_15_06>`.
 
-    .. _ad_inst_vm_06:
+    .. _fig_15_06:
 
-    .. figure:: ad_inst_vm_06.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 6
+        .. figure:: ad_inst_vm_download_file.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.6
+            Download File
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_download_file.*
+            :align: center
+
+            Download File
 
 .. _extract_archive:
 
@@ -211,65 +272,111 @@ Import Image
 To import the |VM| image, do the following steps in Virtual Box.
 
 1)  Go to the **File** menu, then **Import Appliance**.
-    See :ref:`ad_inst_vm_07`.
+    See :ref:`Fig. 15.7 <fig_15_07>`.
 
-    .. _ad_inst_vm_07:
+    .. _fig_15_07:
 
-    .. figure:: ad_inst_vm_07.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 7
+        .. figure:: ad_inst_vm_file_import_app.*
+            :width: 60%
+            :align: center
 
-        File -> Import Appliance
+            Fig. 15.7
+            File -> Import Appliance
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_file_import_app.*
+            :align: center
+
+            File -> Import Appliance
 
 #)  Select the file with the extension 'ovf', which was extracted earlier from
     the |VM| image.
-    See :ref:`ad_inst_vm_08`.
+    See :ref:`Fig. 15.8 <fig_15_08>`.
 
-    .. _ad_inst_vm_08:
+    .. _fig_15_08:
 
-    .. figure:: ad_inst_vm_08.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 8
+        .. figure:: ad_inst_vm_app_to_import.*
+            :width: 60%
+            :align: center
 
-        Appliance to Import
+            Fig. 15.8
+            Appliance to Import
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_app_to_import.*
+            :align: center
+
+            Appliance to Import
 
 #)  Import the |IAT| |VM|.
-    See :ref:`ad_inst_vm_09`.
+    See :ref:`Fig. 15.9 <fig_15_09>`.
 
-    .. _ad_inst_vm_09:
+    .. _fig_15_09:
 
-    .. figure:: ad_inst_vm_09.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 9
+        .. figure:: ad_inst_vm_app_settings.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.9
+            Appliance Settings
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_app_settings.*
+            :align: center
+
+            Appliance Settings
 
 #)  After clicking **Import**, wait for the |VM| to be imported.
-    See :ref:`ad_inst_vm_10`.
+    See :ref:`Fig. 15.10 <fig_15_10>`.
 
-    .. _ad_inst_vm_10:
+    .. _fig_15_10:
 
-    .. figure:: ad_inst_vm_10.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 10
+        .. figure:: ad_inst_vm_watch_import.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.10
+            Watching Appliance Import
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_watch_import.*
+            :align: center
+
+            Watching Appliance Import
 
 #)  Once the |VM| is imported, boot the |VM| by selecting the |VM| and
     clicking **Start**.
-    See :ref:`ad_inst_vm_11`.
+    See :ref:`Fig. 15.11 <fig_15_11>`.
 
-    .. _ad_inst_vm_11:
+    .. _fig_15_11:
 
-    .. figure:: ad_inst_vm_11.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 11
+        .. figure:: ad_inst_vm_boot_vm.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.11
+            Boot the VM
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_boot_vm.*
+            :align: center
+
+            Boot the VM
 
 ------------------------
 Running |IAT| |VM| Image
@@ -345,27 +452,47 @@ Importing the example scripts is easy.
 1.  Go to the desktop, and double-click on the Eclipse icon.
 #.  Go to **File** menu, and select **New** and then **Other**.
 
-    See :ref:`ad_inst_vm_12`.
+    See :ref:`Fig. 15.12 <fig_15_12>`.
 
-    .. _ad_inst_vm_12:
+    .. _fig_15_12:
 
-    .. figure:: ad_inst_vm_12.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 12
+        .. figure:: ad_inst_vm_start_eclipse.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.12
+            Starting Eclipse
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_start_eclipse.*
+            :align: center
+
+            Starting Eclipse
 
 #.  After selecting **File**->**New**->**Other**, look for the PyDev folder
     and expand the list, then select **PyDev Project** then click **Next**.
-    See :ref:`ad_inst_vm_13`.
+    See :ref:`Fig. 15.13 <fig_15_13>`.
 
-    .. _ad_inst_vm_13:
+    .. _fig_15_13:
 
-    .. figure:: ad_inst_vm_13.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 13
+        .. figure:: ad_inst_vm_new_pydev.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.13
+            New PyDev Project
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_new_pydev.*
+            :align: center
+
+            New PyDev Project
 
 #.  The only field you have to change is the 'Project Contents' default
     directory.
@@ -373,27 +500,47 @@ Importing the example scripts is easy.
     '/home/cloudera/examples'.
     Everything else can be left with the default values.
     Click **Next** when you are done.
-    See :ref:`ad_inst_vm_14`.
+    See :ref:`Fig. 15.14 <fig_15_14>`.
 
-    .. _ad_inst_vm_14:
+    .. _fig_15_14:
 
-    .. figure:: ad_inst_vm_14.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 14
+        .. figure:: ad_inst_vm_working_path.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.14
+            Enter Working Path
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_working_path.*
+            :align: center
+
+            Enter Working Path
 
 #.  You should now be able to see all the example scripts on the left hand
     pane.
-    See :ref:`ad_inst_vm_15`.
+    See :ref:`Fig. 15.15 <fig_15_15>`.
 
-    .. _ad_inst_vm_15:
+    .. _fig_15_15:
 
-    .. figure:: ad_inst_vm_15.*
-        :width: 60%
-        :align: center
+    .. only:: html
 
-        Figure 15
+        .. figure:: ad_inst_vm_example_scripts.*
+            :width: 60%
+            :align: center
+
+            Fig. 15.15
+            Examining Example Scripts
+
+    .. only:: latex
+
+        .. figure:: ad_inst_vm_example_scripts.*
+            :align: center
+
+            Examining Example Scripts
 
 .. index::
     single: log

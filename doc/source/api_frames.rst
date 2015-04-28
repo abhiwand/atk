@@ -4,6 +4,7 @@ Frames
 ======
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 
 Global Methods

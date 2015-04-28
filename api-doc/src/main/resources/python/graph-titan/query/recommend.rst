@@ -4,6 +4,7 @@ Get recommendation to either left-side or right-side vertices.
 The prerequisite is at least one of two algorithms (ALS or CGD) has
 been run before this query.
 
+
 Parameters
 ----------
 vertex_id : str
@@ -46,10 +47,13 @@ left_vertex_name : str (optional)
 right_vertex_name : str (optional)
     The real name for right side vertex.
 
+
 Returns
 -------
-List of rank and corresponding recommendation
-    Recommendations for the input vertex
+list
+    List of rank and corresponding recommendation.
+    Recommendations for the input vertex.
+
 
 Notes
 -----

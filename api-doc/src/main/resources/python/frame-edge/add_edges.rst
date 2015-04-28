@@ -2,6 +2,7 @@ Add edges to a graph.
 
 Includes appending to a list of existing edges.
 
+
 Parameters
 ----------
 source_frame : Frame
@@ -18,6 +19,7 @@ create_missing_vertices : Boolean (optional)
     True to create missing vertices for edge (slightly slower), False to drop
     edges pointing to missing vertices.
     Defaults to False.
+
 
 Examples
 --------

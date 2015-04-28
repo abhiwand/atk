@@ -191,12 +191,15 @@ function main() {
     ScriptPath=$(dirname "$(readlink -f "$0")")
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
+    export INTELANALYTICS_AUTOCONNECT=1
 
     # debug: Start the log file
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../core/*.pyc ]]; then rm ../core/*.pyc; fi
+    if [[ -f ../python/intelanalytics/core/*.pyc ]]; then
+        rm ../python/intelanalytics/core/*.pyc
+    fi
 
     # debug: Check on quiet mode
     echo $ModifiedArguments | grep -i -e "/-q/" -e "/-qq/" > /dev/null
@@ -240,8 +243,12 @@ function main() {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
-        # Start the server
+        # debug: Start the server
         pushd ../ > /dev/null
+        RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        if [ "$Return" != "0" ]; then return $Return; fi
         server_start $AskThem $DisplayStatus $TempFile $LogFile
         Return=$?
         popd > /dev/null
@@ -261,6 +268,13 @@ function main() {
             maven $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then return 1; fi
         fi
+
+        # debug: Update the additional python documentation files
+#       pushd ../python > /dev/null
+#       build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+#       Return=$?
+#       popd > /dev/null
+#       if [ "$Return" != "0" ]; then return $Return; fi
 
         # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
@@ -346,6 +360,13 @@ function maven() {
     # $3 = Temporary file
     # $4 = LogFile
 
+    # debug: Maven
+
+    # debug: Stop the server
+    server_stop $1 $2 $3 $4
+    Return=$?
+    if [ "$Return" != "0" ]; then return $Return; fi
+
     # debug: Compile jars
     pushd ../ > /dev/null
     compile_jars $1 $2 $3 $4
@@ -353,11 +374,12 @@ function maven() {
     popd > /dev/null
     if [ "$Return" != "0" ]; then return $Return; fi
 
-    # debug: Update the additional python documentation files
-    pushd ../python > /dev/null
-    build_docstubs $1 $2 $3 $4
+    # debug: Start the server
+    pushd ../ > /dev/null
+    server_start $1 $2 $3 $4
     Return=$?
     popd > /dev/null
+    if [ "$Return" != "0" ]; then return $Return; fi
 
     return $Return
 
@@ -368,7 +390,8 @@ function packages() {
     # $1 = User id name
     # $2 = ScriptPath
 
-    # Give the filename of the list of people with ability to load python packages
+    # debug: Give the filename of the list of people with ability to
+    # debug: load python packages
     TECHWRITERS=techwriters
     # Yes for "packages", check for permissions
     if [ -f $2/$TECHWRITERS ]; then
@@ -402,12 +425,11 @@ function pdf_build() {
     # $5 = Temporary file
     # $6 = LogFile
 
-    # Build a pdf from another source, currently limited to latex
+    # debug: Build a pdf from another source, currently limited to latex
 
     BuildDirectory="build/$1"
     Extension="tex"
 
-    log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     log_step "Checking file $BuildDirectory/$2.$Extension" $4 $6
     if [[ -f "$BuildDirectory/$2.$Extension" ]]; then
         pushd $BuildDirectory > /dev/null
@@ -440,32 +462,69 @@ function server_start() {
     # $3 = Temporary file
     # $4 = LogFile
 
-    # Start the server
-    RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-    do_this "$RunCommand" $1 $2 $3 $4
+    # debug: First, kill any existing server running
+    server_stop $1 $2 $3 $4
     Return=$?
-    if [ "$Return" == "0" ]; then
-        log_step "nohup bin/api-server.sh" $2 $4
-        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+    if [ "$Return" != "0" ]; then return $Return; fi
+
+    # debug: Start the server
+    echo -n "Start server"
+    log_step "nohup bin/api-server.sh" "No" $4
+    nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+    Return=$?
+    if [ "$Return" != "0" ]; then
+        echo
+        Err "Start server (nohup bin/api-server.sh)" $1 $2 $3 $4
         Return=$?
-        if [ "$Return" != "0" ]; then
-            Err "nohup bin/api-server.sh" $1 $2 $3 $4
-            Return=$?
-        fi
+    else
+        let "DURATION = 10"
+        until [[ $DURATION -lt 0 ]]; do
+            sleep 1
+            echo -n "."
+            let "DURATION -= 1"
+        done
+        echo
     fi
     return $Return
 }
 
 ############################################################################################################
 function server_stop() {
+    # $1 = AskThem
+    # $2 = DisplayStatus
+    # $3 = Temporary file
+    # $4 = LogFile
 
-    # Stop the server
-    pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
-    ps|grep $pid > /dev/null
-    if [ "$?" == "0" ]; then
-        kill $pid 2>&1 > /dev/null
-    fi
-    return
+    # debug: Stop the server
+    let "LoopCounter = 24"
+    until [[ $LoopCounter -le 0 ]]; do
+        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
+        ps|grep $pid > /dev/null
+        if [ "$?" == "0" ]; then
+            echo -n "Stop server $pid"
+            kill $pid
+            if [ $? != 0 ]; then
+                echo
+                Err "Stop server $pid" $1 $2 $3 $4
+                Return=$?
+                if [[ "$Return" != "0" ]]; then
+                    return $Return
+                fi
+            fi
+            let "DURATION = 2"
+            until [[ $DURATION -le 0 ]]; do
+                sleep 1
+                echo -n "."
+                let "DURATION -= 1"
+            done
+            echo
+            let "LoopCounter -= 1"
+        else
+            return 0;
+        fi
+    done
+    Err "Unable to stop server."
+    return $?
 }
 
 ############################################################################################################
@@ -476,6 +535,8 @@ function sphinx_build() {
     # $4 = Temporary file
     # $5 = LogFile
     # $6 = Modified Arguments
+
+    # debug: sphinx_build()
 
     BuildDirectory="build/$1"
 
@@ -491,4 +552,3 @@ function sphinx_build() {
 
 #==========================================================================================================#
 main $(parameters "$*")
-server_stop

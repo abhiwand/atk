@@ -1,13 +1,15 @@
-=========
-The |IAT|
-=========
+=================
+Technical Summary
+=================
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 --------
 Overview
 --------
+
 The |IAT| is a platform that simplifies applying :term:`graph analytics` and
 :term:`machine learning` to big data for superior knowledge discovery and
 predictive modeling across a wide variety of use cases and solutions.
@@ -26,9 +28,11 @@ need in a unified workflow that frees the researchers from the overhead of
 understanding, integrating, and inefficiently iterating across a diversity of
 formats and interfaces.
 
+
 --------------------------------------------
 Python and Data Frame User Interface Summary
 --------------------------------------------
+
 The |IAT| utilizes Python data science abstractions to make programming fully
 scalable big data analytic workflows using Spark/Hadoop clusters as familiar
 and accessible as using popular desktop machine learning solutions such as
@@ -47,9 +51,11 @@ mainstream data science programming skills.
 For more information, see the section on :doc:`process flow <ds_dflw>`
 and the `Python website <http://www.python.org>`__.
 
+
 ----------------------
 Graph Pipeline Summary
 ----------------------
+
 In addition to enabling use of entity-based data representations and
 algorithms, the toolkit provides a full graph pipeline to enable application of
 graph methods to big data.
@@ -69,18 +75,22 @@ frame representations (for example, applying a clustering algorithm to a vertex
 list with features developed using graph analytics), the |IAT| provides the
 seamless ability to move between both data representations.
 
+
 -----------------------
 Graph Analytics Summary
 -----------------------
+
 Fully-scalable graph analytic algorithms are provided for uncovering central
 influences and communities in the data set.
 This ability is useful for exploring the data, as well as for incorporating as
 machine learning features that incorporate the context of an entity in the
 graph, thus creating better, more predictive, machine learning results.
 
+
 ------------------------
 Machine Learning Summary
 ------------------------
+
 The toolkit provides algorithms for supervised, unsupervised, and
 semi-supervised machine learning using both entity and graphical machine
 learning tools.
@@ -94,9 +104,11 @@ classification using logistic regression.
 See the section on :doc:`machine learning <ds_ml>` and the
 :doc:`API <ds_apic>` for further information.
 
+
 ---------------
 Plugins Summary
 ---------------
+
 In addition to the extensive set of capabilities provided, the platform is
 fully extensible using a plugin architecture.
 This allows developers to incorporate graph analytical tools into the existing
@@ -110,9 +122,11 @@ commonly used functions to get higher performance than a |UDF|, or integrating
 other tools to further unify the workflow.
 See the :doc:`Plugin Authoring Guide <ad_plug>` for more information.
 
+
 --------------------
 Installation Summary
 --------------------
+
 The |IAT| installs as an edge node on a Hadoop/Spark cluster and makes use of a
 number of engines provided with the distribution.
 This version of the |IAT| supports installation onto the Cloudera distribution

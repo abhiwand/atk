@@ -4,6 +4,7 @@ Physical Machine Configuration
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 The following tutorial goes through configuring a new physical machine
 from scratch.

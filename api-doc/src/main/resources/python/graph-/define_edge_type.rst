@@ -1,5 +1,6 @@
 Define an edge type.
 
+
 Parameters
 ----------
 label : str
@@ -11,9 +12,9 @@ destination_vertex_label : str
 directed : bool
     is the edge directed
 
+
 Examples
 --------
-
 .. code::
 
     >>> graph = ia.Graph()
