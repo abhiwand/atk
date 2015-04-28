@@ -246,6 +246,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
+  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDTrainPlugin)
+  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDTestPlugin)
+  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDNewPlugin)
 
   // Administrative Plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)

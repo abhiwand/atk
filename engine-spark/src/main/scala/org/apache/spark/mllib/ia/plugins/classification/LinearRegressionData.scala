@@ -21,30 +21,16 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.command
+package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.component.{ Archive, Boot }
+import org.apache.spark.mllib.regression.LinearRegressionModel
 
 /**
- * Load command plugin
+ * Command for loading model data into existing model in the model database.
+ * @param linRegModel Trained MLLib's LinearRegressionModel object
+ * @param observationColumns Handle to the observation columns of the data frame
  */
-class CommandLoader {
-  /**
-   * Load plugins from the config
-   * @return mapping between name and plugin, mapping between name and archive's name the plugin was loaded from
-   */
-  def loadFromConfig(): CommandPluginRegistryMaps = {
-    val commandPluginsWithArchiveName = SparkEngineConfig.archives.flatMap {
-      archive =>
-        Archive.getArchive(archive)
-          .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-          .map(p => (p.name, p, archive))
-    }
-    CommandPluginRegistryMaps(
-      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> plugin }.toMap,
-      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> archive }.toMap
-    )
-  }
+case class LinearRegressionData(linRegModel: LinearRegressionModel, observationColumns: List[String]) {
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
+  require(linRegModel != null, "linRegModel must not be null")
 }

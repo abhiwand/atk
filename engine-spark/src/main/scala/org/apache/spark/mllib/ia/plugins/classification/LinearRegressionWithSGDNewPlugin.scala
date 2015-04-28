@@ -21,30 +21,34 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.command
+package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.component.{ Archive, Boot }
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.SparkContext._
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 /**
- * Load command plugin
+ * Create a 'new' instance of this model
  */
-class CommandLoader {
+class LinearRegressionWithSGDNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
-   * Load plugins from the config
-   * @return mapping between name and plugin, mapping between name and archive's name the plugin was loaded from
+   * The name of the command.
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
    */
-  def loadFromConfig(): CommandPluginRegistryMaps = {
-    val commandPluginsWithArchiveName = SparkEngineConfig.archives.flatMap {
-      archive =>
-        Archive.getArchive(archive)
-          .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-          .map(p => (p.name, p, archive))
+  override def name: String = "model:linear_regression/new"
+
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
+    {
+      val models = engine.models
+      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:linear_regression")))
     }
-    CommandPluginRegistryMaps(
-      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> plugin }.toMap,
-      commandPluginsWithArchiveName.map { case (pluginName, plugin, archive) => pluginName -> archive }.toMap
-    )
-  }
 }
+
