@@ -468,13 +468,13 @@ function server_start() {
     if [ "$Return" != "0" ]; then return $Return; fi
 
     # debug: Start the server
-    echo -n "nohup bin/api-server.sh"
+    echo -n "Start server"
     log_step "nohup bin/api-server.sh" "No" $4
     nohup bin/api-server.sh < /dev/null > $3 2>&1 &
     Return=$?
     if [ "$Return" != "0" ]; then
         echo
-        Err "nohup bin/api-server.sh" $1 $2 $3 $4
+        Err "Start server (nohup bin/api-server.sh)" $1 $2 $3 $4
         Return=$?
     else
         let "DURATION = 10"
