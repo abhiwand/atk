@@ -292,12 +292,15 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
           val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
-          //        "--driver-java-options", "-XX:+PrintGCDetails -XX:MaxPermSize=512m", /* to print gc */
           val executionParams = Array(
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-            // lower #cores with more #executors often beats the other way around due to small JVMs having lower GC overhead
-            // "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
             "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
+
+          val executionConfigs = {
+            for {
+              (config, value) <- SparkEngineConfig.sparkConfProperties
+            } yield List("--conf", s"$config=$value")
+          }.flatMap(identity).toArray
 
           // TODO: Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
           val driver_classpath = SparkEngineConfig.sparkMaster match {
@@ -316,6 +319,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
             pluginDependencyJars ++
             pluginDependencyFiles ++
             executionParams ++
+            executionConfigs ++
             driver_classpath ++
             verbose ++
             sparkInternalDriverClass ++
