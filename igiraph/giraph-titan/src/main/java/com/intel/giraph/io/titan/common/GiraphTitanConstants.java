@@ -34,6 +34,11 @@ import org.apache.giraph.conf.StrConfOption;
 public class GiraphTitanConstants {
 
     /**
+     * Titan offset.
+     */
+    public static final long TITAN_ID_OFFSET = 4;
+
+    /**
      * Titan backend type .
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_BACKEND = new StrConfOption(
