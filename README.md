@@ -15,14 +15,14 @@ Intel Analytics Toolkit (ATK)
 * igiraph/ - a few graph algorithms that run on Giraph
 * integration-tests/ - developer written, build time integration tests in python, these run against a minimal version of our product
 * interfaces/ - interfaces shared between rest-server and engine-spark (we should move plugin args/return values out of here)
-* ititan/ - repackaging of Titan to get around classloader issues
 * launcher/ - starts up our application, launches parts of our app
+* meta-store/ - code that interacts with the meta-store database repository including SQL scripts
 * misc/ - miscellaneous items that aren't really part of our product
+* misc/titan-shading/ - repackaging of Titan to get around classloader issues
 * package/ - packaging for VM's, RPM's
 * python/ - python client code
 * python-examples/ - internal example code, add examples here so we don't have to email scripts around
 * rest-server/ - the rest server
-* meta-store/ - mostly code for our meta-data repository, SQL scripts for our meta-data repository
 * testutils/ - some test utility code that get re-used between tests in different modules
 
 
