@@ -1270,7 +1270,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def getCurrentExecutions()(implicit session: Session): Seq[GarbageCollection] = {
-      garbageCollections.filter(_.endTime.isNull).list
+      val nullEndTimes = garbageCollections.filter(_.endTime.isNull)
+      val oneDay = DateTime.now.minusDays(1)
+      //remove anything older than 1 day
+      nullEndTimes.filter(_.startTime <= oneDay).list.foreach(updateEndTime(_))
+      nullEndTimes.filter(_.startTime > oneDay).list
     }
 
     override def updateEndTime(entity: GarbageCollection)(implicit session: Session): Try[GarbageCollection] = Try {
