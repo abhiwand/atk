@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
@@ -33,13 +34,13 @@ import org.apache.hadoop.conf.Configuration
  *
  * HBaseAdmin should not be re-used forever: you should create, use, throw away - and then get another one next time
  */
-class HBaseAdminFactory {
+class HBaseAdminFactory extends ClassLoaderAware {
 
   /**
    * HBaseAdmin should not be re-used forever: you should create, use, throw away - and then get another one next time
    */
-  def createHBaseAdmin(): HBaseAdmin = {
-    val config = new Configuration()
+  def createHBaseAdmin(): HBaseAdmin = withMyClassLoader {
+    val config = HBaseConfiguration.addHbaseResources(new Configuration())
 
     // for some reason HBaseConfiguration wasn't picking up hbase-default.xml automatically, so manually adding here
     config.addResource(getClass.getClassLoader.getResourceAsStream("hbase-default.xml"))
@@ -50,7 +51,7 @@ class HBaseAdminFactory {
     config.setBoolean("hbase.defaults.for.version.skip", true)
     KerberosAuthenticator.loginConfigurationWithKeyTab(config)
 
-    new HBaseAdmin(HBaseConfiguration.addHbaseResources(config))
+    new HBaseAdmin(config)
   }
 
 }

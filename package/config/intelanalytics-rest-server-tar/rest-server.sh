@@ -38,8 +38,13 @@ export SPARK_LOCAL_IP=$(hostname --ip-address)
 #export SPARK_UI_PORT=$(echo $VCAP_APPLICATION | $jq .extra_ports.ui.host_port)
 #export SPARK_MASTER=$(echo $VCAP_SERVICES | $jq '.cdh | .[0].credentials.spark_master' | tr -d '"')
 export FS_ROOT=$(echo $VCAP_SERVICES |  $jq '.cdh | .[0].credentials.hdfs_root' | tr -d '"')
-export ZOOKEEPER_HOST=$(echo $VCAP_SERVICES | $jq '.cdh | .[0].credentials.zk_host' | tr -d '"')
-export ZOOKEEPER_PORT=$(echo $VCAP_SERVICES | $jq '.cdh | .[0].credentials.zk_port' | tr -d '"')
+
+#export ZOOKEEPER_HOST=$(echo $VCAP_SERVICES | $jq '.zookeeper | .[0].credentials.uri / ","  | tr -d '"')
+export ZOOKEEPER_HOST=$(echo $VCAP_SERVICES | $jq '.zookeeper | .[0].credentials.uri  / "," | map(. / ":" | .[0]) | join(",")'  | tr -d '"')
+#temporary workaround
+#export ZOOKEEPER_HOST=10.10.10.8
+#export ZOOKEEPER_PORT=$(echo $VCAP_SERVICES | $jq '.cdh | .[0].credentials.zk_port' | tr -d '"')
+export ZOOKEEPER_PORT=$(echo $VCAP_SERVICES | $jq '.zookeeper | .[0].credentials.uri / "," | .[0] / ":" | .[1])' | tr -d '"')
 export PG_HOST=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.hostname' | tr -d '"')
 export PG_PORT=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.port' | tr -d '"')
 export PG_USER=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.username' | tr -d '"')
@@ -63,6 +68,7 @@ popd
 
 pushd $DIR/..
 pwd
+export PWD=`pwd`
 
 export HOSTNAME=$SPARK_DRIVER_HOST
 #export SPARK_PUBLIC_DNS=$SPARK_DRIVER_HOST
