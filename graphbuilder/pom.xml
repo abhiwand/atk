@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>titan-shading</artifactId>
+            <artifactId>titan-shaded</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

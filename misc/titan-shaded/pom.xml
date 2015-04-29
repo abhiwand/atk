@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.intel.ia</groupId>
-    <artifactId>titan-shading</artifactId>
+    <artifactId>titan-shaded</artifactId>
     <version>0.5.0-SNAPSHOT</version>
 
     <description>

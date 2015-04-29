@@ -714,7 +714,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>titan-shading</artifactId>
+                <artifactId>titan-shaded</artifactId>
                 <version>${dep.titan-shaded.version}</version>
                 <!--<exclusions>
                     <exclusion>
