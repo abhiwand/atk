@@ -45,15 +45,10 @@ class ModelLinearRegressionTest(unittest.TestCase):
         frame = ia.Frame(csv)
 
         print "Initializing a LinearRegressionModel object"
-        k = ia.LinearRegressionModel(name='myLinearRegressionModel')
+        model = ia.LinearRegressionModel(name='myLinearRegressionModel')
 
         print "Training the model on the Frame"
-        k.train(frame,'y',['1','2','3','4','5','6','7','8','9','10'])
-
-        print "Predicting on the Frame"
-        m = k.predict(frame)
-
-        self.assertEqual(m.column_names,['y','1','2','3','4','5','6','7','8','9','10','predicted_value'])
+        model.train(frame,'y',['1','2','3','4','5','6','7','8','9','10'])
 
 
 if __name__ == "__main__":
