@@ -243,17 +243,6 @@ function main() {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
-        # debug: Start the server
-        pushd ../ > /dev/null
-        RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        if [ "$Return" != "0" ]; then return $Return; fi
-        server_start $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        popd > /dev/null
-        if [ "$Return" != "0" ]; then return $Return; fi
-
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
@@ -269,12 +258,24 @@ function main() {
             if [ "$?" == "1" ]; then return 1; fi
         fi
 
+        # debug: Start the server
+        pushd ../ > /dev/null
+        RunCommand="cp conf/examples/application.conf.build conf/application.conf"
+        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        if [ "$Return" != "0" ]; then return $Return; fi
+        server_start $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then return $Return; fi
+
+
         # debug: Update the additional python documentation files
-#       pushd ../python > /dev/null
-#       build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
-#       Return=$?
-#       popd > /dev/null
-#       if [ "$Return" != "0" ]; then return $Return; fi
+        pushd ../python > /dev/null
+        build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then return $Return; fi
 
         # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
@@ -370,13 +371,6 @@ function maven() {
     # debug: Compile jars
     pushd ../ > /dev/null
     compile_jars $1 $2 $3 $4
-    Return=$?
-    popd > /dev/null
-    if [ "$Return" != "0" ]; then return $Return; fi
-
-    # debug: Start the server
-    pushd ../ > /dev/null
-    server_start $1 $2 $3 $4
     Return=$?
     popd > /dev/null
     if [ "$Return" != "0" ]; then return $Return; fi
@@ -477,11 +471,11 @@ function server_start() {
         Err "Start server (nohup bin/api-server.sh)" $1 $2 $3 $4
         Return=$?
     else
-        let "DURATION = 10"
-        until [[ $DURATION -lt 0 ]]; do
+        let "Duration = 10"
+        until [[ $Duration -lt 0 ]]; do
             sleep 1
             echo -n "."
-            let "DURATION -= 1"
+            let "Duration -= 1"
         done
         echo
     fi
@@ -498,9 +492,9 @@ function server_stop() {
     # debug: Stop the server
     let "LoopCounter = 24"
     until [[ $LoopCounter -le 0 ]]; do
-        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
-        ps|grep $pid > /dev/null
+        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
+            pid=$(echo $pid | head -n 1 |  awk '{print $2}')
             echo -n "Stop server $pid"
             kill $pid
             if [ $? != 0 ]; then
@@ -511,11 +505,11 @@ function server_stop() {
                     return $Return
                 fi
             fi
-            let "DURATION = 2"
-            until [[ $DURATION -le 0 ]]; do
+            let "Duration = 2"
+            until [[ $Duration -le 0 ]]; do
                 sleep 1
                 echo -n "."
-                let "DURATION -= 1"
+                let "Duration -= 1"
             done
             echo
             let "LoopCounter -= 1"
