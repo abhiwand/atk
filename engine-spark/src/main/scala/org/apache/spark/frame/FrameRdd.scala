@@ -459,7 +459,7 @@ object FrameRdd {
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
-  def schemaToStructType(columns: List[(String, DataType)]): StructType = {
+  def schemaToStructType(columns: List[(String, com.intel.intelanalytics.domain.schema.DataTypes.DataType)]): StructType = {
     val fields: Seq[StructField] = columns.map {
       case (name, dataType) =>
         StructField(name.replaceAll("\\s", ""), dataType match {
@@ -479,7 +479,7 @@ object FrameRdd {
    * Converts the spark DataTypes to our schema Datatypes
    * @return our schema DataType
    */
-  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.catalyst.types.DataType): DataType = {
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.catalyst.types.DataType): com.intel.intelanalytics.domain.schema.DataTypes.DataType = {
     val intType = IntegerType.getClass()
     val longType = LongType.getClass()
     val floatType = FloatType.getClass()
