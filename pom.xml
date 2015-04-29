@@ -151,8 +151,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <module>api-doc</module>
-                <module>event-api</module>
-                <module>event</module>
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>
@@ -175,8 +173,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>event-api</module>
-                <module>event</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -194,8 +190,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <module>api-doc</module>
-                <module>event-api</module>
-                <module>event</module>
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>

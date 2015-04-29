@@ -3,25 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.intel.ia</groupId>
     <artifactId>event</artifactId>
+    <version>master-SNAPSHOT</version>
+
     <packaging>jar</packaging>
     <name>event (logging)</name>
        
     <description>
         event-api provides the interfaces and event provides the implementation.
 
-        The event module provides logging including more advanced features not usually seen in logging frameworks.
-
         Unlike other logging frameworks it supports rich event data including nested execution contexts, and delayed
         translation support.
     </description>
-
-    <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
-        <relativePath>../pom.xml</relativePath>
-        <version>master-SNAPSHOT</version>
-    </parent>
 
     <build>
         <plugins>
