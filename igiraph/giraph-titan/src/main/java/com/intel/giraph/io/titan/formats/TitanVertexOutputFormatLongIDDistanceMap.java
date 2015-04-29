@@ -58,9 +58,6 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
     V extends DistanceMapWritable, E extends NullWritable>
     extends TitanVertexOutputFormat<I,V,E> {
 
-    private static final Logger LOG = Logger.getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
-
-
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
         return new TitanLongIDDistanceMapWriter();
@@ -72,21 +69,6 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
      * and <code>TwoVector</code> values.
      */
     public class TitanLongIDDistanceMapWriter extends TitanVertexWriterToEachLine {
-        /**
-         * Vertex value properties to filter
-         */
-        protected String[] vertexValuePropertyKeyList = null;
-
-        /**
-         * Initialize Titan vertex writer and open graph
-         * @param context Task attempt context
-         */
-        @Override
-        public void initialize(TaskAttemptContext context) throws IOException,
-                InterruptedException {
-            super.initialize(context);
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
-        }
 
         /**
          * Write results to Titan vertex

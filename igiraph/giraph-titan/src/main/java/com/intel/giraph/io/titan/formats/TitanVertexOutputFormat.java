@@ -23,11 +23,9 @@
 
 package com.intel.giraph.io.titan.formats;
 
-import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.TitanGraphWriter;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
@@ -75,17 +73,24 @@ public abstract class TitanVertexOutputFormat<I extends WritableComparable,
     protected abstract class TitanVertexWriterToEachLine extends TextVertexWriterToEachLine {
 
         /**
+         * Vertex value properties to filter
+         */
+        protected String[] vertexValuePropertyKeyList = null;
+
+        /**
          * TitanFactory to write back results
          */
         protected TitanGraph graph = null;
+
         /**
          * Used to commit vertices in batches
          */
         protected int verticesPendingCommit = 0;
+
         /**
          * regular expression of the deliminators for a property list
          */
-        protected String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
+        protected String regexp = "[\\s,\\t]+";
 
         /**
          * Initialize Titan vertex writer and open graph
@@ -96,6 +101,7 @@ public abstract class TitanVertexOutputFormat<I extends WritableComparable,
                 InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
         /**

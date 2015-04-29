@@ -77,19 +77,6 @@ public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
      */
     protected class TitanLongIDLongValueWriter extends TitanVertexWriterToEachLine {
 
-        /**
-         * Vertex value properties to filter
-         */
-        private String[] vertexValuePropertyKeyList = null;
-
-        @Override
-        public void initialize(TaskAttemptContext context) throws IOException,
-            InterruptedException {
-            super.initialize(context);
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
-        }
-
-
         @Override
         public Text convertVertexToLine(Vertex<I, V, E> vertex) throws IOException {
 

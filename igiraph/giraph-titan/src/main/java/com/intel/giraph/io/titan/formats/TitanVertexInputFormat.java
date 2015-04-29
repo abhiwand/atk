@@ -58,8 +58,8 @@ public abstract class TitanVertexInputFormat<I extends WritableComparable, V ext
      * @param conf Configuration
      */
     public void checkInputSpecs(Configuration conf) {
-
     }
+
 
     /**
      * Set up Titan/HBase configuration for Giraph
