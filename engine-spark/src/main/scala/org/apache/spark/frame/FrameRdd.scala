@@ -27,6 +27,7 @@ import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
@@ -473,4 +474,31 @@ object FrameRdd {
     }
     StructType(fields)
   }
+
+  /**
+   * Converts the spark DataTypes to our schema Datatypes
+   * @return our schema DataType
+   */
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.catalyst.types.DataType): DataType = {
+    val intType = IntegerType.getClass()
+    val longType = LongType.getClass()
+    val floatType = FloatType.getClass()
+    val doubleType = DoubleType.getClass()
+    val stringType = StringType.getClass()
+    val dateType = DateType.getClass()
+    val timeStampType = TimestampType.getClass()
+
+    val a = dataType.getClass()
+    a match {
+      case `intType` => int32
+      case `longType` => int64
+      case `floatType` => float32
+      case `doubleType` => float64
+      case `stringType` => DataTypes.string
+      case `dateType` => DataTypes.string
+      case `timeStampType` => DataTypes.string
+      case _ => throw new IllegalArgumentException(s"unsupported type $a")
+    }
+  }
+
 }
