@@ -179,7 +179,7 @@ class SparkModelStorage(metaStore: MetaStore)
     metaStore.withSession("spark.modelstorage.getModels") {
       implicit session =>
         {
-          metaStore.modelRepo.scanAll().filter(m => m.statusId != Status.Deleted && m.statusId != Status.Dead && m.name.isDefined)
+          metaStore.modelRepo.scanAll().filter(m => m.statusId != Status.Deleted && m.statusId != Status.Deleted_Final && m.name.isDefined)
         }
     }
   }
@@ -202,4 +202,18 @@ class SparkModelStorage(metaStore: MetaStore)
     }
   }
 
+  /**
+   * Set a model to be deleted on the next execution of garbage collection
+   * @param model model to delete
+   * @param invocation current invocation
+   */
+  override def scheduleDeletion(model: ModelEntity)(implicit invocation: Invocation): Unit = {
+    metaStore.withSession("spark.modelstorage.scheduleDeletion") {
+      implicit session =>
+        {
+          info(s"marking as ready to delete: model id:${model.id}, name:${model.name}")
+          metaStore.modelRepo.updateReadyToDelete(model)
+        }
+    }
+  }
 }

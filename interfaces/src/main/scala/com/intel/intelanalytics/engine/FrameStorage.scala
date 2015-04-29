@@ -68,4 +68,6 @@ trait FrameStorage {
    */
   def lookupErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): Option[FrameEntity]
   def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long]
+
+  def scheduleDeletion(frame: FrameEntity)(implicit invocation: Invocation): Unit
 }

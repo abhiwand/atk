@@ -3,6 +3,7 @@ Predict test frame labels and show metrics.
 Predict the labels for a test frame and run classification metrics on predicted
 and target labels.
 
+
 Parameters
 ----------
 predict_frame : Frame
@@ -15,23 +16,21 @@ observation_column : list of str (Optional)
     By default, we test over the columns the LogisticRegressionModel was
     trained on.
 
+
 Returns
 -------
-An object with binary classification metrics.
+object
+    An object with binary classification metrics.
+    The data returned is composed of multiple components:
+<object>.accuracy : double
+<object>.confusion_matrix : table
+<object>.f_measure : double
+<object>.precision : double
+<object>.recall : double
 
-  <object>.accuracy : double
-
-  <object>.confusion_matrix : table
-
-  <object>.f_measure : double
-
-  <object>.precision : double
-
-  <object>.recall : double
 
 Examples
 --------
-
 .. only:: html
 
     .. code::

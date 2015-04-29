@@ -15,6 +15,8 @@ Global Methods
 
 .. autofunction:: intelanalytics.drop_models
 
+.. _api_kmeans:
+
 K-Means Model
 -------------
 .. autoclass:: intelanalytics.KMeansModel

@@ -65,9 +65,6 @@ weight_label: Array[Int] (Optional)
 weight: Array[Double] (Optional)
     Default is (Array[Double](0.0))
 
-Returns
--------
-None
 
 Examples
 --------

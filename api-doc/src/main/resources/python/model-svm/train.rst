@@ -3,6 +3,7 @@ Train SVM model based on another frame.
 Creating a SVM Model using the observation column and label column of the train
 frame.
 
+
 Parameters
 ----------
 frame : Frame
@@ -23,6 +24,7 @@ reg_param: double (Optional)
     Regularization parameter. Default is 0.01.
 mini_batch_fraction : double (Optional)
     Mini batch fraction parameter. Default is 1.0.
+
 
 Examples
 --------

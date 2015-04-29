@@ -2,16 +2,19 @@ Build new frame with columns for data and distribution.
 
 Generates the :term:`empirical cumulative distribution` for the input column.
 
+
 Parameters
 ----------
 sample_col : str
     The name of the column containing sample.
 
+
 Returns
 -------
-Frame : ECDF frame
+Frame
     A frame containing each distinct value in the sample and its
     corresponding ecdf value.
+
 
 Examples
 --------

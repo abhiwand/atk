@@ -6,10 +6,12 @@ Returns
 A set of titan vertices and edges representing the internal clustering of the
 graph.
 
+
 Notes
 -----
 The internal vertices and edges are for graph navigation and are added to the
 intial graph.
+
 
 Examples
 --------

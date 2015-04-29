@@ -38,8 +38,8 @@
                             <arguments>
                                 <argument>+x</argument>
                                 <argument>run_tests.sh</argument>
-                                <argument>api-server-start.sh</argument>
-                                <argument>api-server-stop.sh</argument>
+                                <argument>rest-server-start.sh</argument>
+                                <argument>rest-server-stop.sh</argument>
                                 <argument>clean.sh</argument>
                             </arguments>
                         </configuration>

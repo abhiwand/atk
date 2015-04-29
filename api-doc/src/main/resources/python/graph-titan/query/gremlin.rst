@@ -6,21 +6,25 @@ or JSON (for other results like counts).
 GraphSON is a JSON-based format for property graphs which uses reserved keys
 that begin with underscores to encode vertex and edge metadata.
 
+
 Parameters
 ----------
 gremlin : str
     The Gremlin script to execute.
 
+
 Returns
 -------
-dict : Dictionary
+dict
     Query results and runtime in seconds.
+
 
 Notes
 -----
 The query does not support pagination so the results of query should be limited
 using the Gremlin range filter [i..j], for example, g.V[0..9] to return the
 first 10 vertices.
+
 
 Examples
 --------

@@ -3,6 +3,7 @@ Determining which vertices are the most important.
 ** Experimental Feature **
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
+
 Parameters
 ----------
 output_property : str
@@ -28,19 +29,21 @@ reset_probability : float (optional)
     The probability that the random walk of a page is reset.
     Default is 0.15.
 
+
 Returns
 -------
-dict : Edge & vertex dictionary
-    dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame)))
+dict
+    dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame))).
     Dictionary containing a dictionary of labeled vertices and labeled edges.
     For the vertex_dictionary the vertex type is the key and the corresponding
     vertex's frame with a new column storing the page rank value for the vertex
-    Call vertex_dictionary['label'] to get the handle to frame whose vertex type
-    is label.
+    Call vertex_dictionary['label'] to get the handle to frame whose vertex
+    type is label.
     For the edge_dictionary the edge type is the key and the corresponding
     edge's frame with a new column storing the page rank value for the edge
     Call edge_dictionary['label'] to get the handle to frame whose edge type
     is label.
+
 
 Examples
 --------

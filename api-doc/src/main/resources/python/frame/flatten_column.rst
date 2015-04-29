@@ -6,6 +6,7 @@ New rows are a full copy of the original row, but the specified column only
 contains one value.
 The original row is deleted.
 
+
 Parameters
 ----------
 column : str
@@ -13,6 +14,7 @@ column : str
 delimiter : str (optional)
     The delimiter string.
     Default is comma (,).
+
 
 Examples
 --------

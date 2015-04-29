@@ -65,6 +65,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     binary classifier model, formatted for human readability.
     See notes below.
 
+
 Parameters
 ----------
 label_column : str
@@ -80,9 +81,6 @@ beta : double (optional)
     measure is computed); must be greater than zero.
     Defaults to 1.
 
-Notes
------
-The **confusion_matrix** is not yet implemented for multi-class classifiers.
 
 Returns
 -------
@@ -92,6 +90,12 @@ object
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double
+
+
+Notes
+-----
+The **confusion_matrix** is not yet implemented for multi-class classifiers.
+
 
 Examples
 --------

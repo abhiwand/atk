@@ -1,6 +1,8 @@
 .. index::
     pair: data; type
 
+.. _api_datatypes:
+
 Data Types
 ==========
 

@@ -94,14 +94,14 @@
 
     <dependencies>
 
-        <!--START BDA dependencies to our modules-->
+        <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>shared</artifactId>
+            <artifactId>meta-store</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -113,7 +113,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphbuilder-3</artifactId>
+            <artifactId>graphbuilder</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.jboss.netty</groupId>
@@ -157,7 +157,7 @@
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--END BDA dependencies to our modules-->
+        <!--END dependencies to our modules-->
 
         <dependency>
             <groupId>com.typesafe</groupId>

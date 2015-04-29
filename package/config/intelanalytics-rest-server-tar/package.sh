@@ -27,11 +27,11 @@ mkdir -p  tarballs/$package/lib
 cp -v  config/intelanalytics-rest-server-tar/application.conf tarballs/$package/conf
 cp -v  config/intelanalytics-rest-server-tar/logback.xml tarballs/$package/conf
 cp -Rv config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
-cp -v  config/intelanalytics-rest-server-tar/api-server.sh tarballs/$package/bin/
+cp -v  config/intelanalytics-rest-server-tar/rest-server.sh tarballs/$package/bin/
 
 
 
-jars="api-server.jar  engine.jar  interfaces.jar  deploy.jar"
+jars="rest-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 #popd
 

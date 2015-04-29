@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>ititan-core</artifactId>
+            <artifactId>titan-shading</artifactId>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>

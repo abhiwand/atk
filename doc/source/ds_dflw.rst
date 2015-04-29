@@ -1352,6 +1352,7 @@ Graph Analytics
 *   `Clustering Coefficients`_
 *   `Connected Components (CC)`_
 *   `Degree Calculation`_
+*   `K-Clique Percolation`_
 *   `PageRank (PR)`_
 
 .. _Clustering Coefficients:
@@ -1363,6 +1364,9 @@ Graph Analytics
 .. _Degree Calculation:
 .. include:: ds_gaal_dc.inc
 
+.. _K-Clique Percolation:
+.. include:: ds_gaal_k.inc
+
 .. _PageRank (PR):
 .. include:: ds_gaal_pr.inc
 
@@ -1370,3 +1374,19 @@ Graph Analytics
     :hidden:
 
     ds_apir
+
+.. rubric:: Footnotes
+
+.. [K1]
+    G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
+    community structure of complex networks in nature and society”.
+    Nature, 435:814, 2005 (
+    See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
+
+.. [K2]
+    Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
+    "Distributed Clique Percolation based community detection on social
+    networks using MapReduce,"
+    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol.,
+    no., pp.478,483, 28-30 May 2013
+
