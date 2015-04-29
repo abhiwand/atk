@@ -186,10 +186,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Column identifications in the current Frame.
 
+
         Returns
         -------
-        list : list of str
+        list
             A list of the names of the columns.
+
 
         Examples
         --------
@@ -217,10 +219,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Retrieve the name of the current frame.
 
+
         Returns
         -------
-        str : identification
-            The name of the frame
+        str
+            The name of the frame.
+
 
         Examples
         --------
@@ -248,6 +252,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Assign the name to the current frame.
 
+
         Examples
         --------
         Assign the name "movies" to the current frame:
@@ -265,10 +270,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Number of rows in the current frame.
 
+
         Returns
         -------
-        int : quantity
+        int
             The number of rows in the frame.
+
 
         Examples
         --------
@@ -296,12 +303,15 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         The schema of the current frame is a list of column names and
         associated data types.
-        It is retrieved as a list of tuples.
-        Each tuple has the name and data type of one of the frame's columns.
+
 
         Returns
         -------
-        list : list of tuples
+        list
+            A list of tuples.
+            Each tuple has the name and data type of one of the frame's
+            columns.
+
 
         Examples
         --------
@@ -330,23 +340,23 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Assigns data to column based on evaluating a function for each row.
 
+
         Parameters
         ----------
         func : row function
             Function (|UDF|) which takes the values in the row and produces a
             value, or collection of values, for the new cell(s).
-
         schema : [ tuple | list of tuples ]
             The schema for the results of the |UDF|, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type, and is of the form (str, type).
-
         columns_accessed : list of str (optional)
             List of columns which the |UDF| will access.
             This adds significant performance benefit if we know which
             column(s) will be needed to execute the |UDF|, especially when the
             frame has significantly more columns than those being used to
             evaluate the |UDF|.
+
 
         Notes
         -----
@@ -355,6 +365,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             See :doc:`ds_apir`.
         2)  Unicode in column names is not supported and will likely cause the
             drop_frames() method (and others) to fail!
+
 
         Examples
         --------
@@ -451,6 +462,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Copy frame or certain frame columns entirely or filtered.
         Useful for frame query.
 
+
         Parameters
         ----------
         columns : [ str | list of str | dict ] (optional)
@@ -458,20 +470,20 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             If a dictionary is used, the string pairs represent a column
             renaming, {source_column_name: destination_column_name}.
             Default is None.
-
         where : |UDF| (optional)
             If not None, only those rows which evaluate to True will be copied.
             Default is None.
-
         name : str (optional)
             Name of the copied frame.
             Default is None.
 
+
         Returns
         -------
-        Frame : access to new frame
-            A new Frame object accessing data in a new frame which is a copy of
+        Frame
+            A Frame object accessing data in a new frame which is a copy of
             the original frame.
+
 
         Examples
         --------
@@ -528,16 +540,45 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Counts the number of rows which meet given criteria.
 
+
         Parameters
         ----------
-        where : |UDF|
+        where : [ |UDF| | lambda ]
             |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
+
         Returns
         -------
-        int : count
-            number of rows for which the where |UDF| evaluated to True.
+        int
+            Number of rows where the |UDF| evaluated to True.
+
+
+        Examples
+        --------
+        Given a frame with 10 rows of data, finding out how many rows have a
+        value of 1 in column *a*:
+
+        .. code::
+
+            >>> print my_frame.inspect()
+
+              a:int
+            /-------/
+              1
+              2
+              3
+              4
+              1
+              2
+              3
+              4
+              1
+              2
+
+            >>> print my_frame.count(lambda row: row.a == 1)
+            3
+
         """
         return self._backend.get_row_count(self, where)
 
@@ -545,7 +586,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Download a frame from the server into client workspace.
 
-        Copies an intelanalytics Frame into a Pandas DataFrame.
+        Copies an intelanalytics Frame into a Pandas Data Frame.
+
 
         Parameters
         ----------
@@ -553,20 +595,20 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             The number of rows to copy from the currently active intelanalytics
             Frame.
             Default is 100.
-
         offset : int (optional)
             The number of rows to skip before copying.
             Default is 0.
-
         columns : str or iterable of str (optional)
             The columns to be included in the result.
             Default is all.
+
 
         Returns
         -------
         Pandas Data Frame
             A new pandas data frame object containing copies of all or subset
             of the original frame.
+
 
         Examples
         --------
@@ -609,11 +651,13 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Erase any rows in the current frame which qualify.
 
+
         Parameters
         ----------
-        predicate : |UDF|
+        predicate : [ |UDF| | lambda ]
             |UDF| or :term:`lambda` which takes a row argument and
             evaluates to a boolean value.
+
 
         Examples
         --------
@@ -645,10 +689,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Modifies the current frame to save defined rows and delete everything
         else.
 
+
         Parameters
         ----------
-        predicate : |UDF|
-            |UDF| definition or lambda which takes a row argument and
+        predicate : [ |UDF| | lambda ]
+            |UDF| definition or :term:`lambda` which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -661,8 +706,8 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         .. code::
 
             >>> def my_filter(row):
-            ... return row['animal_type'] == 'lizard' or
-            ... row['animal_type'] == "frog"
+            ...     return row['animal_type'] == 'lizard' or
+            ...     row['animal_type'] == "frog"
 
             >>> my_frame.filter(my_filter)
 
@@ -682,10 +727,11 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         When a frame is created, another frame is transparently
         created to capture parse errors.
 
+
         Returns
         -------
-        Frame : error frame object
-            A new object accessing a frame that contains the parse errors of
+        Frame
+            An object accessing a frame that contains the parse errors of
             the currently active Frame or None if no error frame exists.
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
@@ -703,20 +749,22 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         The other columns are combined according to the aggregation
         argument(s).
 
+
         Parameters
         ----------
         group_by_columns : [ str | list of str ]
             Column name or list of column names.
-
         aggregation_arguments
             Aggregation function based on entire row, and/or
             dictionaries (one or more) of { column name str : aggregation
             function(s) }.
 
+
         Returns
         -------
-        Frame : frame reference
-            A new object accessing a new aggregated frame.
+        Frame
+            An object accessing a new aggregated frame.
+
 
         Notes
         -----
@@ -739,6 +787,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             *   stdev
             *   sum
             *   var (see glossary :term:`Bias vs Variance`)
+
 
         Examples
         --------
@@ -858,6 +907,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         Print the frame data in readable format.
 
+
         Parameters
         ----------
         n : int (optional)
@@ -872,10 +922,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             Specify the columns to be included in the result.
             Default is all.
 
+
         Returns
         -------
         data
-            Formatted for ease of human inspection.
+            Data from frame, formatted for ease of human inspection.
+
 
         Examples
         --------
@@ -925,6 +977,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         the left and right frames did not have the same value in the matching
         column.
 
+
         Parameters
         ----------
         right : Frame
@@ -943,10 +996,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
             Name for the resulting new joined frame.
             Default is None.
 
+
         Returns
         -------
-        Frame : combined frames
-            A new object accessing a new joined frame.
+        Frame
+            An object accessing a new joined frame.
+
 
         Notes
         -----
@@ -961,6 +1016,7 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         to using the ``join`` method.
         Keep in mind that unicode in column names will likely cause the
         drop_frames() method (and others) to fail!
+
 
         Examples
         --------
@@ -1053,15 +1109,16 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Sort a frame by column values either ascending or descending.
 
+
         Parameters
         ----------
         columns : [ str | list of str | list of tuples ]
             Either a column name, a list of column names, or a list of tuples
             where each tuple is a name and an ascending bool value.
-
         ascending: bool (optional)
             True for ascending, False for descending.
             Default is True.
+
 
         Examples
         --------
@@ -1117,18 +1174,18 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         Take a subset of the currently active Frame.
 
+
         Parameters
         ----------
         n : int
             The number of rows to copy from the currently active Frame.
-
         offset : int (optional)
             The number of rows to skip before copying.
             Default is 0.
-
         columns : [ str | iterable of str ] (optional)
             Specify the columns to be included in the result.
             Default is None, meaning all columns are to be included.
+
 
         Notes
         -----
@@ -1136,12 +1193,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         number of rows, the rows obtained may be different every time the
         command is executed, even if the parameters do not change.
 
+
         Returns
         -------
         list : list of lists of row data
             A list composed of the data from the frame.
             Each item of the overall list is a list of the values of the
             columns for one row of the original frame.
+
 
         Examples
         --------
@@ -1187,19 +1246,20 @@ class Frame(DocStubsFrame, _BaseFrame):
     frame,
     Has information needed to modify data and table structure.
 
+
     Parameters
     ----------
     source : [ CsvFile | Frame ] (optional)
         A source of initial data.
-
     name : str (optional)
         The name of the newly created frame.
         Default is None.
 
+
     Returns
     -------
-    class | Frame object
-        An object with access to the frame.
+    Frame
+        An object with access to the data frame.
 
     Notes
     -----
@@ -1217,6 +1277,7 @@ class Frame(DocStubsFrame, _BaseFrame):
     considered part of the str.
     If the last field type is str, trailing spaces on each row are
     considered part of the str.
+
 
     Examples
     --------
@@ -1263,10 +1324,12 @@ class Frame(DocStubsFrame, _BaseFrame):
         """
         Adds more data to the current frame.
 
+
         Parameters
         ----------
         data : Frame
             A Frame accessing the data being added.
+
 
         Examples
         --------
@@ -1353,6 +1416,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     -   "Columns" on a VertexFrame can also be thought of as "properties" on
         vertices
 
+
     Parameters
     ----------
     source : ? (optional)
@@ -1360,10 +1424,12 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     label : ? (optional)
     _info : ? (optional)
 
+
     Returns
     -------
-    class : VertexFrame object
-        An object with access to the frame.
+    VertexFrame
+        An object with access to the data frame.
+
 
     Examples
     --------
@@ -1442,11 +1508,13 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
         """
         Delete rows that qualify.
 
+
         Parameters
         ----------
-        predicate : |UDF|
+        predicate : [ |UDF| | lambda ]
             |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
+
 
         Examples
         --------
@@ -1500,6 +1568,7 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     -   "Columns" on an EdgeFrame can also be thought of as "properties" on
         Edges
 
+
     Parameters
     ----------
     source : ? (optional)
@@ -1510,10 +1579,12 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     directed : ? (optional)
     _info : ? (optional)
 
+
     Returns
     -------
-    class : VertexFrame object
-        An object with access to the frame.
+    EdgeFrame
+        An object with access to the data frame.
+
 
     Examples
     --------

@@ -62,9 +62,10 @@ Connect to the server:
 
 .. note::
 
-    Sometimes it is helpful to see the details of the python stack trace upon error.
-    Setting the *show_details* to ``True`` causes the full python stack trace to be
-    printed, rather than a friendlier digest.
+    Sometimes it is helpful to see the details of the python stack trace upon
+    error.
+    Setting the *show_details* to ``True`` causes the full python stack trace
+    to be printed, rather than a friendlier digest.
 
     .. code::
 

@@ -115,6 +115,7 @@ class _NamedObjectsFunctionFactory(object):
         Identification names must start with a letter and are limited to
         alphanumeric characters and the ``_`` character.
 
+
         Examples
         --------
 
@@ -148,10 +149,11 @@ class _NamedObjectsFunctionFactory(object):
 
         Gets the names of {obj_term} objects available for retrieval.
 
+
         Returns
         -------
-        list : list of str
-            Names of the all {obj_term} objects.
+        list
+            A list of the names of the all {obj_term} objects.
         """.format(obj_term=self._term)
         set_function_doc_stub_text(get_object_names, '')
         return get_api_decorator(module_logger)(get_object_names)
@@ -185,14 +187,17 @@ class _NamedObjectsFunctionFactory(object):
         get_object.__doc__ = """
         Get access to {obj_term} object.
 
+
         Parameters
         ----------
         name : str
             String containing the name of the object.
 
+
         Returns
         -------
-        class | {obj_term} object.
+        class
+            {obj_term} object.
         """.format(obj_term=self._term)
         set_function_doc_stub_text(get_object, 'name')
         return get_api_decorator(module_logger)(get_object)
@@ -223,6 +228,7 @@ class _NamedObjectsFunctionFactory(object):
         drop_objects.__name__ = drop_objects_name
         drop_objects.__doc__ = """
         Deletes the {obj_term} and it's data.
+
 
         Parameters
         ----------

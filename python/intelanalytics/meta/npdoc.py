@@ -37,6 +37,7 @@ class CommandNumpyDoc(object):
 
     (instantiate, grab repr, discard)
 
+
     Parameters
     ----------
     command_def : CommandDefinition
