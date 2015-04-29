@@ -727,7 +727,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>ititan-core</artifactId>
+                <artifactId>titan-shading</artifactId>
                 <version>${dep.ititan.version}</version>
                 <!--<exclusions>
                     <exclusion>
