@@ -4,31 +4,31 @@ import org.scalatest.{ Matchers, FlatSpec }
 
 class EdgeDistanceMinTest extends FlatSpec with Matchers {
 
-    val nullEdgeList = null
+  val nullEdgeList = null
 
-    val emptyEdgeList = List()
+  val emptyEdgeList = List()
 
-    val basicEdgeList: List[HierarchicalClusteringEdge] = List(
-      HierarchicalClusteringEdge(1,1,2,1,1.1f,false),
-      HierarchicalClusteringEdge(2,1,3,1,1.2f,false)
-    )
+  val basicEdgeList: List[HierarchicalClusteringEdge] = List(
+    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  )
 
-    val reversedEdgeList: List[HierarchicalClusteringEdge] = List(
-      HierarchicalClusteringEdge(1,1,2,1,1.1f,false),
-      HierarchicalClusteringEdge(2,1,1,1,1.1f,false),
-      HierarchicalClusteringEdge(2,1,3,1,1.2f,false)
-    )
+  val reversedEdgeList: List[HierarchicalClusteringEdge] = List(
+    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    HierarchicalClusteringEdge(2, 1, 1, 1, 1.1f, false),
+    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  )
 
   "edgeDistance::min" should "return null for null inputs" in {
     val (minEdge, list) = EdgeDistance.min(nullEdgeList)
     assert(minEdge == null)
-    assert(list == VertexOutEdges(null,null))
+    assert(list == VertexOutEdges(null, null))
   }
 
   "edgeDistance::min" should "return null for empty lists" in {
     val (minEdge, list) = EdgeDistance.min(emptyEdgeList)
     assert(minEdge == null)
-    assert(list == VertexOutEdges(null,null))
+    assert(list == VertexOutEdges(null, null))
   }
 
   "edgeDistance::min" should "return non null edge" in {

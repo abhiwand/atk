@@ -540,3 +540,20 @@ class XmlFile(MultiLineFile):
 
     def __repr__(self):
         return repr(self.file_name)
+
+
+class HiveQuery(DataFile):
+    """
+    Hive query and settings if any
+
+    """
+
+    annotation = "hive_settings"
+
+    def __init__(self, file_name):
+        if not file_name or not isinstance(file_name, basestring):
+            raise ValueError("The query must be a non-empty string")
+        self.file_name = file_name
+
+    def __repr__(self):
+        return repr(self.file_name)

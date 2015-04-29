@@ -130,10 +130,9 @@ object EdgeDistance extends Serializable {
     }
 
     if (!edges.isEmpty) {
-        edges.head
+      edges.head
     }
-    else
-    {
+    else {
       null
     }
 

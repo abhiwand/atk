@@ -35,7 +35,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
-from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile, HiveQuery
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -194,7 +194,12 @@ class FrameBackendRest(object):
                     },
                     }
 
-
+        if isinstance( source, HiveQuery):
+            return {'destination': frame._id,
+                    'source': {"source_type": "hivedb",
+                               "uri": source.file_name
+                               },
+                    }
 
         if isinstance( source, MultiLineFile):
             return {'destination': frame._id,

@@ -716,5 +716,27 @@ object DataTypes extends EventLogging {
       case _ => throw new IllegalArgumentException(s"unsupported type $a")
     }
   }
+  /**
+   * Match scala DataType object and return DataType instance.
+   *
+   *
+   * @return DataType instance
+   */
+  def scalaDataTypeToDataType(a: java.lang.Class[_]): DataType = {
+    val intType = classOf[java.lang.Integer]
+    val longType = classOf[java.lang.Long]
+    val floatType = classOf[java.lang.Float]
+    val doubleType = classOf[java.lang.Double]
+    val stringType = classOf[java.lang.String]
+
+    a match {
+      case `intType` => int32
+      case `longType` => int64
+      case `floatType` => float32
+      case `doubleType` => float64
+      case `stringType` => string
+      case _ => throw new IllegalArgumentException(s"unsupported type $a")
+    }
+  }
 }
 
