@@ -96,7 +96,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     }
     else if (arguments.source.isHiveDb) {
       val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-      val rdd = sqlContext.sql("SELECT year, max(runs) FROM avrosam GROUP BY year") //arguments.source.uri) //use URI
+      val rdd = sqlContext.sql(arguments.source.uri) //use URI
       println("SELECT year, max(runs) FROM avrosam GROUP BY year")
       rdd.collect.foreach(print(_))
       val array: Seq[StructField] = rdd.schema.fields
