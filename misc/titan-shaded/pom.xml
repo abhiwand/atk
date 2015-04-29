@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.intel.ia</groupId>
-    <artifactId>titan-shading</artifactId>
+    <artifactId>titan-shaded</artifactId>
     <version>0.5.0-SNAPSHOT</version>
 
     <description>
@@ -58,7 +58,7 @@
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <!--
-                                            Exclude these so they don't conflict when ititan jar is included in gb jar.
+                                            Exclude these so they don't conflict when titan jar is included in gb jar.
                                           -->
                                         <exclude>META-INF/maven/com.esotericsoftware.kryo/kryo/pom.properties</exclude>
                                         <exclude>META-INF/maven/com.esotericsoftware.kryo/kryo/pom.xml</exclude>

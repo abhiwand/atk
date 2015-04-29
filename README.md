@@ -18,7 +18,7 @@ Intel Analytics Toolkit (ATK)
 * launcher/ - starts up our application, launches parts of our app
 * meta-store/ - code that interacts with the meta-store database repository including SQL scripts
 * misc/ - miscellaneous items that aren't really part of our product
-* misc/titan-shading/ - repackaging of Titan to get around classloader issues
+* misc/titan-shaded/ - repackaging of Titan to get around classloader issues
 * package/ - packaging for VM's, RPM's
 * python/ - python client code
 * python-examples/ - internal example code, add examples here so we don't have to email scripts around
