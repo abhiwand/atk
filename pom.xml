@@ -167,14 +167,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>event-api</module>
                 <module>event</module>
                 <module>testutils</module>
-                <module>graphbuilder-3</module>
+                <module>graphbuilder</module>
                 <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module>
-                <module>shared</module>
+                <module>meta-store</module>
                 <module>engine</module>
                 <module>engine-spark</module>
-                <module>api-server</module>
+                <module>rest-server</module>
                 <module>igiraph/giraph-titan</module>
                 <module>package</module>
             </modules>
@@ -210,14 +210,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>event-api</module>
                 <module>event</module>
                 <module>testutils</module>
-                <module>graphbuilder-3</module>
+                <module>graphbuilder</module>
                 <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module>
-                <module>shared</module>
+                <module>meta-store</module>
                 <module>engine</module>
                 <module>engine-spark</module>
-                <module>api-server</module>
+                <module>rest-server</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -612,7 +612,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>api-server/application.home_IS_UNDEFINED</directory>
+                            <directory>rest-server/application.home_IS_UNDEFINED</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
@@ -659,7 +659,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>graphbuilder-3</artifactId>
+                <artifactId>graphbuilder</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -681,12 +681,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>shared</artifactId>
+                <artifactId>meta-store</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>api-server</artifactId>
+                <artifactId>rest-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
