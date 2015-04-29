@@ -4,6 +4,7 @@ Remove duplicate vertex rows, keeping only one vertex row per uniqueness
 criteria match.
 Edges that were connected to removed vertices are also automatically dropped.
 
+
 Parameters
 ----------
 columns : [str | list of str]
@@ -11,6 +12,7 @@ columns : [str | list of str]
     If empty, the method will remove duplicates that have the whole row of
     data identical (not including the _vid column that is already unique per
     row).
+
 
 Examples
 --------

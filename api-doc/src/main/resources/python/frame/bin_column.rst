@@ -3,6 +3,7 @@ Classify data into user-defined groups.
 Summarize rows of data based on the value in a single column by sorting them
 into bins, or groups, based on a list of bin cutoff points.
 
+
 Parameters
 ----------
 column_name : str
@@ -28,6 +29,7 @@ strict_binning : bool (optional)
 bin_column_name : str (optional)
     The name for the new binned column.
     Default is ``<column_name>_binned``.
+
 
 Notes
 -----

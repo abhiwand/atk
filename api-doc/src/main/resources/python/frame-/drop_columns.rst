@@ -2,16 +2,19 @@ Remove columns from the frame.
 
 The data from the columns is lost.
 
+
 Parameters
 ----------
 columns: [ str | list of str ]
     Column name OR list of column names to be removed from the frame.
+
 
 Notes
 -----
 It is not possible to delete all columns from a frame.
 At least one column needs to remain.
 If it is necessary to delete all columns, then delete the frame.
+
 
 Examples
 --------

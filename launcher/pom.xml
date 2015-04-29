@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
 
     <description>
-        This module launches "archives" like the api-server, it encapsulates common start-up logic that is also used
+        This module launches "archives" like the rest-server, it encapsulates common start-up logic that is also used
         by the plugin system.
     </description>
 

@@ -10,6 +10,7 @@ number of vertices that have the same out-degree as it.
 That is, the weight applied to each vertex for 'degreedist' vertex sampling
 is given by the out-degree histogram bin size.
 
+
 Parameters
 ----------
 size : int
@@ -19,10 +20,12 @@ sample_type : str
 seed : int (optional)
     Random seed value.
 
+
 Returns
 -------
 Graph
     A new Graph object representing the vertex induced subgraph.
+
 
 Examples
 --------

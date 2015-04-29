@@ -4,6 +4,7 @@ This algorithm is presented in X. Zhu and Z. Ghahramani.
 Learning from labeled and unlabeled data with label propagation.
 Technical Report CMU-CALD-02-107, CMU, 2002.
 
+
 Parameters
 ----------
 vertex_value_property_list : list of str
@@ -56,10 +57,12 @@ validate_graph_structure : bool (optional)
     This algorithm validation is for undirected graphs.
     This is a necessary but insufficient, check for valid input.
 
+
 Returns
 -------
-Multiple line str
-    The configuration and learning curve report for Label Propagation.
+str
+    The configuration and learning curve report for Label Propagation in the format of a multiple-line string.
+
 
 Examples
 --------
