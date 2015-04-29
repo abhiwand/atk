@@ -36,10 +36,10 @@ class ModelLinearRegressionTest(unittest.TestCase):
     def testLinearRegression(self):
         print "define csv file"
 
-        csv = ia.CsvFile("/datasets/lin_reg_8.csv", schema = [("y", ia.float64),("1",ia.float64),("2",ia.ia.float64),
+        csv = ia.CsvFile("/datasets/lin_reg_8.csv", schema = [("y", ia.float64),("1",ia.float64),("2",ia.float64),
                                                               ("3",ia.float64),("4",ia.float64),("5",ia.float64),
                                                               ("6",ia.float64),("7",ia.float64),("8",ia.float64),
-                                                              ("9",ia.float64),("10",ia.float64)],skip_header_lines=1)
+                                                              ("9",ia.float64),("10",ia.float64)])
 
         print "create frame"
         frame = ia.Frame(csv)
