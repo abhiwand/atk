@@ -109,7 +109,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.titan-shaded.version>0.5.0-SNAPSHOT</dep.titan-shaded.version>
         <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections>0.9.9-RC1</dep.reflections>
@@ -141,19 +141,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
     </modules>
     <profiles>
-        <profile>
-            <id>ititan</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <!--only needs to be run to add titan jar-->
-                    <name>env.build_number</name>
-                </property>
-            </activation>
-            <modules>
-                <module>ititan</module>
-            </modules>
-        </profile>
         <profile>
             <id>modules-packaged</id>
             <activation>
@@ -727,8 +714,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>titan-shading</artifactId>
-                <version>${dep.ititan.version}</version>
+                <artifactId>titan-shaded</artifactId>
+                <version>${dep.titan-shaded.version}</version>
                 <!--<exclusions>
                     <exclusion>
                         <groupId>org.apache.avro</groupId>

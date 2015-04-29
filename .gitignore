@@ -2,11 +2,6 @@ scratch.py
 .ensime*
 TAGS
 dependency-reduced-pom.xml
-/ititan/bin
-/ititan/conf
-/ititan/ext
-/ititan/log
-/ititan/titan-hbase/conf/hbase-site.xml
 dev.conf
 application.home_IS_UNDEFINED
 /bin

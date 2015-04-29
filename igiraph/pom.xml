@@ -74,7 +74,7 @@
         <!-- START Titan dependencies -->
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>titan-shading</artifactId>
+            <artifactId>titan-shaded</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>asm</artifactId>
