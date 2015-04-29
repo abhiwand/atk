@@ -82,8 +82,7 @@ public class TitanVertexBuilder {
         this.vertexValuePropertyKeys = getPropertyKeyMap(conf, INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST);
         this.edgeValuePropertyKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
         this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_LABEL_LIST);
-
-        this.enableVectorValue = "true".equals(VECTOR_VALUE.get(conf));
+        this.enableVectorValue = Boolean.TRUE.toString().equals(VECTOR_VALUE.get(conf));
         this.vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
         this.edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
     }
@@ -204,6 +203,7 @@ public class TitanVertexBuilder {
         double edgeValue = 1.0d;
 
         if (edgeValueObject == null) {
+            // TODO - revisit
             throw new IllegalArgumentException("Edge did not have property named '" + propertyKey + "'");
         }
 
@@ -277,7 +277,7 @@ public class TitanVertexBuilder {
         String propertyKeyString = confOption.get(conf).trim();
         Map<String, Integer> propertyKeyMap = new HashMap<>();
 
-        if (!StringUtils.EMPTY.equals(propertyKeyString)) {
+        if (StringUtils.isNotEmpty(propertyKeyString)) {
             String[] configList =  confOption.get(conf).split(regexp);
             for (int i = 0; i < configList.length; i++) {
                 propertyKeyMap.put(configList[i], i);

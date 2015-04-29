@@ -40,7 +40,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
  * Utility methods for Titan IO
  */
 public class GiraphTitanUtils {
-    private static String propertyKeyRegExp = "[\\s,\\t]+";
+    private static final String propertyKeyRegExp = "[\\s,\\t]+";
 
     /**
      * Logger
@@ -71,23 +71,23 @@ public class GiraphTitanUtils {
 
         }
 
-        if (INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).equals(StringUtils.EMPTY)) {
+        if (StringUtils.isEmpty(INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf))) {
             LOG.info(NO_VERTEX_PROPERTY + ENSURE_INPUT_FORMAT);
         }
 
-        if (INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).equals(StringUtils.EMPTY)) {
+        if (StringUtils.isEmpty(INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf))) {
             LOG.info(NO_EDGE_PROPERTY + ENSURE_INPUT_FORMAT);
         }
 
-        if (INPUT_EDGE_LABEL_LIST.get(conf).equals(StringUtils.EMPTY)) {
+        if (StringUtils.isEmpty(INPUT_EDGE_LABEL_LIST.get(conf))) {
             LOG.info(NO_EDGE_LABEL + ENSURE_INPUT_FORMAT);
         }
 
-        if (VERTEX_TYPE_PROPERTY_KEY.get(conf).equals(StringUtils.EMPTY)) {
+        if (StringUtils.isEmpty(VERTEX_TYPE_PROPERTY_KEY.get(conf))) {
             LOG.info(NO_VERTEX_TYPE + ENSURE_INPUT_FORMAT);
         }
 
-        if (EDGE_TYPE_PROPERTY_KEY.get(conf).equals(StringUtils.EMPTY)) {
+        if (StringUtils.isEmpty(EDGE_TYPE_PROPERTY_KEY.get(conf))) {
             LOG.info(NO_EDGE_TYPE + ENSURE_INPUT_FORMAT);
         }
     }
