@@ -65,7 +65,7 @@ object LbpJsonFormat {
 
 import LbpJsonFormat._
 
-class LoopyBeliefPropagation
+class LoopyBeliefPropagationPlugin
     extends CommandPlugin[Lbp, LbpResult] {
 
   /**
@@ -74,7 +74,7 @@ class LoopyBeliefPropagation
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/ml/loopy_belief_propagation"
+  override def name: String = "graph/ml/loopy_belief_propagation"
 
   override def execute(arguments: Lbp)(implicit invocation: Invocation): LbpResult = {
 

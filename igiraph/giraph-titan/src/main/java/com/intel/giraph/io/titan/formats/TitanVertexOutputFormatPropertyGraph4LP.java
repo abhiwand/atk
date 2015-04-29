@@ -83,10 +83,6 @@ public class TitanVertexOutputFormatPropertyGraph4LP<I extends LongWritable,
     protected class TitanVertexPropertyGraph4LPWriter extends TitanVertexWriterToEachLine {
 
         /**
-         * Vertex value properties to filter
-         */
-        private String[] vertexValuePropertyKeyList = null;
-        /**
          * Enable vector value
          */
         private String enableVectorValue = "true";
@@ -96,7 +92,6 @@ public class TitanVertexOutputFormatPropertyGraph4LP<I extends LongWritable,
             InterruptedException {
             super.initialize(context);
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
 

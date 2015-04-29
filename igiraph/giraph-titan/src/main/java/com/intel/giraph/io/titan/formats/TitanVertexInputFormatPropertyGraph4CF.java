@@ -33,9 +33,9 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.log4j.Logger;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
@@ -63,8 +63,6 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_E
 public class TitanVertexInputFormatPropertyGraph4CF extends
         TitanVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
 
-    private static final Logger LOG = Logger.getLogger(TitanVertexInputFormatPropertyGraph4CF.class);
-
     /**
      * Constructs Giraph vertex reader
      * <p/>
@@ -84,10 +82,7 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class PropertyGraph4CFVertexReader extends TitanVertexReader<
-                LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
-
-        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> giraphVertex = null;
+    public static class PropertyGraph4CFVertexReader extends TitanVertexReaderCommon<VertexData4CFWritable, EdgeData4CFWritable> {
 
         /**
          * The length of vertex value vector
@@ -106,48 +101,13 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
         }
 
         /**
-         * Gets the next Giraph vertex from the input split.
-         *
-         * @return boolean Returns True, if more vertices available
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        public boolean nextVertex() throws IOException, InterruptedException {
-            while (getRecordReader().nextKeyValue()) {
-                Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable>  tempGiraphVertex =
-                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                if (tempGiraphVertex != null) {
-                    this.giraphVertex = tempGiraphVertex;
-                    return true;
-                }
-            }
-            this.giraphVertex = null;
-            return false;
-
-        }
-
-        /**
-         * Get current vertex with ID in long; value as two vectors, both in
-         * double edge as two vectors, both in double
-         *
-         * @return Vertex Giraph vertex
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        @Override
-        public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> getCurrentVertex()
-                throws IOException, InterruptedException {
-            return this.giraphVertex;
-        }
-
-        /**
          * Get vertex value
          *
          * @return VertexDataWritable vertex value in vector
          * @throws IOException
          */
         protected VertexData4CFWritable getValue() throws IOException {
-            VertexData4CFWritable vertexValue = this.giraphVertex.getValue();
+            VertexData4CFWritable vertexValue = giraphVertex.getValue();
             Vector vector = vertexValue.getVector();
             if (cardinality != vector.size()) {
                 if (cardinality == -1) {
@@ -160,24 +120,14 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
         }
 
         /**
-         * Get edges of this vertex
-         *
-         * @return Iterable of Giraph edges
-         * @throws IOException
-         */
-        protected Iterable<Edge<LongWritable, EdgeData4CFWritable>> getEdges() throws IOException {
-
-            return this.giraphVertex.getEdges();
-        }
-
-        /**
          * Construct a Giraph vertex from a Faunus (Titan/Hadoop vertex).
          *
          * @param conf         Giraph configuration with property names, and edge labels to filter
          * @param faunusVertex Faunus vertex
          * @return Giraph vertex
          */
-        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> readGiraphVertex(
+        @Override
+        public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> readGiraphVertex(
                 final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
 
             // Initialize Giraph vertex
@@ -235,6 +185,11 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
             }
         }
 
+        @Override
+        public <A extends Writable> A getAggregatedValue(String name) {
+            return super.getAggregatedValue(name);
+        }
+
         /**
          * Add edges to Giraph vertex.
          * <p/>
@@ -244,7 +199,8 @@ public class TitanVertexInputFormatPropertyGraph4CF extends
          * @param faunusVertex Faunus (Titan/Hadoop) vertex
          * @param titanEdges   Iterator of Titan edges
          */
-        private void addGiraphEdges(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
+        @Override
+         public void addGiraphEdges(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
                                     FaunusVertex faunusVertex, Iterator<TitanEdge> titanEdges) {
             while (titanEdges.hasNext()) {
                 TitanEdge titanEdge = titanEdges.next();
