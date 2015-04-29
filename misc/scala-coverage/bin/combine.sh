@@ -8,7 +8,8 @@
 echo "assuming combine.sh is being ran from source_code"
 
 # list of modules we want coverage for
-scala_coverage_modules="interfaces shared engine-spark graphbuilder-3 graphon api-server launcher imllib"
+scala_coverage_modules="interfaces meta-store engine-spark graphbuilder graphon rest-server launcher IB876
+"
 
 # target directory to generate report
 report_target=misc/scala-coverage/target/scala-coverage-report

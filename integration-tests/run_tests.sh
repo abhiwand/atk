@@ -18,7 +18,7 @@ echo "$NAME PYTHONPATH=$PYTHONPATH"
 echo "$NAME all generated files will go to target dir: $TARGET_DIR"
 
 echo "$NAME Shutting down old API Server if it is still running"
-$DIR/api-server-stop.sh
+$DIR/rest-server-stop.sh
 
 
 if [ ! -d $TARGET_DIR/surefire-reports/ ]
@@ -30,12 +30,12 @@ fi
 echo "$NAME remove old intelanalytics"
 rm -rf $TARGET_DIR/fs-root/intelanalytics
 
-echo "$NAME Starting api server... "
-$DIR/api-server-start.sh
+echo "$NAME Starting REST server... "
+$DIR/rest-server-start.sh
 STARTED=$?
 if [[ $STARTED == 2 ]]
 then
-    echo "$NAME FAILED Couldn't start API server"
+    echo "$NAME FAILED Couldn't start REST server"
     exit 2
 fi
 
@@ -45,13 +45,13 @@ until netstat -atn | grep -q :$PORT
 do
     if [ $COUNTER -gt 90 ]
     then
-        echo "$NAME Tired of waiting for API Server to start up, giving up..."
-        $DIR/api-server-stop.sh
+        echo "$NAME Tired of waiting for REST Server to start up, giving up..."
+        $DIR/rest-server-stop.sh
         exit 3
     else
         let COUNTER=COUNTER+1
     fi
-    echo "$NAME Waiting for API Server to start up on port $PORT..."
+    echo "$NAME Waiting for REST Server to start up on port $PORT..."
     sleep 1
 done
 
@@ -70,7 +70,7 @@ if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     TEST_SUCCESS=$?
 fi
 
-$DIR/api-server-stop.sh
+$DIR/rest-server-stop.sh
 
 if [[ $SMOKE_TEST_SUCCESS != 0 ]] ; then
    echo "$NAME Python smoke tests FAILED"

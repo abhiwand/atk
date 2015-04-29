@@ -89,7 +89,7 @@
         <!--START GAO dependencies-->
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphbuilder-3</artifactId>
+            <artifactId>graphbuilder</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
