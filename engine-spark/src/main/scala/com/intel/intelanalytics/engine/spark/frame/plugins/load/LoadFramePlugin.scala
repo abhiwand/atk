@@ -97,33 +97,11 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     else if (arguments.source.isHiveDb) {
       val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
       val rdd = sqlContext.sql(arguments.source.uri) //use URI
-      println("SELECT year, max(runs) FROM avrosam GROUP BY year")
-      println(arguments.source.uri)
-      rdd.collect.foreach(print(_))
       val array: Seq[StructField] = rdd.schema.fields
-
       val list = new ListBuffer[Column]
       for (field <- array) {
-        list += new Column(field.name, {
-          val intType = IntegerType.getClass()
-          val longType = LongType.getClass()
-          val floatType = FloatType.getClass()
-          val doubleType = DoubleType.getClass()
-          val stringType = StringType.getClass()
-
-          val a = field.dataType.getClass()
-          a match {
-            case `intType` => int32
-            case `longType` => int64
-            case `floatType` => float32
-            case `doubleType` => float64
-            case `stringType` => DataTypes.string
-            case _ => throw new IllegalArgumentException(s"unsupported type $a")
-          }
-        }
-        )
+        list += new Column(field.name, FrameRdd.sparkDataTypeToSchemaDataType(field.dataType))
       }
-
       unionAndSave(destinationFrame, new FrameRdd(new FrameSchema(list.toList), rdd))
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
