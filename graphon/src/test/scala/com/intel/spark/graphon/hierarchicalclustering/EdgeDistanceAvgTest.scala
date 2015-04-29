@@ -1,21 +1,21 @@
 package com.intel.spark.graphon.hierarchicalclustering
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class EdgeDistanceAvgTest extends FlatSpec with Matchers {
 
-    val emptyEdgeList = List()
+  val emptyEdgeList = List()
 
-    val basicEdgeList: List[HierarchicalClusteringEdge] = List(
-      HierarchicalClusteringEdge(1,1,2,1,1.1f,false),
-      HierarchicalClusteringEdge(2,1,3,1,1.3f,false)
-    )
+  val basicEdgeList: List[HierarchicalClusteringEdge] = List(
+    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    HierarchicalClusteringEdge(2, 1, 3, 1, 1.3f, false)
+  )
 
-    val reversedEdgeList: List[HierarchicalClusteringEdge] = List(
-      HierarchicalClusteringEdge(1,4,2,1,1.0f,false),
-      HierarchicalClusteringEdge(2,1,1,1,1.4f,false),
-      HierarchicalClusteringEdge(2,1,3,1,1.2f,false)
-    )
+  val reversedEdgeList: List[HierarchicalClusteringEdge] = List(
+    HierarchicalClusteringEdge(1, 4, 2, 1, 1.0f, false),
+    HierarchicalClusteringEdge(2, 1, 1, 1, 1.4f, false),
+    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  )
 
   "edgeDistance::weightedAvg" should "be 0 for empty lists" in {
     val dist = EdgeDistance.weightedAvg(emptyEdgeList)
@@ -27,7 +27,7 @@ class EdgeDistanceAvgTest extends FlatSpec with Matchers {
     assert(dist == 1.2f)
   }
 
-  "edgeDistance::weightedAvg" should "return non 0 value" in  {
+  "edgeDistance::weightedAvg" should "return non 0 value" in {
     val dist = EdgeDistance.weightedAvg(reversedEdgeList)
     assert(dist == 1.1f)
   }

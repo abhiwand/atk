@@ -297,11 +297,11 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
             // lower #cores with more #executors often beats the other way around due to small JVMs having lower GC overhead
             // "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
-            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
+            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions -Dspark.executor.extraClassPath=/opt/cloudera/parcels/CDH/lib/hive/lib")
 
           // TODO: Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
           val driver_classpath = SparkEngineConfig.sparkMaster match {
-            case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"${pluginExtraClasspath.mkString(":")}")
+            case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"${pluginExtraClasspath.mkString(":")}:/opt/cloudera/parcels/CDH/lib/hive/lib:/etc/hive/conf")
             case _ => Array[String]()
           }
           val verbose = Array("--verbose")

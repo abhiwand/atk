@@ -26,15 +26,21 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
+import com.intel.intelanalytics.domain.schema.DataTypes.{ float32, float64, int64, int32 }
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.sql
+import org.apache.spark.sql.catalyst.types._
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * Parsing data to load and append to data frames
@@ -87,6 +93,37 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
         null, partitions, arguments.source.startTag, arguments.source.endTag, arguments.source.sourceType.contains("xml"))
       unionAndSave(destinationFrame, parseResult.parsedLines)
 
+    }
+    else if (arguments.source.isHiveDb) {
+      val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
+      val rdd = sqlContext.sql("SELECT year, max(runs) FROM avrosam GROUP BY year") //arguments.source.uri) //use URI
+      println("SELECT year, max(runs) FROM avrosam GROUP BY year")
+      rdd.collect.foreach(print(_))
+      val array: Seq[StructField] = rdd.schema.fields
+
+      val list = new ListBuffer[Column]
+      for (field <- array) {
+        list += new Column(field.name, {
+          val intType = IntegerType.getClass()
+          val longType = LongType.getClass()
+          val floatType = FloatType.getClass()
+          val doubleType = DoubleType.getClass()
+          val stringType = StringType.getClass()
+
+          val a = field.dataType.getClass()
+          a match {
+            case `intType` => int32
+            case `longType` => int64
+            case `floatType` => float32
+            case `doubleType` => float64
+            case `stringType` => DataTypes.string
+            case _ => throw new IllegalArgumentException(s"unsupported type $a")
+          }
+        }
+        )
+      }
+
+      unionAndSave(destinationFrame, new FrameRdd(new FrameSchema(list.toList), rdd))
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
