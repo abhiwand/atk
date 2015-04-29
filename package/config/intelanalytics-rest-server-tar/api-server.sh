@@ -7,7 +7,8 @@ export KEYTAB=$DIR/../atk.keytab
 export PRINCIPAL="atk-user@US-WEST-2.COMPUTE.INTERNAL"
 #echo "Creating /opt/cloudera/parcels"
 #mkdir -p /opt/cloudera/parcels
-export YARN_CONF_DIR="$DIR/../conf"
+export ATK_CONF_DIR="$DIR/../conf"
+export YARN_CONF_DIR=$ATK_CONF_DIR
 
 #echo "Copying CDH installation"
 #cp -R $DIR/../CDH /opt/cloudera/parcels/.
@@ -17,7 +18,11 @@ echo $DIR
 #. ../env
 LAUNCHER=$DIR/../launcher.jar
 LAUNCHER=$DIR/../conf/logback.xml:$LAUNCHER
+# set up jquery exectuable to parse environment variables
 jq=$DIR/../jq
+wget http://stedolan.github.io/jq/download/linux64/jq -O $jq
+chmod +x $jq
+
 
 echo "Setting environment variables"
 export APP_NAME=$(echo $VCAP_APPLICATION | $jq -r .application_name)
@@ -42,6 +47,19 @@ export PG_PASS=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.pas
 export PG_DB=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.dbname' | tr -d '"')
 export PG_URL=$(echo $VCAP_SERVICES | $jq '.postgresql93 | .[0].credentials.uri' | tr -d '"')
 env
+
+pushd $ATK_CONF_DIR
+#download yarn, hdfs and hbase configs
+for url_suffix in "yarn_config" "hdfs_config" "hbase_config"
+do
+  conf_url=$(echo $VCAP_SERVICES |  $jq '.cdh | .[0].credentials.'$url_suffix | tr -d '"')
+  zip_file=conf_$url_suffix.zip
+  curl -X GET -H "content-type:application/json" $conf_url > zip_file
+  unzip -o -j zip_file
+  unlink zip_file
+done
+popd
+
 
 pushd $DIR/..
 pwd
