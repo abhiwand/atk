@@ -29,10 +29,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 from decorator import decorator
+from intelanalytics.core.api import api_status
 import intelanalytics.rest.config as config
-from intelanalytics.meta.api import _Api
 from intelanalytics.rest.server import Server
 from intelanalytics.rest.uaa import UaaServer
+from intelanalytics.meta.metaprog2 import install_api
 
 
 class InvalidAuthTokenError(RuntimeError):
@@ -203,7 +204,7 @@ class IaServer(Server):
         If user credentials are supplied, they will override the settings in the server's configuration
         """
 
-        if _Api.is_loaded():
+        if api_status.is_installed:
             print "Already connected to intelanalytics server."
         else:
             if user_name or user_password:
@@ -221,7 +222,7 @@ class IaServer(Server):
                 # token_or = "eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJmMjM4OTEyYS1mOGM4LTQ0ZmItYmRlZi05MDU4N2JiNTljNjgiLCJzdWIiOiIyNWFiMDgwYy1jMjI4LTRjZDktODg2YS1jZGY1YWQ0Nzg5M2MiLCJzY29wZSI6WyJzY2ltLnJlYWQiLCJjbG91ZF9jb250cm9sbGVyLmFkbWluIiwicGFzc3dvcmQud3JpdGUiLCJzY2ltLndyaXRlIiwib3BlbmlkIiwiY2xvdWRfY29udHJvbGxlci53cml0ZSIsImNsb3VkX2NvbnRyb2xsZXIucmVhZCIsImRvcHBsZXIuZmlyZWhvc2UiXSwiY2xpZW50X2lkIjoiY2YiLCJjaWQiOiJjZiIsImF6cCI6ImNmIiwiZ3JhbnRfdHlwZSI6InBhc3N3b3JkIiwidXNlcl9pZCI6IjI1YWIwODBjLWMyMjgtNGNkOS04ODZhLWNkZjVhZDQ3ODkzYyIsInVzZXJfbmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbiIsImlhdCI6MTQyNzk4MTA0NCwiZXhwIjoxNDI3OTgxNjQ0LCJpc3MiOiJodHRwczovL3VhYS5nb3RhcGFhcy5jb20vb2F1dGgvdG9rZW4iLCJhdWQiOlsiZG9wcGxlciIsInNjaW0iLCJvcGVuaWQiLCJjbG91ZF9jb250cm9sbGVyIiwicGFzc3dvcmQiLCJjZiJdfQ.IgmW_srXaQeCdIrg6YQtKNDiE7I5INoXnYs_Hu0F8U_VL3XIgi9hh2L3b5V032WSETLaeB-Z3Mrwl_lDRclB59xAT44_Jg3CvGOASInBAK_HGS0iREUti5TLFjkpY6WXCTvZ0Kt-UI7QL3kfj-hftyPiFmLlhwJS5rpXBqbkNtY"
                 #self.oauth_token = token_or
                 #print "token = %s" % self.oauth_token
-            _Api.load_api()
+            install_api()
             self.freeze_configuration()
             print "Connected to intelanalytics server."
 

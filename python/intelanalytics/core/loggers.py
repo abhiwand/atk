@@ -253,14 +253,15 @@ class ApiLogFormat(object):
             except:
                 self = None
             named_args.extend(kwargs.items())
-            formatted_args = '' if not named_args else "(%s)" % (", ".join([ApiLogFormat.format_named_arg(k,v) for k, v in named_args]))
+            formatted_args = '' if not named_args else "(%s)" % (", ".join([ApiLogFormat.format_kwarg(k,v) for k, v in named_args]))
+            formatted_self = ApiLogFormat.format_self(self) if function.__name__ != '__init__' else (ApiLogFormat._format_entity(self) + '.') if self is not None else '<None?>.'
 
-            return "%s %s%s%s" % (location, ApiLogFormat.format_self(self), ApiLogFormat.format_function(function), formatted_args)
+            return "%s %s%s%s" % (location, formatted_self, ApiLogFormat.format_function(function), formatted_args)
         except Exception as e:
             return str(e)
 
     @staticmethod
-    def format_named_arg(name, value):
+    def format_kwarg(name, value):
         return "%s=%s" % (name, ApiLogFormat.format_value(value))
 
     @staticmethod
@@ -273,6 +274,10 @@ class ApiLogFormat(object):
 
     @staticmethod
     def format_value(v):
-        if hasattr(v, "_id"):
-            return "<%s:%s>" % (type(v).__name__, hex(id(v))[2:])
+        if hasattr(v, "_id"):  # the tell of an entity
+            return ApiLogFormat._format_entity(v)
         return repr(v)
+
+    @staticmethod
+    def _format_entity(entity):
+        return "<%s:%s>" % (type(entity).__name__, hex(id(entity))[2:])
