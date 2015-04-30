@@ -544,7 +544,38 @@ class XmlFile(MultiLineFile):
 
 class HiveQuery(DataFile):
     """
-    Hive query and settings if any
+    Define the query to read in the data from a hive table.
+
+    Parameters
+    ----------
+    query : str
+        The sql query of the data we want to read in
+
+    Returns
+    -------
+    class : HiveQuery object
+        An object which holds hive sql query.
+
+    Examples
+    --------
+    Given a hive table named person having name and age among other columns.
+    A simple query could be to get the query for the name and age
+    .. code::
+
+        >>> import intelanalytics as ia
+        >>> ia.connect()
+
+    Define the data:
+
+    .. code::
+
+        >>> hive_query = ia.HiveQuery("select name, age from person")
+
+    Create a frame using the object:
+
+    .. code::
+
+        >>> my_frame = ia.Frame(hive_query)
 
     """
 
