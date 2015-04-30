@@ -26,6 +26,10 @@ chmod +x $jq
 
 echo "Setting environment variables"
 export APP_NAME=$(echo $VCAP_APPLICATION | $jq -r .application_name)
+export APP_SPACE=$(echo $VCAP_APPLICATION | $jq -r .space_id)
+export CC_URI=$(echo $VCAP_APPLICATION | $jq  '.application_uris[0]' | sed -e "s/$APP_NAME\.apps/http:\/\/api.run/g" | tr -d '"')
+export UAA_URI=$(echo $VCAP_APPLICATION | $jq  '.application_uris[0]' | sed -e "s/$APP_NAME\.apps/http:\/\/uaa.run/g" | tr -d '"')
+
 #export SPARK_PUBLIC_DNS=$(echo $VCAP_APPLICATION | $jq -r .host_ip)
 #export SPARK_DRIVER_HOST=$(echo $VCAP_APPLICATION | $jq -r .host_ip)
 export SPARK_LOCAL_IP=$(hostname --ip-address)
