@@ -30,10 +30,11 @@ package com.intel.intelanalytics.rest.v1.viewmodels
  * @param name name assigned by user
  * @param links links to related URIs
  */
-case class GetGraph(id: Long, iaUri: String, name: Option[String], links: List[RelLink], entityType: String) {
+case class GetGraph(id: Long, iaUri: String, name: Option[String], links: List[RelLink], entityType: String, status: String) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name must not be null")
   require(links != null, "links must not be null")
   require(iaUri != null, "ia_uri must not be null")
   require(entityType != null, "entityType prefix must not be null")
+  require(status != null, "status may not be null")
 }

@@ -111,6 +111,9 @@ class FrameBackendRest(object):
     def get_schema(self, frame):
         return self._get_frame_info(frame).schema
 
+    def get_status(self, frame):
+        return self._get_frame_info(frame).status
+
     def get_row_count(self, frame, where):
         if not where:
             return self._get_frame_info(frame).row_count
@@ -140,6 +143,11 @@ class FrameBackendRest(object):
         except Exception as e:
             row_count = "Unable to determine row_count (%s)" % e
 
+        try:
+            status = frame_info.status
+        except Exception as e:
+            status = "Unable to determine status (%s)" % e
+
         if frame_info._has_vertex_schema():
             frame_type = "VertexFrame"
             graph_data = "\nLabel = %s" % frame_info.label
@@ -152,7 +160,8 @@ class FrameBackendRest(object):
             graph_data = ""
         return """{type} {name}{graph_data}
 row_count = {row_count}
-schema = [{schema}]""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema)
+schema = [{schema}]
+status = {status]""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema, status=status)
 
     def _get_frame_info(self, frame):
         response = self.server.get(self._get_frame_full_uri(frame))
@@ -650,6 +659,10 @@ class FrameInfo(object):
             return self._payload['schema']['edge_schema']['src_vertex_label']
         except:
             return None
+
+    @property
+    def status(self):
+        return self._payload['status']
 
     def _has_edge_schema(self):
         return "edge_schema" in self._payload['schema']
