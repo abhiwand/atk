@@ -383,7 +383,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetricArgs)
   implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
-  implicit val ecdfLongFormat = jsonFormat3(EcdfArgs)
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // model service formats
@@ -477,10 +476,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
-  lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
-  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
-  lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
+  lazy implicit val numberSchemaFormat = jsonFormat10(NumberSchema)
+  lazy implicit val stringSchemaFormat = jsonFormat10(StringSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat13(ObjectSchema)
+  lazy implicit val arraySchemaFormat = jsonFormat10(ArraySchema)
 
   implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
     override def read(value: JsValue): CommandDoc = {
