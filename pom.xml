@@ -142,26 +142,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     </modules>
     <profiles>
         <profile>
-            <id>modules-packaged</id>
+            <id>events</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>env.build_number</name>
+		<activeByDefault>true</activeByDefault>
+               <property>
+                    <name>!NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-                <module>api-doc</module>
-                <module>testutils</module>
-                <module>graphbuilder</module>
-                <module>graphon</module>
-                <module>interfaces</module>
-                <module>launcher</module>
-                <module>meta-store</module>
-                <module>engine</module>
-                <module>engine-spark</module>
-                <module>rest-server</module>
-                <module>igiraph/giraph-titan</module>
-                <module>package</module>
+		<module>misc/event-api</module>
+                <module>misc/event</module>
             </modules>
         </profile>
         <profile>
@@ -184,7 +174,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-
                     <name>!NEVERSETME</name>
                 </property>
             </activation>

@@ -10,7 +10,14 @@
 
     <packaging>jar</packaging>
     <name>event (logging)</name>
-       
+    
+    <parent>
+        <groupId>com.intel.ia</groupId>
+        <artifactId>IntelAnalytics</artifactId>
+        <relativePath>../../pom.xml</relativePath>
+        <version>master-SNAPSHOT</version>
+    </parent>
+	   
     <description>
         event-api provides the interfaces and event provides the implementation.
 
