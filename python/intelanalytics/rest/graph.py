@@ -92,6 +92,10 @@ class GraphBackendRest(object):
         graph_info = self._get_graph_info(graph)
         return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name)])
 
+    def get_status(self, graph):
+        graph_info = self._get_graph_info(graph)
+        return graph_info.status
+
     def _get_graph_info(self, graph):
         response = self.server.get(self._get_graph_full_uri(graph))
         return GraphInfo(response.json())
@@ -127,6 +131,7 @@ class GraphBackendRest(object):
     def get_edge_count(self, graph):
         arguments = {'graph': self.get_ia_uri(graph)}
         return executor.get_command_output("graph:", "edge_count", arguments)
+
 
 
 # GB JSON Payload objects:
@@ -246,6 +251,10 @@ class GraphInfo(object):
     @property
     def links(self):
         return self._payload['links']
+
+    @property
+    def status(self):
+        return self._payload['status']
 
     def update(self,payload):
         if self._payload and self.id_number != payload['id']:

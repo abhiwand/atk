@@ -60,6 +60,15 @@ object Status {
     else
       id
 
+  def getName(id: Long): String = {
+    id match {
+      case Active => "Active"
+      case Deleted => "Deleted (scheduled may be undeleted by modifying or inspecting)"
+      case Deleted_Final => "Deleted Final"
+      case _ => "Unkown"
+    }
+  }
+
   /** Active and can be interacted with */
   final val Active: Long = 1
 
