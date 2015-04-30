@@ -398,6 +398,14 @@ class _BaseGraph(_DocStubsBaseGraph, CommandLoadable):
         except:
             return super(_BaseGraph, self).__repr__() + " (Unable to collect metadata from server)"
 
+    @property
+    def status(self):
+        try:
+            return self._backend.get_status(self)
+        except:
+            return super(_BaseGraph, self).__repr__() + " (Unable to collect metadata from server)"
+
+
 
 @api
 class Graph(_DocStubsGraph, _BaseGraph):

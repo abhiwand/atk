@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.rest.v1.decorators
 
+import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.rest.v1.viewmodels.{ GetDataFrame, RelLink, GetGraph, GetGraphs }
 
@@ -42,7 +43,8 @@ object GraphDecorator extends EntityDecorator[GraphEntity, GetGraphs, GetGraph] 
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: GraphEntity): GetGraph = {
 
-    GetGraph(id = entity.id, iaUri = entity.uri, name = entity.name, links = links.toList, entity.entityType)
+    GetGraph(id = entity.id, iaUri = entity.uri, name = entity.name, links = links.toList, entity.entityType,
+      Status.getName(entity.statusId))
   }
 
   /**

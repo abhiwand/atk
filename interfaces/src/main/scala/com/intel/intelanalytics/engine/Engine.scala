@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, UriReference, EntityType }
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }

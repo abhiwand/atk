@@ -95,7 +95,7 @@ import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{ Status, VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -371,10 +371,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = withContext("se.getFrameByName") {
     future {
       val frame = frames.lookupByName(Some(name))
-      if (frame.isDefined)
-        frames.updateLastReadDate(frame.get)
-      else
-        frame
+      frame
     }
   }
 
@@ -439,10 +436,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.getGraphByName") {
       future {
         val graph = graphs.getGraphByName(Some(name))
-        if (graph.isDefined)
-          graphs.updateLastReadDate(graph.get)
-        else
-          graph
+        graph
       }
     }
 
@@ -487,10 +481,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.getModelByName") {
       future {
         val model = models.getModelByName(Some(name))
-        if (model.isDefined)
-          models.updateLastReadDate(model.get).toOption
-        else
-          model
+        model
       }
     }
 
@@ -581,5 +572,4 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       seamless.edgeFrames
     }
   }
-
 }

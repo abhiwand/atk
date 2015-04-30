@@ -220,6 +220,10 @@ class ModelInfo(object):
     def links(self):
         return self._links['links']
 
+    @property
+    def status(self):
+        return self._payload['status']
+
     def initialize_model(self, model):
         model._id = self.id_number
 
