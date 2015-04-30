@@ -25,8 +25,10 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, CommandDoc }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.PluginDocAnnotation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.schema.ObjectSchema
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.JsonSchemaExtractor
 import spray.json.JsonFormat
@@ -114,16 +116,12 @@ class CommandPluginRegistry(loader: CommandLoader) {
    */
   lazy val commandDefinitions: Iterable[CommandDefinition] =
     commandPlugins.values.map(p => {
-      val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
-      CommandDefinition(p.name, argSchema, resSchema, p.doc, p.apiMaturityTag)
+      // It seems that the underlying operations are not thread-safe -- Todd 3/10/2015
+      val argSchema = getArgumentsSchema(p)
+      val retSchema = getReturnSchema(p)
+      val doc = getCommandDoc(p)
+      CommandDefinition(p.name, argSchema, retSchema, doc, p.apiMaturityTag)
     })
-
-  private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {
-    val arg = plugin.argumentManifest
-    val ret = plugin.returnManifest
-    // It seems that the underlying operations are not thread-safe -- Todd 3/10/2015
-    (JsonSchemaExtractor.getProductSchema(arg), JsonSchemaExtractor.getProductSchema(ret))
-  }
 
   //  private var commandPlugins: Map[String, CommandPlugin[_, _]] = pluginRegistry.commandPlugins
 
@@ -134,6 +132,26 @@ class CommandPluginRegistry(loader: CommandLoader) {
   // Get archive name for the plugin. If it does not exist in the map, check if it is in commandPlugins as a valid plugin
   def getArchiveNameFromPlugin(name: String): Option[String] = {
     pluginsToArchiveMap.get(name)
+  }
+
+  private def getArgumentsSchema(p: CommandPlugin[_, _]): ObjectSchema = {
+    JsonSchemaExtractor.getProductSchema(p.argumentManifest, includeDefaultValues = true)
+  }
+
+  private def getReturnSchema(p: CommandPlugin[_, _]): ObjectSchema = {
+    val schema = JsonSchemaExtractor.getProductSchema(p.returnManifest, includeDefaultValues = false)
+    // if plugin annotation has a returns description, add it to the schema
+    JsonSchemaExtractor.getPluginDocAnnotation(p.thisManifest) match {
+      case None => schema
+      case Some(pluginDoc) => schema.copy(description = pluginDoc.getReturnsDescription)
+    }
+  }
+
+  private def getCommandDoc(p: CommandPlugin[_, _]): Option[CommandDoc] = {
+    JsonSchemaExtractor.getPluginDocAnnotation(p.thisManifest) match {
+      case Some(pluginDoc) => Some(CommandDoc(pluginDoc.oneLine, Some(pluginDoc.extended)))
+      case None => p.doc
+    }
   }
 }
 

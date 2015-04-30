@@ -41,7 +41,7 @@ import scala.concurrent.duration._
 
 /**
  * Special archive for dumping the command and query information to a file
- * without needing to start up the api server or too many other resources.
+ * without needing to start up the REST server or too many other resources.
  *
  * This is used for generating the Python docs, it isn't part of the running system.
  */

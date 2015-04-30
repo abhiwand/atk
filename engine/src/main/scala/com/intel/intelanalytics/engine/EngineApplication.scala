@@ -38,7 +38,7 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
     info("Engine setting log adapter from configuration")
     EventLogging.raw = configuration.getBoolean("intel.analytics.engine.logging.raw")
     info("Engine set log adapter from configuration")
-  } // else api-server already installed an SLF4j adapter
+  } // else rest-server already installed an SLF4j adapter
 
   EventLogging.profiling = configuration.getBoolean("intel.analytics.engine.logging.profile")
   info(s"Engine profiling: ${EventLogging.profiling}")

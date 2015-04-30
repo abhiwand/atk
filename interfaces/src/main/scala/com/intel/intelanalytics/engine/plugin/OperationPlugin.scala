@@ -39,6 +39,7 @@ import scala.util.control.NonFatal
 import scala.Some
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.CommandDoc
+import scala.annotation.meta.field
 import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
@@ -177,6 +178,8 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   val returnManifest = implicitly[ClassManifest[Return]]
   val argumentTag = implicitly[TypeTag[Arguments]]
   val returnTag = implicitly[TypeTag[Return]]
+  val thisManifest = implicitly[ClassManifest[this.type]]
+  val thisTag = implicitly[TypeTag[this.type]]
 
   /**
    * Convert the given object to a JsObject

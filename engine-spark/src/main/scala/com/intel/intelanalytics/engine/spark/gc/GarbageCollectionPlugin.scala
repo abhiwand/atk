@@ -55,12 +55,7 @@ class GarbageCollectionPlugin extends CommandPlugin[GarbageCollectionArgs, UnitR
       case Some(age) => stringToMilliseconds(age)
       case None => SparkEngineConfig.gcAgeToDeleteData
     }
-    val metadataDeleteAge = arguments.ageToDeleteMetaData match {
-      case Some(age) => stringToMilliseconds(age)
-      case None => SparkEngineConfig.gcAgeToDeleteMetaData
-    }
-
-    GarbageCollector.singleTimeExecution(dataDeleteAge, metadataDeleteAge)
+    GarbageCollector.singleTimeExecution(dataDeleteAge)
     new UnitReturn
   }
 

@@ -27,10 +27,14 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded
+from intelanalytics.core.api import api_status
+from intelanalytics.meta.clientside import *
 api = get_api_decorator(logger)
 
-from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+#from intelanalytics.meta.metaprog import doc_stubs_import
+from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
+
 from intelanalytics.meta.namedobj import name_support
 import uuid
 
@@ -358,36 +362,36 @@ class EdgeRule(Rule):
 # _BaseGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsBaseGraph
-    doc_stubs_import.success(logger, "DocStubsBaseGraph")
+    from intelanalytics.core.docstubs1 import _DocStubsBaseGraph
+    doc_stubs_import.success(logger, "_DocStubsBaseGraph")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsBaseGraph", e)
-    class DocStubsBaseGraph(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsBaseGraph", e)
+    class _DocStubsBaseGraph(object): pass
 
 
 # TitanGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsTitanGraph
-    doc_stubs_import.success(logger, "DocStubsTitanGraph")
+    from intelanalytics.core.docstubs1 import _DocStubsTitanGraph
+    doc_stubs_import.success(logger, "_DocStubsTitanGraph")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsTitanGraph", e)
-    class DocStubsTitanGraph(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsTitanGraph", e)
+    class _DocStubsTitanGraph(object): pass
 
 
 # Graph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsGraph
-    doc_stubs_import.success(logger, "DocStubsGraph")
+    from intelanalytics.core.docstubs1 import _DocStubsGraph
+    doc_stubs_import.success(logger, "_DocStubsGraph")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsGraph", e)
-    class DocStubsGraph(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsGraph", e)
+    class _DocStubsGraph(object): pass
 
 
 @api
 @name_support('graph')
-class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
+class _BaseGraph(_DocStubsBaseGraph, CommandLoadable):
     _entity_type = 'graph'
     def __init__(self):
         CommandLoadable.__init__(self)
@@ -400,7 +404,7 @@ class _BaseGraph(DocStubsBaseGraph, CommandLoadable):
 
 
 @api
-class Graph(DocStubsGraph, _BaseGraph):
+class Graph(_DocStubsGraph, _BaseGraph):
     """
     Creates a seamless property graph.
 
@@ -782,9 +786,9 @@ class GraphFrameCollection(object):
 
 
 @api
-class TitanGraph(DocStubsTitanGraph, _BaseGraph):
+class TitanGraph(_DocStubsTitanGraph, _BaseGraph):
     """
-    Creates a TitanGraph.
+    Proxy to a graph in Titan, supports Gremlin query
 
 
     Parameters
@@ -887,9 +891,9 @@ class TitanGraph(DocStubsTitanGraph, _BaseGraph):
 
     _entity_type = 'graph:titan'
 
+    @api
     def __init__(self, rules=None, name=None, _info=None):
         try:
-            check_api_is_loaded()
             self._id = 0
             self._ia_uri = None
             if not hasattr(self, '_backend'):

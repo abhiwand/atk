@@ -127,7 +127,18 @@ class FrameBackendRest(object):
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        frame_type = "VertexFrame" if frame_info._has_vertex_schema() else "EdgeFrame" if frame_info._has_edge_schema() else "Frame"
+        try:
+            frame_name = ('"%s"' % frame_info.name) if frame_info.name is not None else ' <unnamed>'
+        except Exception as e:
+            frame_name = "(Unable to determine name, error: %s)" % e
+        try:
+            schema = ', '.join(["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
+        except Exception as e:
+            schema = "Unable to determine schema (%s)" % e
+        try:
+            row_count = frame_info.row_count
+        except Exception as e:
+            row_count = "Unable to determine row_count (%s)" % e
 
         if frame_info._has_vertex_schema():
             frame_type = "VertexFrame"
@@ -139,10 +150,9 @@ class FrameBackendRest(object):
         else:
             frame_type = "Frame"
             graph_data = ""
-        return "\n".join(['%s "%s"%s\nrow_count = %d\nschema = ' %
-                          (frame_type, frame_info.name, graph_data,  frame_info.row_count)] +
-                         ["  %s:%s" % (name, data_type)
-                          for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
+        return """{type} {name}{graph_data}
+row_count = {row_count}
+schema = [{schema}]""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema)
 
     def _get_frame_info(self, frame):
         response = self.server.get(self._get_frame_full_uri(frame))

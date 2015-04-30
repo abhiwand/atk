@@ -461,6 +461,7 @@ function server_start() {
     server_running
     if [ "$?" != "0" ]; then
 
+<<<<<<< HEAD
         # debug: Update the configuration file
         diff ../conf/examples/application.conf.build ../conf/application.conf > /dev/null
         if [ "$?" != "0" ]; then
@@ -478,6 +479,16 @@ function server_start() {
         RunCommand="Start server (nohup bin/api-server.sh)"
         log_step "$RunCommand" "No" $4
         nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+=======
+    # debug: Start the server
+    echo -n "Start server"
+    log_step "nohup bin/rest-server.sh" "No" $4
+    nohup bin/rest-server.sh < /dev/null > $3 2>&1 &
+    Return=$?
+    if [ "$Return" != "0" ]; then
+        echo
+        Err "Start server (nohup bin/rest-server.sh)" $1 $2 $3 $4
+>>>>>>> master
         Return=$?
         popd > /dev/null
         if [ "$Return" != "0" ]; then

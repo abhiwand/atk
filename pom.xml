@@ -109,7 +109,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- START TITAN -->
-        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
+        <dep.titan-shaded.version>0.5.0-SNAPSHOT</dep.titan-shaded.version>
         <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
         <dep.reflections>0.9.9-RC1</dep.reflections>
@@ -142,41 +142,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     </modules>
     <profiles>
         <profile>
-            <id>ititan</id>
+            <id>events</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <!--only needs to be run to add titan jar-->
-                    <name>env.build_number</name>
+		<activeByDefault>true</activeByDefault>
+               <property>
+                    <name>!NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-                <module>ititan</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>modules-packaged</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>env.build_number</name>
-                </property>
-            </activation>
-            <modules>
-                <module>api-doc</module>
-                <module>event-api</module>
-                <module>event</module>
-                <module>testutils</module>
-                <module>graphbuilder-3</module>
-                <module>graphon</module>
-                <module>interfaces</module>
-                <module>launcher</module>
-                <module>shared</module>
-                <module>engine</module>
-                <module>engine-spark</module>
-                <module>api-server</module>
-                <module>igiraph/giraph-titan</module>
-                <module>package</module>
+		<module>misc/event-api</module>
+                <module>misc/event</module>
             </modules>
         </profile>
         <profile>
@@ -188,8 +163,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>event-api</module>
-                <module>event</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -201,23 +174,20 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-
                     <name>!NEVERSETME</name>
                 </property>
             </activation>
             <modules>
                 <module>api-doc</module>
-                <module>event-api</module>
-                <module>event</module>
                 <module>testutils</module>
-                <module>graphbuilder-3</module>
+                <module>graphbuilder</module>
                 <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module>
-                <module>shared</module>
+                <module>meta-store</module>
                 <module>engine</module>
                 <module>engine-spark</module>
-                <module>api-server</module>
+                <module>rest-server</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
@@ -612,7 +582,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>api-server/application.home_IS_UNDEFINED</directory>
+                            <directory>rest-server/application.home_IS_UNDEFINED</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
@@ -659,7 +629,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>graphbuilder-3</artifactId>
+                <artifactId>graphbuilder</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -681,12 +651,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>shared</artifactId>
+                <artifactId>meta-store</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>api-server</artifactId>
+                <artifactId>rest-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -727,8 +697,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <!--STARTititan-->
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>ititan-core</artifactId>
-                <version>${dep.ititan.version}</version>
+                <artifactId>titan-shaded</artifactId>
+                <version>${dep.titan-shaded.version}</version>
                 <!--<exclusions>
                     <exclusion>
                         <groupId>org.apache.avro</groupId>

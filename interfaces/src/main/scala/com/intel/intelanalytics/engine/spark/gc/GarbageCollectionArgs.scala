@@ -28,4 +28,4 @@ package com.intel.intelanalytics.engine.spark.gc
  * @param ageToDeleteData minimum age of entity for data deletion. defaults to server config
  * @param ageToDeleteMetaData minimum age of entity for meta data deletion. defaults to server config
  */
-case class GarbageCollectionArgs(ageToDeleteData: Option[String], ageToDeleteMetaData: Option[String])
+case class GarbageCollectionArgs(ageToDeleteData: Option[String] = None, ageToDeleteMetaData: Option[String] = None)

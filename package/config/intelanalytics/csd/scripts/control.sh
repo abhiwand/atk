@@ -98,8 +98,8 @@ case "$1" in
     log "start intelanalytics start"
     pushd $ATK_LAUNCHER_DIR
     log `pwd`
-    echo  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_TEMP:$ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
-    exec  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_TEMP:$ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
+    echo  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_TEMP:$ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot rest-server com.intel.intelanalytics.rest.RestServerApplication
+    exec  java -XX:MaxPermSize=$ATK_MAX_HEAPSIZE $ATK_ADD_JVM_OPT -cp $ATK_TEMP:$ATK_CLASSPATH:$ATK_CLASSPATH_ADD com.intel.intelanalytics.component.Boot rest-server com.intel.intelanalytics.rest.RestServerApplication
     popd
     log "startted intelanalytics start"
 	;;

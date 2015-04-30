@@ -41,7 +41,7 @@ public class TitanInputFormatFactory {
     public static CachedTitanInputFormat getTitanInputFormat(Configuration conf) {
         CachedTitanInputFormat titanInputFormat;
 
-        if (GIRAPH_TITAN_STORAGE_BACKEND.get(conf).equals("cassandra")) {
+        if ("cassandra".equals(GIRAPH_TITAN_STORAGE_BACKEND.get(conf))) {
             titanInputFormat = new CachedTitanCassandraInputFormat();
         } else {
             titanInputFormat = new GBTitanHBaseInputFormat();

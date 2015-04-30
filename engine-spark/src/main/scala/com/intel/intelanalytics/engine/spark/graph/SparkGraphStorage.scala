@@ -265,7 +265,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("spark.graphstorage.getGraphs") {
       implicit session =>
         {
-          metaStore.graphRepo.scanAll().filter(g => g.statusId != Status.Deleted && g.statusId != Status.Dead && g.name.isDefined)
+          metaStore.graphRepo.scanAll().filter(g => g.statusId != Status.Deleted && g.statusId != Status.Deleted_Final && g.name.isDefined)
         }
     }
   }
@@ -509,6 +509,21 @@ class SparkGraphStorage(metaStore: MetaStore,
     val frameEntity = frameStorage.expectFrame(frameRef)
     require(frameEntity.isEdgeFrame, "frame was not an edge frame")
     frameStorage.saveFrameData(frameEntity.toReference, edgeFrameRdd)
+  }
+
+  /**
+   * Set a graph to be deleted on the next execution of garbage collection
+   * @param graph graph to delete
+   * @param invocation current invocation
+   */
+  override def scheduleDeletion(graph: GraphEntity)(implicit invocation: Invocation): Unit = {
+    metaStore.withSession("spark.graphstorage.scheduleDeletion") {
+      implicit session =>
+        {
+          info(s"marking as ready to delete: graph id:${graph.id}, name:${graph.name}, entityType:${graph.entityType}")
+          metaStore.graphRepo.updateReadyToDelete(graph)
+        }
+    }
   }
 
 }

@@ -27,8 +27,11 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 
-from intelanalytics.meta.api import get_api_decorator, api_globals
-from intelanalytics.meta.metaprog import ENTITY_TYPE, set_function_doc_stub_text, get_loadable_class_from_entity_type
+#from intelanalytics.meta.api import get_api_decorator, api_globals
+from intelanalytics.core.api import api_globals
+from intelanalytics.meta.clientside import get_api_decorator
+from intelanalytics.meta.classnames import entity_type_to_collection_name
+from intelanalytics.meta.metaprog2 import set_function_doc_stub_text, get_entity_class_from_store
 
 
 def name_support(term):
@@ -100,13 +103,13 @@ class _NamedObjectsFunctionFactory(object):
             payload = r.json()
             return payload.get('name', None)
         get_name.__name__ = 'name'
-        api_get_name = get_api_decorator(module_logger)(get_name)
+        api_get_name = get_api_decorator(module_logger, parent_class_name=obj_class.__name__)(get_name)
 
         def set_name(self, value):
             arguments = {obj_term: self._id, "new_name": value}
-            execute_command(getattr(obj_class, ENTITY_TYPE) + "/rename", self, **arguments)
+            execute_command(obj_term + "/rename", self, **arguments)
         set_name.__name__ = 'name'
-        api_set_name = get_api_decorator(module_logger)(set_name)
+        api_set_name = get_api_decorator(module_logger, parent_class_name=obj_class.__name__)(set_name)
 
         doc = """
         Set or get the name of the {term} object.
@@ -155,6 +158,7 @@ class _NamedObjectsFunctionFactory(object):
         list
             A list of the names of the all {obj_term} objects.
         """.format(obj_term=self._term)
+        get_object_names._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
         set_function_doc_stub_text(get_object_names, '')
         return get_api_decorator(module_logger)(get_object_names)
 
@@ -166,7 +170,7 @@ class _NamedObjectsFunctionFactory(object):
         http = self._http
         term = self._term
         obj_class = self._class
-        get_class = get_loadable_class_from_entity_type
+        get_class = get_entity_class_from_store
 
         def get_object(identifier):
             module_logger.info("%s(%s)", get_object_name, identifier)
@@ -199,6 +203,7 @@ class _NamedObjectsFunctionFactory(object):
         class
             {obj_term} object.
         """.format(obj_term=self._term)
+        get_object._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
         set_function_doc_stub_text(get_object, 'name')
         return get_api_decorator(module_logger)(get_object)
 
@@ -225,6 +230,7 @@ class _NamedObjectsFunctionFactory(object):
             for name, id in victim_ids.items():
                 module_logger.info("Drop %s %s", obj_term, name)
                 http.delete(rest_target + str(id))  # TODO: update w/ URI jazz
+        drop_objects._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
         drop_objects.__name__ = drop_objects_name
         drop_objects.__doc__ = """
         Deletes the {obj_term} and it's data.

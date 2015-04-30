@@ -29,6 +29,7 @@ import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.tinkerpop.blueprints.Direction;
+import org.apache.commons.lang.StringUtils;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.conf.StrConfOption;
 import org.apache.giraph.edge.Edge;
@@ -45,7 +46,6 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PR
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 public class TitanVertexBuilder {
-
 
     /** Enable vector value */
     protected boolean enableVectorValue = false;
@@ -82,8 +82,7 @@ public class TitanVertexBuilder {
         this.vertexValuePropertyKeys = getPropertyKeyMap(conf, INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST);
         this.edgeValuePropertyKeys = getPropertyKeyMap(conf, INPUT_EDGE_VALUE_PROPERTY_KEY_LIST);
         this.edgeLabelKeys = getPropertyKeyMap(conf, INPUT_EDGE_LABEL_LIST);
-
-        this.enableVectorValue = VECTOR_VALUE.get(conf).equals("true");
+        this.enableVectorValue = Boolean.TRUE.toString().equals(VECTOR_VALUE.get(conf));
         this.vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
         this.edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
     }
@@ -126,7 +125,7 @@ public class TitanVertexBuilder {
         VertexData4CFWritable.VertexType vertexType;
         Object vertexTypeObject = null;
 
-        if (vertexTypePropertyKey != null && vertexTypePropertyKey != "") {
+        if (StringUtils.isNotBlank(vertexTypePropertyKey)) {
             vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
         }
 
@@ -160,7 +159,7 @@ public class TitanVertexBuilder {
         EdgeData4CFWritable.EdgeType edgeType;
         Object edgeTypeObject = null;
 
-        if (edgeTypePropertyKey != null && edgeTypePropertyKey != "") {
+        if (StringUtils.isNotBlank(edgeTypePropertyKey)) {
             edgeTypeObject = titanEdge.getProperty(edgeTypePropertyKey);
         }
 
@@ -204,7 +203,7 @@ public class TitanVertexBuilder {
         double edgeValue = 1.0d;
 
         if (edgeValueObject == null) {
-            // TODO: not sure if this is the right behavior but it is better than throwing the NullPointerException that this code was throwing
+            // TODO - revisit
             throw new IllegalArgumentException("Edge did not have property named '" + propertyKey + "'");
         }
 
@@ -278,7 +277,7 @@ public class TitanVertexBuilder {
         String propertyKeyString = confOption.get(conf).trim();
         Map<String, Integer> propertyKeyMap = new HashMap<>();
 
-        if (propertyKeyString != "") {
+        if (StringUtils.isNotEmpty(propertyKeyString)) {
             String[] configList =  confOption.get(conf).split(regexp);
             for (int i = 0; i < configList.length; i++) {
                 propertyKeyMap.put(configList[i], i);

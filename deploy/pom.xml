@@ -7,9 +7,9 @@
     <packaging>jar</packaging>
 
     <description>
-        This module is for creating the uber-jar needed for deployment on DP2.
+        This module is for creating an uber jar needed for deployment on DP2.
 
-        The uber jar contains all of our code and our depedencies.
+        The uber jar contains all of our plugin code and dependencies.
     </description>
 
     <parent>
@@ -87,29 +87,21 @@
 
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphbuilder-3</artifactId>
+            <artifactId>graphbuilder</artifactId>
         </dependency>
-				
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
         </dependency>
-
-        <!--<dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>interfaces</artifactId>
-        </dependency>-->
-
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>igiraph-titan</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>graphon</artifactId>
         </dependency>
-				
+
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_${scala.short.version}</artifactId>
@@ -132,22 +124,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-				
-		<dependency>
+
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-				
-				<!--<dependency>
-					<groupId>org.apache.spark</groupId>
-					<artifactId>spark-core_${scala.short.version}</artifactId>
-					<version>${dep.spark.version}</version>
-					<exclusions>
-						<exclusion>
-								<groupId>*</groupId>
-								<artifactId>*</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>-->
     </dependencies>
 </project>

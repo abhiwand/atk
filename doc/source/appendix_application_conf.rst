@@ -104,7 +104,7 @@ Appendix A |EM| Sample Application Configuration File
           #Timeout for waiting for results from the engine
           //default-timeout = 30s
 
-          #HTTP request timeout for the api server
+          #HTTP request timeout for the REST server
           //request-timeout = 29s
         }
 

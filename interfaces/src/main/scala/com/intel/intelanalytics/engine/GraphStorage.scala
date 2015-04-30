@@ -54,4 +54,6 @@ trait GraphStorage {
 
   def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[GraphEntity]
 
+  def scheduleDeletion(graph: GraphEntity)(implicit invocation: Invocation): Unit
+
 }

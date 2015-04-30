@@ -45,4 +45,6 @@ trait ModelStorage {
 
   def updateModel(modelReference: ModelReference, newData: JsObject)(implicit invocation: Invocation): ModelEntity
 
+  def scheduleDeletion(model: ModelEntity)(implicit invocation: Invocation): Unit
+
 }
