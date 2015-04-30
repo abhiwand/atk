@@ -34,7 +34,7 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
  */
 case class LoadGraphArgs(graph: GraphReference,
                          frameRules: List[FrameRule],
-                         append: Boolean = false) {
+                         append: Option[Boolean] = Some(false)) {
   require(graph != null, "graph must not be null")
   require(frameRules != null, "frame rules must not be null")
 }
