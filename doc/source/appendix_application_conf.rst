@@ -1,7 +1,7 @@
-==========
-Appendix A
-==========
-::
+=====================================================
+Appendix A |EM| Sample Application Configuration File
+=====================================================
+.. code::
 
     # BEGIN REQUIRED SETTINGS
 
