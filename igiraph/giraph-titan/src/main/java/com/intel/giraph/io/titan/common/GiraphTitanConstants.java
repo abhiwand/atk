@@ -34,6 +34,11 @@ import org.apache.giraph.conf.StrConfOption;
 public class GiraphTitanConstants {
 
     /**
+     * Titan offset.
+     */
+    public static final long TITAN_ID_OFFSET = 4;
+
+    /**
      * Titan backend type .
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_BACKEND = new StrConfOption(
@@ -48,11 +53,6 @@ public class GiraphTitanConstants {
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_HBASE_TABLE = new StrConfOption(
         "giraph.titan.input.storage.hbase.table", "", "Titan/Hbase tablename - required");
-    /**
-     * Titan/Cassandra Storage table name .
-     */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_CASSANDRA_KEYSPACE = new StrConfOption(
-            "giraph.titan.input.storage.cassandra.keyspace", "", "Titan/Hbase tablename - required");
     /**
      * port where to contact Titan storage.
      */
@@ -73,11 +73,6 @@ public class GiraphTitanConstants {
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_READ_ONLY = new StrConfOption(
         "giraph.titan.input.storage.read-only", "false", "read only or not");
-    /**
-     * backend autotype
-     */
-    public static final StrConfOption GIRAPH_TITAN_AUTOTYPE = new StrConfOption(
-        "giraph.titan.input.autotype", "none", "autotype");
     /**
      * the list of vertex properties to filter during data loading from Titan
      */
@@ -128,36 +123,10 @@ public class GiraphTitanConstants {
      * Used to commit Titan vertices in batches.
      */
     public static int TITAN_MAX_VERTICES_PER_COMMIT = 20000;
-
-    /**
-     * the id offset used by Titan
-     */
-    public static final long TITAN_ID_OFFSET = 4;
-    /**
-     * no valid property
-     */
-    public static final String NO_VALID_PROPERTY = "Skip this entry because no valid property for Giraph to read.";
-    /**
-     * invalid vertex id
-     */
-    public static final String INVALID_VERTEX_ID = "Vertex ID from Titan should be >0. got ";
-    /**
-     * invalid edge id
-     */
-    public static final String INVALID_EDGE_ID = "Edge ID from Titan should be >0. got ";
     /**
      * create vertex property
      */
     public static final String CREATE_VERTEX_PROPERTY = "create vertex.property in Titan ";
-    /**
-     * failed to open titan transaction
-     */
-    public static final String TITAN_TX_NOT_OPEN = "IGIRAPH ERROR: Unable to create Titan transaction! ";
-    /**
-     * failed to open titan transaction
-     */
-    public static final String OPENED_TITAN_TX = "Opened Titan transaction for graph reading.";
-
     /**
      * failed to open titan graph
      */
@@ -219,10 +188,6 @@ public class GiraphTitanConstants {
      */
     public static final String ENSURE_INPUT_FORMAT = "Ensure your InputFormat does not require one.";
     /**
-     * double check config
-     */
-    public static final String DOUBLE_CHECK_CONFIG = "Please double check your configuration.";
-    /**
      * config titan
      */
     public static final String CONFIG_TITAN = "Please configure Titan storage ";
@@ -242,10 +207,6 @@ public class GiraphTitanConstants {
      * configured default
      */
     public static final String CONFIGURED_DEFAULT = " is configured as default value. ";
-    /**
-     * Failed to connect hbase table
-     */
-    public static final String FAILED_CONNECT_HBASE_TABLE = "Failed to connect to HBase table ";
     /**
      * wrong vertex type
      */
