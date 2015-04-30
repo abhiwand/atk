@@ -40,7 +40,8 @@ case class GetDataFrame(id: Long, name: Option[String],
                         rowCount: Option[Long],
                         links: List[RelLink],
                         errorFrameId: Option[Long],
-                        entityType: String) {
+                        entityType: String,
+                        status: String) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name must not be null")
   require(ia_uri != null, "ia_uri must not be null")
@@ -49,4 +50,5 @@ case class GetDataFrame(id: Long, name: Option[String],
   require(links != null, "links must not be null")
   require(errorFrameId != null, "errorFrameId must not be null")
   require(entityType != null, "entityType must not be null")
+  require(status != null, "status may not be null")
 }

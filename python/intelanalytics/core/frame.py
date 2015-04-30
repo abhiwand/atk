@@ -307,7 +307,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Returns
         -------
         list : list of tuples
-
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
@@ -326,6 +325,41 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         """
         return self._backend.get_schema(self)
+
+
+    @property
+    @api
+    def status(self):
+        """
+        Current frame life cycle status.
+
+        One of three statuses: Active, Deleted, Deleted_Final
+           Active:   Frame is available for use
+           Deleted:  Frame has been scheduled for deletion can be unscheduled by modifying
+           Deleted_Final: Frame's backend files have been removed from disk.
+
+        Returns
+        -------
+        status : descriptive text of current life cycle status
+
+        Examples
+        --------
+        Given that we have an existing data frame *my_data*, create a Frame,
+        then show the frame schema:
+
+        .. code::
+
+            >>> BF = ia.get_frame('my_data')
+            >>> print BF.status
+
+        The result is:
+
+        .. code::
+
+            u'Active'
+        """
+        return self._backend.get_status(self)
+
 
     @api
     @has_python_user_function_arg

@@ -7,20 +7,15 @@ Technical Report CMU-CALD-02-107, CMU, 2002.
 
 Parameters
 ----------
-vertex_value_property_list : list of str
+prior_vector: list of str
     The vertex properties which contain prior vertex values when more than one
     vertex property is used.
-edge_value_property_list : list of str
+distance : list of str
     The edge properties which contain the input edge values.
     A comma-separated list of property names when more than one edge property
     is used.
-input_edge_label_list : list of str
-    The name of edge label.
-output_vertex_property_list : list of str
+lp_result : list of str
     The list of vertex properties to store output vertex values.
-vector_value : bool
-    True means a vector as vertex value is supported,
-    False means a vector as vertex value is not supported.
 max_supersteps : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
@@ -51,12 +46,6 @@ lp_lambda : float (optional)
     the LP training process.
     The valid value range is [0.0,1.0].
     The default value is 0.
-validate_graph_structure : bool (optional)
-    Checks if the graph meets certain structural requirements before starting
-    the algorithm: at every vertex, the in-degree equals the out-degree.
-    This algorithm validation is for undirected graphs.
-    This is a necessary but insufficient, check for valid input.
-
 
 Returns
 -------

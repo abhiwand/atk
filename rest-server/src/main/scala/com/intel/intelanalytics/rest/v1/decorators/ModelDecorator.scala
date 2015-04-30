@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.rest.v1.decorators
 
+import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.model.ModelEntity
 import com.intel.intelanalytics.rest.v1.viewmodels.{ RelLink, GetModels, GetModel }
 
@@ -42,7 +43,8 @@ object ModelDecorator extends EntityDecorator[ModelEntity, GetModels, GetModel] 
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: ModelEntity): GetModel = {
 
-    GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList, entity.entityType)
+    GetModel(id = entity.id, ia_uri = entity.uri, name = entity.name, links.toList, entity.entityType,
+      Status.getName(entity.statusId))
   }
 
   /**
