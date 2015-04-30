@@ -94,13 +94,10 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
     protected class TitanVertexPropertyGraph4CFWriter extends TitanVertexWriterToEachLine {
 
         /**
-         * Vertex value properties to filter
-         */
-        private String[] vertexValuePropertyKeyList = null;
-        /**
          * Enable Vertex Bias output or not
          */
         private String enableVertexBias = "false";
+
         /**
          * Enable vector value
          */
@@ -112,7 +109,6 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
             super.initialize(context);
             enableVertexBias = OUTPUT_VERTEX_BIAS.get(context.getConfiguration());
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
 

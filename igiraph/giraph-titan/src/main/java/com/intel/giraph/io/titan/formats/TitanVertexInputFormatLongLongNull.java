@@ -70,9 +70,7 @@ public class TitanVertexInputFormatLongLongNull extends
     /**
      * Vertex Reader that constructs Giraph vertices from Titan Vertices
      */
-    protected static class LongLongNullVertexReader extends TitanVertexReader<LongWritable, LongWritable, NullWritable> {
-
-        private Vertex<LongWritable, LongWritable, NullWritable> giraphVertex = null;
+    protected static class LongLongNullVertexReader extends TitanVertexReaderCommon<LongWritable, NullWritable> {
 
         /**
          * Constructs vertex reader
@@ -87,48 +85,14 @@ public class TitanVertexInputFormatLongLongNull extends
         }
 
         /**
-         * check whether these is nextVertex available
-         *
-         * @return boolean
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        @Override
-        public boolean nextVertex() throws IOException, InterruptedException {
-            while (getRecordReader().nextKeyValue()) {
-                Vertex<LongWritable, LongWritable, NullWritable> tempGiraphVertex =
-                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                if (tempGiraphVertex != null) {
-                    this.giraphVertex = tempGiraphVertex;
-                    return true;
-                }
-            }
-            this.giraphVertex = null;
-            return false;
-        }
-
-        /**
-         * Get current Giraph vertex.
-         *
-         * @return Giraph vertex
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        @Override
-        public Vertex<LongWritable, LongWritable, NullWritable> getCurrentVertex() throws IOException,
-                InterruptedException {
-
-            return this.giraphVertex;
-        }
-
-        /**
          * Construct a Giraph vertex from a Faunus (Titan/Hadoop vertex).
          *
          * @param conf         Giraph configuration with property names, and edge labels to filter
          * @param faunusVertex Faunus vertex
          * @return Giraph vertex
          */
-        private Vertex<LongWritable, LongWritable, NullWritable> readGiraphVertex(
+        @Override
+        public Vertex<LongWritable, LongWritable, NullWritable> readGiraphVertex(
                 final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
             // Initialize Giraph vertex
             Vertex<LongWritable, LongWritable, NullWritable> vertex = conf.createVertex();
@@ -163,35 +127,6 @@ public class TitanVertexInputFormatLongLongNull extends
                 }
             }
             return (new LongWritable(vertexValue));
-        }
-
-
-        /**
-         * Add edges to Giraph vertex.
-         *
-         * @param vertex       Giraph vertex to add edges to
-         * @param faunusVertex (Faunus (Titan/Hadoop) vertex
-         * @param titanEdges   Iterator of Titan edges
-         */
-        private void addGiraphEdges(Vertex<LongWritable, LongWritable, NullWritable> vertex,
-                                    FaunusVertex faunusVertex, Iterator<TitanEdge> titanEdges) {
-            while (titanEdges.hasNext()) {
-                TitanEdge titanEdge = titanEdges.next();
-                Edge<LongWritable, NullWritable> edge = getGiraphEdge(faunusVertex, titanEdge);
-                vertex.addEdge(edge);
-            }
-        }
-
-        /**
-         * Create Giraph edge from Titan edge
-         *
-         * @param faunusVertex Faunus (Titan/Hadoop) vertex
-         * @param titanEdge    Titan edge
-         * @return Giraph edge
-         */
-        private Edge<LongWritable, NullWritable> getGiraphEdge(FaunusVertex faunusVertex, TitanEdge titanEdge) {
-            return EdgeFactory.create(new LongWritable(
-                    titanEdge.getOtherVertex(faunusVertex).getLongId()), NullWritable.get());
         }
     }
 }

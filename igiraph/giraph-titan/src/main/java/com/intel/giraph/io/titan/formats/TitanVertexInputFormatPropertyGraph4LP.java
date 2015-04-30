@@ -75,9 +75,7 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
     /**
      * Uses the RecordReader to get HBase data
      */
-    public static class PropertyGraph4LPVertexReader extends TitanVertexReader<LongWritable, VertexData4LPWritable, DoubleWritable> {
-
-        private Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> giraphVertex = null;
+    public static class PropertyGraph4LPVertexReader extends TitanVertexReaderCommon<VertexData4LPWritable, DoubleWritable> {
 
         /**
          * The length of vertex value vector
@@ -93,41 +91,6 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
          */
         public PropertyGraph4LPVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
             super(split, context);
-        }
-
-        /**
-         * Gets the next Giraph vertex from the input split.
-         *
-         * @return boolean Returns True, if more vertices available
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        @Override
-        public boolean nextVertex() throws IOException, InterruptedException {
-            while (getRecordReader().nextKeyValue()) {
-                Vertex<LongWritable, VertexData4LPWritable, DoubleWritable>  tempGiraphVertex =
-                        readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                if (tempGiraphVertex != null) {
-                    this.giraphVertex = tempGiraphVertex;
-                    return true;
-                }
-            }
-            this.giraphVertex = null;
-            return false;
-        }
-
-        /**
-         * Get current vertex with ID in long; value as two vectors, both in
-         * double edge as two vectors, both in double
-         *
-         * @return Vertex Giraph vertex
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        @Override
-        public Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> getCurrentVertex()
-                throws IOException, InterruptedException {
-            return giraphVertex;
         }
 
         /**
@@ -147,16 +110,6 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
                 }
             }
             return vertexValue;
-        }
-
-        /**
-         * Get edges of this vertex
-         *
-         * @return Iterable of Giraph edges
-         * @throws IOException
-         */
-        protected Iterable<Edge<LongWritable, DoubleWritable>> getEdges() throws IOException {
-            return giraphVertex.getEdges();
         }
 
         /**
@@ -195,7 +148,6 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
             }
         }
 
-
         /**
          * Add edges to Giraph vertex.
          *
@@ -203,7 +155,8 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
          * @param faunusVertex Faunus (Titan/Hadoop) vertex
          * @param titanEdges   Iterator of Titan edges
          */
-        private void addGiraphEdges(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex,
+        @Override
+        public void addGiraphEdges(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex,
                                     FaunusVertex faunusVertex, Iterator<TitanEdge> titanEdges) {
             while (titanEdges.hasNext()) {
                 TitanEdge titanEdge = titanEdges.next();
@@ -226,7 +179,8 @@ public class TitanVertexInputFormatPropertyGraph4LP extends
          * @param faunusVertex Faunus vertex
          * @return Giraph vertex
          */
-        private Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> readGiraphVertex(
+        @Override
+        public Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> readGiraphVertex(
                 final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
 
             Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex = conf.createVertex();
