@@ -56,7 +56,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
       getGBVertexRules(theOnlyFrameRule.vertexRules),
       getGBEdgeRules(theOnlyFrameRule.edgeRules),
       GraphBuilderConfigFactory.getTitanConfiguration(graph.storage),
-      append = graphLoad.append,
+      append = graphLoad.append.get,
       // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
       retainDanglingEdges = false,
       inferSchema = true,

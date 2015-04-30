@@ -36,6 +36,10 @@ case class LibSvmTrainArgs(model: ModelReference,
                            frame: FrameReference,
                            labelColumn: String,
                            observationColumns: List[String],
+                           svmType: Option[Int],
+                           kernelType: Option[Int],
+                           weightLabel: Option[Array[Int]],
+                           weight: Option[Array[Double]],
                            epsilon: Option[Double] = None,
                            degree: Option[Int] = None,
                            gamma: Option[Double] = None,
@@ -46,11 +50,7 @@ case class LibSvmTrainArgs(model: ModelReference,
                            probability: Option[Int] = None,
                            nrWeight: Option[Int] = None,
                            C: Option[Double] = None,
-                           p: Option[Double] = None,
-                           svmType: Option[Int],
-                           kernelType: Option[Int],
-                           weightLabel: Option[Array[Int]],
-                           weight: Option[Array[Double]]) {
+                           p: Option[Double] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(observationColumns != null && !observationColumns.isEmpty, "One or more observation columns is required")

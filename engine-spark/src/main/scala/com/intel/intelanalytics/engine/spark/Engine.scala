@@ -113,7 +113,6 @@ import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
 import com.intel.intelanalytics.domain.frame.ColumnMedianArgs
 import com.intel.intelanalytics.domain.frame.ColumnModeArgs
-import com.intel.intelanalytics.domain.frame.EcdfArgs
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
