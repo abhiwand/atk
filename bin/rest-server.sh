@@ -15,7 +15,7 @@ export HOSTNAME=`hostname`
 # NOTE: Add this parameter to Java for connecting to a debugger
 # -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005
 
-echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot test-server
+echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot rest-server
 java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot rest-server
 
 popd
