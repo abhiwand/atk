@@ -40,15 +40,15 @@ import os
 
 rst_epilog = """
 
-.. |ALPHA|  image:: _static/alpha.*
+.. |ALPHA|  image:: /_static/alpha.*
               :target: glossary.html#term-api-maturity-tags
 .. |API|    replace:: abbr:`API (Application Programming Interface)`
-.. |BETA|   image:: _static/beta.*
+.. |BETA|   image:: /_static/beta.*
               :target: glossary.html#term-api-maturity-tags
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
-.. |DEPRECATED|   image:: _static/deprecated.*
+.. |DEPRECATED|   image:: /_static/deprecated.*
               :target: glossary.html#term-api-maturity-tags
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
@@ -100,6 +100,8 @@ extensions = [
     'sphinx.ext.pngmath',
 #    'sphinx.ext.viewcode',
     'numpydoc',
+#    'sphinxcontrib.napoleon',
+#    'sphinxcontrib.restbuilder',
 ]
 # This is to eliminate the warning that appears saying there is a reference
 # to a class but looking for a rst.
@@ -180,14 +182,14 @@ html_use_modindex = True
 #keep_warnings = False
 
 # The following two functions cause Sphinx to document the __init__ function, which it normally skips
-#def skip(app, what, name, obj, skip, options):
-#    if name == "__init__":
-#        return False
-#    return skip
-#
+def skip(app, what, name, obj, skip, options):
+    if name == "__init__":
+        return False
+    return skip
+
 def setup(app):
-#    app.connect("autodoc-skip-member", skip)
-    app.connect('autodoc-skip-member', autodoc_skip_member)
+    app.connect("autodoc-skip-member", skip)
+#    app.connect('autodoc-skip-member', autodoc_skip_member)
 
 autodoc_default_flags = ['members']
 
