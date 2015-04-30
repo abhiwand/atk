@@ -260,5 +260,4 @@ object MLLibJsonProtocol {
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val linRegDataFormat = jsonFormat2(LinearRegressionData)
-  //implicit val linearRegressionWithSGDTrainFormat = jsonFormat8(LinearRegressionnWithSGDTrainArgs)
 }
