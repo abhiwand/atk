@@ -68,7 +68,7 @@ def return_graph(selfish, json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['id'])
 
-@postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test', 'model:linear_regression/test')
+@postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test')
 def return_metrics(selfish, json_result):
      from intelanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
