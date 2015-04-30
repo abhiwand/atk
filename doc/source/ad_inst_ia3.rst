@@ -13,7 +13,6 @@ Configuration Script
 
         No current SPARK_CLASSPATH set.
         Setting to:
-        SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
         Deploying config   .   .   .   .   .   .   .   .   .   .   .   .
         Config Deployed
@@ -77,7 +76,6 @@ Configuration Script
 
         No current SPARK_CLASSPATH set.
         Setting to:
-        SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
         Deploying config   .   .   .   .   .   .   .   .   .   .   .   .
         Config Deployed

@@ -7,6 +7,7 @@ IntelliJ IDEA Setup Instructions
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 -------------
 Prerequisites

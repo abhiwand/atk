@@ -6,6 +6,7 @@ all data elements whose weight is NaN or infinite.
 If there are no data elements with a finite weight greater than 0,
 the entropy is zero.
 
+
 Parameters
 ----------
 data_column : str
@@ -17,9 +18,12 @@ weights_column : str (optional)
     Uniform weights of 1 for all items will be used for the calculation if
     this parameter is not provided.
 
+
 Returns
 -------
-float64 : entropy
+float64
+    Entropy.
+
 
 Examples
 --------

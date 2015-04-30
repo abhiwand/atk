@@ -5,12 +5,14 @@ the column values and keeping track of the current percentage of the
 total number of times the specified *count_value* has been seen up to
 the current value.
 
+
 Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative sum.
 count_value : str
     The column value to be used for the counts.
+
 
 Examples
 --------
@@ -46,10 +48,10 @@ columns, *obs* that contains the original column values, and
 
       obs:int32    obs_tally_percent:float64
     /----------------------------------------/
-         0                         0.0
+         0                         0.5
          1                         0.5
          2                         0.5
-         0                         0.5
+         0                         1.0
          1                         1.0
          2                         1.0
 

@@ -8,6 +8,7 @@ Machine Learning Algorithms
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 The graph machine learning algorithms currently supported fall into these
 categories:

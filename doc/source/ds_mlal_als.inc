@@ -1,5 +1,8 @@
 .. index::
-    single: ALS, optimization, collaborative filtering
+    single: ALS
+    single: optimization
+    single: collaborative filtering
+    pair: algorithm; ALS
 
 Using ALS Optimization to Solve the Collaborative Filtering Problem
 ===================================================================

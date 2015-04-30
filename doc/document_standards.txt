@@ -1,8 +1,49 @@
+Parameters
+----------
+Parameters are shown as:
+
+Parameters
+----------
+A : B
+    Description of parameter.
+    Default is X.
+A : B
+    Description of parameter.
+    Default is X.
+
+A is the name of the parameter.
+B is the variable type.
+Description can be multiple lines.
+Last line in description states the default value of optional parameters.
+
+Returns
+-------
+This section is included only if the function returns a value.
+The first line of this section is the type of variable being returned.
+The second line is a description of the value being returned.
+The the data type being returned has multiple sections with different parts,
+the last line of the description will be:
+"The data returned is composed of multiple components:"
+and will be followed by a section of different components
+laid out similar to the parameters section.
+For example:
+
+Returns
+-------
+dict
+    A dictionary of data.
+    The data returned is composed of multiple components:
+A : B
+    Description of parameter.
+A : B
+    Description of parameter.
+
+
 Lines
 -----
 Lines are broken at spaces so they could be read on a 80 column screen.
 123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789.
-The last character visible on the line should be blank space or a period.
+The last character visible on the line should be blank space.
 Do not end a line with a space character.
 Use four spaces instead of a tab character.
 When there are multiple lines in a paragraph, each line starts on it's own line.

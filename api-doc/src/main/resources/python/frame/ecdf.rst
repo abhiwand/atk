@@ -2,16 +2,19 @@ Build new frame with columns for data and distribution.
 
 Generates the :term:`empirical cumulative distribution` for the input column.
 
+
 Parameters
 ----------
 sample_col : str
     The name of the column containing sample.
 
+
 Returns
 -------
-Frame : ECDF frame
+Frame
     A frame containing each distinct value in the sample and its
     corresponding ecdf value.
+
 
 Examples
 --------
@@ -21,7 +24,7 @@ specified in the *labels* column and the predicted labels in the
 
 .. code::
 
-    >>> frame.inspect()
+    >>> my_frame.inspect()
 
       a:unicode   b:int32
     /---------------------/
@@ -30,7 +33,7 @@ specified in the *labels* column and the predicted labels in the
        blue        1
        green       0
 
-    >>> result = frame.ecdf('b')
+    >>> result = my_frame.ecdf('b')
     >>> result.inspect()
 
       b:int32   b_ECDF:float64

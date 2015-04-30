@@ -10,7 +10,7 @@ fi
 
 
 #CONFDIR=$DIR/../conf
-CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf/application.conf
+CONFDIR=$DIR/../rest-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf/application.conf
 
 if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar

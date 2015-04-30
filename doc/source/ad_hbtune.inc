@@ -1,5 +1,7 @@
 .. index::
-    single: HBase, performance, tuning
+    single: HBase
+    single: performance
+    single: tuning
 
 HBase Performance Tuning
 ========================

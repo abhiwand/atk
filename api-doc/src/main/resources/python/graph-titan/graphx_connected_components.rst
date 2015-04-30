@@ -3,18 +3,21 @@ Make sub-graph of interconnected but isolated vertices.
 ** Experimental Feature **
 Connected components.
 
+
 Parameters
 ----------
 output_property : str
     The name of the column containing the connected component value.
 
+
 Returns
 -------
-dict : dict(label, Frame)
+dict
     Dictionary containing the vertex type as the key and the corresponding
     vertex's frame with a connected component column.
     Call dictionary_name['label'] to get the handle to frame whose vertex type
     is label.
+
 
 Examples
 --------

@@ -109,7 +109,7 @@
     </build>
 
     <dependencies>
-        <!--START BDA dependencies to our modules-->
+        <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
@@ -126,7 +126,7 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>igiraph-algorithms</artifactId>
         </dependency>
-        <!--END BDA dependencies to our modules-->
+        <!--END dependencies to our modules-->
 
         <!-- START Titan dependencies -->
 

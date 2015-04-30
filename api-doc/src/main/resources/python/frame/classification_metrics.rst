@@ -1,11 +1,11 @@
 Model statistics of accuracy, precision, and others.
 
 Calculate the accuracy, precision, confusion_matrix, recall and
-:math:`F_{\beta}` measure for a classification model.
+:math:`F_{ \beta}` measure for a classification model.
 
-*   The **f_measure** result is the :math:`F_{\beta}` measure for a
+*   The **f_measure** result is the :math:`F_{ \beta}` measure for a
     classification model.
-    The :math:`F_{\beta}` measure of a binary classification model is the
+    The :math:`F_{ \beta}` measure of a binary classification model is the
     harmonic mean of precision and recall.
     If we let:
 
@@ -18,12 +18,12 @@ Calculate the accuracy, precision, confusion_matrix, recall and
 
     .. math::
 
-        F_{\beta} = (1 + \beta ^ 2) * \frac{\frac{T_{P}}{T_{P} + F_{P}} * \
-        \frac{T_{P}}{T_{P} + F_{N}}}{\beta ^ 2 * \frac{T_{P}}{T_{P} + F_{P}} \
-        + \frac{T_{P}}{T_{P} + F_{N}}}
+        F_{ \beta} = (1 + \beta ^ 2) * \frac{ \frac{T_{P}}{T_{P} + F_{P}} * \
+        \frac{T_{P}}{T_{P} + F_{N}}}{ \beta ^ 2 * \frac{T_{P}}{T_{P} + \
+        F_{P}}  + \frac{T_{P}}{T_{P} + F_{N}}}
 
-    The :math:`F_{\beta}` measure for a multi-class classification model is
-    computed as the weighted average of the :math:`F_{\beta}` measure for
+    The :math:`F_{ \beta}` measure for a multi-class classification model is
+    computed as the weighted average of the :math:`F_{ \beta}` measure for
     each label, where the weight is the number of instances of each label.
     The determination of binary vs. multi-class is automatically inferred
     from the data.
@@ -32,7 +32,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     of positive instances that are correctly identified.
     If we let :math:`T_{P}` denote the number of true positives and
     :math:`F_{N}` denote the number of false negatives, then the model
-    recall is given by: :math:`\frac {T_{P}} {T_{P} + F_{N}}`.
+    recall is given by :math:`\frac {T_{P}} {T_{P} + F_{N}}`.
 
     For multi-class classification models, the recall measure is computed as
     the weighted average of the recall for each label, where the weight is
@@ -65,6 +65,7 @@ Calculate the accuracy, precision, confusion_matrix, recall and
     binary classifier model, formatted for human readability.
     See notes below.
 
+
 Parameters
 ----------
 label_column : str
@@ -76,13 +77,10 @@ pos_label : [ str | int | Null ] (optional)
     classifiers.
     The value to be interpreted as a positive instance.
 beta : double (optional)
-    This is the beta value to use for :math:`F_{\beta}` measure (default F1
+    This is the beta value to use for :math:`F_{ \beta}` measure (default F1
     measure is computed); must be greater than zero.
     Defaults to 1.
 
-Notes
------
-**confusion_matrix** is not yet implemented for multi-class classifiers.
 
 Returns
 -------
@@ -92,6 +90,12 @@ object
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double
+
+
+Notes
+-----
+The **confusion_matrix** is not yet implemented for multi-class classifiers.
+
 
 Examples
 --------
@@ -110,7 +114,8 @@ labels specified in the *labels* column and the predicted labels in the
         blue        1              0                  0
         green       0              1                  1
 
-    >>> cm = frame.classification_metrics('labels', 'predictions', 1, 1)
+    >>> cm = frame.classification_metrics(label_column='labels',
+    ... pred_column='predictions', pos_label=1, beta=1)
 
     >>> cm.f_measure
 

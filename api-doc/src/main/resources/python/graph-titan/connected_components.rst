@@ -17,21 +17,32 @@ convergence_output_interval : int (optional)
     The valid value range is [1, max_supersteps].
     Default is 1 (output every superstep).
 
+
 Returns
 -------
-str : Multiple line str
-    The configuration and convergence report for Connected Components.
+str
+    The configuration and convergence report for Connected Components in the
+    format of a multiple-line string.
+
 
 Notes
 -----
 It is prerequisite that the edge label in the property graph must be
 bidirectional.
 
+
 Examples
 --------
-.. code::
+.. only:: html
 
-    >>> g.connected_components(input_edge_label = "edge", output_vertex_property = "component_id")
+    .. code::
 
+        >>> g.connected_components(input_edge_label = "edge", output_vertex_property = "component_id")
 
+.. only:: latex
+
+    .. code::
+
+        >>> g.connected_components(input_edge_label = "edge",
+        ... output_vertex_property = "component_id")
 

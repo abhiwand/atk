@@ -2,6 +2,7 @@ Determining which vertices are the most important.
 
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
+
 Parameters
 ----------
 input_edge_label : list of str
@@ -26,10 +27,13 @@ convergence_output_interval : int (optional)
     The valid value range is [1, max_supersteps].
     The default value is 1, which means output every superstep.
 
+
 Returns
 -------
-str : Multiple line str
-    The configuration and convergence report for Page Rank.
+str
+    The configuration and convergence report for Pagerank in a multiple-line
+    string.
+
 
 Examples
 --------

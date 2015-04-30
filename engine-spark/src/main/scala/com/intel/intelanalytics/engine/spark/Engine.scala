@@ -359,7 +359,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   override def deleteFrame(id: Identifier)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
     future {
       val frame = frames.expectFrame(FrameReference(id))
-      frames.drop(frame)
+      frames.scheduleDeletion(frame)
     }
   }
 
@@ -448,7 +448,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
 
   /**
-   * Delete a graph from the graph database.
+   * Schedule Delete a graph from the graph database.
    * @param graphId The graph to be deleted.
    * @return A future of unit.
    */
@@ -456,7 +456,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.deletegraph") {
       future {
         val graph = graphs.expectGraph(GraphReference(graphId))
-        graphs.drop(graph)
+        graphs.scheduleDeletion(graph)
       }
     }
   }
@@ -510,7 +510,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.deletemodel") {
       future {
         val model = models.expectModel(ModelReference(id))
-        models.drop(model.toReference)
+        models.scheduleDeletion(model)
       }
     }
   }

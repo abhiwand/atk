@@ -3,6 +3,7 @@ Determining which vertices are the most important.
 ** Experimental Feature **
 The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
+
 Parameters
 ----------
 output_property : str
@@ -28,29 +29,46 @@ reset_probability : float (optional)
     The probability that the random walk of a page is reset.
     Default is 0.15.
 
+
 Returns
 -------
-dict(dict) : dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame)))
+dict
+    dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame))).
     Dictionary containing a dictionary of labeled vertices and labeled edges.
     For the vertex_dictionary the vertex type is the key and the corresponding
     vertex's frame with a new column storing the page rank value for the vertex
-    Call vertex_dictionary['label'] to get the handle to frame whose vertex type
-    is label.
+    Call vertex_dictionary['label'] to get the handle to frame whose vertex
+    type is label.
     For the edge_dictionary the edge type is the key and the corresponding
     edge's frame with a new column storing the page rank value for the edge
     Call edge_dictionary['label'] to get the handle to frame whose edge type
     is label.
 
+
 Examples
 --------
-.. code::
+.. only:: html
 
-    >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
-    >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
-    >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
-    >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
-    >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
-    >>> output = graph.graphx_pagerank(output_property="PR", max_iterations = 1, convergence_tolerance = 0.001)
+    .. code::
+
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR", max_iterations = 1, convergence_tolerance = 0.001)
+
+.. only:: latex
+
+    .. code::
+
+        >>> a = ia.VertexRule("node",frame.followed,{"_label":"a"})
+        >>> b = ia.VertexRule("node",frame.follows,{"_label":"b"})
+        >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
+        >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
+        >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
+        >>> output = graph.graphx_pagerank(output_property="PR",
+        ... max_iterations = 1, convergence_tolerance = 0.001)
 
 The expected output is like this:
 
@@ -134,7 +152,8 @@ To query:
         >>> e1 = ia.EdgeRule("e1",b,a,bidirectional=False)
         >>> e2 = ia.EdgeRule("e2",a,b,bidirectional=False)
         >>> graph = ia.TitanGraph([b,a,e1,a,b,e2],"GraphName")
-        >>> output = graph.graphx_pagerank(output_property="PR", max_iterations = 1, convergence_tolerance = 0.001)
+        >>> output = graph.graphx_pagerank(output_property="PR",
+        ... max_iterations = 1, convergence_tolerance = 0.001)
 
 
         {'vertex_dictionary': {u'a': Frame "None"

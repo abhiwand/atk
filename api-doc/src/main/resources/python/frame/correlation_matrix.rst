@@ -1,5 +1,6 @@
 Calculate correlation matrix for two or more columns.
 
+
 Parameters
 ----------
 columns : [ str | list of str ]
@@ -7,11 +8,14 @@ columns : [ str | list of str ]
 
 Returns
 -------
-A matrix with the correlation values for the columns.
+matrix
+    A matrix with the correlation values for the columns.
+
 
 Notes
 -----
 This method applies only to columns containing numerical data.
+
 
 Examples
 --------

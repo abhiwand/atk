@@ -8,6 +8,7 @@ because graphs typically contain cycles, or loops.
 
 In Giraph, the algorithm runs in iterations until it converges.
 
+
 Parameters
 ----------
 vertex_value_property_list : list of str
@@ -70,10 +71,13 @@ power : float (optional)
     Power coefficient for power edge potential.
     Default is 0.
 
+
 Returns
 -------
-str : Multiple line str
+str
     The configuration and learning curve report for Loopy Belief Propagation
+    in the format of a multiple-line string.
+
 
 Examples
 --------

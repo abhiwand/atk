@@ -91,7 +91,7 @@ object CommandDriver {
       if (EventLogging.raw) {
         val config = ConfigFactory.load()
         EventLogging.raw = if (config.hasPath("intel.analytics.engine.logging.raw")) config.getBoolean("intel.analytics.engine.logging.raw") else true
-      } // else api-server already installed an SLF4j adapter
+      } // else rest-server already installed an SLF4j adapter
 
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")

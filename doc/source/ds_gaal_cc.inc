@@ -1,5 +1,8 @@
 .. index::
-    single: CC, connected components, subgraph, message passing
+    single: CC
+    single: connected components
+    single: subgraph
+    single: message passing
 
 Connected Components (CC)
 =========================
@@ -13,6 +16,9 @@ with the identity of the component to which it belongs.
 The algorithm is specific to an edge type, hence in graphs with several
 different types of edges, there may be multiple, overlapping sets of connected
 components.
+
+.. index::
+    pair: algorithm; connected components
 
 The algorithm works by assigning each vertex a unique numerical index and
 passing messages between neighbors.

@@ -4,6 +4,7 @@ Creates a new graph which is the same as the input graph, with the addition
 that every vertex of the graph has its :term:`degree` stored in a
 user-specified property.
 
+
 Parameters
 ----------
 output_property_name : str
@@ -29,12 +30,13 @@ input_edge_labels : list of str (optional)
 
 Returns
 -------
-dict : dict(label, Frame)
+dict
     Dictionary containing the vertex type as the key and the corresponding
     vertex's frame with a column storing the annotated degree for the vertex
     in a user specified property.
     Call dictionary_name['label'] to get the handle to frame whose vertex type
     is label.
+
 
 Examples
 --------

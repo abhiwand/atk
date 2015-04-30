@@ -24,12 +24,12 @@ This folder is for integration tests that are run at build time.
         /fs-root - folder that functions like the HDFS root used by our application
             /datasets - copy of top-level /datasets folder
             /intelanalytics - frames and graphs get written here
-        /api-server.log - output from API Server
-        /api-server.pid - contains PID of API Server so we can kill it when we're done
+        /rest-server.log - output from REST Server
+        /rest-server.pid - contains PID of REST Server so we can kill it when we're done
     /smoketests - pyunit tests that are run first, these only verify the basic functionality of the system needed by all of the other tests
     /tests - pyunit tests, most tests go here
-    /api-server-start.sh - script for starting API server (you don't need to call directly)
-    /api-server-stop.sh - script for stopping API server (that was started with the start script)
+    /rest-server-start.sh - script for starting REST server (you don't need to call directly)
+    /rest-server-stop.sh - script for stopping REST server (that was started with the start script)
     /clean.sh - script for removing generated files (removes everything under target folder)
     /README.txt - this text file
     /run_tests.sh - script for running tests (start server, run tests, stop server)
