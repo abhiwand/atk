@@ -90,7 +90,7 @@ class GraphBackendRest(object):
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
-        return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name)])
+        return "\n".join(['%s "%s"' % (graph.__class__.__name__, graph_info.name), 'status = %s' % graph_info.status])
 
     def get_status(self, graph):
         graph_info = self._get_graph_info(graph)

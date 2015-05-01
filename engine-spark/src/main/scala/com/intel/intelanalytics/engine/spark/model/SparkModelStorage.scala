@@ -157,7 +157,8 @@ class SparkModelStorage(metaStore: MetaStore)
           }
 
           val newModel = expectModel(modelRef).copy(name = Some(newName))
-          metaStore.modelRepo.update(newModel).get
+          val renamed = metaStore.modelRepo.update(newModel).get
+          metaStore.modelRepo.updateLastReadDate(renamed).get
         }
     }
   }

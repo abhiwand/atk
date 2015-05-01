@@ -30,10 +30,14 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.rest.{ CommonDirectives, ServiceTest }
 import org.joda.time.DateTime
 import org.mockito.Mockito._
+import scala.concurrent.duration._
 
 import scala.concurrent.Future
 
 class QueryServiceTest extends ServiceTest {
+
+  // increasing timeout because this test had intermittent failures on build server
+  implicit val routeTestTimeout = RouteTestTimeout(5.seconds)
 
   implicit val userPrincipal = mock[UserPrincipal]
   implicit val call: Invocation = Call(userPrincipal)

@@ -79,11 +79,11 @@ class ClientCommandDefinition(CommandDefinition):
 
             def _get_arg_doc(name):
                 try:
-                    arg_doc = filter(lambda  d: d.name == arg_name, arg_docs)[0]
+                    arg_doc = filter(lambda  d: d.name == name, arg_docs)[0]
                 except IndexError:
-                    raise ValueError("Function missing @arg decorator for argument '%s' in function %s" % (arg, function.__name__))
+                    raise ValueError("Function missing @arg decorator for argument '%s' in function %s" % (name, function.__name__))
                 if not isinstance(arg_doc, ArgDoc):
-                    raise TypeError("InternalError - @api decorator expected an ArgDoc for argument '%s' in function %s.  Received type %s" % (arg_name, function.__name__, type(arg_doc)))
+                    raise TypeError("InternalError - @api decorator expected an ArgDoc for argument '%s' in function %s.  Received type %s" % (name, function.__name__, type(arg_doc)))
                 return arg_doc
 
             for arg_name in args:
