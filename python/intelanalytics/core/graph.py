@@ -31,8 +31,6 @@ from intelanalytics.core.api import api_status
 from intelanalytics.meta.clientside import *
 api = get_api_decorator(logger)
 
-#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
-#from intelanalytics.meta.metaprog import doc_stubs_import
 from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
 
 from intelanalytics.meta.namedobj import name_support

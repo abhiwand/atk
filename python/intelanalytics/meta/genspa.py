@@ -8,9 +8,9 @@ def gen_spa(command_def):
     params = command_def.parameters
     if params:
         params_text = "\n".join([get_parameter_text(p) for p in params if not p.use_self])
-        doc_str += ("\n" + params_text)
+        doc_str += ("\n\n" + params_text)
     if command_def.return_info:
-        doc_str += ("\n" + get_returns_text(command_def.return_info))
+        doc_str += ("\n\n" + get_returns_text(command_def.return_info))
 
     return indent(doc_str)
 

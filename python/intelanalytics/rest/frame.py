@@ -161,7 +161,7 @@ class FrameBackendRest(object):
         return """{type} {name}{graph_data}
 row_count = {row_count}
 schema = [{schema}]
-status = {status]""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema, status=status)
+status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema, status=status)
 
     def _get_frame_info(self, frame):
         response = self.server.get(self._get_frame_full_uri(frame))

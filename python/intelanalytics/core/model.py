@@ -94,7 +94,7 @@ class _BaseModel(_DocStubs_BaseModel, CommandLoadable):
     def __repr__(self):
         try:
             model_info = self._get_model_info()
-            return "\n".join([self.__class__.__name__, 'name =  "%s"' % (model_info.name)])
+            return "\n".join([self.__class__.__name__, 'name =  "%s"' % (model_info.name), "status = %s" % model_info.status])
         except:
             return super(_BaseModel,self).__repr__() + " (Unable to collect metadata from server)"
 
