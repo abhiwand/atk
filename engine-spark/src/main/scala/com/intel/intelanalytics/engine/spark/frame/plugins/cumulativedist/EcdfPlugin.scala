@@ -25,22 +25,54 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ Invocation }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, SparkFrameStorage, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+case class EcdfArgs(frame: FrameReference,
+                    @ArgDoc("The name of the input column containing sample.3") column: String,
+                    @ArgDoc("The missing argie") missing: Option[Int] = Some(7),
+                    @ArgDoc("A name for the resulting frame which is created by this operation.") resultFrameName: Option[String] = None) {
+  require(frame != null, "frame is required")
+  require(column != null, "column is required")
+
+  def getResultFrameName: Option[String] = {
+    resultFrameName match {
+      case Some(n) =>
+        FrameName.validate(n)
+        Some(n)
+      case _ => None
+    }
+  }
+
+}
+
+//case class EcdfReturn(@ArgDoc("A new Frame containing each distinct value in the sample and its corresponding ECDF value.") frame: FrameEntity)
+
+/** Json conversion for arguments and return value case classes */
+object EcdfJsonFormat {
+  import DomainJsonProtocol._
+  implicit val EcdfArgsFormat = jsonFormat4(EcdfArgs)
+  //implicit val EcdfReturnFormat = jsonFormat1(EcdfReturn)
+}
+
+import EcdfJsonFormat._
+import DomainJsonProtocol._
 /**
  * Empirical Cumulative Distribution for a column
  */
+@PluginDoc(oneLine = "Build new elephant frame with columns for data and distribution.",
+  extended = """Generates the :term:`empirical cumulative distribution` for the input column.""",
+  returns = "A new hippo Frame containing each distinct value in the sample and its corresponding ECDF value.")
 class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
 
   /**
@@ -72,7 +104,7 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
     val ecdfSchema = FrameSchema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
 
     // run the operation
-    tryNew(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameMeta =>
+    val newFrameEntity = tryNew(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameMeta =>
       if (arguments.resultFrameName.isDefined) {
         engine.frames.renameFrame(ecdfFrame.meta, FrameName.validate(arguments.resultFrameName.get))
       }
@@ -81,5 +113,6 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),
         new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd()))
     }.meta
+    newFrameEntity
   }
 }

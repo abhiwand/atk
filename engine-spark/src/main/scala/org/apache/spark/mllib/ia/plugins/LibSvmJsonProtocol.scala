@@ -34,7 +34,7 @@ import spray.json._
 
 object LibSvmJsonProtocol {
 
-  implicit object svm_parameter extends JsonFormat[libsvm.svm_parameter] {
+  implicit object SvmParameterFormat extends JsonFormat[libsvm.svm_parameter] {
     override def write(obj: libsvm.svm_parameter): JsValue = {
       JsObject(
         "svm_type" -> JsNumber(obj.svm_type),
@@ -150,7 +150,7 @@ object LibSvmJsonProtocol {
         "sv_indices" -> new JsArray(obj.sv_indices.map(d => JsNumber(d)).toList),
         "sv_coef" -> new JsArray(obj.sv_coef.map(row => new JsArray(row.map(d => JsNumber(d)).toList)).toList),
         "nSV" -> checkNsv,
-        "param" -> svm_parameter.write(obj.param),
+        "param" -> SvmParameterFormat.write(obj.param),
         "SV" -> new JsArray(obj.SV.map(row => new JsArray(row.map(d => svm_node.write(d)).toList)).toList)
       )
     }
@@ -158,8 +158,7 @@ object LibSvmJsonProtocol {
     /**
      * The read method reads a JsValue to LibSVMModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format SVMModel(val weights: Vector,val intercept: Double)
-     *         and the weights Vector could be either a SparseVector or DenseVector
+     * @return LibSvmModel
      */
     override def read(json: JsValue): svm_model = {
       val fields = json.asJsObject.fields
@@ -184,7 +183,7 @@ object LibSvmJsonProtocol {
         case JsNull => null
         case _ => fields.get("nSV").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.intValue()).toArray
       }
-      val param = fields.get("param").map(v => svm_parameter.read(v)).get
+      val param = fields.get("param").map(v => SvmParameterFormat.read(v)).get
       val SV = fields.get("SV").get.asInstanceOf[JsArray].elements.map(row => row.asInstanceOf[JsArray].elements.map(j => svm_node.read(j))toArray).toArray
 
       val svmModel = new svm_model()

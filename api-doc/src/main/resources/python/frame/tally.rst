@@ -4,12 +4,14 @@ A cumulative count is computed by sequentially stepping through the column
 values and keeping track of the the number of times the specified
 *count_value* has been seen up to the current value.
 
+
 Parameters
 ----------
 sample_col : str
     The name of the column from which to compute the cumulative count.
 count_value : str
     The column value to be used for the counts.
+
 
 Examples
 --------
@@ -46,10 +48,10 @@ cumulative counts:
 
       obs:int32        obs_tally:int32
     /----------------------------------/
-         0                      0
+         0                      1
          1                      1
          2                      1
-         0                      1
+         0                      2
          1                      2
          2                      2
 

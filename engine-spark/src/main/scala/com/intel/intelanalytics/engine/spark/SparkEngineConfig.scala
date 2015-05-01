@@ -311,7 +311,6 @@ trait SparkEngineConfig extends EventLogging {
   val sparkDriverMaxPermSize = config.getString("intel.analytics.engine.spark.conf.properties.spark.driver.maxPermSize")
 
   val sparkOnYarnNumExecutors = config.getInt("intel.analytics.engine.spark.conf.properties.spark.yarn.numExecutors")
-  val sparkOnYarnNumCoresPerExecutor = config.getInt("intel.analytics.engine.spark.conf.properties.spark.yarn.numCoresPerExecutor")
 
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
@@ -351,6 +350,7 @@ trait SparkEngineConfig extends EventLogging {
   val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
   val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
   val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+  val metaStorePoolMaxActive: Int = config.getInt("intel.analytics.metastore.pool.max-active")
 
   /**
    * Get a String but throw Exception if it is empty
@@ -365,9 +365,9 @@ trait SparkEngineConfig extends EventLogging {
   //gc variables
   val gcInterval = config.getDuration("intel.analytics.engine.gc.interval", TimeUnit.MILLISECONDS)
   val gcAgeToDeleteData = config.getDuration("intel.analytics.engine.gc.data-lifespan", TimeUnit.MILLISECONDS)
-  val gcAgeToDeleteMetaData = config.getDuration("intel.analytics.engine.gc.metadata-lifespan", TimeUnit.MILLISECONDS) + gcAgeToDeleteData
 
   val enableKerberos: Boolean = config.getBoolean("intel.analytics.engine.hadoop.kerberos.enabled")
   val kerberosPrincipalName: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.principal-name")) else None
   val kerberosKeyTabPath: Option[String] = if (enableKerberos) Some(nonEmptyString("intel.analytics.engine.hadoop.kerberos.keytab-file")) else None
+
 }

@@ -27,6 +27,7 @@ import java.beans.{ Introspector, BeanInfo }
 import java.net.URI
 
 import spray.json.{ JsValue, JsonFormat }
+import scala.annotation.Annotation
 
 trait JsonSchema {
   def id: Option[URI]
@@ -44,15 +45,24 @@ object JsonSchema {
     def description = None
     def `type` = None
   }
-  val int = NumberSchema(id = Some(new URI("ia:int")),
+
+  def verbose_int(description: Option[String], defaultValue: Option[Any]) = NumberSchema(id = Some(new URI("ia:int")),
+    description = description,
+    defaultValue = defaultValue,
     minimum = Some(Int.MinValue),
     maximum = Some(Int.MaxValue),
     multipleOf = Some(1.0))
 
-  val long = NumberSchema(id = Some(new URI("ia:long")),
+  val int = verbose_int(None, None)
+
+  def verbose_long(description: Option[String], defaultValue: Option[Any]) = NumberSchema(id = Some(new URI("ia:long")),
+    description = description,
+    defaultValue = defaultValue,
     minimum = Some(Long.MinValue),
     maximum = Some(Long.MaxValue),
     multipleOf = Some(1.0))
+
+  val long = verbose_long(None, None)
 
   val float = NumberSchema(id = Some(new URI("ia:float")),
     minimum = Some(Float.MinValue),
@@ -64,7 +74,9 @@ object JsonSchema {
 
   val dateTime = StringSchema(format = Some("date-time"))
 
-  val frame = StringSchema(format = Some("uri/ia-frame"))
+  def verbose_frame(description: Option[String], defaultValue: Option[Any]) = StringSchema(format = Some("uri/ia-frame"), description = description, defaultValue = defaultValue)
+
+  val frame = verbose_frame(None, None)
 
   val graph = StringSchema(format = Some("uri/ia-graph"))
 
@@ -77,11 +89,14 @@ sealed trait Primitive extends JsonSchema {
   //def $schema = None
 }
 
+case class DocProperty(description: String) extends Annotation
+
 case class ObjectSchema(
     id: Option[URI] = None,
     title: Option[String] = None,
     //$schema: Option[String] = Some("http://intel.com/iat/schema/json-schema-04"),
     description: Option[String] = None,
+    defaultValue: Option[Any] = None,
     maxProperties: Option[Int] = None,
     minProperties: Option[Int] = None,
     required: Option[Array[String]] = None,
@@ -91,12 +106,19 @@ case class ObjectSchema(
     definitions: Option[Map[String, JsonSchema]] = None,
     order: Option[Array[String]] = None,
     `type`: Option[String] = Some("object")) extends JsonSchema {
+
+  // todo: enable this...
+  //  if (required.isDefined && order.isDefined && !order.get.startsWith(required.get)) {
+  //    throw new RuntimeException("Bad signature found -- all optional arguments must be positioned at the end of the argument list")
+  //    // there's nothing really here to give the user in a message to identify the object, best to catch above
+  //  }
 }
 
 case class StringSchema(
     id: Option[URI] = None,
     title: Option[String] = None,
     description: Option[String] = None,
+    defaultValue: Option[Any] = None,
     maxLength: Option[Int] = None,
     minLength: Option[Int] = None,
     pattern: Option[String] = None,
@@ -111,6 +133,7 @@ case class StringSchema(
 case class ArraySchema(id: Option[URI] = None,
                        title: Option[String] = None,
                        description: Option[String] = None,
+                       defaultValue: Option[Any] = None,
                        additionalItems: Option[Either[Boolean, ObjectSchema]] = None,
                        items: Option[Either[ObjectSchema, Array[ObjectSchema]]] = None,
                        maxItems: Option[Int] = None,
@@ -124,6 +147,7 @@ case class ArraySchema(id: Option[URI] = None,
 case class NumberSchema(id: Option[URI] = None,
                         title: Option[String] = None,
                         description: Option[String] = None,
+                        defaultValue: Option[Any] = None,
                         minimum: Option[Double] = None,
                         exclusiveMinimum: Option[Double] = None,
                         maximum: Option[Double] = None,

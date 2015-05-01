@@ -111,6 +111,9 @@ class FrameBackendRest(object):
     def get_schema(self, frame):
         return self._get_frame_info(frame).schema
 
+    def get_status(self, frame):
+        return self._get_frame_info(frame).status
+
     def get_row_count(self, frame, where):
         if not where:
             return self._get_frame_info(frame).row_count
@@ -127,7 +130,23 @@ class FrameBackendRest(object):
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        frame_type = "VertexFrame" if frame_info._has_vertex_schema() else "EdgeFrame" if frame_info._has_edge_schema() else "Frame"
+        try:
+            frame_name = ('"%s"' % frame_info.name) if frame_info.name is not None else ' <unnamed>'
+        except Exception as e:
+            frame_name = "(Unable to determine name, error: %s)" % e
+        try:
+            schema = ', '.join(["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
+        except Exception as e:
+            schema = "Unable to determine schema (%s)" % e
+        try:
+            row_count = frame_info.row_count
+        except Exception as e:
+            row_count = "Unable to determine row_count (%s)" % e
+
+        try:
+            status = frame_info.status
+        except Exception as e:
+            status = "Unable to determine status (%s)" % e
 
         if frame_info._has_vertex_schema():
             frame_type = "VertexFrame"
@@ -139,10 +158,10 @@ class FrameBackendRest(object):
         else:
             frame_type = "Frame"
             graph_data = ""
-        return "\n".join(['%s "%s"%s\nrow_count = %d\nschema = ' %
-                          (frame_type, frame_info.name, graph_data,  frame_info.row_count)] +
-                         ["  %s:%s" % (name, data_type)
-                          for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
+        return """{type} {name}{graph_data}
+row_count = {row_count}
+schema = [{schema}]
+status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_data, row_count=row_count, schema=schema, status=status)
 
     def _get_frame_info(self, frame):
         response = self.server.get(self._get_frame_full_uri(frame))
@@ -318,20 +337,20 @@ class FrameBackendRest(object):
             self._handle_error(result)
 
     def drop(self, frame, predicate):
-        from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
+        from intelanalytics.rest.spark import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilterfalse)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
-        from itertools import ifilter
+        from intelanalytics.rest.spark import ifilter
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilter)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
-        from itertools import ifilter
-        from itertools import ifilterfalse
+        from intelanalytics.rest.spark import ifilter
+        from intelanalytics.rest.spark import ifilterfalse
 
         if keep_matching_vertices:
             arguments = {'frame': self.get_ia_uri(frame),
@@ -645,6 +664,10 @@ class FrameInfo(object):
             return self._payload['schema']['edge_schema']['src_vertex_label']
         except:
             return None
+
+    @property
+    def status(self):
+        return self._payload['status']
 
     def _has_edge_schema(self):
         return "edge_schema" in self._payload['schema']

@@ -16,17 +16,23 @@ observation_column : list of str (Optional)
 
 Returns
 -------
-An object with binary classification metrics.
+Object
+    Object with binary classification metrics.
+    The data returned is composed of multiple components:
+<object>.accuracy : double
+     The degree of correctness of the test frame labels.
+<object>.confusion_matrix : table
+    A specific table layout that allows visualization of the performance of the
+    test.
+<object>.f_measure : double
+    A measure of a test's accuracy.
+    It considers both the precision and the recall of the test to compute
+    the score.
+<object>.precision : double
+    The degree to which the correctness of the label is expressed.
+<object>.recall : double
+     The fraction of relevant instances that are retrieved.
 
-  <object>.accuracy : double
-
-  <object>.confusion_matrix : table
-
-  <object>.f_measure : double
-
-  <object>.precision : double
-
-  <object>.recall : double
 
 Examples
 --------

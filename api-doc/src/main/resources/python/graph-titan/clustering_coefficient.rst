@@ -8,6 +8,7 @@ THIS FUNCTION IS FOR UNDIRECTED GRAPHS.
 If it is called on a directed graph, its output is NOT guaranteed to calculate
 the local directed clustering coefficients.
 
+
 Parameters
 ----------
 output_property_name : str (optional)
@@ -23,15 +24,18 @@ input_edge_labels : list of str (optional)
     It is required that all edges that enter into the clustering coefficient
     analysis be undirected.
 
+
 Returns
 -------
+double or Frame
+    The data returned can be one of two types:
 global_clustering_coefficient : double
     The global clustering coefficient of the graph.
-
 frame : Frame
     A Frame is only returned if ``output_property_name`` is provided.
     The frame contains data from every vertex of the graph with its
     :term:`local clustering coefficient` stored in the user-specified property.
+
 
 Examples
 --------

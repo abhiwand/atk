@@ -1,7 +1,8 @@
-Make new frame with column for label prediction.
+Make a new frame with a column for label prediction.
 
 Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.
+
 
 Parameters
 ----------
@@ -15,11 +16,13 @@ observation_column : list of str (Optional)
     By default, we predict the labels over columns the LogisticRegressionModel
     was trained on.
 
+
 Returns
 -------
 Frame
     Frame containing the original frame's columns and a column with the
     predicted label
+
 
 Examples
 --------

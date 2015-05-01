@@ -6,6 +6,7 @@ New rows are a full copy of the original row, but the specified column only
 contains one value.
 The original row is deleted.
 
+
 Parameters
 ----------
 column : str
@@ -14,18 +15,17 @@ delimiter : str (optional)
     The delimiter string.
     Default is comma (,).
 
+
 Examples
 --------
-Given that I have a frame accessed by Frame *my_frame* and the frame has two
-columns *a* and *b*.
-The "original_data"::
+Given a data file::
 
     1-"solo,mono,single"
     2-"duo,double"
 
-.. only:: html
+The commands to bring the data into a frame, where it can be worked on:
 
-    I run my commands to bring the data in where I can work on it:
+.. only:: html
 
     .. code::
 
@@ -34,32 +34,30 @@ The "original_data"::
 
 .. only:: latex
 
-    I run my commands to bring the data in where I can work on it:
-
     .. code::
 
         >>> my_csv = CsvFile("original_data.csv", schema=[('a', int32),
-        ...    ('b', str)], delimiter='-')
+        ... ('b', str)], delimiter='-')
         >>> my_frame = Frame(source=my_csv)
 
-I look at it and see:
+Looking at it:
 
 .. code::
 
     >>> my_frame.inspect()
 
       a:int32   b:str
-    /------------------------------/
+    /-------------------------------/
         1       solo, mono, single
         2       duo, double
 
-Now, I want to spread out those sub-strings in column *b*:
+Now, spread out those sub-strings in column *b*:
 
 .. code::
 
     >>> my_frame.flatten_column('b')
 
-Now I check again and my result is:
+Check again:
 
 .. code::
 

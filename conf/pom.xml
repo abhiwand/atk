@@ -20,7 +20,7 @@
     </build>
 
     <dependencies>
-		<!--START BDA dependencies to our modules-->
+		<!--START dependencies to our modules-->
         
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -32,16 +32,16 @@
         </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>api-server</artifactId>
+            <artifactId>rest-server</artifactId>
         </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>igiraph-titan</artifactId>
+            <artifactId>giraph-plugins</artifactId>
         </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>graphon</artifactId>
         </dependency>
-        <!--END BDA dependencies to our modules-->
+        <!--END dependencies to our modules-->
     </dependencies>
 </project>

@@ -9,6 +9,7 @@ PyCharm is a Python IDE created by JetBrains.
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 -------------
 Prerequisites

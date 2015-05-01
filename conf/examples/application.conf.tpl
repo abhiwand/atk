@@ -114,13 +114,13 @@ intel.analytics {
         # use broadcast join if file size is lower than threshold. zero disables broadcast joins.
         # this threshold should be less than the maximum size of results returned to Spark driver (i.e., spark.driver.maxResultSize).
         # to increase Spark driver memory, edit java options (IA_JVM_OPT) in /etc/default/intelanalytics-rest-server
-        broadcast-join-threshold = "1GB"
+        broadcast-join-threshold = "512MB"
     }
   }
 
-  # Configuration for the Intel Analytics REST API server
+  # Configuration for the Intel Analytics REST server
   api {
-      #this is reported by the API server in the /info results - it can be used to identify
+      #this is reported by the REST server in the /info results - it can be used to identify
       #a particular server or cluster
       //identifier = "ia"
 
@@ -130,7 +130,7 @@ intel.analytics {
       #Timeout for waiting for results from the engine
       //default-timeout = 30s
 
-      #HTTP request timeout for the api server
+      #HTTP request timeout for the REST server
       //request-timeout = 29s
     }
 

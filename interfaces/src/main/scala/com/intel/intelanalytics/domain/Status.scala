@@ -25,8 +25,6 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
-// TODO: we added status when first creating the frame and graph tables but then little has been done in terms of actually implementing --Todd 12/3/2014
-
 /**
  * Lifecycle Status for Graphs and Frames
  * @param id unique id in the database
@@ -39,20 +37,14 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
 
   require(name != null, "name must not be null")
 
-  /** Initial Status, currently building or initializing or empty */
-  def isInit: Boolean = id.equals(Status.Init)
-
   /** Active and can be interacted with */
   def isActive: Boolean = id.equals(Status.Active)
-
-  /** Partially created, failure occurred during construction */
-  def isIncomplete: Boolean = id.equals(Status.Incomplete)
 
   /** Deleted but can still be un-deleted, no action has yet been taken on disk */
   def isDeleted: Boolean = id.equals(Status.Deleted)
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  def isDeleteFinal: Boolean = id.equals(Status.Delete_Final)
+  def isDeleteFinal: Boolean = id.equals(Status.Deleted_Final)
 }
 
 object Status {
@@ -63,29 +55,26 @@ object Status {
    * @return proper status id for after the read
    */
   def getNewStatusForRead(id: Long): Long =
-    if (id == Deleted || id == Dead)
-      Weakly_Live
+    if (id == Deleted)
+      Active
     else
       id
 
-  /** Initial Status, currently building or initializing or empty */
-  final val Init: Long = 1
+  def getName(id: Long): String = {
+    id match {
+      case Active => "Active"
+      case Deleted => "Deleted (scheduled may be undeleted by modifying or inspecting)"
+      case Deleted_Final => "Deleted Final"
+      case _ => "Unkown"
+    }
+  }
 
   /** Active and can be interacted with */
-  final val Active: Long = 2
+  final val Active: Long = 1
 
-  /** Partially created, failure occurred during construction */
-  final val Incomplete: Long = 3
-
-  /** Deleted but can still be un-deleted, no action has yet been taken on disk */
-  final val Deleted: Long = 4
+  /** User has marked as Deleted but can still be un-deleted, no action has yet been taken on disk */
+  final val Deleted: Long = 2
 
   /** Underlying storage has been reclaimed, no un-delete is possible */
-  final val Delete_Final: Long = 5
-
-  /** Object is active but is unnamed **/
-  final val Weakly_Live: Long = 7
-
-  /** INACTIVE AND UNUSED, the data on disk will be deleted but can be recreated **/
-  final val Dead: Long = 8
+  final val Deleted_Final: Long = 3
 }

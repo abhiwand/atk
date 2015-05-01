@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.util.concurrent.TimeUnit
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.event.{ EventContext, EventLogging }
@@ -32,7 +33,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.engine.spark.gc.GarbageCollector
+import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.intelanalytics.engine.spark.frame._
@@ -64,6 +65,7 @@ import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.spark.broadcast.Broadcast
@@ -91,9 +93,9 @@ import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.frame.TopKArgs
 import com.intel.intelanalytics.domain.frame.AddColumnsArgs
 import com.intel.intelanalytics.domain.frame.RenameFrameArgs
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
-import com.intel.intelanalytics.domain.{ VectorValue, CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{ Status, VectorValue, CreateEntityArgs, FilterArgs }
 import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
 import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
 import com.intel.intelanalytics.domain.frame.TallyArgs
@@ -111,7 +113,6 @@ import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
 import com.intel.intelanalytics.domain.frame.ColumnMedianArgs
 import com.intel.intelanalytics.domain.frame.ColumnModeArgs
-import com.intel.intelanalytics.domain.frame.EcdfArgs
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
@@ -135,6 +136,7 @@ import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPre
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import scala.util.{ Try, Success, Failure }
+import java.util.StringTokenizer
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -243,6 +245,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
+
+  // Administrative Plugins
+  commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -353,7 +358,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   override def deleteFrame(id: Identifier)(implicit invocation: Invocation): Future[Unit] = withContext("se.delete") {
     future {
       val frame = frames.expectFrame(FrameReference(id))
-      frames.drop(frame)
+      frames.scheduleDeletion(frame)
     }
   }
 
@@ -366,10 +371,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   def getFrameByName(name: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = withContext("se.getFrameByName") {
     future {
       val frame = frames.lookupByName(Some(name))
-      if (frame.isDefined)
-        frames.updateLastReadDate(frame.get)
-      else
-        frame
+      frame
     }
   }
 
@@ -434,15 +436,12 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.getGraphByName") {
       future {
         val graph = graphs.getGraphByName(Some(name))
-        if (graph.isDefined)
-          graphs.updateLastReadDate(graph.get)
-        else
-          graph
+        graph
       }
     }
 
   /**
-   * Delete a graph from the graph database.
+   * Schedule Delete a graph from the graph database.
    * @param graphId The graph to be deleted.
    * @return A future of unit.
    */
@@ -450,7 +449,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.deletegraph") {
       future {
         val graph = graphs.expectGraph(GraphReference(graphId))
-        graphs.drop(graph)
+        graphs.scheduleDeletion(graph)
       }
     }
   }
@@ -482,10 +481,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.getModelByName") {
       future {
         val model = models.getModelByName(Some(name))
-        if (model.isDefined)
-          models.updateLastReadDate(model.get).toOption
-        else
-          model
+        model
       }
     }
 
@@ -504,30 +500,38 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     withContext("se.deletemodel") {
       future {
         val model = models.expectModel(ModelReference(id))
-        models.drop(model.toReference)
+        models.scheduleDeletion(model)
       }
     }
   }
 
   /**
    * Score a vector on a model.
-   * @param id Model id
+   * @param name Model name
    */
-  override def scoreModel(id: Identifier, values: VectorValue)(implicit invocation: Invocation): Future[Double] = {
-    withContext("se.scoremodel") {
-      future {
-        val model = models.expectModel(ModelReference(id))
-        if (model.modelType.equals("model:libsvm")) {
-          val svmJsObject = model.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
-          val libsvmData = svmJsObject.convertTo[LibSvmData]
-          val libsvmModel = libsvmData.svmModel
-          val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, values.value)
-          predictionLabel.value
-        }
-        else {
-          throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
+  override def scoreModel(name: String, values: String): Future[Double] = future {
+    //    val splitObs: StringTokenizer = new StringTokenizer(values, ",")
+    //    var vector = Vector.empty[Double]
+    //    while (splitObs.hasMoreTokens) {
+    //      vector = vector :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
+    //    }
+
+    val vector = DataTypes.toVector(-1)(values)
+    val model = models.getModelByName(Some(name))
+    model match {
+      case Some(x) => {
+        x.modelType match {
+          case "model:libsvm" => {
+            val svmJsObject = x.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
+            val libsvmData = svmJsObject.convertTo[LibSvmData]
+            val libsvmModel = libsvmData.svmModel
+            val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
+            predictionLabel.value
+          }
+          case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
         }
       }
+      case None => throw new IllegalArgumentException(s"Model with the provided name '$name' does not exist in the metastore")
     }
   }
 

@@ -1,25 +1,40 @@
 Compute the histogram for a column in a frame.
 
-Extended Summary
-----------------
+
 Compute the histogram of the data in a column.
 The returned value is a Histogram object containing 3 lists one each for:
 the cutoff points of the bins, size of each bin, and density of each bin.
 
+
 Parameters
 ----------
-column_name: str
+column_name : str
     Name of column to be evaluated.
-num_bins: int (optional)
+num_bins : int (optional)
     Number of bins in histogram.
     If omitted the system will use the Square-root choice
     `math.floor(math.sqrt(frame.row_count))`.
-weight_column_name: str (optional)
+weight_column_name : str (optional)
     Name of column containing weights.
     If omitted the system will weigh all observations equally.
 bin_type : str (optional)
     The binning algorithm to use ['equalwidth' | 'equaldepth'].
     If omitted defaults to equalwidth.
+
+
+Returns
+-------
+histogram
+    A Histogram object containing the result set.
+    The data returned is composed of multiple components:
+cutoffs : array of float
+    A list containing the edges of each bin.
+hist : array of float
+    A list containing count of the weighted observations found in each bin.
+density : array of float
+    A list containing a decimal containing the percentage of
+    observations found in the total set per bin.
+
 
 Notes
 -----
@@ -31,20 +46,6 @@ greater than 2, then the number of actual number of bins will only be 2.
 This is due to a restriction that elements with an identical value must
 belong to the same bin.
 
-Returns
--------
-histogram : Histogram
-    A Histogram object containing the result set.
-    It contains three attributes:
-
-    *   cutoffs |EM| array of type float
-        |EM| A list containing the edges of each bin.
-    *   hist |EM| array of type float
-        |EM| A list containing count of the weighted observations found in
-        each bin.
-    *   density |EM| array of type float
-        |EM| A list containing a decimal containing the percentage of
-        observations found in the total set per bin.
 
 Examples
 --------
@@ -54,13 +55,13 @@ Consider the following sample data set:
 
     >>> frame.inspect()
 
-      a:unicode   b:int32
-    /-----------------------/
-        a           2
-        b           7
-        c           3
-        d           9
-        e           1
+      a:unicode  b:int32
+    /--------------------/
+        a          2
+        b          7
+        c          3
+        d          9
+        e          1
 
     >>> hist = frame.histogram("b")
     >>> print hist
@@ -73,8 +74,20 @@ Consider the following sample data set:
 
 Plot hist as a bar chart using matplotlib:
 
-.. code::
+.. only:: html
 
-    >>> import matplotlib.pyplot as plt
+    .. code::
 
-    >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+        >>> import matplotlib.pyplot as plt
+
+        >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
+
+.. only:: latex
+
+    .. code::
+
+        >>> import matplotlib.pyplot as plt
+
+        >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - 
+        ... hist.cutoffs[0])
+

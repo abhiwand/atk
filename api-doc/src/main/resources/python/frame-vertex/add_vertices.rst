@@ -2,6 +2,7 @@ Add vertices to a graph.
 
 Includes appending to a list of existing vertices.
 
+
 Parameters
 ----------
 source_frame : Frame
@@ -11,13 +12,24 @@ id_column_name : str
 column_names : list of str
     column names that will be turned into properties for each vertex
 
+
 Examples
 --------
+.. only:: html
 
-.. code::
+    .. code::
 
-    >>> graph = ia.Graph()
-    >>> graph.define_vertex_type('users')
-    >>> graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
+        >>> graph = ia.Graph()
+        >>> graph.define_vertex_type('users')
+        >>> graph.vertices['users'].add_vertices(frame, 'user_id', ['user_name', 'age'])
+
+.. only:: latex
+
+    .. code::
+
+        >>> graph = ia.Graph()
+        >>> graph.define_vertex_type('users')
+        >>> graph.vertices['users'].add_vertices(frame, 'user_id',
+        ... ['user_name', 'age'])
 
 

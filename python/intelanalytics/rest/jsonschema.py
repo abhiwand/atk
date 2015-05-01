@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from intelanalytics.meta.command import CommandDefinition, Parameter, Return, Doc, Version
+from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo, Doc, Version
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.graph import Graph
@@ -114,9 +114,17 @@ def log_schema_error(json_schema):
     logger.error("Error in json_schema:\n%s" % schema_str)
 
 
+def get_parameter_description(json_schema):
+    return json_schema.get('description', '')
+
+
+def get_return_description(json_schema):
+    return json_schema.get('description', '')
+
+
 def get_doc(json_schema):
     doc = json_schema.get('doc', {})
-    return Doc(doc.get('title', ''), doc.get('description', ''))
+    return Doc(doc.get('title', '').strip(), doc.get('description', '').lstrip())
 
 
 def get_parameters(argument_schema):
@@ -130,13 +138,13 @@ def get_parameters(argument_schema):
             data_type = get_data_type(properties)
             use_self = properties.get('self', False)
             optional = name not in argument_schema['required']
-            default = properties.get('default', None)
-            doc = get_doc(properties)
+            default = properties.get('default_value', None)
+            doc = get_parameter_description(properties)
             parameters.append(Parameter(name, data_type, use_self, optional, default, doc))
     return parameters
 
 
-def get_return(return_schema):
+def get_return_info(return_schema):
     """Returns a Return tuple according to the return_schema"""
     # Get the definition of what happens with the return  --TODO, enhance for Complex Types, etc...
     # 1. return Simple/Primitive Type
@@ -147,8 +155,8 @@ def get_return(return_schema):
     use_self = return_schema.get('self', False)
     #if use_self and data_type not in [Frame, Graph]:
     #    raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
-    doc = get_doc(return_schema)
-    return Return(data_type, use_self, doc)
+    doc = get_return_description(return_schema)
+    return ReturnInfo(data_type, use_self, doc)
 
 
 def get_version(json_schema):   # TODO - this is first-cut, needs reqs+review
@@ -161,8 +169,8 @@ def get_command_def(json_schema):
     """Returns a CommandDefinition obj according to the json schema"""
     full_name = json_schema['name']
     parameters = get_parameters(json_schema['argument_schema'])
-    return_type = get_return(json_schema['return_schema'])
+    return_info = get_return_info(json_schema['return_schema'])
     version = get_version(json_schema)
     maturity = json_schema.get('maturity', None)
     doc = get_doc(json_schema)
-    return CommandDefinition(json_schema, full_name, parameters, return_type, doc, maturity, version)
+    return CommandDefinition(json_schema, full_name, parameters, return_info, doc, maturity, version)

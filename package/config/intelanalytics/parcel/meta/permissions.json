@@ -24,11 +24,6 @@
         "group": "iauser",
         "permissions": "0775"
     },
-    "usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar": {
-        "user": "iauser",
-        "group": "iauser",
-        "permissions": "0775"
-    },
     "usr/bin": {
         "user": "iauser",
         "group": "iauser",

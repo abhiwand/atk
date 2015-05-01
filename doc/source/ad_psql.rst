@@ -9,6 +9,7 @@ Tracking Metadata
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 By default, the |IAT| uses H2, an in-memory database that is lost on
 application restart.

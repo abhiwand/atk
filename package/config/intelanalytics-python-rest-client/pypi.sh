@@ -29,8 +29,8 @@ cp -v  requirements-linux.txt intelanalytics/
 
 pushd intelanalytics
 
-sed -i "s/VERSION/${VERSION}/g" setup.py
-sed -i "s/BUILD_NUMBER/${BUILD_NUMBER}/g" setup.py
+sed -i "s/\#VERSION\#/${version}/g" setup.py
+sed -i "s/\#BUILD_NUMBER\#/${BUILD_NUMBER}/g" setup.py
 
 python setup.py sdist
 
