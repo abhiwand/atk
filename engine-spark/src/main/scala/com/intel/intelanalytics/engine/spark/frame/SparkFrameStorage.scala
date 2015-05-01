@@ -434,6 +434,12 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
       withMyClassLoader {
         val reader = getReader(frame)
         val rows = reader.take(count, offset, Some(maxRows))
+        metaStore.withSession("frame.updateFrameStatus") {
+          implicit session =>
+            {
+              metaStore.frameRepo.updateLastReadDate(frame)
+            }
+        }
         rows
       }
     }
@@ -503,7 +509,8 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
             throw new RuntimeException("Frame with same name exists. Rename aborted.")
           }
           val newFrame = frame.copy(name = Some(newName))
-          metaStore.frameRepo.update(newFrame).get
+          val renamedFrame = metaStore.frameRepo.update(newFrame).get
+          metaStore.frameRepo.updateLastReadDate(renamedFrame).get
         }
     }
   }
