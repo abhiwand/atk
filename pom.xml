@@ -144,7 +144,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>events</id>
             <activation>
-		<activeByDefault>true</activeByDefault>
+		<activeByDefault>false</activeByDefault>
                <property>
                     <name>NEVERSETME</name>
                 </property>
