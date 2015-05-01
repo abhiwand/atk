@@ -29,9 +29,10 @@ import logging
 
 #from intelanalytics.meta.api import get_api_decorator, api_globals
 from intelanalytics.core.api import api_globals
-from intelanalytics.meta.clientside import get_api_decorator
+from intelanalytics.meta.clientside import get_api_decorator, arg, returns
+from intelanalytics.meta.genspa import gen_spa
 from intelanalytics.meta.classnames import entity_type_to_collection_name
-from intelanalytics.meta.metaprog2 import set_function_doc_stub_text, get_entity_class_from_store
+from intelanalytics.meta.metaprog2 import set_function_doc_stub_text, get_entity_class_from_store, set_entity_collection
 
 
 def name_support(term):
@@ -145,20 +146,16 @@ class _NamedObjectsFunctionFactory(object):
             r = http.get(rest_collection)
             payload = r.json()
             return [item.get('name', None) for item in payload]
+        set_entity_collection(get_object_names, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         get_object_names.__name__ = get_object_names_name
-        get_object_names.__doc__ = """
-        Retrieve all {obj_term} names.
+        get_object_names.__doc__ = """Retrieve names for all the {obj_term} objects on the server.""".format(obj_term=self._term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger)
+        returns_decorator = returns(list, "List of names")
+        decorated_method = api_decorator(returns_decorator(get_object_names))
+        set_function_doc_stub_text(decorated_method, '', gen_spa(decorated_method.command))
+        return decorated_method
 
-        Gets the names of {obj_term} objects available for retrieval.
-
-        Returns
-        -------
-        list : list of str
-            Names of the all {obj_term} objects.
-        """.format(obj_term=self._term)
-        get_object_names._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
-        set_function_doc_stub_text(get_object_names, '')
-        return get_api_decorator(module_logger)(get_object_names)
 
     def create_get_object(self):
         get_object_name = "get_%s" % self._term
@@ -185,22 +182,19 @@ class _NamedObjectsFunctionFactory(object):
                     raise ValueError("Object '%s' is not a %s type" % (identifier, term))
                 cls = get_class(entity_type)
                 return cls(_info=r.json())
+        set_entity_collection(get_object, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         get_object.__name__ = get_object_name
-        get_object.__doc__ = """
-        Get access to {obj_term} object.
+        get_object.__doc__ = """Get handle to a {obj_term} object.""".format(obj_term=self._term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger)
+        arg_decorator = arg(name="identifier",
+                            data_type="str | int",
+                            description="Name of the %s to get" % self._term)
+        returns_decorator = returns(obj_class, "%s object" % self._term)
+        decorated_method = api_decorator(returns_decorator(arg_decorator(get_object)))
+        set_function_doc_stub_text(decorated_method, 'identifier', gen_spa(decorated_method.command))
+        return decorated_method
 
-        Parameters
-        ----------
-        name : str
-            String containing the name of the object.
-
-        Returns
-        -------
-        class | {obj_term} object.
-        """.format(obj_term=self._term)
-        get_object._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
-        set_function_doc_stub_text(get_object, 'name')
-        return get_api_decorator(module_logger)(get_object)
 
     def create_drop_objects(self):
         # create local vars for better closures:
@@ -225,16 +219,14 @@ class _NamedObjectsFunctionFactory(object):
             for name, id in victim_ids.items():
                 module_logger.info("Drop %s %s", obj_term, name)
                 http.delete(rest_target + str(id))  # TODO: update w/ URI jazz
-        drop_objects._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
+        set_entity_collection(drop_objects, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         drop_objects.__name__ = drop_objects_name
-        drop_objects.__doc__ = """
-        Deletes the {obj_term} and it's data.
-
-        Parameters
-        ----------
-        items : [ str | {obj_term} object | list [ str | {obj_term} objects ]]
-            Either the name of the {obj_term} object to delete or the {obj_term}
-            object itself
-        """.format(obj_term=obj_term)
-        set_function_doc_stub_text(drop_objects, 'items')
-        return get_api_decorator(module_logger)(drop_objects)
+        drop_objects.__doc__ = """Deletes the {obj_term} on the server.""".format(obj_term=obj_term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger)
+        arg_decorator = arg(name="items",
+                            data_type="[ str | {obj_term} object | list [ str | {obj_term} objects ]]".format(obj_term=obj_term),
+                            description="Either the name of the {obj_term} object to delete or the {obj_term} object itself".format(obj_term=obj_term))
+        decorated_method = api_decorator(arg_decorator(drop_objects))
+        set_function_doc_stub_text(decorated_method, 'items', gen_spa(decorated_method.command))
+        return decorated_method

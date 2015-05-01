@@ -97,6 +97,8 @@ class CommandInstallation(object):
     @staticmethod
     def _create_intermediate_property(name, intermediate_class):
         fget = CommandInstallation.get_fget(name)
+        from intelanalytics.meta.clientside import mark_item_as_api  # todo: make clientside be full dep declared at top
+        mark_item_as_api(fget)
         doc = CommandInstallation._get_canned_property_doc(name, intermediate_class.__name__)
         return property(fget=fget, doc=doc)
 
@@ -123,6 +125,8 @@ def doc_stub(function):
 class Constants(object):
     IA_URI = '_id'
     COMMAND_INSTALLATION = "_command_installation"
+    ENTITY_COLLECTION = "_entity_collection"
+
 
     INTERMEDIATE_CLASS = '_intermediate_class'
     LOADED_COMMANDS = '_loaded_commands'
@@ -167,11 +171,10 @@ class CommandInstallable(object):
         self._entity = entity if entity else self
 
         # Instantiate intermediate classes for the properties which scope installed commands.
-        # To honor inheritance overriding, we must start at the most base class (not inc. CommandInstallable)
-        # and work towards self's class, doing it last.
+        # To honor inheritance overriding, we must start at this class and work up to the most base class (not inc. CommandInstallable)
         class_lineage = inspect.getmro(self.__class__)
         index = class_lineage.index(CommandInstallable)
-        for i in reversed(xrange(index)):
+        for i in xrange(index):
             cls = class_lineage[i]
             if has_installation(cls):
                 self._init_intermediate_classes(cls)
@@ -183,7 +186,7 @@ class CommandInstallable(object):
             installation = get_installation(installation_class)
             for name, cls in installation.intermediates.items():
                 private_member_name = naming.name_to_private(name)
-                if not hasattr(self, private_member_name):
+                if private_member_name not in self.__dict__:
                     logger.debug("Instantiating intermediate class %s as %s", cls, private_member_name)
                     private_member_value = cls(self._entity)  # instantiate
                     logger.debug("Adding intermediate class instance as member %s", private_member_name)
@@ -221,6 +224,26 @@ def set_installation(cls, installation):
     """makes the installation object a member of the class type"""
     setattr(cls, Constants.COMMAND_INSTALLATION, installation)
     _installable_classes_store[installation.install_path.full] = cls  # update store
+
+
+def has_entity_collection(item):
+    """the entity collection name for an item"""
+    return hasattr(item, Constants.ENTITY_COLLECTION)
+
+
+def get_entity_collection(item, *default):
+    """returns the entity collection name of given item"""
+    try:
+        return getattr(item, Constants.ENTITY_COLLECTION)
+    except AttributeError:
+        if len(default) > 0:
+            return default[0]
+        raise AttributeError("Item %s does not have entity collection metadata" % item)
+
+
+def set_entity_collection(item, collection_name):
+    """the entity collection name for an item"""
+    setattr(item, Constants.ENTITY_COLLECTION, collection_name)
 
 
 def get_class_from_store(install_path):
@@ -655,16 +678,16 @@ def api_class_alias(cls):
     return cls
 
 
-def set_function_doc_stub_text(function, params_text):
+def set_function_doc_stub_text(function, params_text, doc_str):
     doc_stub_text = '''@{doc_stub}
 def {name}({params}):
     """
-    {doc}
+{doc}
     """
     pass'''.format(doc_stub=doc_stub.__name__,
                    name=function.__name__,
                    params=params_text,
-                   doc=function.__doc__)
+                   doc=doc_str)
     set_doc_stub_text(function, doc_stub_text)
 
 
@@ -676,7 +699,7 @@ def set_class_doc_stub_text(cls):
     doc_stub_text = '''@{doc_stub}
 class {name}({base}):
     """
-    {doc}
+{doc}
     """
     pass'''.format(doc_stub=doc_stub.__name__,
                    name=cls.__name__,
@@ -716,18 +739,26 @@ def get_doc_stub_class_text(loaded_class):
 def get_doc_stub_globals_text(module):
     doc_stub_all = []
     lines = []
+    return_types = set()
     for key, value in sorted(module.__dict__.items()):
         if hasattr(value, Constants.DOC_STUB_TEXT):
             doc_stub_text = getattr(value, Constants.DOC_STUB_TEXT)
             if doc_stub_text:
                 doc_stub_all.append(key)
                 lines.append(doc_stub_text)
-    if doc_stub_all:
-        lines.insert(0, '__all__ = ["%s"]' % '", "'.join(doc_stub_all))
-    return '\n\n\n'.join(lines) if lines else ''
+                if hasattr(value, 'command'):
+                    return_type = value.command.get_return_type()
+                    if inspect.isclass(return_type):
+                        return_types.add(return_type)
+    for return_type in return_types:
+        module_path = return_type.__module__
+        lines.insert(0, "from %s import %s" % (module_path, get_type_name(return_type)))
+    return '\n\n\n'.join(lines) if lines else '', doc_stub_all
 
 
 def get_doc_stubs_modules_text(command_defs, global_module):
+    """creates docstub text for two different files, returning a tuple of the file content"""
+    # the content of the second item in the tuple contains those entity classes that were created by the metaprogramming, not coded in the python client.
     install_server_commands(command_defs)
     delete_docstubs()
     before_lines = [get_file_header_text()]
@@ -765,15 +796,17 @@ def get_doc_stubs_modules_text(command_defs, global_module):
                                              "Contains commands for %s provided by the server" % class_name,
                                              members_text))
 
-    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
     for d in after_definitions:
         after_dependencies.pop(d, None)
     for baseclass_name, install_path in after_dependencies.items():
         if install_path:
             module_path = _installable_classes_store[install_path.full].__module__
             after_lines.insert(0, "from %s import %s" % (module_path, baseclass_name))
+    global_lines, global_all = get_doc_stub_globals_text(global_module)
+    after_lines.append(global_lines)
+    after_all.extend(global_all)
+    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
     after_lines.insert(0, get_file_header_text())
-    before_lines.append(get_doc_stub_globals_text(global_module))
     return '\n'.join(before_lines), '\n'.join(after_lines)
 
 
@@ -867,17 +900,34 @@ def delete_docstubs():
     """
     Deletes all the doc_stub functions from all classes in docstubs.py
     """
-    try:
-        import intelanalytics.core.docstubs as docstubs
-    except Exception:
-        logger.info("No docstubs.py found, nothing to delete")
-    else:
+
+    def _is_doc_stub(attr):
+        if isinstance(attr, property):
+            attr = attr.fget
+        elif not hasattr(attr, '__call__'):
+            attr = None
+        return attr and hasattr(attr, Constants.DOC_STUB)
+
+    def _delete_docstubs(docstubs):
         for item in docstubs.__dict__.values():
             if inspect.isclass(item):
-                victims = [k for k, v in item.__dict__.iteritems() if hasattr(v, '__call__') and hasattr(v, Constants.DOC_STUB)]
+                victims = [k for k, v in item.__dict__.iteritems() if _is_doc_stub(v)]
                 logger.debug("deleting docstubs from %s: %s", item, victims)
                 for victim in victims:
                     delattr(item, victim)
+    try:
+        import intelanalytics.core.docstubs1 as docstubs1
+    except Exception:
+        logger.info("No docstubs1.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs1)
+
+    try:
+        import intelanalytics.core.docstubs2 as docstubs2
+    except Exception:
+        logger.info("No docstubs2.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs2)
 
 
 ##############################################################################
@@ -921,9 +971,9 @@ def install_api():
         from intelanalytics.rest.jsonschema import get_command_def
         from intelanalytics.core.errorhandle import errors
         #try:
+        delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
-        delete_docstubs()
         from intelanalytics import _refresh_api_namespace
         _refresh_api_namespace()
         #except Exception as e:

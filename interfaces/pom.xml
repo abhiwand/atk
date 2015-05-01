@@ -99,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>api-doc</artifactId>
+            <artifactId>doc-api-examples</artifactId>
         </dependency>
         <dependency>
             <groupId>io.spray</groupId>
