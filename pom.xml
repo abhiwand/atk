@@ -175,7 +175,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <module>api-doc</module>
+                <module>doc-api-examples</module>
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>
@@ -565,11 +565,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scalariform-maven-plugin</artifactId>
             </plugin>
 
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-            </plugin>-->
-
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>2.5</version>
@@ -655,7 +650,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>api-doc</artifactId>
+                <artifactId>doc-api-examples</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

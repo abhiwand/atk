@@ -3,12 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>api-doc</artifactId>
+    <artifactId>doc-api-examples</artifactId>
     <packaging>jar</packaging>
-    <name>api-doc (API docs)</name>
+    <name>doc-api-examples (API docs)</name>
 
     <description>
-        The api-doc module contains the API documentation in RST text resource files.
+        The doc-api-examples module contains the API documentation in RST text resource files.
 
         All command plugins should also have an API doc string stored in an RST
         documentation file located in this directory structure, according to the
@@ -25,7 +25,7 @@
 
         Example:  "frame/add_columns" plugin should have a file
 
-        api-doc/src/main/resources/python/frame/add_columns.rst
+        doc-api-examples/src/main/resources/python/frame/add_columns.rst
         
         test/entity/function.rst is used by unittests, and serves as an example
     </description>
