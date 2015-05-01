@@ -7,7 +7,7 @@ Intel Analytics Toolkit (ATK)
 * Run 'mvn install' at top level
 
 # Folders Overview
-* api-doc/ - customer facing plugin docs
+* doc-api-examples/ - customer facing plugin docs
 * bin/ - script for starting REST server, gremlin shell
 * conf/ - configuration templates for setting up a system, put your application.conf here for running out of source_code
 * doc/ - customer facing docs
