@@ -86,7 +86,6 @@
     </build>
 
     <dependencies>
-        <!--START GAO dependencies-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder</artifactId>
@@ -121,14 +120,7 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-graphx_${scala.short.version}</artifactId>
-            <!--<scope>provided</scope>-->
         </dependency>
-
-<!--        <dependency>
-            <groupId>io.spray</groupId>
-            <artifactId>spray-json_${scala.short.version}</artifactId>
-        </dependency>-->
-        <!--END GAO dependencies-->
 
         <dependency>
             <groupId>org.apache.spark</groupId>
