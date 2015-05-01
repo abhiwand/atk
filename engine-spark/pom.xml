@@ -386,7 +386,5 @@
             <groupId>org.apache.mahout</groupId>
             <artifactId>mahout-math</artifactId>
         </dependency>
-
->>>>>>> origin/master
     </dependencies>
 </project>
