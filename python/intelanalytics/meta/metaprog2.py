@@ -97,6 +97,8 @@ class CommandInstallation(object):
     @staticmethod
     def _create_intermediate_property(name, intermediate_class):
         fget = CommandInstallation.get_fget(name)
+        from intelanalytics.meta.clientside import mark_item_as_api  # todo: make clientside be full dep declared at top
+        mark_item_as_api(fget)
         doc = CommandInstallation._get_canned_property_doc(name, intermediate_class.__name__)
         return property(fget=fget, doc=doc)
 
@@ -655,16 +657,16 @@ def api_class_alias(cls):
     return cls
 
 
-def set_function_doc_stub_text(function, params_text):
+def set_function_doc_stub_text(function, params_text, doc_str):
     doc_stub_text = '''@{doc_stub}
 def {name}({params}):
     """
-    {doc}
+{doc}
     """
     pass'''.format(doc_stub=doc_stub.__name__,
                    name=function.__name__,
                    params=params_text,
-                   doc=function.__doc__)
+                   doc=doc_str)
     set_doc_stub_text(function, doc_stub_text)
 
 
@@ -676,7 +678,7 @@ def set_class_doc_stub_text(cls):
     doc_stub_text = '''@{doc_stub}
 class {name}({base}):
     """
-    {doc}
+{doc}
     """
     pass'''.format(doc_stub=doc_stub.__name__,
                    name=cls.__name__,
@@ -728,6 +730,8 @@ def get_doc_stub_globals_text(module):
 
 
 def get_doc_stubs_modules_text(command_defs, global_module):
+    """creates docstub text for two different files, returning a tuple of the file content"""
+    # the content of the second item in the tuple contains those entity classes that were created by the metaprogramming, not coded in the python client.
     install_server_commands(command_defs)
     delete_docstubs()
     before_lines = [get_file_header_text()]
@@ -867,17 +871,34 @@ def delete_docstubs():
     """
     Deletes all the doc_stub functions from all classes in docstubs.py
     """
-    try:
-        import intelanalytics.core.docstubs as docstubs
-    except Exception:
-        logger.info("No docstubs.py found, nothing to delete")
-    else:
+
+    def _is_doc_stub(attr):
+        if isinstance(attr, property):
+            attr = attr.fget
+        elif not hasattr(attr, '__call__'):
+            attr = None
+        return attr and hasattr(attr, Constants.DOC_STUB)
+
+    def _delete_docstubs(docstubs):
         for item in docstubs.__dict__.values():
             if inspect.isclass(item):
-                victims = [k for k, v in item.__dict__.iteritems() if hasattr(v, '__call__') and hasattr(v, Constants.DOC_STUB)]
+                victims = [k for k, v in item.__dict__.iteritems() if _is_doc_stub(v)]
                 logger.debug("deleting docstubs from %s: %s", item, victims)
                 for victim in victims:
                     delattr(item, victim)
+    try:
+        import intelanalytics.core.docstubs1 as docstubs1
+    except Exception:
+        logger.info("No docstubs1.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs1)
+
+    try:
+        import intelanalytics.core.docstubs2 as docstubs2
+    except Exception:
+        logger.info("No docstubs2.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs2)
 
 
 ##############################################################################
@@ -921,9 +942,9 @@ def install_api():
         from intelanalytics.rest.jsonschema import get_command_def
         from intelanalytics.core.errorhandle import errors
         #try:
+        delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
-        delete_docstubs()
         from intelanalytics import _refresh_api_namespace
         _refresh_api_namespace()
         #except Exception as e:
