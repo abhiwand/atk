@@ -163,10 +163,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
+                <module>giraph-plugins</module>
             </modules>
         </profile>
         <profile>
@@ -188,10 +185,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine</module>
                 <module>engine-spark</module>
                 <module>rest-server</module>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
+                <module>giraph-plugins</module>
                 <module>deploy</module>
                 <module>package</module>
             </modules>
@@ -676,22 +670,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-algorithms</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-titan</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph</artifactId>
+                <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--STARTititan-->
