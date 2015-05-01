@@ -45,7 +45,7 @@ lp_lambda : float (optional)
     the option allows incorporating external classifier's prediction into
     the LP training process.
     The valid value range is [0.0,1.0].
-    The default value is 0.
+    The default value is 0. 
 
 Returns
 -------

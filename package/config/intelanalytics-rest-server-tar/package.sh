@@ -31,7 +31,7 @@ cp -v  config/intelanalytics-rest-server-tar/rest-server.sh tarballs/$package/bi
 
 
 
-jars="rest-server.jar  engine.jar  interfaces.jar  deploy.jar"
+jars="rest-server.jar  engine.jar  engine-interfaces.jar  deploy.jar"
 
 #popd
 

@@ -38,7 +38,7 @@ __all__ = ['get_command_def']
 
 
 # See http://json-schema.org/documentation.html
-# And source_code/interfaces/src/main/scala/com/intel/intelanalytics/schema/JsonSchema.scala
+# And source_code/engine-interfaces/src/main/scala/com/intel/intelanalytics/schema/JsonSchema.scala
 
 json_type_id_to_data_type  = {
     "ia:int": int32,

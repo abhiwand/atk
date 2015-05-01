@@ -179,7 +179,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>
-                <module>interfaces</module>
+                <module>engine-interfaces</module>
                 <module>launcher</module>
                 <module>meta-store</module>
                 <module>engine</module>
@@ -628,7 +628,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>interfaces</artifactId>
+                <artifactId>engine-interfaces</artifactId>
                 <version>${project.version}</version>
                 <!-- <scope>provided</scope> -->
             </dependency>
