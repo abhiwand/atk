@@ -113,7 +113,7 @@ Configuration details are discussed in the "Configuration" section below.
 Plugins have access to the configuration, but only the section of it that
 contains settings that are relevant.
 For example, the Loopy Belief Propagation plugin gets its configuration from
-'intel.analytics.igiraph-titan.command.graph.ml.loopy_belief_propagation.config'.
+'intel.analytics.giraph-plugins.command.graph.ml.loopy_belief_propagation.config'.
 Values that appear in this section are available to the plugin, and are passed
 to it during execution.
 The plugin does not have convenient access to other configuration parameters of
