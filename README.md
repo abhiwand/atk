@@ -7,10 +7,10 @@ Intel Analytics Toolkit (ATK)
 * Run 'mvn install' at top level
 
 # Folders Overview
-* api-doc/ - customer facing plugin docs
 * bin/ - script for starting REST server, gremlin shell
 * conf/ - configuration templates for setting up a system, put your application.conf here for running out of source_code
-* doc/ - customer facing docs
+* doc/ - end user docs for using the system (doc for specific plugins goes elsewhere)
+* doc-api-examples/ - examples of api usage for end user docs
 * engine/ - engine interface (seems like we should just delete this module)
 * engine-spark - majority of the engine code
 * giraph-plugins/ - a few graph algorithms that run on Giraph
