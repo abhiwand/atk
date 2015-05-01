@@ -94,26 +94,25 @@
     </build>
 
     <dependencies>
-	<!--START dependencies to our modules-->
+        <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>interfaces</artifactId>
+            <artifactId>engine-interfaces</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <!--END dependencies to our modules-->
-		
+
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-can</artifactId>
