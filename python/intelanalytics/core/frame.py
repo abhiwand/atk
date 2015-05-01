@@ -102,7 +102,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         if name == '_backend':
             raise AttributeError('_backend')
         try:
-            print "super name=%s" % name
             return super(_BaseFrame, self).__getattribute__(name)
         except AttributeError:
             return self._get_column(name, AttributeError, "Attribute '%s' not found")
