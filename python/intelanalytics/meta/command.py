@@ -136,6 +136,9 @@ class CommandDefinition(object):
                           repr(self.version),
                           repr(self.doc)])
 
+    def get_return_type(self):
+        return None if self.return_info is None else self.return_info.data_type
+
     def get_function_parameters_text(self):
         if self.parameters:
             return ", ".join(['self' if param.use_self else
