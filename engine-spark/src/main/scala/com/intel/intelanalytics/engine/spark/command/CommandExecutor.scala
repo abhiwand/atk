@@ -298,7 +298,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
             // "--executor-cores", s"${SparkEngineConfig.sparkOnYarnNumCoresPerExecutor}",
             "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions -Dspark.executor.extraClassPath=/opt/cloudera/parcels/CDH/lib/hive/lib")
 
-
           val executionConfigs = {
             for {
               (config, value) <- SparkEngineConfig.sparkConfProperties
