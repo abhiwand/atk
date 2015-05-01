@@ -37,7 +37,7 @@ import scala.concurrent.Future
 class QueryServiceTest extends ServiceTest {
 
   // increasing timeout because this test had intermittent failures on build server
-  implicit val routeTestTimeout = RouteTestTimeout(5.seconds)
+  implicit val routeTestTimeout = RouteTestTimeout(10.seconds)
 
   implicit val userPrincipal = mock[UserPrincipal]
   implicit val call: Invocation = Call(userPrincipal)
