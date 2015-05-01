@@ -80,7 +80,7 @@ export SPARK_LOCAL_IP=$SPARK_DRIVER_HOST
 export PATH=$PWD/.java-buildpack/open_jdk_jre/bin:$PATH
 export JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre
 
-jars="engine-spark.jar igiraph-titan.jar graphon.jar"
+jars="engine-spark.jar giraph-plugins.jar graphon.jar"
 echo "Creating jar links"
 for jar in $jars
 do
