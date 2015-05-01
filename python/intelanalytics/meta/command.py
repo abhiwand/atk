@@ -25,26 +25,67 @@
 Command objects
 """
 
+import re
 import logging
+from intelanalytics.meta.installpath import InstallPath
+
 logger = logging.getLogger(__name__)
 
 from collections import namedtuple
-from intelanalytics.meta.npdoc import get_numpy_doc
 
+ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME = "new"
+
+ARGS_TEXT = "_args_text"  # attribute
 
 Parameter = namedtuple("Parameter", ['name', 'data_type', 'use_self', 'optional', 'default', 'doc'])
 
-Return = namedtuple("Return", ['data_type', 'use_self', 'doc'])
+ReturnInfo = namedtuple("Returns", ['data_type', 'use_self', 'doc'])
 
 Version = namedtuple("Version", ['added', 'changed', 'deprecated', 'doc'])
 
-Doc = namedtuple("Doc", ['one_line_summary', 'extended_summary'])
+
+class Doc(object):
+    """Represents descriptive text for an object, but not its individual pieces"""
+
+    def __init__(self, one_line='<Missing>', extended=''):  # todo add examples!!
+        self.one_line = one_line.strip()
+        self.extended = extended
+
+    def __str__(self):
+        r = self.one_line
+        if self.extended:
+            r += ("\n\n" + self.extended)
+        return r
+
+    @staticmethod
+    def _pop_blank_lines(lines):
+        while lines and not lines[0].strip():
+            lines.pop(0)
+
+    @staticmethod
+    def get_from_str(doc_str):
+        if doc_str:
+            lines = doc_str.split('\n')
+
+            Doc._pop_blank_lines(lines)
+            summary = lines.pop(0).strip() if lines else ''
+            Doc._pop_blank_lines(lines)
+            if lines:
+                margin = len(lines[0]) - len(lines[0].lstrip())
+                extended = '\n'.join([line[margin:] for line in lines])
+            else:
+                extended = ''
+
+            if summary:
+                return Doc(summary, extended)
+
+        return Doc("<Missing>", doc_str)
 
 
 class CommandDefinition(object):
     """Defines a Command"""
 
-    def __init__(self, json_schema, full_name, parameters, return_type, doc=None, maturity=None, version=None):
+    def __init__(self, json_schema, full_name, parameters=None, return_info=None, doc=None, maturity=None, version=None):
         self.json_schema = json_schema
         self.full_name = full_name
         parts = self.full_name.split('/')
@@ -53,41 +94,55 @@ class CommandDefinition(object):
             raise ValueError("Invalid empty entity_type, expected non-empty string")
         self.intermediates = tuple(parts[1:-1])
         self.name = parts[-1]
-        self.parameters = parameters
-        self.return_type = return_type
-        self.maturity =maturity
+        self.install_path = InstallPath(full_name[:-(len(self.name)+1)])
+        self.parameters = parameters if parameters else []
+        self.return_info = return_info
+        self.maturity = maturity
         self.version = version
-        # do doc last, so we can send populated self to create CommandNumpydoc
-        self.doc = '' if doc is None else get_numpy_doc(self, doc.one_line_summary, doc.extended_summary)
+        self._doc = None
+        self.doc = doc
+
+    @property
+    def doc(self):
+        return self._doc
+
+    @doc.setter
+    def doc(self, value):
+        if value is None:
+            self._doc = Doc()
+        elif isinstance(value, basestring):
+            self._doc = Doc.get_from_str(value)
+        elif isinstance(value, Doc):
+            self._doc = value
+        else:
+            raise TypeError("Received bad type %s for doc, expected type %s or string" % (type(value), Doc))
 
     @property
     def is_constructor(self):
-        return self.name == 'new'
+        return self.name == ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME or self.name == "__init__"
 
     @property
-    def entity_subtype(self):
-        return EntityType.get_entity_subtype(self.entity_type)
+    def function_name(self):
+        return "__init__" if self.is_constructor else self.name
 
     @property
-    def entity_basetype(self):
-        return EntityType.get_entity_basetype(self.entity_type)
+    def doc_name(self):
+        return '.'.join(list(self.intermediates) + [self.function_name])
 
     def __repr__(self):
         return "\n".join([self.full_name,
-                          "\n".join([repr(p) for p in self.parameters]),
-                          repr(self.return_type),
+                          "\n".join([repr(p) for p in self.parameters]) if self.parameters else "<no parameters>",
+                          repr(self.return_info),
                           repr(self.version),
-                          self.doc])
+                          repr(self.doc)])
 
-
-class EntityType(object):
-
-    @staticmethod
-    def get_entity_subtype(entity_type):
-        split_index = entity_type.find(':')
-        return '' if split_index < 1 else entity_type[split_index+1:]
-
-    @staticmethod
-    def get_entity_basetype(entity_type):
-        split_index = entity_type.find(':')
-        return entity_type if split_index < 1 else entity_type[:split_index]
+    def get_function_parameters_text(self):
+        if self.parameters:
+            return ", ".join(['self' if param.use_self else
+                              param.name if not param.optional else
+                              "%s=%s" % (param.name, param.default)
+                              for param in self.parameters])
+        elif hasattr(self, ARGS_TEXT):
+            return getattr(self, ARGS_TEXT)
+        else:
+            return ''

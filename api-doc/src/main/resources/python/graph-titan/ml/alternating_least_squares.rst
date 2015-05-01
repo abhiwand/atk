@@ -12,6 +12,7 @@ The algorithms presented in:
     Filtering Model.
     In ACM KDD 2008. (Equation 5)
 
+
 Parameters
 ----------
 edge_value_property_list : comma-separated str
@@ -89,14 +90,18 @@ min_value : float (optional)
     Valid value range is all float.
     Default is -Infinity.
 
+
 Returns
 -------
-str : Multiple line str
-    The configuration and learning curve report for ALS
+str
+    The configuration and learning curve report for ALS in the format of a
+    multiple-line string.
+
 
 Notes
 -----
 Vertices must be identified as left-side ("L") or right-side ("R").
+
 
 Examples
 --------

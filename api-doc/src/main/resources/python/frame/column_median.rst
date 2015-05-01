@@ -10,6 +10,7 @@ calculation, as are all data elements whose weight is NaN or infinite.
 If a weight column is provided and no weights are finite numbers greater
 than 0, None is returned.
 
+
 Parameters
 ----------
 data_column : str
@@ -18,21 +19,22 @@ weights_column : str (optional)
     The column that provides weights (frequencies) for the median
     calculation.
     Must contain numerical data.
-    Uniform weights of 1 for all items will be used for the calculation
-    if this parameter is not provided.
+    Default is all items have a weight of 1.
+
 
 Returns
 -------
-median : The median of the values
+varies
+    The median of the values.
     If a weight column is provided and no weights are finite numbers greater
     than 0, None is returned.
     The type of the median returned is the same as the contents of the data
     column, so a column of Longs will result in a Long median and a column of
     Floats will result in a Float median.
 
+
 Examples
 --------
-
 .. code::
 
     >>> median = frame.column_median('middling column')

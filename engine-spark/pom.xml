@@ -94,14 +94,14 @@
 
     <dependencies>
 
-        <!--START BDA dependencies to our modules-->
+        <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>shared</artifactId>
+            <artifactId>meta-store</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -113,7 +113,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphbuilder-3</artifactId>
+            <artifactId>graphbuilder</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.jboss.netty</groupId>
@@ -157,7 +157,7 @@
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--END BDA dependencies to our modules-->
+        <!--END dependencies to our modules-->
 
         <dependency>
             <groupId>com.typesafe</groupId>
@@ -357,10 +357,6 @@
             <artifactId>parquet-column</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>imahout</artifactId>
-        </dependency>
-				<dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
@@ -377,5 +373,19 @@
             <artifactId>spark-hive_2.10</artifactId>
             <version>1.2.0-cdh5.3.1</version>
         </dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-math</artifactId>
+        </dependency>
+
+>>>>>>> origin/master
     </dependencies>
 </project>

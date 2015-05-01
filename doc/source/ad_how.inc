@@ -6,6 +6,7 @@ How To ...
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 How to start Cloudera Manager
 =============================

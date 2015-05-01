@@ -4,6 +4,7 @@ Best Known Methods (User)
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 .. index::
     single: Python

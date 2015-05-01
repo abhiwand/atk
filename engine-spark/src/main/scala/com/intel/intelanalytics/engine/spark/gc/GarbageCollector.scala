@@ -52,28 +52,11 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
   val gcRepo = metaStore.gcRepo
   val gcEntryRepo = metaStore.gcEntryRepo
 
+  /**
+   * Execute Garbage Collection as a Runnable
+   */
   override def run(): Unit = {
-    this.synchronized {
-      metaStore.withSession("garbagecollector") {
-        implicit session =>
-          try {
-            if (gcRepo.getCurrentExecutions().length == 0) {
-              info("Execute Garbage Collector")
-
-              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(getHostName(), getProcessId(), new DateTime)).get
-
-              garbageCollectEntities(gc)
-              gcRepo.updateEndTime(gc)
-            }
-            else {
-              info("Garbage Collector currently executing in another process.")
-            }
-          }
-          catch {
-            case e: Exception => error("Exception Thrown during Garbage Collection", exception = e)
-          }
-      }
-    }
+    garbageCollectEntities()
   }
 
   /**
@@ -90,13 +73,33 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
 
   /**
    * garbage collect all entities
-   * @param gc garbage collection database entry
-   * @param session db session for backend process
    */
-  def garbageCollectEntities(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
-    garbageCollectFrames(gc)
-    garbageCollectGraphs(gc)
-    garbageCollectModels(gc)
+  def garbageCollectEntities(gcAgeToDeleteData: Long = SparkEngineConfig.gcAgeToDeleteData): Unit = {
+    this.synchronized {
+      metaStore.withSession("gc.garbagecollector") {
+        implicit session =>
+          try {
+            if (gcRepo.getCurrentExecutions().length == 0) {
+              info("Execute Garbage Collector")
+              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(getHostName(), getProcessId(), new DateTime)).get
+              garbageCollectFrames(gc, gcAgeToDeleteData)
+              garbageCollectGraphs(gc, gcAgeToDeleteData)
+              garbageCollectModels(gc, gcAgeToDeleteData)
+              gcRepo.updateEndTime(gc)
+            }
+            else {
+              info("Garbage Collector currently executing in another process.")
+            }
+          }
+          catch {
+            case e: Exception => error("Exception Thrown during Garbage Collection", exception = e)
+          }
+          finally {
+
+          }
+      }
+    }
+
   }
 
   /**
@@ -105,24 +108,10 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    * @param gc garbage collection database entry
    * @param session db session for backend process
    */
-  def garbageCollectFrames(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
+  def garbageCollectFrames(gc: GarbageCollection, gcAgeToDeleteData: Long)(implicit session: metaStore.Session): Unit = {
     //get weakly live records that are old
-    metaStore.frameRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(frame => {
+    metaStore.frameRepo.listReadyForDeletion(gcAgeToDeleteData).foreach(frame => {
       deleteFrameData(gc, frame)
-    })
-    //get dead records that are old
-    metaStore.frameRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(frame => {
-      val description = s"Marking MetaData as Deleted for DataFrame ID: ${frame.id} Name: ${frame.name}"
-      try {
-        val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
-          new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
-        info(description)
-        metaStore.frameRepo.updateMetaDataDeleted(frame)
-        gcEntryRepo.updateEndTime(gcEntry)
-      }
-      catch {
-        case e: Exception => error(s"Exception when: $description", exception = e)
-      }
     })
   }
 
@@ -152,7 +141,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    * @param gc garbage collection database entry
    * @param session db session for backend process
    */
-  def garbageCollectGraphs(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
+  def garbageCollectGraphs(gc: GarbageCollection, gcAgeToDeleteData: Long)(implicit session: metaStore.Session): Unit = {
     metaStore.graphRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(graph => {
       val description = s"Deleting Data for Graph ID: ${graph.id} Name: ${graph.name}"
       try {
@@ -170,20 +159,6 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
-
-    metaStore.graphRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(graph => {
-      val description = s"Deleting MetaData for Graph ID: ${graph.id} Name: ${graph.name}"
-      try {
-        val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
-          new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
-        info(description)
-        metaStore.graphRepo.updateMetaDataDeleted(graph)
-        gcEntryRepo.updateEndTime(gcEntry)
-      }
-      catch {
-        case e: Exception => error(s"Exception when: $description", exception = e)
-      }
-    })
   }
 
   /**
@@ -191,7 +166,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    * @param gc garbage collection database entry
    * @param session db session for backend process
    */
-  def garbageCollectModels(gc: GarbageCollection)(implicit session: metaStore.Session): Unit = {
+  def garbageCollectModels(gc: GarbageCollection, gcAgeToDeleteData: Long)(implicit session: metaStore.Session): Unit = {
     metaStore.modelRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(model => {
       val description = s"Deleting Data for Model ID: ${model.id} Name: ${model.name}"
       try {
@@ -205,25 +180,12 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         case e: Exception => error(s"Exception when: $description", exception = e)
       }
     })
-
-    metaStore.modelRepo.listReadyForMetaDataDeletion(SparkEngineConfig.gcAgeToDeleteMetaData).foreach(model => {
-      val description = s"Deleting MetaData for Model ID: ${model.id} Name: ${model.name}"
-      try {
-        val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
-          new GarbageCollectionEntryTemplate(gc.id, description, new DateTime)).get
-        info(description)
-        metaStore.modelRepo.updateMetaDataDeleted(model)
-        gcEntryRepo.updateEndTime(gcEntry)
-      }
-      catch {
-        case e: Exception => error(s"Exception when: $description", exception = e)
-      }
-    })
   }
 }
 
 object GarbageCollector {
-  var gcScheduler: ScheduledFuture[_] = null
+  private[this] var gcScheduler: ScheduledFuture[_] = null
+  private[this] var garbageCollector: GarbageCollector = null
 
   /**
    * start the garbage collector thread
@@ -233,11 +195,21 @@ object GarbageCollector {
    */
   def startup(metaStore: MetaStore, frameStorage: FrameFileStorage, graphBackendStorage: GraphBackendStorage): Unit = {
     this.synchronized {
+      if (garbageCollector == null)
+        garbageCollector = new GarbageCollector(metaStore, frameStorage, graphBackendStorage)
       if (gcScheduler == null) {
-        gcScheduler = Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(
-          new GarbageCollector(metaStore, frameStorage, graphBackendStorage), 0, SparkEngineConfig.gcInterval, TimeUnit.MILLISECONDS)
+        gcScheduler = Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(garbageCollector, 0, SparkEngineConfig.gcInterval, TimeUnit.MILLISECONDS)
       }
     }
+  }
+
+  /**
+   * Execute a garbage collection outside of the regularly scheduled intervals
+   * @param gcAgeToDeleteData
+   */
+  def singleTimeExecution(gcAgeToDeleteData: Long): Unit = {
+    require(garbageCollector != null, "GarbageCollector has not been initialized. Problem during RestServer initialization")
+    garbageCollector.garbageCollectEntities(gcAgeToDeleteData)
   }
 
   /**

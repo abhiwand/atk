@@ -4,6 +4,7 @@ Graphs
 ======
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 Global Methods
 --------------
@@ -13,35 +14,50 @@ Global Methods
 
 .. autofunction:: intelanalytics.drop_graphs
 
+.. _seamless_graph:
 
-Graph
------
+Seamless Graph
+--------------
 .. autoclass:: intelanalytics.Graph
     :members:
     :inherited-members:
 
-TitanGraph
-----------
+.. _titan_graph_rules:
+
+Titan Graph Rules
+-----------------
+.. autoclass:: intelanalytics.EdgeRule
+    :members:
+    :inherited-members:
+
+.. autoclass:: intelanalytics.VertexRule
+    :members:
+    :inherited-members:
+
+.. _titan_graph:
+
+Titan Graph
+-----------
 .. autoclass:: intelanalytics.TitanGraph
     :members:
     :inherited-members:
 
 .. currentmodule:: intelanalytics.core.docstubs
 
-TitanGraphML
-------------
+Titan Graph ML
+--------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphMl
     :members:
     :inherited-members:
 
-TitanGraphQuery
----------------
+Titan Graph Query
+-----------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphQuery
     :members:
     :inherited-members:
 
-TitanGraphSampling
-------------------
+Titan Graph Sampling
+--------------------
 .. autoclass:: intelanalytics.core.docstubs.TitanGraphSampling
     :members:
     :inherited-members:

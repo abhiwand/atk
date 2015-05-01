@@ -30,9 +30,9 @@ mini_batch_fraction : double (Optional)
     Mini batch fraction parameter.
     Default is 1.0.
 
+
 Examples
 --------
-
 .. only:: html
 
     .. code::

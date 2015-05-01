@@ -27,8 +27,8 @@ Formatting for numpydoc docstrings
 from intelanalytics import valid_data_types
 
 
-def get_numpy_doc(command_def, one_line_summary, extended_summary=''):
-    return repr(CommandNumpyDoc(command_def, one_line_summary, extended_summary))
+def get_numpy_doc(command_def, one_line, extended_summary=''):
+    return repr(CommandNumpyDoc(command_def, one_line, extended_summary))
 
 
 class CommandNumpyDoc(object):
@@ -41,14 +41,14 @@ class CommandNumpyDoc(object):
     ----------
     command_def : CommandDefinition
         command definition
-    one_line_summary : str
+    one_line : str
         simple, one-line summary
     extended_summary : str (optional)
         more involved summary text
     """
-    def __init__(self, command_def, one_line_summary, extended_summary=''):
+    def __init__(self, command_def, one_line, extended_summary=''):
         self.command_def = command_def
-        self.doc = self._create_doc(one_line_summary, extended_summary, command_def.maturity)
+        self.doc = self._create_doc(one_line, extended_summary, command_def.maturity)
 
     def __repr__(self):
         return self.doc
@@ -108,11 +108,11 @@ class CommandNumpyDoc(object):
             except:
                 return str(data_type)
 
-    def _create_doc(self, one_line_summary, extended_summary, maturity, ignore_parameters=True):
+    def _create_doc(self, one_line, extended_summary, maturity, ignore_parameters=True):
         """Assembles the doc sections and creates a full doc string for this function"""
         sections = []
-        if one_line_summary:
-            sections.append(self._format_summary(one_line_summary))
+        if one_line:
+            sections.append(self._format_summary(one_line))
         if maturity:
             sections.append("    |%s|" % maturity.upper())
         if extended_summary:

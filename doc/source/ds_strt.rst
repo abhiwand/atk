@@ -4,6 +4,7 @@ Getting Started
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 ----------------
 Before You Start

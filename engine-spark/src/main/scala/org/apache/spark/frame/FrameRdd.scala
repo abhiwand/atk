@@ -23,7 +23,7 @@
 
 package org.apache.spark.frame
 
-import com.intel.graphbuilder.elements.GBVertex
+import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -31,8 +31,8 @@ import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.VertexSchemaAggregator
-import org.apache.spark.ia.graph.VertexWrapper
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan._
+import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
@@ -406,6 +406,30 @@ object FrameRdd {
       })
       val vertexWrapper = new VertexWrapper(schema)
       val rows = filteredVertices.map(gbVertex => vertexWrapper.create(gbVertex))
+      val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
+
+      (schema.label, frameRdd)
+    }).toMap
+  }
+
+  /**
+   * Convert an RDD of mixed vertex types into a map where the keys are labels and values are FrameRdd's
+   * @param gbEdgeRDD Graphbuilder Edge RDD
+   * @param gbVertexRDD Graphbuilder Vertex RDD
+   * @return  keys are labels and values are FrameRdd's
+   */
+  def toFrameRddMap(gbEdgeRDD: RDD[GBEdge], gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
+
+    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+
+    val edgeHolders = gbEdgeRDD.map(edge => EdgeHolder(edge, null, null))
+
+    val edgeSchemas = edgeHolders.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
+
+    edgeSchemas.map(schema => {
+      val filteredEdges: RDD[GBEdge] = gbEdgeRDD.filter(_.label == schema.label)
+      val edgeWrapper = new EdgeWrapper(schema)
+      val rows = filteredEdges.map(gbEdge => edgeWrapper.create(gbEdge))
       val frameRdd = new FrameRdd(schema.toFrameSchema, rows)
 
       (schema.label, frameRdd)

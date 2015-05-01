@@ -33,7 +33,6 @@ GOOD = '\033[92m'
 WARNING = '\033[93m'
 ERROR = '\033[91m'
 RESET = '\033[0m'
-LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
 node=socket.gethostbyname(socket.gethostname())
 
@@ -59,9 +58,6 @@ parser.add_argument("--hostnames", type=str, help="The role hostnames")
 
 #set classpath
 parser.add_argument("--classpath", type=str, help="Set the classpath")
-parser.add_argument("--classpath-lib", type=str, help="fullpath for the classpath", default="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar")
-
-
 
 args = parser.parse_args()
 

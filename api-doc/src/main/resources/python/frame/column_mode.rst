@@ -12,6 +12,7 @@ set of modes to be returned.
 By default, only one is returned, but by setting the optional parameter
 max_modes_returned, a larger number of modes can be returned.
 
+
 Parameters
 ----------
 data_column : str
@@ -20,17 +21,17 @@ weights_column : str (optional)
     The name of the column that provides weights (frequencies) for the mode
     calculation.
     Must contain numerical data.
-    Uniform weights of 1 for all items will be used for the calculation
-    if this parameter is not provided.
+    Default is all items have weight of 1.
 max_modes_returned : int (optional)
     Maximum number of modes returned.
-    If this parameter is not provided, it defaults to 1.
+    Default is 1.
+
 
 Returns
 -------
 dict
-    Dictionary containing summary statistics in the following entries:
-
+    Dictionary containing summary statistics.
+    The data returned is composed of multiple components:
 mode : A mode is a data element of maximum net weight.
     A set of modes is returned.
     The empty set is returned when the sum of the weights is 0.
@@ -52,6 +53,7 @@ total_weight : Sum of all weights in the weight column.
 mode_count : The number of distinct modes in the data.
     In the case that the data is very multimodal, this number may
     exceed max_modes_returned.
+
 
 Examples
 --------

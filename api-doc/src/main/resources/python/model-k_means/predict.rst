@@ -1,5 +1,6 @@
 Predict the cluster assignments for the data points.
 
+
 Parameters
 ----------
 predict_frame : Frame
@@ -13,15 +14,17 @@ observation_columns : list of str (optional)
     trained on.
     The columns are scaled using the same values used when training the model.
 
+
 Returns
 -------
 Frame
-    A new frame consisting of the existing columns of the frame along with the
-    following new columns:
+    A new frame consisting of the existing columns of the frame and new
+    columns.
+    The data returned is composed of multiple components:
 'k' columns : double
     Containing squared distance of each point to every cluster center.
 predicted_cluster : int
-    Containing the cluster assignment.
+    Integer containing the cluster assignment.
 
 
 Examples

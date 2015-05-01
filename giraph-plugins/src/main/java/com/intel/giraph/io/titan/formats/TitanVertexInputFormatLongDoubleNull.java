@@ -1,0 +1,131 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2015 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
+package com.intel.giraph.io.titan.formats;
+
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanProperty;
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.Vertex;
+import org.apache.giraph.io.VertexReader;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+/**
+ * TitanHBaseVertexInputFormatLongDoubleNull loads vertex
+ * with <code>Long</code> vertex ID's,
+ * <code>Double</code> vertex values,
+ * and <code>Float</code> edge weights.
+ */
+public class TitanVertexInputFormatLongDoubleNull extends
+        TitanVertexInputFormat<LongWritable, DoubleWritable, NullWritable> {
+
+    private static final Logger LOG = Logger.getLogger(TitanVertexInputFormatLongDoubleNull.class);
+
+    /**
+     * Create vertex reader for Titan vertices
+     *
+     * @param split   Input splits for HBase table
+     * @param context Giraph task context
+     * @return VertexReader Vertex reader for Giraph vertices
+     * @throws IOException
+     */
+    @Override
+    public VertexReader<LongWritable, DoubleWritable, NullWritable> createVertexReader(
+            InputSplit split, TaskAttemptContext context) throws IOException {
+
+        return new LongDoubleNullVertexReader(split, context);
+    }
+
+    /**
+     * Uses the RecordReader to return HBase data
+     */
+    protected static class LongDoubleNullVertexReader extends TitanVertexReaderCommon<DoubleWritable, NullWritable> {
+
+        /**
+         * Constructs Giraph vertex reader to read Giraph vertices from Titan/HBase table.
+         *
+         * @param split   Input split from HBase table
+         * @param context Giraph task context
+         * @throws IOException
+         */
+        public LongDoubleNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
+            super(split, context);
+        }
+
+        /**
+         * Construct a Giraph vertex from a Faunus (Titan/Hadoop vertex).
+         *
+         * @param conf         Giraph configuration with property names, and edge labels to filter
+         * @param faunusVertex Faunus vertex
+         * @return Giraph vertex
+         */
+        @Override
+        public Vertex<LongWritable, DoubleWritable, NullWritable> readGiraphVertex(
+                final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+
+            // Initialize Giraph vertex
+            Vertex<LongWritable, DoubleWritable, NullWritable> newGiraphVertex = conf.createVertex();
+            newGiraphVertex.initialize(new LongWritable(faunusVertex.getLongId()), new DoubleWritable(0));
+
+            // Add vertex properties
+            Iterator<TitanProperty> titanProperties = vertexBuilder.buildTitanProperties(faunusVertex);
+            newGiraphVertex.setValue(getDoubleWritableProperty(titanProperties));
+
+            // Add edges
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
+            addGiraphEdges(newGiraphVertex, faunusVertex, titanEdges);
+
+            return (newGiraphVertex);
+        }
+
+        /**
+         * Create Double writable from value of first Titan property in iterator
+         *
+         * @param titanProperties Iterator of Titan properties
+         * @return Double writable containing value of first property in list
+         */
+        private DoubleWritable getDoubleWritableProperty(Iterator<TitanProperty> titanProperties) {
+            double vertexValue = 0;
+            if (titanProperties.hasNext()) {
+                Object propertyValue = titanProperties.next().getValue();
+                try {
+                    vertexValue = Double.parseDouble(propertyValue.toString());
+                } catch (NumberFormatException e) {
+                    LOG.warn("Unable to parse double value for property: " + propertyValue);
+                }
+            }
+            return (new DoubleWritable(vertexValue));
+        }
+    }
+}

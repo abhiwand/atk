@@ -1,13 +1,18 @@
 Make a copy of the current graph.
 
+
 Parameters
 ----------
 name : str (optional)
     The name for the copy of the graph.
+    Default is None.
+
 
 Returns
 -------
-graph copy
+Graph
+    A copy of the original graph
+
 
 Examples
 --------

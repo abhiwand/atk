@@ -4,6 +4,7 @@ Best Known Methods (Admin)
 
 .. contents:: Table of Contents
     :local:
+    :backlinks: none
 
 -------------------------
 Configuration information

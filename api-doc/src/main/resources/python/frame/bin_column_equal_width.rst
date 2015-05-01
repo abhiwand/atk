@@ -1,4 +1,4 @@
-Classify a particular column into same-width groups.
+Classify column into same-width groups.
 
 Group rows of data based on the value in a single column and add a label
 to identify grouping.
@@ -7,6 +7,7 @@ Equal width binning places column values into groups such that the values
 in each group fall within the same interval and the interval width for each
 group is equal.
 
+
 Parameters
 ----------
 column_name : str
@@ -14,10 +15,17 @@ column_name : str
 num_bins : int (optional)
     The maximum number of bins.
     Default is the Square-root choice
-    :math:`math.floor(math.sqrt(frame.row_count))`.
+    :math:`\lfloor \sqrt{m} \rfloor`, where :math:`m` is the number of rows.
 bin_column_name : str (optional)
     The name for the new column holding the grouping labels.
     Default is ``<column_name>_binned``.
+
+
+Returns
+-------
+array of floats
+   A list of the edges of each bin.
+
 
 Notes
 -----
@@ -25,16 +33,12 @@ Notes
     drop_frames() method (and others) to fail!
 2)  The num_bins parameter is considered to be the maximum permissible number
     of bins because the data may dictate fewer bins.
-    With equal depth binning, for example, if the column to be binned has 10
+    For example, if the column to be binned has 10
     elements with only 2 distinct values and the *num_bins* parameter is
     greater than 2, then the number of actual number of bins will only be 2.
     This is due to a restriction that elements with an identical value must
     belong to the same bin.
 
-Returns
--------
-array of floats : cutoffs
-   A list of the edges of each bin.
 
 Examples
 --------

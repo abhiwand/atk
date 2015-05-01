@@ -26,7 +26,8 @@ mkdir -p  ${BUILD_DIR}/etc/intelanalytics/rest-server
 mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
 
 #copy example scripts
-cp -Rv vm/iavm/salt-stack/salt/base/${packageName}/examples ${BUILD_DIR}/usr/lib/intelanalytics/rest-server
+mkdir -p ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/examples/
+cp -Rv ../python-examples/end-user/* ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/examples/
 
 if [ -d /home/agent/datasets ]; then
     #copy datasets from agent home if it exists into the rpm tar.gz source
@@ -43,8 +44,8 @@ pushd $SCRIPTPATH
 popd
 
 #excluded jars are now combined in deploy.jar
-#engine-spark.jar igiraph-titan.jar graphon.jar
-jars=" api-server.jar  engine.jar  interfaces.jar  deploy.jar"
+#engine-spark.jar giraph-plugins.jar graphon.jar
+jars=" rest-server.jar  engine.jar  interfaces.jar  deploy.jar"
 
 pushd ..
 for jar in $jars

@@ -23,7 +23,6 @@
 
 package com.intel.spark.graphon.sampling
 
-import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -36,8 +35,6 @@ import scala.collection.JavaConversions._
  * Integration testing for uniform vertex sampling
  */
 class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
-
-  EnvironmentValidator.skipEnvironmentValidation = true
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),

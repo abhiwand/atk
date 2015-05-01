@@ -7,6 +7,7 @@ Package Installation
 
 .. contents::
     :local:
+    :backlinks: none
 
 ------------
 Introduction
@@ -471,14 +472,24 @@ Becomes:
 
 Click on the Spark service then configuration in Cloudera Manager to get
 executor memory.
-See :ref:`ad_inst_ia_01`.
+See :ref:`Fig. 12.1 <fig_12_01>`.
 
-.. _ad_inst_ia_01:
+.. _fig_12_01:
 
-.. figure:: ad_inst_ia_01.*
-    :align: center
+.. only:: html
 
-    Figure 1
+    .. figure:: ad_inst_ia1_spark_executor_memory.*
+        :align: center
+
+        Fig. 12.1
+        Spark Executor Memory
+
+.. only:: latex
+
+    .. figure:: ad_inst_ia1_spark_executor_memory.*
+        :align: center
+
+        Spark Executor Memory
 
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -498,33 +509,53 @@ Updating the Spark Class Path
 The automatic configuration script updates the classpath in Cloudera Manager.
 The spark class path can also be configured through Cloudera Manager under the
 spark configuration / Worker Environment Advanced Configuration Snippet.
-See :ref:`ad_inst_ia_02`.
+See :ref:`Fig 12.2 <fig_12_02>`.
 If it isn't already set, add:
 
 .. code::
 
     SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 
-.. _ad_inst_ia_02:
+.. _fig_12_02:
 
-.. figure:: ad_inst_ia_02.*
-    :align: center
+.. only:: html
 
-    Figure 2
+    .. figure:: ad_inst_ia1_spark_class_path.*
+        :align: center
+
+        Fig. 12.2
+        Spark Class Path
+
+.. only:: latex
+
+    .. figure:: ad_inst_ia1_spark_class_path.*
+        :align: center
+
+        Spark Class Path
 
 .. _skip_manual_section:
 
 **End of manual configuration**
 
 Restart the Spark service.
-See :ref:`ad_inst_ia_03`.
+See :ref:`Fig. 13.3 <fig_13_03>`.
 
-.. _ad_inst_ia_03:
+.. _fig_13_03:
 
-.. figure:: ad_inst_ia_03.*
-    :align: center
+.. only:: html
 
-    Figure 3
+    .. figure:: ad_inst_ia1_restart_spark.*
+        :align: center
+
+        Fig. 13.3
+        Restart Spark
+
+.. only:: latex
+
+    .. figure:: ad_inst_ia1_restart_spark.*
+        :align: center
+
+        Restart Spark
 
 Database Configuration
 ======================
@@ -769,10 +800,21 @@ Switch databases:
 
 Then insert into the users table:
 
-.. code::
+.. only:: html
 
-    postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
-    INSERT 0 1
+    .. code::
+
+        postgres=# insert into users (username, api_key, created_on, modified_on) values( 'metastore', 'test_api_key_1', now(), now() );
+        INSERT 0 1
+
+.. only:: latex
+
+    .. code::
+
+        postgres=# insert into users (username, api_key, created_on,
+            modified_on) values( 'metastore', 'test_api_key_1', now(),
+            now() );
+        INSERT 0 1
 
 View the insertion by doing a select on the users table:
 
@@ -785,9 +827,9 @@ There should only be a single row per api_key:
 .. code::
 
 
-     user_id | username  |    api_key     |         created_on         |        modified_on
-    ---------+-----------+----------------+----------------------------+----------------------------
-           1 | metastore | test_api_key_1 | 2014-11-20 12:37:16.535852 | 2014-11-20 12:37:16.535852
+     user_id | username  |  api_key  |      created_on     |     modified_on
+    ---------+-----------+-----------+---------------------+---------------------
+           1 | metastore | api_key_1 | 2014-11-20 12:37:16 | 2014-11-20 12:37:16
        (1 row)
 
 If there is more than one row for a single api key, remove one of them or

@@ -6,7 +6,8 @@ product message passing.
 The priors are read from a property in the graph, the posteriors are written
 to another property in the graph.
 
-This is the GraphX based implementation of belief propagation in the toolkit.
+This is the GraphX-based implementation of belief propagation.
+
 
 Parameters
 ----------
@@ -29,10 +30,13 @@ max_iterations : int (optional)
     The valid range is all positive int.
     Default is 20.
 
+
 Returns
 -------
-str : Multiple line string
-    Progress report for belief propagation.
+str
+    Progress report for belief propagation in the format of a multiple-line
+    string.
+
 
 Examples
 --------
