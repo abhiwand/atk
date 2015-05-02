@@ -23,21 +23,23 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation
-import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CF }
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CFCGD, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
+import spray.json.DefaultJsonProtocol._
+import spray.json._
 import scala.concurrent.duration._
 
 import scala.concurrent._
-
+import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Als(graph: GraphReference,
+case class ConjugateGradientDescent(graph: GraphReference,
                edgeValuePropertyList: List[String],
                inputEdgeLabelList: List[String],
                outputVertexPropertyList: List[String],
@@ -46,41 +48,42 @@ case class Als(graph: GraphReference,
                vectorValue: Option[Boolean] = None,
                maxSupersteps: Option[Int] = None,
                convergenceThreshold: Option[Double] = None,
-               alsLambda: Option[Float] = None,
+               cgdLambda: Option[Float] = None,
                featureDimension: Option[Int] = None,
                learningCurveOutputInterval: Option[Int] = None,
                validateGraphStructure: Option[Boolean] = None,
                biasOn: Option[Boolean] = None,
                maxValue: Option[Float] = None,
-               minValue: Option[Float] = None)
+               minValue: Option[Float] = None,
+               numIters: Option[Int] = None)
 
-case class AlsResult(value: String)
+case class ConjugateGradientDescentResult(value: String)
 
 /** Json conversion for arguments and return value case classes */
-object AlsJsonFormat {
+object ConjugateGradientDescentJsonFormat {
   import DomainJsonProtocol._
-  implicit val alsFormat = jsonFormat16(Als)
-  implicit val alsResultFormat = jsonFormat1(AlsResult)
+  implicit val cgdFormat = jsonFormat17(ConjugateGradientDescent)
+  implicit val cgdResultFormat = jsonFormat1(ConjugateGradientDescentResult)
 }
 
-import AlsJsonFormat._
+import ConjugateGradientDescentJsonFormat._
 
-class AlternatingLeastSquares
-    extends CommandPlugin[Als, AlsResult] {
+class ConjugateGradientDescentPlugin
+    extends CommandPlugin[ConjugateGradientDescent, ConjugateGradientDescentResult] {
 
   /**
-   * The name of the command, e.g. graphs/ml/alternating_least_squares
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/ml/alternating_least_squares"
+  override def name: String = "graph:titan/ml/conjugate_gradient_descent"
 
-  override def execute(arguments: Als)(implicit context: Invocation): AlsResult = {
+  override def execute(arguments: ConjugateGradientDescent)(implicit context: Invocation): ConjugateGradientDescentResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(",")
+    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(argSeparator)
     val resultPropertyList = outputVertexPropertyList.split(pattern)
     val vectorValue = arguments.vectorValue.getOrElse(false)
     val biasOn = arguments.biasOn.getOrElse(false)
@@ -98,23 +101,24 @@ class AlternatingLeastSquares
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "als.maxSupersteps", arguments.maxSupersteps)
-    GiraphConfigurationUtil.set(hConf, "als.convergenceThreshold", arguments.convergenceThreshold)
-    GiraphConfigurationUtil.set(hConf, "als.featureDimension", arguments.featureDimension)
-    GiraphConfigurationUtil.set(hConf, "als.bidirectionalCheck", arguments.validateGraphStructure)
-    GiraphConfigurationUtil.set(hConf, "als.biasOn", arguments.biasOn)
-    GiraphConfigurationUtil.set(hConf, "als.lambda", arguments.alsLambda)
-    GiraphConfigurationUtil.set(hConf, "als.learningCurveOutputInterval", arguments.learningCurveOutputInterval)
-    GiraphConfigurationUtil.set(hConf, "als.maxVal", arguments.maxValue)
-    GiraphConfigurationUtil.set(hConf, "als.minVal", arguments.minValue)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxSupersteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "cgd.convergenceThreshold", arguments.convergenceThreshold)
+    GiraphConfigurationUtil.set(hConf, "cgd.featureDimension", arguments.featureDimension)
+    GiraphConfigurationUtil.set(hConf, "cgd.bidirectionalCheck", arguments.validateGraphStructure)
+    GiraphConfigurationUtil.set(hConf, "cgd.biasOn", arguments.biasOn)
+    GiraphConfigurationUtil.set(hConf, "cgd.lambda", arguments.cgdLambda)
+    GiraphConfigurationUtil.set(hConf, "cgd.learningCurveOutputInterval", arguments.learningCurveOutputInterval)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxVal", arguments.maxValue)
+    GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.minValue)
+    GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.numIters)
 
     GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edgeTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
@@ -122,15 +126,15 @@ class AlternatingLeastSquares
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4CF])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4CFCGD])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4CF[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute])
-    giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
-    giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
+    giraphConf.setMasterComputeClass(classOf[ConjugateGradientDescentMasterCompute])
+    giraphConf.setComputationClass(classOf[ConjugateGradientDescentComputation])
+    giraphConf.setAggregatorWriterClass(classOf[ConjugateGradientDescentAggregatorWriter])
 
-    AlsResult(GiraphJobManager.run("ia_giraph_als",
-      classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, context, "als-learning-report_0"))
+    ConjugateGradientDescentResult(GiraphJobManager.run("ia_giraph_cgd",
+      classOf[ConjugateGradientDescentComputation].getCanonicalName,
+      config, giraphConf, context, "cgd-learning-report_0"))
   }
 
 }

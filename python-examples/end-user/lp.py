@@ -60,7 +60,7 @@ graph = ia.TitanGraph([source, target, edge], "lp_graph")
 
 print "Running Label Propagation on Graph 'lp_graph'"
 
-print graph.ml.label_propagation(vertex_value_property_list = ["input_value"],
+print graph.label_propagation(vertex_value_property_list = ["input_value"],
                                  edge_value_property_list = ["weight"],
                                  input_edge_label_list = ["edge"],
                                  output_vertex_property_list = ["lp_posterior"],

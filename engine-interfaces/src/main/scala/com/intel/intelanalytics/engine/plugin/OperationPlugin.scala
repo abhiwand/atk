@@ -180,6 +180,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   val returnTag = implicitly[TypeTag[Return]]
   val thisManifest = implicitly[ClassManifest[this.type]]
   val thisTag = implicitly[TypeTag[this.type]]
+  val argSeparator = ","
 
   /**
    * Convert the given object to a JsObject
