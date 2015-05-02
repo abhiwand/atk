@@ -65,7 +65,7 @@ Examples
 
     .. code::
 
-        >>> g.ml.label_propagation(
+        >>> g.label_propagation(
         ... vertex_value_property_list = "input_value",
         ... edge_value_property_list  = "weight",
         ... input_edge_label_list = "edge",

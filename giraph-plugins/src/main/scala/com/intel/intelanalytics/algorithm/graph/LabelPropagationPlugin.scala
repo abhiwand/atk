@@ -24,54 +24,30 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation
+import com.intel.giraph.algorithms.lp.LabelPropagationComputation.{LabelPropagationMasterCompute, LabelPropagationAggregatorWriter}
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LP, TitanVertexInputFormatPropertyGraph4LP }
+import com.intel.ia.giraph.lp.{LabelPropagationJsonFormat, LabelPropagationArgs, LabelPropagationResult}
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import LabelPropagationJsonFormat._
 import scala.concurrent.duration._
-
 import scala.concurrent._
-import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Lp(graph: GraphReference,
-              vertexValuePropertyList: List[String],
-              edgeValuePropertyList: List[String],
-              inputEdgeLabelList: List[String],
-              outputVertexPropertyList: List[String],
-              vectorValue: Boolean,
-              maxSupersteps: Option[Int] = None,
-              convergenceThreshold: Option[Double] = None,
-              anchorThreshold: Option[Double] = None,
-              lpLambda: Option[Double] = None,
-              validateGraphStructure: Option[Boolean] = None)
-case class LpResult(value: String) //TODO
-
-/** Json conversion for arguments and return value case classes */
-object LpJsonFormat {
-  import DomainJsonProtocol._
-  implicit val lbpFormat = jsonFormat11(Lp)
-  implicit val lbpResultFormat = jsonFormat1(LpResult)
-}
-
-import LpJsonFormat._
-
-class LabelPropagation
-    extends CommandPlugin[Lp, LpResult] {
+class LabelPropagationPlugin
+    extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graphs/label_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/ml/label_propagation"
+  override def name: String = "graph/label_propagation"
 
-  override def execute(arguments: Lp)(implicit context: Invocation): LpResult = {
+  override def execute(arguments: LabelPropagationArgs)(implicit context: Invocation): LabelPropagationResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
@@ -90,23 +66,26 @@ class LabelPropagation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
     giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[LabelPropagationComputation.LabelPropagationMasterCompute])
+    giraphConf.setMasterComputeClass(classOf[LabelPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LabelPropagationComputation])
-    giraphConf.setAggregatorWriterClass(classOf[LabelPropagationComputation.LabelPropagationAggregatorWriter])
+    giraphConf.setAggregatorWriterClass(classOf[LabelPropagationAggregatorWriter])
 
-    LpResult(GiraphJobManager.run("ia_giraph_lp",
-      classOf[LabelPropagationComputation].getCanonicalName,
-      config, giraphConf, context, "lp-learning-report_0"))
+    LabelPropagationResult(GiraphJobManager.run("ia_giraph_lp",
+                                                classOf[LabelPropagationComputation].getCanonicalName,
+                                                config, 
+                                                giraphConf, 
+                                                context, 
+                                                "lp-learning-report_0"))
   }
 
 }

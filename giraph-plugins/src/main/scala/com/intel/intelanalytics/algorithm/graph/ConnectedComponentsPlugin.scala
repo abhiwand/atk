@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDDoubleValue, TitanVertexInputFormatLongDoubleNull }
+import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -36,29 +36,27 @@ import spray.json._
 import scala.concurrent.duration._
 
 import scala.concurrent._
+import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Pr(graph: GraphReference,
-              inputEdgeLabelList: List[String],
-              outputVertexPropertyList: List[String],
-              maxSupersteps: Option[Int] = None,
-              convergenceThreshold: Option[Double] = None,
-              resetProbability: Option[Double] = None,
-              convergenceProgressOutputInterval: Option[Int] = None)
+case class ConnectedComponentsCommand(graph: GraphReference,
+                                      inputEdgeLabel: String,
+                                      outputVertexProperty: String,
+                                      convergenceProgressOutputInterval: Option[Int] = None)
 
-case class PrResult(value: String) //TODO
+case class ConnectedComponentsResult(value: String) //TODO
 
 /** Json conversion for arguments and return value case classes */
-object PrJsonFormat {
+object ConnectedComponentsJsonFormat {
   import DomainJsonProtocol._
-  implicit val prFormat = jsonFormat7(Pr)
-  implicit val prResultFormat = jsonFormat1(PrResult)
+  implicit val connectedComponentsCommandFormat = jsonFormat4(ConnectedComponentsCommand)
+  implicit val connectedComponentsResultFormat = jsonFormat1(ConnectedComponentsResult)
 }
 
-import PrJsonFormat._
+import ConnectedComponentsJsonFormat._
 
-class PageRank
-    extends CommandPlugin[Pr, PrResult] {
+class ConnectedComponentsPlugin
+    extends CommandPlugin[ConnectedComponentsCommand, ConnectedComponentsResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -66,9 +64,10 @@ class PageRank
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph:titan/page_rank"
+  override def name: String = "graph:titan/connected_components"
 
-  override def execute(arguments: Pr)(implicit invocation: Invocation): PrResult = {
+  override def execute(arguments: ConnectedComponentsCommand)(implicit context: Invocation): ConnectedComponentsResult = {
+
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
@@ -77,30 +76,25 @@ class PageRank
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "pr.maxSupersteps", arguments.maxSupersteps)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergenceThreshold)
-    GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.resetProbability)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergenceProgressOutputInterval)
-
-    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+    GiraphConfigurationUtil.set(hConf, "cc.convergenceProgressOutputInterval",
+      arguments.convergenceProgressOutputInterval)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabel))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexProperty))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatLongDoubleNull])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.DoubleWritable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[PageRankComputation.PageRankMasterCompute])
-    giraphConf.setComputationClass(classOf[PageRankComputation])
-    giraphConf.setAggregatorWriterClass(classOf[PageRankComputation.PageRankAggregatorWriter])
+    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatLongLongNull])
+    giraphConf.
+      setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDLongValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.Writable]])
+    giraphConf.setMasterComputeClass(classOf[ConnectedComponentsMasterCompute])
+    giraphConf.setComputationClass(classOf[ConnectedComponentsComputation])
+    giraphConf.setAggregatorWriterClass(classOf[ConnectedComponentsAggregatorWriter])
 
-    PrResult(GiraphJobManager.run("ia_giraph_pr",
-      classOf[PageRankComputation].getCanonicalName,
-      config, giraphConf, invocation, "pr-convergence-report_0"))
-
+    ConnectedComponentsResult(GiraphJobManager.run("ia_giraph_conncectedcomponents",
+      classOf[ConnectedComponentsComputation].getCanonicalName,
+      config, giraphConf, context, "cc-convergence-report_0"))
   }
-
 }
