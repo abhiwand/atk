@@ -132,10 +132,10 @@ object GiraphJobManager {
     // Clear Giraph Report Directory
     val fs = FileSystem.get(new Configuration())
     val output_dir_path = config.getString("fs.root") +
-                                           File.separator +
-                                           config.getString("output.dir") +
-                                           File.separator +
-                                           commandInvocation.commandId
+      File.separator +
+      config.getString("output.dir") +
+      File.separator +
+      commandInvocation.commandId
     if (config.getBoolean("output.overwrite")) {
       fs.delete(getFullyQualifiedPath(output_dir_path, fs), true)
     }
@@ -146,7 +146,7 @@ object GiraphJobManager {
     job.run(true) match {
       case false => "Error: No Learning Report found!!"
       case true =>
-        val stream = fs.open(getFullyQualifiedPath(output_dir_path + File.separator+ reportName, fs))
+        val stream = fs.open(getFullyQualifiedPath(output_dir_path + File.separator + reportName, fs))
         def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
         val result = readLines.takeWhile(_ != null).toList.mkString("\n")
         result

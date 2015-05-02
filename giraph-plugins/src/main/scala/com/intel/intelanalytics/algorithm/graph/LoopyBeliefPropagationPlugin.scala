@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.{ LoopyBeliefPropagationAggregatorWriter, LoopyBeliefPropagationMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LBP, TitanVertexInputFormatPropertyGraph4LBP }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -39,20 +40,20 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class LoopyBeliefPropagation(graph: GraphReference,
-               vertexValuePropertyList: List[String],
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexType: String,
-               vectorValue: Boolean,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               anchorThreshold: Option[Double] = None,
-               smoothing: Option[Double] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               ignoreVertexType: Option[Boolean] = None,
-               maxProduct: Option[Boolean] = None,
-               power: Option[Double] = None)
+                                  vertexValuePropertyList: List[String],
+                                  edgeValuePropertyList: List[String],
+                                  inputEdgeLabelList: List[String],
+                                  outputVertexPropertyList: List[String],
+                                  vertexType: String,
+                                  vectorValue: Boolean,
+                                  maxSupersteps: Option[Int] = None,
+                                  convergenceThreshold: Option[Double] = None,
+                                  anchorThreshold: Option[Double] = None,
+                                  smoothing: Option[Double] = None,
+                                  validateGraphStructure: Option[Boolean] = None,
+                                  ignoreVertexType: Option[Boolean] = None,
+                                  maxProduct: Option[Boolean] = None,
+                                  power: Option[Double] = None)
 
 case class LoopyBeliefPropagationResult(value: String) //TODO
 

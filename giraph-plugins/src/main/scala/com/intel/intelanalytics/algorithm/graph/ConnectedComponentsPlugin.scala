@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
+import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation.{ ConnectedComponentsAggregatorWriter, ConnectedComponentsMasterCompute }
 import com.intel.giraph.algorithms.pr.PageRankComputation
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol

@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation
-import com.intel.giraph.algorithms.lp.LabelPropagationComputation.{LabelPropagationMasterCompute, LabelPropagationAggregatorWriter}
+import com.intel.giraph.algorithms.lp.LabelPropagationComputation.{ LabelPropagationMasterCompute, LabelPropagationAggregatorWriter }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LP, TitanVertexInputFormatPropertyGraph4LP }
-import com.intel.ia.giraph.lp.{LabelPropagationJsonFormat, LabelPropagationArgs, LabelPropagationResult}
+import com.intel.ia.giraph.lp.{ LabelPropagationJsonFormat, LabelPropagationArgs, LabelPropagationResult }
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
@@ -81,11 +81,11 @@ class LabelPropagationPlugin
     giraphConf.setAggregatorWriterClass(classOf[LabelPropagationAggregatorWriter])
 
     LabelPropagationResult(GiraphJobManager.run("ia_giraph_lp",
-                                                classOf[LabelPropagationComputation].getCanonicalName,
-                                                config, 
-                                                giraphConf, 
-                                                context, 
-                                                "lp-learning-report_0"))
+      classOf[LabelPropagationComputation].getCanonicalName,
+      config,
+      giraphConf,
+      context,
+      "lp-learning-report_0"))
   }
 
 }
