@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.algorithms.pr.PageRankComputation.{PageRankMasterCompute, PageRankAggregatorWriter}
+import com.intel.giraph.algorithms.pr.PageRankComputation.{ PageRankMasterCompute, PageRankAggregatorWriter }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDDoubleValue, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -40,12 +40,12 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class PageRank(graph: GraphReference,
-              inputEdgeLabelList: List[String],
-              outputVertexPropertyList: List[String],
-              maxSupersteps: Option[Int] = None,
-              convergenceThreshold: Option[Double] = None,
-              resetProbability: Option[Double] = None,
-              convergenceProgressOutputInterval: Option[Int] = None)
+                    inputEdgeLabelList: List[String],
+                    outputVertexPropertyList: List[String],
+                    maxSupersteps: Option[Int] = None,
+                    convergenceThreshold: Option[Double] = None,
+                    resetProbability: Option[Double] = None,
+                    convergenceProgressOutputInterval: Option[Int] = None)
 
 case class PageRankResult(value: String) //TODO
 

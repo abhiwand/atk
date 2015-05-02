@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.{ AlternatingLeastSquaresAggregatorWriter, AlternatingLeastSquaresMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -38,21 +39,21 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class AlternatingLeastSquares(graph: GraphReference,
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexTypePropertyKey: String,
-               edgeTypePropertyKey: String,
-               vectorValue: Option[Boolean] = None,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               alsLambda: Option[Float] = None,
-               featureDimension: Option[Int] = None,
-               learningCurveOutputInterval: Option[Int] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               biasOn: Option[Boolean] = None,
-               maxValue: Option[Float] = None,
-               minValue: Option[Float] = None)
+                                   edgeValuePropertyList: List[String],
+                                   inputEdgeLabelList: List[String],
+                                   outputVertexPropertyList: List[String],
+                                   vertexTypePropertyKey: String,
+                                   edgeTypePropertyKey: String,
+                                   vectorValue: Option[Boolean] = None,
+                                   maxSupersteps: Option[Int] = None,
+                                   convergenceThreshold: Option[Double] = None,
+                                   alsLambda: Option[Float] = None,
+                                   featureDimension: Option[Int] = None,
+                                   learningCurveOutputInterval: Option[Int] = None,
+                                   validateGraphStructure: Option[Boolean] = None,
+                                   biasOn: Option[Boolean] = None,
+                                   maxValue: Option[Float] = None,
+                                   minValue: Option[Float] = None)
 
 case class AlternatingLeastSquaresResult(value: String)
 

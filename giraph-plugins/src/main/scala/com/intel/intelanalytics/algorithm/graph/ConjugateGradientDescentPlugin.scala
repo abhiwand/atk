@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CFCGD, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -40,22 +41,22 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class ConjugateGradientDescent(graph: GraphReference,
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexTypePropertyKey: String,
-               edgeTypePropertyKey: String,
-               vectorValue: Option[Boolean] = None,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               cgdLambda: Option[Float] = None,
-               featureDimension: Option[Int] = None,
-               learningCurveOutputInterval: Option[Int] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               biasOn: Option[Boolean] = None,
-               maxValue: Option[Float] = None,
-               minValue: Option[Float] = None,
-               numIters: Option[Int] = None)
+                                    edgeValuePropertyList: List[String],
+                                    inputEdgeLabelList: List[String],
+                                    outputVertexPropertyList: List[String],
+                                    vertexTypePropertyKey: String,
+                                    edgeTypePropertyKey: String,
+                                    vectorValue: Option[Boolean] = None,
+                                    maxSupersteps: Option[Int] = None,
+                                    convergenceThreshold: Option[Double] = None,
+                                    cgdLambda: Option[Float] = None,
+                                    featureDimension: Option[Int] = None,
+                                    learningCurveOutputInterval: Option[Int] = None,
+                                    validateGraphStructure: Option[Boolean] = None,
+                                    biasOn: Option[Boolean] = None,
+                                    maxValue: Option[Float] = None,
+                                    minValue: Option[Float] = None,
+                                    numIters: Option[Int] = None)
 
 case class ConjugateGradientDescentResult(value: String)
 
