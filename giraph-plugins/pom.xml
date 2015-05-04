@@ -132,7 +132,7 @@
         <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>interfaces</artifactId>
+            <artifactId>engine-interfaces</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
