@@ -294,8 +294,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
           val executionParams = Array(
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-            //"--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
-            "--driver-java-options", s"-Dspark.executor.extraClassPath=/opt/cloudera/parcels/CDH/lib/hive/lib/*")
+            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions -Dspark.executor.extraClassPath=/opt/cloudera/parcels/CDH/lib/hive/lib")
 
           val executionConfigs = {
             for {
