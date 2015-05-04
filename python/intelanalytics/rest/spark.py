@@ -132,8 +132,8 @@ class RowWrapper(Row):
     Wraps row for specific RDD line digestion using the Row object
     """
 
-    def load_row(self, s):
-        self._set_data(bson.decode_all(s)[0]['array'])
+    def load_row(self, data):
+        self._set_data(data)
 
 
 def pickle_function(func):
@@ -159,12 +159,25 @@ def _wrap_row_function(frame, row_function, optional_schema=None):
     """
     schema = optional_schema if optional_schema is not None else frame.schema  # must grab schema now so frame is not closed over
     row_wrapper = RowWrapper(schema)
+    decode = bson.decode_all
     def row_func(row):
         try:
-            row_wrapper.load_row(row)
+            row_data = decode(row)[0]['array']
+            row_wrapper.load_row(row_data)
             return row_function(row_wrapper)
         except Exception as e:
-            msg = base64.urlsafe_b64encode((u'Exception:%s while processing row:%s' % (repr(e),row)).encode('utf-8'))
+            try:
+                e_msg = unicode(e)
+            except:
+                e_msg = u'<unable to get exception message>'
+            try:
+                e_row = unicode(row_data)
+            except:
+                e_row = u'<unable to get row data>'
+            try:
+                msg = base64.urlsafe_b64encode((u'Exception: %s running UDF on row: %s' % (e_msg, e_row)).encode('utf-8'))
+            except:
+                msg = base64.urlsafe_b64encode(u'Exception running UDF, unable to provide details.'.encode('utf-8'))
             raise IaPyWorkerError(msg)
     return row_func
 
