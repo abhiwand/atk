@@ -115,11 +115,11 @@ trait SparkEngineConfig extends EventLogging {
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int =
-    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-sample-rows")
+    config.getInt("intel.analytics.engine.command.frames.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
   val frameLoadTestFailThresholdPercentage: Int =
-    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-fail-threshold-percentage")
+    config.getInt("intel.analytics.engine.command.frames.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
@@ -204,7 +204,7 @@ trait SparkEngineConfig extends EventLogging {
    * Max partitions if file is larger than limit specified in autoPartitionConfig
    */
   val maxPartitions: Int = {
-    config.getInt("intel.analytics.engine-spark.auto-partitioner.max-partitions")
+    config.getInt("intel.analytics.engine.auto-partitioner.max-partitions")
   }
 
   /**
@@ -218,7 +218,7 @@ trait SparkEngineConfig extends EventLogging {
    */
   val autoPartitionerConfig: List[FileSizeToPartitionSize] = {
     import scala.collection.JavaConverters._
-    val key = "intel.analytics.engine-spark.auto-partitioner.file-size-to-partition-size"
+    val key = "intel.analytics.engine.auto-partitioner.file-size-to-partition-size"
     val configs = config.getConfigList(key).asScala.toList
     val unsorted = configs.map(config => {
       val partitions = config.getInt("partitions")
@@ -240,7 +240,7 @@ trait SparkEngineConfig extends EventLogging {
    * Spark re-partitioning strategy
    */
   val repartitionStrategy: SparkAutoPartitionStrategy.PartitionStrategy = {
-    val strategyName = config.getString("intel.analytics.engine-spark.auto-partitioner.repartition.strategy")
+    val strategyName = config.getString("intel.analytics.engine.auto-partitioner.repartition.strategy")
     val strategy = SparkAutoPartitionStrategy.getRepartitionStrategy(strategyName)
 
     info("Setting Spark re-partitioning strategy to: " + strategy)
@@ -253,7 +253,7 @@ trait SparkEngineConfig extends EventLogging {
    * Re-partition RDD if the percentage difference between actual and desired partitions exceeds threshold
    */
   val repartitionThreshold: Double = {
-    val repartitionPercentage = config.getInt("intel.analytics.engine-spark.auto-partitioner.repartition.threshold-percent")
+    val repartitionPercentage = config.getInt("intel.analytics.engine.auto-partitioner.repartition.threshold-percent")
     if (repartitionPercentage >= 0 && repartitionPercentage <= 100) {
       repartitionPercentage / 100d
     }
@@ -271,7 +271,7 @@ trait SparkEngineConfig extends EventLogging {
    * e.g., compression-ratio=4 if  uncompressed size is 20MB, and compressed size is 5MB
    */
   val frameCompressionRatio: Double = {
-    val ratio = config.getDouble("intel.analytics.engine-spark.auto-partitioner.repartition.frame-compression-ratio")
+    val ratio = config.getDouble("intel.analytics.engine.auto-partitioner.repartition.frame-compression-ratio")
     if (ratio <= 0) throw new RuntimeException("frame-compression-ratio should be greater than zero")
     ratio
   }
@@ -284,7 +284,7 @@ trait SparkEngineConfig extends EventLogging {
    * relative to available cores (especially in the reduce phase)
    */
   val maxTasksPerCore: Int = {
-    val tasksPerCore = config.getInt("intel.analytics.engine-spark.auto-partitioner.default-tasks-per-core")
+    val tasksPerCore = config.getInt("intel.analytics.engine.auto-partitioner.default-tasks-per-core")
     if (tasksPerCore > 0) tasksPerCore else throw new RuntimeException(s"Default tasks per core should be greater than 0")
   }
 
@@ -295,7 +295,7 @@ trait SparkEngineConfig extends EventLogging {
    * that can be returned to the Spark driver (i.e., spark.driver.maxResultSize).
    */
   val broadcastJoinThreshold = {
-    val joinThreshold = config.getBytes("intel.analytics.engine-spark.auto-partitioner.broadcast-join-threshold")
+    val joinThreshold = config.getBytes("intel.analytics.engine.auto-partitioner.broadcast-join-threshold")
     val maxResultSize = config.getBytes("intel.analytics.engine.spark.conf.properties.spark.driver.maxResultSize")
     if (joinThreshold > maxResultSize) {
       throw new RuntimeException(
@@ -315,7 +315,7 @@ trait SparkEngineConfig extends EventLogging {
   /**
    * Determines whether SparkContex.addJars() paths get "local:" prefix or not.
    *
-   * True if engine-spark.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
+   * True if engine.jar, graphon.jar and ohters are installed locally on each cluster node (preferred).
    * False is useful mainly for development on a cluster.  False results in many copies of the application jars
    * being made and copied to all of the cluster nodes.
    */

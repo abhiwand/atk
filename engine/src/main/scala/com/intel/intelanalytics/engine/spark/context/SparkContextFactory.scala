@@ -77,7 +77,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
 
     val sparkContext = new SparkContext(sparkConf)
     if (SparkEngineConfig.sparkMaster != "yarn-cluster") {
-      val path = jarPath("engine-spark")
+      val path = jarPath("engine")
       info(s"addJar() path=$path")
       sparkContext.addJar(path)
     }

@@ -273,7 +273,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       /* Serialize current config for the plugin so as to pass to Spark Submit */
       val (pluginJarsList, pluginExtraClasspath) = sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
 
-      val pluginJarPath = pluginJarsList.filter(_ != "engine-spark")
+      val pluginJarPath = pluginJarsList.filter(_ != "engine")
         .map(j => SparkContextFactory.jarPath(j)).mkString(",")
 
       try {
@@ -308,7 +308,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
             case _ => Array[String]()
           }
           val verbose = Array("--verbose")
-          /* Using engine-spark.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
+          /* Using engine.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
           val sparkInternalDriverClass = Array("spark-internal")
           val pluginArguments = Array(s"${command.id}")
 
@@ -327,13 +327,13 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           /* Launch Spark Submit */
           info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-          val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-spark")}:${pluginExtraClasspath.mkString(":")}"
+          val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine")}:${pluginExtraClasspath.mkString(":")}"
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
 
           // We were initially invoking SparkSubmit main method directly (i.e. inside our JVM). However, only one
           // ApplicationMaster can exist at a time inside a single JVM. All further calls to SparkSubmit fail to
           // create an instance of ApplicationMaster due to current spark design. We took the approach of invoking
-          // SparkSubmit as a standalone process (using engine-spark.jar) for every command to get the parallel
+          // SparkSubmit as a standalone process (using engine.jar) for every command to get the parallel
           // execution in yarn-cluster mode.
 
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)

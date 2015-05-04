@@ -60,7 +60,7 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
   override def start() = {
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
-      engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
+      engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
         .load("com.intel.intelanalytics.engine.spark.SparkEngineComponent")
         .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
     }
