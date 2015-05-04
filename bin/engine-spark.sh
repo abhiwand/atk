@@ -33,7 +33,7 @@ pwd                             i
 export HOSTNAME=`hostname`
 
 
-echo java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot engine-spark com.intel.intelanalytics.engine.spark.CommandDumper
-java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot engine-spark com.intel.intelanalytics.engine.spark.CommandDumper
+echo java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot engine com.intel.intelanalytics.engine.spark.CommandDumper
+java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot engine com.intel.intelanalytics.engine.spark.CommandDumper
 
 popd

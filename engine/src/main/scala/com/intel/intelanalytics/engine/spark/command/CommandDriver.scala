@@ -68,7 +68,7 @@ object CommandDriver {
   /**
    * Usage string if this was being executed from the command line
    */
-  def usage() = println("Usage: java -cp engine-spark.jar com.intel.intelanalytics.component.CommandDriver <command_id>")
+  def usage() = println("Usage: java -cp engine.jar com.intel.intelanalytics.component.CommandDriver <command_id>")
 
   /**
    * Instantiate an instance of the driver and then executing the requested command.

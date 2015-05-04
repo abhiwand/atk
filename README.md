@@ -13,7 +13,7 @@ Intel Analytics Toolkit (ATK)
 * doc-api-examples/ - examples of api usage for end user docs
 * engine/ - engine interface (seems like we should just delete this module)
 * engine-interfaces/ - interfaces shared between rest-server and engine-spark (we should move plugin args/return values out of here)
-* engine-spark - majority of the engine code
+* engine - majority of the engine code
 * giraph-plugins/ - a few graph algorithms that run on Giraph
 * graphbuilder - Titan graph construction and reading
 * graphon/ - some graph related plugins that run on Spark and GraphX

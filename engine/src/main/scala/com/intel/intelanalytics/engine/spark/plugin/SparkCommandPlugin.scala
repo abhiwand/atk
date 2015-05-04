@@ -155,8 +155,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     } extraClassPath ++= configValue.asInstanceOf[ConfigList].unwrapped().map(_.toString)
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */
-    /* We always need engine-spark as in Engine.scala we add plugins via
-    registerCommand api which need engine-spark to be there in system archives list always */
+    /* We always need engine as in Engine.scala we add plugins via
+    registerCommand api which need engine to be there in system archives list always */
     val configEntriesInString = for {
       (configKey, configValue) <- allEntries
     } yield {

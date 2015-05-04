@@ -54,7 +54,7 @@ class LegacyFrameRddTest extends TestingSparkContextWordSpec with Matchers {
       frameRdd.first should equal(rdd.first)
     }
 
-    // ignoring because of OutOfMemory errors, these weren't showing up in engine-spark until most of shared was merged in
+    // ignoring because of OutOfMemory errors, these weren't showing up in engine until most of shared was merged in
     "allow a SchemaRDD in its constructor" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
       val sqlContext = new SQLContext(sparkContext)

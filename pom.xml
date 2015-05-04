@@ -183,7 +183,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>launcher</module>
                 <module>meta-store</module>
                 <module>engine</module>
-                <module>engine-spark</module>
                 <module>rest-server</module>
                 <module>giraph-plugins</module>
                 <module>deploy</module>
@@ -656,11 +655,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>engine-spark</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
