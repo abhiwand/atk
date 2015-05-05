@@ -35,20 +35,22 @@ ia.connect()
 class ModelLinearRegressionTest(unittest.TestCase):
     def testLinearRegression(self):
         print "define csv file"
-
-        csv = ia.CsvFile("/datasets/lin_reg_8.csv", schema = [("y", ia.float64),("1",ia.float64),("2",ia.float64),
+        csv = ia.CsvFile("/datasets/linear_regression_8_columns.csv", schema = [("y", ia.float64),("1",ia.float64),("2",ia.float64),
                                                               ("3",ia.float64),("4",ia.float64),("5",ia.float64),
                                                               ("6",ia.float64),("7",ia.float64),("8",ia.float64),
                                                               ("9",ia.float64),("10",ia.float64)])
 
         print "create frame"
-        frame = ia.Frame(csv)
+        frame = ia.Frame(csv,'LinearRegressionSampleFrame')
 
         print "Initializing a LinearRegressionModel object"
         model = ia.LinearRegressionModel(name='myLinearRegressionModel')
 
         print "Training the model on the Frame"
         model.train(frame,'y',['1','2','3','4','5','6','7','8','9','10'])
+
+        #tput = model.predict(frame)
+        #self.assertEqual(output.column_names, ['y','1','2','3','4','5','6','7','8','9','10','predicted_value'])
 
 
 if __name__ == "__main__":
