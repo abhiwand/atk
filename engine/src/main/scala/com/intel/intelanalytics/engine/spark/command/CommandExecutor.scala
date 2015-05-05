@@ -238,7 +238,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarnClusterMode) {
       val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
       executeCommandOnYarn(commandContext.command, plugin, archiveName)
-      /* Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution */
+      // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
       val updatedCommand = commands.lookup(commandContext.command.id).get
       if (updatedCommand.error.isDefined)
         throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
