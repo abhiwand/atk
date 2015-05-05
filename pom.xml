@@ -123,6 +123,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
         <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
+        <dep.hive.version>0.13.1-${dep.cdh.version}</dep.hive.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -346,6 +347,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </dependency>
             </dependencies>
         </profile>
+
         <profile>
             <id>scala-coverage</id>
             <activation>
@@ -527,7 +529,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <groupId>org.scalariform</groupId>
                     <artifactId>scalariform-maven-plugin</artifactId>
                     <version>0.1.4</version>
@@ -544,7 +546,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
 
@@ -560,10 +562,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
 
-            <plugin>
-                <groupId>org.scalariform</groupId>
-                <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>
+
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -774,6 +773,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <artifactId>netty</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!--org.apache.hive-->
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-common</artifactId>
+                <version>${dep.hive.version}</version>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
