@@ -144,13 +144,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>events</id>
             <activation>
-		<activeByDefault>false</activeByDefault>
-               <property>
+                <activeByDefault>false</activeByDefault>
+                <property>
                     <name>NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-		<module>misc/event-api</module>
+                <module>misc/event-api</module>
                 <module>misc/event</module>
             </modules>
         </profile>
@@ -1168,7 +1168,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>akka-actor_${scala.short.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
-						
+
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-slf4j_${scala.short.version}</artifactId>
