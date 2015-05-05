@@ -14,7 +14,7 @@ Intel Analytics Toolkit (ATK)
 * doc-api-examples/ - examples of api usage for end user docs
 * engine/ - loads and executes plugins and provides the basic services that plugins need.
 * engine-interfaces/ - interfaces the Engine exposes to the REST server. (we should move plugin args/return values out of here)
-* giraph-plugins/ - a few graph algorithms that run on Giraph
+* giraph-plugins/ - a few algorithms that run on Giraph
 * graphbuilder - Titan graph construction and reading
 * graphon/ - some graph related plugins that run on Spark and GraphX
 * integration-tests/ - developer written, build time integration tests in python, these run against a minimal version of our product
