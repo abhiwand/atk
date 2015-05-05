@@ -52,6 +52,7 @@
                                     <artifact>org.apache.hive:hive-exec</artifact>
                                     <includes>
                                         <include>org/apache/hadoop/hive/**</include>
+                                        <include>org/apache/hive/**</include>
                                     </includes>
                                 </filter>
                                 <filter>
