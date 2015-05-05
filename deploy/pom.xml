@@ -44,6 +44,7 @@
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                     <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                     <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+                                    <exclude>org.apache.hive:*:jar:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
