@@ -164,14 +164,14 @@ object Archive extends ClassLoaderAware {
         FolderPath("development class files", root / archive / "target" / "classes"),
         FolderPath("development resource files", root / archive / "src" / "main" / "resources"),
         JarPath("development jar", root / archive / "target" / (archive + ".jar")),
-        FolderPath("giraph development class files", root / "igiraph" / archive.substring(1) / "target" / "classes"),
-        FolderPath("giraph development resource files", root / "igiraph" / archive.substring(1) / "src" / "main" / "resources"),
-        JarPath("giraph development jar", root / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")),
+        FolderPath("giraph development class files", root / "giraph-plugins" / archive.substring(1) / "target" / "classes"),
+        FolderPath("giraph development resource files", root / "giraph-plugins" / archive.substring(1) / "src" / "main" / "resources"),
+        JarPath("giraph development jar", root / "giraph-plugins" / archive.substring(1) / "target" / (archive + ".jar")),
         JarPath("yarn cluster mode", root / (archive + ".jar")), /* In yarn container mode, all jars are copied to root */
         JarPath("launcher", root / ".." / (archive + ".jar"))
       )
       archive match {
-        case "engine-spark" => baseSearchPath :+ JarPath("__spark__", root / "__spark__.jar")
+        case "engine" => baseSearchPath :+ JarPath("__spark__", root / "__spark__.jar")
         case _ => baseSearchPath
       }
     } ++ jarFolders.map(s => JarPath("deployed jar",

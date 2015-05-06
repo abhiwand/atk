@@ -113,7 +113,7 @@ Configuration details are discussed in the "Configuration" section below.
 Plugins have access to the configuration, but only the section of it that
 contains settings that are relevant.
 For example, the Loopy Belief Propagation plugin gets its configuration from
-'intel.analytics.igiraph-titan.command.graph.ml.loopy_belief_propagation.config'.
+'intel.analytics.giraph-plugins.command.graph.ml.loopy_belief_propagation.config'.
 Values that appear in this section are available to the plugin, and are passed
 to it during execution.
 The plugin does not have convenient access to other configuration parameters of
@@ -287,7 +287,7 @@ plugin registration and publishing.
 ``<parent>`` is also optional.
 If provided, this archive is treated as dependent on whatever archive is
 specified here.
-For example, SparkCommand plugins should use "engine-spark" for this entry, so
+For example, SparkCommand plugins should use "engine" for this entry, so
 that they have access to the same version of Spark the engine is using, as well
 as the SparkInvocation class.
 
@@ -300,7 +300,7 @@ It can be convenient to provide a vale for the config path because it leads to
 less nested config files.
 
 Here is a sample config file for an archive that provides a single plugin.
-Note that it relies on the engine-spark archive, and re-maps its configuration
+Note that it relies on the engine archive, and re-maps its configuration
 to "intel.graphon" rather than including the configuration in the
 intel.analytics.component.archives.graphon section.
 
@@ -310,7 +310,7 @@ sections to be pulled in so they're available to the plugin.
 
     intel.analytics.component.archives {
         graphon {
-            parent = "engine-spark"
+            parent = "engine"
             config-path = "intel.graphon"
         }
     }
