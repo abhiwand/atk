@@ -104,13 +104,13 @@ case class LdaConfig(inputFormatConfig: LdaInputFormatConfig,
 /**
  * JSON formats needed by Lda.
  */
-object LDAConfigJSONFormat {
+object LdaConfigJSONFormat {
   implicit val ldaInputFormatConfigFormat = jsonFormat2(LdaInputFormatConfig)
   implicit val ldaOutputFormatConfigFormat = jsonFormat2(LdaOutputFormatConfig)
   implicit val ldaConfigFormat = jsonFormat11(LdaConfig)
 }
 
-import LDAConfigJSONFormat._
+import LdaConfigJSONFormat._
 
 /**
  * Wrapper so that we can use simpler API for getting configuration settings.

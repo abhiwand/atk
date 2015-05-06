@@ -24,23 +24,36 @@
 package com.intel.ia.giraph.lp
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.domain.model.ModelReference
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
-case class LabelPropagationArgs(graph: GraphReference,
-                                vertexValuePropertyList: List[String],
-                                edgeValuePropertyList: List[String],
-                                inputEdgeLabelList: List[String],
-                                outputVertexPropertyList: List[String],
+case class LabelPropagationArgs(model: ModelReference,
+                                frame: FrameReference,
+                                sourceIdColumnName: String,
+                                destinationIdColumnName: String,
+                                edgeWeightColumnName: String,
+                                sourceIdLabelColumnName: String,
+                                destinationIdLabelColumnName: String,
                                 vectorValue: Boolean,
-                                maxSupersteps: Option[Int] = None,
+                                maxIterations: Option[Int] = None,
                                 convergenceThreshold: Option[Double] = None,
                                 anchorThreshold: Option[Double] = None,
                                 lpLambda: Option[Double] = None,
                                 validateGraphStructure: Option[Boolean] = None) {
-
+  
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
+  require(StringUtils.isNotBlank(sourceIdColumnName), "source column name property list is required")
+  require(StringUtils.isNotBlank(destinationIdColumnName), "destination column name property list is required")
+  require(StringUtils.isNotBlank(edgeWeightColumnName), "edge weight property list is required")
+  require(StringUtils.isNotBlank(sourceIdLabelColumnName), "source label column name property list is required")
+  require(StringUtils.isNotBlank(destinationIdLabelColumnName), "destination label column name property list is required")
+  require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
 }
 
 case class LabelPropagationResult(value: String) //TODO
@@ -48,6 +61,6 @@ case class LabelPropagationResult(value: String) //TODO
 /** Json conversion for arguments and return value case classes */
 object LabelPropagationJsonFormat {
 
-  implicit val argsFormat = jsonFormat11(LabelPropagationArgs)
+  implicit val argsFormat = jsonFormat13(LabelPropagationArgs)
   implicit val resultFormat = jsonFormat1(LabelPropagationResult)
 }
