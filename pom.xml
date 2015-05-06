@@ -137,9 +137,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
-    <modules>
-
-    </modules>
     <profiles>
         <profile>
             <id>events</id>
@@ -181,6 +178,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>graphon</module>
                 <module>engine-interfaces</module>
                 <module>launcher</module>
+                <module>scoring-models</module>
                 <module>meta-store</module>
                 <module>engine</module>
                 <module>rest-server</module>

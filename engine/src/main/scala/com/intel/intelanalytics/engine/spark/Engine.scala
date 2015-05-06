@@ -510,12 +510,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
    * @param name Model name
    */
   override def scoreModel(name: String, values: String): Future[Double] = future {
-    //    val splitObs: StringTokenizer = new StringTokenizer(values, ",")
-    //    var vector = Vector.empty[Double]
-    //    while (splitObs.hasMoreTokens) {
-    //      vector = vector :+ LibSvmPluginFunctions.atof(splitObs.nextToken)
-    //    }
-
     val vector = DataTypes.toVector(-1)(values)
     val model = models.getModelByName(Some(name))
     model match {
