@@ -98,10 +98,10 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
         val doubles = array.map(i => DataTypes.toDouble(i))
         val point = Vectors.dense(doubles)
         val prediction = linRegModel.predict(point)
-        row.addValue(DataTypes.toFloat(prediction))
+        row.addValue(DataTypes.toDouble(prediction))
       })
 
-      val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_value", DataTypes.float32)
+      val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_value", DataTypes.float64)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
       tryNew(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
