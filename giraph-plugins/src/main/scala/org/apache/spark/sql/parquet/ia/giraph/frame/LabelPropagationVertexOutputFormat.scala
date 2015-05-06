@@ -23,7 +23,7 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import com.intel.giraph.io.{VertexData4LPWritable, LabelPropagationVertexId}
+import com.intel.giraph.io.{ VertexData4LPWritable, LabelPropagationVertexId }
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import org.apache.giraph.io.VertexOutputFormat
 import org.apache.hadoop.mapreduce._
@@ -56,7 +56,4 @@ class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LabelPropaga
     new MultiOutputCommitter(List(docCommitter))
   }
 }
-
-
-
 
