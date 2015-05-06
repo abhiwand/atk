@@ -507,6 +507,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 </artifactSet>
                                 <filters>
                                     <filter>
+                                        <artifact>org.apache.spark:spark-core_2.10</artifact>
+                                        <excludes>
+                                            <exclude>com/google/common/base/**</exclude>
+                                        </excludes>
+                                    </filter>
+                                    <filter>
                                         <artifact>*:*</artifact>
                                         <excludes>
                                             <exclude>*.html</exclude>
@@ -687,6 +693,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>org.slf4j</artifactId>
+                        <groupId>slf4j-log4j12</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--STARTititan-->
             <dependency>
@@ -768,6 +780,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <exclusion>
                         <groupId>org.fusesource.jansi</groupId>
                         <artifactId>jansi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -893,13 +909,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>spark-core_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
                 <exclusions>
-										<exclusion>
-												<groupId>org.slf4j</groupId>
-												<artifactId>slf4j-log4j12</artifactId>
-										</exclusion>
+                    <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.objenesis</groupId>
                         <artifactId>objenesis</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
                     </exclusion>
 										<!--<exclusion>
                         <groupId>org.spark-project.akka</groupId>
@@ -957,6 +977,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.python</groupId>
+                        <artifactId>jython</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -974,6 +1002,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.python</groupId>
+                        <artifactId>jython</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -987,6 +1019,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-protocol</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.stephenc.findbugs</groupId>
+                        <artifactId>findbugs-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
