@@ -47,10 +47,10 @@ class ModelLinearRegressionTest(unittest.TestCase):
         model = ia.LinearRegressionModel(name='myLinearRegressionModel')
 
         print "Training the model on the Frame"
-        model.train(frame,'y',['1','2','3','4','5','6','7','8','9','10'])
+        model.train(frame,'y', ['1','2','3','4','5','6','7','8','9','10'])
 
-        #tput = model.predict(frame)
-        #self.assertEqual(output.column_names, ['y','1','2','3','4','5','6','7','8','9','10','predicted_value'])
+        output = model.predict(frame)
+        self.assertEqual(output.column_names, ['y','1','2','3','4','5','6','7','8','9','10','predicted_value'])
 
 
 if __name__ == "__main__":
