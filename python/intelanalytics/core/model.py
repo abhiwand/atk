@@ -28,26 +28,38 @@ Model
 import logging
 import json
 logger = logging.getLogger(__name__)
-from intelanalytics.meta.api import get_api_decorator
+from intelanalytics.meta.clientside import *
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import, get_entity_type_from_class_name
+from intelanalytics.core.errorhandle import IaError
+#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
+#from intelanalytics.meta.metaprog import doc_stubs_import, get_entity_type_from_class_name
+from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
 from intelanalytics.rest.iaserver import server
 
 # _BaseModel
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubs_BaseModel
-    doc_stubs_import.success(logger, "DocStubs_BaseModel")
+    from intelanalytics.core.docstubs1 import _DocStubs_BaseModel
+    doc_stubs_import.success(logger, "_DocStubs_BaseModel")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubs_BaseModel", e)
-    class DocStubs_BaseModel(object): pass
+    doc_stubs_import.failure(logger, "_DocStubs_BaseModel", e)
+    class _DocStubs_BaseModel(object): pass
+
+
+def x(beans):
+    """
+
+    :param beans:
+    :return:
+    """
 
 
 @api
 @name_support('model')
-class _BaseModel(DocStubs_BaseModel, CommandLoadable):
+class _BaseModel(_DocStubs_BaseModel, CommandLoadable):
     """
     Class with information about a model.
     Has information needed to modify data and table structure.
@@ -82,7 +94,7 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
     def __repr__(self):
         try:
             model_info = self._get_model_info()
-            return "\n".join([self.__class__.__name__, 'name =  "%s"' % (model_info.name)])
+            return "\n".join([self.__class__.__name__, 'name =  "%s"' % (model_info.name), "status = %s" % model_info.status])
         except:
             return super(_BaseModel,self).__repr__() + " (Unable to collect metadata from server)"
 
@@ -91,16 +103,16 @@ class _BaseModel(DocStubs_BaseModel, CommandLoadable):
             return False
         return self._id == other._id
 
-# LogisticRegressionModel
-# TODO - remove once metaprog can handle generating these models on the fly
-try:
-    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsLogisticRegressionModel
-    doc_stubs_import.success(logger, "DocStubsLogisticRegressionModel")
-except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsLogisticRegressionModel", e)
-    class DocStubsLogisticRegressionModel(object): pass
-
+# # LogisticRegressionModel
+# # TODO - remove once metaprog can handle generating these models on the fly
+# try:
+#     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+#     from intelanalytics.core.docstubs1 import _DocStubsLogisticRegressionModel
+#     doc_stubs_import.success(logger, "DocStubsLogisticRegressionModel")
+# except Exception as e:
+#     doc_stubs_import.failure(logger, "DocStubsLogisticRegressionModel", e)
+#     class DocStubsLogisticRegressionModel(object): pass
+#
 
 # @api
 # #@name_support('model')
@@ -207,6 +219,10 @@ class ModelInfo(object):
     @property
     def links(self):
         return self._links['links']
+
+    @property
+    def status(self):
+        return self._payload['status']
 
     def initialize_model(self, model):
         model._id = self.id_number

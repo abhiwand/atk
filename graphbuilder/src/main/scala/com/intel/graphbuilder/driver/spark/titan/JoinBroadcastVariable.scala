@@ -41,7 +41,7 @@ import scala.collection.mutable.Map
  */
 case class JoinBroadcastVariable[K, V](rdd: RDD[(K, V)]) {
   import JoinBroadcastVariable._
-  //TODO: Create a base class for broadcast join variables to avoid code duplication once we move graphbuilder module to engine-spark
+  //TODO: Create a base class for broadcast join variables to avoid code duplication once we move graphbuilder module to engine
   require(rdd != null, "RDD should not be null")
 
   // Represented as a sequence of multi-maps to support broadcast variables larger than 2GB

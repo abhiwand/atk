@@ -91,11 +91,11 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine-spark</artifactId>
+            <artifactId>engine</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>igiraph-titan</artifactId>
+            <artifactId>giraph-plugins</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

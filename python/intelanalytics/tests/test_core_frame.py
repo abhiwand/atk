@@ -59,13 +59,13 @@ class FrameConstruction(unittest.TestCase):
             self.assertNotEqual(None,frame[i])
 
 
-    @patch("intelanalytics.core.frame.check_api_is_loaded", Mock())
+    '''
+    @patch("intelanalytics.core.frame.api_status.verify_installed", Mock())
     def test_create(self, get_frame_backend):
         f = Frame()
         self.assertEqual(0, f._id)
         self.assertEqual(None, f._error_frame_id)
 
-    '''
 
     def test_create_from_csv(self, get_frame_backend):
         f = Frame(CsvFile("dummy.csv", [('A', int32), ('B', int64)]))

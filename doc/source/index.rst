@@ -7,8 +7,9 @@ Intel Analytics Toolkit
 
     ia_over
     ds_over
-    ds_apic
+    #ds_apic
     ad_over
+    python_api/index
 
 ==========
 References

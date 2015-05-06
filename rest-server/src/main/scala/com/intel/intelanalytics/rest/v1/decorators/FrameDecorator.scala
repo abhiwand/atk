@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.rest.v1.decorators
 
+import com.intel.intelanalytics.domain.Status
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.rest.v1.viewmodels.{ Rel, RelLink, GetDataFrame, GetDataFrames }
 import spray.http.Uri
@@ -61,7 +62,8 @@ object FrameDecorator extends EntityDecorator[FrameEntity, GetDataFrames, GetDat
       rowCount = entity.rowCount,
       links,
       entity.errorFrameId,
-      entity.entityType)
+      entity.entityType,
+      Status.getName(entity.status))
   }
 
   def decorateEntities(uri: String, additionalLinks: Iterable[RelLink] = Nil, entities: Seq[FrameEntity]): List[GetDataFrame] = {

@@ -39,7 +39,7 @@ pig_*.log
 /python/intelanalytics/connections.py*
 /python/intelanalytics/core/autoframe.py
 /python/intelanalytics/core/autograph.py
-/python/intelanalytics/core/docstubs.py*
+/python/intelanalytics/core/docstubs*.py*
 /python/nosetests.xml
 scratch.py
 sdhu.xml

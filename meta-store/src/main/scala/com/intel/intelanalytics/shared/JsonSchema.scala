@@ -25,17 +25,21 @@ package com.intel.intelanalytics.shared
 
 import java.net.URI
 
-import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.event.{ EventContext, EventLogging }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.PluginDocAnnotation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, PluginDoc }
 import com.intel.intelanalytics.schema._
 import spray.json.{ AdditionalFormats, StandardFormats }
 import com.intel.intelanalytics.spray.json.{ JsonPropertyNameConverter, CustomProductFormats }
 import org.joda.time.DateTime
-import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.reflect.ClassTag
 import com.intel.intelanalytics.domain.model.ModelReference
+
+import scala.util.{ Try, Success, Failure }
 
 /**
  * Helper to allow access to spray-json utility so that we can ensure we're
@@ -55,12 +59,20 @@ private[intelanalytics] class ProductFormatsAccessor extends CustomProductFormat
  */
 private[intelanalytics] object JsonSchemaExtractor {
 
+  def getArgumentsSchema[T](tag: ClassTag[T]): ObjectSchema = {
+    getProductSchema(tag, includeDefaultValues = true)
+  }
+
+  def getReturnSchema[T](tag: ClassTag[T]): ObjectSchema = {
+    getProductSchema(tag, includeDefaultValues = false)
+  }
+
   /**
    * Entry point for generating schema information for a case class
    * @param tag extended type information for the given type
    * @tparam T the type for which to generate a JSON schema
    */
-  def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
+  def getProductSchema[T](tag: ClassTag[T], includeDefaultValues: Boolean = false): ObjectSchema = {
     // double check that Spray serialization will work
     val manifest: ClassManifest[T] = tag
 
@@ -70,16 +82,119 @@ private[intelanalytics] object JsonSchemaExtractor {
     val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
     val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
     val members: Array[ru.Symbol] = typ.members.filter(m => !m.isMethod).toArray.reverse
-    val func = getFieldSchema(typ)(_, _)
+    val func = getFieldSchema(typ)(_, _, _, _)
     val ordered = Array.tabulate(members.length) { i => (members(i), i) }
+    val defaultValues = if (includeDefaultValues) { getDefaultValuesForClass(tag) } else { List() }
     val propertyInfo = ordered.map({
-      case (sym, i) => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> func(sym, i)
+      case (sym, i) =>
+        val annotationArgValues: Option[List[Any]] = sym.annotations.find(a => a.tpe <:< ru.typeOf[ArgDoc]) match {
+          case Some(argDocAnnotation) =>
+            Some(argDocAnnotation.scalaArgs.map(annotationArg => annotationArg.productElement(0)))
+          case _ => None
+        }
+        val description: Option[String] = annotationArgValues match {
+          case Some(argValues) =>
+            argValues(0) match {
+              case Constant(s: String) => Some(s)
+              case _ => throw new RuntimeException("Internal Error - bad Argument description annotation type (expected String)")
+            }
+          case _ => None
+        }
+
+        val tryDefaultValue: Option[Any] = defaultValues.lift(i) match { // see if default value is available
+          case None => None
+          case Some(null) => None
+          case Some(x) => Some(x)
+        }
+        val optional = tryDefaultValue.isDefined // capture the fact that value was or wasn't available
+        val defaultValue: Option[Any] = tryDefaultValue match {
+          case None => None
+          case Some(value) => value match {
+            case None => None
+            case Some(x) => Some(x)
+            case y => Some(y)
+          }
+        }
+        //JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> (func(sym, i, description, defaultValue), optional)
+        val (name, (schema, isTypeOption)) = JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> func(sym, i, description, defaultValue)
+        if (isTypeOption && !optional) {
+          println(s"WARNING - Argument ${sym.name} in $typ is type Option with no default value")
+        }
+        (name, (schema, isTypeOption))
     })
+
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
-    ObjectSchema(properties = Some(properties),
-      required = Some(required),
-      order = Some(members.map(sym => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded))))
+    Try {
+      ObjectSchema(properties = Some(properties),
+        required = Some(required),
+        order = Some(members.map(sym => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded))))
+    } match {
+      case Success(schema) => schema
+      case Failure(ex) => throw new RuntimeException(s"Problem generating object schema for $tag: $ex")
+    }
+  }
+
+  def getPluginDocAnnotation(tag: ClassTag[_]): Option[PluginDoc] = {
+    val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
+    val sym: ru.Symbol = mirror.classSymbol(tag.runtimeClass)
+    val annotationArgValues: Option[List[Any]] = sym.annotations.find(a => a.tpe <:< ru.typeOf[PluginDoc]) match {
+      case Some(argDocAnnotation) =>
+        Some(argDocAnnotation.scalaArgs.map(annotationArg => annotationArg.productElement(0)))
+      case _ => None
+    }
+    annotationArgValues match {
+      case Some(argValues) =>
+        val oneLine: String = argValues(0) match {
+          case Constant(s: String) => s
+          case _ => throw new RuntimeException("Internal Error - bad oneLine description in annotation (expected String)")
+        }
+        val extended: String = argValues(1) match {
+          case Constant(s: String) => s
+          case _ => throw new RuntimeException("Internal Error - bad extended description in annotation (expected String)")
+        }
+        val returns: String = argValues(2) match {
+          case Constant(s: String) => s
+          case _ => ""
+        }
+        Some(PluginDocAnnotation(oneLine, extended, returns))
+      case _ => None
+    }
+  }
+
+  /**
+   * Get the default values for a class
+   * (adapted from http://stackoverflow.com/questions/14034142/how-do-i-access-default-parameter-values-via-scala-reflection)
+   * @param tag class's ClassTag
+   * @return list of values.  By convention, null means no default found
+   */
+  def getDefaultValuesForClass(tag: ClassTag[_]): List[Any] = {
+    val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
+    val sym: ru.Symbol = mirror.classSymbol(tag.runtimeClass)
+    val module = sym.companionSymbol.asModule
+    val im: InstanceMirror = mirror.reflect(mirror.reflectModule(module).instance)
+    getDefaultValuesForMethod(im, "apply") // the "apply" method of the case class provides the right signature
+  }
+
+  /**
+   * Helper method, obtains default values from an instance mirror and method name
+   * @param im module instance mirror
+   * @param methodName name of method
+   * @return list of values.  By convention, null means no default found
+   */
+  private def getDefaultValuesForMethod(im: InstanceMirror, methodName: String): List[Any] = {
+    val ts = im.symbol.typeSignature
+    val method = ts.member(newTermName(methodName)).asMethod
+
+    // if method for obtaining a default is found, call it and return the value, else return null
+    def valueFor(p: Symbol, i: Int): Any = {
+      val defaultValueMethodName = s"$methodName$$default$$${i + 1}"
+      ts.member(newTermName(defaultValueMethodName)) match {
+        case NoSymbol => null
+        case defaultValueSymbol => im.reflectMethod(defaultValueSymbol.asMethod)()
+      }
+    }
+    (for (ps <- method.paramss; p <- ps) yield p).zipWithIndex.map(p => valueFor(p._1, p._2))
   }
 
   /**
@@ -90,9 +205,9 @@ private[intelanalytics] object JsonSchemaExtractor {
    * @param order the numeric (0 based) order of this field in the class
    * @return a pair containing the schema, plus a flag indicating if the field is optional or not
    */
-  private def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int): (JsonSchema, Boolean) = {
+  private def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int, description: Option[String] = None, defaultValue: Option[Any] = None): (JsonSchema, Boolean) = { //JsonSchema = { //}, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
-    val schema = getSchemaForType(typeSignature, order)
+    val schema = getSchemaForType(typeSignature, order, description, defaultValue)
     schema
   }
 
@@ -106,15 +221,22 @@ private[intelanalytics] object JsonSchemaExtractor {
    * @param order the numeric order of the field within its containing class
    * @return
    */
-  def getSchemaForType(typeSignature: ru.Type, order: Int): (JsonSchema, Boolean) = {
+  def getSchemaForType(typeSignature: ru.Type, order: Int, description: Option[String] = None, defaultValue: Option[Any]): (JsonSchema, Boolean) = { // JsonSchema = { //}, Boolean) = {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
-      case t if t =:= typeTag[String].tpe => StringSchema()
-      case t if t =:= typeTag[Int].tpe => JsonSchema.int
-      case t if t =:= typeTag[Long].tpe => JsonSchema.long
+      case t if t =:= typeTag[String].tpe => StringSchema(description = description)
+      case t if t =:= typeTag[Int].tpe => JsonSchema.verbose_int(description = description, defaultValue = defaultValue)
+      case t if t =:= typeTag[Long].tpe => JsonSchema.verbose_long(description = description, defaultValue = defaultValue)
+      // TODO: noticed floating-point types are missing - blbarker 2/25/15
       case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
       case t if t =:= typeTag[FrameReference].tpe =>
-        val s = JsonSchema.frame
+        val s = JsonSchema.verbose_frame(description, defaultValue)
+        if (order == 0) {
+          s.copy(self = Some(true))
+        }
+        else s
+      case t if t =:= typeTag[FrameEntity].tpe =>
+        val s = JsonSchema.verbose_frame(description, defaultValue)
         if (order == 0) {
           s.copy(self = Some(true))
         }
@@ -132,7 +254,7 @@ private[intelanalytics] object JsonSchemaExtractor {
         }
         else s
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
-        val (subSchema, _) = getSchemaForType(t.asInstanceOf[TypeRefApi].args.head, order)
+        val (subSchema, _) = getSchemaForType(t.asInstanceOf[TypeRefApi].args.head, order, description, defaultValue)
         subSchema
       //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
@@ -143,6 +265,8 @@ private[intelanalytics] object JsonSchemaExtractor {
       case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
       case t => JsonSchema.empty
     }
-    (schema, typeSignature.erasure =:= typeTag[Option[Any]].tpe)
+    //schema
+    val isTypeOption = typeSignature.erasure =:= typeTag[Option[Any]].tpe
+    (schema, isTypeOption) // TODO: optional is determined by using Option type, instead of if default is provided.  Need to switch this!
   }
 }

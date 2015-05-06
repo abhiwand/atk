@@ -25,17 +25,18 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context
+#from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context, swallow_for_api
+from intelanalytics.meta.context import api_context
+from intelanalytics.meta.clientside import * #get_api_decorator, Doc, ArgDoc, ReturnDoc #, check_api_is_loaded, api_context, swallow_for_api
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.udf import has_python_user_function_arg
+from intelanalytics.core.api import api_status
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
-
-#from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
+from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
 
 
 def _get_backend():
@@ -47,46 +48,49 @@ __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_
 # BaseFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubs_BaseFrame
-    doc_stubs_import.success(logger, "DocStubsBaseFrame")
+    from intelanalytics.core.docstubs1 import _DocStubs_BaseFrame
+    doc_stubs_import.success(logger, "_DocStubsBaseFrame")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsBaseFrame", e)
-    class DocStubs_BaseFrame(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsBaseFrame", e)
+    class _DocStubs_BaseFrame(object): pass
 
 
 # Frame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsFrame
-    doc_stubs_import.success(logger, "DocStubsFrame")
+    from intelanalytics.core.docstubs1 import _DocStubsFrame
+    doc_stubs_import.success(logger, "_DocStubsFrame")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsFrame", e)
-    class DocStubsFrame(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsFrame", e)
+    class _DocStubsFrame(object): pass
 
+
+def get_frame_man(name):
+    return Frame(name)
 
 # VertexFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsVertexFrame
-    doc_stubs_import.success(logger, "DocStubsVertexFrame")
+    from intelanalytics.core.docstubs1 import _DocStubsVertexFrame
+    doc_stubs_import.success(logger, "_DocStubsVertexFrame")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsVertexFrame", e)
-    class DocStubsVertexFrame(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsVertexFrame", e)
+    class _DocStubsVertexFrame(object): pass
 
 
 # EdgeFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from intelanalytics.core.docstubs import DocStubsEdgeFrame
-    doc_stubs_import.success(logger, "DocStubsEdgeFrame")
+    from intelanalytics.core.docstubs1 import _DocStubsEdgeFrame
+    doc_stubs_import.success(logger, "_DocStubsEdgeFrame")
 except Exception as e:
-    doc_stubs_import.failure(logger, "DocStubsEdgeFrame", e)
-    class DocStubsEdgeFrame(object): pass
+    doc_stubs_import.failure(logger, "_DocStubsEdgeFrame", e)
+    class _DocStubsEdgeFrame(object): pass
 
 
 @api
 @name_support('frame')
-class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
+class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     _entity_type = 'frame'
 
     def __init__(self):
@@ -302,7 +306,6 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         Returns
         -------
         list : list of tuples
-
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
@@ -321,6 +324,41 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
         """
         return self._backend.get_schema(self)
+
+
+    @property
+    @api
+    def status(self):
+        """
+        Current frame life cycle status.
+
+        One of three statuses: Active, Deleted, Deleted_Final
+           Active:   Frame is available for use
+           Deleted:  Frame has been scheduled for deletion can be unscheduled by modifying
+           Deleted_Final: Frame's backend files have been removed from disk.
+
+        Returns
+        -------
+        status : descriptive text of current life cycle status
+
+        Examples
+        --------
+        Given that we have an existing data frame *my_data*, create a Frame,
+        then show the frame schema:
+
+        .. code::
+
+            >>> BF = ia.get_frame('my_data')
+            >>> print BF.status
+
+        The result is:
+
+        .. code::
+
+            u'Active'
+        """
+        return self._backend.get_status(self)
+
 
     @api
     @has_python_user_function_arg
@@ -541,32 +579,17 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_row_count(self, where)
 
+    @api
+    @arg('count', int, 'The number of rows to download to the client')
+    @arg('offset', int, 'The number of rows to skip before copying')
+    @arg('columns', list, 'Column filter, the names of columns to be included (default is all columns)')
+    @returns('pandas.DataFrame', 'A new pandas dataframe object containing the downloaded frame data' )
     def download(self, count=100, offset=0, columns=None):
         """
         Download a frame from the server into client workspace.
 
         Copies an intelanalytics Frame into a Pandas DataFrame.
 
-        Parameters
-        ----------
-        count : int (optional)
-            The number of rows to copy from the currently active intelanalytics
-            Frame.
-            Default is 100.
-
-        offset : int (optional)
-            The number of rows to skip before copying.
-            Default is 0.
-
-        columns : str or iterable of str (optional)
-            The columns to be included in the result.
-            Default is all.
-
-        Returns
-        -------
-        Pandas Data Frame
-            A new pandas data frame object containing copies of all or subset
-            of the original frame.
 
         Examples
         --------
@@ -591,11 +614,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         the original frame.
 
         """
-        import pandas as pd
+        try:
+            import pandas
+        except:
+            raise RuntimeError("pandas module not found, unable to download.  Install pandas or try the take command.")
         result = self._backend.take(self, count, offset, columns)
         headers, data_types = zip(*result.schema)
 
-        pandas_df = pd.DataFrame(result.data, columns=headers)
+        pandas_df = pandas.DataFrame(result.data, columns=headers)
 
         for i, dtype in enumerate(data_types):
             dtype_str = valid_data_types.to_string(dtype) if valid_data_types.is_primitive_type(dtype) else "object"
@@ -690,33 +716,20 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
 
+
     @api
+    @beta
+    @arg('group_by_columns', list, 'Column name or list of column names')
+    @arg('aggregation_arguments', dict, """Aggregation function based on entire row, and/or dictionaries (one or more) of { column name str : aggregation function(s) }.""")
     def group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
-
-        |BETA|
 
         Creates a new frame and returns a Frame object to access it.
         Takes a column or group of columns, finds the unique combination of
         values, and creates unique rows with these column values.
         The other columns are combined according to the aggregation
         argument(s).
-
-        Parameters
-        ----------
-        group_by_columns : [ str | list of str ]
-            Column name or list of column names.
-
-        aggregation_arguments
-            Aggregation function based on entire row, and/or
-            dictionaries (one or more) of { column name str : aggregation
-            function(s) }.
-
-        Returns
-        -------
-        Frame : frame reference
-            A new object accessing a new aggregated frame.
 
         Notes
         -----
@@ -854,28 +867,12 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
 
     @api
+    @arg('n', int, 'The number of rows to print.')
+    @arg('offset', int, 'The number of rows to skip before printing.')
+    @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
     def inspect(self, n=10, offset=0, columns=None):
         """
-        Print the frame data in readable format.
-
-        Parameters
-        ----------
-        n : int (optional)
-            The number of rows to print.
-            Default is 10.
-
-        offset : int (optional)
-            The number of rows to skip before printing.
-            Default is 0.
-
-        columns : [ str | iterable of str ] (optional)
-            Specify the columns to be included in the result.
-            Default is all.
-
-        Returns
-        -------
-        data
-            Formatted for ease of human inspection.
+        Prints the frame data in readable format.
 
         Examples
         --------
@@ -1179,9 +1176,14 @@ class _BaseFrame(DocStubs_BaseFrame, CommandLoadable):
 
 
 @api
-class Frame(DocStubsFrame, _BaseFrame):
+class Frame(_DocStubsFrame, _BaseFrame):
     """
-    Data handle.
+    Large table of data.
+    """
+    @api
+    def __init__(self, source=None, name=None, _info=None):
+        """
+    # For other examples, see :ref:`example_frame.bigframe`.
 
     Class with information about a large row and columnar data store in a
     frame,
@@ -1196,10 +1198,6 @@ class Frame(DocStubsFrame, _BaseFrame):
         The name of the newly created frame.
         Default is None.
 
-    Returns
-    -------
-    class | Frame object
-        An object with access to the frame.
 
     Notes
     -----
@@ -1242,16 +1240,14 @@ class Frame(DocStubsFrame, _BaseFrame):
     A frame has been created and Frame *your_frame* is its proxy.
     It has no data yet, but it does have the name *yourframe*.
 
-    """
 
-    _entity_type = 'frame:'
-
-    def __init__(self, source=None, name=None, _info=None):
+        .. versionadded:: 0.8
+        """
         self._error_frame_id = None
         self._id = 0
         self._ia_uri = None
         with api_context(logger, 3, self.__init__, self, source, name, _info):
-            check_api_is_loaded()
+            api_status.verify_installed()
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             _BaseFrame.__init__(self)
@@ -1330,7 +1326,7 @@ class Frame(DocStubsFrame, _BaseFrame):
 
 
 @api
-class VertexFrame(DocStubsVertexFrame, _BaseFrame):
+class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
     """
     A list of Vertices owned by a Graph..
 
@@ -1353,6 +1349,17 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     -   "Columns" on a VertexFrame can also be thought of as "properties" on
         vertices
 
+
+    """
+    # For other examples, see :ref:`example_frame.frame`.
+
+    # TODO - Review Parameters, Examples
+
+    _entity_type = 'frame:vertex'
+
+    @api
+    def __init__(self, source=None, graph=None, label=None, _info=None):
+        """
     Parameters
     ----------
     source : ? (optional)
@@ -1415,17 +1422,9 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
     .. code::
 
         >>> new_Frame = my_vertex_frame.vertices["label"].copy()
-
-    """
-    # For other examples, see :ref:`example_frame.frame`.
-
-    # TODO - Review Parameters, Examples
-
-    _entity_type = 'frame:vertex'
-
-    def __init__(self, source=None, graph=None, label=None, _info=None):
+        """
         try:
-            check_api_is_loaded()
+            api_status.verify_installed()
             self._error_frame_id = None
             self._id = 0
             self._ia_uri = None
@@ -1480,7 +1479,7 @@ class VertexFrame(DocStubsVertexFrame, _BaseFrame):
 
 
 @api
-class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
+class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
     """
     A list of Edges owned by a Graph.
 
@@ -1499,7 +1498,13 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
         be modified by the user
     -   "Columns" on an EdgeFrame can also be thought of as "properties" on
         Edges
+    """
 
+    _entity_type = 'frame:edge'
+
+    @api
+    def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None, _info=None):
+        """
     Parameters
     ----------
     source : ? (optional)
@@ -1578,14 +1583,9 @@ class EdgeFrame(DocStubsEdgeFrame, _BaseFrame):
     .. code::
 
         >>> my_new_frame = my_new_edge_frame.copy()
-
-    """
-
-    _entity_type = 'frame:edge'
-
-    def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None, _info=None):
+        """
         try:
-            check_api_is_loaded()
+            api_status.verify_installed()
             self._error_frame_id = None
             self._id = 0
             self._ia_uri = None

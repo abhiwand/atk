@@ -144,13 +144,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>events</id>
             <activation>
-		<activeByDefault>true</activeByDefault>
-               <property>
-                    <name>!NEVERSETME</name>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-		<module>misc/event-api</module>
+                <module>misc/event-api</module>
                 <module>misc/event</module>
             </modules>
         </profile>
@@ -163,10 +163,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
+                <module>giraph-plugins</module>
             </modules>
         </profile>
         <profile>
@@ -178,20 +175,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <module>api-doc</module>
+                <module>doc-api-examples</module>
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>
-                <module>interfaces</module>
+                <module>engine-interfaces</module>
                 <module>launcher</module>
                 <module>meta-store</module>
                 <module>engine</module>
-                <module>engine-spark</module>
                 <module>rest-server</module>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
+                <module>giraph-plugins</module>
                 <module>deploy</module>
                 <module>package</module>
             </modules>
@@ -395,6 +388,69 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </plugins>
             </reporting>
         </profile>
+        <profile>
+            <id>devonly</id>
+            <activation>
+                <property>
+                    <name>!env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.scalariform</groupId>
+                            <artifactId>scalariform-maven-plugin</artifactId>
+                            <version>0.1.4</version>
+                            <executions>
+                                <execution>
+                                    <phase>process-sources</phase>
+                                    <goals>
+                                        <goal>format</goal>
+                                    </goals>
+                                    <configuration>
+                                        <alignParameters>true</alignParameters>
+                                        <compactControlReadability>true</compactControlReadability>
+                                        <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-checkstyle-plugin</artifactId>
+                            <version>2.10</version>
+                            <configuration>
+                                <configLocation>checkstyle.xml</configLocation>
+                                <consoleOutput>true</consoleOutput>
+                                <enableRulesSummary>false</enableRulesSummary>
+                                <headerLocation>license-header.txt</headerLocation>
+                                <failOnViolation>false</failOnViolation>
+                                <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>check</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.scalariform</groupId>
+                        <artifactId>scalariform-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <build>
         <pluginManagement>
@@ -423,27 +479,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <source>1.7</source>
                         <target>1.7</target>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.10</version>
-                    <configuration>
-                        <configLocation>checkstyle.xml</configLocation>
-                        <consoleOutput>true</consoleOutput>
-                        <enableRulesSummary>false</enableRulesSummary>
-                        <headerLocation>license-header.txt</headerLocation>
-                        <failOnViolation>false</failOnViolation>
-                        <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <!--Create our jars-->
@@ -533,24 +568,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.scalariform</groupId>
-                    <artifactId>scalariform-maven-plugin</artifactId>
-                    <version>0.1.4</version>
-                    <executions>
-                        <execution>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>format</goal>
-                            </goals>
-                            <configuration>
-                                <alignParameters>true</alignParameters>
-                                <compactControlReadability>true</compactControlReadability>
-                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+
             </plugins>
         </pluginManagement>
 
@@ -560,21 +578,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalariform</groupId>
-                <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>
-
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -639,7 +642,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>interfaces</artifactId>
+                <artifactId>engine-interfaces</artifactId>
                 <version>${project.version}</version>
                 <!-- <scope>provided</scope> -->
             </dependency>
@@ -661,7 +664,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>api-doc</artifactId>
+                <artifactId>doc-api-examples</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -671,27 +674,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine-spark</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-algorithms</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-titan</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph</artifactId>
+                <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--STARTititan-->
@@ -1200,7 +1183,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>akka-actor_${scala.short.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
-						
+
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-slf4j_${scala.short.version}</artifactId>
