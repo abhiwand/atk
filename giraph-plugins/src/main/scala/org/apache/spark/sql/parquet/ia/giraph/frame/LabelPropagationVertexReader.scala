@@ -1,17 +1,17 @@
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import com.intel.giraph.io.{LabelPropagationVertexId, VertexData4LPWritable}
+import com.intel.giraph.io.{ LabelPropagationVertexId, VertexData4LPWritable }
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.graph.Vertex
-import org.apache.giraph.io.{VertexReader}
-import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
+import org.apache.giraph.io.{ VertexReader }
+import org.apache.hadoop.mapreduce.{ InputSplit, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
-import org.apache.spark.sql.parquet.{RowReadSupport}
-import parquet.hadoop.{ParquetRecordReader, ParquetInputFormat}
+import org.apache.spark.sql.parquet.{ RowReadSupport }
+import parquet.hadoop.{ ParquetRecordReader, ParquetInputFormat }
 
-class LabelPropagationVertexReader(conf: LabelPropagationConfiguration, vertexInputFormat:ParquetInputFormat[Row])
-  extends VertexReader[LabelPropagationVertexId, VertexData4LPWritable, Nothing] {
+class LabelPropagationVertexReader(conf: LabelPropagationConfiguration, vertexInputFormat: ParquetInputFormat[Row])
+    extends VertexReader[LabelPropagationVertexId, VertexData4LPWritable, Nothing] {
 
   private val config = conf.labelPropagationConfig
   private val reader = new ParquetRecordReader[Row](new RowReadSupport)
@@ -42,7 +42,7 @@ class LabelPropagationVertexReader(conf: LabelPropagationConfiguration, vertexIn
       val vertex = this.getConf().createVertex()
 
       //TODO - what is the value to initialize with?
-      vertex.initialize(sourceId,null)
+      vertex.initialize(sourceId, null)
       return vertex
     }
     else {

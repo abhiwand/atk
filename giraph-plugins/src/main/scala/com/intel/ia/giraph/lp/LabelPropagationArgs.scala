@@ -45,7 +45,7 @@ case class LabelPropagationArgs(model: ModelReference,
                                 anchorThreshold: Option[Double] = None,
                                 lpLambda: Option[Double] = None,
                                 validateGraphStructure: Option[Boolean] = None) {
-  
+
   require(model != null, "model is required")
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(sourceIdColumnName), "source column name property list is required")
