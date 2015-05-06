@@ -23,8 +23,6 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import java.util
-
 import com.intel.giraph.io.{ LabelPropagationEdgeData, LabelPropagationVertexId }
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
@@ -55,9 +53,10 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LabelPropagationVe
     new ReverseEdgeDuplicator(edgeReader)
   }
 
-  override def getSplits(context: JobContext, minSplitCountHint: Int): util.List[InputSplit] = {
-    val path: String = new LabelPropagationConfiguration(context.getConfiguration).labelPropagationConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(context.getConfiguration)
+  override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
+    val conf = context.getConfiguration
+    val path: String = new LabelPropagationConfiguration(conf).getConfig.inputFormatConfig.parquetFileLocation
+    val fs: FileSystem = FileSystem.get(conf)
 
     val statuses = if (fs.isDirectory(new Path(path))) {
       fs.globStatus(new Path(path + "/*.parquet"))
@@ -67,14 +66,14 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LabelPropagationVe
     }
     val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
 
-    parquetInputFormat.getSplits(context.getConfiguration, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(conf, footers).asInstanceOf[java.util.List[InputSplit]]
   }
 }
 
 class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
     extends EdgeReader[LabelPropagationVertexId, LabelPropagationEdgeData] {
 
-  private val conf = config.labelPropagationConfig
+  private val conf = config.getConfig
   private val reader = new ParquetRecordReader[Row](new RowReadSupport)
   private val row = new RowWrapper(conf.inputFormatConfig.frameSchema)
 
@@ -103,7 +102,7 @@ class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
       row.apply(reader.getCurrentValue)
 
       val sourceId = new LabelPropagationVertexId(row.stringValue(conf.sourceIdColumnName))
-      val destId = new LabelPropagationVertexId(row.stringValue(conf.sourceIdColumnName))
+      val destId = new LabelPropagationVertexId(row.stringValue(conf.destinationIdColumnName))
       val edgeWeight = new LabelPropagationEdgeData(row.stringValue(conf.edgeWeightColumnName).toDouble)
 
       currentSourceId = sourceId

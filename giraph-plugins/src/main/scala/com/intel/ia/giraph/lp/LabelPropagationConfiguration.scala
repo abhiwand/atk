@@ -24,7 +24,6 @@
 package com.intel.ia.giraph.lp
 
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.model.ModelReference
 import com.intel.intelanalytics.domain.schema.Schema
 import org.apache.commons.lang3.StringUtils
@@ -32,7 +31,6 @@ import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.hadoop.conf.Configuration
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import LabelPropagationJsonFormat._
 
 /**
  * Config for Input
@@ -62,7 +60,6 @@ case class LabelPropagationOutputFormatConfig(parquetFileLocation: String) {
  * @param destinationIdColumnName
  * @param edgeWeightColumnName
  * @param sourceIdLabelColumnName
- * @param destinationIdLabelColumnName
  * @param vectorValue
  * @param maxSupersteps
  * @param convergenceThreshold
@@ -78,7 +75,6 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
                                   destinationIdColumnName: String,
                                   edgeWeightColumnName: String,
                                   sourceIdLabelColumnName: String,
-                                  destinationIdLabelColumnName: String,
                                   vectorValue: Boolean,
                                   maxSupersteps: Option[Int] = None,
                                   convergenceThreshold: Option[Double] = None,
@@ -97,7 +93,6 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
       args.destinationIdColumnName,
       args.edgeWeightColumnName,
       args.sourceIdLabelColumnName,
-      args.destinationIdLabelColumnName,
       args.vectorValue,
       args.maxIterations)
   }
@@ -111,7 +106,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
 object LabelPropagationConfigJSONFormat {
   implicit val inputFormatConfigFormat = jsonFormat2(LabelPropagationInputFormatConfig)
   implicit val outputFormatConfigFormat = jsonFormat1(LabelPropagationOutputFormatConfig)
-  implicit val configFormat = jsonFormat15(LabelPropagationConfig)
+  implicit val configFormat = jsonFormat14(LabelPropagationConfig)
 }
 
 import LabelPropagationConfigJSONFormat._
@@ -135,7 +130,7 @@ class LabelPropagationConfiguration(other: Configuration) extends GiraphConfigur
     require(get(ConfigPropertyName) != null, "labelPropagation.config property was not set in the Configuration")
   }
 
-  def labelPropagationConfig: LabelPropagationConfig = {
+  def getConfig: LabelPropagationConfig = {
     JsonParser(get(ConfigPropertyName)).asJsObject.convertTo[LabelPropagationConfig]
   }
 
