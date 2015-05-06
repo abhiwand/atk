@@ -26,10 +26,14 @@ package com.intel.intelanalytics.algorithm.graph
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation.{ LabelPropagationMasterCompute, LabelPropagationAggregatorWriter }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LP, TitanVertexInputFormatPropertyGraph4LP }
-import com.intel.ia.giraph.lp.{ LabelPropagationJsonFormat, LabelPropagationArgs, LabelPropagationResult }
+import com.intel.ia.giraph.lda.v2.{LdaConfig, LdaOutputFormatConfig, LdaInputFormatConfig, LdaConfiguration}
+import com.intel.ia.giraph.lp._
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
+import org.apache.spark.sql.parquet.ia.giraph.frame._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import LabelPropagationJsonFormat._
@@ -45,37 +49,47 @@ class LabelPropagationPlugin
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph/label_propagation"
+  override def name: String = "model:label_propagation"
 
   override def execute(arguments: LabelPropagationArgs)(implicit context: Invocation): LabelPropagationResult = {
 
+    val frames = engine.frames
     val config = configuration
-    val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
 
-    val graphFuture = engine.getGraph(arguments.graph.id)
-    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    //TODO validate frame args here
+    val frame = frames.expectFrame(arguments.frame)
+    require(frame.isParquet, "frame must be stored as parquet file, or support for new input format is needed")
 
-    //    These parameters are set from the arguments passed in, or defaulted from
-    //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lp.maxSupersteps", arguments.maxSupersteps)
-    GiraphConfigurationUtil.set(hConf, "lp.convergenceThreshold", arguments.convergenceThreshold)
-    GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchorThreshold)
-    GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.validateGraphStructure)
+    // setup and run
+    val hadoopConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
+    val giraphConf = new LabelPropagationConfiguration(hadoopConf)
 
-    GiraphConfigurationUtil.set(hConf, "giraphjob.maxSteps", arguments.maxSupersteps)
+//    GiraphConfigurationUtil.set(hadoopConf, "lp.maxSupersteps", arguments.maxIterations)
+//    GiraphConfigurationUtil.set(hadoopConf, "lp.convergenceThreshold", arguments.convergenceThreshold)
+//    GiraphConfigurationUtil.set(hadoopConf, "lp.anchorThreshold", arguments.anchorThreshold)
+//    GiraphConfigurationUtil.set(hadoopConf, "lp.bidirectionalCheck", arguments.validateGraphStructure)
+//
+//    GiraphConfigurationUtil.set(hadoopConf, "giraphjob.maxSteps", arguments.maxIterations)
+//    GiraphConfigurationUtil.set(hadoopConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(argSeparator)))
+//    GiraphConfigurationUtil.set(hadoopConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+//    GiraphConfigurationUtil.set(hadoopConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+//    GiraphConfigurationUtil.set(hadoopConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
+//    GiraphConfigurationUtil.set(hadoopConf, "vector.value", Some(arguments.vectorValue.toString))
 
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
+//    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
+//    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(argSeparator)))
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
-    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
+    val labeledGraph = frames.prepareForSave(CreateEntityArgs(description = Some("Label propagation results")))
+    val inputFormatConfig = new LabelPropagationInputFormatConfig(frame.storageLocation.get, frame.schema)
+    val outputFormatConfig = new LabelPropagationOutputFormatConfig(labeledGraph.storageLocation.get)
+    val labelPropagationConfig = new LabelPropagationConfig(inputFormatConfig, outputFormatConfig, arguments)
 
-    val giraphConf = new GiraphConfiguration(hConf)
+    giraphConf.setConfig(labelPropagationConfig)
+    GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
+    giraphConf.setEdgeInputFormatClass(classOf[LabelPropagationEdgeInputFormat])
+    giraphConf.setVertexOutputFormatClass(classOf[LabelPropagationVertexOutputFormat])
+    giraphConf.setVertexInputFormatClass(classOf[LabelPropagationVertexInputFormat])
     giraphConf.setMasterComputeClass(classOf[LabelPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LabelPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LabelPropagationAggregatorWriter])
