@@ -38,7 +38,6 @@ case class LabelPropagationArgs(model: ModelReference,
                                 destinationIdColumnName: String,
                                 edgeWeightColumnName: String,
                                 sourceIdLabelColumnName: String,
-                                destinationIdLabelColumnName: String,
                                 vectorValue: Boolean,
                                 maxIterations: Option[Int] = None,
                                 convergenceThreshold: Option[Double] = None,
@@ -52,7 +51,6 @@ case class LabelPropagationArgs(model: ModelReference,
   require(StringUtils.isNotBlank(destinationIdColumnName), "destination column name property list is required")
   require(StringUtils.isNotBlank(edgeWeightColumnName), "edge weight property list is required")
   require(StringUtils.isNotBlank(sourceIdLabelColumnName), "source label column name property list is required")
-  require(StringUtils.isNotBlank(destinationIdLabelColumnName), "destination label column name property list is required")
   require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
 }
 
@@ -61,6 +59,6 @@ case class LabelPropagationResult(value: String) //TODO
 /** Json conversion for arguments and return value case classes */
 object LabelPropagationJsonFormat {
 
-  implicit val argsFormat = jsonFormat13(LabelPropagationArgs)
+  implicit val argsFormat = jsonFormat12(LabelPropagationArgs)
   implicit val resultFormat = jsonFormat1(LabelPropagationResult)
 }

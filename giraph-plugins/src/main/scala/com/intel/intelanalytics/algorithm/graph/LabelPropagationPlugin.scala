@@ -79,9 +79,9 @@ class LabelPropagationPlugin
     //    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
     //    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
 
-    val labeledGraph = frames.prepareForSave(CreateEntityArgs(description = Some("Label propagation results")))
+    val outputGraph = frames.prepareForSave(CreateEntityArgs(description = Some("Label propagation results")))
     val inputFormatConfig = new LabelPropagationInputFormatConfig(frame.storageLocation.get, frame.schema)
-    val outputFormatConfig = new LabelPropagationOutputFormatConfig(labeledGraph.storageLocation.get)
+    val outputFormatConfig = new LabelPropagationOutputFormatConfig(outputGraph.storageLocation.get)
     val labelPropagationConfig = new LabelPropagationConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setConfig(labelPropagationConfig)
