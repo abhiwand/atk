@@ -503,6 +503,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                         <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                         <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                         <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+                                        <exclude>com.google.code.findbugs:*</exclude>
                                     </excludes>
                                 </artifactSet>
                                 <filters>
@@ -781,10 +782,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.fusesource.jansi</groupId>
                         <artifactId>jansi</artifactId>
                     </exclusion>
-                    <exclusion>
+                    <!--<exclusion>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy</artifactId>
-                    </exclusion>
+                    </exclusion>-->
                 </exclusions>
             </dependency>
             <!--org.scala-->
@@ -921,6 +922,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>jsr305</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
+                    </exclusion>
 										<!--<exclusion>
                         <groupId>org.spark-project.akka</groupId>
                         <artifactId>akka-remote_${scala.short.version}</artifactId>
@@ -959,6 +964,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <exclusion>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.solr</groupId>
+                        <artifactId>solr-commons-csv</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
