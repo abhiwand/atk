@@ -80,9 +80,6 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
       val inputFrame = frames.expectFrame(arguments.frame)
       val modelMeta = models.expectModel(arguments.model)
 
-      //create RDD from the frame
-      val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
-
       //Running MLLib
       val linRegJsObject = modelMeta.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
       val linRegData = linRegJsObject.convertTo[LinearRegressionData]
@@ -91,6 +88,9 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
         require(linRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
       }
       val linRegColumns = arguments.observationColumns.getOrElse(linRegData.observationColumns)
+
+      //create RDD from the frame
+      val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
 
       //predicting a label for the observation columns
       val predictionsRDD = inputFrameRdd.mapRows(row => {
