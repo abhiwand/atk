@@ -67,6 +67,18 @@
                             </artifactSet>
                             <filters>
                                 <filter>
+                                    <artifact>org.apache.hive:hive-exec</artifact>
+                                    <includes>
+                                        <include>org/apache/hadoop/hive/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.python:jython</artifact>
+                                    <includes>
+                                        <exclude>org/google/common/**</exclude>
+                                    </includes>
+                                </filter>
+                                <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -166,7 +178,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.2.2</version>
         </dependency>
 	<dependency>
             <groupId>com.google.guava</groupId>
