@@ -23,13 +23,13 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import com.intel.giraph.io.{ LabelPropagationEdgeData, LabelPropagationVertexId }
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.io.{ LongWritable, DoubleWritable }
 import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport
@@ -40,14 +40,14 @@ import scala.collection.JavaConverters._
 /**
  * InputFormat for Label propagation reads edges from Parquet Frame
  */
-class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LabelPropagationVertexId, LabelPropagationEdgeData] {
+class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, DoubleWritable] {
 
   private val parquetInputFormat = new ParquetInputFormat[Row](classOf[RowReadSupport])
 
   override def checkInputSpecs(conf: Configuration): Unit = {
   }
 
-  override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LabelPropagationVertexId, LabelPropagationEdgeData] = {
+  override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LongWritable, DoubleWritable] = {
     val edgeReader = new LabelPropagationEdgeReader(new LabelPropagationConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
     new ReverseEdgeDuplicator(edgeReader)
@@ -71,14 +71,14 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LabelPropagationVe
 }
 
 class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
-    extends EdgeReader[LabelPropagationVertexId, LabelPropagationEdgeData] {
+    extends EdgeReader[LongWritable, DoubleWritable] {
 
   private val conf = config.getConfig
   private val reader = new ParquetRecordReader[Row](new RowReadSupport)
   private val row = new RowWrapper(conf.inputFormatConfig.frameSchema)
 
-  private var currentSourceId: LabelPropagationVertexId = null
-  private var currentEdge: DefaultEdge[LabelPropagationVertexId, LabelPropagationEdgeData] = null
+  private var currentSourceId: LongWritable = null
+  private var currentEdge: DefaultEdge[LongWritable, DoubleWritable] = null
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     reader.initialize(inputSplit, context)
@@ -88,11 +88,11 @@ class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
     reader.getProgress
   }
 
-  override def getCurrentEdge: Edge[LabelPropagationVertexId, LabelPropagationEdgeData] = {
+  override def getCurrentEdge: Edge[LongWritable, DoubleWritable] = {
     currentEdge
   }
 
-  override def getCurrentSourceId: LabelPropagationVertexId = {
+  override def getCurrentSourceId: LongWritable = {
     currentSourceId
   }
 
@@ -101,12 +101,12 @@ class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
     if (hasNext) {
       row.apply(reader.getCurrentValue)
 
-      val sourceId = new LabelPropagationVertexId(row.stringValue(conf.sourceIdColumnName))
-      val destId = new LabelPropagationVertexId(row.stringValue(conf.destinationIdColumnName))
-      val edgeWeight = new LabelPropagationEdgeData(row.stringValue(conf.edgeWeightColumnName).toDouble)
+      val sourceId = new LongWritable(row.longValue(conf.srcColName))
+      val destId = new LongWritable(row.longValue(conf.destColName))
+      val edgeWeight = new DoubleWritable(row.stringValue(conf.weightColName).toDouble)
 
       currentSourceId = sourceId
-      currentEdge = new DefaultEdge[LabelPropagationVertexId, LabelPropagationEdgeData]()
+      currentEdge = new DefaultEdge[LongWritable, DoubleWritable]()
       currentEdge.setTargetVertexId(destId)
       currentEdge.setValue(edgeWeight)
     }

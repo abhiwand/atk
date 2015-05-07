@@ -54,47 +54,46 @@ case class LabelPropagationOutputFormatConfig(parquetFileLocation: String) {
  *
  * @param inputFormatConfig
  * @param outputFormatConfig
- * @param model
  * @param frame
- * @param sourceIdColumnName
- * @param destinationIdColumnName
- * @param edgeWeightColumnName
- * @param sourceIdLabelColumnName
- * @param vectorValue
- * @param maxSupersteps
+ * @param srcColName
+ * @param destColName
+ * @param weightColName
+ * @param srcLabelColName
+ * @param resultColName
+ * @param maxIterations
  * @param convergenceThreshold
- * @param anchorThreshold
  * @param lpLambda
- * @param validateGraphStructure
  */
 case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormatConfig,
                                   outputFormatConfig: LabelPropagationOutputFormatConfig,
-                                  model: ModelReference,
                                   frame: FrameReference,
-                                  sourceIdColumnName: String,
-                                  destinationIdColumnName: String,
-                                  edgeWeightColumnName: String,
-                                  sourceIdLabelColumnName: String,
-                                  vectorValue: Boolean,
-                                  maxSupersteps: Option[Int] = None,
-                                  convergenceThreshold: Option[Double] = None,
-                                  anchorThreshold: Option[Double] = None,
-                                  lpLambda: Option[Double] = None,
-                                  validateGraphStructure: Option[Boolean] = None) {
+                                  srcColName: String,
+                                  destColName: String,
+                                  weightColName: String,
+                                  srcLabelColName: String,
+                                  resultColName: String,
+                                  maxIterations: Int,
+                                  convergenceThreshold: Float,
+                                  lpLambda: Float,
+                                  bidirectionalChecks: Boolean,
+                                  anchorThreshold: Float) {
 
   def this(inputFormatConfig: LabelPropagationInputFormatConfig,
            outputFormatConfig: LabelPropagationOutputFormatConfig,
            args: LabelPropagationArgs) = {
     this(inputFormatConfig,
       outputFormatConfig,
-      args.model,
       args.frame,
-      args.sourceIdColumnName,
-      args.destinationIdColumnName,
-      args.edgeWeightColumnName,
-      args.sourceIdLabelColumnName,
-      args.vectorValue,
-      args.maxIterations)
+      args.srcColName,
+      args.destColName,
+      args.weightColName,
+      args.srcLabelColName,
+      args.getResultsColName,
+      args.getMaxIterations,
+      args.getConvergenceThreshold,
+      args.getLpLambda,
+      args.getBidirectionalChecks,
+      args.getAnchorThreshold)
   }
   require(inputFormatConfig != null, "input format is required")
   require(outputFormatConfig != null, "output format is required")
@@ -106,7 +105,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
 object LabelPropagationConfigJSONFormat {
   implicit val inputFormatConfigFormat = jsonFormat2(LabelPropagationInputFormatConfig)
   implicit val outputFormatConfigFormat = jsonFormat1(LabelPropagationOutputFormatConfig)
-  implicit val configFormat = jsonFormat14(LabelPropagationConfig)
+  implicit val configFormat = jsonFormat13(LabelPropagationConfig)
 }
 
 import LabelPropagationConfigJSONFormat._
