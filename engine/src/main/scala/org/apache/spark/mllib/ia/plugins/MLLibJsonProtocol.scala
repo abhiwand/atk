@@ -26,6 +26,7 @@ package org.apache.spark.mllib.ia.plugins
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import org.apache.spark.mllib.classification.LogisticRegressionModel
 import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
@@ -126,6 +127,43 @@ object MLLibJsonProtocol {
     }
 
   }
+
+  implicit object LinearRegressionModelFormat extends JsonFormat[LinearRegressionModel] {
+    /**
+     * The write methods converts from LinearRegressionModel to JsValue
+     * @param obj LinearRegressionModel. Where LinearRegressionModel's format is
+     *            LinearRegressionModel(val weights: Vector,val intercept: Double)
+     *            and the weights Vector could be either a SparseVector or DenseVector
+     * @return JsValue
+     */
+    override def write(obj: LinearRegressionModel): JsValue = {
+      val weights = VectorFormat.write(obj.weights)
+      JsObject(
+        "weights" -> weights,
+        "intercept" -> JsNumber(obj.intercept)
+      )
+    }
+
+    /**
+     * The read method reads a JsValue to LinearRegressionModel
+     * @param json JsValue
+     * @return LinearRegressionModel with format LinearRegressionModel(val weights: Vector,val intercept: Double)
+     *         and the weights Vector could be either a SparseVector or DenseVector
+     */
+    override def read(json: JsValue): LinearRegressionModel = {
+      val fields = json.asJsObject.fields
+      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+
+      val weights = fields.get("weights").map(v => {
+        VectorFormat.read(v)
+      }
+      ).get
+
+      new LinearRegressionModel(weights, intercept)
+    }
+
+  }
+
   implicit object VectorFormat extends JsonFormat[Vector] {
     override def write(obj: Vector): JsValue = {
       obj match {
@@ -221,4 +259,5 @@ object MLLibJsonProtocol {
   implicit val kmeansModelTrainReturnFormat = jsonFormat2(KMeansTrainReturn)
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
+  implicit val linRegDataFormat = jsonFormat2(LinearRegressionData)
 }
