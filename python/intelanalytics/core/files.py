@@ -618,10 +618,10 @@ class HiveQuery(DataFile):
 
     annotation = "hive_settings"
 
-    def __init__(self, file_name):
-        if not file_name or not isinstance(file_name, basestring):
+    def __init__(self, sql_query):
+        if not sql_query or not isinstance(sql_query, basestring):
             raise ValueError("The query must be a non-empty string")
-        self.file_name = file_name
+        self.file_name = sql_query
 
     def __repr__(self):
         return repr(self.file_name)

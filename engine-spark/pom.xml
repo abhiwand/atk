@@ -370,8 +370,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_2.10</artifactId>
-            <version>1.2.0-cdh5.3.1</version>
+            <artifactId>spark-hive_${scala.short.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
@@ -380,7 +379,6 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
-            <version>2.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mahout</groupId>
