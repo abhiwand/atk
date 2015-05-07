@@ -78,6 +78,10 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val param = initializeParameters(arguments)
     val prob = initializeProblem(trainFrameRdd, arguments, param)
 
+    svm.svm_check_parameter(prob, param) match {
+      case null => None
+      case str => Some(throw new IllegalArgumentException("Illegal Argument Exception: " + str))
+    }
     val mySvmModel = svm.svm_train(prob, param)
 
     val jsonModel = new LibSvmData(mySvmModel, arguments.observationColumns)
