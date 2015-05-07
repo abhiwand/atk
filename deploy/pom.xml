@@ -100,6 +100,10 @@
                                     <pattern>com.google.guava</pattern>
                                     <shadedPattern>atk.com.google.guava</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.apache.spark</pattern>
+                                    <shadedPattern>atk.org.apache.spark</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
