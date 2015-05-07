@@ -51,108 +51,109 @@ class ApiExistsSmokeTest(unittest.TestCase):
     _multiprocess_can_split_ = True
 
     def test_expected_methods_exist_on_csvfile(self):
-        self.assert_method_defined('annotation', ia.CsvFile)
-        self.assert_method_defined('field_names', ia.CsvFile)
-        self.assert_method_defined('field_types', ia.CsvFile)
+        self.assert_methods_defined(['annotation',
+                                    'field_names',
+                                    'field_types'], ia.CsvFile)
 
     def test_expected_methods_exist_on_frame(self):
-        self.assert_method_defined('add_columns', ia.Frame)
-        self.assert_method_defined('append', ia.Frame)
-        self.assert_method_defined('assign_sample', ia.Frame)
-        self.assert_method_defined('bin_column', ia.Frame)
-        self.assert_method_defined('bin_column_equal_depth', ia.Frame)
-        self.assert_method_defined('bin_column_equal_width', ia.Frame)
-        self.assert_method_defined('classification_metrics', ia.Frame)
-        self.assert_method_defined('column_median', ia.Frame)
-        self.assert_method_defined('column_mode', ia.Frame)
-        self.assert_method_defined('column_names', ia.Frame)
-        self.assert_method_defined('column_summary_statistics', ia.Frame)
-        self.assert_method_defined('copy', ia.Frame)
-        self.assert_method_defined('correlation', ia.Frame)
-        self.assert_method_defined('correlation_matrix', ia.Frame)
-        self.assert_method_defined('count', ia.Frame)
-        self.assert_method_defined('covariance', ia.Frame)
-        self.assert_method_defined('covariance_matrix', ia.Frame)
-        self.assert_method_defined('cumulative_percent', ia.Frame)
-        self.assert_method_defined('cumulative_sum', ia.Frame)
-        self.assert_method_defined('dot_product', ia.Frame)
-        self.assert_method_defined('download', ia.Frame)
-        self.assert_method_defined('drop_columns', ia.Frame)
-        self.assert_method_defined('drop_duplicates', ia.Frame)
-        self.assert_method_defined('drop_rows', ia.Frame)
-        self.assert_method_defined('ecdf', ia.Frame)
-        self.assert_method_defined('entropy', ia.Frame)
-        self.assert_method_defined('export_to_csv', ia.Frame)
-        self.assert_method_defined('export_to_json', ia.Frame)
-        self.assert_method_defined('filter', ia.Frame)
-        self.assert_method_defined('flatten_column', ia.Frame)
-        self.assert_method_defined('get_error_frame', ia.Frame)
-        self.assert_method_defined('group_by', ia.Frame)
-        self.assert_method_defined('histogram', ia.Frame)
-        self.assert_method_defined('inspect', ia.Frame)
-        self.assert_method_defined('join', ia.Frame)
-        self.assert_method_defined('name', ia.Frame)
-        self.assert_method_defined('quantiles', ia.Frame)
-        self.assert_method_defined('rename_columns', ia.Frame)
-        self.assert_method_defined('row_count', ia.Frame)
-        self.assert_method_defined('schema', ia.Frame)
-        self.assert_method_defined('sort', ia.Frame)
-        self.assert_method_defined('status', ia.Frame)
-        self.assert_method_defined('take', ia.Frame)
-        self.assert_method_defined('tally', ia.Frame)
-        self.assert_method_defined('tally_percent', ia.Frame)
-        self.assert_method_defined('top_k', ia.Frame)
+        self.assert_methods_defined(['add_columns',
+                                      'append',
+                                      'assign_sample',
+                                      'bin_column',
+                                      'bin_column_equal_depth',
+                                      'bin_column_equal_width',
+                                      'classification_metrics',
+                                      'column_median',
+                                      'column_mode',
+                                      'column_names',
+                                      'column_summary_statistics',
+                                      'copy',
+                                      'correlation',
+                                      'correlation_matrix',
+                                      'count',
+                                      'covariance',
+                                      'covariance_matrix',
+                                      'cumulative_percent',
+                                      'cumulative_sum',
+                                      'dot_product',
+                                      'download',
+                                      'drop_columns',
+                                      'drop_duplicates',
+                                      'drop_rows',
+                                      'ecdf',
+                                      'entropy',
+                                      'export_to_csv',
+                                      'export_to_json',
+                                      'filter',
+                                      'flatten_column',
+                                      'get_error_frame',
+                                      'group_by',
+                                      'histogram',
+                                      'inspect',
+                                      'join',
+                                      'name',
+                                      'quantiles',
+                                      'rename_columns',
+                                      'row_count',
+                                      'schema',
+                                      'sort',
+                                      'status',
+                                      'take',
+                                      'tally',
+                                      'tally_percent',
+                                      'top_k'], ia.Frame)
 
     def test_expected_methods_exist_on_graph(self):
-        self.assert_method_defined('annotate_degrees', ia.Graph)
-        self.assert_method_defined('annotate_weighted_degrees', ia.Graph)
-        self.assert_method_defined('clustering_coefficient', ia.Graph)
-        self.assert_method_defined('copy', ia.Graph)
-        self.assert_method_defined('define_edge_type', ia.Graph)
-        self.assert_method_defined('define_vertex_type', ia.Graph)
-        self.assert_method_defined('edge_count', ia.Graph)
-        self.assert_method_defined('edges', ia.Graph)
-        self.assert_method_defined('export_to_titan', ia.Graph)
-        self.assert_method_defined('graphx_connected_components', ia.Graph)
-        self.assert_method_defined('graphx_pagerank', ia.Graph)
-        self.assert_method_defined('graphx_triangle_count', ia.Graph)
-        self.assert_method_defined('ml', ia.Graph)
-        self.assert_method_defined('name', ia.Graph)
-        self.assert_method_defined('status', ia.Graph)
-        self.assert_method_defined('vertex_count', ia.Graph)
-        self.assert_method_defined('vertices', ia.Graph)
+        self.assert_methods_defined(['annotate_degrees',
+                                     'annotate_weighted_degrees',
+                                     'clustering_coefficient',
+                                     'copy',
+                                     'define_edge_type',
+                                     'define_vertex_type',
+                                     'edge_count',
+                                     'edges',
+                                     'export_to_titan',
+                                     'graphx_connected_components',
+                                     'graphx_pagerank',
+                                     'graphx_triangle_count',
+                                     'ml',
+                                     'name',
+                                     'status',
+                                     'vertex_count',
+                                     'vertices'], ia.Graph)
 
     def test_expected_methods_exist_on_titangraph(self):
-        self.assert_method_defined('annotate_degrees', ia.TitanGraph)
-        self.assert_method_defined('annotate_weighted_degrees', ia.TitanGraph)
-        self.assert_method_defined('append', ia.TitanGraph)
-        self.assert_method_defined('clustering_coefficient', ia.TitanGraph)
-        self.assert_method_defined('connected_components', ia.TitanGraph)
-        self.assert_method_defined('copy', ia.TitanGraph)
-        self.assert_method_defined('export_to_graph', ia.TitanGraph)
-        self.assert_method_defined('graphx_connected_components', ia.TitanGraph)
-        self.assert_method_defined('graphx_pagerank', ia.TitanGraph)
-        self.assert_method_defined('graphx_triangle_count', ia.TitanGraph)
-        self.assert_method_defined('hierarchical_clustering', ia.TitanGraph)
-        self.assert_method_defined('load', ia.TitanGraph)
-        self.assert_method_defined('ml', ia.TitanGraph)
-        self.assert_method_defined('name', ia.TitanGraph)
-        self.assert_method_defined('page_rank', ia.TitanGraph)
-        self.assert_method_defined('query', ia.TitanGraph)
-        self.assert_method_defined('sampling', ia.TitanGraph)
-        self.assert_method_defined('status', ia.TitanGraph)
+        self.assert_methods_defined(['annotate_degrees',
+                                     'annotate_weighted_degrees',
+                                     'append',
+                                     'clustering_coefficient',
+                                     'connected_components',
+                                     'copy',
+                                     'export_to_graph',
+                                     'graphx_connected_components',
+                                     'graphx_pagerank',
+                                     'graphx_triangle_count',
+                                     'hierarchical_clustering',
+                                     'load',
+                                     'ml',
+                                     'name',
+                                     'page_rank',
+                                     'query',
+                                     'sampling',
+                                     'status'], ia.TitanGraph)
 
     def test_expected_methods_exist_on_kmeansmodel(self):
-        self.assert_method_defined("name", ia.KMeansModel)
-        self.assert_method_defined("predict", ia.KMeansModel)
-        self.assert_method_defined("train", ia.KMeansModel)
+        self.assert_methods_defined(["name",
+                                     "predict",
+                                     "train"], ia.KMeansModel)
 
     def test_expected_methods_exist_on_ldamodel(self):
-        self.assert_method_defined("name", ia.LdaModel)
-        self.assert_method_defined("train", ia.LdaModel)
+        self.assert_methods_defined(["name",
+                                    "train"], ia.LdaModel)
 
-    def assert_method_defined(self, method, clazz):
-        self.assertTrue(method in dir(clazz), "method " + method + " didn't exist on " + str(clazz))
+    def assert_methods_defined(self, methods, clazz):
+        for method in methods:
+            self.assertTrue(method in dir(clazz), "method " + method + " didn't exist on " + str(clazz))
 
 
 if __name__ == "__main__":
