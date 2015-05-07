@@ -23,20 +23,25 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
-import com.intel.giraph.io.{ VertexData4LPWritable, LabelPropagationVertexId }
+import com.intel.giraph.io.{ VertexData4LPWritable }
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexWriter, VertexOutputFormat }
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce._
+import org.apache.spark.mllib.ia.plugins.VectorUtils
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
 import org.apache.spark.sql.parquet.RowWriteSupport
 import parquet.hadoop.ParquetOutputFormat
 
+object LabelPropagationOutputFormat {
+  val OutputRowSchema = "StructType(row(StructField(id,LongType,false),StructField(result,ArrayType(DoubleType,true),true)))"
+}
 /**
  * OutputFormat for parquet frame
  */
-class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LabelPropagationVertexId, VertexData4LPWritable, Nothing] {
+class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LongWritable, VertexData4LPWritable, Nothing] {
 
   private val resultsOutputFormat = new ParquetOutputFormat[Row](new RowWriteSupport)
 
@@ -52,15 +57,13 @@ class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LabelPropaga
     val outputFormatConfig = new LabelPropagationConfiguration(context.getConfiguration).getConfig.outputFormatConfig
 
     context.getConfiguration.set("mapreduce.output.fileoutputformat.outputdir", outputFormatConfig.parquetFileLocation)
-    val docCommitter = resultsOutputFormat.getOutputCommitter(context)
-
-    new MultiOutputCommitter(List(docCommitter))
+    resultsOutputFormat.getOutputCommitter(context)
   }
 }
 
 class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
                                    resultsOutputFormat: ParquetOutputFormat[Row])
-    extends VertexWriter[LabelPropagationVertexId, VertexData4LPWritable, Nothing] {
+    extends VertexWriter[LongWritable, VertexData4LPWritable, Nothing] {
 
   private val outputFormatConfig = conf.getConfig.outputFormatConfig
   private var resultsWriter: RecordWriter[Void, Row] = null
@@ -68,7 +71,7 @@ class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
   override def initialize(context: TaskAttemptContext): Unit = {
     // TODO: this looks like it will be needed in future version
     //context.getConfiguration.setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, true)
-    context.getConfiguration.set(RowWriteSupport.SPARK_ROW_SCHEMA, LdaOutputFormat.OutputRowSchema)
+    context.getConfiguration.set(RowWriteSupport.SPARK_ROW_SCHEMA, LabelPropagationOutputFormat.OutputRowSchema)
 
     val fileName = s"/part-${context.getTaskAttemptID.getTaskID.getId}.parquet"
     resultsWriter = resultsOutputFormat.getRecordWriter(context, new Path(outputFormatConfig.parquetFileLocation + fileName))
@@ -78,15 +81,15 @@ class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
     resultsWriter.close(context)
   }
 
-  override def writeVertex(vertex: Vertex[LabelPropagationVertexId, VertexData4LPWritable, Nothing]): Unit = {
+  override def writeVertex(vertex: Vertex[LongWritable, VertexData4LPWritable, Nothing]): Unit = {
 
     resultsWriter.write(null, giraphVertexToRow(vertex))
   }
 
-  private def giraphVertexToRow(vertex: Vertex[LabelPropagationVertexId, VertexData4LPWritable, Nothing]): Row = {
+  private def giraphVertexToRow(vertex: Vertex[LongWritable, VertexData4LPWritable, Nothing]): Row = {
     val content = new Array[Any](2)
-    content(0) = vertex.getId.getValue
-    content(1) = vertex.getValue.getPosteriorVector()
+    content(0) = vertex.getId
+    content(1) = VectorUtils.toScalaVector(vertex.getValue.getPosteriorVector())
     new GenericRow(content)
   }
 }

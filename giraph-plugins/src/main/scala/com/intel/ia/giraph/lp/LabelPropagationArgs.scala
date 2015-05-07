@@ -32,26 +32,46 @@ import org.apache.commons.lang3.StringUtils
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
-case class LabelPropagationArgs(model: ModelReference,
-                                frame: FrameReference,
-                                sourceIdColumnName: String,
-                                destinationIdColumnName: String,
-                                edgeWeightColumnName: String,
-                                sourceIdLabelColumnName: String,
-                                vectorValue: Boolean,
+case class LabelPropagationArgs(frame: FrameReference,
+                                srcColName: String,
+                                destColName: String,
+                                weightColName: String,
+                                srcLabelColName: String,
+                                resultColName: Option[String] = None,
                                 maxIterations: Option[Int] = None,
-                                convergenceThreshold: Option[Double] = None,
-                                anchorThreshold: Option[Double] = None,
-                                lpLambda: Option[Double] = None,
-                                validateGraphStructure: Option[Boolean] = None) {
+                                convergenceThreshold: Option[Float] = None,
+                                lpLambda: Option[Float] = None,
+                                bidirectionalChecks: Option[Boolean] = None) {
 
-  require(model != null, "model is required")
   require(frame != null, "frame is required")
-  require(StringUtils.isNotBlank(sourceIdColumnName), "source column name property list is required")
-  require(StringUtils.isNotBlank(destinationIdColumnName), "destination column name property list is required")
-  require(StringUtils.isNotBlank(edgeWeightColumnName), "edge weight property list is required")
-  require(StringUtils.isNotBlank(sourceIdLabelColumnName), "source label column name property list is required")
-  require(maxIterations.isEmpty || maxIterations.get > 0, "Max iterations should be greater than 0")
+  require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
+  require(StringUtils.isNotBlank(destColName), "destination column name property list is required")
+  require(StringUtils.isNotBlank(weightColName), "edge weight property list is required")
+  require(StringUtils.isNotBlank(srcLabelColName), "source label column name property list is required")
+
+  def getResultsColName: String = {
+    resultColName.getOrElse("resultLabels")
+  }
+
+  def getMaxIterations: Int = {
+    maxIterations.getOrElse(10)
+  }
+
+  def getConvergenceThreshold: Float = {
+    1f
+  }
+
+  def getAnchorThreshold: Float = {
+    convergenceThreshold.getOrElse(1f)
+  }
+
+  def getLpLambda: Float = {
+    lpLambda.getOrElse(0.001f)
+  }
+
+  def getBidirectionalChecks: Boolean = {
+    bidirectionalChecks.getOrElse(false)
+  }
 }
 
 case class LabelPropagationResult(value: String) //TODO
@@ -59,6 +79,6 @@ case class LabelPropagationResult(value: String) //TODO
 /** Json conversion for arguments and return value case classes */
 object LabelPropagationJsonFormat {
 
-  implicit val argsFormat = jsonFormat12(LabelPropagationArgs)
+  implicit val argsFormat = jsonFormat10(LabelPropagationArgs)
   implicit val resultFormat = jsonFormat1(LabelPropagationResult)
 }

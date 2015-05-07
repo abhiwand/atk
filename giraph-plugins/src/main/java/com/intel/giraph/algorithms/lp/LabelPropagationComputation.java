@@ -25,10 +25,11 @@ package com.intel.giraph.algorithms.lp;
 
 import com.intel.giraph.io.VertexData4LPWritable;
 import com.intel.giraph.io.IdWithVectorMessage;
+import com.intel.ia.giraph.lp.LabelPropagationConfig;
+import com.intel.ia.giraph.lp.LabelPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
-import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
@@ -59,6 +60,9 @@ import java.util.Map.Entry;
 )
 public class LabelPropagationComputation extends BasicComputation<LongWritable, VertexData4LPWritable,
     DoubleWritable, IdWithVectorMessage> {
+
+    LabelPropagationConfig config = null;
+
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "lp.maxSupersteps";
     /**
@@ -90,16 +94,28 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
     /** Turning on/off bi-directional edge check */
     private boolean bidirectionalCheck = false;
 
+    private void initialize() {
+        config = new LabelPropagationConfiguration(getConf()).getConfig();
+
+        getConf().setInt(MAX_SUPERSTEPS, config.maxIterations());
+        getConf().setDouble(LAMBDA, config.lpLambda());
+        getConf().setFloat(ANCHOR_THRESHOLD, config.anchorThreshold());
+        getConf().setBoolean(BIDIRECTIONAL_CHECK, config.bidirectionalChecks());
+        getConf().setFloat(CONVERGENCE_THRESHOLD, config.convergenceThreshold());
+    }
+
     @Override
     public void preSuperstep() {
         // Set custom parameters
-        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
-        lambda = getConf().getFloat(LAMBDA, 0f);
+        initialize();
+
+        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS,config.maxIterations());
+        lambda = getConf().getFloat(LAMBDA, config.lpLambda());
         if (lambda < 0 || lambda > 1) {
             throw new IllegalArgumentException("Tradeoff parameter lambda should be in the range of [0, 1].");
         }
-        anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
-        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+        anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, config.anchorThreshold());
+        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, config.bidirectionalChecks());
     }
 
     /**
