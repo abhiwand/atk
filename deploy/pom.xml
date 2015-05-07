@@ -41,6 +41,10 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -67,12 +71,12 @@
                                 </excludes>
                             </artifactSet>
                             <filters>
-                                <!--<filter>
+                                <filter>
                                     <artifact>org.apache.spark:spark-core_2.10</artifact>
                                     <excludes>
-                                        <exclude>com/google/common/base/**</exclude>
+                                        <exclude>org/apache/spark/api/java/JavaRDD</exclude>
                                     </excludes>
-                                </filter>-->
+                                </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
@@ -99,10 +103,6 @@
                                 <relocation>
                                     <pattern>com.google.guava</pattern>
                                     <shadedPattern>atk.com.google.guava</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.spark</pattern>
-                                    <shadedPattern>atk.org.apache.spark</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
