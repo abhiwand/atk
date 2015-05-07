@@ -67,12 +67,12 @@
                                 </excludes>
                             </artifactSet>
                             <filters>
-                                <filter>
+                                <!--<filter>
                                     <artifact>org.apache.spark:spark-core_2.10</artifact>
                                     <excludes>
                                         <exclude>com/google/common/base/**</exclude>
                                     </excludes>
-                                </filter>
+                                </filter>-->
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
