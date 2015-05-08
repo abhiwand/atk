@@ -41,6 +41,7 @@ pig_*.log
 /python/intelanalytics/core/autograph.py
 /python/intelanalytics/core/docstubs*.py*
 /python/nosetests.xml
+.Rhistory
 scratch.py
 sdhu.xml
 stats

@@ -133,7 +133,7 @@ class RowWrapper(Row):
     """
 
     def load_row(self, data):
-        self._set_data(data)
+        self._set_data(bson.decode_all(data)[0]['array'])
 
 
 def pickle_function(func):
@@ -159,11 +159,9 @@ def _wrap_row_function(frame, row_function, optional_schema=None):
     """
     schema = optional_schema if optional_schema is not None else frame.schema  # must grab schema now so frame is not closed over
     row_wrapper = RowWrapper(schema)
-    decode = bson.decode_all
     def row_func(row):
         try:
-            row_data = decode(row)[0]['array']
-            row_wrapper.load_row(row_data)
+            row_wrapper.load_row(row)
             return row_function(row_wrapper)
         except Exception as e:
             try:
@@ -171,7 +169,7 @@ def _wrap_row_function(frame, row_function, optional_schema=None):
             except:
                 e_msg = u'<unable to get exception message>'
             try:
-                e_row = unicode(row_data)
+                e_row = unicode(bson.decode_all(row)[0]['array'])
             except:
                 e_row = u'<unable to get row data>'
             try:

@@ -28,10 +28,6 @@
         </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine-spark</artifactId>
-        </dependency>
-		<dependency>
-            <groupId>com.intel.ia</groupId>
             <artifactId>rest-server</artifactId>
         </dependency>
 		<dependency>

@@ -6,7 +6,7 @@
     <artifactId>engine-interfaces</artifactId>
     <name>engine-interfaces</name>
     <description>
-        Interfaces the Engine exposes
+        Interfaces the Engine exposes to the REST server.
     </description>
 
     <packaging>jar</packaging>
