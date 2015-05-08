@@ -7,37 +7,30 @@ Technical Report CMU-CALD-02-107, CMU, 2002.
 
 Parameters
 ----------
-prior_vector: list of str
-    The vertex properties which contain prior vertex values when more than one
-    vertex property is used.
-distance : list of str
+source vertex: int
+    The source vertex id.
+dest vertex: int
+    The destination vertex id.
+weight : list of str
     The edge properties which contain the input edge values.
     A comma-separated list of property names when more than one edge property
     is used.
-lp_result : list of str
-    The list of vertex properties to store output vertex values.
-max_supersteps : int (optional)
+source labels: list of str
+    The list of label properties for the source vertex.
+result : str
+    column name for the results (holding the post labels for the vertices)
+max iterations : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
     The default value is 10.
-convergence_threshold : float (optional)
+convergence threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
     If the change is less than this threshold, the algorithm exits earlier
     before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
     The default value is 0.001.
-anchor_threshold : float (optional)
-    The parameter that determines if a node's initial prediction from
-    external classifier will be updated or not.
-    If a node's maximum initial prediction value is greater than this
-    threshold, the node will be treated as anchor node, whose final
-    prediction will inherit from prior without update.
-    This is for the case where there is confident initial predictions on some
-    nodes and it is desirable that the algorithm does not update those nodes.
-    The valid value range is [0, 1].
-    The default value is 1.0.
-lp_lambda : float (optional)
+lp lambda : float (optional)
     The tradeoff parameter that controls how much influence an external
     classifier's prediction contributes to the final prediction.
     This is for the case where an external classifier is available that can
@@ -45,13 +38,19 @@ lp_lambda : float (optional)
     the option allows incorporating external classifier's prediction into
     the LP training process.
     The valid value range is [0.0,1.0].
-    The default value is 0. 
+    The default value is 0.
+bidirectional checks : boolean (optional)
+    Enable/disable bidirectional edge checking.
+    Default is false (no checks)
 
 Returns
 -------
-str
-    The configuration and learning curve report for Label Propagation in the format of a multiple-line string.
+a 2-column frame:
 
+vertex: int
+    A vertex id.
+result : Vector (long)
+    label vector for the results (for the node id in column 1)
 
 Examples
 --------
@@ -59,22 +58,35 @@ Examples
 
     .. code::
 
-        >>> g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
+    input frame (lp.csv)
+    “a”        “b”        “c”        “d”
+    1,         2,         0.5,       "0.5,0.5"
+    2,         3,         0.4,       "-1,-1"
+    3,         1,         0.1,       "0.8,0.2"
+
+    script
+
+    ia.connect()
+    s = [("a", ia.int32), ("b", ia.int32), ("c", ia.float32), ("d", ia.vector(2))]
+    d = "lp.csv"
+    c = ia.CsvFile(d,s)
+    f = ia.Frame(c)
+    f.label_propagation("a", "b", "c", "d", "results")
 
 .. only:: latex
 
     .. code::
 
-        >>> g.label_propagation(
-        ... vertex_value_property_list = "input_value",
-        ... edge_value_property_list  = "weight",
-        ... input_edge_label_list = "edge",
-        ... output_vertex_property_list = "lp_posterior",
-        ... vector_value = "true",
-        ... max_supersteps = 10,
-        ... convergence_threshold = 0.0,
-        ... anchor_threshold = 0.9,
-        ... lp_lambda = 0.5,
+        >>> f.label_propagation(
+        ... srcColName = "a",
+        ... destColName  = "b",
+        ... weightColName = "c",
+        ... srcLabelColName = "d",
+        ... resultColName = "resultLabels",
+        ... max_iterations = 10,
+        ... convergence_threshold = 1.0,
+        ... anchor_threshold = 1.0,
+        ... lp_lambda = 0.001,
         ... bidirectional_check = False)
 
 

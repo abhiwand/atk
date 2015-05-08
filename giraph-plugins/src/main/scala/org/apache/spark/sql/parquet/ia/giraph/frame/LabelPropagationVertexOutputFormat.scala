@@ -45,14 +45,28 @@ class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LongWritable
 
   private val resultsOutputFormat = new ParquetOutputFormat[Row](new RowWriteSupport)
 
+  /**
+   * Creates a parquet vertex writer
+   * @param context the execution context
+   * @return the vertex writer
+   */
   override def createVertexWriter(context: TaskAttemptContext): LabelPropagationVertexWriter = {
     new LabelPropagationVertexWriter(new LabelPropagationConfiguration(context.getConfiguration), resultsOutputFormat)
   }
 
+  /**
+   * Validates the internal configuration data
+   * @param context
+   */
   override def checkOutputSpecs(context: JobContext): Unit = {
     new LabelPropagationConfiguration(context.getConfiguration).validate()
   }
 
+  /**
+   * See parquet documentation
+   * @param context execution context
+   * @return output commiter
+   */
   override def getOutputCommitter(context: TaskAttemptContext): OutputCommitter = {
     val outputFormatConfig = new LabelPropagationConfiguration(context.getConfiguration).getConfig.outputFormatConfig
 
@@ -61,6 +75,11 @@ class LabelPropagationVertexOutputFormat extends VertexOutputFormat[LongWritable
   }
 }
 
+/**
+ * Vertex writer class.
+ * @param conf execution context
+ * @param resultsOutputFormat output format for parquet
+ */
 class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
                                    resultsOutputFormat: ParquetOutputFormat[Row])
     extends VertexWriter[LongWritable, VertexData4LPWritable, Nothing] {
@@ -68,6 +87,10 @@ class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
   private val outputFormatConfig = conf.getConfig.outputFormatConfig
   private var resultsWriter: RecordWriter[Void, Row] = null
 
+  /**
+   * initialize the writer
+   * @param context execution context
+   */
   override def initialize(context: TaskAttemptContext): Unit = {
     // TODO: this looks like it will be needed in future version
     //context.getConfiguration.setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, true)
@@ -77,10 +100,18 @@ class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
     resultsWriter = resultsOutputFormat.getRecordWriter(context, new Path(outputFormatConfig.parquetFileLocation + fileName))
   }
 
+  /**
+   * close the writer
+   * @param context execution context
+   */
   override def close(context: TaskAttemptContext): Unit = {
     resultsWriter.close(context)
   }
 
+  /**
+   * writer vertex to parquet
+   * @param vertex vertex to write
+   */
   override def writeVertex(vertex: Vertex[LongWritable, VertexData4LPWritable, Nothing]): Unit = {
 
     resultsWriter.write(null, giraphVertexToRow(vertex))
@@ -88,7 +119,7 @@ class LabelPropagationVertexWriter(conf: LabelPropagationConfiguration,
 
   private def giraphVertexToRow(vertex: Vertex[LongWritable, VertexData4LPWritable, Nothing]): Row = {
     val content = new Array[Any](2)
-    content(0) = vertex.getId
+    content(0) = vertex.getId.get()
     content(1) = VectorUtils.toScalaVector(vertex.getValue.getPosteriorVector())
     new GenericRow(content)
   }

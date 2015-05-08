@@ -45,15 +45,29 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
   private val parquetInputFormat = new ParquetInputFormat[Row](classOf[RowReadSupport])
 
   override def checkInputSpecs(conf: Configuration): Unit = {
+    new LabelPropagationConfiguration(conf).validate()
   }
 
+  /**
+   * Create edge reader for parquet
+   * @param split data splits
+   * @param context execution context
+   * @return the edge reader
+   */
   override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LongWritable, DoubleWritable] = {
     val edgeReader = new LabelPropagationEdgeReader(new LabelPropagationConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
     new ReverseEdgeDuplicator(edgeReader)
   }
 
+  /**
+   * Get data splits
+   * @param context execution context
+   * @param minSplitCountHint number of desired splits
+   * @return a list of input splits
+   */
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
+    //TODO refactor into a utility method and use it for all readers
     val conf = context.getConfiguration
     val path: String = new LabelPropagationConfiguration(conf).getConfig.inputFormatConfig.parquetFileLocation
     val fs: FileSystem = FileSystem.get(conf)
@@ -70,6 +84,10 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
   }
 }
 
+/**
+ * The edge reader class for parquet
+ * @param config configuration data
+ */
 class LabelPropagationEdgeReader(config: LabelPropagationConfiguration)
     extends EdgeReader[LongWritable, DoubleWritable] {
 

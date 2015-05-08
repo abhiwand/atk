@@ -58,21 +58,6 @@ class LabelPropagationPlugin
     val hadoopConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val giraphConf = new LabelPropagationConfiguration(hadoopConf)
 
-    //    GiraphConfigurationUtil.set(hadoopConf, "lp.core", arguments.maxIterations)
-    //    GiraphConfigurationUtil.set(hadoopConf, "lp.convergenceThreshold", arguments.convergenceThreshold)
-    //    GiraphConfigurationUtil.set(hadoopConf, "lp.anchorThreshold", arguments.anchorThreshold)
-    //    GiraphConfigurationUtil.set(hadoopConf, "lp.bidirectionalCheck", arguments.validateGraphStructure)
-    //
-    //    GiraphConfigurationUtil.set(hadoopConf, "giraphjob.maxSteps", arguments.maxIterations)
-    //    GiraphConfigurationUtil.set(hadoopConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(argSeparator)))
-    //    GiraphConfigurationUtil.set(hadoopConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
-    //    GiraphConfigurationUtil.set(hadoopConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
-    //    GiraphConfigurationUtil.set(hadoopConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
-    //    GiraphConfigurationUtil.set(hadoopConf, "vector.value", Some(arguments.vectorValue.toString))
-
-    //    giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LP])
-    //    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
-
     val outputFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Label propagation results")))
     val inputFormatConfig = new LabelPropagationInputFormatConfig(frame.storageLocation.get, frame.schema)
     val outputFormatConfig = new LabelPropagationOutputFormatConfig(outputFrame.storageLocation.get)

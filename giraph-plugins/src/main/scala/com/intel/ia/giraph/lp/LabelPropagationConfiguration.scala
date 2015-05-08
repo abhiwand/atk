@@ -23,8 +23,6 @@
 
 package com.intel.ia.giraph.lp
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.model.ModelReference
 import com.intel.intelanalytics.domain.schema.Schema
 import org.apache.commons.lang3.StringUtils
 import org.apache.giraph.conf.GiraphConfiguration
@@ -52,21 +50,19 @@ case class LabelPropagationOutputFormatConfig(parquetFileLocation: String) {
 
 /**
  *
- * @param inputFormatConfig
- * @param outputFormatConfig
- * @param frame
- * @param srcColName
- * @param destColName
- * @param weightColName
- * @param srcLabelColName
- * @param resultColName
- * @param maxIterations
- * @param convergenceThreshold
- * @param lpLambda
+ * @param inputFormatConfig input configuration
+ * @param outputFormatConfig output configuration
+ * @param srcColName column name for the source vertex
+ * @param destColName column name for the dest vertex
+ * @param weightColName column name for the edge weight
+ * @param srcLabelColName column name for the source labels
+ * @param resultColName column name for the results column (calculated by the algorithm)
+ * @param maxIterations max number of iterations for the algorithm
+ * @param convergenceThreshold deprecated - do not use
+ * @param lpLambda deprecated - do not use
  */
 case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormatConfig,
                                   outputFormatConfig: LabelPropagationOutputFormatConfig,
-                                  frame: FrameReference,
                                   srcColName: String,
                                   destColName: String,
                                   weightColName: String,
@@ -83,7 +79,6 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
            args: LabelPropagationArgs) = {
     this(inputFormatConfig,
       outputFormatConfig,
-      args.frame,
       args.srcColName,
       args.destColName,
       args.weightColName,
@@ -105,7 +100,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
 object LabelPropagationConfigJSONFormat {
   implicit val inputFormatConfigFormat = jsonFormat2(LabelPropagationInputFormatConfig)
   implicit val outputFormatConfigFormat = jsonFormat1(LabelPropagationOutputFormatConfig)
-  implicit val configFormat = jsonFormat13(LabelPropagationConfig)
+  implicit val configFormat = jsonFormat12(LabelPropagationConfig)
 }
 
 import LabelPropagationConfigJSONFormat._
