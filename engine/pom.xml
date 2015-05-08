@@ -66,9 +66,9 @@
                             </artifactSet>
                             <filters>
                                 <filter>
-                                    <artifact>org.apache.spark:spark-core_2.10</artifact>
+                                    <artifact>org.apache.spark:spark-core_${scala.short.version}</artifact>
                                     <excludes>
-                                        <exclude>com/google/common/base/**</exclude>
+                                        <exclude>org/apache/spark/api/java/JavaRDD</exclude>
                                     </excludes>
                                 </filter>
                                 <filter>

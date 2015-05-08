@@ -17,17 +17,15 @@
 
 package org.apache.spark.api.java
 
-import java.util.Comparator
-
-import scala.language.implicitConversions
-import scala.reflect.ClassTag
-
 import org.apache.spark._
 import org.apache.spark.api.java.JavaSparkContext.fakeClassTag
-import org.apache.spark.api.java.function.{ Function => JFunction }
+import org.apache.spark.api.java.function.{Function => JFunction}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.Utils
+
+import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 @SerialVersionUID(-205673586731292241L)
 class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
@@ -179,7 +177,6 @@ class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
    * Return this RDD sorted by the given key function.
    */
   def sortBy[S](f: JFunction[T, S], ascending: Boolean, numPartitions: Int): JavaRDD[T] = {
-    import scala.collection.JavaConverters._
     def fn = (x: T) => f.call(x)
     import com.google.common.collect.Ordering // shadows scala.math.Ordering
     implicit val ordering = Ordering.natural().asInstanceOf[Ordering[S]]
