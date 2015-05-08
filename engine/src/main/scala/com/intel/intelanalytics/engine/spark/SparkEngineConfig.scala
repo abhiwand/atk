@@ -101,6 +101,14 @@ trait SparkEngineConfig extends EventLogging {
     throw new RuntimeException("sparkHome wasn't found at any of the expected locations, please set sparkHome in the config")
   }
 
+  val hiveLib: String = {
+    config.getString("intel.analytics.engine.hive.lib")
+  }
+
+  val hiveConf: String = {
+    config.getString("intel.analytics.engine.hive.conf")
+  }
+
   /**
    * true to re-use a SparkContext, this can be helpful for automated integration tests, not for customers.
    * NOTE: true should break the progress bar.

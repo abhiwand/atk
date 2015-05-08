@@ -68,6 +68,18 @@
                                     </excludes>
                                 </filter>
                                 <filter>
+                                    <artifact>org.apache.hive:hive-exec</artifact>
+                                    <includes>
+                                        <include>org/apache/hadoop/hive/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.python:jython</artifact>
+                                    <includes>
+                                        <exclude>org/google/common/**</exclude>
+                                    </includes>
+                                </filter>
+                                <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -183,6 +195,5 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

@@ -27,8 +27,10 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.FrameMeta
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
+import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan._
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
@@ -278,26 +280,7 @@ class FrameRdd(val frameSchema: Schema,
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
     val pairRdd = mapRows(row => (row.values(columnNames), row.data))
 
-    implicit val multiColumnOrdering = new Ordering[List[Any]] {
-      override def compare(a: List[Any], b: List[Any]): Int = {
-        for (i <- 0 to a.length - 1) {
-          val columnA = a(i)
-          val columnB = b(i)
-          val result = DataTypes.compare(columnA, columnB)
-          if (result != 0) {
-            if (ascendingPerColumn(i)) {
-              // ascending
-              return result
-            }
-            else {
-              // descending
-              return result * -1
-            }
-          }
-        }
-        0
-      }
-    }
+    implicit val multiColumnOrdering = new MultiColumnOrdering(ascendingPerColumn)
 
     // ascending is always true here because we control in the ordering
     val sortedRows = pairRdd.sortByKey(ascending = true).values
@@ -482,7 +465,7 @@ object FrameRdd {
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
-  def schemaToStructType(columns: List[(String, DataType)]): StructType = {
+  def schemaToStructType(columns: List[(String, com.intel.intelanalytics.domain.schema.DataTypes.DataType)]): StructType = {
     val fields: Seq[StructField] = columns.map {
       case (name, dataType) =>
         StructField(name.replaceAll("\\s", ""), dataType match {
@@ -497,4 +480,31 @@ object FrameRdd {
     }
     StructType(fields)
   }
+
+  /**
+   * Converts the spark DataTypes to our schema Datatypes
+   * @return our schema DataType
+   */
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.catalyst.types.DataType): com.intel.intelanalytics.domain.schema.DataTypes.DataType = {
+    val intType = IntegerType.getClass()
+    val longType = LongType.getClass()
+    val floatType = FloatType.getClass()
+    val doubleType = DoubleType.getClass()
+    val stringType = StringType.getClass()
+    val dateType = DateType.getClass()
+    val timeStampType = TimestampType.getClass()
+
+    val a = dataType.getClass()
+    a match {
+      case `intType` => int32
+      case `longType` => int64
+      case `floatType` => float32
+      case `doubleType` => float64
+      case `stringType` => DataTypes.string
+      case `dateType` => DataTypes.string
+      case `timeStampType` => DataTypes.string
+      case _ => throw new IllegalArgumentException(s"unsupported type $a")
+    }
+  }
+
 }

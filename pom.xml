@@ -126,6 +126,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
         <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
+        <dep.hive.version>0.13.1-${dep.cdh.version}</dep.hive.version>
+        <dev.spark.hive.version>1.2.0-${dep.cdh.version}</dev.spark.hive.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -152,18 +154,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>misc/event-api</module>
                 <module>misc/event</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>modules-java</id>
-            <!--
-                This profile is here so that we can capture code-coverage for the Java modules only.
-            -->
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>giraph-plugins</module>
             </modules>
         </profile>
         <profile>
@@ -677,12 +667,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>org.slf4j</artifactId>
-                        <groupId>slf4j-log4j12</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!--STARTititan-->
             <dependency>
@@ -795,6 +779,23 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!--org.apache.hive-->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-hive_${scala.short.version}</artifactId>
+                <version>${dev.spark.hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-common</artifactId>
+                <version>${dep.hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-hive_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
             <!--org.apache.hadoop-->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -893,21 +894,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>spark-core_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
                 <exclusions>
-                    <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
+										<exclusion>
+												<groupId>org.slf4j</groupId>
+												<artifactId>slf4j-log4j12</artifactId>
+										</exclusion>
                     <exclusion>
                         <groupId>org.objenesis</groupId>
                         <artifactId>objenesis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.code.findbugs</groupId>
-                        <artifactId>jsr305</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>jcl-over-slf4j</artifactId>
                     </exclusion>
 										<!--<exclusion>
                         <groupId>org.spark-project.akka</groupId>
@@ -977,6 +970,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>annotations</artifactId>
                     </exclusion>
+             
                 </exclusions>
             </dependency>
             <dependency>
@@ -1393,6 +1387,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.chuusai</groupId>
                 <artifactId>shapeless_${scala.short.version}</artifactId>
                 <version>1.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>bson</artifactId>
+                <version>2.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.2.2</version>
             </dependency>
             <!--test scope-->
             <dependency>
