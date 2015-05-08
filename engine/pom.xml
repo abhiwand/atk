@@ -74,6 +74,7 @@
                                 <filter>
                                     <artifact>org.apache.hive:hive-exec</artifact>
                                     <includes>
+                                        <include>org/apache/hive/**</include>
                                         <include>org/apache/hadoop/hive/**</include>
                                     </includes>
                                 </filter>
