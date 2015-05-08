@@ -124,10 +124,6 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>graphon</artifactId>
         </dependency>
-        <!--<dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.short.version}</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_${scala.short.version}</artifactId>
