@@ -30,10 +30,10 @@ ia.connect();
 dataset = r"datasets/lp_edge.csv"
 
 #csv schema definition
-schema = [("source", ia.int32),
-          ("dest", ia.int32),
-          ("weight", ia.float32),
-          ("labels", Vector())]
+schema = [("source", ia.int64),
+          ("input_value", str),
+          ("target", ia.int64),
+          ("weight", ia.float64)]
 
 #csv schema definition
 csv = ia.CsvFile(dataset, schema, skip_header_lines=1)
@@ -48,4 +48,25 @@ print "Inspecting frame 'lp'"
 
 print frame.inspect()
 
-print frame.label_propagation("source", "dest", "weight", "labels")
+source = ia.VertexRule("source", frame.source, {"input_value" : frame.input_value})
+
+target = ia.VertexRule("target", frame.target, {"input_value" : frame.input_value})
+
+edge = ia.EdgeRule("edge", source, target, {'weight': frame.weight}, bidirectional=True)
+
+print "Creating graph 'lp_graph'"
+
+graph = ia.TitanGraph([source, target, edge], "lp_graph")
+
+print "Running Label Propagation on Graph 'lp_graph'"
+
+print graph.label_propagation(vertex_value_property_list = ["input_value"],
+                                 edge_value_property_list = ["weight"],
+                                 input_edge_label_list = ["edge"],
+                                 output_vertex_property_list = ["lp_posterior"],
+                                 vector_value = True,
+                                 max_supersteps = 10,
+                                 convergence_threshold = 0.0,
+                                 anchor_threshold = 0.9,
+                                 lp_lambda = 0.5,
+                                )

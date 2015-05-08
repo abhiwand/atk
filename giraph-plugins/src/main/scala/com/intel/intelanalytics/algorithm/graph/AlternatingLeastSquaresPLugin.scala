@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.{ AlternatingLeastSquaresAggregatorWriter, AlternatingLeastSquaresMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -37,36 +38,36 @@ import scala.concurrent._
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Als(graph: GraphReference,
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexTypePropertyKey: String,
-               edgeTypePropertyKey: String,
-               vectorValue: Option[Boolean] = None,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               alsLambda: Option[Float] = None,
-               featureDimension: Option[Int] = None,
-               learningCurveOutputInterval: Option[Int] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               biasOn: Option[Boolean] = None,
-               maxValue: Option[Float] = None,
-               minValue: Option[Float] = None)
+case class AlternatingLeastSquares(graph: GraphReference,
+                                   edgeValuePropertyList: List[String],
+                                   inputEdgeLabelList: List[String],
+                                   outputVertexPropertyList: List[String],
+                                   vertexTypePropertyKey: String,
+                                   edgeTypePropertyKey: String,
+                                   vectorValue: Option[Boolean] = None,
+                                   maxSupersteps: Option[Int] = None,
+                                   convergenceThreshold: Option[Double] = None,
+                                   alsLambda: Option[Float] = None,
+                                   featureDimension: Option[Int] = None,
+                                   learningCurveOutputInterval: Option[Int] = None,
+                                   validateGraphStructure: Option[Boolean] = None,
+                                   biasOn: Option[Boolean] = None,
+                                   maxValue: Option[Float] = None,
+                                   minValue: Option[Float] = None)
 
-case class AlsResult(value: String)
+case class AlternatingLeastSquaresResult(value: String)
 
 /** Json conversion for arguments and return value case classes */
-object AlsJsonFormat {
+object AlternatingLeastSquaresJsonFormat {
   import DomainJsonProtocol._
-  implicit val alsFormat = jsonFormat16(Als)
-  implicit val alsResultFormat = jsonFormat1(AlsResult)
+  implicit val alsFormat = jsonFormat16(AlternatingLeastSquares)
+  implicit val alsResultFormat = jsonFormat1(AlternatingLeastSquaresResult)
 }
 
-import AlsJsonFormat._
+import AlternatingLeastSquaresJsonFormat._
 
-class AlternatingLeastSquares
-    extends CommandPlugin[Als, AlsResult] {
+class AlternatingLeastSquaresPLugin
+    extends CommandPlugin[AlternatingLeastSquares, AlternatingLeastSquaresResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/alternating_least_squares
@@ -76,7 +77,7 @@ class AlternatingLeastSquares
    */
   override def name: String = "graph:titan/ml/alternating_least_squares"
 
-  override def execute(arguments: Als)(implicit context: Invocation): AlsResult = {
+  override def execute(arguments: AlternatingLeastSquares)(implicit context: Invocation): AlternatingLeastSquaresResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
@@ -112,9 +113,9 @@ class AlternatingLeastSquares
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edgeTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
@@ -124,11 +125,11 @@ class AlternatingLeastSquares
 
     giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4CF])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4CF[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute])
+    giraphConf.setMasterComputeClass(classOf[AlternatingLeastSquaresMasterCompute])
     giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
-    giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
+    giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresAggregatorWriter])
 
-    AlsResult(GiraphJobManager.run("ia_giraph_als",
+    AlternatingLeastSquaresResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
       config, giraphConf, context, "als-learning-report_0"))
   }

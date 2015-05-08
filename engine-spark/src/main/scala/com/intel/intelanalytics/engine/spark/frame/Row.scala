@@ -138,6 +138,10 @@ trait AbstractRow {
    */
   def stringValue(columnName: String): String = DataTypes.toStr(row(schema.columnIndex(columnName)))
 
+  def vectorValue(columnName: String): Vector[Double] = {
+    DataTypes.toVector(schema.columnDataType(columnName).length)(row(schema.columnIndex(columnName)))
+  }
+
   /**
    * Get property of vector data type
    * @param columnName name of the property

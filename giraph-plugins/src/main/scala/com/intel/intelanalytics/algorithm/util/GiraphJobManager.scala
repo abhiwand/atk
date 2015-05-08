@@ -23,15 +23,16 @@
 
 package com.intel.intelanalytics.algorithm.util
 
+import java.io.File
+
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
 import org.apache.giraph.conf.GiraphConfiguration
-import org.apache.giraph.counters.GiraphTimers
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
-import org.apache.hadoop.mapreduce.{ CounterGroup, Job, Counters }
+import org.apache.hadoop.mapreduce.{ Job }
 import com.typesafe.config.Config
 import scala.collection.mutable.HashMap
 
@@ -130,7 +131,11 @@ object GiraphJobManager {
 
     // Clear Giraph Report Directory
     val fs = FileSystem.get(new Configuration())
-    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + commandInvocation.commandId
+    val output_dir_path = config.getString("fs.root") +
+      File.separator +
+      config.getString("output.dir") +
+      File.separator +
+      commandInvocation.commandId
     if (config.getBoolean("output.overwrite")) {
       fs.delete(getFullyQualifiedPath(output_dir_path, fs), true)
     }
@@ -141,7 +146,7 @@ object GiraphJobManager {
     job.run(true) match {
       case false => "Error: No Learning Report found!!"
       case true =>
-        val stream = fs.open(getFullyQualifiedPath(output_dir_path + "/" + reportName, fs))
+        val stream = fs.open(getFullyQualifiedPath(output_dir_path + File.separator + reportName, fs))
         def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
         val result = readLines.takeWhile(_ != null).toList.mkString("\n")
         result
