@@ -66,7 +66,7 @@ object AlternatingLeastSquaresJsonFormat {
 
 import AlternatingLeastSquaresJsonFormat._
 
-class AlternatingLeastSquaresPLugin
+class AlternatingLeastSquaresPlugin
     extends CommandPlugin[AlternatingLeastSquares, AlternatingLeastSquaresResult] {
 
   /**
