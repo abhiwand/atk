@@ -7,14 +7,9 @@
     <packaging>jar</packaging>
 
     <description>
-<<<<<<< HEAD
-        Not used yet - this will be where the Engine is launched when we move it from inside the API Server to
-        its own process.
-=======
         The engine loads and executes plugins and provides the basic services that plugins need.
 
         The Engine should NOT be aware of REST or HTTP.
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
     </description>
 
     <parent>
@@ -25,16 +20,12 @@
     </parent>
 
     <build>
-<<<<<<< HEAD
-        <sourceDirectory>src/main/scala</sourceDirectory>
-=======
         <!--
             sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
             seem to help IntelliJ import projects correctly (but aren't needed on every module)
         -->
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -73,10 +64,9 @@
                             </artifactSet>
                             <filters>
                                 <filter>
-<<<<<<< HEAD
-=======
                                     <artifact>org.apache.hive:hive-exec</artifact>
                                     <includes>
+                                        <include>org/apache/hive/**</include>
                                         <include>org/apache/hadoop/hive/**</include>
                                     </includes>
                                 </filter>
@@ -87,7 +77,6 @@
                                     </includes>
                                 </filter>
                                 <filter>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -105,8 +94,6 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-<<<<<<< HEAD
-=======
                             <relocations>
                                 <relocation>
                                     <pattern>com.google.common</pattern>
@@ -117,7 +104,6 @@
                                     <shadedPattern>atk.com.google.guava</shadedPattern>
                                 </relocation>
                             </relocations>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                         </configuration>
                     </execution>
                 </executions>
@@ -128,10 +114,6 @@
 
     <dependencies>
 
-<<<<<<< HEAD
-        <!--START dependencies to our modules-->
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
@@ -144,14 +126,6 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
-<<<<<<< HEAD
-        <!--END dependencies to our modules-->
-
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_${scala.short.version}</artifactId>
-        </dependency>
-=======
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>meta-store</artifactId>
@@ -437,6 +411,5 @@
             <artifactId>mahout-math</artifactId>
         </dependency>
 
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
     </dependencies>
 </project>

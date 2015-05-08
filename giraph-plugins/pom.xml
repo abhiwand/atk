@@ -140,11 +140,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-<<<<<<< HEAD
-            <artifactId>engine-spark</artifactId>
-=======
             <artifactId>engine</artifactId>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
         </dependency>
 
         <!--END dependencies to our modules-->

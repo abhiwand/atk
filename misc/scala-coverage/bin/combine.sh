@@ -8,11 +8,7 @@
 echo "assuming combine.sh is being ran from source_code"
 
 # list of modules we want coverage for
-<<<<<<< HEAD
-scala_coverage_modules="engine-interfaces meta-store engine-spark graphbuilder graphon rest-server launcher IB876
-=======
 scala_coverage_modules="engine-interfaces meta-store engine graphbuilder graphon rest-server launcher IB876
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 "
 
 # target directory to generate report

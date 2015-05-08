@@ -123,11 +123,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
         <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
-<<<<<<< HEAD
-=======
         <dep.hive.version>0.13.1-${dep.cdh.version}</dep.hive.version>
         <dev.spark.hive.version>1.2.0-${dep.cdh.version}</dev.spark.hive.version>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -142,51 +139,21 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
-<<<<<<< HEAD
-    <modules>
-
-    </modules>
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
     <profiles>
         <profile>
             <id>events</id>
             <activation>
-<<<<<<< HEAD
-		<activeByDefault>false</activeByDefault>
-               <property>
-=======
                 <activeByDefault>false</activeByDefault>
                 <property>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                     <name>NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-<<<<<<< HEAD
-		<module>misc/event-api</module>
-=======
                 <module>misc/event-api</module>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                 <module>misc/event</module>
             </modules>
         </profile>
         <profile>
-<<<<<<< HEAD
-            <id>modules-java</id>
-            <!--
-                This profile is here so that we can capture code-coverage for the Java modules only.
-            -->
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>giraph-plugins</module>
-            </modules>
-        </profile>
-        <profile>
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             <id>modules-all</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -201,15 +168,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>graphon</module>
                 <module>engine-interfaces</module>
                 <module>launcher</module>
-<<<<<<< HEAD
-                <module>meta-store</module>
-                <module>engine</module>
-                <module>engine-spark</module>
-=======
                 <module>scoring-models</module>
                 <module>meta-store</module>
                 <module>engine</module>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                 <module>rest-server</module>
                 <module>giraph-plugins</module>
                 <module>deploy</module>
@@ -415,8 +376,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </plugins>
             </reporting>
         </profile>
-<<<<<<< HEAD
-=======
         <profile>
             <id>devonly</id>
             <activation>
@@ -480,7 +439,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </plugins>
             </build>
         </profile>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
     </profiles>
     <build>
         <pluginManagement>
@@ -510,30 +468,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <target>1.7</target>
                     </configuration>
                 </plugin>
-<<<<<<< HEAD
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.10</version>
-                    <configuration>
-                        <configLocation>checkstyle.xml</configLocation>
-                        <consoleOutput>true</consoleOutput>
-                        <enableRulesSummary>false</enableRulesSummary>
-                        <headerLocation>license-header.txt</headerLocation>
-                        <failOnViolation>false</failOnViolation>
-                        <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 
                 <!--Create our jars-->
                 <plugin>
@@ -622,28 +556,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-<<<<<<< HEAD
-                <plugin>
-                    <groupId>org.scalariform</groupId>
-                    <artifactId>scalariform-maven-plugin</artifactId>
-                    <version>0.1.4</version>
-                    <executions>
-                        <execution>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>format</goal>
-                            </goals>
-                            <configuration>
-                                <alignParameters>true</alignParameters>
-                                <compactControlReadability>true</compactControlReadability>
-                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-=======
 
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             </plugins>
         </pluginManagement>
 
@@ -655,19 +568,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </plugin>
 
             <plugin>
-<<<<<<< HEAD
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalariform</groupId>
-                <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>2.5</version>
                 <configuration>
@@ -762,14 +662,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-<<<<<<< HEAD
-                <artifactId>engine-spark</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-=======
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                 <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -880,8 +772,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </exclusion>
                 </exclusions>
             </dependency>
-<<<<<<< HEAD
-=======
 
             <!--org.apache.hive-->
             <dependency>
@@ -899,7 +789,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>spark-hive_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
             </dependency>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             <!--org.apache.hadoop-->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -1062,13 +951,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
-<<<<<<< HEAD
-=======
                     <exclusion>
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>annotations</artifactId>
                     </exclusion>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                 </exclusions>
             </dependency>
             <dependency>
@@ -1099,15 +985,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-protocol</artifactId>
                 <version>${dep.hbase.version}</version>
-<<<<<<< HEAD
-=======
                 <exclusions>
                     <exclusion>
                         <groupId>com.github.stephenc.findbugs</groupId>
                         <artifactId>findbugs-annotations</artifactId>
                     </exclusion>
                 </exclusions>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -1315,11 +1198,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>akka-actor_${scala.short.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
-<<<<<<< HEAD
-						
-=======
 
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-slf4j_${scala.short.version}</artifactId>
@@ -1331,7 +1210,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <version>${akka.version}</version>
                 <scope>test</scope>
             </dependency>
-<<<<<<< HEAD
 
             <!-- parquet -->
             <dependency>
@@ -1351,27 +1229,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <version>1.1.1</version>
             </dependency>
 
-=======
-
-            <!-- parquet -->
-            <dependency>
-                <groupId>com.twitter</groupId>
-                <artifactId>parquet-hadoop</artifactId>
-                <version>${dep.parquet.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twitter</groupId>
-                <artifactId>parquet-column</artifactId>
-                <version>${dep.parquet.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
@@ -1511,8 +1368,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>shapeless_${scala.short.version}</artifactId>
                 <version>1.2.4</version>
             </dependency>
-<<<<<<< HEAD
-=======
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>bson</artifactId>
@@ -1523,7 +1378,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>jackson-databind</artifactId>
                 <version>2.2.2</version>
             </dependency>
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
             <!--test scope-->
             <dependency>
                 <groupId>org.mockito</groupId>

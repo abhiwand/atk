@@ -577,8 +577,6 @@ class XmlFile(MultiLineFile):
 
     def __repr__(self):
         return repr(self.file_name)
-<<<<<<< HEAD
-=======
 
 
 class HiveQuery(DataFile):
@@ -627,4 +625,3 @@ class HiveQuery(DataFile):
 
     def __repr__(self):
         return repr(self.file_name)
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8

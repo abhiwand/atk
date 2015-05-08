@@ -66,11 +66,7 @@ POST="
 restUser=iauser
 deployJar=deploy.jar
 
-<<<<<<< HEAD
-jars=\"engine-spark.jar giraph-plugins.jar graphon.jar\"
-=======
 jars=\"engine.jar giraph-plugins.jar graphon.jar\"
->>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 
 for jar in \$jars
 do
