@@ -1,6 +1,7 @@
 /var/log/intelanalytics/rest-server/*.log {
     daily
     rotate 5
+    size=20M
     copytruncate
     notifempty
     missingok
