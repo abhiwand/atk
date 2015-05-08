@@ -30,6 +30,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
+import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan._
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
@@ -279,26 +280,7 @@ class FrameRdd(val frameSchema: Schema,
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
     val pairRdd = mapRows(row => (row.values(columnNames), row.data))
 
-    implicit val multiColumnOrdering = new Ordering[List[Any]] {
-      override def compare(a: List[Any], b: List[Any]): Int = {
-        for (i <- 0 to a.length - 1) {
-          val columnA = a(i)
-          val columnB = b(i)
-          val result = DataTypes.compare(columnA, columnB)
-          if (result != 0) {
-            if (ascendingPerColumn(i)) {
-              // ascending
-              return result
-            }
-            else {
-              // descending
-              return result * -1
-            }
-          }
-        }
-        0
-      }
-    }
+    implicit val multiColumnOrdering = new MultiColumnOrdering(ascendingPerColumn)
 
     // ascending is always true here because we control in the ordering
     val sortedRows = pairRdd.sortByKey(ascending = true).values

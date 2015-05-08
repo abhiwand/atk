@@ -33,6 +33,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
 import com.intel.intelanalytics.domain.query._
+import com.intel.intelanalytics.engine.spark.frame.plugins.sortedk.SortedKPlugin
 import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
@@ -205,6 +206,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new BinColumnEqualWidthPlugin)
   commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
   commandPluginRegistry.registerCommand(new DotProductPlugin)
+  commandPluginRegistry.registerCommand(new SortedKPlugin)
 
   // Registering graph plugins
   commandPluginRegistry.registerCommand(new LoadGraphPlugin)
