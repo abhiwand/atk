@@ -49,7 +49,7 @@ case class LoadFrameArgs(destination: FrameReference, source: LoadSource)
 case class LoadSource(sourceType: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None, startTag: Option[List[String]] = None, endTag: Option[List[String]] = None) {
 
   require(sourceType != null, "sourceType cannot be null")
-  require(sourceType == "frame" || sourceType == "file" || sourceType == "strings" || sourceType == "linefile" || sourceType == "multilinefile" || sourceType == "xmlfile",
+  require(sourceType == "frame" || sourceType == "file" || sourceType == "hivedb" || sourceType == "strings" || sourceType == "linefile" || sourceType == "multilinefile" || sourceType == "xmlfile",
     "sourceType must be a valid type")
   require(uri != null, "uri cannot be null")
   require(parser != null, "parser cannot be null")
@@ -93,6 +93,10 @@ case class LoadSource(sourceType: String, uri: String, parser: Option[LineParser
 
   def isMultilineFile: Boolean = {
     sourceType == "multilinefile" || sourceType == "xmlfile"
+  }
+
+  def isHiveDb: Boolean = {
+    sourceType == "hivedb"
   }
 }
 

@@ -60,6 +60,21 @@
                             </artifactSet>
                             <filters>
                                 <filter>
+<<<<<<< HEAD
+=======
+                                    <artifact>org.apache.hive:hive-exec</artifact>
+                                    <includes>
+                                        <include>org/apache/hadoop/hive/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.python:jython</artifact>
+                                    <includes>
+                                        <exclude>org/google/common/**</exclude>
+                                    </includes>
+                                </filter>
+                                <filter>
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -77,6 +92,19 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+<<<<<<< HEAD
+=======
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.guava</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                            </relocations>
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
                         </configuration>
                     </execution>
                 </executions>
@@ -110,7 +138,11 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
+<<<<<<< HEAD
             <artifactId>engine-spark</artifactId>
+=======
+            <artifactId>engine</artifactId>
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

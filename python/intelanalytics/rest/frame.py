@@ -35,7 +35,11 @@ import intelanalytics.rest.config as config
 from intelanalytics.core.frame import Frame
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.core.column import Column
+<<<<<<< HEAD
 from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile
+=======
+from intelanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile, HiveQuery
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 
@@ -213,7 +217,16 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
                     },
                     }
 
+<<<<<<< HEAD
 
+=======
+        if isinstance( source, HiveQuery):
+            return {'destination': frame._id,
+                    'source': {"source_type": "hivedb",
+                               "uri": source.file_name
+                               },
+                    }
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 
         if isinstance( source, MultiLineFile):
             return {'destination': frame._id,

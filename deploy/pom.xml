@@ -44,9 +44,23 @@
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                     <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                     <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+                                    <exclude>org.codehaus.groovy:groovy:jar:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
+                                <filter>
+                                    <artifact>org.apache.hive:hive-exec</artifact>
+                                    <includes>
+                                        <include>org/apache/hadoop/hive/**</include>
+                                        <include>org/apache/hive/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.python:jython</artifact>
+                                    <includes>
+                                        <exclude>org/google/common/**</exclude>
+                                    </includes>
+                                </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
@@ -91,7 +105,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine-spark</artifactId>
+            <artifactId>engine</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

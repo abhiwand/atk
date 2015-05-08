@@ -71,7 +71,11 @@ case class AnnotateWeightedDegreesArgs(graph: GraphReference,
   }
 }
 
+<<<<<<< HEAD
 case class AnnotateWeightedDegreesReturn(connectedComponentsDictionary: Map[String, FrameEntity])
+=======
+case class AnnotateWeightedDegreesReturn(frameDictionaryOutput: Map[String, FrameEntity])
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 
 import DomainJsonProtocol._
 import spray.json._

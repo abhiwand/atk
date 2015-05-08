@@ -85,7 +85,11 @@ args = [a.strip() for a in sys.argv[1:]]
 skip_engine_launch = '-x' in args
 scala_debug = '-s' in args
 if skip_engine_launch:
+<<<<<<< HEAD
     print "SKIPPING the call to engine-spark!"
+=======
+    print "SKIPPING the call to engine!"
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 else:
     cmd = os.path.join(here, r'../bin/engine-spark.sh')
     if scala_debug:
@@ -93,7 +97,11 @@ else:
     print "Calling engine-spark to dump the command json file: %s" % cmd
     subprocess.call(cmd, shell=True)
 
+<<<<<<< HEAD
 # Get the command definitions, which should have been dumped by the engine-spark's CommandDumper
+=======
+# Get the command definitions, which should have been dumped by the engine's CommandDumper
+>>>>>>> 83fb11195ff6bab3bf0874fa161dea075d0335a8
 print "Opening dump file and pulling in the command defintions"
 with open("../target/command_dump.json", 'r') as json_file:
     command_defs = [get_command_def(json_schema) for json_schema in json.load(json_file)['commands']]

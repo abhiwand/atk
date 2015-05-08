@@ -71,7 +71,7 @@ intel.analytics {
 # specifics of your cluster and workload.
 
 intel.analytics {
-  engine-spark {
+  engine {
     auto-partitioner {
         # auto-partitioning spark based on the file size
         file-size-to-partition-size = [{ upper-bound="1MB", partitions = 15 }
