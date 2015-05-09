@@ -36,20 +36,27 @@ import java.io.IOException;
  * Writable to handle serialization of VertexData4LP (label propagation)
  */
 public final class VertexData4LPWritable implements Writable {
+
     /** prior vector of this vertex */
     private final VectorWritable priorWritable = new VectorWritable();
+
     /** posterior vector of this vertex */
     private final VectorWritable posteriorWritable = new VectorWritable();
+
     /** degree of this vertex */
     private double degree = 0;
+
+    /** true if the vertex has been labeled; false otherwise */
+    private boolean wasLabeled = false;
+
     /**
-     * Default constructor
+     * Default c'tor
      */
     public VertexData4LPWritable() {
     }
 
     /**
-     * Constructor
+     * Paramerized C'tor
      *
      * @param prior of type vector
      * @param posterior of type vector
@@ -59,6 +66,8 @@ public final class VertexData4LPWritable implements Writable {
         this.priorWritable.set(prior);
         this.posteriorWritable.set(posterior);
         this.degree = degree;
+
+        this.wasLabeled = !(prior.minValue() < 0d);
     }
 
     /**
@@ -139,6 +148,7 @@ public final class VertexData4LPWritable implements Writable {
     public static VertexData4LPWritable read(DataInput in) throws IOException {
         VertexData4LPWritable writable = new VertexData4LPWritable();
         writable.readFields(in);
+
         return writable;
     }
 
@@ -156,4 +166,15 @@ public final class VertexData4LPWritable implements Writable {
         new VertexData4LPWritable(ssv1, ssv2, degree).write(out);
     }
 
+    /**
+     * Returns the status of the vertex
+     * @return true if the label has been labeled; false otherwise
+     */
+    public boolean wasLabeled () {
+        return wasLabeled;
+    }
+
+    public void markLabeled() {
+        wasLabeled = true;
+    }
 }

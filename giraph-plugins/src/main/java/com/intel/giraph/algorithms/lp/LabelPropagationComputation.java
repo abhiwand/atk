@@ -45,6 +45,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.mahout.math.Vector;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -61,153 +62,110 @@ import java.util.Map.Entry;
 public class LabelPropagationComputation extends BasicComputation<LongWritable, VertexData4LPWritable,
     DoubleWritable, IdWithVectorMessage> {
 
-    LabelPropagationConfig config = null;
-
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "lp.maxSupersteps";
+    
     /**
      * Custom argument for tradeoff parameter: lambda
      * f = (1-lambda)*Pf + lambda*h
      */
     public static final String LAMBDA = "lp.lambda";
+    
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "lp.convergenceThreshold";
-    /**
-     * Custom argument for the anchor threshold [0, 1]
-     * the vertices whose normalized values are greater than
-     * this threshold will not be updated.
-     */
-    public static final String ANCHOR_THRESHOLD = "lp.anchorThreshold";
-    /** Custom argument for checking bi-directional edge or not (default: false) */
-    public static final String BIDIRECTIONAL_CHECK = "lp.bidirectionalCheck";
+    
     /** Aggregator name for sum of cost at each super step */
     private static String SUM_COST = "sum_cost";
+    
     /** Cost of previous super step for convergence monitoring */
     private static String PREV_COST = "prev_cost";
 
     /** Number of super steps */
-    private int maxSupersteps = 10;
-    /** The tradeoff parameter between prior and posterior */
-    private float lambda = 0f;
-    /** The anchor threshold controlling if updating a vertex */
-    private float anchorThreshold = 1f;
-    /** Turning on/off bi-directional edge check */
-    private boolean bidirectionalCheck = false;
-
-    private void initialize() {
-        config = new LabelPropagationConfiguration(getConf()).getConfig();
-
-        getConf().setInt(MAX_SUPERSTEPS, config.maxIterations());
-        getConf().setDouble(LAMBDA, config.lpLambda());
-        getConf().setFloat(ANCHOR_THRESHOLD, config.anchorThreshold());
-        getConf().setBoolean(BIDIRECTIONAL_CHECK, config.bidirectionalChecks());
-        getConf().setFloat(CONVERGENCE_THRESHOLD, config.convergenceThreshold());
-    }
+    private int maxSupersteps;
+    
+    /** The trade-off parameter between prior and posterior */
+    private float lambda;
 
     @Override
     public void preSuperstep() {
-        // Set custom parameters
-        initialize();
+        LabelPropagationConfig config = new LabelPropagationConfiguration(getConf()).getConfig();
 
-        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS,config.maxIterations());
-        lambda = getConf().getFloat(LAMBDA, config.lpLambda());
-        if (lambda < 0 || lambda > 1) {
-            throw new IllegalArgumentException("Tradeoff parameter lambda should be in the range of [0, 1].");
-        }
-        anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, config.anchorThreshold());
-        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, config.bidirectionalChecks());
+        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, config.maxIterations());
+        lambda = getConf().getFloat(LAMBDA, config.lambda());
     }
 
     /**
      * initialize vertex and edges
      *
-     * @param vertex of the graph
+     * @param vertex a graph vertex
      */
     private void initializeVertexEdges(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex) {
-        VertexData4LPWritable vertexValue = vertex.getValue();
+        
         // normalize prior and initialize posterior
-        Vector prior = vertexValue.getPriorVector();
-        if (prior.minValue() < 0d) {
-            throw new IllegalArgumentException("Vertex ID: " + vertex.getId() + " has negative prior value.");
-        }
-        prior = prior.normalize(1d);
-        vertexValue.setPriorVector(prior);
-        vertexValue.setPosteriorVector(prior.clone());
-        // normalize edge weight
-        double degree = 0d;
-        for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
-            double weight = edge.getValue().get();
-            if (weight <= 0d) {
-                throw new IllegalArgumentException("Vertex ID: " + vertex.getId() +
-                    " has an edge with negative or zero weight value.");
-            }
-            degree += weight;
-        }
-        for (Edge<LongWritable, DoubleWritable> edge : vertex.getMutableEdges()) {
-            edge.getValue().set(edge.getValue().get() / degree);
-        }
-        vertexValue.setDegree(degree);
+        VertexData4LPWritable vertexValue = vertex.getValue();
+        Vector priorValues = vertexValue.getPriorVector().normalize(1d);
+        
+        vertexValue.setPriorVector(priorValues);
+        vertexValue.setPosteriorVector(priorValues.clone());
+        vertexValue.setDegree(initializeEdge(vertex));
+        
         // send out messages
-        IdWithVectorMessage newMessage = new IdWithVectorMessage(vertex.getId().get(), prior);
+        IdWithVectorMessage newMessage = new IdWithVectorMessage(vertex.getId().get(), priorValues);
         sendMessageToAllEdges(vertex, newMessage);
     }
 
     @Override
     public void compute(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex,
         Iterable<IdWithVectorMessage> messages) throws IOException {
-        long step = getSuperstep();
-        if (step == 0) {
+        long superStep = getSuperstep();
+        
+        if (superStep == 0) {
             initializeVertexEdges(vertex);
             vertex.voteToHalt();
-            return;
         }
-
-        if (step <= maxSupersteps) {
+        else if (superStep <= maxSupersteps) {
             VertexData4LPWritable vertexValue = vertex.getValue();
             Vector prior = vertexValue.getPriorVector();
             Vector posterior = vertexValue.getPosteriorVector();
             double degree = vertexValue.getDegree();
 
             // collect messages sent to this vertex
-            HashMap<Long, Vector> map = new HashMap<Long, Vector>();
+            HashMap<Long, Vector> map = new HashMap();
             for (IdWithVectorMessage message : messages) {
                 map.put(message.getData(), message.getVector());
-            }
-            if (bidirectionalCheck) {
-                if (map.size() != vertex.getNumEdges()) {
-                    throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
-                        " isn't equal to number of edges (%d).", vertex.getId().get(), map.size(),
-                        vertex.getNumEdges()));
-                }
             }
 
             // Update belief and calculate cost
             double hi = prior.getQuick(0);
             double fi = posterior.getQuick(0);
             double crossSum = 0d;
-            Vector oldBelief = posterior;
-            Vector belief = oldBelief.clone().assign(0d);
+            Vector newBelief = posterior.clone().assign(0d);
+            
             for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
                 double weight = edge.getValue().get();
-                long id = edge.getTargetVertexId().get();
-                if (map.containsKey(id)) {
-                    Vector tempVector = map.get(id);
-                    belief = belief.plus(tempVector.times(weight));
+                long targetVertex = edge.getTargetVertexId().get();
+                if (map.containsKey(targetVertex)) {
+                    Vector tempVector = map.get(targetVertex);
+                    newBelief = newBelief.plus(tempVector.times(weight));
                     double fj = tempVector.getQuick(0);
                     crossSum += weight * fi * fj;
                 }
             }
-            double cost = degree * ((1 - lambda) * (fi * fi - crossSum) + 0.5 * lambda * (fi - hi) * (fi - hi));
+            
+            double cost = degree * ((1 - lambda) * (Math.pow(fi,2) - crossSum) + 
+                                    0.5 * lambda * Math.pow ((fi - hi),2)
+                                   );
             aggregate(SUM_COST, new DoubleWritable(cost));
 
-            // Update posterior if this isn't an anchor vertex
-            if (prior.maxValue() < anchorThreshold) {
-                belief = belief.times(1 - lambda).plus(prior.times(lambda));
-                vertexValue.setPosteriorVector(belief);
+            // Update posterior if the vertex was not processed
+            if (vertexValue.wasLabeled() == false) {
+                newBelief = newBelief.times(1 - lambda).plus(prior.times(lambda));
+                vertexValue.setPosteriorVector(newBelief);
+                vertexValue.markLabeled();
             }
 
-            if (step != maxSupersteps) {
-                // Send out messages
+            // Send out messages if not the last step
+            if (superStep != maxSupersteps) {
                 IdWithVectorMessage newMessage = new IdWithVectorMessage(vertex.getId().get(),
                     vertexValue.getPosteriorVector());
                 sendMessageToAllEdges(vertex, newMessage);
@@ -217,32 +175,62 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         vertex.voteToHalt();
     }
 
+    private double calculateVertexDegree (Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex) {
+        double degree = 0d;
+        for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
+            double weight = edge.getValue().get();
+            if (weight <= 0d) {
+                throw new IllegalArgumentException(
+                                "Vertex ID: " + 
+                                vertex.getId() +
+                                " has an edge with negative or zero weight value.");
+            }
+            degree += weight;
+        }
+        return degree;
+    }
+
+    private double initializeEdge(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex) {
+        double degree = calculateVertexDegree(vertex);
+        degree = (degree == 0) ? 1 : degree;
+        
+        for (Edge<LongWritable, DoubleWritable> edge : vertex.getMutableEdges()) {
+            edge.getValue().set(edge.getValue().get() / degree);
+        }
+
+        return degree;
+    }
+
     /**
      * Master compute associated with {@link LabelPropagationComputation}. It registers required aggregators.
      */
     public static class LabelPropagationMasterCompute extends DefaultMasterCompute {
 
+        private LabelPropagationConfig config = null;
+        private float convergenceThreshold = 1f;
+
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException {
+            config = new LabelPropagationConfiguration(getConf()).getConfig();
+            convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, config.convergenceThreshold());
+
             registerAggregator(SUM_COST, DoubleSumAggregator.class);
         }
 
         @Override
         public void compute() {
-            long step = getSuperstep();
-            if (step <= 0) {
-                return;
-            }
-            if (step != 1) {
-                // evaluate convergence condition
-                float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+            if (getSuperstep() > 1) {
+
                 float prevCost = getConf().getFloat(PREV_COST, 0f);
                 DoubleWritable sumCost = getAggregatedValue(SUM_COST);
                 double cost = sumCost.get() / getTotalNumVertices();
                 sumCost.set(cost);
-                if (Math.abs(prevCost - cost) < threshold) {
+
+                // evaluate convergence condition           
+                if (Math.abs(prevCost - cost) < convergenceThreshold) {
                     haltComputation();
                 }
+                
                 getConf().setFloat(PREV_COST, (float) cost);
             }
         }
@@ -254,29 +242,35 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
      */
     public static class LabelPropagationAggregatorWriter implements AggregatorWriter {
         /** Name of the file we wrote to */
-        private static String FILENAME;
+        private static String filename;
+        
         /** Saved output stream to write to */
         private FSDataOutputStream output;
+        
         /** Last superstep number */
-        private long lastStep = -1L;
-
+        private long currentStep = -1L;
+        
+        /** giraph configuration */
+        private ImmutableClassesGiraphConfiguration conf;
 
 
         public static String getFilename() {
-            return FILENAME;
+            return filename;
         }
 
         @SuppressWarnings("rawtypes")
         @Override
         public void initialize(Context context, long applicationAttempt) throws IOException {
+            
             setFilename(applicationAttempt);
             String outputDir = context.getConfiguration().get("mapred.output.dir");
-            Path p = new Path(outputDir + "/" + FILENAME);
-            FileSystem fs = FileSystem.get(context.getConfiguration());
-            if (fs.exists(p)) {
-                fs.delete(p, true);
+            Path outputPath = new Path(outputDir + File.separator + filename);
+            FileSystem fileSystem = FileSystem.get(context.getConfiguration());
+            
+            if (fileSystem.exists(outputPath)) {
+                fileSystem.delete(outputPath, true);
             }
-            output = fs.create(p, true);
+            output = fileSystem.create(outputPath, true);
         }
 
         /**
@@ -285,57 +279,53 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
          * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
-            FILENAME = "lp-learning-report_" + applicationAttempt;
+            filename = "lp-learning-report_" + applicationAttempt;
         }
 
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
-            long realStep = lastStep;
 
-            if (realStep == 0) {
-                // output graph statistics
+            if (currentStep == 0) {
+
                 output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d%n",
                     GiraphStats.getInstance().getVertices().getValue()));
                 output.writeBytes(String.format("Number of edges: %d%n",
                     GiraphStats.getInstance().getEdges().getValue()));
                 output.writeBytes("\n");
-                // output LP configuration
+
                 float lambda = getConf().getFloat(LAMBDA, 0f);
-                float anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
-                boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+
                 output.writeBytes("======LP Configuration======\n");
                 output.writeBytes(String.format("lambda: %f%n", lambda));
-                output.writeBytes(String.format("anchorThreshold: %f%n", anchorThreshold));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
-                output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
-            } else if (realStep > 0) {
+            } else if (currentStep > 0) {
+                
                 // collect aggregator data
-                HashMap<String, String> map = new HashMap<String, String>();
+                HashMap<String, String> map = new HashMap();
                 for (Entry<String, Writable> entry : aggregatorMap) {
                     map.put(entry.getKey(), entry.getValue().toString());
                 }
+                
                 // output learning progress
-                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("superstep = %d%c", currentStep, '\t'));
                 double cost = Double.parseDouble(map.get(SUM_COST));
                 output.writeBytes(String.format("cost = %f%n", cost));
             }
             output.flush();
-            lastStep =  superstep;
+            currentStep =  superstep;
         }
 
         @Override
         public void close() throws IOException {
             output.close();
         }
-
-        private ImmutableClassesGiraphConfiguration conf;
 
         /**
          * Set the configuration to be used by this object.
@@ -357,5 +347,4 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             return conf;
         }
     }
-
 }
