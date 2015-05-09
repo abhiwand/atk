@@ -27,7 +27,7 @@ import com.intel.graphbuilder.elements.GBVertex
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema._
 import org.apache.hadoop.io._
-import org.apache.spark.sql._
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 import scala.collection.mutable.ArrayBuffer
@@ -138,6 +138,14 @@ trait AbstractRow {
    */
   def stringValue(columnName: String): String = DataTypes.toStr(row(schema.columnIndex(columnName)))
 
+  /**
+   * Get property of string data type
+   * @param columnName name of the property
+   * @return property value
+   */
+  def vectorValue(columnName: String): Vector[Double] = {
+    DataTypes.toVector()(row(schema.columnIndex(columnName)))
+  }
   /**
    * True if value for this column is null.
    *

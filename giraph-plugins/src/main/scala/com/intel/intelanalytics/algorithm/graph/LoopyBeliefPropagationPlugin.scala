@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.{ LoopyBeliefPropagationAggregatorWriter, LoopyBeliefPropagationMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4LBP, TitanVertexInputFormatPropertyGraph4LBP }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -38,35 +39,35 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Lbp(graph: GraphReference,
-               vertexValuePropertyList: List[String],
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexType: String,
-               vectorValue: Boolean,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               anchorThreshold: Option[Double] = None,
-               smoothing: Option[Double] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               ignoreVertexType: Option[Boolean] = None,
-               maxProduct: Option[Boolean] = None,
-               power: Option[Double] = None)
+case class LoopyBeliefPropagation(graph: GraphReference,
+                                  vertexValuePropertyList: List[String],
+                                  edgeValuePropertyList: List[String],
+                                  inputEdgeLabelList: List[String],
+                                  outputVertexPropertyList: List[String],
+                                  vertexType: String,
+                                  vectorValue: Boolean,
+                                  maxSupersteps: Option[Int] = None,
+                                  convergenceThreshold: Option[Double] = None,
+                                  anchorThreshold: Option[Double] = None,
+                                  smoothing: Option[Double] = None,
+                                  validateGraphStructure: Option[Boolean] = None,
+                                  ignoreVertexType: Option[Boolean] = None,
+                                  maxProduct: Option[Boolean] = None,
+                                  power: Option[Double] = None)
 
-case class LbpResult(value: String) //TODO
+case class LoopyBeliefPropagationResult(value: String) //TODO
 
 /** Json conversion for arguments and return value case classes */
-object LbpJsonFormat {
+object LoopyBeliefPropagationJsonFormat {
   import DomainJsonProtocol._
-  implicit val lbpFormat = jsonFormat15(Lbp)
-  implicit val lbpResultFormat = jsonFormat1(LbpResult)
+  implicit val lbpFormat = jsonFormat15(LoopyBeliefPropagation)
+  implicit val lbpResultFormat = jsonFormat1(LoopyBeliefPropagationResult)
 }
 
-import LbpJsonFormat._
+import LoopyBeliefPropagationJsonFormat._
 
 class LoopyBeliefPropagationPlugin
-    extends CommandPlugin[Lbp, LbpResult] {
+    extends CommandPlugin[LoopyBeliefPropagation, LoopyBeliefPropagationResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -76,7 +77,7 @@ class LoopyBeliefPropagationPlugin
    */
   override def name: String = "graph/ml/loopy_belief_propagation"
 
-  override def execute(arguments: Lbp)(implicit invocation: Invocation): LbpResult = {
+  override def execute(arguments: LoopyBeliefPropagation)(implicit invocation: Invocation): LoopyBeliefPropagationResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
@@ -98,10 +99,10 @@ class LoopyBeliefPropagationPlugin
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertexValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexType))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vectorValue.toString))
 
@@ -109,11 +110,11 @@ class LoopyBeliefPropagationPlugin
 
     giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4LBP])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
+    giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
-    giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
+    giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationAggregatorWriter])
 
-    LbpResult(GiraphJobManager.run("ia_giraph_lbp",
+    LoopyBeliefPropagationResult(GiraphJobManager.run("ia_giraph_lbp",
       classOf[LoopyBeliefPropagationComputation].getCanonicalName,
       config, giraphConf, invocation, "lbp-learning-report_0"))
   }
