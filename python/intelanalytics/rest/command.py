@@ -69,7 +69,7 @@ def execute_command(command_name, selfish, **arguments):
         result = command_info.result.get('value')
     elif is_frame:
         # TODO: remove this hack for plugins that return data frame
-        from intelanalytics.core.frame import get_frame
+        from intelanalytics import get_frame
         if parent:
             result = selfish
         else:
