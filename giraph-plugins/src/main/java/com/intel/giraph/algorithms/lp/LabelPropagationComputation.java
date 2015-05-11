@@ -62,18 +62,6 @@ import java.util.Map.Entry;
 public class LabelPropagationComputation extends BasicComputation<LongWritable, VertexData4LPWritable,
     DoubleWritable, IdWithVectorMessage> {
 
-    /** Custom argument for number of super steps */
-    public static final String MAX_SUPERSTEPS = "lp.maxSupersteps";
-    
-    /**
-     * Custom argument for tradeoff parameter: lambda
-     * f = (1-lambda)*Pf + lambda*h
-     */
-    public static final String LAMBDA = "lp.lambda";
-    
-    /** Custom argument for the convergence threshold */
-    public static final String CONVERGENCE_THRESHOLD = "lp.convergenceThreshold";
-    
     /** Aggregator name for sum of cost at each super step */
     private static String SUM_COST = "sum_cost";
     
@@ -90,8 +78,8 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
     public void preSuperstep() {
         LabelPropagationConfig config = new LabelPropagationConfiguration(getConf()).getConfig();
 
-        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, config.maxIterations());
-        lambda = getConf().getFloat(LAMBDA, config.lambda());
+        maxSupersteps = config.maxIterations();
+        lambda = config.lambda();
     }
 
     /**
@@ -143,6 +131,11 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             
             for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
                 double weight = edge.getValue().get();
+                if (weight <= 0d) {
+                    throw new IllegalArgumentException("Vertex ID: " +
+                                                       vertex.getId() +
+                                                       "has an edge with negative or zero value");
+                }
                 long targetVertex = edge.getTargetVertexId().get();
                 if (map.containsKey(targetVertex)) {
                     Vector tempVector = map.get(targetVertex);
@@ -161,7 +154,6 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             if (vertexValue.wasLabeled() == false) {
                 newBelief = newBelief.times(1 - lambda).plus(prior.times(lambda));
                 vertexValue.setPosteriorVector(newBelief);
-                vertexValue.markLabeled();
             }
 
             // Send out messages if not the last step
@@ -192,7 +184,6 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
 
     private double initializeEdge(Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex) {
         double degree = calculateVertexDegree(vertex);
-        degree = (degree == 0) ? 1 : degree;
         
         for (Edge<LongWritable, DoubleWritable> edge : vertex.getMutableEdges()) {
             edge.getValue().set(edge.getValue().get() / degree);
@@ -212,7 +203,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException {
             config = new LabelPropagationConfiguration(getConf()).getConfig();
-            convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, config.convergenceThreshold());
+            convergenceThreshold = config.convergenceThreshold();
 
             registerAggregator(SUM_COST, DoubleSumAggregator.class);
         }
@@ -285,6 +276,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
+            LabelPropagationConfig config = new LabelPropagationConfiguration(getConf()).getConfig();
 
             if (currentStep == 0) {
 
@@ -295,14 +287,10 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
                     GiraphStats.getInstance().getEdges().getValue()));
                 output.writeBytes("\n");
 
-                float lambda = getConf().getFloat(LAMBDA, 0f);
-                float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
-                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
-
                 output.writeBytes("======LP Configuration======\n");
-                output.writeBytes(String.format("lambda: %f%n", lambda));
-                output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
-                output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
+                output.writeBytes(String.format("lambda: %f%n", config.lambda()));
+                output.writeBytes(String.format("convergence threshold: %f%n", config.convergenceThreshold()));
+                output.writeBytes(String.format("max iterations: %d%n", config.maxIterations()));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
             } else if (currentStep > 0) {

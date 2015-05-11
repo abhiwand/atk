@@ -50,13 +50,13 @@ public final class VertexData4LPWritable implements Writable {
     private boolean wasLabeled = false;
 
     /**
-     * Default c'tor
+     * Default constructor
      */
     public VertexData4LPWritable() {
     }
 
     /**
-     * Paramerized C'tor
+     * Paramerized Constructor
      *
      * @param prior of type vector
      * @param posterior of type vector
@@ -67,7 +67,8 @@ public final class VertexData4LPWritable implements Writable {
         this.posteriorWritable.set(posterior);
         this.degree = degree;
 
-        this.wasLabeled = !(prior.minValue() < 0d);
+        this.wasLabeled = prior.minValue() >= 0d;
+        setStatusAndUnlabeledValues();
     }
 
     /**
@@ -129,6 +130,8 @@ public final class VertexData4LPWritable implements Writable {
         priorWritable.readFields(in);
         posteriorWritable.readFields(in);
         degree = in.readDouble();
+
+        setStatusAndUnlabeledValues();
     }
 
     @Override
@@ -174,7 +177,20 @@ public final class VertexData4LPWritable implements Writable {
         return wasLabeled;
     }
 
-    public void markLabeled() {
-        wasLabeled = true;
+    /**
+     * Initialize the labels on vertex
+     */
+    private void setStatusAndUnlabeledValues() {
+
+        this.wasLabeled = priorWritable.get().minValue() >= 0d;
+        if (!wasLabeled) {
+            Vector temp = priorWritable.get();
+            int size = temp.size();
+            for (int i = 0; i < size; i++) {
+                temp.set (i, 1/size);
+            }
+            priorWritable.set(temp);
+            posteriorWritable.set(temp);
+        }
     }
 }

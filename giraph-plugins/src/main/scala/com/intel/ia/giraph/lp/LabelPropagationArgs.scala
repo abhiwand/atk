@@ -40,7 +40,7 @@ case class LabelPropagationArgs(frame: FrameReference,
                                 resultColName: Option[String] = None,
                                 maxIterations: Option[Int] = None,
                                 convergenceThreshold: Option[Float] = None,
-                                lambda: Option[Float] = None) {
+                                alpha: Option[Float] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
@@ -54,16 +54,16 @@ case class LabelPropagationArgs(frame: FrameReference,
 
   def getMaxIterations: Int = {
     val value = maxIterations.getOrElse(10)
-    if ((value < 0) || (value > 1)) 10 else value
+    if (value < 1) 10 else value
   }
 
   def getConvergenceThreshold: Float = {
-    1f
+    convergenceThreshold.getOrElse(0.00000001f)
   }
 
   def getLambda: Float = {
-    val value = lambda.getOrElse(0.001f)
-    if ((value < 0) || (value > 1)) 0.001f else value
+    val value = alpha.getOrElse(0f)
+    1 - Math.min(1, Math.max(0, value))
   }
 }
 
