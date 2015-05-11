@@ -83,7 +83,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -99,9 +98,19 @@
                                 <excludes>
                                     <exclude>org.apache.maven:*</exclude>
                                     <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
+                                    <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
+                                    <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
+                                    <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+                                    <exclude>com.google.code.findbugs:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
+                                <filter>
+                                    <artifact>org.apache.spark:spark-core_2.10</artifact>
+                                    <excludes>
+                                        <exclude>com/google/common/base/**</exclude>
+                                    </excludes>
+                                </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
@@ -120,6 +129,16 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.guava</pattern>
+                                    <shadedPattern>atk.com.google.guava</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -397,14 +416,14 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>junit</groupId>
@@ -498,7 +517,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

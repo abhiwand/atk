@@ -59,7 +59,7 @@
         <!-- END BDA dependencies to our modules -->
 
         <!-- START Titan dependencies -->
-				<dependency>
+		<dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>

@@ -36,10 +36,8 @@
             </plugin>
 
             <plugin>
-                <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -55,9 +53,19 @@
                                 <excludes>
                                     <exclude>org.apache.maven:*</exclude>
                                     <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
+                                    <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
+                                    <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
+                                    <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
+                                    <exclude>com.google.code.findbugs:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
+                                <filter>
+                                    <artifact>org.apache.spark:spark-core_2.10</artifact>
+                                    <excludes>
+                                        <exclude>com/google/common/base/**</exclude>
+                                    </excludes>
+                                </filter>
                                 <filter>
                                     <artifact>org.apache.hive:hive-exec</artifact>
                                     <includes>

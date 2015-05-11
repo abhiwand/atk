@@ -18,7 +18,26 @@
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
+    <!--<reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
 
+        </plugins>
+    </reporting>-->
     <build>
         <plugins>
             <plugin>
@@ -44,7 +63,7 @@
                                     <exclude>com.google.protobuf:protobuf-java:jar:2.4.1</exclude>
                                     <exclude>com.thinkaurelius.titan:titan-core:jar:*</exclude>
                                     <exclude>org.elasticsearch:elasticsearch:jar:*</exclude>
-                                    <exclude>org.codehaus.groovy:groovy:jar:*</exclude>
+                                    <exclude>com.google.code.findbugs:*</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -60,6 +79,12 @@
                                     <includes>
                                         <exclude>org/google/common/**</exclude>
                                     </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.apache.spark:spark-core_${scala.short.version}</artifact>
+                                    <excludes>
+                                        <exclude>org/apache/spark/api/java/JavaRDD</exclude>
+                                    </excludes>
                                 </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -93,7 +118,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
@@ -123,7 +147,6 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>model-plugins</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_${scala.short.version}</artifactId>
@@ -150,6 +173,10 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
         </dependency>
     </dependencies>
 </project>
