@@ -27,11 +27,10 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 
-#from intelanalytics.meta.api import get_api_decorator, api_globals
 from intelanalytics.core.api import api_globals
-from intelanalytics.meta.clientside import get_api_decorator
+from intelanalytics.meta.clientside import get_api_decorator, arg, returns
 from intelanalytics.meta.classnames import entity_type_to_collection_name
-from intelanalytics.meta.metaprog2 import set_function_doc_stub_text, get_entity_class_from_store
+from intelanalytics.meta.metaprog2 import get_entity_class_from_store, set_entity_collection
 
 
 def name_support(term):
@@ -45,12 +44,13 @@ def name_support(term):
 def add_named_object_support(obj_class, obj_term):
     from intelanalytics.rest.iaserver import server
     from intelanalytics.rest.command import execute_command
-    module = get_module(obj_class)
-    factory = _NamedObjectsFunctionFactory(obj_class, obj_term, server, execute_command)
-    for function in factory.global_functions:
-        setattr(module, function.__name__, function)
-        api_globals.add(function)
-    setattr(obj_class, 'name', factory.class_name_property)
+    _NamedObjectsFunctionFactory(obj_class, obj_term, server, execute_command)
+    # the act of creation is sufficient, they'll get registered via decorations during install
+    # module = get_module(obj_class)
+    # for function in factory.global_functions:
+    #     setattr(module, function.__name__, function)
+    #     api_globals.add(function)
+    # setattr(obj_class, '__name', factory.class_name_property)
 
 
 def get_module(cls):
@@ -102,15 +102,7 @@ class _NamedObjectsFunctionFactory(object):
             r = http.get(rest_target + str(self._id))  # TODO: update w/ URI jazz
             payload = r.json()
             return payload.get('name', None)
-        get_name.__name__ = 'name'
-        api_get_name = get_api_decorator(module_logger, parent_class_name=obj_class.__name__)(get_name)
-
-        def set_name(self, value):
-            arguments = {obj_term: self._id, "new_name": value}
-            execute_command(obj_term + "/rename", self, **arguments)
-        set_name.__name__ = 'name'
-        api_set_name = get_api_decorator(module_logger, parent_class_name=obj_class.__name__)(set_name)
-
+        get_name.__name__ = '__name'
         doc = """
         Set or get the name of the {term} object.
 
@@ -133,10 +125,20 @@ class _NamedObjectsFunctionFactory(object):
 
             "cleaned_data"
         """.format(term=self._term)
-        return property(fget=api_get_name, fset=api_set_name, fdel=None, doc=doc)
+        get_name.__doc__ = doc
+
+        def set_name(self, value):
+            arguments = {obj_term: self._id, "new_name": value}
+            execute_command(obj_term + "/rename", self, **arguments)
+        set_name.__name__ = '__name'
+        from intelanalytics.meta.context import get_api_context_decorator
+        api_set_name = get_api_context_decorator(module_logger)(set_name)
+
+        name_prop = property(fget=get_name, fset=api_set_name, fdel=None, doc=doc)
+        return get_api_decorator(module_logger, parent_class_name=obj_class.__name__)(name_prop)
 
     def create_get_object_names(self):
-        get_object_names_name = "get_%s_names" % self._term
+        get_object_names_name = "__get_%s_names" % self._term
         rest_collection = self._term + 's'
         module_logger = self._module_logger
         http = self._http
@@ -146,24 +148,18 @@ class _NamedObjectsFunctionFactory(object):
             r = http.get(rest_collection)
             payload = r.json()
             return [item.get('name', None) for item in payload]
+        set_entity_collection(get_object_names, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         get_object_names.__name__ = get_object_names_name
-        get_object_names.__doc__ = """
-        Retrieve all {obj_term} names.
+        get_object_names.__doc__ = """Retrieve names for all the {obj_term} objects on the server.""".format(obj_term=self._term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger) #, parent_class_name="_BaseGlobals")
+        returns_decorator = returns(list, "List of names")
+        decorated_method = api_decorator(returns_decorator(get_object_names))
+        return decorated_method
 
-        Gets the names of {obj_term} objects available for retrieval.
-
-
-        Returns
-        -------
-        list
-            A list of the names of the all {obj_term} objects.
-        """.format(obj_term=self._term)
-        get_object_names._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
-        set_function_doc_stub_text(get_object_names, '')
-        return get_api_decorator(module_logger)(get_object_names)
 
     def create_get_object(self):
-        get_object_name = "get_%s" % self._term
+        get_object_name = "__get_%s" % self._term
         rest_target = '%ss' % self._term
         rest_target_with_name = '%s?name=' % rest_target
         module_logger = self._module_logger
@@ -187,29 +183,22 @@ class _NamedObjectsFunctionFactory(object):
                     raise ValueError("Object '%s' is not a %s type" % (identifier, term))
                 cls = get_class(entity_type)
                 return cls(_info=r.json())
+        set_entity_collection(get_object, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         get_object.__name__ = get_object_name
-        get_object.__doc__ = """
-        Get access to {obj_term} object.
+        get_object.__doc__ = """Get handle to a {obj_term} object.""".format(obj_term=self._term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger) #, parent_class_name="_BaseGlobals")
+        arg_decorator = arg(name="identifier",
+                            data_type="str | int",
+                            description="Name of the %s to get" % self._term)
+        returns_decorator = returns(obj_class, "%s object" % self._term)
+        decorated_method = api_decorator(returns_decorator(arg_decorator(get_object)))
+        return decorated_method
 
-
-        Parameters
-        ----------
-        name : str
-            String containing the name of the object.
-
-
-        Returns
-        -------
-        class
-            {obj_term} object.
-        """.format(obj_term=self._term)
-        get_object._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
-        set_function_doc_stub_text(get_object, 'name')
-        return get_api_decorator(module_logger)(get_object)
 
     def create_drop_objects(self):
         # create local vars for better closures:
-        drop_objects_name = "drop_%ss" % self._term
+        drop_objects_name = "__drop_%ss" % self._term
         rest_target = '%ss/' % self._term
         module_logger = self._module_logger
         obj_class = self._class
@@ -230,17 +219,13 @@ class _NamedObjectsFunctionFactory(object):
             for name, id in victim_ids.items():
                 module_logger.info("Drop %s %s", obj_term, name)
                 http.delete(rest_target + str(id))  # TODO: update w/ URI jazz
-        drop_objects._entity_collection = entity_type_to_collection_name(self._term)  # so meta knows where it goes
+        set_entity_collection(drop_objects, entity_type_to_collection_name(self._term))  # so meta knows where it goes
         drop_objects.__name__ = drop_objects_name
-        drop_objects.__doc__ = """
-        Deletes the {obj_term} and it's data.
-
-
-        Parameters
-        ----------
-        items : [ str | {obj_term} object | list [ str | {obj_term} objects ]]
-            Either the name of the {obj_term} object to delete or the {obj_term}
-            object itself
-        """.format(obj_term=obj_term)
-        set_function_doc_stub_text(drop_objects, 'items')
-        return get_api_decorator(module_logger)(drop_objects)
+        drop_objects.__doc__ = """Deletes the {obj_term} on the server.""".format(obj_term=obj_term)
+        # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
+        api_decorator = get_api_decorator(module_logger, parent_class_name="_BaseGlobals")
+        arg_decorator = arg(name="items",
+                            data_type="[ str | {obj_term} object | list [ str | {obj_term} objects ]]".format(obj_term=obj_term),
+                            description="Either the name of the {obj_term} object to delete or the {obj_term} object itself".format(obj_term=obj_term))
+        decorated_method = api_decorator(arg_decorator(drop_objects))
+        return decorated_method

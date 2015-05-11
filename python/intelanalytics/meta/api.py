@@ -445,7 +445,7 @@ import inspect
 #     return decorator(_error_if_api_already_loaded, function)
 
 
-from intelanalytics.meta.metaprog2 import get_installation
+from intelanalytics.meta.metaprog2 import get_installation, get_intermediate_class
 
 # methods to dump the names in the API (driven by QA coverage)
 def get_api_names(obj, prefix=''):
@@ -456,11 +456,9 @@ def get_api_names(obj, prefix=''):
             a = getattr(obj, name)
             suffix = _get_inheritance_suffix(obj, name)
             if isinstance(a, property):
-                installation = get_installation(obj, None)
-                if installation:
-                    intermediate_class = installation.get_intermediate_class(name)
-                    if intermediate_class:
-                        found.extend(get_api_names(intermediate_class, prefix + name + "."))
+                intermediate_class = get_intermediate_class(obj, name)
+                if intermediate_class:
+                    found.extend(get_api_names(intermediate_class, prefix + name + "."))
                 a = a.fget
             if hasattr(a, "_is_api"):
                 found.append(prefix + name + suffix)
@@ -468,6 +466,7 @@ def get_api_names(obj, prefix=''):
                     found.extend(get_api_names(a, prefix + name + "."))
     return found
 
+from intelanalytics.meta.clientside import is_api
 
 def walk_api(cls, cls_function, attr_function, include_init=False):
     """
@@ -478,7 +477,6 @@ def walk_api(cls, cls_function, attr_function, include_init=False):
     Either *_function arg can be None.  For example if you're only interesting in walking functions,
     set cls_function=None.
     """
-    from intelanalytics.meta.metaprog2 import get_installation
     cls_func = cls_function
     attr_func = attr_function
     inc_init = include_init
@@ -487,19 +485,17 @@ def walk_api(cls, cls_function, attr_function, include_init=False):
         for name in dir(obj):
             if not name.startswith("_") or (inc_init and name == "__init__"):
                 a = getattr(obj, name)
-                if isinstance(a, property):
-                    installation = get_installation(obj, None)
-                    if installation:
-                        intermediate_class = installation.intermediates.get(name, None)
-                        if intermediate_class:
-                            walker(intermediate_class)
-                    a = a.fget
-                elif inspect.isclass(a):
-                    if hasattr(a, "_is_api") and cls_func:
+                if inspect.isclass(a):
+                    if is_api(a) and cls_func:
                         cls_func(a)
                     walker(a)
-                elif hasattr(a, "_is_api"):
-                    if attr_func:
+                else:
+                    if isinstance(a, property):
+                        intermediate_class = get_intermediate_class(name, obj)
+                        if intermediate_class:
+                            walker(intermediate_class)
+                        a = a.fget
+                    if is_api(a) and attr_func:
                         attr_func(obj, a)
     walker(cls)
 

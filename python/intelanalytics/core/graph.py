@@ -27,12 +27,9 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import api_status
-from intelanalytics.meta.clientside import *
+from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
-#from intelanalytics.meta.metaprog import doc_stubs_import
 from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
 
 from intelanalytics.meta.namedobj import name_support
@@ -402,6 +399,15 @@ class _BaseGraph(_DocStubsBaseGraph, CommandLoadable):
         except:
             return super(_BaseGraph, self).__repr__() + " (Unable to collect metadata from server)"
 
+    @api
+    @property
+    def __status(self):
+        try:
+            return self._backend.get_status(self)
+        except:
+            return super(_BaseGraph, self).__repr__() + " (Unable to collect metadata from server)"
+
+
 
 @api
 class Graph(_DocStubsGraph, _BaseGraph):
@@ -625,7 +631,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
         _BaseGraph.__init__(self)
 
     @api
-    def _get_vertex_frame(self, label):
+    def ___get_vertex_frame(self, label):
         """
         return a VertexFrame for the associated label
         :param label: the label of the frame to return
@@ -633,14 +639,14 @@ class Graph(_DocStubsGraph, _BaseGraph):
         return self._backend.get_vertex_frame(self._id, label)
 
     @api
-    def _get_vertex_frames(self):
+    def ___get_vertex_frames(self):
         """
         return all VertexFrames for this graph
         """
         return self._backend.get_vertex_frames(self._id)
 
     @api
-    def _get_edge_frame(self, label):
+    def ___get_edge_frame(self, label):
         """
         return an EdgeFrame for the associated label
         :param label: the label of the frame to return
@@ -648,15 +654,15 @@ class Graph(_DocStubsGraph, _BaseGraph):
         return self._backend.get_edge_frame(self._id, label)
 
     @api
-    def _get_edge_frames(self):
+    def ___get_edge_frames(self):
         """
         return all EdgeFrames for this graph
         """
         return self._backend.get_edge_frames(self._id)
 
-    @property
     @api
-    def vertices(self):
+    @property
+    def __vertices(self):
         """
         Vertex frame collection
 
@@ -672,9 +678,9 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         return self._vertices
 
-    @property
     @api
-    def edges(self):
+    @property
+    def __edges(self):
         """
         Edge frame collection
 
@@ -690,9 +696,9 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         return self._edges
 
-    @property
     @api
-    def vertex_count(self):
+    @property
+    def __vertex_count(self):
         """
         Get the total number of vertices in the graph.
 
@@ -719,9 +725,9 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         return self._backend.get_vertex_count(self)
 
-    @property
     @api
-    def edge_count(self):
+    @property
+    def __edge_count(self):
         """
         Get the total number of edges in the graph.
 
@@ -911,7 +917,7 @@ class TitanGraph(_DocStubsTitanGraph, _BaseGraph):
             return super(TitanGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @api
-    def append(self, rules=None):
+    def __append(self, rules=None):
         """
         Append frame data to the current graph.
 

@@ -40,7 +40,7 @@ except Exception as e:
     errors._doc_stubs = e
     del e
 
-from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile
+from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile, HiveQuery
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.rest.udfdepends import udf
 from intelanalytics.core.frame import Frame, VertexFrame

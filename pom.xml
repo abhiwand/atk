@@ -123,6 +123,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.5.0-${dep.cdh.version}</dep.hadoop2.version>
         <dep.zookeeper.version>3.4.5-${dep.cdh.version}</dep.zookeeper.version>
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
+        <dep.hive.version>0.13.1-${dep.cdh.version}</dep.hive.version>
+        <dev.spark.hive.version>1.2.0-${dep.cdh.version}</dev.spark.hive.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -137,36 +139,18 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
-    <modules>
-
-    </modules>
     <profiles>
         <profile>
             <id>events</id>
             <activation>
-		<activeByDefault>true</activeByDefault>
-               <property>
-                    <name>!NEVERSETME</name>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>NEVERSETME</name>
                 </property>
             </activation>
             <modules>
-		<module>misc/event-api</module>
+                <module>misc/event-api</module>
                 <module>misc/event</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>modules-java</id>
-            <!--
-                This profile is here so that we can capture code-coverage for the Java modules only.
-            -->
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
             </modules>
         </profile>
         <profile>
@@ -178,20 +162,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <module>api-doc</module>
+                <module>doc-api-examples</module>
                 <module>testutils</module>
                 <module>graphbuilder</module>
                 <module>graphon</module>
-                <module>interfaces</module>
+                <module>engine-interfaces</module>
                 <module>launcher</module>
+                <module>scoring-models</module>
                 <module>meta-store</module>
                 <module>engine</module>
-                <module>engine-spark</module>
                 <module>rest-server</module>
-                <module>igiraph/giraph-core</module>
-                <module>igiraph/giraph-algorithms</module>
-                <module>igiraph/giraph-titan</module>
-                <module>igiraph</module>
+                <module>giraph-plugins</module>
                 <module>deploy</module>
                 <module>package</module>
             </modules>
@@ -395,6 +376,69 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </plugins>
             </reporting>
         </profile>
+        <profile>
+            <id>devonly</id>
+            <activation>
+                <property>
+                    <name>!env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.scalariform</groupId>
+                            <artifactId>scalariform-maven-plugin</artifactId>
+                            <version>0.1.4</version>
+                            <executions>
+                                <execution>
+                                    <phase>process-sources</phase>
+                                    <goals>
+                                        <goal>format</goal>
+                                    </goals>
+                                    <configuration>
+                                        <alignParameters>true</alignParameters>
+                                        <compactControlReadability>true</compactControlReadability>
+                                        <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-checkstyle-plugin</artifactId>
+                            <version>2.10</version>
+                            <configuration>
+                                <configLocation>checkstyle.xml</configLocation>
+                                <consoleOutput>true</consoleOutput>
+                                <enableRulesSummary>false</enableRulesSummary>
+                                <headerLocation>license-header.txt</headerLocation>
+                                <failOnViolation>false</failOnViolation>
+                                <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>check</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.scalariform</groupId>
+                        <artifactId>scalariform-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <build>
         <pluginManagement>
@@ -423,27 +467,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <source>1.7</source>
                         <target>1.7</target>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.10</version>
-                    <configuration>
-                        <configLocation>checkstyle.xml</configLocation>
-                        <consoleOutput>true</consoleOutput>
-                        <enableRulesSummary>false</enableRulesSummary>
-                        <headerLocation>license-header.txt</headerLocation>
-                        <failOnViolation>false</failOnViolation>
-                        <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <!--Create our jars-->
@@ -533,24 +556,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.scalariform</groupId>
-                    <artifactId>scalariform-maven-plugin</artifactId>
-                    <version>0.1.4</version>
-                    <executions>
-                        <execution>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>format</goal>
-                            </goals>
-                            <configuration>
-                                <alignParameters>true</alignParameters>
-                                <compactControlReadability>true</compactControlReadability>
-                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+
             </plugins>
         </pluginManagement>
 
@@ -560,21 +566,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalariform</groupId>
-                <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>
-
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-            </plugin>-->
 
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -639,7 +630,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>interfaces</artifactId>
+                <artifactId>engine-interfaces</artifactId>
                 <version>${project.version}</version>
                 <!-- <scope>provided</scope> -->
             </dependency>
@@ -661,7 +652,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>api-doc</artifactId>
+                <artifactId>doc-api-examples</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -671,27 +662,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine-spark</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-algorithms</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-titan</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>igiraph</artifactId>
+                <artifactId>giraph-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--STARTititan-->
@@ -800,6 +771,23 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <artifactId>netty</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!--org.apache.hive-->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-hive_${scala.short.version}</artifactId>
+                <version>${dev.spark.hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-common</artifactId>
+                <version>${dep.hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-hive_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
             </dependency>
             <!--org.apache.hadoop-->
             <dependency>
@@ -963,6 +951,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -993,6 +985,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-protocol</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.stephenc.findbugs</groupId>
+                        <artifactId>findbugs-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -1200,7 +1198,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>akka-actor_${scala.short.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
-						
+
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-slf4j_${scala.short.version}</artifactId>
@@ -1369,6 +1367,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.chuusai</groupId>
                 <artifactId>shapeless_${scala.short.version}</artifactId>
                 <version>1.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>bson</artifactId>
+                <version>2.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.2.2</version>
             </dependency>
             <!--test scope-->
             <dependency>

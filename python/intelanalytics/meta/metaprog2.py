@@ -91,12 +91,12 @@ class CommandInstallation(object):
             setattr(parent_class, property_name, self._create_intermediate_property(property_name, intermediate_class))
             self.intermediates[property_name] = intermediate_class
 
-    def get_intermediate_class(self, property_name):
-        return self.intermediates.get(property_name, None)
-
     @staticmethod
     def _create_intermediate_property(name, intermediate_class):
         fget = CommandInstallation.get_fget(name)
+        from intelanalytics.meta.clientside import mark_item_as_api  # todo: make clientside be full dep declared at top
+        mark_item_as_api(fget)
+        fget._intermediate_class = intermediate_class
         doc = CommandInstallation._get_canned_property_doc(name, intermediate_class.__name__)
         return property(fget=fget, doc=doc)
 
@@ -112,6 +112,24 @@ class CommandInstallation(object):
     def _get_canned_property_doc(name, class_name):
         return "Access to object's %s functionality (See :class:`~intelanalytics.core.docstubs.%s`)" % (name, class_name)
 
+def is_intermediate_property(item):
+    return isinstance(item, property) and hasattr(item.fget, "_intermediate_class")
+
+def get_intermediate_class(property_name, from_class):
+    installation = get_installation(from_class, None)
+    if installation:
+        intermediate_class = installation.intermediates.get(property_name, None)
+        if intermediate_class:
+            return intermediate_class
+    # keep looking...
+    for cls in inspect.getmro(from_class)[1:]:
+        installation = get_installation(cls, None)
+        if installation:
+            intermediate_class = installation.intermediates.get(property_name, None)
+            if intermediate_class:
+                # Need to make a new intermediate class for 'this' installation
+                return intermediate_class
+    return None
 
 def doc_stub(function):
     """Doc stub decorator"""
@@ -123,6 +141,8 @@ def doc_stub(function):
 class Constants(object):
     IA_URI = '_id'
     COMMAND_INSTALLATION = "_command_installation"
+    ENTITY_COLLECTION = "_entity_collection"
+
 
     INTERMEDIATE_CLASS = '_intermediate_class'
     LOADED_COMMANDS = '_loaded_commands'
@@ -167,11 +187,10 @@ class CommandInstallable(object):
         self._entity = entity if entity else self
 
         # Instantiate intermediate classes for the properties which scope installed commands.
-        # To honor inheritance overriding, we must start at the most base class (not inc. CommandInstallable)
-        # and work towards self's class, doing it last.
+        # To honor inheritance overriding, we must start at this class and work up to the most base class (not inc. CommandInstallable)
         class_lineage = inspect.getmro(self.__class__)
         index = class_lineage.index(CommandInstallable)
-        for i in reversed(xrange(index)):
+        for i in xrange(index):
             cls = class_lineage[i]
             if has_installation(cls):
                 self._init_intermediate_classes(cls)
@@ -183,7 +202,7 @@ class CommandInstallable(object):
             installation = get_installation(installation_class)
             for name, cls in installation.intermediates.items():
                 private_member_name = naming.name_to_private(name)
-                if not hasattr(self, private_member_name):
+                if private_member_name not in self.__dict__:
                     logger.debug("Instantiating intermediate class %s as %s", cls, private_member_name)
                     private_member_value = cls(self._entity)  # instantiate
                     logger.debug("Adding intermediate class instance as member %s", private_member_name)
@@ -221,6 +240,26 @@ def set_installation(cls, installation):
     """makes the installation object a member of the class type"""
     setattr(cls, Constants.COMMAND_INSTALLATION, installation)
     _installable_classes_store[installation.install_path.full] = cls  # update store
+
+
+def has_entity_collection(item):
+    """the entity collection name for an item"""
+    return hasattr(item, Constants.ENTITY_COLLECTION)
+
+
+def get_entity_collection(item, *default):
+    """returns the entity collection name of given item"""
+    try:
+        return getattr(item, Constants.ENTITY_COLLECTION)
+    except AttributeError:
+        if len(default) > 0:
+            return default[0]
+        raise AttributeError("Item %s does not have entity collection metadata" % item)
+
+
+def set_entity_collection(item, collection_name):
+    """the entity collection name for an item"""
+    setattr(item, Constants.ENTITY_COLLECTION, collection_name)
 
 
 def get_class_from_store(install_path):
@@ -323,7 +362,8 @@ def is_command_name_installable(cls, command_name):
 
 
 def install_client_commands():
-    from intelanalytics.meta.clientside import client_commands
+    from intelanalytics.meta.clientside import client_commands, clear_clientside_api_stubs
+    cleared_classes = set()
     for class_name, command_def in client_commands:
 
         # what to do with global methods???
@@ -340,6 +380,9 @@ def install_client_commands():
             cls_with_installation = get_class_from_store(InstallPath(command_def.entity_type))
             if cls_with_installation is not cls:
                 raise RuntimeError("Internal Error: @api decoration resolved with mismatched classes for %s" % class_name)
+            if cls not in cleared_classes:
+                clear_clientside_api_stubs(cls)
+                cleared_classes.add(cls)
             installation = get_installation(cls_with_installation)
             if command_def.entity_type != installation.install_path.full:
                 raise RuntimeError("Internal Error: @api decoration resulted in different install paths '%s' and '%s' for function %s in class %s"
@@ -347,11 +390,12 @@ def install_client_commands():
 
             if command_def.full_name not in muted_commands:
                 installation.commands.append(command_def)
+                setattr(cls, command_def.name, command_def.client_member)
                 logger.debug("Installed client-side api function %s to class %s", command_def.name, cls)
 
-        elif command_def.client_function not in api_globals:
+        elif command_def.client_member not in api_globals:
             # global function
-            api_globals.add(command_def.client_function)
+            api_globals.add(command_def.client_member)
 
 
 def install_command_def(cls, command_def, execute_command_function):
@@ -390,22 +434,43 @@ def install_server_commands(command_defs):
         cls = get_class(command_def.install_path)
         install_command_def(cls, command_def, execute_command)
 
-    # Some added properties may access intermediate classes which did not end up
-    # receiving any commands. They are empty and should not appear in the API.  We
-    # will take a moment to delete them.  This approach seemed much better than writing
-    # special logic to calculate fancy inheritance and awkwardly insert classes into
-    # the hierarchy on-demand.
-    del_empty_intermediate_properties()
+    post_install_clean_up()
 
 
-def del_empty_intermediate_properties():
+def post_install_clean_up():
+    """Do some post-processing on the installation to clean things like property inheritance"""
+
+    # Find all the intermediate properties that are using a base class and create an appropriate
+    # inherited class that matches the inheriance of its parent class
+    # Example:  say someone registers   "graph/colors/red"
+    # We end up with  _BaseGraphColors, where _BaseGraph has a property 'colors' which points to it
+    # Then we see  "graph:titan/colors/blue"
+    # We get TitanGraphColors(_BaseGraphColors) and TitaGraph has a property 'colors' which points to it
+    # Now, regular old Graph(_BaseGraph) did get any commands installed at colors specifically, so it inherits property 'color' which points to _BaseGraphColors
+    # This makes things awkward because the Graph class installation doesn't know about the property color, since it wasn't installed there.
+    # It becomes much more straightforward in Graph gets its own proeprty 'colors' (overriding inheritance) which points to a class GraphColors
+    # So in this method, we look for this situation, now that installation is complete.
     for cls in _installable_classes_store.values():
         installation = get_installation(cls)
-        for name, intermediate_cls in installation.intermediates.items():
-            intermediate_installation = get_installation(intermediate_cls)
-            if not intermediate_installation.commands:  # i.e. no commands have been installed
-                delattr(cls, name)
-                del installation.intermediates[name]
+        if installation:
+            for name in dir(cls):
+                member = getattr(cls, name)
+                if is_intermediate_property(member):
+                    if name not in cls.__dict__:  # is inherited...
+                        path =InstallPath(installation.install_path.entity_type + '/' + name)
+                        new_class = _create_class(path)  # create new, appropriate class to avoid inheritance
+                        installation.add_property(cls, name, new_class)
+                        get_installation(new_class).keep_me = True  # mark its installation so it will survive the next for loop
+            # Some added properties may access intermediate classes which did not end up
+            # receiving any commands. They are empty and should not appear in the API.  We
+            # will take a moment to delete them.  This approach seemed much better than writing
+            # special logic to calculate fancy inheritance and awkwardly insert classes into
+            # the hierarchy on-demand.
+            for name, intermediate_cls in installation.intermediates.items():
+                intermediate_installation = get_installation(intermediate_cls)
+                if not intermediate_installation.commands and not hasattr(intermediate_installation, "keep_me"):
+                    delattr(cls, name)
+                    del installation.intermediates[name]
 
 
 def get_class_init_from_path(install_path):
@@ -490,32 +555,37 @@ def get_function_text(command_def, body_text='pass', decorator_text=''):
     """Produces python code text for a command to be inserted into python modules"""
 
     from intelanalytics.meta.genspa import gen_spa
-    parameters_text=command_def.get_function_parameters_text()
+    args_text=command_def.get_function_args_text()
     if command_def.is_constructor:
-        parameters_text += ", _info=None"
+        if args_text:
+            args_text += ", _info=None"
+        else:
+            args_text = "_info=None"
+    if not command_def.is_property:
+        args_text = "(%s)" % args_text
     return '''{decorator}
-def {func_name}({parameters}):
+def {func_name}{args_text}:
     """
 {doc}
     """
     {body_text}
 '''.format(decorator=decorator_text,
            func_name=command_def.name,
-           parameters=parameters_text,
+           args_text=args_text,
            doc=gen_spa(command_def),
            body_text=body_text)
 
 
 def get_doc_stub_init_text(command_def):
     from intelanalytics.meta.genspa import gen_spa
-    parameters_text=command_def.get_function_parameters_text()
+    args_text=command_def.get_function_args_text()
     return '''
-def __init__({parameters}):
+def __init__({args_text}):
     """
     {doc}
     """
     pass
-'''.format(parameters=parameters_text, doc=gen_spa(command_def))
+'''.format(args_text=args_text, doc=gen_spa(command_def))
 
 
 def get_call_execute_command_text(command_def):
@@ -655,17 +725,17 @@ def api_class_alias(cls):
     return cls
 
 
-def set_function_doc_stub_text(function, params_text):
-    doc_stub_text = '''@{doc_stub}
-def {name}({params}):
-    """
-    {doc}
-    """
-    pass'''.format(doc_stub=doc_stub.__name__,
-                   name=function.__name__,
-                   params=params_text,
-                   doc=function.__doc__)
-    set_doc_stub_text(function, doc_stub_text)
+# def set_function_doc_stub_text(function, params_text, doc_str):
+#     doc_stub_text = '''@{doc_stub}
+# def {name}({params}):
+#     """
+# {doc}
+#     """
+#     pass'''.format(doc_stub=doc_stub.__name__,
+#                    name=function.__name__,
+#                    params=params_text,
+#                    doc=doc_str)
+#     set_doc_stub_text(function, doc_stub_text)
 
 
 def get_base_class_via_inspect(cls):
@@ -676,7 +746,7 @@ def set_class_doc_stub_text(cls):
     doc_stub_text = '''@{doc_stub}
 class {name}({base}):
     """
-    {doc}
+{doc}
     """
     pass'''.format(doc_stub=doc_stub.__name__,
                    name=cls.__name__,
@@ -716,18 +786,26 @@ def get_doc_stub_class_text(loaded_class):
 def get_doc_stub_globals_text(module):
     doc_stub_all = []
     lines = []
+    return_types = set()
     for key, value in sorted(module.__dict__.items()):
         if hasattr(value, Constants.DOC_STUB_TEXT):
             doc_stub_text = getattr(value, Constants.DOC_STUB_TEXT)
             if doc_stub_text:
                 doc_stub_all.append(key)
                 lines.append(doc_stub_text)
-    if doc_stub_all:
-        lines.insert(0, '__all__ = ["%s"]' % '", "'.join(doc_stub_all))
-    return '\n\n\n'.join(lines) if lines else ''
+                if hasattr(value, 'command'):
+                    return_type = value.command.get_return_type()
+                    if inspect.isclass(return_type):
+                        return_types.add(return_type)
+    for return_type in return_types:
+        module_path = return_type.__module__
+        lines.insert(0, "from %s import %s" % (module_path, get_type_name(return_type)))
+    return '\n\n\n'.join(lines) if lines else '', doc_stub_all
 
 
 def get_doc_stubs_modules_text(command_defs, global_module):
+    """creates docstub text for two different files, returning a tuple of the file content"""
+    # the content of the second item in the tuple contains those entity classes that were created by the metaprogramming, not coded in the python client.
     install_server_commands(command_defs)
     delete_docstubs()
     before_lines = [get_file_header_text()]
@@ -765,15 +843,17 @@ def get_doc_stubs_modules_text(command_defs, global_module):
                                              "Contains commands for %s provided by the server" % class_name,
                                              members_text))
 
-    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
     for d in after_definitions:
         after_dependencies.pop(d, None)
     for baseclass_name, install_path in after_dependencies.items():
         if install_path:
             module_path = _installable_classes_store[install_path.full].__module__
             after_lines.insert(0, "from %s import %s" % (module_path, baseclass_name))
+    global_lines, global_all = get_doc_stub_globals_text(global_module)
+    after_lines.append(global_lines)
+    after_all.extend(global_all)
+    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
     after_lines.insert(0, get_file_header_text())
-    before_lines.append(get_doc_stub_globals_text(global_module))
     return '\n'.join(before_lines), '\n'.join(after_lines)
 
 
@@ -867,17 +947,34 @@ def delete_docstubs():
     """
     Deletes all the doc_stub functions from all classes in docstubs.py
     """
-    try:
-        import intelanalytics.core.docstubs as docstubs
-    except Exception:
-        logger.info("No docstubs.py found, nothing to delete")
-    else:
+
+    def _is_doc_stub(attr):
+        if isinstance(attr, property):
+            attr = attr.fget
+        elif not hasattr(attr, '__call__'):
+            attr = None
+        return attr and hasattr(attr, Constants.DOC_STUB)
+
+    def _delete_docstubs(docstubs):
         for item in docstubs.__dict__.values():
             if inspect.isclass(item):
-                victims = [k for k, v in item.__dict__.iteritems() if hasattr(v, '__call__') and hasattr(v, Constants.DOC_STUB)]
+                victims = [k for k, v in item.__dict__.iteritems() if _is_doc_stub(v)]
                 logger.debug("deleting docstubs from %s: %s", item, victims)
                 for victim in victims:
                     delattr(item, victim)
+    try:
+        import intelanalytics.core.docstubs1 as docstubs1
+    except Exception:
+        logger.info("No docstubs1.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs1)
+
+    try:
+        import intelanalytics.core.docstubs2 as docstubs2
+    except Exception:
+        logger.info("No docstubs2.py found, nothing to delete")
+    else:
+        _delete_docstubs(docstubs2)
 
 
 ##############################################################################
@@ -921,9 +1018,9 @@ def install_api():
         from intelanalytics.rest.jsonschema import get_command_def
         from intelanalytics.core.errorhandle import errors
         #try:
+        delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
-        delete_docstubs()
         from intelanalytics import _refresh_api_namespace
         _refresh_api_namespace()
         #except Exception as e:

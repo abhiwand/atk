@@ -29,12 +29,10 @@ import inspect
 from intelanalytics.core.api import api_globals
 
 from intelanalytics.meta.classnames import class_name_to_entity_type
-from intelanalytics.meta.command import CommandDefinition, Parameter, Doc, ReturnInfo
+from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 from intelanalytics.meta.context import get_api_context_decorator
 from intelanalytics.meta.reflect import get_args_spec_from_function, get_args_text_from_function
-
-# make all the decorators import with * for convenience
-__all__ = ['get_api_decorator', 'alpha', 'beta', 'deprecated', 'arg', 'returns']
+from intelanalytics.meta.genspa import gen_spa
 
 
 client_commands = []  # list of tuples (class_name, command_def) defined in the python client code (not from server)
@@ -56,48 +54,54 @@ class ReturnDoc(object):
 class ClientCommandDefinition(CommandDefinition):
     """CommandDefinition for functions marked as @api in the core python code"""
 
-    def __init__(self, class_name, function):
+    def __init__(self, class_name, member, is_property):
         # Note: this code runs during package init (before connect)
 
-        self.client_function = function
+        self.client_member = member
         self.parent_name = class_name
+
+        function = member.fget if is_property else member
         function.command = self  # make command def accessible from function, just like functions gen'd from server info
 
         json_schema = {}  # make empty, since this command didn't come from json, and there is no need to generate it
-        full_name = self._generate_full_name(class_name, function)
+        full_name = self._generate_full_name(class_name, function.__name__)
 
         params = []
         return_info = None
 
+        args, kwargs, varargs, varkwargs = get_args_spec_from_function(function, ignore_private_args=True)
+        num_args = len(args) + len(kwargs) + (1 if varargs else 0) + (1 if varkwargs else 0)
+
         if hasattr(function, "arg_docs"):
             arg_docs = function.arg_docs
-            args, kwargs, varargs, varkwargs = get_args_spec_from_function(function, ignore_private_args=True)
-            num_args = len(args) + len(kwargs) + (1 if varargs else 0) + (1 if varkwargs else 0)
             num_arg_docs = len(arg_docs)
             if num_arg_docs > num_args:   # only check for greater than, the code after will give a better exception message for less than case
                 raise ValueError("function received %d @arg decorators, expected %d for function %s." % (num_arg_docs, num_args, function.__name__))
 
             def _get_arg_doc(name):
                 try:
-                    arg_doc = filter(lambda  d: d.name == arg_name, arg_docs)[0]
+                    arg_doc = filter(lambda  d: d.name == name, arg_docs)[0]
                 except IndexError:
-                    raise ValueError("Function missing @arg decorator for argument '%s' in function %s" % (arg, function.__name__))
+                    raise ValueError("Function missing @arg decorator for argument '%s' in function %s" % (name, function.__name__))
                 if not isinstance(arg_doc, ArgDoc):
-                    raise TypeError("InternalError - @api decorator expected an ArgDoc for argument '%s' in function %s.  Received type %s" % (arg_name, function.__name__, type(arg_doc)))
+                    raise TypeError("InternalError - @api decorator expected an ArgDoc for argument '%s' in function %s.  Received type %s" % (name, function.__name__, type(arg_doc)))
                 return arg_doc
+        else:
+            def _get_arg_doc(name):
+                return ArgDoc(name, '', '')
 
-            for arg_name in args:
+        for arg_name in args:
+            arg_doc = _get_arg_doc(arg_name)
+            params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=False, default=None, doc=arg_doc.description))
+
+        for arg_name, default in kwargs:
+            arg_doc = _get_arg_doc(arg_name)
+            params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=True, default=default, doc=arg_doc.description))
+
+        for arg_name in [varargs, varkwargs]:
+            if arg_name:
                 arg_doc = _get_arg_doc(arg_name)
-                params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=False, default=None, doc=arg_doc.description))
-
-            for arg_name, default in kwargs:
-                arg_doc = _get_arg_doc(arg_name)
-                params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=True, default=default, doc=arg_doc.description))
-
-            for arg_name in [varargs, varkwargs]:
-                if arg_name:
-                    arg_doc = _get_arg_doc(arg_name)
-                    params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=True, default=None, doc=arg_doc.description))
+                params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=True, default=None, doc=arg_doc.description))
 
         if hasattr(function, "return_doc"):
             return_doc = function.return_doc
@@ -107,13 +111,15 @@ class ClientCommandDefinition(CommandDefinition):
 
         maturity = function.maturity if hasattr(function, "maturity") else None
 
-        super(ClientCommandDefinition, self).__init__(json_schema, full_name, params, return_info, function.__doc__, maturity=maturity)
+        super(ClientCommandDefinition, self).__init__(json_schema, full_name, params, return_info, is_property, function.__doc__, maturity=maturity)
 
+        spa_doc = gen_spa(self)
+        function.__doc__ = spa_doc
 
-    def _generate_full_name(self, class_name, function):
-        # reverse engineer the full_name, for command_def's sake
+    @staticmethod
+    def _generate_full_name(class_name, member_name):
         entity_type = class_name_to_entity_type(class_name)
-        full_name = "%s/%s" % (entity_type, function.__name__)  # used to shave first char --why bother? [1:])  # [1:] means skip the underscore
+        full_name = "%s/%s" % (entity_type, member_name)
         return full_name
 
 
@@ -121,13 +127,10 @@ class InitClientCommandDefinition(ClientCommandDefinition):
     """CommandDefinition for __init__ functions marked as @api in the core python code"""
 
     def __init__(self, class_name, function):
-        super(InitClientCommandDefinition, self).__init__(class_name, function)
+        super(InitClientCommandDefinition, self).__init__(class_name, function, False)
         self.args_text = get_args_text_from_function(function, ignore_private_args=True)
 
-    def _generate_full_name(self, class_name, function):
-        return "%s/__init__" % class_name_to_entity_type(class_name)  # should we make this "/new" instead?
-
-    def get_function_parameters_text(self):
+    def get_function_args_text(self):
         return self.args_text
 
 
@@ -166,6 +169,9 @@ def returns(data_type, description):
         return item
     return add_return_doc
 
+
+def is_api(item):
+    return hasattr(item, "_is_api") and getattr(item, "_is_api")
 
 def mark_item_as_api(item):
     item._is_api = True
@@ -208,11 +214,13 @@ def get_api_decorator(logger, parent_class_name=None):
             '''
        """
 
-
         if inspect.isclass(item):
             return decorate_api_class(item)
 
-        mark_item_as_api(item)
+        is_property = isinstance(item, property)
+        attr = item.fget if is_property else item
+
+        mark_item_as_api(attr)
 
         # for a method, we need the name of its class
         if parent_class_name:
@@ -227,17 +235,43 @@ def get_api_decorator(logger, parent_class_name=None):
             except:
                 raise RuntimeError("Internal Error: @api decoration cannot resolve class name for item %s" % item)
 
+        _patch_member_name(class_name, attr)
+
         # wrap the function with API logging and error handling
-        function = get_api_context_decorator(execution_logger)(item)
+        function = get_api_context_decorator(execution_logger)(attr)
 
         if function.__name__ == "__init__":
             command_def = InitClientCommandDefinition(class_name, function)
-            #decorated_function = item
         else:
-            command_def = ClientCommandDefinition(class_name, function)
-            #decorated_function = _swallowed_api  # return a stub which throws an error if called
+            member = property(fget=function, fset=item.fset) if is_property else function
+            command_def = ClientCommandDefinition(class_name, member, is_property)
 
         client_commands.append((class_name, command_def))
-        return function  #decorated_function
+
+        return clientside_api_stub
 
     return api_decorator
+
+
+def _patch_member_name(class_name, member):
+    """Patch up the name of the member.  ie. remove leading underscores"""
+    prefix = "__"
+    name = member.__name__
+    if name[:len(prefix)] != prefix:
+        raise RuntimeError("@api applied to incorrectly named member '%s' in object '%s'" % (name, class_name))
+    if name != '__init__':
+        member.__name__ = name[len(prefix):]
+
+
+def clientside_api_stub():
+    """Filler method stub for the decorator to return, should never be called"""
+    raise RuntimeError("Illegal function call.  This method should have been cleaned up during command installation.")
+
+
+def clear_clientside_api_stubs(cls):
+    """Deletes all the clientside_api_stub attributes from the cls"""
+    victims = [k for k, v in cls.__dict__.items() if v is clientside_api_stub]
+    for v in victims:
+        delattr(cls, v)
+
+

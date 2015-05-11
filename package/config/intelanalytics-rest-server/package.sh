@@ -44,8 +44,8 @@ pushd $SCRIPTPATH
 popd
 
 #excluded jars are now combined in deploy.jar
-#engine-spark.jar igiraph-titan.jar graphon.jar
-jars=" rest-server.jar  engine.jar  interfaces.jar  deploy.jar"
+# giraph-plugins.jar graphon.jar
+jars=" rest-server.jar  engine.jar  engine-interfaces.jar  deploy.jar"
 
 pushd ..
 for jar in $jars
