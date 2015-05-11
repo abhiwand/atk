@@ -1,5 +1,8 @@
-Build hierarchical clustering over an inital titan graph.
+Build hierarchical clustering over an initial titan graph.
 
+Parameter
+---------
+dist:str    column name for the edge distance.
 
 Returns
 -------
@@ -10,7 +13,7 @@ graph.
 Notes
 -----
 The internal vertices and edges are for graph navigation and are added to the
-intial graph.
+initial graph.
 
 
 Examples
@@ -27,14 +30,14 @@ distance:
     1, 3, 1.5f
     3, 1, 1.5f
 
-The edge should have a property *dist* holding a float value.
+The edge column name should be passed in as an argument to the plug-in.
 
 .. code::
 
     >>> import intelanalytics as ia
     >>> ia.connect()
     >>> my_graph = ia.TitanGraph([src, dest, dist], "sample_graph")
-    >>> my_graph.hierarchical_clustering()
+    >>> my_graph.hierarchical_clustering("dist")
 
 The expected output (new vertices) can be queried:
 
