@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CFCGD, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -39,37 +40,37 @@ import scala.concurrent._
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
-case class Cgd(graph: GraphReference,
-               edgeValuePropertyList: List[String],
-               inputEdgeLabelList: List[String],
-               outputVertexPropertyList: List[String],
-               vertexTypePropertyKey: String,
-               edgeTypePropertyKey: String,
-               vectorValue: Option[Boolean] = None,
-               maxSupersteps: Option[Int] = None,
-               convergenceThreshold: Option[Double] = None,
-               cgdLambda: Option[Float] = None,
-               featureDimension: Option[Int] = None,
-               learningCurveOutputInterval: Option[Int] = None,
-               validateGraphStructure: Option[Boolean] = None,
-               biasOn: Option[Boolean] = None,
-               maxValue: Option[Float] = None,
-               minValue: Option[Float] = None,
-               numIters: Option[Int] = None)
+case class ConjugateGradientDescent(graph: GraphReference,
+                                    edgeValuePropertyList: List[String],
+                                    inputEdgeLabelList: List[String],
+                                    outputVertexPropertyList: List[String],
+                                    vertexTypePropertyKey: String,
+                                    edgeTypePropertyKey: String,
+                                    vectorValue: Option[Boolean] = None,
+                                    maxSupersteps: Option[Int] = None,
+                                    convergenceThreshold: Option[Double] = None,
+                                    cgdLambda: Option[Float] = None,
+                                    featureDimension: Option[Int] = None,
+                                    learningCurveOutputInterval: Option[Int] = None,
+                                    validateGraphStructure: Option[Boolean] = None,
+                                    biasOn: Option[Boolean] = None,
+                                    maxValue: Option[Float] = None,
+                                    minValue: Option[Float] = None,
+                                    numIters: Option[Int] = None)
 
-case class CgdResult(value: String)
+case class ConjugateGradientDescentResult(value: String)
 
 /** Json conversion for arguments and return value case classes */
-object CgdJsonFormat {
+object ConjugateGradientDescentJsonFormat {
   import DomainJsonProtocol._
-  implicit val cgdFormat = jsonFormat17(Cgd)
-  implicit val cgdResultFormat = jsonFormat1(CgdResult)
+  implicit val cgdFormat = jsonFormat17(ConjugateGradientDescent)
+  implicit val cgdResultFormat = jsonFormat1(ConjugateGradientDescentResult)
 }
 
-import CgdJsonFormat._
+import ConjugateGradientDescentJsonFormat._
 
-class ConjugateGradientDescent
-    extends CommandPlugin[Cgd, CgdResult] {
+class ConjugateGradientDescentPlugin
+    extends CommandPlugin[ConjugateGradientDescent, ConjugateGradientDescentResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -79,11 +80,11 @@ class ConjugateGradientDescent
    */
   override def name: String = "graph:titan/ml/conjugate_gradient_descent"
 
-  override def execute(arguments: Cgd)(implicit context: Invocation): CgdResult = {
+  override def execute(arguments: ConjugateGradientDescent)(implicit context: Invocation): ConjugateGradientDescentResult = {
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(",")
+    val outputVertexPropertyList = arguments.outputVertexPropertyList.mkString(argSeparator)
     val resultPropertyList = outputVertexPropertyList.split(pattern)
     val vectorValue = arguments.vectorValue.getOrElse(false)
     val biasOn = arguments.biasOn.getOrElse(false)
@@ -116,9 +117,9 @@ class ConjugateGradientDescent
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(",")))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edgeValuePropertyList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertexTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edgeTypePropertyKey))
     GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
@@ -128,11 +129,11 @@ class ConjugateGradientDescent
 
     giraphConf.setVertexInputFormatClass(classOf[TitanVertexInputFormatPropertyGraph4CFCGD])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4CF[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute])
+    giraphConf.setMasterComputeClass(classOf[ConjugateGradientDescentMasterCompute])
     giraphConf.setComputationClass(classOf[ConjugateGradientDescentComputation])
-    giraphConf.setAggregatorWriterClass(classOf[ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter])
+    giraphConf.setAggregatorWriterClass(classOf[ConjugateGradientDescentAggregatorWriter])
 
-    CgdResult(GiraphJobManager.run("ia_giraph_cgd",
+    ConjugateGradientDescentResult(GiraphJobManager.run("ia_giraph_cgd",
       classOf[ConjugateGradientDescentComputation].getCanonicalName,
       config, giraphConf, context, "cgd-learning-report_0"))
   }

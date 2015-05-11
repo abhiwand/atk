@@ -29,6 +29,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
 
 import scala.collection.immutable.Set
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConversions._
@@ -641,6 +642,7 @@ object DataTypes extends EventLogging {
       case l: List[Any] => l.map(value => toDouble(value)).toVector
       case i: Iterator[Any] => i.map(value => toDouble(value)).toVector
       case i: java.util.Iterator[Any] => i.map(value => toDouble(value)).toVector
+      case wa: mutable.WrappedArray[_] => wa.map(value => toDouble(value)).toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not implemented")
     }
     if (length >= 0) {

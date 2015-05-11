@@ -1,4 +1,4 @@
-from intelanalytics.meta.metaprog2 import indent, get_type_name, get_installation, Constants
+from intelanalytics.meta.metaprog2 import indent, get_type_name, get_installation, get_intermediate_class
 from intelanalytics.meta.classnames import is_name_private
 from intelanalytics.meta.reflect import get_args_text_from_function
 
@@ -11,16 +11,25 @@ def gen_rst(command_def):
     """return text for a docstring needed for interactive documentation, uses numpy format"""
     # could switch to google-style, which is more concise is quite readable, allows rst markup
     one_line = command_def.doc.one_line
+    if command_def.maturity:
+        one_line = get_maturity_text(command_def.maturity) + "\n" + one_line
     extended = command_def.doc.extended
-    signature = command_def.get_function_parameters_text()
+    args_text = command_def.get_function_args_text()
+    display_name = command_def.rst_info.display_name if hasattr(command_def, "rst_info") else command_def.name
+    if command_def.is_property:
+        directive = "attribute"
+    else:
+        args_text = "(%s)" % args_text
+        directive = "function"
+
     doc = """
-.. function:: {name}({signature})
+.. {directive}:: {name}{args_text}
 
 {one_line}
 
 
 {extended}
-""".format(name=command_def.function_name, signature=signature, one_line=indent(one_line), extended=indent(extended))
+""".format(directive=directive, name=display_name, args_text=args_text, one_line=indent(one_line), extended=indent(extended))
 
 
     if command_def.parameters:
@@ -79,9 +88,6 @@ def get_returns_text(return_info):
 """
 
 
-###########################################################################
-# code from metaprog2.py that's just for rst
-
 first_column_header_char_count = 100
 second_column_header_char_count = 100
 number_of_spaces_between_columns = 2
@@ -89,32 +95,23 @@ index_of_summary_start = first_column_header_char_count + number_of_spaces_betwe
 table_line = "=" * first_column_header_char_count + " " * number_of_spaces_between_columns + "=" * second_column_header_char_count
 
 
-def _get_method_summary_table_tuple(command_def):
-    name = command_def.function_name
-    if command_def.intermediates:
-        name = '.'.join(list(command_def.intermediates) + [name])
-    signature = command_def.get_function_parameters_text()
-    summary = command_def.one_line  #get_function_summary(command_def)
-    return name, signature, summary
-
-
 def get_signature_max(rst_name):
     return first_column_header_char_count - len(rst_name)
 
 
-def get_method_summary_table(sorted_members, cls):
+def get_method_summary_table(sorted_members):
     lines = ["\n.. rubric:: Methods", "", table_line]
     for member in sorted_members:
         if member.in_method_table:
-            lines.append(member.get_summary_table_entry(cls))
+            lines.append(member.get_summary_table_entry())
     lines.append(table_line)
     return "\n".join(lines)
 
-def get_attribute_summary_table(sorted_members, cls):
+def get_attribute_summary_table(sorted_members):
     lines = ["\n.. rubric:: Attributes", "", table_line]
     for member in sorted_members:
         if member.in_attribute_table:
-            lines.append(member.get_summary_table_entry(cls))
+            lines.append(member.get_summary_table_entry())
     lines.append(table_line)
     return "\n".join(lines)
 
@@ -137,29 +134,19 @@ def get_member_rst_list(cls, intermediate_prefix=None):
     prefix = intermediate_prefix if intermediate_prefix else ''
     # create a ordered dict of names -> whether the name is inherited or not, based on do dir() vs. __dict__ comparison
     members = OrderedDict([(name, name not in cls.__dict__) for name in dir(cls) if not is_name_private(name)])  # True means we assume all are inherited
-    # for k in cls.__dict__.keys():
-    #     if k in members:
-    #         members[k] = False  # i.e. mark NOT inherited
-    #     elif not k.startswith("_"):
-    #         raise RuntimeError("__dict__ member %s not in dir() for class %s" % (k, cls))
-
     # Actually, we don't need the command_defs, can just leverage work they've already done by directly interrogating the method
     #  X create a dict from command defs with display name key and function text
 
-    member_rst_list = [MemberRst(cls, getattr(cls, name), prefix + name, is_inherited) for name, is_inherited in members.items()]
-    #rst_members = [get_member_rst(prefix + name, is_inherited, getattr(cls, name)) for name, is_inherited in members.items()]
+    member_rst_list = [RstInfo(cls, getattr(cls, name), prefix + name, is_inherited) for name, is_inherited in members.items()]
 
-    # what about intermediates and their inheritance --duplicate these?  sure, for now
-    installation = get_installation(cls, None)
-    if installation:
-        for property_name, intermediate_cls in installation.intermediates.items():
+    # what about intermediates and their inheritance --duplicate these?  sure
+    properties = [(name, get_intermediate_class(name, cls)) for name in members.keys() if isinstance(getattr(cls, name), property)]
+    for property_name, intermediate_cls in properties:
+        if intermediate_cls:
             p = prefix + property_name + '.'
             member_rst_list.extend(get_member_rst_list(intermediate_cls, intermediate_prefix=p))  # recursion
 
     return sorted(member_rst_list, key=lambda m: m.display_name)
-
-    # i don't think we can use autofunction :( what a waste, because we still need the signature and summary for the summary table
-    # so I have to spin the signature discovery stuff myself :^( in the cases where we do not have a command_def
 
 
 def get_class_rst(cls):
@@ -171,22 +158,15 @@ def get_class_rst(cls):
     return template
 
 
-def get_member_details(sorted_members):
-    lines = []
-    for d in sorted_members:
-        lines.append(d.get_rst())
-    return "\n".join(lines)
-
-
 def get_rst_for_class(cls):
     installation = get_installation(cls)
     lines = [get_class_rst(cls)]
     # sort defs for both summary table and
     sorted_members = get_member_rst_list(cls)
     # create attribute summary table
-    lines.append(indent(get_attribute_summary_table(sorted_members, cls), 4))
+    lines.append(indent(get_attribute_summary_table(sorted_members), 4))
     # create method summary table
-    lines.append(indent(get_method_summary_table(sorted_members, cls), 4))
+    lines.append(indent(get_method_summary_table(sorted_members), 4))
 
     init_commands = [c for c in installation.commands if c.is_constructor]
     if init_commands:
@@ -226,58 +206,68 @@ def get_doc_tuple(doc_str):
         if summary:
             return Doc(summary, doc_str[len(summary):].strip())
 
-    return Doc("<Missing>", doc_str)
+    return Doc("<Missing Doc>", doc_str)
 
 
 def get_cls_init_rst_label(cls):
     return "%s__init__" % get_type_name(cls)
 
-class MemberRst(object):
-    def __init__(self, cls, member, display_name, is_inherited, command_def=None):
-        is_private = is_name_private(member.fget.__name__ if isinstance(member, property) else member.__name__)
-        in_method_table = hasattr(member,  '__call__') and not is_private
-        in_attribute_table = not in_method_table and not is_private
-        #print "hee, v=%s for display_name=%s" % (v, display_name)
-      #  args = None if not in_method_table else get_signature_from_function(member)
-      #  return RstMember(display_name, is_inherited, args=args, in_method_table=in_method_table, in_attribute_table=in_attribute_table, doc=member.__doc__)
+def get_maturity_text(maturity):
+    if maturity:
+        return '|' + maturity.upper() + '|'
+    else:
+        return ''
 
-
-# class RstMember(object):
-
-    # def __init__(self, display_name, is_inherited, args, in_method_table, in_attribute_table, doc, command_def=None):
-        self.cls = cls
+class RstInfo(object):
+    """Represents a member to be rendered with .rst"""
+    def __init__(self, cls, member, display_name, is_inherited):
         self.display_name = display_name
-        self.is_inherited = is_inherited
-        self.args = None if not in_method_table else get_args_text_from_function(member)
-        self.in_method_table = in_method_table
-        self.in_attribute_table = in_attribute_table
-        self.doc = doc_to_rst(member.__doc__)
-        self.command_def = command_def
-
-    def get_summary_table_entry(self, cls):
-        summary = self.doc.one_line
-
-        if self.display_name == "__init__":
-            rst_name = ":ref:`__init__ <%s>`\ " % get_cls_init_rst_label(cls)
+        if self.display_name[-8:] == "__init__":
+            if len(self.display_name) > 8:  # mask (make private) the __init__ methods for properties (intermediates)
+                self.display_name = "__private__init__"
+            self.summary_rst_name = ":ref:`__init__ <%s>`\ " % get_cls_init_rst_label(cls)
         else:
-            rst_name = ":doc:`%s <%s>`\ " % (self.display_name, self.display_name)
+            self.summary_rst_name = ":doc:`%s <%s>`\ " % (self.display_name, self.display_name.replace('.', '/'))
+
+        intermediate_class = get_intermediate_class(display_name, cls)
+        if intermediate_class:
+            self.display_name = "__private_" + self.display_name
+
+        self.is_inherited = is_inherited
+        self.in_method_table = hasattr(member,  '__call__') and not self.is_private
+        self.args_text = '' if not self.in_method_table else "(%s)" % get_args_text_from_function(member)
+
+        if isinstance(member, property):
+            member = member.fget
+        command_def = getattr(member, "command") if hasattr(member, "command") else None
+        if command_def:
+            command_def.rst_info = self
+            self.maturity = command_def.maturity
+        else:
+            self.maturity = None
+        self.doc = command_def.doc if command_def else doc_to_rst(member.__doc__)
+
+    @property
+    def is_private(self):
+        return is_name_private(self.display_name)
+
+    @property
+    def in_attribute_table(self):
+        return not self.in_method_table and not self.is_private
+
+    def get_summary_table_entry(self):
+        summary = self.doc.one_line
+        if self.maturity:
+            summary = get_maturity_text(self.maturity) + " " + summary
 
         if self.in_method_table:
-            signature = get_signature_for_summary(rst_name, self.args)
+            signature = get_signature_for_summary(self.summary_rst_name, self.args_text)
         else:
             signature = ''
 
-        first_half = rst_name + signature
+        first_half = self.summary_rst_name + signature
         spaces = " " * (index_of_summary_start - len(first_half))
         return first_half + spaces + summary
-        #return get_method_summary_entry(self.display_name, signature, summary)
-
-    def get_rst(self):
-        return """
-.. function:: {name}({args})
-
-{rst_doc}""".format(name=self.display_name, args=self.args, rst_doc=indent(self.doc, 4))
-
 
 
 ###########################################################################
@@ -345,5 +335,3 @@ def limited_join(sep, items, max_chars=30, overflow_marker="..."):
             break
 
     return sep.join(list(items[:n_items]) + [overflow_marker])
-
-

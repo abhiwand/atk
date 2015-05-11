@@ -181,6 +181,7 @@ object WeightedDegrees {
   private case class VertexDegreeRecord(vertexOption: Option[GBVertex], weightedDegree: Double)
 
   private def mergeVertexAndDegrees(vad1: VertexDegreeRecord, vad2: VertexDegreeRecord) = {
+    //TODO: Uncommenting the require statament causes the method to break on parquet graphs. But on commenting, the output of this seems inconsistent with the equivalent titan graph.
     //require(vad1.vertexOption.isEmpty || vad2.vertexOption.isEmpty)
     val v = if (vad1.vertexOption.isDefined) vad1.vertexOption else vad2.vertexOption
     VertexDegreeRecord(v, vad1.weightedDegree + vad2.weightedDegree)

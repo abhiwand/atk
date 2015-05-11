@@ -27,7 +27,7 @@ import logging
 logger = logging.getLogger(__name__)
 #from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context, swallow_for_api
 from intelanalytics.meta.context import api_context
-from intelanalytics.meta.clientside import * #get_api_decorator, Doc, ArgDoc, ReturnDoc #, check_api_is_loaded, api_context, swallow_for_api
+from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.udf import has_python_user_function_arg
@@ -184,9 +184,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return hash(self._id)
 
 
-    @property
     @api
-    def column_names(self):
+    @property
+    def __column_names(self):
         """
         Column identifications in the current Frame.
 
@@ -215,57 +215,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return [name for name, data_type in self._backend.get_schema(self)]
 
+    @api
     @property
-    @api
-    def name(self):
-        """
-        Retrieve the name of the current frame.
-
-        Returns
-        -------
-        str : identification
-            The name of the frame
-
-        Examples
-        --------
-        Create a frame and give it the name "Flavor Recipes"; read the name
-        back to check it:
-
-        .. code::
-
-            >>> frame = ia.Frame(name="Flavor Recipes")
-            >>> given_name = frame.name
-            >>> print given_name
-
-        The result given is:
-
-        .. code::
-
-            "Flavor Recipes"
-
-        """
-        return self._backend.get_name(self)
-
-    @name.setter
-    @api
-    def name(self, value):
-        """
-        Assign the name to the current frame.
-
-        Examples
-        --------
-        Assign the name "movies" to the current frame:
-
-        .. code::
-
-            >>> my_frame.name = "movies"
-
-        """
-        self._backend.rename_frame(self, value)
-
-    @property
-    @api
-    def row_count(self):
+    @returns(int, "The number of rows in the frame")
+    def __row_count(self):
         """
         Number of rows in the current frame.
 
@@ -292,9 +245,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.get_row_count(self, None)
 
 
-    @property
     @api
-    def schema(self):
+    @property
+    def __schema(self):
         """
         Current frame column names and types.
 
@@ -326,9 +279,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.get_schema(self)
 
 
-    @property
     @api
-    def status(self):
+    @property
+    def __status(self):
         """
         Current frame life cycle status.
 
@@ -362,7 +315,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_python_user_function_arg
-    def add_columns(self, func, schema, columns_accessed=None):
+    def __add_columns(self, func, schema, columns_accessed=None):
         """
         Add columns to current frame.
 
@@ -482,7 +435,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
-    def copy(self, columns=None, where=None, name=None):
+    def __copy(self, columns=None, where=None, name=None):
         """
         Create new frame from current frame.
 
@@ -562,7 +515,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.copy(self, columns, where, name)
 
     @api
-    def count(self, where):
+    def __count(self, where):
         """
         Counts the number of rows which meet given criteria.
 
@@ -584,7 +537,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @arg('offset', int, 'The number of rows to skip before copying')
     @arg('columns', list, 'Column filter, the names of columns to be included (default is all columns)')
     @returns('pandas.DataFrame', 'A new pandas dataframe object containing the downloaded frame data' )
-    def download(self, count=100, offset=0, columns=None):
+    def __download(self, count=100, offset=0, columns=None):
         """
         Download a frame from the server into client workspace.
 
@@ -631,7 +584,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_python_user_function_arg
-    def drop_rows(self, predicate):
+    def __drop_rows(self, predicate):
         """
         Erase any rows in the current frame which qualify.
 
@@ -664,7 +617,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_python_user_function_arg
-    def filter(self, predicate):
+    def __filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
 
@@ -701,7 +654,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         self._backend.filter(self, predicate)
 
     @api
-    def get_error_frame(self):
+    def __get_error_frame(self):
         """
         Get a frame with error recordings.
 
@@ -721,7 +674,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @beta
     @arg('group_by_columns', list, 'Column name or list of column names')
     @arg('aggregation_arguments', dict, """Aggregation function based on entire row, and/or dictionaries (one or more) of { column name str : aggregation function(s) }.""")
-    def group_by(self, group_by_columns, *aggregation_arguments):
+    def __group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
 
@@ -870,7 +823,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')
     @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
-    def inspect(self, n=10, offset=0, columns=None):
+    def __inspect(self, n=10, offset=0, columns=None):
         """
         Prints the frame data in readable format.
 
@@ -897,7 +850,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.inspect(self, n, offset, columns)
 
     @api
-    def join(self, right, left_on, right_on=None, how='inner', name=None):
+    def __join(self, right, left_on, right_on=None, how='inner', name=None):
         """
         New frame from current frame and another frame.
 
@@ -1042,7 +995,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.join(self, right, left_on, right_on, how, name)
 
     @api
-    def sort(self, columns, ascending=True):
+    def __sort(self, columns, ascending=True):
         """
         Sort the data in a frame.
 
@@ -1108,7 +1061,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.sort(self, columns, ascending)
 
     @api
-    def take(self, n, offset=0, columns=None):
+    def __take(self, n, offset=0, columns=None):
         """
         Get data subset.
 
@@ -1255,7 +1208,7 @@ class Frame(_DocStubsFrame, _BaseFrame):
             logger.info('Created new frame "%s"', new_frame_name)
 
     @api
-    def append(self, data):
+    def __append(self, data):
         """
         Adds more data to the current frame.
 

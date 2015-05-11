@@ -20,32 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
-#!/usr/bin/python2.7
-import intelanalytics as ia
-
-ia.connect();
-
-#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
-dataset = r"datasets/lp_edge.csv"
-
-#csv schema definition
-schema = [("source", ia.int32),
-          ("dest", ia.int32),
-          ("weight", ia.float32),
-          ("labels", Vector())]
-
-#csv schema definition
-csv = ia.CsvFile(dataset, schema, skip_header_lines=1)
-
-print "Building data frame 'lp'"
-
-frame = ia.Frame(csv, "lp")
-
-print "Done building data frame"
-
-print "Inspecting frame 'lp'"
-
-print frame.inspect()
-
-print frame.label_propagation("source", "dest", "weight", "labels")
+"""
+API decorators
+"""
+from intelanalytics.meta.clientside import get_api_decorator, arg, returns, alpha, beta, deprecated

@@ -35,8 +35,6 @@ from collections import namedtuple
 
 ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME = "new"
 
-ARGS_TEXT = "_args_text"  # attribute
-
 Parameter = namedtuple("Parameter", ['name', 'data_type', 'use_self', 'optional', 'default', 'doc'])
 
 ReturnInfo = namedtuple("Returns", ['data_type', 'use_self', 'doc'])
@@ -47,7 +45,7 @@ Version = namedtuple("Version", ['added', 'changed', 'deprecated', 'doc'])
 class Doc(object):
     """Represents descriptive text for an object, but not its individual pieces"""
 
-    def __init__(self, one_line='<Missing>', extended=''):  # todo add examples!!
+    def __init__(self, one_line='<Missing Doc>', extended=''):  # todo add examples!!
         self.one_line = one_line.strip()
         self.extended = extended
 
@@ -79,13 +77,13 @@ class Doc(object):
             if summary:
                 return Doc(summary, extended)
 
-        return Doc("<Missing>", doc_str)
+        return Doc("<Missing Doc>", doc_str)
 
 
 class CommandDefinition(object):
     """Defines a Command"""
 
-    def __init__(self, json_schema, full_name, parameters=None, return_info=None, doc=None, maturity=None, version=None):
+    def __init__(self, json_schema, full_name, parameters=None, return_info=None, is_property=False, doc=None, maturity=None, version=None):
         self.json_schema = json_schema
         self.full_name = full_name
         parts = self.full_name.split('/')
@@ -97,9 +95,10 @@ class CommandDefinition(object):
         self.install_path = InstallPath(full_name[:-(len(self.name)+1)])
         self.parameters = parameters if parameters else []
         self.return_info = return_info
+        self.is_property = is_property
         self.maturity = maturity
         self.version = version
-        self._doc = None
+        self._doc = None  # handle type conversion in the setter, next line
         self.doc = doc
 
     @property
@@ -139,13 +138,11 @@ class CommandDefinition(object):
     def get_return_type(self):
         return None if self.return_info is None else self.return_info.data_type
 
-    def get_function_parameters_text(self):
+    def get_function_args_text(self):
         if self.parameters:
             return ", ".join(['self' if param.use_self else
                               param.name if not param.optional else
                               "%s=%s" % (param.name, param.default)
                               for param in self.parameters])
-        elif hasattr(self, ARGS_TEXT):
-            return getattr(self, ARGS_TEXT)
         else:
             return ''

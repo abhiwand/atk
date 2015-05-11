@@ -124,7 +124,7 @@ def get_return_description(json_schema):
 
 def get_doc(json_schema):
     doc = json_schema.get('doc', {})
-    return Doc(doc.get('title', '').strip(), doc.get('description', '').lstrip())
+    return Doc(doc.get('title', '<Missing Doc>').strip(), doc.get('description', '').lstrip())
 
 
 def get_parameters(argument_schema):
@@ -173,4 +173,4 @@ def get_command_def(json_schema):
     version = get_version(json_schema)
     maturity = json_schema.get('maturity', None)
     doc = get_doc(json_schema)
-    return CommandDefinition(json_schema, full_name, parameters, return_info, doc, maturity, version)
+    return CommandDefinition(json_schema, full_name, parameters, return_info, is_property=False, doc=doc, maturity=maturity, version=version)
