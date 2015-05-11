@@ -65,7 +65,7 @@ def add_return_none_postprocessor(command_full_name):
                'graph:titan/annotate_degrees', 'graph:titan/annotate_weighted_degrees', 'graph/copy')
 def return_graph(selfish, json_result):
 
-    from intelanalytics.core.graph import get_graph
+    from intelanalytics import get_graph
     return get_graph(json_result['id'])
 
 @postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test')
@@ -85,7 +85,7 @@ def return_histogram(selfish, json_result):
 
 @postprocessor('graph/clustering_coefficient')
 def return_clustering_coefficient(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     from intelanalytics.core.clusteringcoefficient import  ClusteringCoefficient
     if json_result.has_key('frame'):
         frame = get_frame(json_result['frame']['id'])
@@ -100,14 +100,14 @@ def return_bin_result(selfish, json_result):
 
 @postprocessor('model:lda/train')
 def return_lda_train(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     doc_frame = get_frame(json_result['doc_results']['id'])
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
 @postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_triangle_count')
 def return_connected_components(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     dictionary = json_result["frame_dictionary_output"]
     return dict([(k,get_frame(v["id"])) for k,v in dictionary.items()])
 
