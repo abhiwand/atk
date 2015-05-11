@@ -36,8 +36,10 @@ intel.analytics {
         titan.load.storage.hostname = ${HOSTNAME}
         titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
         
-	spark {
-            # The URL for connecting to the Spark master server
+    spark {
+            # Yarn Cluster mode
+            #master = "yarn-cluster"
+            # Spark Standalone mode: the URL for connecting to the Spark master server
             master = "spark://"${HOSTNAME}":7077"
         }
     }
