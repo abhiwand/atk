@@ -139,6 +139,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
+    <modules>
+
+    </modules>
     <profiles>
         <profile>
             <id>events</id>
@@ -164,15 +167,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>doc-api-examples</module>
                 <module>testutils</module>
-                <module>graphbuilder</module>
-                <module>graphon</module>
-                <module>engine-interfaces</module>
-                <module>launcher</module>
-                <module>scoring-models</module>
-                <module>meta-store</module>
+                <module>misc</module>
                 <module>engine</module>
+                <module>engine-plugins</module>
+                <module>scoring-models</module>
                 <module>rest-server</module>
-                <module>giraph-plugins</module>
                 <module>deploy</module>
                 <module>package</module>
             </modules>
@@ -186,7 +185,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <module>python</module>
+                <module>python-client</module>
             </modules>
         </profile>
 
@@ -625,12 +624,22 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>graphon</artifactId>
+                <artifactId>frame-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine-interfaces</artifactId>
+                <artifactId>graph-plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>model-plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
                 <!-- <scope>provided</scope> -->
             </dependency>
@@ -657,7 +666,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine</artifactId>
+                <artifactId>engine-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

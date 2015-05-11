@@ -20,23 +20,31 @@
     </build>
 
     <dependencies>
-		<!--START dependencies to our modules-->
-        
+
+        <!--START dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine</artifactId>
+            <artifactId>engine-core</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>rest-server</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>giraph-plugins</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphon</artifactId>
+            <artifactId>frame-plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>graph-plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>model-plugins</artifactId>
         </dependency>
         <!--END dependencies to our modules-->
     </dependencies>

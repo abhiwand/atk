@@ -10,7 +10,7 @@ PYTHON_DIR='/usr/lib/python2.7/site-packages'
 TARGET_DIR=$DIR/target
 OUTPUT1=$TARGET_DIR/surefire-reports/TEST-nose-smoketests.xml
 OUTPUT2=$TARGET_DIR/surefire-reports/TEST-nose-tests.xml
-export PYTHONPATH=$DIR/../python:$PYTHONPATH:$PYTHON_DIR
+export PYTHONPATH=$DIR/../python-client:$PYTHONPATH:$PYTHON_DIR
 
 echo "$NAME DIR=$DIR"
 echo "$NAME PYTHON_DIR=$PYTHON_DIR"

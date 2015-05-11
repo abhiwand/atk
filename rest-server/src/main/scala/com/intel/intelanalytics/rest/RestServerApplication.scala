@@ -89,7 +89,7 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
   private def initializeEngine()(implicit invocation: Invocation): Engine = {
 
     //TODO: later engine will be initialized in a separate JVM
-    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
+    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine-core")
       .get[Engine]("engine")
 
     //make sure engine is initialized

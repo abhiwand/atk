@@ -3,8 +3,8 @@
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 
-if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
-	LAUNCHER=$DIR/../launcher/target/launcher.jar:.
+if [[ -f $DIR/../misc/launcher/target/launcher.jar ]]; then
+	LAUNCHER=$DIR/../misc/launcher/target/launcher.jar:.
 fi
 
 pushd $DIR/..

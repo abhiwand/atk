@@ -101,7 +101,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine-interfaces</artifactId>
+            <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

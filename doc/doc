@@ -197,8 +197,8 @@ function main() {
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../python/intelanalytics/core/*.pyc ]]; then
-        rm ../python/intelanalytics/core/*.pyc
+    if [[ -f ../python-client/intelanalytics/core/*.pyc ]]; then
+        rm ../python-client/intelanalytics/core/*.pyc
     fi
 
     # debug: Check on quiet mode
@@ -327,7 +327,7 @@ function main() {
     # debug: Test the examples
     echo $ModifiedArguments | grep -i -e "/test/" > /dev/null
     if [ $? == 0 ]; then
-        export PYTHONPATH="$PYTHONPATH;../python"
+        export PYTHONPATH="$PYTHONPATH;../python-client"
         for File in $(ls -1a source/*.rst)
         do
             echo $File

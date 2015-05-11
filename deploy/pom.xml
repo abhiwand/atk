@@ -105,7 +105,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>engine</artifactId>
+            <artifactId>engine-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -113,7 +113,15 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>graphon</artifactId>
+            <artifactId>frame-plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>graph-plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>model-plugins</artifactId>
         </dependency>
 
         <dependency>
