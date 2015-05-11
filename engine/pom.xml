@@ -126,10 +126,7 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>engine-interfaces</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
