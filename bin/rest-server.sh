@@ -11,6 +11,7 @@ pushd $DIR/..
 pwd
 
 export HOSTNAME=`hostname`
+export YARN_CONF_DIR="/etc/hadoop/conf"
 
 # NOTE: Add this parameter to Java for connecting to a debugger
 # -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005
