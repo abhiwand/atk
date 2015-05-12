@@ -171,7 +171,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>doc-api-examples</module>
                 <module>testutils</module>
                 <module>misc</module>
+                <module>engine/graphbuilder</module>
+                <module>engine/interfaces</module>
+                <module>engine/meta-store</module>
                 <module>engine</module>
+                <module>engine/engine-core</module>
                 <module>engine-plugins</module>
                 <module>scoring-models</module>
                 <module>rest-server</module>
@@ -381,6 +385,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>devonly</id>
             <activation>
+                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>!env.BUILD_NUMBER</name>
                 </property>

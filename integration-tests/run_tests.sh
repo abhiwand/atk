@@ -42,6 +42,7 @@ fi
 sleep 10
 PORT=19099
 COUNTER=0
+sleep 10
 until netstat -atn | grep -q :$PORT && curl 127.0.0.1:$PORT 2> is_the_server_running
 do
     if [ $COUNTER -gt 90 ]
