@@ -150,9 +150,11 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     val extraClassPath = scala.collection.mutable.MutableList[String]()
     for {
       i <- jars
-      (configKey, configValue) <- allEntries
-      if (configKey.contains(s"$i.extra-classpath"))
-    } extraClassPath ++= configValue.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+      configPathKey = s"intel.analytics.component.archives.$i.config-path"
+      configPath = allEntries.get(configPathKey).get.unwrapped().toString
+      extraClassPathKey = s"$configPath.extra-classpath"
+      if (allEntries.contains(extraClassPathKey))
+    } extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */
     /* We always need engine as in Engine.scala we add plugins via
