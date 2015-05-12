@@ -17,11 +17,15 @@
 
 package org.apache.spark.api.java
 
+import scala.reflect.ClassTag
+
+import org.apache.spark._
+import org.apache.spark.rdd.RDD
 import org.apache.spark.api.java.function.{Function => JFunction}
+import org.apache.spark.storage.StorageLevel
 
 @SerialVersionUID(-205673586731292241L)
-class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
-    extends JavaRDDLike[T, JavaRDD[T]] {
+class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T]) extends JavaRDDLike[T, JavaRDD[T]] {
 
   override def wrapRDD(rdd: RDD[T]): JavaRDD[T] = JavaRDD.fromRDD(rdd)
 
@@ -93,49 +97,14 @@ class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
   /**
    * Return a sampled subset of this RDD.
    */
-  def sample(withReplacement: Boolean, fraction: Double): JavaRDD[T] =
-    sample(withReplacement, fraction, Utils.random.nextLong)
-
-  /**
-   * Return a sampled subset of this RDD.
-   */
-  def sample(withReplacement: Boolean, fraction: Double, seed: Long): JavaRDD[T] =
+  def sample(withReplacement: Boolean, fraction: Double, seed: Int): JavaRDD[T] =
     wrapRDD(rdd.sample(withReplacement, fraction, seed))
-
-  /**
-   * Randomly splits this RDD with the provided weights.
-   *
-   * @param weights weights for splits, will be normalized if they don't sum to 1
-   *
-   * @return split RDDs in an array
-   */
-  def randomSplit(weights: Array[Double]): Array[JavaRDD[T]] =
-    randomSplit(weights, Utils.random.nextLong)
-
-  /**
-   * Randomly splits this RDD with the provided weights.
-   *
-   * @param weights weights for splits, will be normalized if they don't sum to 1
-   * @param seed random seed
-   *
-   * @return split RDDs in an array
-   */
-  def randomSplit(weights: Array[Double], seed: Long): Array[JavaRDD[T]] =
-    rdd.randomSplit(weights, seed).map(wrapRDD)
 
   /**
    * Return the union of this RDD and another one. Any identical elements will appear multiple
    * times (use `.distinct()` to eliminate them).
    */
   def union(other: JavaRDD[T]): JavaRDD[T] = wrapRDD(rdd.union(other.rdd))
-
-  /**
-   * Return the intersection of this RDD and another one. The output will not contain any duplicate
-   * elements, even if the input RDDs did.
-   *
-   * Note that this method performs a shuffle internally.
-   */
-  def intersection(other: JavaRDD[T]): JavaRDD[T] = wrapRDD(rdd.intersection(other.rdd))
 
   /**
    * Return an RDD with the elements from `this` that are not in `other`.
@@ -164,17 +133,6 @@ class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
     rdd.setName(name)
     this
   }
-
-  /**
-   * Return this RDD sorted by the given key function.
-   */
-  def sortBy[S](f: JFunction[T, S], ascending: Boolean, numPartitions: Int): JavaRDD[T] = {
-    def fn = (x: T) => f.call(x) // shadows scala.math.Ordering
-    implicit val ordering = Ordering.natural().asInstanceOf[Ordering[S]]
-    implicit val ctag: ClassTag[S] = fakeClassTag
-    wrapRDD(rdd.sortBy(fn, ascending, numPartitions))
-  }
-
 }
 
 object JavaRDD {
