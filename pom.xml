@@ -41,15 +41,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
     <repositories>
         <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
             <id>cloudera cdh</id>
-            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <!--<url>https://repository.cloudera.com/artifactory/cloudera-repos</url>-->
+            <url>https://repository.cloudera.com/cloudera/cloudera-repos/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -57,6 +51,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+
         <repository>
             <id>apache</id>
             <url>https://repository.apache.org/content/groups/public/</url>
@@ -139,6 +142,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>1.0.4</scoverage-plugin.version>
     </properties>
+    <modules>
+
+    </modules>
     <profiles>
         <profile>
             <id>events</id>
@@ -164,15 +170,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>doc-api-examples</module>
                 <module>testutils</module>
-                <module>graphbuilder</module>
-                <module>graphon</module>
-                <module>engine-interfaces</module>
-                <module>launcher</module>
-                <module>scoring-models</module>
-                <module>meta-store</module>
+                <module>misc</module>
+                <module>engine/graphbuilder</module>
+                <module>engine/interfaces</module>
+                <module>engine/meta-store</module>
                 <module>engine</module>
+                <module>engine/engine-core</module>
+                <module>engine-plugins</module>
+                <module>scoring-models</module>
                 <module>rest-server</module>
-                <module>giraph-plugins</module>
                 <module>deploy</module>
                 <module>package</module>
             </modules>
@@ -186,7 +192,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </property>
             </activation>
             <modules>
-                <module>python</module>
+                <module>python-client</module>
             </modules>
         </profile>
 
@@ -379,6 +385,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>devonly</id>
             <activation>
+                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>!env.BUILD_NUMBER</name>
                 </property>
@@ -625,12 +632,22 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>graphon</artifactId>
+                <artifactId>frame-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine-interfaces</artifactId>
+                <artifactId>graph-plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>model-plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
                 <!-- <scope>provided</scope> -->
             </dependency>
@@ -657,7 +674,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
-                <artifactId>engine</artifactId>
+                <artifactId>engine-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -746,6 +763,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.fusesource.jansi</groupId>
                         <artifactId>jansi</artifactId>
                     </exclusion>
+                    <!--<exclusion>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy</artifactId>
+                    </exclusion>-->
                 </exclusions>
             </dependency>
             <!--org.scala-->
@@ -934,6 +955,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.solr</groupId>
+                        <artifactId>solr-commons-csv</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -952,9 +977,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <artifactId>hadoop-core</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.python</groupId>
+                        <artifactId>jython</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>annotations</artifactId>
                     </exclusion>
+             
                 </exclusions>
             </dependency>
             <dependency>
@@ -971,6 +1001,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <exclusion>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.python</groupId>
+                        <artifactId>jython</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

@@ -10,7 +10,7 @@ PYTHON_DIR='/usr/lib/python2.7/site-packages'
 TARGET_DIR=$DIR/target
 OUTPUT1=$TARGET_DIR/surefire-reports/TEST-nose-smoketests.xml
 OUTPUT2=$TARGET_DIR/surefire-reports/TEST-nose-tests.xml
-export PYTHONPATH=$DIR/../python:$PYTHONPATH:$PYTHON_DIR
+export PYTHONPATH=$DIR/../python-client:$PYTHONPATH:$PYTHON_DIR
 
 echo "$NAME DIR=$DIR"
 echo "$NAME PYTHON_DIR=$PYTHON_DIR"
@@ -39,9 +39,11 @@ then
     exit 2
 fi
 
+sleep 10
 PORT=19099
 COUNTER=0
-until netstat -atn | grep -q :$PORT
+sleep 10
+until netstat -atn | grep -q :$PORT && curl 127.0.0.1:$PORT 2> is_the_server_running
 do
     if [ $COUNTER -gt 90 ]
     then
@@ -56,7 +58,7 @@ do
 done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"
-
+sleep 10
 # Rene said each build agent has about 18 cores (Feb 2015)
 
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"

@@ -310,7 +310,7 @@ sections to be pulled in so they're available to the plugin.
 
     intel.analytics.component.archives {
         graphon {
-            parent = "engine"
+            parent = "engine-core"
             config-path = "intel.graphon"
         }
     }

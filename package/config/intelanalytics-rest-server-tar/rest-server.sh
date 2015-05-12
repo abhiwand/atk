@@ -56,7 +56,7 @@ export PWD=`pwd`
 export PATH=$PWD/.java-buildpack/open_jdk_jre/bin:$PATH
 export JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre
 
-jars="engine.jar giraph-plugins.jar graphon.jar"
+jars="engine-core.jar giraph-plugins.jar frame-plugins.jar graph-plugins.jar model-plugins.jar"
 echo "Creating jar links"
 for jar in $jars
 do

@@ -3,14 +3,15 @@
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 
-if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
-	LAUNCHER=$DIR/../launcher/target/launcher.jar:.
+if [[ -f $DIR/../misc/launcher/target/launcher.jar ]]; then
+	LAUNCHER=$DIR/../misc/launcher/target/launcher.jar:.
 fi
 
 pushd $DIR/..
 pwd
 
 export HOSTNAME=`hostname`
+export YARN_CONF_DIR="/etc/hadoop/conf"
 
 # NOTE: Add this parameter to Java for connecting to a debugger
 # -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005

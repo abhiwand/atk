@@ -10,8 +10,8 @@ echo "$NAME DIR=$DIR"
 
 CONFDIR=$DIR/conf
 
-if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
-	LAUNCHER=$DIR/../launcher/target/launcher.jar
+if [[ -f $DIR/../misc/launcher/target/launcher.jar ]]; then
+	LAUNCHER=$DIR/../misc/launcher/target/launcher.jar
 fi
 
 
@@ -25,7 +25,8 @@ export HOSTNAME=`hostname`
 
 PORT=19099
 echo "$NAME making sure port $PORT isn't already in use"
-if netstat -atn | grep -q :$PORT
+netstat -atn | grep -q :$PORT
+if [ $? -eq 0 ]
 then
     echo "$NAME ERROR: Port $PORT is already in use!!! (it can take a little while for it to be released, we should switch to random port)"
     exit 2
@@ -48,6 +49,7 @@ cp -rp $DIR/datasets $FS_ROOT
 echo "$NAME fs.root is $FS_ROOT"
 echo "$NAME Api Server logging going to $LOG"
 
+echo "starting"
 java $@ -XX:MaxPermSize=256m -Xss10m -cp "$CONF:$LAUNCHER" \
     -Dconfig.resource=integration-test.conf \
     -Dintel.analytics.engine.fs.root=file:$FS_ROOT \

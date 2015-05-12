@@ -27,7 +27,7 @@ mkdir -p  ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/lib
 
 #copy example scripts
 mkdir -p ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/examples/
-cp -Rv ../python-examples/end-user/* ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/examples/
+cp -Rv ../python-client/examples/end-user/* ${BUILD_DIR}/usr/lib/intelanalytics/rest-server/examples/
 
 if [ -d /home/agent/datasets ]; then
     #copy datasets from agent home if it exists into the rpm tar.gz source
@@ -45,7 +45,7 @@ popd
 
 #excluded jars are now combined in deploy.jar
 # giraph-plugins.jar graphon.jar
-jars=" rest-server.jar  engine.jar  engine-interfaces.jar  deploy.jar"
+jars=" rest-server.jar  engine-interfaces.jar  deploy.jar"
 
 pushd ..
 for jar in $jars
