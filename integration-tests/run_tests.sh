@@ -42,8 +42,9 @@ fi
 sleep 10
 PORT=19099
 COUNTER=0
-sleep 10
-until netstat -atn | grep -q :$PORT && curl 127.0.0.1:$PORT 2> is_the_server_running
+httpCode=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$PORT)
+echo $httpCode
+while [ $httpCode != "200" ]
 do
     if [ $COUNTER -gt 90 ]
     then
@@ -55,6 +56,7 @@ do
     fi
     echo "$NAME Waiting for REST Server to start up on port $PORT..."
     sleep 1
+    httpCode=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$PORT)
 done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"

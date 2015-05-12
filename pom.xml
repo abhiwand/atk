@@ -251,6 +251,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 </execution>
                             </executions>
                             <configuration>
+                                <recompileMode>incremental</recompileMode>
+                                <useZincServer>true</useZincServer>
                                 <scalaVersion>${scala.long.version}</scalaVersion>
                                 <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                             </configuration>
