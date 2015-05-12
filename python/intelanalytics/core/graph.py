@@ -324,7 +324,7 @@ class EdgeRule(Rule):
 
         Returns
         -------
-        bool : ?
+        bool
             # TODO - verify return type and give proper descriptions
 
         Examples
