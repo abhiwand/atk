@@ -19,7 +19,7 @@ package org.apache.spark.api.java
 
 import org.apache.spark._
 import org.apache.spark.api.java.JavaSparkContext.fakeClassTag
-import org.apache.spark.api.java.function.{ Function => JFunction }
+import org.apache.spark.api.java.function.{Function => JFunction}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.Utils
