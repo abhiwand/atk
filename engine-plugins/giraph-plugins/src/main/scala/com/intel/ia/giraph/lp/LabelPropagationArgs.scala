@@ -40,8 +40,7 @@ case class LabelPropagationArgs(frame: FrameReference,
                                 resultColName: Option[String] = None,
                                 maxIterations: Option[Int] = None,
                                 convergenceThreshold: Option[Float] = None,
-                                lpLambda: Option[Float] = None,
-                                bidirectionalChecks: Option[Boolean] = None) {
+                                alpha: Option[Float] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
@@ -54,23 +53,17 @@ case class LabelPropagationArgs(frame: FrameReference,
   }
 
   def getMaxIterations: Int = {
-    maxIterations.getOrElse(10)
+    val value = maxIterations.getOrElse(10)
+    if (value < 1) 10 else value
   }
 
   def getConvergenceThreshold: Float = {
-    1f
+    convergenceThreshold.getOrElse(0.00000001f)
   }
 
-  def getAnchorThreshold: Float = {
-    convergenceThreshold.getOrElse(1f)
-  }
-
-  def getLpLambda: Float = {
-    lpLambda.getOrElse(0.001f)
-  }
-
-  def getBidirectionalChecks: Boolean = {
-    bidirectionalChecks.getOrElse(false)
+  def getLambda: Float = {
+    val value = alpha.getOrElse(0f)
+    1 - Math.min(1, Math.max(0, value))
   }
 }
 
@@ -79,6 +72,6 @@ case class LabelPropagationResult(value: String) //TODO
 /** Json conversion for arguments and return value case classes */
 object LabelPropagationJsonFormat {
 
-  implicit val argsFormat = jsonFormat10(LabelPropagationArgs)
+  implicit val argsFormat = jsonFormat9(LabelPropagationArgs)
   implicit val resultFormat = jsonFormat1(LabelPropagationResult)
 }
