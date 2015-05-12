@@ -211,7 +211,7 @@ class CsvFile(DataFile):
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema = [("col1", int32), ("col2", float32)])
                 >>> print(csv_class.field_types())
 
         .. only:: html
@@ -392,23 +392,23 @@ class JsonFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-        '{ "obj": {
-            "color": "blue",
-            "size": 3,
-            "shape": "square" }
-        }'
-        '{ "obj": {
-            "color": "green",
-            "size": 7,
-            "shape": "triangle" }
-        }'
-        '{ "obj": {
-            "color": "orange",
-            "size": 10,
-            "shape": "square" }
-        }'
+          '{ "obj": {
+              "color": "blue",
+              "size": 3,
+              "shape": "square" }
+          }'
+          '{ "obj": {
+              "color": "green",
+              "size": 7,
+              "shape": "triangle" }
+          }'
+          '{ "obj": {
+              "color": "orange",
+              "size": 10,
+              "shape": "square" }
+          }'
 
     Parse values out of the XML column using the add_columns method:
 
@@ -536,25 +536,25 @@ class XmlFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-         '<square>
+          '<square>
                 <name>left</name>
                 <size>3</size>
-            </square>'
-         '<square color="blue">
+           </square>'
+          '<square color="blue">
                 <name>right</name>
                 <size>5</size>
-            </square>'
+           </square>'
 
     Parse values out of the XML column using the add_columns method:
 
     .. code::
 
         >>> def parse_my_xml(row):
-        ...    import xml.etree.ElementTree as ET
-        ...    ele = ET.fromstring(row[0])
-        ...    return (ele.get("color"), ele.find("name").text, ele.find("size").text)
+        ...     import xml.etree.ElementTree as ET
+        ...     ele = ET.fromstring(row[0])
+        ...     return (ele.get("color"), ele.find("name").text, ele.find("size").text)
 
         >>> my_frame.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
@@ -607,7 +607,7 @@ class HiveQuery(DataFile):
 
     Examples
     --------
-    Given a hive table named person having name and age among other columns.
+    Given a hive table *person* having *name* and *age* among other columns.
     A simple query could be to get the query for the name and age
     .. code::
 
