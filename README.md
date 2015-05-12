@@ -18,7 +18,6 @@ Intel Analytics Toolkit (ATK)
   * model-plugins/ - model related plugins, e.g. LinearRegressionModel
   * giraph-plugins/ - a few algorithms that run on Giraph
 * integration-tests/ - developer written, build time integration tests in python, these run against a minimal version of our product
-* meta-store/ - code that interacts with the meta-store database repository including SQL scripts
 * misc/ - miscellaneous items that aren't really part of our product
   * launcher/ - starts up our application, launches parts of our app
 * package/ - packaging for VM's, RPM's

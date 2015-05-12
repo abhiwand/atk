@@ -2,6 +2,9 @@
 #set -o errexit
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
+
+# TODO: rename this file to command-dumper.sh
+
 echo $DIR
 
 if [[ -f $DIR/../misc/launcher/target/launcher.jar ]]; then
