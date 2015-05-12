@@ -59,7 +59,7 @@ case class LabelPropagationOutputFormatConfig(parquetFileLocation: String) {
  * @param resultColName column name for the results column (calculated by the algorithm)
  * @param maxIterations max number of iterations for the algorithm
  * @param convergenceThreshold deprecated - do not use
- * @param lpLambda deprecated - do not use
+ * @param lambda deprecated - do not use
  */
 case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormatConfig,
                                   outputFormatConfig: LabelPropagationOutputFormatConfig,
@@ -70,9 +70,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
                                   resultColName: String,
                                   maxIterations: Int,
                                   convergenceThreshold: Float,
-                                  lpLambda: Float,
-                                  bidirectionalChecks: Boolean,
-                                  anchorThreshold: Float) {
+                                  lambda: Float) {
 
   def this(inputFormatConfig: LabelPropagationInputFormatConfig,
            outputFormatConfig: LabelPropagationOutputFormatConfig,
@@ -86,9 +84,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
       args.getResultsColName,
       args.getMaxIterations,
       args.getConvergenceThreshold,
-      args.getLpLambda,
-      args.getBidirectionalChecks,
-      args.getAnchorThreshold)
+      args.getLambda)
   }
   require(inputFormatConfig != null, "input format is required")
   require(outputFormatConfig != null, "output format is required")
@@ -100,7 +96,7 @@ case class LabelPropagationConfig(inputFormatConfig: LabelPropagationInputFormat
 object LabelPropagationConfigJSONFormat {
   implicit val inputFormatConfigFormat = jsonFormat2(LabelPropagationInputFormatConfig)
   implicit val outputFormatConfigFormat = jsonFormat1(LabelPropagationOutputFormatConfig)
-  implicit val configFormat = jsonFormat12(LabelPropagationConfig)
+  implicit val configFormat = jsonFormat10(LabelPropagationConfig)
 }
 
 import LabelPropagationConfigJSONFormat._
