@@ -274,6 +274,8 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
 
         optimized_frame_schema = []
         if columns_accessed:
+            if isinstance(columns_accessed, basestring):
+                columns_accessed = [columns_accessed]
             frame_schema = frame.schema
             for i in columns_accessed:
                 for j in frame_schema:
