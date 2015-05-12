@@ -807,11 +807,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>hive-common</artifactId>
                 <version>${dep.hive.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-hive_${scala.short.version}</artifactId>
-                <version>${dep.spark.version}</version>
-            </dependency>
             <!--org.apache.hadoop-->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
