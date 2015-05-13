@@ -42,7 +42,7 @@ fi
 sleep 10
 PORT=19099
 COUNTER=0
-httpCode=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$PORT)
+httpCode=$(curl -s -o /dev/null -w "%{http_code}" localhost:$PORT)
 echo $httpCode
 while [ $httpCode != "200" ]
 do
@@ -56,7 +56,7 @@ do
     fi
     echo "$NAME Waiting for REST Server to start up on port $PORT..."
     sleep 1
-    httpCode=$(curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:$PORT)
+    httpCode=$(curl -s -o /dev/null -w "%{http_code}" localhost:$PORT)
     echo $httpCode
 done
 
