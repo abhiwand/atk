@@ -239,20 +239,60 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'sampling',
                                      'status'], ia.TitanGraph)
 
-    def test_expected_methods_exist_on_kmeansmodel(self):
+    def test_expected_methods_exist_on_graphml(self):
+        # TODO: this seems wrong? lbp isn't on Graph?
+        self.assert_methods_defined(['loopy_belief_propagation'], ia.core.api.GraphMl)
+
+    def test_expected_methods_exist_on_titangraphml(self):
+        self.assert_methods_defined(['alternating_least_squares',
+                                     'belief_propagation',
+                                     'conjugate_gradient_descent',
+                                     'kclique_percolation',
+                                     'loopy_belief_propagation'], ia.core.api.TitanGraphMl)
+
+    def test_expected_methods_exist_on_kmeans_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "train"], ia.KMeansModel)
 
-    def test_expected_methods_exist_on_ldamodel(self):
+    def test_expected_methods_exist_on_lda_model(self):
         self.assert_methods_defined(["name",
                                     "train"], ia.LdaModel)
 
-    def test_expected_methods_exist_on_svmmodel(self):
+    def test_expected_methods_exist_on_libsvm_model(self):
+        self.assert_methods_defined(["name",
+                                     "predict",
+                                     "score",
+                                     "test",
+                                     "train"], ia.LibsvmModel)
+
+    def test_expected_methods_exist_on_linear_regression_model(self):
+        self.assert_methods_defined(["name",
+                                     "predict",
+                                     "train"], ia.LinearRegressionModel)
+
+    def test_expected_methods_exist_on_logistic_regression_model(self):
+        self.assert_methods_defined(["name",
+                                     "predict",
+                                     "test",
+                                     "train"], ia.LogisticRegressionModel)
+
+    def test_expected_methods_exist_on_svm_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "test",
                                      "train"], ia.SvmModel)
+
+    def test_expected_global_methods_exist(self):
+        self.assert_methods_defined(['drop_frames',
+                                     'drop_graphs',
+                                     'drop_models',
+                                     'get_frame',
+                                     'get_frame_names',
+                                     'get_graph',
+                                     'get_graph_names',
+                                     'get_model',
+                                     'get_model_names'], ia)
 
     def assert_methods_defined(self, methods, clazz):
         for method in methods:
