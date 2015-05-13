@@ -21,7 +21,7 @@ import scala.reflect.ClassTag
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.api.java.function.{Function => JFunction}
+import org.apache.spark.api.java.function.{ Function => JFunction }
 import org.apache.spark.storage.StorageLevel
 
 @SerialVersionUID(-205673586731292241L)
