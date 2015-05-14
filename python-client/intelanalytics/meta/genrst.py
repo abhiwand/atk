@@ -1,28 +1,53 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2015 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+"""
+Creates pieces of rst text according to meta-programming
+"""
+
+import re
+from collections import OrderedDict
+
+from intelanalytics.meta.command import Doc
 from intelanalytics.meta.metaprog2 import indent, get_type_name, get_installation, get_intermediate_class
 from intelanalytics.meta.classnames import is_name_private
 from intelanalytics.meta.reflect import get_args_text_from_function
 
-import re
-from collections import OrderedDict
-from intelanalytics.rest.jsonschema import Doc
 
-
-def gen_rst(command_def):
-    """return text for a docstring needed for interactive documentation, uses numpy format"""
-    # could switch to google-style, which is more concise is quite readable, allows rst markup
+def get_command_def_rst(command_def):
+    """return rst entry for a function or attribute described by the command def"""
     one_line = command_def.doc.one_line
     if command_def.maturity:
-        one_line = get_maturity_text(command_def.maturity) + "\n" + one_line
+        one_line = get_maturity_rst(command_def.maturity) + "\n" + one_line
     extended = command_def.doc.extended
-    args_text = command_def.get_function_args_text()
     display_name = command_def.rst_info.display_name if hasattr(command_def, "rst_info") else command_def.name
     if command_def.is_property:
+        args_text = ""
         directive = "attribute"
     else:
-        args_text = "(%s)" % args_text
+        args_text = "(%s)" % command_def.get_function_args_text()
         directive = "function"
 
-    doc = """
+    rst = """
 .. {directive}:: {name}{args_text}
 
 {one_line}
@@ -33,20 +58,20 @@ def gen_rst(command_def):
 
 
     if command_def.parameters:
-        doc += indent(get_parameters_text(command_def))
+        rst += indent(_get_parameters_rst(command_def))
     if command_def.return_info:
-        doc += indent(get_returns_text(command_def.return_info))
-    return doc
+        rst += indent(_get_returns_rst(command_def.return_info))
+    return rst
 
 
-def get_parameters_text(command_def):
+def _get_parameters_rst(command_def):
     return """
 :Parameters:
 %s
-""" % indent("\n".join([get_parameter_text(p) for p in command_def.parameters if not p.use_self]))
+""" % indent("\n".join([_get_parameter_rst(p) for p in command_def.parameters if not p.use_self]))
 
 
-def get_parameter_text(p):
+def _get_parameter_rst(p):
     data_type = get_type_name(p.data_type)
     if p.optional:
         data_type += " (default=%s)" % (p.default if p.default is not None else "None")
@@ -60,7 +85,7 @@ def get_parameter_text(p):
 """.format(name=p.name, data_type=data_type, description=indent(p.doc))
 
 
-def get_returns_text(return_info):
+def _get_returns_rst(return_info):
     return """
 
 :Returns:
@@ -88,58 +113,50 @@ def get_returns_text(return_info):
 """
 
 
-first_column_header_char_count = 100
-second_column_header_char_count = 100
-number_of_spaces_between_columns = 2
-index_of_summary_start = first_column_header_char_count + number_of_spaces_between_columns
-table_line = "=" * first_column_header_char_count + " " * number_of_spaces_between_columns + "=" * second_column_header_char_count
-
-
-def get_signature_max(rst_name):
-    return first_column_header_char_count - len(rst_name)
-
-
-def get_method_summary_table(sorted_members):
-    lines = ["\n.. rubric:: Methods", "", table_line]
-    for member in sorted_members:
-        if member.in_method_table:
-            lines.append(member.get_summary_table_entry())
-    lines.append(table_line)
-    return "\n".join(lines)
-
-def get_attribute_summary_table(sorted_members):
-    lines = ["\n.. rubric:: Attributes", "", table_line]
-    for member in sorted_members:
-        if member.in_attribute_table:
-            lines.append(member.get_summary_table_entry())
-    lines.append(table_line)
-    return "\n".join(lines)
-
-
-def get_signature_for_summary(rst_name, sig):
-    if not sig:
-        sig = ''
+def get_maturity_rst(maturity):
+    """rst markup for the maturity tags"""
+    if maturity:
+        return '|' + maturity.upper() + '|'
     else:
-        #max_chars = max(10, sig_col_len - len(display_name) - 2)  # -2 for the ()'s
-        sig = mangle_signature(sig, max_chars=get_signature_max(rst_name))
-        sig = sig.replace('*', r'\*')
-    return sig
+        return ''
 
 
-def get_function_summary(command_def):
-    return command_def.doc.one_line
+def get_class_rst(cls):
+    """
+    Gets rst text to describe a class
+
+    Only lists members in summary tables with hyperlinks to other rst docs, with the exception of __init__
+    which is described in class rst text, below the summary tables.
+    """
+
+    starter = """
+.. class:: {name}
+
+{rst_doc}""".format(name=get_type_name(cls), rst_doc=indent(cls.__doc__))
+
+    lines = [starter]
+    sorted_members = get_member_rst_list(cls)  # sort defs for both summary table and attribute tables
+    lines.append(indent(get_attribute_summary_table(sorted_members), 4))
+    lines.append(indent(get_method_summary_table(sorted_members), 4))
+
+    installation = get_installation(cls)
+    init_commands = [c for c in installation.commands if c.is_constructor]
+    if init_commands:
+        lines.append("\n.. _%s:\n" % get_cls_init_rst_label(cls))  # add rst label for internal reference
+        lines.append(get_command_def_rst(init_commands[0]))
+
+    return "\n".join(lines)
 
 
 def get_member_rst_list(cls, intermediate_prefix=None):
+    """Gets list of RstInfo objects for all the members of the given class"""
     prefix = intermediate_prefix if intermediate_prefix else ''
     # create a ordered dict of names -> whether the name is inherited or not, based on do dir() vs. __dict__ comparison
     members = OrderedDict([(name, name not in cls.__dict__) for name in dir(cls) if not is_name_private(name)])  # True means we assume all are inherited
-    # Actually, we don't need the command_defs, can just leverage work they've already done by directly interrogating the method
-    #  X create a dict from command defs with display name key and function text
 
     member_rst_list = [RstInfo(cls, getattr(cls, name), prefix + name, is_inherited) for name, is_inherited in members.items()]
 
-    # what about intermediates and their inheritance --duplicate these?  sure
+    # add members accessed through intermediate properties, for example, graph.sampling.vertex_sample will appear as 'sampling.vertex_sample'
     properties = [(name, get_intermediate_class(name, cls)) for name in members.keys() if isinstance(getattr(cls, name), property)]
     for property_name, intermediate_cls in properties:
         if intermediate_cls:
@@ -149,74 +166,10 @@ def get_member_rst_list(cls, intermediate_prefix=None):
     return sorted(member_rst_list, key=lambda m: m.display_name)
 
 
-def get_class_rst(cls):
-    template = """
-.. class:: {name}
-
-{rst_doc}""".format(name=get_type_name(cls), rst_doc=indent(cls.__doc__))
-
-    return template
-
-
-def get_rst_for_class(cls):
-    installation = get_installation(cls)
-    lines = [get_class_rst(cls)]
-    # sort defs for both summary table and
-    sorted_members = get_member_rst_list(cls)
-    # create attribute summary table
-    lines.append(indent(get_attribute_summary_table(sorted_members), 4))
-    # create method summary table
-    lines.append(indent(get_method_summary_table(sorted_members), 4))
-
-    init_commands = [c for c in installation.commands if c.is_constructor]
-    if init_commands:
-        lines.append("\n.. _%s:\n" % get_cls_init_rst_label(cls))  # add rst label for internal reference
-        lines.append(gen_rst(init_commands[0]))
-
-    return "\n".join(lines)
-
-
-def doc_to_rst(doc):
-    return doc if isinstance(doc, Doc) else get_doc_tuple(doc)
-
-
-def get_doc_tuple(doc_str):
-    if doc_str:
-        lines = doc_str.split('\n')
-
-        while lines and not lines[0].strip():
-            lines.pop(0)
-
-        # If there's a blank line, then we can assume the first sentence /
-        # paragraph has ended, so anything after shouldn't be part of the
-        # summary
-        for i, piece in enumerate(lines):
-            if not piece.strip():
-                lines = lines[:i]
-                break
-
-        # Try to find the "first sentence", which may span multiple lines
-        m = re.search(r"^([A-Z].*?\.)(?:\s|$)", " ".join(lines).strip())
-        if m:
-            summary = m.group(1).strip()
-        elif lines:
-            summary = lines[0].strip()
-        else:
-            summary = ''
-        if summary:
-            return Doc(summary, doc_str[len(summary):].strip())
-
-    return Doc("<Missing Doc>", doc_str)
-
-
 def get_cls_init_rst_label(cls):
+    """Gets the rst label (by our convention) for the init method so sphinx can create appropriate hyperlink"""
     return "%s__init__" % get_type_name(cls)
 
-def get_maturity_text(maturity):
-    if maturity:
-        return '|' + maturity.upper() + '|'
-    else:
-        return ''
 
 class RstInfo(object):
     """Represents a member to be rendered with .rst"""
@@ -245,7 +198,7 @@ class RstInfo(object):
             self.maturity = command_def.maturity
         else:
             self.maturity = None
-        self.doc = command_def.doc if command_def else doc_to_rst(member.__doc__)
+        self.doc = command_def.doc if command_def else self.doc_to_rst(member.__doc__)
 
     @property
     def is_private(self):
@@ -258,10 +211,10 @@ class RstInfo(object):
     def get_summary_table_entry(self):
         summary = self.doc.one_line
         if self.maturity:
-            summary = get_maturity_text(self.maturity) + " " + summary
+            summary = get_maturity_rst(self.maturity) + " " + summary
 
         if self.in_method_table:
-            signature = get_signature_for_summary(self.summary_rst_name, self.args_text)
+            signature = self.get_signature_for_summary()
         else:
             signature = ''
 
@@ -269,9 +222,56 @@ class RstInfo(object):
         spaces = " " * (index_of_summary_start - len(first_half))
         return first_half + spaces + summary
 
+    def get_signature_for_summary(self):
+        if not self.args_text:
+            sig = ''
+        else:
+            sig = mangle_signature(self.args_text, max_chars=get_signature_max(self.summary_rst_name))
+            sig = sig.replace('*', r'\*')
+        return sig
 
-###########################################################################
-# rest of the file taken from sphinx/ext/autosummary/__init__.py
+    @staticmethod
+    def doc_to_rst(doc):
+        """Create a Doc object if not already a Doc"""
+        return doc if isinstance(doc, Doc) else Doc.get_from_str(doc)
+
+
+###############################################################################
+# Summary Tables
+
+# parameters for summary table, signature mangling computation...
+first_column_header_char_count = 100
+second_column_header_char_count = 100
+number_of_spaces_between_columns = 2
+index_of_summary_start = first_column_header_char_count + number_of_spaces_between_columns
+table_line = "=" * first_column_header_char_count + " " * number_of_spaces_between_columns + "=" * second_column_header_char_count
+
+
+def get_signature_max(rst_name):
+    return first_column_header_char_count - len(rst_name)
+
+
+def get_method_summary_table(sorted_members):
+    lines = ["\n.. rubric:: Methods", "", table_line]
+    for member in sorted_members:
+        if member.in_method_table:
+            lines.append(member.get_summary_table_entry())
+    lines.append(table_line)
+    return "\n".join(lines)
+
+
+def get_attribute_summary_table(sorted_members):
+    lines = ["\n.. rubric:: Attributes", "", table_line]
+    for member in sorted_members:
+        if member.in_attribute_table:
+            lines.append(member.get_summary_table_entry())
+    lines.append(table_line)
+    return "\n".join(lines)
+
+
+#########################################################################################
+# rest of the file taken from sphinx/ext/autosummary/__init__.py, for signature mangling
+
 
 max_item_chars = 50
 

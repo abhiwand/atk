@@ -20,6 +20,9 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Utility functions for names, entity_types, etc.
+"""
 
 def is_name_private(name):
     return name.startswith('_') and name != "__init__"
@@ -90,3 +93,13 @@ def entity_type_to_entity_basetype(entity_type):
 def entity_type_to_collection_name(entity_type):
     return entity_type_to_entity_basetype(entity_type) + "s"
 
+
+def indent(text, spaces=4):
+    indentation = ' ' * spaces
+    return "\n".join([indentation + line if line else line for line in text.split('\n')])
+
+
+def get_type_name(data_type):
+    if isinstance(data_type, basestring):
+        return data_type
+    return data_type.__name__ if data_type is not None else 'None'

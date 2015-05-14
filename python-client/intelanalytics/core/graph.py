@@ -397,7 +397,16 @@ class _BaseGraph(_DocStubsBaseGraph, CommandLoadable):
 
     @api
     @property
+    @returns(data_type=str, description="Status of the graph")
     def __status(self):
+        """
+        Current graph life cycle status.
+
+        One of three statuses: Active, Deleted, Deleted_Final
+           Active:   available for use
+           Deleted:  has been scheduled for deletion
+           Deleted_Final: backend files have been removed from disk.
+        """
         try:
             return self._backend.get_status(self)
         except:
@@ -713,6 +722,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
 
     @api
     @property
+    @returns(int, 'Total number of edges in the graph')
     def __edge_count(self):
         """
         Get the total number of edges in the graph.

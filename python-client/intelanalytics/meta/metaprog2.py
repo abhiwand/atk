@@ -48,10 +48,6 @@ Meta-programming - dynamically adding commands to api objects or building doc st
 # g.ml.graphx_pagerank(...)   # works
 # g.ml.pagerank(...)          # attribute 'pagerank' not found (desired behavior)
 from intelanalytics.meta.installpath import InstallPath
-from intelanalytics.core.iatypes import valid_data_types
-
-
-__all__ = ['CommandInstallable', 'load_loadable']
 
 
 import logging
@@ -65,8 +61,11 @@ from decorator import decorator
 from intelanalytics.core.api import api_globals
 from intelanalytics.meta.context import get_api_context_decorator
 from intelanalytics.meta.mute import muted_commands
+from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 import intelanalytics.meta.classnames as naming
-
+from intelanalytics.meta.classnames import indent, get_type_name
+from intelanalytics.meta.genspa import gen_spa
+from intelanalytics.meta.clientside import mark_item_as_api, is_api, decorate_api_class, client_commands, clear_clientside_api_stubs, DocStubCalledError
 _installable_classes_store = {}
 _docstub_classes_store = {}
 
@@ -88,17 +87,19 @@ class CommandInstallation(object):
         if get_installation(parent_class) != self:
             raise RuntimeError("Internal error: installation and class type mismatch for class %s" % parent_class)
         if property_name not in parent_class.__dict__:   # don't use hasattr, because it would match an inherited prop
-            setattr(parent_class, property_name, self._create_intermediate_property(property_name, intermediate_class))
+            prop = self._create_intermediate_property(property_name, intermediate_class, parent_class.__name__)
+            setattr(parent_class, property_name, prop)
             self.intermediates[property_name] = intermediate_class
 
     @staticmethod
-    def _create_intermediate_property(name, intermediate_class):
+    def _create_intermediate_property(name, intermediate_class, parent_name):
         fget = CommandInstallation.get_fget(name)
-        from intelanalytics.meta.clientside import mark_item_as_api  # todo: make clientside be full dep declared at top
         mark_item_as_api(fget)
         fget._intermediate_class = intermediate_class
         doc = CommandInstallation._get_canned_property_doc(name, intermediate_class.__name__)
-        return property(fget=fget, doc=doc)
+        prop = property(fget=fget, doc=doc)
+        fget.command = IntermediatePropertyCommandDefinition(name, prop, intermediate_class, parent_name)
+        return prop
 
     @staticmethod
     def get_fget(name):
@@ -131,11 +132,43 @@ def get_intermediate_class(property_name, from_class):
                 return intermediate_class
     return None
 
-def doc_stub(function):
+class IntermediatePropertyCommandDefinition(CommandDefinition):
+    """CommandDef for synthesized properties created for intermediate classes"""
+
+    def __init__(self, name, prop, intermediate_class, parent_name):
+
+        self.parent_name = parent_name
+
+        function = prop.fget
+        function.command = self  # make command def accessible from function, just like functions gen'd from server info
+
+        json_schema = {}  # make empty, since this command didn't come from json, and there is no need to generate it
+        full_name = self._generate_full_name(parent_name, name)
+
+        params = []
+        params.append(Parameter(name='self', data_type='object', use_self=True, optional=False, default=None, doc=None))
+        return_info = ReturnInfo(intermediate_class, use_self=False, doc='%s object' % intermediate_class.__name__)
+
+        maturity = function.maturity if hasattr(function, "maturity") else None
+
+        super(IntermediatePropertyCommandDefinition, self).__init__(json_schema, full_name, params, return_info, is_property=True, doc=prop.__doc__, maturity=maturity)
+
+        spa_doc = gen_spa(self)
+        function.__doc__ = spa_doc
+
+    @staticmethod
+    def _generate_full_name(class_name, member_name):
+        entity_type = naming.class_name_to_entity_type(class_name)
+        full_name = "%s/%s" % (entity_type, member_name)
+        return full_name
+
+
+def doc_stub(item):
     """Doc stub decorator"""
-    decorated_function = decorator(_doc_stub, function)
-    setattr(decorated_function, Constants.DOC_STUB, function.__name__)
-    return decorated_function
+    if not inspect.isclass(item):
+        item = decorator(_doc_stub, item)
+    setattr(item, Constants.DOC_STUB, item.__name__)
+    return item
 
 
 class Constants(object):
@@ -155,7 +188,7 @@ class Constants(object):
 
     INIT_INFO_ARGUMENT_NAME = '_info'
 
-    DOC_STUB = 'doc_stub'
+    DOC_STUB = '_doc_stub'
     DOC_STUB_LOADABLE_CLASS_PREFIX = '_DocStubs'
     DOC_STUB_TEXT = '_doc_stub_text'  # attribute for a function to hold on to its own doc stub text
     DOC_STUB_DECORATOR_TEXT = '@' + doc_stub.__name__
@@ -324,7 +357,6 @@ def create_entity_class(command_def):
     if not command_def.is_constructor:
         raise RuntimeError("Internal Error: algo was not a constructor command_def")
     new_class = _create_class(command_def.install_path, command_def.doc)
-    from intelanalytics.meta.clientside import decorate_api_class
     decorate_api_class(new_class)
 
 
@@ -362,7 +394,6 @@ def is_command_name_installable(cls, command_name):
 
 
 def install_client_commands():
-    from intelanalytics.meta.clientside import client_commands, clear_clientside_api_stubs
     cleared_classes = set()
     for class_name, command_def in client_commands:
 
@@ -551,41 +582,42 @@ def get_function_kwargs(command_def):
                       for p in command_def.parameters])
 
 
-def get_function_text(command_def, body_text='pass', decorator_text=''):
+def get_function_text(command_def, body_text='return None', decorator_text=''):
     """Produces python code text for a command to be inserted into python modules"""
 
-    from intelanalytics.meta.genspa import gen_spa
     args_text=command_def.get_function_args_text()
     if command_def.is_constructor:
         if args_text:
             args_text += ", _info=None"
         else:
             args_text = "_info=None"
-    if not command_def.is_property:
-        args_text = "(%s)" % args_text
+    elif command_def.is_property:
+        decorator_text = "@property\n" + decorator_text
     return '''{decorator}
-def {func_name}{args_text}:
+def {name}({args_text}):
     """
 {doc}
     """
     {body_text}
 '''.format(decorator=decorator_text,
-           func_name=command_def.name,
+           name=command_def.name,
            args_text=args_text,
            doc=gen_spa(command_def),
            body_text=body_text)
 
 
-def get_doc_stub_init_text(command_def):
-    from intelanalytics.meta.genspa import gen_spa
+def get_doc_stub_init_text(command_def, override_rtype=None):
     args_text=command_def.get_function_args_text()
     return '''
 def __init__({args_text}):
     """
     {doc}
     """
-    pass
-'''.format(args_text=args_text, doc=gen_spa(command_def))
+    raise {error}("{name}")
+'''.format(args_text=args_text,
+           doc=gen_spa(command_def, override_rtype=override_rtype),
+           error=DocStubCalledError.__name__,
+           name=command_def.full_name)
 
 
 def get_call_execute_command_text(command_def):
@@ -605,9 +637,9 @@ def get_repr(command_def):
 def default_repr(self, collection_name):
     entity = type(self).__name__
     try:
-        from intelanalytics.rest.connection import http
-        uri = http.create_full_uri(collection_name + "/" + str(self._id))
-        response = http.get_full_uri(uri).json()
+        from intelanalytics.rest.iaserver import server
+        uri = server.create_full_uri(collection_name + "/" + str(self._id))
+        response = server.get(uri).json()
         name = response.get('name', None)
         if name:
             details = ' "%s"' % response['name']
@@ -708,13 +740,6 @@ class DocStubsImport(object):
 doc_stubs_import = DocStubsImport
 
 
-class DocStubCalledError(RuntimeError):
-    def __init__(self, func_name=''):
-        RuntimeError.__init__(self, "Call made to a documentation stub function '%s' "
-                                    "which is just a placeholder for the real function."
-                                    "This usually indicates a problem with a API loaded from server." % func_name)
-
-
 def _doc_stub(function, *args, **kwargs):
     raise DocStubCalledError(function.__name__)
 
@@ -723,19 +748,6 @@ def api_class_alias(cls):
     """Decorates aliases (which use inheritance) to NOT have DOC STUB TEXT"""
     set_doc_stub_text(cls, None)
     return cls
-
-
-# def set_function_doc_stub_text(function, params_text, doc_str):
-#     doc_stub_text = '''@{doc_stub}
-# def {name}({params}):
-#     """
-# {doc}
-#     """
-#     pass'''.format(doc_stub=doc_stub.__name__,
-#                    name=function.__name__,
-#                    params=params_text,
-#                    doc=doc_str)
-#     set_doc_stub_text(function, doc_stub_text)
 
 
 def get_base_class_via_inspect(cls):
@@ -767,7 +779,7 @@ def get_doc_stub_class_text(loaded_class):
     if not has_installation(loaded_class):
         return ''
 
-    members_text = get_members_text(loaded_class) or indent("pass")
+    members_text = get_members_text(loaded_class) or indent("return None")
     installation = get_installation(loaded_class)
     class_name, baseclass_name = installation.install_path.get_class_and_baseclass_names()
     if class_name != loaded_class.__name__:
@@ -803,58 +815,7 @@ def get_doc_stub_globals_text(module):
     return '\n\n\n'.join(lines) if lines else '', doc_stub_all
 
 
-def get_doc_stubs_modules_text(command_defs, global_module):
-    """creates docstub text for two different files, returning a tuple of the file content"""
-    # the content of the second item in the tuple contains those entity classes that were created by the metaprogramming, not coded in the python client.
-    install_server_commands(command_defs)
-    delete_docstubs()
-    before_lines = [get_file_header_text()]
-    after_lines = []
-    after_all = []
-    after_definitions = []
-    after_dependencies = {}
-    classes = sorted(_installable_classes_store.items(), key=lambda kvp: len(kvp[0]))
-    if 0 < logger.level <= logging.INFO:
-        logger.info("Processing class in this order: " + "\n".join([str(c[1]) for c in classes]))
-
-    for cls_pair in classes:
-        cls = cls_pair[1]
-        installation = get_installation(cls)
-        members_text = get_members_text(cls) or indent("pass")
-        class_name, baseclass_name = installation.install_path.get_class_and_baseclass_names()
-        if class_name != cls.__name__:
-            raise RuntimeError("Internal Error: class name mismatch generating docstubs (%s != %s)" % (class_name, cls.__name__))
-        if installation.host_class_was_created and installation.install_path.is_entity:
-            lines = after_lines
-            after_definitions.append(class_name)
-            after_dependencies[baseclass_name] = installation.install_path.baseclass_install_path
-            #if installation.install_path.is_entity:
-                # need to export it as part of __all__
-            after_all.append(class_name)
-        else:
-            if not installation.host_class_was_created:
-                class_name = get_doc_stubs_class_name(class_name)
-                if baseclass_name != CommandInstallable.__name__:
-                    baseclass_name = get_doc_stubs_class_name(baseclass_name)
-            lines = before_lines
-
-        lines.append(get_loadable_class_text(class_name,
-                                             baseclass_name,
-                                             "Contains commands for %s provided by the server" % class_name,
-                                             members_text))
-
-    for d in after_definitions:
-        after_dependencies.pop(d, None)
-    for baseclass_name, install_path in after_dependencies.items():
-        if install_path:
-            module_path = _installable_classes_store[install_path.full].__module__
-            after_lines.insert(0, "from %s import %s" % (module_path, baseclass_name))
-    global_lines, global_all = get_doc_stub_globals_text(global_module)
-    after_lines.append(global_lines)
-    after_all.extend(global_all)
-    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
-    after_lines.insert(0, get_file_header_text())
-    return '\n'.join(before_lines), '\n'.join(after_lines)
+spa_default_import_names = [doc_stub.__name__, DocStubCalledError.__name__]
 
 
 def get_file_header_text():
@@ -889,23 +850,27 @@ from {module} import {objects}
 
 """.format(timestamp=datetime.datetime.now().isoformat(),
            module=__name__,
-           objects=", ".join([CommandInstallable.__name__, doc_stub.__name__]))
+           objects=", ".join(spa_default_import_names))
 
 
-def get_loadable_class_text(class_name, baseclass_name, doc, members_text):
+def get_file_footer_text():
+    """removes the imports brought in by the header from the namespace"""
+    return "\n".join(["del %s" % name for name in spa_default_import_names])
+
+
+def get_loadable_class_text(class_name, baseclass_name, doc, members_text, decoration="@doc_stub"):
     """
     Produces code text for a loadable class definition
     """
     return '''
+{decoration}
 class {name}({baseclass}):
     """
 {doc}
     """
 
-    # (the __init__ method may or may not be defined somewhere below)
-
 {members}
-'''.format(name=class_name, baseclass=baseclass_name, doc=indent(doc), members=members_text)
+'''.format(decoration=decoration, name=class_name, baseclass=baseclass_name, doc=indent(doc), members=members_text)
 
 
 def get_doc_stubs_class_name(class_name):
@@ -930,19 +895,6 @@ def get_members_text(cls):
     return "\n".join(lines)
 
 
-def indent(text, spaces=4):
-    indentation = ' ' * spaces
-    return "\n".join([indentation + line if line else line for line in text.split('\n')])
-
-def get_type_name(data_type):
-    try:
-        return valid_data_types.to_string(data_type)
-    except:
-        if isinstance(data_type, basestring):
-            return data_type
-        return data_type.__name__ if data_type is not None else 'None'
-
-
 def delete_docstubs():
     """
     Deletes all the doc_stub functions from all classes in docstubs.py
@@ -956,12 +908,17 @@ def delete_docstubs():
         return attr and hasattr(attr, Constants.DOC_STUB)
 
     def _delete_docstubs(docstubs):
+        import intelanalytics as ia
         for item in docstubs.__dict__.values():
             if inspect.isclass(item):
                 victims = [k for k, v in item.__dict__.iteritems() if _is_doc_stub(v)]
                 logger.debug("deleting docstubs from %s: %s", item, victims)
                 for victim in victims:
                     delattr(item, victim)
+                if hasattr(item, Constants.DOC_STUB) and hasattr(ia, item.__name__):
+                    # print "Deleting %s from ia" % item.__name__
+                    delattr(ia, item.__name__)
+
     try:
         import intelanalytics.core.docstubs1 as docstubs1
     except Exception:
@@ -1043,3 +1000,54 @@ Restarting your python session is now require to use this package.
 Details:%s
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """ % self.details)
+
+
+def walk_api(cls, cls_function, attr_function, include_init=False):
+    """
+    Walks the API and executes the cls_function at every class and the attr_function at every attr
+
+    Skip all private methods.  If __init__ should be included (special case), set include_init=True
+
+    Either *_function arg can be None.  For example if you're only interesting in walking functions,
+    set cls_function=None.
+    """
+    cls_func = cls_function
+    attr_func = attr_function
+    inc_init = include_init
+
+    def walker(obj):
+        for name in dir(obj):
+            if not name.startswith("_") or (inc_init and name == "__init__"):
+                a = getattr(obj, name)
+                if inspect.isclass(a):
+                    if is_api(a) and cls_func:
+                        cls_func(a)
+                    walker(a)
+                else:
+                    if isinstance(a, property):
+                        intermediate_class = get_intermediate_class(name, obj)
+                        if intermediate_class:
+                            walker(intermediate_class)
+                        a = a.fget
+                    if is_api(a) and attr_func:
+                        attr_func(obj, a)
+    walker(cls)
+
+
+def get_api_names(obj, prefix=''):
+    """
+    Collects the full names of the commands in the API (driven by QA coverage)
+    """
+    names = set()
+    def collect(o, a):
+        try:
+            name = a.command.full_name
+            if name not in names:
+                names.add(name)
+        except:
+            pass
+
+    walk_api(obj, None, collect, include_init=True)
+    return names
+
+

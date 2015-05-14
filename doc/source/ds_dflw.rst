@@ -384,7 +384,7 @@ It would still be accessed by Frame *my_frame1*:
         >>> objects1.append(objects2)
         >>> objects1.inspect()
 
-See also the :code:`join` method in the :doc:`API <ds_apic>` section.
+See also the :code:`join` method in the :doc:`API <python_api/index>` section.
 
 .. _example_frame.inspect:
 

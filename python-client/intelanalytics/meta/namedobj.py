@@ -27,9 +27,8 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 
-from intelanalytics.core.api import api_globals
 from intelanalytics.meta.clientside import get_api_decorator, arg, returns
-from intelanalytics.meta.classnames import entity_type_to_collection_name
+from intelanalytics.meta.classnames import entity_type_to_collection_name, upper_first
 from intelanalytics.meta.metaprog2 import get_entity_class_from_store, set_entity_collection
 
 
@@ -46,11 +45,6 @@ def add_named_object_support(obj_class, obj_term):
     from intelanalytics.rest.command import execute_command
     _NamedObjectsFunctionFactory(obj_class, obj_term, server, execute_command)
     # the act of creation is sufficient, they'll get registered via decorations during install
-    # module = get_module(obj_class)
-    # for function in factory.global_functions:
-    #     setattr(module, function.__name__, function)
-    #     api_globals.add(function)
-    # setattr(obj_class, '__name', factory.class_name_property)
 
 
 def get_module(cls):
@@ -151,11 +145,10 @@ class _NamedObjectsFunctionFactory(object):
         get_object_names.__name__ = get_object_names_name
         get_object_names.__doc__ = """Retrieve names for all the {obj_term} objects on the server.""".format(obj_term=self._term)
         # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
-        api_decorator = get_api_decorator(module_logger) #, parent_class_name="_BaseGlobals")
+        api_decorator = get_api_decorator(module_logger, parent_class_name="_BaseGlobals")
         returns_decorator = returns(list, "List of names")
         decorated_method = api_decorator(returns_decorator(get_object_names))
         return decorated_method
-
 
     def create_get_object(self):
         get_object_name = "__get_%s" % self._term
@@ -186,14 +179,18 @@ class _NamedObjectsFunctionFactory(object):
         get_object.__name__ = get_object_name
         get_object.__doc__ = """Get handle to a {obj_term} object.""".format(obj_term=self._term)
         # decorate the method with api and arg, which will also give a nice command def for setting the doc_stub
-        api_decorator = get_api_decorator(module_logger) #, parent_class_name="_BaseGlobals")
+        api_decorator = get_api_decorator(module_logger, parent_class_name="_BaseGlobals")
         arg_decorator = arg(name="identifier",
                             data_type="str | int",
                             description="Name of the %s to get" % self._term)
-        returns_decorator = returns(obj_class, "%s object" % self._term)
+        # Determining the return type is difficult, because we don't know in advance what specific type of entity
+        # we will get (like Frame or VertexFrame or ?).  We choose to go with the general entity type, like "Frame",
+        # because it is likely the most common case and also has backing for SPA (i.e. _BaseFrame does not get defined
+        # in the DocStubs)  Btw, we know "Model" will fail SPA --there is no "general" Model class.
+        returns_type = upper_first(self._term)  # so, "frame" -> "Frame"
+        returns_decorator = returns(returns_type, "%s object" % self._term)
         decorated_method = api_decorator(returns_decorator(arg_decorator(get_object)))
         return decorated_method
-
 
     def create_drop_objects(self):
         # create local vars for better closures:

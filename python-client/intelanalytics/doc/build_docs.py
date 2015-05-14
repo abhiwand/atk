@@ -21,56 +21,85 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Builds .rst files and folder structure for Python API
+Script to generate all the collateral needed for documentation and Static Program Analysis (SPA)
+
+Builds .rst files and folder structure for Python API HTML+PDF documentation
+
+Builds docstub*.py files for SPA
+
 """
+
+# todo: break this script up a little, move to genrst.py and genspa.py
 
 import tempfile
 import shutil
 import os
 import errno
 import sys
+import glob
+import logging
+logger = logging.getLogger(__name__)
 
 
 this_script_dir = os.path.dirname(os.path.abspath(__file__))
 source_code_dir = os.path.join(os.path.join(os.path.join(this_script_dir, os.pardir), os.pardir), os.pardir)
-dst_path = os.path.join(source_code_dir, "doc/source/python_api")
 
 # override the python path so that 'this' intelanalytics package is used
 sys.path.insert(0, os.path.join(source_code_dir, "python"))
 
-# connect to running server
+core_dir = os.path.join(source_code_dir, r'python-client/intelanalytics/core')
+
+spa_module1_file_name = os.path.join(core_dir, 'docstubs1.py')
+spa_module2_file_name = os.path.join(core_dir, 'docstubs2.py')
+
+
+# Must delete any existing docstub.py files BEFORE importing ia
+for file_name in [spa_module1_file_name, spa_module2_file_name]:
+    for existing_doc_file in glob.glob("%s*" % file_name):  # * on the end to get the .pyc as well
+        print "Deleting existing docstub file: %s" % existing_doc_file
+        os.remove(existing_doc_file)
+
+
+# Connect to running server
 import intelanalytics as ia
 ia.connect()
 
 
-from intelanalytics.meta.metaprog2 import get_installation, get_type_name, has_entity_collection, get_entity_collection
-from intelanalytics.meta.genrst import gen_rst
+from intelanalytics.meta.metaprog2 import get_installation, get_type_name, has_entity_collection, get_entity_collection, get_function_text
+from intelanalytics.meta.metaprog2 import get_file_header_text, get_file_footer_text, get_doc_stubs_class_name, get_loadable_class_text, indent, get_doc_stub_init_text
+from intelanalytics.meta.genrst import get_command_def_rst, get_class_rst
 
 
-COLLECTION_MARKER_FILE_NAME = ".collection"  # an empty file with this name is created in every folder to mark a collection
+#############################################################################
+# rst
+
+COLLECTION_MARKER_FILE_NAME = ".collection"  # an empty file with this name is created in a folder to mark it as  a collection
 
 
-def get_prepared_root_path():
+def get_prepared_rst_root_path():
     """creates a temporary folder which functions as the root_path for rst construction"""
     tmp_folder_path = tempfile.mkdtemp(prefix="tmp_doc_staging_")
-    root_path = os.path.join(tmp_folder_path, "python_api")
-    shutil.copytree("api_template", root_path)  # copy the template into the tmp folder
-    return root_path
+    rst_root_path = os.path.join(tmp_folder_path, "python_api")
+    shutil.copytree("api_template", rst_root_path)  # copy the template into the tmp folder
+    return rst_root_path
 
 
-def copy_root_path_to_dst(root_path):
+def copy_rst_root_path_to_dst(root_path):
     """Copies the temp folder to destination folder and deletes the temp folder"""
-    print "dst_path=%s" % dst_path  # dst_path is global
-    if os.path.exists(dst_path):
-        print "deleting %s" % dst_path
-        shutil.rmtree(dst_path)
-    shutil.copytree(root_path, dst_path)
+    rst_dst_path = os.path.join(source_code_dir, "doc/source/python_api")  # source_code_dir is global, set above
+    if os.path.exists(rst_dst_path):
+        print "Deleting old %s" % rst_dst_path
+        shutil.rmtree(rst_dst_path)
+    print "Copying %s to %s" % (root_path, rst_dst_path)
+    shutil.copytree(root_path, rst_dst_path)
+    print "Deleting temp %s" % root_path
+    shutil.rmtree(root_path)
 
 
 def write_rst_dummy_collection_index_file(path):
     file_path = os.path.join(path, COLLECTION_MARKER_FILE_NAME)
     if not os.path.exists(file_path):
-        print "writing %s" % file_path
+        print "Writing %s" % file_path
         with open(file_path, 'w') as f:
             f.write("# Dummy file marking this folder as a entity collection folder")
 
@@ -96,7 +125,7 @@ def split_path(path):
     return folders
 
 
-def get_rst_folder_path(root_path, obj, attr=None):
+def get_rst_folder_path(rst_root_path, obj, attr=None):
     installation = get_installation(obj, None)
     if installation:
         entity_collection_name = installation.install_path.entity_collection_name
@@ -107,7 +136,7 @@ def get_rst_folder_path(root_path, obj, attr=None):
     else:
         raise RuntimeError("Unable to determine the entity collection for method %s" % attr)
 
-    collection_path = os.path.join(root_path, entity_collection_name)
+    collection_path = os.path.join(rst_root_path, entity_collection_name)
     if not os.path.exists(collection_path):
         raise RuntimeError("Documentation collections folder %s does not exist" % collection_path)
     write_rst_dummy_collection_index_file(collection_path)
@@ -144,11 +173,6 @@ def get_rst_cls_file_header(collection_name, class_name):
     return get_rst_file_header(title)
 
 
-def gen_rst_cls_content(cls):
-    from intelanalytics.meta.genrst import get_rst_for_class
-    return get_rst_for_class(cls)
-
-
 def get_index_ref(cls):
     installation = get_installation(cls, None)
     nested_level = len(installation.install_path._intermediate_names) if installation else 0
@@ -158,7 +182,7 @@ def get_index_ref(cls):
 def write_rst_attr_file(root_path, cls, attr):
     command_def = attr.command
     header = get_rst_attr_file_header(class_name=get_type_name(cls), index_ref=get_index_ref(cls), attr_name=attr.__name__) #command_def.name)
-    content = gen_rst(command_def)
+    content = get_command_def_rst(command_def)
     folder = get_rst_folder_path(root_path, cls, attr)
     file_path = os.path.join(folder, command_def.name + ".rst")
     print "writing %s" % file_path
@@ -170,7 +194,7 @@ def write_rst_cls_file(root_path, cls):
     installation = get_installation(cls)
     entity_collection_name = installation.install_path.entity_collection_name
     header = get_rst_cls_file_header(entity_collection_name, class_name=get_type_name(cls))
-    content = gen_rst_cls_content(cls)
+    content = get_class_rst(cls)
     folder = get_rst_folder_path(root_path, cls)
     file_path = os.path.join(folder, "index.rst")
     print "writing %s" % file_path
@@ -179,10 +203,9 @@ def write_rst_cls_file(root_path, cls):
 
 
 def write_rst_collections_file(root_path, collection_name, subfolders, files):
-    # go through subfolders and find the index.rst and them to toc jazz
+    # go through subfolders and find the index.rst and add to toc jazz
     # go through files and list global methods  (leave making nice "summary table" as another exercise)
-    from intelanalytics.meta.classnames import upper_first, entity_type_to_class_name
-    from intelanalytics.meta.metaprog2 import indent
+    from intelanalytics.meta.classnames import upper_first, entity_type_to_class_name, indent
     title = upper_first(collection_name)
     title_emphasis = "=" * len(title)
     # Frame <frame-/index.rst>
@@ -213,7 +236,7 @@ def walk_collection_folders(root_path):
             write_rst_collections_file(folder, os.path.split(folder)[1], subfolders, files)
 
 
-def per_attribute(doc_root_path):
+def get_attr_rst(doc_root_path):
     root_path = doc_root_path
     def write_command(obj, attr):
         if hasattr(attr, "command"):
@@ -221,160 +244,134 @@ def per_attribute(doc_root_path):
     return write_command
 
 
-def per_class(doc_root_path):
+def get_obj_rst(doc_root_path):
     root_path = doc_root_path
     def write_class(cls):
         write_rst_cls_file(root_path,  cls)
     return write_class
 
 
-def print_attr(obj, attr):
-    print "attr:  %s:%s" % (obj, attr)
+
+##############################################################################
+# SPA
+
+spa_obj_to_member_text = {}   # obj -> list of docstub text per method, ex.
+                              #  { Frame -> [ "@docstub\ndef add_columns....", "@docstub\ndef ecdf(..." ...) ],
+                              #    VertexFrame -> [ "...  " ...], ... }
 
 
-def print_class(obj):
-    print "---------------------------------------------------------"
-    print "class: %s" % (obj)
-    print "---------------------------------------------------------"
-
-
-
-doc_stubs_text = {}   # obj -> list of docstubs per method
-                      # ex.
-                      #  { Frame -> [ "@docstub\ndef add_columns....", "@docstub\ndef ecdf(..." ...) ]
-                      #    VertexFrame -> [ "...  " ...]
-
-from intelanalytics.meta.genspa import gen_spa
-from intelanalytics.meta.metaprog2 import get_function_text
-
-# def get_attr_spa(obj_spa, stubs_table):
-#     table = stubs_table
-#     def attr_spa(obj, attr):
-#         if hasattr(attr, "command"):
-#             if obj not in table:
-#                 obj_spa(obj)
-#             command_def = attr.command
-#             text = get_function_text(command_def, decorator_text='@doc_stub')
-#             table[obj].append(text)
-#     return attr_spa
-#
-# def get_obj_spa(stubs_table):
-#     table = stubs_table
-#     def obj_spa(obj):
-#         if obj not in table:
-#             table[obj] = []
-#     return obj_spa
+spa_import_return_types = set()  # for spa to work (at least in IJ), the rtype must be in the modules namespace, like
+# for example, get_frame, returns a Frame.  For IJ to provide metadata about the return type, Frame has to be around
+# so we hold on to all the funky return types so we can import them in the docstubs.
 
 
 def attr_spa(obj, attr):
     if hasattr(attr, "command"):
-        if obj not in doc_stubs_text:
+        if obj not in spa_obj_to_member_text:
             obj_spa(obj)
         command_def = attr.command
-        text = get_function_text(command_def, decorator_text='@doc_stub')
-        doc_stubs_text[obj].append((command_def.name, text))
+        if command_def.is_constructor:
+            text = get_doc_stub_init_text(command_def, override_rtype=obj)
+        else:
+            text = get_function_text(command_def, decorator_text='@doc_stub')
+        if command_def.return_info:
+            return_type = command_def.return_info.data_type
+            if return_type:
+                s = return_type.__name__ if hasattr(return_type, "__name__") else str(return_type) if not isinstance(return_type, basestring) else return_type
+                if s not in dir(__builtins__) and s not in spa_import_return_types:
+                    spa_import_return_types.add(return_type)
+        spa_obj_to_member_text[obj].append((command_def.name, text))
+
 
 def obj_spa(obj):
-    if obj not in doc_stubs_text:
-        doc_stubs_text[obj] = []
-
-from intelanalytics.meta.metaprog2 import delete_docstubs, get_file_header_text, get_doc_stubs_class_name, CommandInstallable, get_loadable_class_text, indent
+    if obj not in spa_obj_to_member_text:
+        spa_obj_to_member_text[obj] = []
 
 
-def get_doc_stubs_modules_text(): #command_defs, global_module):
-    """creates docstub text for two different files, returning a tuple of the file content"""
-    # the content of the second item in the tuple contains those entity classes that were created by the metaprogramming, not coded in the python client.
-    #install_server_commands(command_defs)
-    delete_docstubs()
-    before_lines = [get_file_header_text()]
-    after_lines = []
-    after_all = []
-    after_definitions = []
-    after_dependencies = {}
-    global_lines = []
-    #classes = sorted(_installable_classes_store.items(), key=lambda kvp: len(kvp[0]))
-    #if 0 < logger.level <= logging.INFO:
-        #logger.info("Processing class in this order: " + "\n".join([str(c[1]) for c in classes]))
+def get_spa_modules_text():
+    """creates spa text for two different modules, returning the content in a tuple"""
 
-    classes = sorted(doc_stubs_text.items(), key=lambda kvp: len(kvp[0].__name__))
+    # The first module contains dependencies for the entity classes that are 'hard-coded' in the python API,
+    # like Frame, Graph...  They need things like  _DocStubsFrame, or GraphMl to be defined first.
+    # The second module contains entity classes that are created by meta-programming, like LdaModel, *Model,
+    # which may depend on the 'hard-coded' python API.  The second modules also contains any global methods,
+    # like get_frame_names, which depend on objects like Frame being already defined.
+
+    module1_lines = [get_file_header_text()]
+
+    module2_lines = []
+    module2_all = []  # holds the names which should be in module2's __all__ for import *
+
+    classes = sorted([(k, v) for k, v in spa_obj_to_member_text.items()], key=lambda kvp: kvp[0].__name__)
     for cls, members_info in classes:
+        logger.info("Processing %s for doc stubs", cls)
         names, text = zip(*members_info)
         installation = get_installation(cls, None)
         if installation:
-        #members_text = get_members_text(cls) or indent("pass")
             class_name, baseclass_name = installation.install_path.get_class_and_baseclass_names()
             if class_name != cls.__name__:
                 raise RuntimeError("Internal Error: class name mismatch generating docstubs (%s != %s)" % (class_name, cls.__name__))
             if installation.host_class_was_created and installation.install_path.is_entity:
-                lines = after_lines
-                after_definitions.append(class_name)
-                after_dependencies[baseclass_name] = installation.install_path.baseclass_install_path
-                #if installation.install_path.is_entity:
-                    # need to export it as part of __all__
-                after_all.append(class_name)
+                lines = module2_lines
+                module2_all.append(class_name)
             else:
                 if not installation.host_class_was_created:
                     class_name = get_doc_stubs_class_name(class_name)
-                    if baseclass_name != CommandInstallable.__name__:
-                        baseclass_name = get_doc_stubs_class_name(baseclass_name)
-                lines = before_lines
-
+                lines = module1_lines
 
             lines.append(get_loadable_class_text(class_name,
-                                                 "object", #baseclass_name,
-                                                 "Contains commands for %s provided by the server" % class_name,
+                                                 "object",  # no inheritance for docstubs, just define all explicitly
+                                                 "Auto-generated to contain doc stubs for static program analysis",
                                                  indent("\n\n".join(text))))
         elif cls.__name__ == "intelanalytics":
-            global_lines.extend(list(text))
-            after_all.extend(list(names))
+            module2_lines.extend(list(text))
+            module2_all.extend(list(names))
 
-    for d in after_definitions:
-        after_dependencies.pop(d, None)
-        # for baseclass_name, install_path in after_dependencies.items():
-        #     if install_path:
-    #         module_path = _installable_classes_store[install_path.full].__module__
-    #         after_lines.insert(0, "from %s import %s" % (module_path, baseclass_name))
-    # global_lines, global_all = get_doc_stub_globals_text(global_module)
-    after_lines.extend(global_lines)
-    #after_all.extend(global_all)
-    after_lines.insert(0, '__all__ = ["%s"]' % '", "'.join(after_all))  # export the entities created in 'after'
-    after_lines.insert(0, get_file_header_text())
-    return '\n'.join(before_lines), '\n'.join(after_lines)
+    module2_lines.insert(0, '\n__all__ = ["%s"]' % '", "'.join(module2_all))
 
+    # Need to import any return type to enable SPA, like for get_frame, we need Frame
+    for t in spa_import_return_types:
+        if test_import(t):
+            module2_lines.insert(0, "from intelanalytics import %s" % t)
 
-def main():
-    rp = get_prepared_root_path()
-    print "Using root_path=%s" % rp
-    #ia._walk_api(per_class(rp), per_attribute(rp), include_init=True)
-    #obj_spa = get_obj_spa(doc_stubs_text)
-    #attr_spa = get_attr_spa(obj_spa, doc_stubs_text)
-    ia._walk_api(obj_spa, attr_spa, include_init=False)
+    module2_lines.insert(0, get_file_header_text())
 
-    # write the index.rst files for the collection folders...
-    # walk and look for .collection files
-    walk_collection_folders(rp)
+    # remove doc_stub from namespace
+    module1_lines.append(get_file_footer_text())
+    module2_lines.append("\ndel doc_stub")
 
-    copy_root_path_to_dst(rp)
-    print "Done."
+    return '\n'.join(module1_lines), '\n'.join(module2_lines)
 
 
+def test_import(name):
+    """Determines if the name is importable from main module"""
+    try:
+        import intelanalytics as ia
+        getattr(ia, name)
+        return True
+    except:
+        return False
 
-main()
-#print str(doc_stubs_text)
-#print get_doc_stubs_modules_text()
 
-text_1, text_2 = get_doc_stubs_modules_text() #command_defs, ia)
-
-
-def write_text(file_name, text):
+def write_text_to_file(file_name, text):
     with open(file_name, 'w') as doc_stubs_file:
         print "Writing file %s" % file_name
         doc_stubs_file.write(text)
 
-import os
-root_path = os.path.dirname(ia.__file__) + "/core/"
-print root_path
-write_text(root_path + "docstubs1.py", text_1)
-write_text(root_path + "docstubs2.py", text_2)
 
-print "Complete"
+rp = get_prepared_rst_root_path()
+print "Creating rst files, using root_path %s" % rp
+ia._walk_api(get_obj_rst(rp), get_attr_rst(rp), include_init=True)
+# write the index.rst files for the collection folders...
+# walk and look for .collection files
+walk_collection_folders(rp)
+copy_rst_root_path_to_dst(rp)
+
+print "Creating spa modules..."
+ia._walk_api(obj_spa, attr_spa, include_init=True)
+text_1, text_2 = get_spa_modules_text()
+write_text_to_file(spa_module1_file_name, text_1)
+write_text_to_file(spa_module2_file_name, text_2)
+print "Done."
+
+

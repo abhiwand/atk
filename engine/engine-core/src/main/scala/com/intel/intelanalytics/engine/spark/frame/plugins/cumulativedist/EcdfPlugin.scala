@@ -39,8 +39,7 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import spray.json._
 
 case class EcdfArgs(frame: FrameReference,
-                    @ArgDoc("The name of the input column containing sample.3") column: String,
-                    @ArgDoc("The missing argie") missing: Option[Int] = Some(7),
+                    @ArgDoc("The name of the input column containing sample.") column: String,
                     @ArgDoc("A name for the resulting frame which is created by this operation.") resultFrameName: Option[String] = None) {
   require(frame != null, "frame is required")
   require(column != null, "column is required")
@@ -56,13 +55,10 @@ case class EcdfArgs(frame: FrameReference,
 
 }
 
-//case class EcdfReturn(@ArgDoc("A new Frame containing each distinct value in the sample and its corresponding ECDF value.") frame: FrameEntity)
-
 /** Json conversion for arguments and return value case classes */
 object EcdfJsonFormat {
   import DomainJsonProtocol._
-  implicit val EcdfArgsFormat = jsonFormat4(EcdfArgs)
-  //implicit val EcdfReturnFormat = jsonFormat1(EcdfReturn)
+  implicit val EcdfArgsFormat = jsonFormat3(EcdfArgs)
 }
 
 import EcdfJsonFormat._
@@ -70,9 +66,9 @@ import DomainJsonProtocol._
 /**
  * Empirical Cumulative Distribution for a column
  */
-@PluginDoc(oneLine = "Build new elephant frame with columns for data and distribution.",
+@PluginDoc(oneLine = "Builds new frame with columns for data and distribution.",
   extended = """Generates the :term:`empirical cumulative distribution` for the input column.""",
-  returns = "A new hippo Frame containing each distinct value in the sample and its corresponding ECDF value.")
+  returns = "A new Frame containing each distinct value in the sample and its corresponding ECDF value.")
 class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
 
   /**

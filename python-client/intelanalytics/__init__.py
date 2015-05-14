@@ -33,13 +33,6 @@ from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.errorhandle import errors
-
-try:
-    from intelanalytics.core.docstubs1 import *
-except Exception as e:
-    errors._doc_stubs = e
-    del e
-
 from intelanalytics.core.files import CsvFile, LineFile, JsonFile, MultiLineFile, XmlFile, HiveQuery
 from intelanalytics.core.iapandas import Pandas
 from intelanalytics.rest.udfdepends import udf
@@ -49,7 +42,6 @@ from intelanalytics.core.model import _BaseModel
 
 from intelanalytics.rest.iaserver import server
 connect = server.connect
-server_test = server
 
 
 try:
@@ -71,24 +63,18 @@ _refresh_api_namespace()
 
 
 def _get_api_names():
-    from intelanalytics.meta.api import get_api_names
+    """Gets the set of all the command full names in the API"""
+    from intelanalytics.meta.metaprog2 import get_api_names
     import sys
     return get_api_names(sys.modules[__name__])
 
+
 def _walk_api(cls_function, attr_function, include_init=False):
-    from intelanalytics.meta.api import walk_api
+    """Walks the installed API and runs the given functions for class and attributes in the API"""
+    from intelanalytics.meta.metaprog2 import walk_api
     import sys
     return walk_api(sys.modules[__name__], cls_function, attr_function, include_init=include_init)
 
-def _api_map(function, is_generator=False, include_init=False):
-    from intelanalytics.meta.api import api_map
-    import sys
-    return api_map(sys.modules[__name__], function, is_generator=is_generator, include_init=include_init)
-
-def _api_foreach(function, is_generator=False, include_init=False):
-    from intelanalytics.meta.api import api_foreach
-    import sys
-    return api_foreach(sys.modules[__name__], function, is_generator=is_generator, include_init=include_init)
 
 # Autoconnect if env says so.  This is NOT standard usage, but needed when
 # an 'import intelanalytics' really needs to get EVERYTHING, like

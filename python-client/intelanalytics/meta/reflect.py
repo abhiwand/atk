@@ -25,9 +25,9 @@ from intelanalytics.meta.classnames import is_name_private
 import inspect
 
 
-def get_args_text_from_function(function, ignore_self=True, ignore_private_args=False):
+def get_args_text_from_function(function, ignore_self=False, ignore_private_args=False):
     args, kwargs, varargs, varkwargs = get_args_spec_from_function(function, ignore_self, ignore_private_args)
-    args_text = ", ".join(args + ["%s=%s" % (name, _default_value_to_str(value)) for name, value in kwargs])
+    args_text = ", ".join(args + ["%s=%s" % (name, default_value_to_str(value)) for name, value in kwargs])
     if varargs:
         args_text += (', *' + varargs)
     if varkwargs:
@@ -35,7 +35,7 @@ def get_args_text_from_function(function, ignore_self=True, ignore_private_args=
     return args_text
 
 
-def get_args_spec_from_function(function, ignore_self=True, ignore_private_args=False):
+def get_args_spec_from_function(function, ignore_self=False, ignore_private_args=False):
     args, varargs, varkwargs, defaults = inspect.getargspec(function)
     if ignore_self:
         args = [a for a in args if a != 'self']
@@ -53,6 +53,6 @@ def get_args_spec_from_function(function, ignore_self=True, ignore_private_args=
     return args, kwargs, varargs, varkwargs
 
 
-def _default_value_to_str(value):
+def default_value_to_str(value):
     return value if value is None or type(value) not in [str, unicode] else "'%s'" % value
 

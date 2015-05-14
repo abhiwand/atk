@@ -90,6 +90,10 @@ class ClientCommandDefinition(CommandDefinition):
             def _get_arg_doc(name):
                 return ArgDoc(name, '', '')
 
+        if args and args[0] == "self":
+            params.append(Parameter(name='self', data_type='object', use_self=True, optional=False, default=None, doc=''))
+            args.pop(0)
+
         for arg_name in args:
             arg_doc = _get_arg_doc(arg_name)
             params.append(Parameter(name=arg_doc.name, data_type=arg_doc.data_type, use_self=False, optional=False, default=None, doc=arg_doc.description))
@@ -248,7 +252,7 @@ def get_api_decorator(logger, parent_class_name=None):
 
         client_commands.append((class_name, command_def))
 
-        return clientside_api_stub
+        return get_clientside_api_stub(command_def.full_name)
 
     return api_decorator
 
@@ -263,15 +267,25 @@ def _patch_member_name(class_name, member):
         member.__name__ = name[len(prefix):]
 
 
-def clientside_api_stub():
-    """Filler method stub for the decorator to return, should never be called"""
-    raise RuntimeError("Illegal function call.  This method should have been cleaned up during command installation.")
+def get_clientside_api_stub(name):
+    command_name = name
+    def clientside_api_stub(*args, **kwargs):
+        """Filler method stub for the decorator to return, should never be called"""
+        raise DocStubCalledError(command_name)
+    clientside_api_stub._is_clientside_api_stub = True
+    return clientside_api_stub
 
 
 def clear_clientside_api_stubs(cls):
     """Deletes all the clientside_api_stub attributes from the cls"""
-    victims = [k for k, v in cls.__dict__.items() if v is clientside_api_stub]
+    victims = [k for k, v in cls.__dict__.items() if hasattr(v, "_is_clientside_api_stub")]
     for v in victims:
         delattr(cls, v)
 
+class DocStubCalledError(RuntimeError):
+    def __init__(self, func_name=''):
+        RuntimeError.__init__(self, "Call made to a documentation stub function '%s' "
+                                    "which is just a placeholder for the real function.  "
+                                    "This usually indicates that you have not yet connected to the server.  "
+                                    "Otherwise there was a problem with a API installed from server." % func_name)
 

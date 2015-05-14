@@ -25,7 +25,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-#from intelanalytics.meta.api import get_api_decorator, check_api_is_loaded, api_context, swallow_for_api
 from intelanalytics.meta.context import api_context
 from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
@@ -43,7 +42,6 @@ def _get_backend():
     from intelanalytics.meta.config import get_frame_backend
     return get_frame_backend()
 
-__all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 # BaseFrame
 try:
@@ -64,9 +62,6 @@ except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsFrame", e)
     class _DocStubsFrame(object): pass
 
-
-def get_frame_man(name):
-    return Frame(name)
 
 # VertexFrame
 try:
@@ -281,6 +276,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @property
+    @returns(data_type=str, description="Status of the frame")
     def __status(self):
         """
         Current frame life cycle status.
@@ -289,10 +285,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
            Active:   Frame is available for use
            Deleted:  Frame has been scheduled for deletion can be unscheduled by modifying
            Deleted_Final: Frame's backend files have been removed from disk.
-
-        Returns
-        -------
-        status : descriptive text of current life cycle status
 
         Examples
         --------

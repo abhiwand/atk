@@ -32,10 +32,6 @@ from intelanalytics.meta.clientside import *
 api = get_api_decorator(logger)
 
 from intelanalytics.meta.namedobj import name_support
-#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import, get_entity_type_from_class_name
-from intelanalytics.core.errorhandle import IaError
-#from intelanalytics.meta.metaprog import CommandLoadable, doc_stubs_import
-#from intelanalytics.meta.metaprog import doc_stubs_import, get_entity_type_from_class_name
 from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
 from intelanalytics.rest.iaserver import server
 
@@ -47,14 +43,6 @@ try:
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubs_BaseModel", e)
     class _DocStubs_BaseModel(object): pass
-
-
-def x(beans):
-    """
-
-    :param beans:
-    :return:
-    """
 
 
 @api
@@ -103,86 +91,6 @@ class _BaseModel(_DocStubs_BaseModel, CommandLoadable):
             return False
         return self._id == other._id
 
-# # LogisticRegressionModel
-# # TODO - remove once metaprog can handle generating these models on the fly
-# try:
-#     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-#     from intelanalytics.core.docstubs1 import _DocStubsLogisticRegressionModel
-#     doc_stubs_import.success(logger, "DocStubsLogisticRegressionModel")
-# except Exception as e:
-#     doc_stubs_import.failure(logger, "DocStubsLogisticRegressionModel", e)
-#     class DocStubsLogisticRegressionModel(object): pass
-#
-
-# @api
-# #@name_support('model')
-# class LogisticRegressionModel(DocStubsLogisticRegressionModel, _BaseModel):
-#     """
-#     LogisticRegressionModel model instantiation.
-#
-#     Parameters
-#     ----------
-#     name: str
-#         Name of the LogisticRegressionModel
-#
-#     Returns
-#     -------
-#     LogisticRegressionModel object
-#         An object with access to the LogisticRegressionModel
-#
-#     Examples
-#     --------
-#     model = ia.LogisticRegressionModel(name='LogReg')
-#     """
-#     _entity_type = "model:logistic_regression"
-#
-#     def __init__(self, source=None, name=None, _info=None):
-#         try:
-#             self._id = 0
-#             CommandLoadable.__init__(self)
-#             self._create(source, name, _info)
-#         except:
-#             error = IaError(logger)
-#             raise error
-#
-#
-#     def _create(self, source, name, _info):
-#         if isinstance(_info, dict):
-#             _info = ModelInfo(_info)
-#         if isinstance(_info, ModelInfo):
-#             _info.initialize_model(self)
-#         elif _info is None:
-#         #if isinstance(source, Frame):
-#             # create
-#             entity_type = get_entity_type_from_class_name(self.__class__.__name__)
-#             payload = {'name': name, 'entity_type': entity_type}
-#             r = http.post('models', payload)
-#             ModelInfo(r.json()).initialize_model(self)
-#         #elif source is not None:
-#         else:
-#             raise ValueError("Invalid source type %s.  Expected Frame or Model, got %s" % type(source))
-#
-#         return self.name
-#
-#     def _get_model_info(self):
-#         response = http.get_full_uri(self._get_model_full_uri())
-#         return ModelInfo(response.json())
-#
-#     def _get_model_full_uri(self):
-#         return http.create_full_uri('models/%d' % self._id)
-#
-#     def __repr__(self):
-#         try:
-#             model_info = self._get_model_info()
-#             return '%s "%s"' % (self.__class__.__name__, model_info.name)
-#         except:
-#             return super(_BaseModel,self).__repr__() + " (Unable to collect metadata from server)"
-#
-#     def __eq__(self, other):
-#         if not isinstance(other, _BaseModel):
-#             return False
-#         return self._id == other._id
-#
 
 class ModelInfo(object):
     """

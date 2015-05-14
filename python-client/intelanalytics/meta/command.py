@@ -28,6 +28,7 @@ Command objects
 import re
 import logging
 from intelanalytics.meta.installpath import InstallPath
+from intelanalytics.meta.reflect import default_value_to_str
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ class CommandDefinition(object):
         if self.parameters:
             return ", ".join(['self' if param.use_self else
                               param.name if not param.optional else
-                              "%s=%s" % (param.name, param.default)
+                              "%s=%s" % (param.name, default_value_to_str(param.default))
                               for param in self.parameters])
         else:
             return ''

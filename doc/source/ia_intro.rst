@@ -102,7 +102,7 @@ systems using alternating least squares and conjugate gradient descent, topic
 modeling using Latent Dirchelet Allocation, clustering using K-means, and
 classification using logistic regression.
 See the section on :doc:`machine learning <ds_ml>` and the
-:doc:`API <ds_apic>` for further information.
+:doc:`API <python_api/index>` for further information.
 
 
 ---------------

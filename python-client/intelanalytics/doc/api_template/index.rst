@@ -1,8 +1,8 @@
 .. index::
     single: Python
 
-Earthworm API
-=============
+Python API
+==========
 
 .. contents:: Table of Contents
     :local:
