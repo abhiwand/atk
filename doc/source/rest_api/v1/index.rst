@@ -8,10 +8,8 @@ REST API
     :local:
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
-    info/index.rst
-    commands/index.rst
-    frames/index.rst
-    graphs/index.rst
-    models/index.rst
+    Commands <commands/index.rst>
+    Entities <entities/index.rst>
+    Info <info.rst>

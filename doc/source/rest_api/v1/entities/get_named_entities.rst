@@ -1,13 +1,11 @@
-===============
-Frames REST API
-===============
+-------------------------------------------
+:doc:`Entities <index>`  Get Named Entities
+-------------------------------------------
 
-----------------
-Get Named Frames
-----------------
+Gets list of short entries for all named entities in the entity collection.
 
-GET /v1/frames/
-===============
+GET /v1/:entities/
+==================
 
 Request
 -------
@@ -15,6 +13,8 @@ Request
 **Route** ::
 
   GET /v1/frames/
+  GET /v1/graphs/
+  GET /v1/models/
 
 **Body**
 
@@ -35,25 +35,26 @@ Response
 
 **Body**
 
-Returns a list of frame entity entries, where an entry is defined as...
+Returns a list of entity entries for the given collection, where an entry is defined as...
 
 +-------------------------------+----------------------------------------------+
 | Name                          | Description                                  |
 +===============================+==============================================+
-| id                            | frame id (engine-assigned)                   |
+| id                            | entity id (engine-assigned)                  |
 +-------------------------------+----------------------------------------------+
-| name                          | frame name (user-assigned)                   |
+| name                          | entity name (user-assigned)                  |
 +-------------------------------+----------------------------------------------+
-| url                           | url to the frame                             |
+| url                           | url to the entity                            |
 +-------------------------------+----------------------------------------------+
-| entity_type                   | e.g. "frame:", "frame:vertex", "frame:edge"  |
+| entity_type                   | e.g. "frame:", "frame:vertex", "graph:",     |
+|                               |  "model:kmeans"                              |
 +-------------------------------+----------------------------------------------+
 
 |
 
 ::
 
-  Example:
+  Example for GET /v1/frames/:
   [
     {
         "id": 7,
@@ -70,7 +71,7 @@ Returns a list of frame entity entries, where an entry is defined as...
   ]
 
 
-Headers::
+**Headers**::
 
   Content-Length: 279
   Content-Type: application/json; charset=UTF-8
