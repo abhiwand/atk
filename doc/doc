@@ -17,12 +17,13 @@ function build_docstubs() {
     do_this "$RunCommand" $1 "No" $3 $4
     Return=$?
     if [ "$Return" != "0" ]; then return $Return; fi
-    if [[ -f cmdgen.py ]]; then
+    if [[ -f build_docs.py ]]; then
         export INTELANALYTICS_AUTOCONNECT=1
-        do_this "python2.7 cmdgen.py" $1 $2 $3 $4
+        # do_this "python2.7 cmdgen.py" $1 $2 $3 $4
+        do_this "build_docs.py" $1 $2 $3 $4
         return $?
     else
-        echo "The python script cmdgen.py seems to be missing."
+        echo "The python script build_docs.py seems to be missing."
         read -p "Abort? [Y/n] "
         if [ -z $UserResponse ];then
             UserResponse='y'
@@ -197,8 +198,8 @@ function main() {
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../python-client/intelanalytics/core/*.pyc ]]; then
-        rm ../python-client/intelanalytics/core/*.pyc
+    if [[ -f ../python/intelanalytics/core/*.pyc ]]; then
+        rm ../python/intelanalytics/core/*.pyc
     fi
 
     # debug: Check on quiet mode
@@ -250,7 +251,7 @@ function main() {
             if [ "$?" == "1" ]; then return 1; fi
         fi
 
-        # debug: Check for rebuilding the scala routines
+        # debug: Check for rebuilding the scala jar routines
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
             # Update the scala and python cmdgen
@@ -261,6 +262,13 @@ function main() {
         # debug: Start the server
         server_start $AskThem $DisplayStatus $TempFile $LogFile
         Return=$?
+        if [ "$Return" != "0" ]; then return $Return; fi
+
+        # debug: Update the additional python documentation files
+        pushd ../python-client/intelanalytics/doc > /dev/null
+        build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        popd > /dev/null
         if [ "$Return" != "0" ]; then return $Return; fi
 
         RunCommand="which sphinx-build"
@@ -315,7 +323,7 @@ function main() {
     # debug: Test the examples
     echo $ModifiedArguments | grep -i -e "/test/" > /dev/null
     if [ $? == 0 ]; then
-        export PYTHONPATH="$PYTHONPATH;../python-client"
+        export PYTHONPATH="$PYTHONPATH;../python"
         for File in $(ls -1a source/*.rst)
         do
             echo $File
@@ -359,14 +367,6 @@ function maven() {
     # debug: Compile jars
     pushd ../ > /dev/null
     compile_jars $1 $2 $3 $4
-    Return=$?
-    popd > /dev/null
-    if [ "$Return" != "0" ]; then return $Return; fi
-
-    # debug: Update the additional python documentation files
-    server_start $1 $2 $3 $4
-    pushd ../python > /dev/null
-    build_docstubs $1 $2 $3 $4
     Return=$?
     popd > /dev/null
 
