@@ -157,6 +157,7 @@ class VertexRule(Rule):
     performance impact if there are many distinct values (hundreds of
     values are okay, thousands of values may take a long time).
 
+
     Parameters
     ----------
     id_key : string
@@ -173,11 +174,13 @@ class VertexRule(Rule):
         literal value or a column source, which must be from the same Frame
         as the id_key and id_value arguments.
 
+
     Notes
     -----
     Vertex rules must include the property 'vertex_type':'L' for left-side, or
     'vertex_type':'R' for right-side, for the ALS and CGD (and other)
     algorithms to work properly.
+
 
     Examples
     --------
@@ -247,6 +250,7 @@ class EdgeRule(Rule):
     have a negative performance impact if there are many distinct values
     (hundreds of values are okay, thousands of values may take a long time).
 
+
     Parameters
     ----------
     label : str or column source
@@ -266,9 +270,9 @@ class EdgeRule(Rule):
         Indicates the edge is bidirectional.
         Default is True.
 
+
     Examples
     --------
-
     .. only:: html
 
         .. code::
@@ -320,7 +324,7 @@ class EdgeRule(Rule):
 
         Returns
         -------
-        bool : ?
+        bool
             # TODO - verify return type and give proper descriptions
 
         Examples
@@ -426,6 +430,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
 
     A seamless graph is better suited for bulk :term:`OLAP`-type operations
     whereas a Titan graph is better suited to :term:`OLTP`.
+
 
     Examples
     --------
@@ -670,6 +675,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         Vertex frame collection
 
+
         Examples
         --------
         Inspect vertices with the supplied label:
@@ -687,6 +693,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         Edge frame collection
 
+
         Examples
         --------
         Inspect edges with the supplied label:
@@ -703,6 +710,13 @@ class Graph(_DocStubsGraph, _BaseGraph):
     def __vertex_count(self):
         """
         Get the total number of vertices in the graph.
+
+
+        Returns
+        -------
+        int32
+            The number of vertices in the graph.
+
 
         Examples
         --------
@@ -727,9 +741,15 @@ class Graph(_DocStubsGraph, _BaseGraph):
         """
         Get the total number of edges in the graph.
 
+
+        Returns
+        -------
+        int32
+            The number of edges in the graph.
+
+
         Examples
         --------
-
         .. code::
 
             >>> my_graph.edge_count
@@ -786,6 +806,7 @@ class TitanGraph(_DocStubsTitanGraph, _BaseGraph):
     """
     Proxy to a graph in Titan, supports Gremlin query
 
+
     Parameters
     ----------
     rules : list of rule (optional)
@@ -794,6 +815,7 @@ class TitanGraph(_DocStubsTitanGraph, _BaseGraph):
     name : str (optional)
          Name for the new graph.
          Default is None.
+
 
     Examples
     --------
@@ -916,11 +938,13 @@ class TitanGraph(_DocStubsTitanGraph, _BaseGraph):
         Edges are considered the same if they have the same source vertex,
         destination vertex, and label.
 
+
         Parameters
         ----------
         rules : list of rule
             List of rules which specify how the graph will be added to.
             Default is no data will be added.
+
 
         Examples
         --------

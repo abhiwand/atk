@@ -243,17 +243,6 @@ function main() {
     echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
     if [ "$?" == "0" ]; then
 
-        # debug: Start the server
-        pushd ../ > /dev/null
-        RunCommand="cp conf/examples/application.conf.build conf/application.conf"
-        do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        if [ "$Return" != "0" ]; then return $Return; fi
-        server_start $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        popd > /dev/null
-        if [ "$Return" != "0" ]; then return $Return; fi
-
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
         if [ "$?" == "0" ]; then
@@ -269,17 +258,16 @@ function main() {
             if [ "$?" == "1" ]; then return 1; fi
         fi
 
-        # debug: Update the additional python documentation files
-#       pushd ../python > /dev/null
-#       build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
-#       Return=$?
-#       popd > /dev/null
-#       if [ "$Return" != "0" ]; then return $Return; fi
+        # debug: Start the server
+        server_start $AskThem $DisplayStatus $TempFile $LogFile
+        Return=$?
+        if [ "$Return" != "0" ]; then return $Return; fi
 
-        # debug: Look for sphinx build types
         RunCommand="which sphinx-build"
         do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
         if [ "$?" != "0" ]; then return 1; fi
+
+        # debug: Look for sphinx build types
         SphinxFormats="latex text html"
         SphinxFlag=OK
         for Format in $SphinxFormats
@@ -351,6 +339,7 @@ function main() {
     if [ -e doc.log ]; then
         rm doc.log
     fi
+    server_stop $AskThem $DisplayStatus $TempFile $LogFile
 }
 
 ############################################################################################################
@@ -374,12 +363,12 @@ function maven() {
     popd > /dev/null
     if [ "$Return" != "0" ]; then return $Return; fi
 
-    # debug: Start the server
-    pushd ../ > /dev/null
+    # debug: Update the additional python documentation files
     server_start $1 $2 $3 $4
+    pushd ../python > /dev/null
+    build_docstubs $1 $2 $3 $4
     Return=$?
     popd > /dev/null
-    if [ "$Return" != "0" ]; then return $Return; fi
 
     return $Return
 
@@ -456,34 +445,54 @@ function pdf_build() {
 }
 
 ############################################################################################################
+function server_running() {
+    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep" > /dev/null
+    return $?
+}
+
+############################################################################################################
 function server_start() {
     # $1 = AskThem
     # $2 = DisplayStatus
     # $3 = Temporary file
     # $4 = LogFile
 
-    # debug: First, kill any existing server running
-    server_stop $1 $2 $3 $4
-    Return=$?
-    if [ "$Return" != "0" ]; then return $Return; fi
+    Return=0
+    server_running
+    if [ "$?" != "0" ]; then
 
-    # debug: Start the server
-    echo -n "Start server"
-    log_step "nohup bin/rest-server.sh" "No" $4
-    nohup bin/rest-server.sh < /dev/null > $3 2>&1 &
-    Return=$?
-    if [ "$Return" != "0" ]; then
-        echo
-        Err "Start server (nohup bin/rest-server.sh)" $1 $2 $3 $4
+        # debug: Update the configuration file
+        diff ../conf/examples/application.conf.build ../conf/application.conf > /dev/null
+        if [ "$?" != "0" ]; then
+            # debug: Copy the build configuration to/over the current
+            # debug: application configuration
+            RunCommand="cp ../conf/examples/application.conf.build ../conf/application.conf"
+            do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+            Return=$?
+            if [ "$Return" != "0" ]; then return $Return; fi
+        fi
+
+        # debug: Start the server
+        pushd ../ > /dev/null
+        echo -n "Start server"
+        RunCommand="Start server (nohup bin/api-server.sh)"
+        log_step "$RunCommand" "No" $4
+        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
         Return=$?
-    else
-        let "DURATION = 10"
-        until [[ $DURATION -lt 0 ]]; do
-            sleep 1
-            echo -n "."
-            let "DURATION -= 1"
-        done
-        echo
+        popd > /dev/null
+        if [ "$Return" != "0" ]; then
+            echo
+            Err "$RunCommand" $1 $2 $3 $4
+            Return=$?
+        else
+            let "Duration = 10"
+            until [[ $Duration -lt 0 ]]; do
+                sleep 1
+                echo -n "."
+                let "Duration -= 1"
+            done
+            echo
+        fi
     fi
     return $Return
 }
@@ -496,11 +505,12 @@ function server_stop() {
     # $4 = LogFile
 
     # debug: Stop the server
-    let "LoopCounter = 24"
-    until [[ $LoopCounter -le 0 ]]; do
-        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | head -n 1 |  awk '{print $2}')
-        ps|grep $pid > /dev/null
+    server_running
+    LoopCounter=$?
+    while [ "$LoopCounter" == "0" ]; do
+        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
+            pid=$(echo $pid | head -n 1 |  awk '{print $2}')
             echo -n "Stop server $pid"
             kill $pid
             if [ $? != 0 ]; then
@@ -511,20 +521,20 @@ function server_stop() {
                     return $Return
                 fi
             fi
-            let "DURATION = 2"
-            until [[ $DURATION -le 0 ]]; do
+            let "Duration = 2"
+            until [[ $Duration -le 0 ]]; do
                 sleep 1
                 echo -n "."
-                let "DURATION -= 1"
+                let "Duration -= 1"
             done
             echo
-            let "LoopCounter -= 1"
+            server_running
+            LoopCounter=$?
         else
             return 0;
         fi
     done
-    Err "Unable to stop server."
-    return $?
+    return 0
 }
 
 ############################################################################################################

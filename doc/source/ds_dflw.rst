@@ -62,9 +62,10 @@ Connect to the server:
 
 .. note::
 
-    Sometimes it is helpful to see the details of the python stack trace upon error.
-    Setting the *show_details* to ``True`` causes the full python stack trace to be
-    printed, rather than a friendlier digest.
+    Sometimes it is helpful to see the details of the python stack trace upon
+    error.
+    Setting the *show_details* to ``True`` causes the full python stack trace
+    to be printed, rather than a friendlier digest.
 
     .. code::
 
@@ -207,8 +208,6 @@ the data layouts:
         ... schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
-.. _example_frame.frame:
-
 .. TODO:: Add example for JsonFile.
 
 .. index::
@@ -216,6 +215,8 @@ the data layouts:
     single: Frame (capital F)
     pair: frame (lower case f); example
     pair: Frame (capital F); example
+
+.. _example_frame.frame:
 
 ------
 Frames
@@ -294,11 +295,11 @@ Let's create a Frame and check it out:
     >>> small_songs.inspect()
     >>> small_songs.get_error_frame().inspect()
 
-.. _example_frame.append:
-
 .. index::
     pair: append; example
     single: append
+
+.. _example_frame.append:
 
 Append:
 -------
@@ -533,11 +534,11 @@ Example of data cleaning:
     >>> animals.drop_columns('animals')
     >>> animals.rename_columns({'animals_cleaned' : 'animals'})
 
-.. _example_frame.drop_rows:
-
 .. index::
     pair: drop rows; example
     single: drop rows
+
+.. _example_frame.drop_rows:
 
 Drop Rows:
 ----------
@@ -566,11 +567,11 @@ To drop any rows where any column is empty:
 
     >>> my_frame.drop_rows(lambda row: any([cell is None for cell in row]))
 
-.. _example_frame.filter:
-
 .. index::
     pair: filter rows; example
     single: filter rows
+
+.. _example_frame.filter:
 
 Filter Rows:
 ------------
@@ -587,12 +588,12 @@ To delete those rows where field *b* is outside the range of 0 to 10:
 
     >>> my_frame.filter(lambda row: 0 >= row['b'] >= 10)
 
-.. _example_frame.drop_duplicates:
-
 .. index::
     pair: drop duplicates; example
     single: drop duplicates
     single: duplicates
+
+.. _example_frame.drop_duplicates:
 
 Drop Duplicates:
 ----------------
@@ -618,11 +619,11 @@ duplicate:
     >>> animals.drop_duplicates(['User', 'animals'])
     >>> animals.inspect(animals.row_count)
 
-.. _example_frame.drop_columns:
-
 .. index::
     pair: drop column; example
     single: drop column
+
+.. _example_frame.drop_columns:
 
 Drop Columns:
 -------------
@@ -635,11 +636,11 @@ list of strings:
     >>> my_frame.drop_columns('b')
     >>> my_frame.drop_columns(['a', 'c'])
 
-.. _example_frame.rename_columns:
-
 .. index::
     pair: rename column; example
     single: rename column
+
+.. _example_frame.rename_columns:
 
 Rename Columns:
 ---------------
@@ -668,11 +669,11 @@ For example, you need the first name combined with the last name, or
 you need the number times John spent more than five dollars, or
 you need the average age of students attending a college.
 
-.. _example_frame.add_columns:
-
 .. index::
     pair: add column; example
     single: add column
+
+.. _example_frame.add_columns:
 
 Add Columns:
 ------------
@@ -801,11 +802,11 @@ frame function :code:`column_summary_statistics`:
 
     >>> my_frame.column_summary_statistics()
 
-.. _example_frame.group_by:
-
 .. index::
     pair: group by; example
     single: group by
+
+.. _example_frame.group_by:
 
 Group by (and aggregate):
 -------------------------
@@ -919,11 +920,11 @@ Aggregation currently supports using the following functions:
     * sum
     * var (see glossary :term:`Bias vs Variance`)
 
-.. _example_frame.join:
-
 .. index::
     pair: join; example
     single: join
+
+.. _example_frame.join:
 
 Join:
 -----
@@ -1054,11 +1055,11 @@ Result is *right_frame*:
       mirror     frog         ball       berry      5218         frog
       None       None         None       blue          0         log
 
-.. _example_frame.flatten_column:
-
 .. index::
     pair: flatten column; example
     single: flatten column
+
+.. _example_frame.flatten_column:
 
 Flatten Column:
 ---------------
