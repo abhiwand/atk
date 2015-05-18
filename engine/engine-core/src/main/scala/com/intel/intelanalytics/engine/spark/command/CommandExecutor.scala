@@ -290,7 +290,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
-          val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("engine-core")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
+          val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
           val executionParams = Array(
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
