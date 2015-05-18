@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -106,7 +107,7 @@ class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedD
 
   override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): AnnotateWeightedDegreesReturn = {
 
-    if (sc.master != "yarn-cluster")
+    if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
 
     val degreeMethod: String = arguments.degreeMethod
