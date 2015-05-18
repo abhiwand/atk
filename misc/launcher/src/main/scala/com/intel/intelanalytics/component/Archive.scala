@@ -177,7 +177,7 @@ object Archive extends ClassLoaderAware {
         JarPath("launcher", root / ".." / (archive + ".jar"))
       )
       archive match {
-        case "engine" => baseSearchPath :+ JarPath("__spark__", root / "__spark__.jar")
+        case "engine-core" => baseSearchPath :+ JarPath("__spark__", root / "__spark__.jar")
         case _ => baseSearchPath
       }
     } ++ jarFolders.map(s => JarPath("deployed jar",
