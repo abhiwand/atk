@@ -18,9 +18,7 @@ function build_docstubs() {
     Return=$?
     if [ "$Return" != "0" ]; then return $Return; fi
     if [[ -f build_docs.py ]]; then
-        export INTELANALYTICS_AUTOCONNECT=1
-        # do_this "python2.7 cmdgen.py" $1 $2 $3 $4
-        do_this "build_docs.py" $1 $2 $3 $4
+        do_this "python2.7 build_docs.py" $1 $2 $3 $4
         return $?
     else
         echo "The python script build_docs.py seems to be missing."
@@ -193,6 +191,9 @@ function main() {
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
     export INTELANALYTICS_AUTOCONNECT=1
+    export PYTHON_DIR=/usr/lib/python2.7/dist-packages 
+    export PYTHONPATH=$(pwd)/../python-client:$PYTHONPATH:$PYTHON_DIR
+
 
     # debug: Start the log file
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
@@ -475,9 +476,9 @@ function server_start() {
         # debug: Start the server
         pushd ../ > /dev/null
         echo -n "Start server"
-        RunCommand="Start server (nohup bin/api-server.sh)"
+        RunCommand="Start server (nohup bin/rest-server.sh)"
         log_step "$RunCommand" "No" $4
-        nohup bin/api-server.sh < /dev/null > $3 2>&1 &
+        nohup bin/rest-server.sh < /dev/null > $3 2>&1 &
         Return=$?
         popd > /dev/null
         if [ "$Return" != "0" ]; then
@@ -487,11 +488,23 @@ function server_start() {
         else
             let "Duration = 10"
             until [[ $Duration -lt 0 ]]; do
-                sleep 1
-                echo -n "."
-                let "Duration -= 1"
+                curl -s localhost:9099 > /dev/null
+                if [ "$?" != "0" ]; then
+                    sleep 1
+                    echo -n "."
+                    let "Duration -= 1"
+                else
+                    let "Duration = -1"
+                fi
             done
             echo
+            pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
+            if [ "$?" != "0" ]; then
+                Err "$RunCommand" $1 $2 $3 $4
+                Return=$?
+            else
+                Return=0
+            fi
         fi
     fi
     return $Return
@@ -546,7 +559,7 @@ function sphinx_build() {
     # $5 = LogFile
     # $6 = Modified Arguments
 
-    # debug: sphinx_build()
+    # debug: sphinx_build
 
     BuildDirectory="build/$1"
 
