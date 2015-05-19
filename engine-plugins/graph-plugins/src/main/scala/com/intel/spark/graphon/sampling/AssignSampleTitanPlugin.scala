@@ -27,6 +27,7 @@ import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
@@ -67,7 +68,7 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
 
     val graph = engine.graphs.expectGraph(arguments.graph)
     require(graph.isTitan, "assign sample is currently only implemented for Titan Graphs")
-    if (sc.master != "yarn-cluster")
+    if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
 
     //convert graph into vertex and edge RDDs

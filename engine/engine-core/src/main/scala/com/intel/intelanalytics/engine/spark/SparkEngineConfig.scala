@@ -72,34 +72,10 @@ trait SparkEngineConfig extends EventLogging {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
 
-  val isSparkOnYarnClusterMode: Boolean = (sparkMaster == "yarn-cluster")
+  val isSparkOnYarn: Boolean = (sparkMaster == "yarn-cluster" || sparkMaster == "yarn-client")
 
   /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
-  val sparkHome: String = {
-    val sparkHome = config.getString("intel.analytics.engine.spark.home")
-    if (sparkHome == "" && !isSparkOnYarnClusterMode) {
-      info("Spark Home is NOT configured so guessing where it is")
-      guessSparkHome
-    }
-    else {
-      sparkHome
-    }
-  }
-
-  /**
-   * Check for sparkHome in the expected locations
-   */
-  private def guessSparkHome: String = {
-    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
-    possibleSparkHomes.foreach(dir => {
-      val path = new File(dir)
-      if (path.exists()) {
-        info("Using Spark Home found at " + path.getAbsolutePath)
-        return path.getAbsolutePath
-      }
-    })
-    throw new RuntimeException("sparkHome wasn't found at any of the expected locations, please set sparkHome in the config")
-  }
+  val sparkHome: String = config.getString("intel.analytics.engine.spark.home")
 
   val hiveLib: String = {
     config.getString("intel.analytics.engine.hive.lib")
