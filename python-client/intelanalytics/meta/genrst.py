@@ -196,8 +196,10 @@ class RstInfo(object):
         if command_def:
             command_def.rst_info = self
             self.maturity = command_def.maturity
+            #self.name = command_def.name
         else:
             self.maturity = None
+            #self.name = self.display_name
         self.doc = command_def.doc if command_def else self.doc_to_rst(member.__doc__)
 
     @property
