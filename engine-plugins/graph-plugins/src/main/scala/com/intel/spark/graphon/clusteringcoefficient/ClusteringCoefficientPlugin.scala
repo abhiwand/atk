@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
@@ -82,7 +83,7 @@ class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficie
 
   override def execute(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): ClusteringCoefficientResult = {
 
-    if (sc.master != "yarn-cluster")
+    if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
 
     val frames = engine.frames

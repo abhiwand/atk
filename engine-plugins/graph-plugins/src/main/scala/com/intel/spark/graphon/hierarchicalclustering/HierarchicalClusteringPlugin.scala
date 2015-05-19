@@ -27,6 +27,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.{ GraphNoArgs, GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
@@ -61,7 +62,8 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
 
   override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
+    if (!SparkEngineConfig.isSparkOnYarn)
+      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
