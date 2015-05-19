@@ -139,8 +139,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     class _FrameIter(object):
         """
         (Private)
-        Iterator for Frame - frame iteration works on the columns, returns
-        Column objects (see Frame.__iter__)
+        Iterator for Frame - frame iteration works on the columns, returns Column objects
+        (see Frame.__iter__)
 
         Parameters
         ----------
@@ -151,9 +151,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         def __init__(self, frame):
             self.frame = frame
-            # Grab schema once for the duration of the iteration.
-            # Consider the behavior here --alternative is to ask the backend
-            # on each iteration (and there's still a race condition)
+            # Grab schema once for the duration of the iteration
+            # Consider the behavior here --alternative is to ask
+            # the backend on each iteration (and there's still a race condition)
             self.schema = frame.schema
             self.i = 0  # the iteration index
 
@@ -185,12 +185,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Column identifications in the current Frame.
 
-
         Returns
         -------
-        list
+        list : list of str
             A list of the names of the columns.
-
 
         Examples
         --------
@@ -219,10 +217,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Number of rows in the current frame.
 
-
         Returns
         -------
-        int
+        int : quantity
             The number of rows in the frame.
 
         Examples
@@ -233,27 +230,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.row_count
 
+        The result given is:
+
+        .. code::
+
             81734
 
         """
         return self._backend.get_row_count(self, None)
-
-    @name.setter
-    @api
-    def name(self, value):
-        """
-        Assign the name to the current frame.
-
-
-        Examples
-        --------
-        Assign the name "movies" to the current frame:
-
-        .. code::
-
-            >>> my_frame.name = "movies"
-        """
-        return self._backend.get_name(self)
 
 
     @api
@@ -267,12 +251,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         It is retrieved as a list of tuples.
         Each tuple has the name and data type of one of the frame's columns.
 
-
         Returns
         -------
-        list
-            List of tuples.
-
+        list : list of tuples
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
@@ -282,6 +263,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> BF = ia.get_frame('my_data')
             >>> print BF.schema
+
+        The result is:
+
+        .. code::
 
             [("col1", str), ("col2", numpy.int32)]
 
@@ -297,10 +282,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Current frame life cycle status.
 
         One of three statuses: Active, Deleted, Deleted_Final
-
-        *   Active: Frame is available for use.
-        *   Deleted: Frame has been scheduled for deletion can be unscheduled.
-        *   Deleted_Final: Frame's backend files have been removed from disk.
+           Active:   Frame is available for use
+           Deleted:  Frame has been scheduled for deletion can be unscheduled by modifying
+           Deleted_Final: Frame's backend files have been removed from disk.
 
         Examples
         --------
@@ -311,6 +295,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> BF = ia.get_frame('my_data')
             >>> print BF.status
+
+        The result is:
+
+        .. code::
 
             u'Active'
         """
@@ -325,23 +313,23 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Assigns data to column based on evaluating a function for each row.
 
-
         Parameters
         ----------
         func : row function
             Function (|UDF|) which takes the values in the row and produces a
             value, or collection of values, for the new cell(s).
+
         schema : [ tuple | list of tuples ]
             The schema for the results of the |UDF|, indicating the new
             column(s) to add.  Each tuple provides the column name and data
             type, and is of the form (str, type).
+
         columns_accessed : list of str (optional)
             List of columns which the |UDF| will access.
             This adds significant performance benefit if we know which
             column(s) will be needed to execute the |UDF|, especially when the
             frame has significantly more columns than those being used to
             evaluate the |UDF|.
-
 
         Notes
         -----
@@ -350,7 +338,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             See :doc:`ds_apir`.
         2)  Unicode in column names is not supported and will likely cause the
             drop_frames() method (and others) to fail!
-
 
         Examples
         --------
@@ -452,8 +439,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         More information on a row |UDF| can be found at :doc:`ds_apir`
 
-        For further examples, see :ref:`example_frame.add_columns`.
         """
+        # For further examples, see :ref:`example_frame.add_columns`.
         self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
@@ -464,7 +451,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Copy frame or certain frame columns entirely or filtered.
         Useful for frame query.
 
-
         Parameters
         ----------
         columns : [ str | list of str | dict ] (optional)
@@ -472,20 +458,20 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             If a dictionary is used, the string pairs represent a column
             renaming, {source_column_name: destination_column_name}.
             Default is None.
+
         where : |UDF| (optional)
             If not None, only those rows which evaluate to True will be copied.
             Default is None.
+
         name : str (optional)
             Name of the copied frame.
             Default is None.
 
-
         Returns
         -------
-        Frame
-            A Frame object accessing data in a new frame which is a copy of
+        Frame : access to new frame
+            A new Frame object accessing data in a new frame which is a copy of
             the original frame.
-
 
         Examples
         --------
@@ -542,45 +528,16 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Counts the number of rows which meet given criteria.
 
-
         Parameters
         ----------
-        where : [ |UDF| | lambda ]
+        where : |UDF|
             |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
 
-
         Returns
         -------
-        int
-            Number of rows where the |UDF| evaluated to True.
-
-
-        Examples
-        --------
-        Given a frame with 10 rows of data, finding out how many rows have a
-        value of 1 in column *a*:
-
-        .. code::
-
-            >>> print my_frame.inspect()
-
-              a:int
-            /-------/
-              1
-              2
-              3
-              4
-              1
-              2
-              3
-              4
-              1
-              2
-
-            >>> print my_frame.count(lambda row: row.a == 1)
-            3
-
+        int : count
+            number of rows for which the where |UDF| evaluated to True.
         """
         return self._backend.get_row_count(self, where)
 
@@ -593,7 +550,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Download a frame from the server into client workspace.
 
-        Copies an intelanalytics Frame into a Pandas Data Frame.
+        Copies an intelanalytics Frame into a Pandas DataFrame.
 
 
         Examples
@@ -640,13 +597,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Erase any rows in the current frame which qualify.
 
-
         Parameters
         ----------
-        predicate : [ |UDF| | lambda ]
+        predicate : |UDF|
             |UDF| or :term:`lambda` which takes a row argument and
             evaluates to a boolean value.
-
 
         Examples
         --------
@@ -664,9 +619,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         More information on a |UDF| can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.drop_rows`
 
         """
+        # For further examples, see :ref:`example_frame.drop_rows`
         self._backend.drop(self, predicate)
 
     @api
@@ -678,11 +633,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Modifies the current frame to save defined rows and delete everything
         else.
 
-
         Parameters
         ----------
-        predicate : [ |UDF| | lambda ]
-            |UDF| definition or :term:`lambda` which takes a row argument and
+        predicate : |UDF|
+            |UDF| definition or lambda which takes a row argument and
             evaluates to a boolean value.
 
         Examples
@@ -695,8 +649,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         .. code::
 
             >>> def my_filter(row):
-            ...     return row['animal_type'] == 'lizard' or
-            ...     row['animal_type'] == "frog"
+            ... return row['animal_type'] == 'lizard' or
+            ... row['animal_type'] == "frog"
 
             >>> my_frame.filter(my_filter)
 
@@ -704,8 +658,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         More information on a |UDF| can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.filter`
         """
+        # For further examples, see :ref:`example_frame.filter`
         self._backend.filter(self, predicate)
 
     @api
@@ -716,11 +670,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         When a frame is created, another frame is transparently
         created to capture parse errors.
 
-
         Returns
         -------
-        Frame
-            An object accessing a frame that contains the parse errors of
+        Frame : error frame object
+            A new object accessing a frame that contains the parse errors of
             the currently active Frame or None if no error frame exists.
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
@@ -761,7 +714,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             *   stdev
             *   sum
             *   var (see glossary :term:`Bias vs Variance`)
-
 
         Examples
         --------
@@ -932,7 +884,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         the left and right frames did not have the same value in the matching
         column.
 
-
         Parameters
         ----------
         right : Frame
@@ -951,12 +902,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             Name for the resulting new joined frame.
             Default is None.
 
-
         Returns
         -------
-        Frame
-            An object accessing a new joined frame.
-
+        Frame : combined frames
+            A new object accessing a new joined frame.
 
         Notes
         -----
@@ -971,7 +920,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         to using the ``join`` method.
         Keep in mind that unicode in column names will likely cause the
         drop_frames() method (and others) to fail!
-
 
         Examples
         --------
@@ -1064,16 +1012,15 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Sort a frame by column values either ascending or descending.
 
-
         Parameters
         ----------
         columns : [ str | list of str | list of tuples ]
             Either a column name, a list of column names, or a list of tuples
             where each tuple is a name and an ascending bool value.
+
         ascending: bool (optional)
             True for ascending, False for descending.
             Default is True.
-
 
         Examples
         --------
@@ -1129,18 +1076,18 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Take a subset of the currently active Frame.
 
-
         Parameters
         ----------
         n : int
             The number of rows to copy from the currently active Frame.
+
         offset : int (optional)
             The number of rows to skip before copying.
             Default is 0.
+
         columns : [ str | iterable of str ] (optional)
             Specify the columns to be included in the result.
             Default is None, meaning all columns are to be included.
-
 
         Notes
         -----
@@ -1148,14 +1095,12 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         number of rows, the rows obtained may be different every time the
         command is executed, even if the parameters do not change.
 
-
         Returns
         -------
         list : list of lists of row data
             A list composed of the data from the frame.
             Each item of the overall list is a list of the values of the
             columns for one row of the original frame.
-
 
         Examples
         --------
@@ -1200,62 +1145,65 @@ class Frame(_DocStubsFrame, _BaseFrame):
     @api
     def __init__(self, source=None, name=None, _info=None):
         """
-        Class with information about a large row and columnar data store in a
-        frame,
-        Has information needed to modify data and table structure.
+    # For other examples, see :ref:`example_frame.bigframe`.
+
+    Class with information about a large row and columnar data store in a
+    frame,
+    Has information needed to modify data and table structure.
+
+    Parameters
+    ----------
+    source : [ CsvFile | Frame ] (optional)
+        A source of initial data.
+
+    name : str (optional)
+        The name of the newly created frame.
+        Default is None.
 
 
-        Parameters
-        ----------
-        source : [ CsvFile | Frame ] (optional)
-            A source of initial data.
-        name : str (optional)
-            The name of the newly created frame.
-            Default is None.
+    Notes
+    -----
+    A frame with no name is subject to garbage collection.
+
+    If a string in the CSV file starts and ends with a double-quote (")
+    character, the character is stripped off of the data before it is put into
+    the field.
+    Anything, including delimiters, between the double-quote characters is
+    considered part of the str.
+    If the first character after the delimiter is anything other than a
+    double-quote character, the string will be composed of all the characters
+    between the delimiters, including double-quotes.
+    If the first field type is str, leading spaces on each row are
+    considered part of the str.
+    If the last field type is str, trailing spaces on each row are
+    considered part of the str.
+
+    Examples
+    --------
+    Create a new frame based upon the data described in the CsvFile object
+    *my_csv_schema*.
+    Name the frame "myframe".
+    Create a Frame *my_frame* to access the data:
+
+    .. code::
+
+        >>> my_frame = ia.Frame(my_csv_schema, "myframe")
+
+    A Frame object has been created and *my_frame* is its proxy.
+    It brought in the data described by *my_csv_schema*.
+    It is named *myframe*.
+
+    Create an empty frame; name it "yourframe":
+
+    .. code::
+
+        >>> your_frame = ia.Frame(name='yourframe')
+
+    A frame has been created and Frame *your_frame* is its proxy.
+    It has no data yet, but it does have the name *yourframe*.
 
 
-        Notes
-        -----
-        *   A frame with no name is subject to garbage collection.
-        *   If a string in the CSV file starts and ends with a double-quote (")
-            character, that character is stripped off of the data before it is
-            put into the field.
-        *   Anything, including delimiters, between the double-quote characters
-            is considered part of the string.
-        *   If the first character after the delimiter is anything other than a
-            double-quote character, the string will be composed of all the
-            characters between the delimiters, including double-quotes.
-        *   If the first field type is str, leading spaces on each row are
-            considered part of the str.
-        *   If the last field type is str, trailing spaces on each row are
-            considered part of the str.
-
-
-        Examples
-        --------
-        Create a new frame based upon the data described in the CsvFile object
-        *my_csv_schema*.
-        Name the frame "myframe".
-        Create a Frame *my_frame* to access the data:
-
-        .. code::
-
-            >>> my_frame = ia.Frame(my_csv_schema, "myframe")
-
-        A Frame object has been created and *my_frame* is its proxy.
-        It brought in the data described by *my_csv_schema*.
-        It is named *myframe*.
-
-        Create an empty frame; name it "yourframe":
-
-        .. code::
-
-            >>> your_frame = ia.Frame(name='yourframe')
-
-        A frame has been created and Frame *your_frame* is its proxy.
-        It has no data yet, but it does have the name *yourframe*.
-
-
+        .. versionadded:: 0.8
         """
         self._error_frame_id = None
         self._id = 0
@@ -1273,12 +1221,10 @@ class Frame(_DocStubsFrame, _BaseFrame):
         """
         Adds more data to the current frame.
 
-
         Parameters
         ----------
         data : Frame
             A Frame accessing the data being added.
-
 
         Examples
         --------
@@ -1286,27 +1232,25 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
         .. code::
 
-            >>> my_frame.inspect(4)
+                >>> my_frame.inspect(4)
+                  col_1:str
+                /-----------/
+                  dog
+                  cat
+                  bear
+                  donkey
 
-              col_1:str
-            /-----------/
-              dog
-              cat
-              bear
-              donkey
+          and a frame with two columns, *col_1* and *col_2*:
 
-        and a frame with two columns, *col_1* and *col_2*:
+          ..code::
 
-        .. code::
-
-            >>> your_frame.inspect(4)
-
-              col_1:str  col_qty:int32
-            /--------------------------/
-              bear          15
-              cat            2
-              snake          8
-              horse          5
+                >>> your_frame.inspect(4)
+                  col_1:str  col_qty:int32
+                /--------------------------/
+                  bear          15
+                  cat            2
+                  snake          8
+                  horse          5
 
         Column *col_1* means the same thing in both frames.
         The Frame *my_frame* points to the first frame and *your_frame* points
@@ -1317,7 +1261,6 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
             >>> my_frame.append(your_frame)
             >>> my_frame.inspect(8)
-
               col_1:str  col_2:int32
             /------------------------/
               dog           None
@@ -1347,29 +1290,30 @@ class Frame(_DocStubsFrame, _BaseFrame):
 @api
 class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
     """
-    A list of Vertices owned by a Graph.
+    A list of Vertices owned by a Graph..
 
     A VertexFrame is similar to a Frame but with a few important differences:
 
     -   VertexFrames are not instantiated directly by the user, instead they
-        are created by defining a vertex type in a graph.
-    -   Each row of a VertexFrame represents a vertex in a graph.
+        are created by defining a vertex type in a graph
+    -   Each row of a VertexFrame represents a vertex in a graph
     -   VertexFrames have many of the same methods as Frames but not all (for
-        example, flatten_column()).
+        example, flatten_column())
     -   VertexFrames have extra methods not found on Frames (for example,
-        add_vertices()).
+        add_vertices())
     -   Removing a vertex (or row) from a VertexFrame also removes edges
-        connected to that vertex from the graph.
+        connected to that vertex from the graph
     -   VertexFrames have special system columns (_vid, _label) that are
         maintained automatically by the system and cannot be modified by the
-        user.
+        user
     -   VertexFrames have a special user defined id column whose value uniquely
-        identifies the vertex.
+        identifies the vertex
     -   "Columns" on a VertexFrame can also be thought of as "properties" on
-        vertices.
+        vertices
 
-    For other examples, see :ref:`example_frame.frame`.
+
     """
+    # For other examples, see :ref:`example_frame.frame`.
 
     # TODO - Review Parameters, Examples
 
@@ -1378,70 +1322,68 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
     @api
     def __init__(self, source=None, graph=None, label=None, _info=None):
         """
-        Parameters
-        ----------
-        source : ? (optional)
-        graph : ? (optional)
-        label : ? (optional)
-        _info : ? (optional)
+    Parameters
+    ----------
+    source : ? (optional)
+    graph : ? (optional)
+    label : ? (optional)
+    _info : ? (optional)
 
+    Returns
+    -------
+    class : VertexFrame object
+        An object with access to the frame.
 
-        Returns
-        -------
-        VertexFrame
-            An object with access to the data frame.
+    Examples
+    --------
+    Given a data file, create a frame, move the data to graph and then define a
+    new VertexFrame and add data to it:
 
-
-        Examples
-        --------
-        Given a data file, create a frame, move the data to graph and then
-        define a new VertexFrame and add data to it:
-
-        .. only:: html
-
-            .. code::
-
-                >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), ('user_name', str), ('movie_id', int32), ('movie_title', str), ('rating', str)])
-                >>> my_frame = ia.Frame(csv)
-                >>> my_graph = ia.Graph()
-                >>> my_graph.define_vertex_type('users')
-                >>> my_vertex_frame = my_graph.vertices['users']
-                >>> my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
-
-        .. only:: latex
-
-            .. code::
-
-                >>> csv = ia.CsvFile("/movie.csv", schema = [('user_id', int32),
-                ...                                          ('user_name', str),
-                ...                                          ('movie_id', int32),
-                ...                                          ('movie_title', str),
-                ...                                          ('rating', str)])
-                >>> my_frame = ia.Frame(csv)
-                >>> my_graph = ia.Graph()
-                >>> my_graph.define_vertex_type('users')
-                >>> my_vertex_frame = my_graph.vertices['users']
-                >>> my_vertex_frame.add_vertices(my_frame, 'user_id',
-                ...                             ['user_name', 'age'])
-
-        Retrieve a previously defined graph and retrieve a VertexFrame from it:
+    .. only:: html
 
         .. code::
 
-            >>> my_graph = ia.get_graph("your_graph")
-            >>> my_vertex_frame = my_graph.vertices["your_label"]
+            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), ('user_name', str), ('movie_id', int32), ('movie_title', str), ('rating', str)])
+            >>> my_frame = ia.Frame(csv)
+            >>> my_graph = ia.Graph()
+            >>> my_graph.define_vertex_type('users')
+            >>> my_vertex_frame = my_graph.vertices['users']
+            >>> my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
 
-        Calling methods on a VertexFrame:
-
-        .. code::
-
-            >>> my_vertex_frame.vertices["your_label"].inspect(20)
-
-        Convert a VertexFrame to a frame:
+    .. only:: html
 
         .. code::
 
-            >>> new_Frame = my_vertex_frame.vertices["label"].copy()
+            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+            ...                                     ('user_name', str),
+            ...                                     ('movie_id', int32),
+            ...                                     ('movie_title', str),
+            ...                                     ('rating', str)])
+            >>> my_frame = ia.Frame(csv)
+            >>> my_graph = ia.Graph()
+            >>> my_graph.define_vertex_type('users')
+            >>> my_vertex_frame = my_graph.vertices['users']
+            >>> my_vertex_frame.add_vertices(my_frame, 'user_id',
+            ... ['user_name', 'age'])
+
+    Retrieve a previously defined graph and retrieve a VertexFrame from it:
+
+    .. code::
+
+        >>> my_graph = ia.get_graph("your_graph")
+        >>> my_vertex_frame = my_graph.vertices["your_label"]
+
+    Calling methods on a VertexFrame:
+
+    .. code::
+
+        >>> my_vertex_frame.vertices["your_label"].inspect(20)
+
+    Convert a VertexFrame to a frame:
+
+    .. code::
+
+        >>> new_Frame = my_vertex_frame.vertices["label"].copy()
         """
         try:
             api_status.verify_installed()
@@ -1461,13 +1403,11 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
         """
         Delete rows that qualify.
 
-
         Parameters
         ----------
-        predicate : [ |UDF| | lambda ]
+        predicate : |UDF|
             |UDF| or :term:`lambda` which takes a row argument and evaluates
             to a boolean value.
-
 
         Examples
         --------
@@ -1508,18 +1448,18 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
     An EdgeFrame is similar to a Frame but with a few important differences:
 
     -   EdgeFrames are not instantiated directly by the user, instead they are
-        created by defining an edge type in a graph.
-    -   Each row of an EdgeFrame represents an edge in a graph.
-    -   EdgeFrames have many of the same methods as Frames but not all.
-    -   EdgeFrames have extra methods not found on Frames (e.g. add_edges()).
+        created by defining an edge type in a graph
+    -   Each row of an EdgeFrame represents an edge in a graph
+    -   EdgeFrames have many of the same methods as Frames but not all
+    -   EdgeFrames have extra methods not found on Frames (e.g. add_edges())
     -   EdgeFrames have a dependency on one or two VertexFrames
         (adding an edge to an EdgeFrame requires either vertices to be present
-        or for the user to specify create_missing_vertices=True).
+        or for the user to specify create_missing_vertices=True)
     -   EdgeFrames have special system columns (_eid, _label, _src_vid,
         _dest_vid) that are maintained automatically by the system and cannot
-        be modified by the user.
+        be modified by the user
     -   "Columns" on an EdgeFrame can also be thought of as "properties" on
-        Edges.
+        Edges
     """
 
     _entity_type = 'frame:edge'
@@ -1527,86 +1467,84 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
     @api
     def __init__(self, source=None, graph=None, label=None, src_vertex_label=None, dest_vertex_label=None, directed=None, _info=None):
         """
-        Parameters
-        ----------
-        source : ? (optional)
-        graph : ? (optional)
-        label : ? (optional)
-        src_vertex_label : ? (optional)
-        dest_vertex_label : ? (optional)
-        directed : ? (optional)
-        _info : ? (optional)
+    Parameters
+    ----------
+    source : ? (optional)
+    graph : ? (optional)
+    label : ? (optional)
+    src_vertex_label : ? (optional)
+    dest_vertex_label : ? (optional)
+    directed : ? (optional)
+    _info : ? (optional)
 
+    Returns
+    -------
+    class : VertexFrame object
+        An object with access to the frame.
 
-        Returns
-        -------
-        EdgeFrame
-            An object with access to the data frame.
+    Examples
+    --------
+    Given a data file */movie.csv*, create a frame to match this data and move
+    the data to the frame.
+    Create an empty graph and define some vertex and edge types.
 
+    .. code::
 
-        Examples
-        --------
-        Given a data file */movie.csv*, create a frame to match this data and move
-        the data to the frame.
-        Create an empty graph and define some vertex and edge types.
+        >>> my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        ...                                     ('user_name', str),
+        ...                                     ('movie_id', int32),
+        ...                                     ('movie_title', str),
+        ...                                     ('rating', str)])
 
-        .. code::
+        >>> my_frame = ia.Frame(my_csv)
+        >>> my_graph = ia.Graph()
+        >>> my_graph.define_vertex_type('users')
+        >>> my_graph.define_vertex_type('movies')
+        >>> my_graph.define_edge_type('ratings','users','movies',directed=True)
 
-            >>> my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
-            ...                                     ('user_name', str),
-            ...                                     ('movie_id', int32),
-            ...                                     ('movie_title', str),
-            ...                                     ('rating', str)])
+    Add data to the graph from the frame:
 
-            >>> my_frame = ia.Frame(my_csv)
-            >>> my_graph = ia.Graph()
-            >>> my_graph.define_vertex_type('users')
-            >>> my_graph.define_vertex_type('movies')
-            >>> my_graph.define_edge_type('ratings','users','movies',directed=True)
-
-        Add data to the graph from the frame:
-
-        .. only:: html
-
-            .. code::
-
-                >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
-                >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
-
-        .. only:: latex
-
-            .. code::
-
-                >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id',
-                ... ['user_name'])
-                >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id',
-                ... ['movie_title])
-
-        Create an edge frame from the graph, and add edge data from the frame.
+    .. only:: html
 
         .. code::
 
-            >>> my_edge_frame = graph.edges['ratings']
-            >>> my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
+            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
 
-        Retrieve a previously defined graph and retrieve an EdgeFrame from it:
-
-        .. code::
-
-            >>> my_old_graph = ia.get_graph("your_graph")
-            >>> my_new_edge_frame = my_old_graph.edges["your_label"]
-
-        Calling methods on an EdgeFrame:
+    .. only:: latex
 
         .. code::
 
-            >>> my_new_edge_frame.inspect(20)
+            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id',
+            ... ['user_name'])
+            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id',
+            ... ['movie_title])
 
-        Copy an EdgeFrame to a frame using the copy method:
+    Create an edge frame from the graph, and add edge data from the frame.
 
-        .. code::
+    .. code::
 
-            >>> my_new_frame = my_new_edge_frame.copy()
+        >>> my_edge_frame = graph.edges['ratings']
+        >>> my_edge_frame.add_edges(my_frame, 'user_id', 'movie_id', ['rating']
+
+    Retrieve a previously defined graph and retrieve an EdgeFrame from it:
+
+    .. code::
+
+        >>> my_old_graph = ia.get_graph("your_graph")
+        >>> my_new_edge_frame = my_old_graph.edges["your_label"]
+
+    Calling methods on an EdgeFrame:
+
+    .. code::
+
+        >>> my_new_edge_frame.inspect(20)
+
+    Copy an EdgeFrame to a frame using the copy method:
+
+    .. code::
+
+        >>> my_new_frame = my_new_edge_frame.copy()
         """
         try:
             api_status.verify_installed()
