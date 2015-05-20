@@ -28,7 +28,7 @@ import unittest
 import mock
 import intelanalytics.core.iatypes as iatypes
 #from intelanalytics.meta.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_entity_type
-from intelanalytics.meta.metaprog2 import CommandInstallable, install_command_def, CommandInstallation, Constants
+from intelanalytics.meta.metaprog2 import CommandInstallable, install_command_def, CommandInstallation, _Constants
 from intelanalytics.meta.classnames import entity_type_to_class_name
 from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 
@@ -41,7 +41,7 @@ class Numbers(CommandInstallable):
         CommandInstallable.__init__(self)
 
 
-setattr(Numbers, Constants.COMMAND_INSTALLATION, CommandInstallation('numbers', True))
+setattr(Numbers, _Constants.COMMAND_INSTALLATION, CommandInstallation('numbers', True))
 
 def get_french(a, b):
     numbers = ['zero', 'un', 'deux']

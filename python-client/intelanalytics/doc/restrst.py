@@ -21,12 +21,11 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Creates pieces of rst text according to meta-programming
+Library for creating pieces of rst text for the REST API, based on metaprog
 """
 
-from intelanalytics.meta.metaprog2 import indent, get_type_name
-from intelanalytics.meta.classnames import upper_first
-from intelanalytics.meta.genrst import get_maturity_rst
+from intelanalytics.meta.classnames import upper_first, indent, get_type_name
+from intelanalytics.doc.pyrst import get_member_rst_list, get_maturity_rst, is_name_private
 
 
 def get_command_def_rest_rst(collection_name, command_def):
@@ -160,3 +159,32 @@ def _get_returns_rest_rst(return_info):
 """.format(data_type=get_type_name(return_info.data_type), description=indent(return_info.doc, 8)) if return_info\
         else "<Missing Return Information>"
 
+
+def get_rest_summary_table(cls):
+    """Creates rst summary table for given class"""
+    members = get_member_rst_list(cls)
+    name_max_len = 0
+    summary_max_len = 0
+    line_tuples = []
+    for m in members:
+        if not is_name_private(m.display_name) and m.display_name != "__init__":
+            display_name = m.display_name.replace('.', '/')
+            name = ":doc:`%s <%s>`\ " % (display_name, display_name)
+            summary = m.doc.one_line
+            if m.maturity:
+                summary = get_maturity_rst(m.maturity) + " " + summary
+            if len(name) > name_max_len:
+                name_max_len = len(name)
+            if len(summary) > summary_max_len:
+                summary_max_len = len(summary)
+            line_tuples.append((name, summary))
+
+    name_len = name_max_len + 2
+    summary_len = summary_max_len + 2
+
+    table_line = ("=" * name_len) + "  " + ("=" * summary_len)
+
+    lines = sorted(["%s%s  %s" % (t[0], " " * (name_len - len(t[0])), t[1]) for t in line_tuples])
+    lines.insert(0, table_line)
+    lines.append(table_line)
+    return "\n".join(lines)

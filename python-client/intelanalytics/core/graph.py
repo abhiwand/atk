@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
-
+from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable
+from intelanalytics.meta.docstub import doc_stubs_import
 from intelanalytics.meta.namedobj import name_support
 import uuid
 

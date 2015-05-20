@@ -35,7 +35,8 @@ from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
+from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable
+from intelanalytics.meta.docstub import doc_stubs_import
 
 
 def _get_backend():
@@ -1399,7 +1400,8 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
             error = IaError(logger)
             raise error
 
-    def drop_vertices(self, predicate):
+    @api
+    def __drop_vertices(self, predicate):
         """
         Delete rows that qualify.
 
@@ -1436,7 +1438,8 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
-    def filter(self, predicate):
+    @api
+    def __filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 
 

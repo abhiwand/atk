@@ -21,15 +21,15 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Creates pieces of rst text according to meta-programming
+Library for creating pieces of rst text for the Python API, based on metaprog
 """
 
 import re
 from collections import OrderedDict
 
 from intelanalytics.meta.command import Doc
-from intelanalytics.meta.metaprog2 import indent, get_type_name, get_installation, get_intermediate_class
-from intelanalytics.meta.classnames import is_name_private
+from intelanalytics.meta.metaprog2 import get_installation, get_intermediate_class
+from intelanalytics.meta.classnames import is_name_private, indent, get_type_name
 from intelanalytics.meta.reflect import get_args_text_from_function
 
 

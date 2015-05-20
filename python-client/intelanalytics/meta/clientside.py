@@ -27,12 +27,11 @@ Decoration and installation for the API objects defined in the python core code
 import inspect
 
 from intelanalytics.core.api import api_globals
-
 from intelanalytics.meta.classnames import class_name_to_entity_type
 from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 from intelanalytics.meta.context import get_api_context_decorator
 from intelanalytics.meta.reflect import get_args_spec_from_function, get_args_text_from_function
-from intelanalytics.meta.genspa import gen_spa
+from intelanalytics.meta.spa import get_spa_docstring
 
 
 client_commands = []  # list of tuples (class_name, command_def) defined in the python client code (not from server)
@@ -117,7 +116,7 @@ class ClientCommandDefinition(CommandDefinition):
 
         super(ClientCommandDefinition, self).__init__(json_schema, full_name, params, return_info, is_property, function.__doc__, maturity=maturity)
 
-        spa_doc = gen_spa(self)
+        spa_doc = get_spa_docstring(self)
         function.__doc__ = spa_doc
 
     @staticmethod
