@@ -93,7 +93,7 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
 
   override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
 
-    if (sc.master != "yarn-cluster") {
+    if (!SparkEngineConfig.isSparkOnYarn) {
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     }
 
