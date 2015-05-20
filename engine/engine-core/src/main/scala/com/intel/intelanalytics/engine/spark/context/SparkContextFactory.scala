@@ -98,7 +98,6 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     }
     else {
       Archive.getJar(archive).toString
-
     }
   }
 
