@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.titan.io;
 
-import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.titan_054.hbase.CachedTitanHBaseInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -44,7 +44,7 @@ import java.util.List;
  * @see org.apache.hadoop.hbase.mapreduce.TableInputFormat
  * @see org.apache.hadoop.mapreduce.InputFormat#getSplits(org.apache.hadoop.mapreduce.JobContext)
  */
-public class GBTitanHBaseInputFormat extends TitanHBaseInputFormat {
+public class GBTitanHBaseInputFormat extends CachedTitanHBaseInputFormat {
 
 
     public static final String NUM_REGION_SPLITS = "hbase.mapreduce.regions.splits";
@@ -106,6 +106,4 @@ public class GBTitanHBaseInputFormat extends TitanHBaseInputFormat {
         LOG.info("Set requested input splits for HBase table to: " + requestedSplitCount);
         return requestedSplitCount;
     }
-
-
 }

@@ -100,7 +100,7 @@ public abstract class TitanVertexOutputFormat<I extends WritableComparable,
         public void initialize(TaskAttemptContext context) throws IOException,
                 InterruptedException {
             super.initialize(context);
-            this.graph = TitanGraphWriter.open(context);
+            this.graph = TitanGraphWriter.getGraphFromCache(context.getConfiguration());
             vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
@@ -131,8 +131,9 @@ public abstract class TitanVertexOutputFormat<I extends WritableComparable,
         @Override
         public void close(TaskAttemptContext context) throws IOException, InterruptedException {
             this.graph.commit();
-            this.graph.shutdown();
-            LOG.info(CLOSED_GRAPH);
+            //Closing the graph is managed by the graph cache
+            //this.graph.shutdown();
+            //LOG.info(CLOSED_GRAPH);
             super.close(context);
         }
     }

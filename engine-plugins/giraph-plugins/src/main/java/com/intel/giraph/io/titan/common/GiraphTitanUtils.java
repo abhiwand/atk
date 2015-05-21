@@ -143,12 +143,12 @@ public class GiraphTitanUtils {
     public static void createTitanKeys(ImmutableClassesGiraphConfiguration conf) {
         TitanGraph graph;
 
-        try {
-            graph = TitanGraphWriter.open(conf);
-        } catch (IOException e) {
-            LOG.error(TITAN_GRAPH_NOT_OPEN);
-            throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
-        }
+        //try {
+            graph = TitanGraphWriter.getGraphFromCache(conf);
+        //} catch (IOException e) {
+       //     LOG.error(TITAN_GRAPH_NOT_OPEN);
+       //     throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
+       // }
 
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(propertyKeyRegExp);
 
@@ -162,7 +162,7 @@ public class GiraphTitanUtils {
             }
         }
         graphManager.commit();
-        graph.shutdown();
+        //graph.shutdown();
     }
 
 

@@ -23,6 +23,7 @@
 
 package com.intel.graphbuilder.graph.titan
 
+import com.thinkaurelius.titan.hadoop.formats.titan_054.hbase.CachedTitanHBaseRecordReader
 import org.apache.spark.scheduler.{ SparkListener, SparkListenerApplicationEnd }
 
 /**
@@ -44,17 +45,6 @@ class TitanHadoopHBaseCacheListener() extends SparkListener {
 
   override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd): Unit = {
     System.out.println("Invalidating Titan/Hadoop HBase graph cache:")
-    //CachedTitanHBaseRecordReader.invalidateGraphCache()
-  }
-}
-
-/**
- * Ensures clean shut down by invalidating all entries in the Titan/Hadoop Cassandra graph cache
- * when the spark application shuts down.
- */
-class TitanHadoopCassandraCacheListener() extends SparkListener {
-  override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd): Unit = {
-    System.out.println("Invalidating Titan graph cache:")
-    //CachedTitanCassandraRecordReader.invalidateGraphCache()
+    CachedTitanHBaseRecordReader.invalidateGraphCache()
   }
 }
