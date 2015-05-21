@@ -20,7 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.service
+package com.intel.intelanalytics.rest
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits

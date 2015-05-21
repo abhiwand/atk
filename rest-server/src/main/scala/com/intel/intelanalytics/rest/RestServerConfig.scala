@@ -75,12 +75,19 @@ object RestServerConfig {
   val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.rest-server.user-principal-cache.max-size")
 
   /**
-   * Mode of invocation for rest-server : normal or scoring engine mode
-   * The ATK rest-server can be run in two different modes:
-   * 1) the Normal mode where all the services(excluding scoring-service) for models, frames, queries, graphs are available
-   * 2) scoring engine mode where ONLY scoring service is available
-   * True means scoring engine mode.
+   * Mode of invocation for api-server : standard or scoring mode
+   * The ATK Server can be run in two different modes:
+   * 1) standard mode where all the services(excluding scoring-service) for models, frames, queries, graphs are available
+   * 2) scoring mode where ONLY scoring service is available
    */
-  val scoringEngineMode: Boolean = config.getBoolean("intel.analytics.api.scoring-engine")
+  val serviceMode: String = config.getString("intel.analytics.api.service-mode")
 
+  /** Scheme for Rest Service to bind with (http or https) */
+  val schemeIsHttps: Boolean = config.getBoolean("spray.can.server.ssl-encryption")
+
+  /** Location of the Java keystore file */
+  val keyStoreFile: String = config.getString("intel.analytics.rest-server.key-store-file")
+
+  /** Password for the keystore file */
+  val keyStorePassword: String = config.getString("intel.analytics.rest-server.key-store-password")
 }
