@@ -28,8 +28,8 @@ import re
 from collections import OrderedDict
 
 from intelanalytics.meta.command import Doc
-from intelanalytics.meta.metaprog2 import get_installation, get_intermediate_class
-from intelanalytics.meta.classnames import is_name_private, indent, get_type_name
+from intelanalytics.meta.metaprog import get_installation, get_intermediate_class
+from intelanalytics.meta.names import is_name_private, indent, get_type_name
 from intelanalytics.meta.reflect import get_args_text_from_function
 
 

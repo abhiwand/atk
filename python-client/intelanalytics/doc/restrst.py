@@ -24,7 +24,7 @@
 Library for creating pieces of rst text for the REST API, based on metaprog
 """
 
-from intelanalytics.meta.classnames import upper_first, indent, get_type_name
+from intelanalytics.meta.names import upper_first, indent, get_type_name
 from intelanalytics.doc.pyrst import get_member_rst_list, get_maturity_rst, is_name_private
 
 

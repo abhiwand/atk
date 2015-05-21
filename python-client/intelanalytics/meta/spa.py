@@ -24,7 +24,7 @@
 Static Program Analysis (SPA) docstring lib
 """
 
-from intelanalytics.meta.classnames import indent, get_type_name
+from intelanalytics.meta.names import indent, get_type_name
 
 
 def get_spa_docstring(command_def, override_rtype=None):

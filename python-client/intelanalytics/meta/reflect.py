@@ -20,9 +20,11 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
-from intelanalytics.meta.classnames import is_name_private
+"""
+Python reflection with inspect
+"""
 import inspect
+from intelanalytics.meta.names import is_name_private, default_value_to_str
 
 
 def get_args_text_from_function(function, ignore_self=False, ignore_private_args=False):
@@ -51,8 +53,3 @@ def get_args_spec_from_function(function, ignore_self=False, ignore_private_args
         args = [name for name in args if not is_name_private(name)]
         kwargs = [(name, value) for name, value in kwargs if not is_name_private(name)]
     return args, kwargs, varargs, varkwargs
-
-
-def default_value_to_str(value):
-    return value if value is None or type(value) not in [str, unicode] else "'%s'" % value
-

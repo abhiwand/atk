@@ -28,8 +28,8 @@ import sys
 import logging
 
 from intelanalytics.meta.clientside import get_api_decorator, arg, returns
-from intelanalytics.meta.classnames import entity_type_to_collection_name, upper_first
-from intelanalytics.meta.metaprog2 import get_entity_class_from_store, set_entity_collection
+from intelanalytics.meta.names import entity_type_to_collection_name, upper_first
+from intelanalytics.meta.metaprog import get_entity_class_from_store, set_entity_collection
 
 
 def name_support(term):

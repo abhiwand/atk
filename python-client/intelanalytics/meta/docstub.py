@@ -28,12 +28,12 @@ import inspect
 import datetime
 from decorator import decorator
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('meta')
 
-from intelanalytics.meta.classnames import indent, get_type_name
+from intelanalytics.meta.names import indent, get_type_name
 from intelanalytics.meta.clientside import DocStubCalledError
 from intelanalytics.meta.spa import get_spa_docstring
-from intelanalytics.meta.metaprog2 import CommandInstallable, CommandInstallation, get_installation, has_installation
+from intelanalytics.meta.metaprog import CommandInstallable, CommandInstallation, get_installation
 
 
 ATTR_DOC_STUB = '_doc_stub'

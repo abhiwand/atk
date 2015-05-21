@@ -25,11 +25,9 @@ import iatest
 iatest.init()
 
 import unittest
-import mock
 import intelanalytics.core.iatypes as iatypes
-#from intelanalytics.meta.metaprog import CommandLoadable, load_loadable, get_loadable_class_name_from_entity_type
-from intelanalytics.meta.metaprog2 import CommandInstallable, install_command_def, CommandInstallation, _Constants
-from intelanalytics.meta.classnames import entity_type_to_class_name
+from intelanalytics.meta.metaprog import CommandInstallable, CommandInstallation, ATTR_COMMAND_INSTALLATION
+from intelanalytics.meta.names import entity_type_to_class_name
 from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 
 
@@ -41,7 +39,7 @@ class Numbers(CommandInstallable):
         CommandInstallable.__init__(self)
 
 
-setattr(Numbers, _Constants.COMMAND_INSTALLATION, CommandInstallation('numbers', True))
+setattr(Numbers, ATTR_COMMAND_INSTALLATION, CommandInstallation('numbers', True))
 
 def get_french(a, b):
     numbers = ['zero', 'un', 'deux']
@@ -94,29 +92,29 @@ def get_numbers(cmd_name, selfish, **args):
 class TestNaming(unittest.TestCase):
 
     def test_upper_first(self):
-        from intelanalytics.meta.classnames import upper_first
+        from intelanalytics.meta.names import upper_first
         self.assertEqual("Apple", upper_first('apple'))
         self.assertEqual("Apple", upper_first('Apple'))
         self.assertEqual('', upper_first(''))
         self.assertEqual('', upper_first(None))
 
     def test_lower_first(self):
-        from intelanalytics.meta.classnames import lower_first
+        from intelanalytics.meta.names import lower_first
         self.assertEqual("apple", lower_first('apple'))
         self.assertEqual("apple", lower_first('Apple'))
         self.assertEqual('', lower_first(''))
         self.assertEqual('', lower_first(None))
 
     def test_underscores_to_pascal(self):
-        from intelanalytics.meta.classnames import underscores_to_pascal
+        from intelanalytics.meta.names import underscores_to_pascal
         self.assertEqual("LogisticRegressionModel", underscores_to_pascal("logistic_regression_model"))
 
     def test_pascal_to_underscores(self):
-        from intelanalytics.meta.classnames import pascal_to_underscores
+        from intelanalytics.meta.names import pascal_to_underscores
         self.assertEqual("logistic_regression_model", pascal_to_underscores("LogisticRegressionModel"))
 
     def test_get_entity_type_from_class_name(self):
-        from intelanalytics.meta.classnames import class_name_to_entity_type
+        from intelanalytics.meta.names import class_name_to_entity_type
         self.assertEqual("model:logistic_regression", class_name_to_entity_type("LogisticRegressionModel"))
         self.assertEqual("model", class_name_to_entity_type("_BaseModel"))
         with self.assertRaises(ValueError) as cm:
@@ -124,7 +122,7 @@ class TestNaming(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Invalid empty class_name, expected non-empty string")
 
     def test_get_loadable_class_name_from_entity_type(self):
-        from intelanalytics.meta.classnames import entity_type_to_class_name
+        from intelanalytics.meta.names import entity_type_to_class_name
         self.assertEqual("LogisticRegressionModel", entity_type_to_class_name("model:logistic_regression"))
         self.assertEqual("_BaseModel", entity_type_to_class_name("model"))
         with self.assertRaises(ValueError) as cm:

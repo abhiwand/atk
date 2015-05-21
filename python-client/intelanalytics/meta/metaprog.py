@@ -21,49 +21,33 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Meta-programming - dynamically adding commands to api objects or building doc stub *.py
+Meta-programming - dynamically creating classes and functions
 """
 
-#  Example: given commands "graph:titan/ml/pagerank" and "graph/ml/graphx_pagerank"  and class structure:
-#
-#     CommandsInstallable
-#            |
-#       _BaseGraph
-#       /         \
-#    Graph       TitanGraph
-#
-#
-#  We need to create:
-#
-#     _BaseGraphMl defines "graphx_pagerank"
-#       /         \
-#    GraphMl       TitanGraphMl defines "pagerank"
-#
-# such that
-#
-# t = TitanGraph()
-# t.ml.graphx_pagerank(...)   # works
-# t.ml.pagerank(...)          # works
-# g = Graph()
-# g.ml.graphx_pagerank(...)   # works
-# g.ml.pagerank(...)          # attribute 'pagerank' not found (desired behavior)
-import logging
 
-from intelanalytics.meta.installpath import InstallPath
-logger = logging.getLogger(__name__)
+import logging
+logger = logging.getLogger('meta')
 
 import sys
 import inspect
 
 from intelanalytics.core.api import api_globals, api_status
+from intelanalytics.meta.installpath import InstallPath
 from intelanalytics.meta.context import get_api_context_decorator
 from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 from intelanalytics.meta.spa import get_spa_docstring
-import intelanalytics.meta.classnames as naming
+from intelanalytics.meta.names import name_to_private, class_name_to_entity_type, entity_type_to_baseclass_name, entity_type_to_collection_name, get_entity_constructor_command_full_name
 from intelanalytics.meta.clientside import mark_item_as_api, decorate_api_class
 
 
-_installable_classes_store = {}
+ATTR_COMMAND_INSTALLATION = "_command_installation"
+ATTR_ENTITY_COLLECTION = "_entity_collection"
+ATTR_INTERMEDIATE_CLASS = "_intermediate_class"
+EXECUTE_COMMAND_FUNCTION_NAME = 'execute_command'
+IA_URI = '_id'
+
+
+_installable_classes_store = {}  # global store, keyed on full install path, str -> cls   ex.  { 'frame:' : Frame }
 
 
 class CommandInstallation(object):
@@ -91,7 +75,7 @@ class CommandInstallation(object):
     def _create_intermediate_property(name, intermediate_class, parent_name):
         fget = CommandInstallation.get_fget(name)
         mark_item_as_api(fget)
-        fget._intermediate_class = intermediate_class
+        setattr(fget, ATTR_INTERMEDIATE_CLASS, intermediate_class)
         doc = CommandInstallation._get_canned_property_doc(name, intermediate_class.__name__)
         prop = property(fget=fget, doc=doc)
         fget.command = IntermediatePropertyCommandDefinition(name, prop, intermediate_class, parent_name)
@@ -99,7 +83,7 @@ class CommandInstallation(object):
 
     @staticmethod
     def get_fget(name):
-        private_name = naming.name_to_private(name)
+        private_name = name_to_private(name)
 
         def fget(self):
             return getattr(self, private_name)
@@ -111,9 +95,10 @@ class CommandInstallation(object):
 
 
 def is_intermediate_property(item):
+    """An intermediate property is a getter for an instance of an intermediate class, like graph.ml"""
     if isinstance(item, property):
         item = item.fget
-    return hasattr(item, "_intermediate_class")
+    return hasattr(item, ATTR_INTERMEDIATE_CLASS)
 
 
 class IntermediatePropertyCommandDefinition(CommandDefinition):
@@ -141,25 +126,9 @@ class IntermediatePropertyCommandDefinition(CommandDefinition):
 
     @staticmethod
     def _generate_full_name(class_name, member_name):
-        entity_type = naming.class_name_to_entity_type(class_name)
+        entity_type = class_name_to_entity_type(class_name)
         full_name = "%s/%s" % (entity_type, member_name)
         return full_name
-
-
-class _Constants(object):
-    IA_URI = '_id'
-    COMMAND_INSTALLATION = "_command_installation"
-    ENTITY_COLLECTION = "_entity_collection"
-
-    INTERMEDIATE_CLASS = '_intermediate_class'
-    LOADED_COMMANDS = '_loaded_commands'
-    LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
-    INIT_COMMAND = "_init_command"  # attribute for a class to hold the command_def of its init function, since the __init__ function is immutable
-
-    EXECUTE_COMMAND_FUNCTION_NAME = 'execute_command'
-    ALIASED_EXECUTE_COMMAND_FUNCTION_NAME = 'aliased_execute_command'
-
-    INIT_INFO_ARGUMENT_NAME = '_info'
 
 
 class CommandInstallable(object):
@@ -198,7 +167,7 @@ class CommandInstallable(object):
             have something to return"""
             installation = get_installation(installation_class)
             for name, cls in installation.intermediates.items():
-                private_member_name = naming.name_to_private(name)
+                private_member_name = name_to_private(name)
                 if private_member_name not in self.__dict__:
                     logger.debug("Instantiating intermediate class %s as %s", cls, private_member_name)
                     private_member_value = cls(self._entity)  # instantiate
@@ -207,7 +176,7 @@ class CommandInstallable(object):
 
     def _get_entity_ia_uri(self):
         """standard way for generated code to ask for the entity id"""
-        return getattr(self._entity, _Constants.IA_URI)
+        return getattr(self._entity, IA_URI)
 
 
 def is_class_command_installable(cls):
@@ -222,9 +191,10 @@ def get_default_init():
     return init
 
 
+
 def has_installation(cls):
     """tests if the given class type itself has a command installation object (and not inherited from a base class)"""
-    return _Constants.COMMAND_INSTALLATION in cls.__dict__  # don't use hasattr
+    return ATTR_COMMAND_INSTALLATION in cls.__dict__  # don't use hasattr
 
 
 def get_installation(cls, *default):
@@ -234,7 +204,7 @@ def get_installation(cls, *default):
     :rtype: CommandInstallation
     """
     try:
-        return cls.__dict__[_Constants.COMMAND_INSTALLATION]  # don't use getattr
+        return cls.__dict__[ATTR_COMMAND_INSTALLATION]  # don't use getattr
     except KeyError:
         if len(default) > 0:
             return default[0]
@@ -243,19 +213,19 @@ def get_installation(cls, *default):
 
 def set_installation(cls, installation):
     """makes the installation object a member of the class type"""
-    setattr(cls, _Constants.COMMAND_INSTALLATION, installation)
+    setattr(cls, ATTR_COMMAND_INSTALLATION, installation)
     _installable_classes_store[installation.install_path.full] = cls  # update store
 
 
 def has_entity_collection(item):
     """the entity collection name for an item"""
-    return hasattr(item, _Constants.ENTITY_COLLECTION)
+    return hasattr(item, ATTR_ENTITY_COLLECTION)
 
 
 def get_entity_collection(item, *default):
     """returns the entity collection name of given item"""
     try:
-        return getattr(item, _Constants.ENTITY_COLLECTION)
+        return getattr(item, ATTR_ENTITY_COLLECTION)
     except AttributeError:
         if len(default) > 0:
             return default[0]
@@ -264,7 +234,7 @@ def get_entity_collection(item, *default):
 
 def set_entity_collection(item, collection_name):
     """the entity collection name for an item"""
-    setattr(item, _Constants.ENTITY_COLLECTION, collection_name)
+    setattr(item, ATTR_ENTITY_COLLECTION, collection_name)
 
 
 def get_installable_classes():
@@ -373,13 +343,36 @@ def _create_class_type(new_class_name, baseclass, doc, init=None):
     new_class._is_api = True
     return new_class
 
+    #  Example: given commands "graph:titan/ml/pagerank" and "graph/ml/graphx_pagerank"  and class structure:
+    #
+    #     CommandsInstallable
+    #            |
+    #       _BaseGraph
+    #       /         \
+    #    Graph       TitanGraph
+    #
+    #
+    #  We need to create:
+    #
+    #     _BaseGraphMl defines "graphx_pagerank"
+    #       /         \
+    #    GraphMl       TitanGraphMl defines "pagerank"
+    #
+    # such that
+    #
+    # t = TitanGraph()
+    # t.ml.graphx_pagerank(...)   # works
+    # t.ml.pagerank(...)          # works
+    # g = Graph()
+    # g.ml.graphx_pagerank(...)   # works
+    # g.ml.pagerank(...)          # attribute 'pagerank' not found (desired behavior)
+
 
 def get_class_init_from_path(install_path):
     if install_path.is_entity:
         # Means a class is being created for an entity and requires more information about the __init__ method
         # We return an __init__ that will throw an error when called.  It must be overwritten by a special plugin
-        from intelanalytics.meta.command import ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME
-        plugin_name = "%s/%s" % (install_path, ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME)
+        plugin_name = get_entity_constructor_command_full_name(install_path)
         msg = "Internal Error: server does not know how to construct entity type %s.  A command plugin " \
               "named \"%s\" must be registered." % (install_path.entity_type, plugin_name)
 
@@ -418,6 +411,7 @@ def create_execute_command_function(command_def, execute_command_function):
     over the parameter info for validating the arguments during usage
     """
     parameters = command_def.parameters
+
     def execute_command(_command_name, _selfish, **kwargs):
         arguments = validate_arguments(kwargs, parameters)
         return execute_command_function(_command_name, _selfish, **arguments)
@@ -426,7 +420,7 @@ def create_execute_command_function(command_def, execute_command_function):
 
 def get_self_argument_text():
     """Produces the text for argument to use for self in a command call"""
-    return "self._entity.%s" % _Constants.IA_URI
+    return "self._entity.%s" % IA_URI
 
 
 def get_function_kwargs(command_def):
@@ -459,13 +453,14 @@ def {name}({args_text}):
 
 
 def get_call_execute_command_text(command_def):
-    return "%s('%s', self, %s)" % (_Constants.EXECUTE_COMMAND_FUNCTION_NAME,
+    return "%s('%s', self, %s)" % (EXECUTE_COMMAND_FUNCTION_NAME,
                                command_def.full_name,
                                get_function_kwargs(command_def))
 
 
-def get_repr(command_def):
-    collection_name = naming.entity_type_to_collection_name(command_def.entity_type)
+def get_repr_function(command_def):
+    """Get repr function for a command def"""
+    collection_name = entity_type_to_collection_name(command_def.entity_type)
     repr_func = default_repr
 
     def _repr(self):
@@ -474,6 +469,7 @@ def get_repr(command_def):
 
 
 def default_repr(self, collection_name):
+    """Default __repr__ for a synthesized class"""
     entity = type(self).__name__
     try:
         from intelanalytics.rest.iaserver import server
@@ -490,7 +486,8 @@ def default_repr(self, collection_name):
     return entity + details
 
 
-def get_init_text(command_def):
+def _get_init_body_text(command_def):
+    """Gets text for the body of an init function for a constructor command_def"""
     return '''
     self._id = 0
     base_class.__init__(self)
@@ -500,11 +497,11 @@ def get_init_text(command_def):
     self._id = _info['id']
     self._name = _info.get('name', None)  # todo: remove, move to initialize_from_info
     # initialize_from_info(self, {info})  todo: implement
-    '''.format(info=_Constants.INIT_INFO_ARGUMENT_NAME,
+    '''.format(info='_info',
                call_execute_create=get_call_execute_command_text(command_def))
 
 
-def compile_function(func_name, func_text, dependencies):
+def _compile_function(func_name, func_text, dependencies):
     func_code = compile(func_text, '<string>', "exec")
     func_globals = {}
     eval(func_code, dependencies, func_globals)
@@ -515,15 +512,15 @@ def create_function(loadable_class, command_def, execute_command_function=None):
     """Creates the function which will appropriately call execute_command for this command"""
     execute_command = create_execute_command_function(command_def, execute_command_function)
     if command_def.is_constructor:
-        func_text = get_function_text(command_def, body_text=get_init_text(command_def))
+        func_text = get_function_text(command_def, body_text=_get_init_body_text(command_def))
         #print "func_text for %s = %s" % (command_def.full_name, func_text)
-        dependencies = {'base_class': _installable_classes_store.get(naming.entity_type_to_baseclass_name(command_def.install_path.full), CommandInstallable), _Constants.EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
+        dependencies = {'base_class': _installable_classes_store.get(entity_type_to_baseclass_name(command_def.install_path.full), CommandInstallable), EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
     else:
         func_text = get_function_text(command_def, body_text='return ' + get_call_execute_command_text(command_def), decorator_text='@api')
         api_decorator = get_api_context_decorator(logging.getLogger(loadable_class.__module__))
-        dependencies = {'api': api_decorator, _Constants.EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
+        dependencies = {'api': api_decorator,  EXECUTE_COMMAND_FUNCTION_NAME: execute_command}
     try:
-        function = compile_function(command_def.name, func_text, dependencies)
+        function = _compile_function(command_def.name, func_text, dependencies)
     except:
         sys.stderr.write("Metaprogramming problem compiling %s for class %s in code: %s" %
                          (command_def.full_name, loadable_class.__name__, func_text))

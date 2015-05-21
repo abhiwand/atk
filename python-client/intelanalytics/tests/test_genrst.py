@@ -1,7 +1,7 @@
 import iatest
 iatest.init()
 
-from doc.genrst import Doc
+from intelanalytics.meta.command import Doc
 
 doc1 = """Computes a cumulative percent sum.
 

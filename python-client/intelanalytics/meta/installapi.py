@@ -32,7 +32,7 @@ from intelanalytics.core.api import api_status, api_globals
 from intelanalytics.meta.docstub import delete_docstubs, is_doc_stub
 from intelanalytics.meta.clientside import client_commands, clear_clientside_api_stubs, is_api
 from intelanalytics.meta.mute import muted_commands
-import intelanalytics.meta.metaprog2 as metaprog
+import intelanalytics.meta.metaprog as metaprog
 
 
 def download_server_commands():
@@ -97,7 +97,7 @@ def install_command_def(cls, command_def, execute_command_function):
             function._is_api = True
             if command_def.is_constructor:
                 cls.__init__ = function
-                cls.__repr__ = metaprog.get_repr(command_def)
+                cls.__repr__ = metaprog.get_repr_function(command_def)
             else:
                 setattr(cls, command_def.name, function)
             metaprog.get_installation(cls).commands.append(command_def)

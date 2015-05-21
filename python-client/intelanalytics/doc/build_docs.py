@@ -74,11 +74,11 @@ print "Using package: %s" % ia.__file__
 ia.connect()
 
 
-from intelanalytics.meta.metaprog2 import get_installation, has_entity_collection, get_entity_collection, get_function_text
+from intelanalytics.meta.metaprog import get_installation, has_entity_collection, get_entity_collection, get_function_text
 from intelanalytics.meta.docstub import get_doc_stub_modules_text, get_doc_stub_init_text
+from intelanalytics.meta.names import upper_first, entity_type_to_class_name, indent, get_type_name
 from intelanalytics.doc.pyrst import  get_command_def_rst, get_class_rst
 from intelanalytics.doc.restrst import get_command_def_rest_rst, get_rest_summary_table
-from intelanalytics.meta.classnames import upper_first, entity_type_to_class_name, indent, get_type_name
 
 COLLECTION_MARKER_FILE_NAME = ".collection"  # an empty file with this name is created in a folder to mark it as  a collection
 
