@@ -62,7 +62,7 @@ def get_file_content_as_str(filename):
     elif os.path.isdir(filename): # Serialize local directories
         UdfZip.zipdir(filename)
         name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
-    elif not ('/' in filename) and filename.endswith('.py'): # Serialize local files
+    elif os.path.isfile(filename) and filename.endswith('.py'): # Serialize local files
         name, fileToSerialize = (filename, filename)
     else:
         raise Exception('%s should be either local python script without any packaging structure \
