@@ -33,7 +33,7 @@ from intelanalytics.core.api import api_status
 import intelanalytics.rest.config as config
 from intelanalytics.rest.server import Server
 from intelanalytics.rest.uaa import UaaServer
-from intelanalytics.meta.metaprog2 import install_api
+from intelanalytics.meta.installapi import install_api
 
 
 class InvalidAuthTokenError(RuntimeError):

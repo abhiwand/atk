@@ -7,45 +7,41 @@ Technical Report CMU-CALD-02-107, CMU, 2002.
 
 Parameters
 ----------
-source vertex: int
-    The source vertex id.
-dest vertex: int
-    The destination vertex id.
-weight : list of str
-    The edge properties which contain the input edge values.
-    A comma-separated list of property names when more than one edge property
-    is used.
-source labels: list of str
-    The list of label properties for the source vertex.
-result : str
+src_col_name: str
+    The column name for the source vertex id.
+dest_col_name: str
+    The column name for the destination vertex id.
+weight_col_name: str
+    The column name for the edge weight.
+src_label_col_name: str
+    The column name for the label properties for the source vertex.
+result_col_name : str (optional)
     column name for the results (holding the post labels for the vertices)
-max iterations : int (optional)
+max_iterations : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
     The default value is 10.
-convergence threshold : float (optional)
+convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
     If the change is less than this threshold, the algorithm exits earlier
     before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
-    The default value is 0.001.
-lp lambda : float (optional)
+    The default value is 0.00000001f.
+alpha : float (optional)
     The tradeoff parameter that controls how much influence an external
     classifier's prediction contributes to the final prediction.
     This is for the case where an external classifier is available that can
-    produce initial probabilistic classification on unlabled examples, and
+    produce initial probabilistic classification on unlabeled examples, and
     the option allows incorporating external classifier's prediction into
     the LP training process.
     The valid value range is [0.0,1.0].
     The default value is 0.
-bidirectional checks : boolean (optional)
-    Enable/disable bidirectional edge checking.
-    Default is false (no checks)
+
 
 Returns
 -------
-a 2-column frame:
+a dictionary <report, 2-column output frame>. The report is an execution summary string. The output frame contains:
 
 vertex: int
     A vertex id.
@@ -71,7 +67,9 @@ Examples
     d = "lp.csv"
     c = ia.CsvFile(d,s)
     f = ia.Frame(c)
-    f.label_propagation("a", "b", "c", "d", "results")
+    r = f.label_propagation("a", "b", "c", "d", "results")
+    result_string = r['report']
+    output_frame = r['frame']
 
 .. only:: latex
 
@@ -82,12 +80,7 @@ Examples
         ... destColName  = "b",
         ... weightColName = "c",
         ... srcLabelColName = "d",
-        ... resultColName = "resultLabels",
-        ... max_iterations = 10,
-        ... convergence_threshold = 1.0,
-        ... anchor_threshold = 1.0,
-        ... lp_lambda = 0.001,
-        ... bidirectional_check = False)
+        ... resultColName = "resultLabels")
 
 
 The expected output is like this:

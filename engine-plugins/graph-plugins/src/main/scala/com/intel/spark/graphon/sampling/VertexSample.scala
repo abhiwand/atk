@@ -91,7 +91,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     val graph = engine.graphs.expectGraph(arguments.graph)
 
     // get SparkContext and add the graph-plugins jar
-    if (sc.master != "yarn-cluster")
+    if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
 
     // convert graph name and get the graph vertex and edge RDDs

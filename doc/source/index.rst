@@ -9,6 +9,7 @@ Intel Analytics Toolkit
     ds_over
     ad_over
     python_api/index
+    rest_api/v1/index
 
 ==========
 References

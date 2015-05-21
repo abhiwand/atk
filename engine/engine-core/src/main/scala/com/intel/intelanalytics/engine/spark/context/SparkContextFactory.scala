@@ -76,7 +76,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     info("SparkConf settings: " + sparkConf.toDebugString)
 
     val sparkContext = new SparkContext(sparkConf)
-    if (SparkEngineConfig.sparkMaster != "yarn-cluster") {
+    if (!SparkEngineConfig.isSparkOnYarn) {
       val path = jarPath("engine-core")
       info(s"addJar() path=$path")
       sparkContext.addJar(path)
@@ -98,7 +98,6 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     }
     else {
       Archive.getJar(archive).toString
-
     }
   }
 

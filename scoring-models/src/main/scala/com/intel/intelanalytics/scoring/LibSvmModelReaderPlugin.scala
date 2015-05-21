@@ -26,6 +26,7 @@ class LibSvmModelReaderPlugin() extends ModelLoader {
       if (inputStream != null)
         inputStream.close()
     }
+
     libsvmModel.asInstanceOf[Model]
   }
 }

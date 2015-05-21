@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.meta.classnames import entity_type_to_class_name, entity_type_to_baseclass_name, entity_type_to_entity_basetype
+from intelanalytics.meta.names import entity_type_to_class_name, entity_type_to_baseclass_name, entity_type_to_entity_basetype
 
 
 class InstallPath(object):

@@ -25,7 +25,7 @@ API context
 """
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('meta')
 
 from decorator import decorator
 

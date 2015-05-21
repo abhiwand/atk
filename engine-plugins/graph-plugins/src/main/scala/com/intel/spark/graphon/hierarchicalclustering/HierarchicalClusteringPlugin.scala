@@ -62,7 +62,7 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
 
   override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    if (!SparkEngineConfig.isSparkOnYarnClusterMode)
+    if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)

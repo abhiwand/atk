@@ -20,21 +20,17 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
 """
-Command objects
+Command Definition and subservient objects
 """
 
-import re
 import logging
-from intelanalytics.meta.installpath import InstallPath
-from intelanalytics.meta.reflect import default_value_to_str
-
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger('meta')
 from collections import namedtuple
 
-ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME = "new"
+from intelanalytics.meta.installpath import InstallPath
+from intelanalytics.meta.names import default_value_to_str, is_entity_constructor_command_name
+
 
 Parameter = namedtuple("Parameter", ['name', 'data_type', 'use_self', 'optional', 'default', 'doc'])
 
@@ -119,7 +115,7 @@ class CommandDefinition(object):
 
     @property
     def is_constructor(self):
-        return self.name == ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME or self.name == "__init__"
+        return is_entity_constructor_command_name(self.name) or self.name == "__init__"
 
     @property
     def function_name(self):

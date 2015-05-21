@@ -1,18 +1,18 @@
-package org.apache.spark.sql.parquet.ia.giraph.frame
+package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.giraph.io.{ VertexData4LPWritable }
+import com.intel.giraph.io.VertexData4LPWritable
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.graph.Vertex
-import org.apache.giraph.io.{ VertexInputFormat, VertexValueInputFormat, VertexReader }
+import org.apache.giraph.io.{ VertexInputFormat, VertexReader }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path, FileSystem }
+import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit, JobContext }
-import org.apache.mahout.math.{ DenseVector }
+import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
+import org.apache.mahout.math.DenseVector
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport
-import parquet.hadoop.{ ParquetRecordReader, ParquetInputFormat }
+import parquet.hadoop.{ ParquetInputFormat, ParquetRecordReader }
 
 import scala.collection.JavaConverters._
 
