@@ -41,7 +41,7 @@ alpha : float (optional)
 
 Returns
 -------
-a disctionary <result, 2-column output frame>. The result is an execution summary. The output frame contains:
+a dictionary <result, 2-column output frame>. The result is an execution summary. The output frame contains:
 
 vertex: int
     A vertex id
