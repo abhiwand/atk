@@ -25,14 +25,15 @@ Decoration and installation for the API objects defined in the python core code
 """
 
 import inspect
+import warnings
+from decorator import decorator
 
 from intelanalytics.core.api import api_globals
-
-from intelanalytics.meta.classnames import class_name_to_entity_type
+from intelanalytics.meta.names import class_name_to_entity_type
 from intelanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 from intelanalytics.meta.context import get_api_context_decorator
 from intelanalytics.meta.reflect import get_args_spec_from_function, get_args_text_from_function
-from intelanalytics.meta.genspa import gen_spa
+from intelanalytics.meta.spa import get_spa_docstring
 
 
 client_commands = []  # list of tuples (class_name, command_def) defined in the python client code (not from server)
@@ -117,7 +118,7 @@ class ClientCommandDefinition(CommandDefinition):
 
         super(ClientCommandDefinition, self).__init__(json_schema, full_name, params, return_info, is_property, function.__doc__, maturity=maturity)
 
-        spa_doc = gen_spa(self)
+        spa_doc = get_spa_docstring(self)
         function.__doc__ = spa_doc
 
     @staticmethod
@@ -149,8 +150,20 @@ def beta(item):
 
 
 def deprecated(item):
-    item.maturity = 'deprecated'
-    return item
+    def wrapper(*args, **kwargs):
+        raise_deprecation_warning(item.__name__)
+        return item(*args, **kwargs)
+    function = decorator(wrapper, item)
+    function.maturity = 'deprecated'
+    return function
+
+
+def raise_deprecation_warning(function_name):
+    with warnings.catch_warnings():
+        warnings.simplefilter('default')  # make it so Python 2.7 will still report this warning
+        warnings.warn("Call to deprecated function %s." % function_name,
+                      DeprecationWarning,
+                      stacklevel=2)
 
 
 def arg(name, data_type, description):
@@ -176,6 +189,7 @@ def returns(data_type, description):
 
 def is_api(item):
     return hasattr(item, "_is_api") and getattr(item, "_is_api")
+
 
 def mark_item_as_api(item):
     item._is_api = True
@@ -269,6 +283,7 @@ def _patch_member_name(class_name, member):
 
 def get_clientside_api_stub(name):
     command_name = name
+
     def clientside_api_stub(*args, **kwargs):
         """Filler method stub for the decorator to return, should never be called"""
         raise DocStubCalledError(command_name)
@@ -281,6 +296,7 @@ def clear_clientside_api_stubs(cls):
     victims = [k for k, v in cls.__dict__.items() if hasattr(v, "_is_clientside_api_stub")]
     for v in victims:
         delattr(cls, v)
+
 
 class DocStubCalledError(RuntimeError):
     def __init__(self, func_name=''):

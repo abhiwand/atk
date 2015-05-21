@@ -22,7 +22,7 @@
 ##############################################################################
 
 import iatest
-from intelanalytics.meta.udf import has_python_user_function_arg
+from intelanalytics.meta.udf import has_udf_arg
 
 iatest.init()
 
@@ -83,7 +83,7 @@ class TestUserFunc(unittest.TestCase):
         message = "ZeroDivisionError: integer division or modulo by zero"
         self.assertTrue(e.args[0].find(filter) >= 0)
 
-        @has_python_user_function_arg
+        @has_udf_arg
         def func():
             raise e
 

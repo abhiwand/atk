@@ -29,13 +29,14 @@ from intelanalytics.meta.context import api_context
 from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from intelanalytics.meta.udf import has_python_user_function_arg
+from intelanalytics.meta.udf import has_udf_arg
 from intelanalytics.core.api import api_status
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
+from intelanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from intelanalytics.meta.docstub import doc_stubs_import
 
 
 def _get_backend():
@@ -306,7 +307,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
 
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
     def __add_columns(self, func, schema, columns_accessed=None):
         """
         Add columns to current frame.
@@ -592,7 +593,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
 
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
     def __drop_rows(self, predicate):
         """
         Erase any rows in the current frame which qualify.
@@ -625,7 +626,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         self._backend.drop(self, predicate)
 
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
     def __filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -1399,7 +1400,8 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
             error = IaError(logger)
             raise error
 
-    def drop_vertices(self, predicate):
+    @api
+    def __drop_vertices(self, predicate):
         """
         Delete rows that qualify.
 
@@ -1436,7 +1438,8 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
-    def filter(self, predicate):
+    @api
+    def __filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 
 

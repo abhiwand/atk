@@ -113,7 +113,7 @@ def return_connected_components(selfish, json_result):
 
 @postprocessor('graph/graphx_pagerank')
 def return_page_ank(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     vertex_json = json_result["vertex_dictionary_output"]
     edge_json = json_result["edge_dictionary_output"]
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])

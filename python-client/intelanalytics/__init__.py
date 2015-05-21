@@ -64,14 +64,14 @@ _refresh_api_namespace()
 
 def _get_api_names():
     """Gets the set of all the command full names in the API"""
-    from intelanalytics.meta.metaprog2 import get_api_names
+    from intelanalytics.meta.installapi import get_api_names
     import sys
     return get_api_names(sys.modules[__name__])
 
 
 def _walk_api(cls_function, attr_function, include_init=False):
     """Walks the installed API and runs the given functions for class and attributes in the API"""
-    from intelanalytics.meta.metaprog2 import walk_api
+    from intelanalytics.meta.installapi import walk_api
     import sys
     return walk_api(sys.modules[__name__], cls_function, attr_function, include_init=include_init)
 
