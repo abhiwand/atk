@@ -28,6 +28,31 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
+import ssl
+
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+
+requests.packages.urllib3.disable_warnings()
+
+class Tlsv1HttpAdapter(HTTPAdapter):
+    """"Transport adapter" that allows us to use TLSv1."""
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=ssl.PROTOCOL_TLSv1)
+
+# A simple http session wrapper over requests given a scheme (http or https)
+class httpSession(object):
+    def __init__(self, scheme):
+        self.scheme = scheme
+        self.session = requests.Session()
+        self.session.mount('%s://' % self.scheme, Tlsv1HttpAdapter())
+    def __enter__(self):
+        return self.session
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
 
 # Helper methods
 
@@ -56,7 +81,8 @@ def get(server, uri_path, **kwargs):
         if logger.level <= logging.DEBUG:
             details += "\nheaders=%s" % headers
         logger.info("[HTTP Get] %s", details)
-    response = requests.get(uri, headers=headers, timeout=timeout, **kwargs)
+    with httpSession(server.scheme) as session:
+        response = session.get(uri, headers=headers, timeout=timeout, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Get Response] %s\nheaders=%s", response.text, response.headers)
     return response
@@ -66,7 +92,8 @@ def delete(server, uri_path, **kwargs):
     uri = server.create_full_uri(uri_path)
     headers = _get_headers(server, kwargs)
     logger.info("[HTTP Delete] %s", uri)
-    response = requests.delete(uri, headers=headers, **kwargs)
+    with httpSession(server.scheme) as session:
+        response = session.delete(uri, headers=headers, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Delete Response] %s", response.text)
     return response
@@ -81,7 +108,8 @@ def post(server, uri_path, data, **kwargs):
         except:
             pretty_data = data
         logger.info("[HTTP Post] %s\n%s\nheaders=%s", uri, pretty_data, headers)
-    response = requests.post(uri, headers=headers, data=data, **kwargs)
+    with httpSession(server.scheme) as session:
+            response = session.post(uri, headers=headers, data=data, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Post Response] %s", response.text)
     return response
