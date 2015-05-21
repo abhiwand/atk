@@ -21,12 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.sql.parquet.ia.giraph.frame
+package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.giraph.io.{ VertexData4LPWritable }
+import com.intel.giraph.io.VertexData4LPWritable
 import com.intel.ia.giraph.lp.LabelPropagationConfiguration
 import org.apache.giraph.graph.Vertex
-import org.apache.giraph.io.{ VertexWriter, VertexOutputFormat }
+import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce._

@@ -30,8 +30,7 @@ import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, Giraph
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import org.apache.spark.sql.parquet.ia.giraph.frame._
-
+import org.apache.spark.sql.parquet.ia.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
 
 class LabelPropagationPlugin
@@ -80,10 +79,10 @@ class LabelPropagationPlugin
       context,
       "lp-learning-report_0")
 
-    val resultsColumn = Column("lp_results", frame.schema.columnDataType(arguments.srcLabelColName))
+    val resultsColumn = Column(arguments.srcLabelColName, frame.schema.columnDataType(arguments.srcLabelColName))
     frames.postSave(None, outputFrame.toReference, new FrameSchema(List(frame.schema.column(arguments.srcColName), resultsColumn)))
 
-    LabelPropagationResult(result)
+    LabelPropagationResult(frames.expectFrame(outputFrame.toReference), result)
 
   }
 

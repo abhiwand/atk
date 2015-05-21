@@ -263,6 +263,11 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     }
   }
 
+  private def getPluginJarPath(pluginJarsList: List[String], delimiter: String = ","): String = {
+    pluginJarsList.filter(_ != "engine-core")
+      .map(j => SparkContextFactory.jarPath(j)).mkString(delimiter)
+  }
+
   private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Unit = {
     withContext("executeCommandOnYarn") {
 
@@ -272,9 +277,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
       /* Serialize current config for the plugin so as to pass to Spark Submit */
       val (pluginJarsList, pluginExtraClasspath) = sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
-
-      val pluginJarPath = pluginJarsList.filter(_ != "engine-core")
-        .map(j => SparkContextFactory.jarPath(j)).mkString(",")
 
       try {
 
@@ -290,25 +292,46 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
-          val pluginDependencyJars = Array("--jars", s"${SparkContextFactory.jarPath("interfaces")},${SparkContextFactory.jarPath("launcher")},$pluginJarPath")
-          val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile", "--conf", s"config.resource=application.conf")
+
+          val pluginDependencyJars = SparkEngineConfig.sparkAppJarsLocal match {
+            case true => Array[String]() /* Expect jars to installed locally and available */
+            case false => Array("--jars",
+              s"${SparkContextFactory.jarPath("interfaces")}," +
+                s"${SparkContextFactory.jarPath("launcher")}," +
+                s"${getPluginJarPath(pluginJarsList)}")
+          }
+
+          val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile",
+            "--conf", s"config.resource=application.conf")
           val executionParams = Array(
             "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions -Dspark.executor.extraClassPath=${SparkEngineConfig.hiveLib}")
+            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
+
+          val executorClassPathString = "spark.executor.extraClassPath"
+          val executorClassPathTuple = SparkEngineConfig.sparkAppJarsLocal match {
+            case true => (executorClassPathString,
+              s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
+              s"${SparkEngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
+              s"${SparkEngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
+            case false => (executorClassPathString,
+              s"${SparkEngineConfig.hiveLib}:${SparkEngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
+          }
+
+          val driverClassPathString = "spark.driver.extraClassPath"
+          val driverClassPathTuple = (driverClassPathString,
+            s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
+            s"${pluginExtraClasspath.mkString(":")}:${SparkEngineConfig.hiveLib}:${SparkEngineConfig.hiveConf}:" +
+            s"${SparkEngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
 
           val executionConfigs = {
             for {
-              (config, value) <- SparkEngineConfig.sparkConfProperties
+              (config, value) <- SparkEngineConfig.sparkConfProperties + (executorClassPathTuple, driverClassPathTuple)
             } yield List("--conf", s"$config=$value")
           }.flatMap(identity).toArray
 
-          // TODO: Once we get rid of setting SPARK_CLASSPATH in cdh, we should be setting only the driver-class-path
-          val driver_classpath = SparkEngineConfig.sparkMaster match {
-            case "yarn-cluster" | "yarn-client" => Array(s"--driver-class-path", s"${pluginExtraClasspath.mkString(":")}:${SparkEngineConfig.hiveLib}:${SparkEngineConfig.hiveConf}")
-            case _ => Array[String]()
-          }
           val verbose = Array("--verbose")
-          /* Using engine.jar here causes issue due to duplicate copying of the resource. So we hack to submit the job as if we are spark-submit shell script */
+          /* Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
+          So we hack to submit the job as if we are spark-submit shell script */
           val sparkInternalDriverClass = Array("spark-internal")
           val pluginArguments = Array(s"${command.id}")
 
@@ -320,7 +343,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
             pluginDependencyFiles ++
             executionParams ++
             executionConfigs ++
-            driver_classpath ++
             verbose ++
             sparkInternalDriverClass ++
             pluginArguments
