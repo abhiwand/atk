@@ -190,7 +190,6 @@ function main() {
     ScriptPath=$(dirname "$(readlink -f "$0")")
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
-    export INTELANALYTICS_AUTOCONNECT=1
     export PYTHON_DIR=/usr/lib/python2.7/dist-packages 
     export PYTHONPATH=$(pwd)/../python-client:$PYTHONPATH:$PYTHON_DIR
 
@@ -199,8 +198,8 @@ function main() {
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../python/intelanalytics/core/*.pyc ]]; then
-        rm ../python/intelanalytics/core/*.pyc
+    if [[ -f ../python-client/intelanalytics/core/*.pyc ]]; then
+        rm ../python-client/intelanalytics/core/*.pyc
     fi
 
     # debug: Check on quiet mode
@@ -324,7 +323,6 @@ function main() {
     # debug: Test the examples
     echo $ModifiedArguments | grep -i -e "/test/" > /dev/null
     if [ $? == 0 ]; then
-        export PYTHONPATH="$PYTHONPATH;../python"
         for File in $(ls -1a source/*.rst)
         do
             echo $File
@@ -448,6 +446,11 @@ function pdf_build() {
 ############################################################################################################
 function server_running() {
     ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep" > /dev/null
+    Return=$?
+    if [ "$Return" != "0" ]; then
+        return $Return
+    fi
+    curl -s localhost:9099 > /dev/null
     return $?
 }
 
@@ -488,7 +491,7 @@ function server_start() {
         else
             let "Duration = 10"
             until [[ $Duration -lt 0 ]]; do
-                curl -s localhost:9099 > /dev/null
+                server_running
                 if [ "$?" != "0" ]; then
                     sleep 1
                     echo -n "."
@@ -498,7 +501,7 @@ function server_start() {
                 fi
             done
             echo
-            pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
+            server_running
             if [ "$?" != "0" ]; then
                 Err "$RunCommand" $1 $2 $3 $4
                 Return=$?
@@ -519,30 +522,35 @@ function server_stop() {
 
     # debug: Stop the server
     server_running
-    LoopCounter=$?
-    while [ "$LoopCounter" == "0" ]; do
-        pid=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
+    Looping=$?
+    while [ "$Looping" == "0" ]; do
+        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
-            pid=$(echo $pid | head -n 1 |  awk '{print $2}')
-            echo -n "Stop server $pid"
-            kill $pid
+            Process_ID=$(echo $Servers | head -n 1 |  awk '{print $2}')
+            echo -n "Stop server $Process_ID"
+            kill $Process_ID
             if [ $? != 0 ]; then
                 echo
-                Err "Stop server $pid" $1 $2 $3 $4
+                Err "Stop server $Process_ID" $1 $2 $3 $4
                 Return=$?
                 if [[ "$Return" != "0" ]]; then
                     return $Return
                 fi
             fi
-            let "Duration = 2"
+            let "Duration = 10"
             until [[ $Duration -le 0 ]]; do
-                sleep 1
-                echo -n "."
-                let "Duration -= 1"
+                ps $Process_ID > /dev/null
+                if [ "$?" == 0 ]; then
+                    sleep 1
+                    echo -n "."
+                    let "Duration -= 1"
+                else
+                    let "Duration = -1"
+                fi
             done
             echo
             server_running
-            LoopCounter=$?
+            Looping=$?
         else
             return 0;
         fi
