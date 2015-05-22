@@ -163,6 +163,7 @@ def _get_returns_rest_rst(return_info):
 def get_command_rest_rst_file_name(command_def):
     return command_def.full_name.replace(':', '-').replace('/', '__') + ".rst"
 
+ABOUT_COMMAND_NAMES = "about_command_names"  # for about_command_names.rst
 
 def get_commands_rest_index_content(command_defs):
     return """
@@ -175,13 +176,28 @@ def get_commands_rest_index_content(command_defs):
     Issue Command <issue_command.rst>
     Get Command <get_command.rst>
 
+.. toctree::
+    :hidden:
+
+{manual_hidden_toctree}
+{auto_hidden_toctree}
+
 ------
 
 Command List
 ------------
 
 
-""" + _get_commands_rest_summary_table(command_defs)
+""".format(manual_hidden_toctree=_get_manual_hidden_toctree(),
+           auto_hidden_toctree=_get_auto_hidden_toctree(command_defs)) + _get_commands_rest_summary_table(command_defs)
+
+
+def _get_auto_hidden_toctree(command_defs):
+    return indent("\n".join(sorted([get_command_rest_rst_file_name(c)[:-4] for c in command_defs])))
+
+
+def _get_manual_hidden_toctree():
+    return indent("\n".join([ABOUT_COMMAND_NAMES]))
 
 
 def _get_commands_rest_summary_table(command_defs):
@@ -206,7 +222,7 @@ def _get_commands_rest_summary_table(command_defs):
     summary_len = summary_max_len + 2
 
     table_line = ("=" * name_len) + "  " + ("=" * summary_len)
-    header_command_name = "Command Name  (explained :doc:`here <about_command_names>`)"  # for about_command_names.rst
+    header_command_name = "Command Name  (explained :doc:`here <%s>`)" % ABOUT_COMMAND_NAMES
     table_header = "\n".join([table_line, "%s%s  Description" % (header_command_name, " " * (name_len - len(header_command_name))), table_line])
 
     lines = sorted(["%s%s  %s" % (t[0], " " * (name_len - len(t[0])), t[1]) for t in line_tuples])

@@ -220,20 +220,29 @@ def write_py_rst_collections_file(root_path, collection_name, subfolders, files)
     title_emphasis = "=" * len(title)
     # Frame <frame-/index.rst>
     toctree = indent("\n".join(["%s <%s/index.rst>" % (entity_type_to_class_name(subfolder.replace('-',':')), subfolder) for subfolder in subfolders]))
-    globs = "\n\n".join([":doc:`%s<%s>`" % (f[:-4], f[:-4]) for f in files if f[-4:] == ".rst" and f != "index.rst"])
-    content =  """
+    names =[f[:-4] for f in files if f[-4:] == ".rst" and f != "index.rst"]
+    globs = "\n\n".join([":doc:`%s<%s>`" % (name, name) for name in names])
+    hidden_toctree = indent("\n".join(names))
+    content = """
 {title}
 {title_emphasis}
 
+**Classes**
+
 .. toctree::
 {toctree}
+
+.. toctree::
+    :hidden:
+
+{hidden_toctree}
 
 -------
 
 **Global Methods**
 
 {globs}
-""".format(title=title, title_emphasis=title_emphasis, toctree=toctree, globs=globs)
+""".format(title=title, title_emphasis=title_emphasis, toctree=toctree, hidden_toctree=hidden_toctree, globs=globs)
     file_path = os.path.join(root_path, "index.rst")
     write_text_to_file(file_path, content)
 

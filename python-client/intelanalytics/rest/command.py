@@ -20,15 +20,12 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
 """
 Command objects.
 """
-import datetime
 import time
 import json
 import logging
-import sys
 import re
 
 from requests import HTTPError
@@ -37,23 +34,16 @@ logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
 from intelanalytics.rest.iaserver import server
+from intelanalytics.rest.progress import ProgressPrinter
 from collections import namedtuple
-
-def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):
-    """
-    Execute garbage collection out of cycle age ranges specified using the typesafe config duration format.
-    :param age_to_delete_data: Minimum age for data deletion. Defaults to server config.
-    :param age_to_delete_meta_data: Minimum age for meta data deletion. Defaults to server config.
-    """
-    execute_command("_admin:/_explicit_garbage_collection", None,
-                    age_to_delete_data=age_to_delete_data,
-                    age_to_delete_meta_data=age_to_delete_meta_data)
 
 
 def execute_command(command_name, selfish, **arguments):
     """Executes command and returns the output."""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
+
+    # post-process the results
     from intelanalytics.meta.results import get_postprocessor
     is_frame = command_info.result.has_key('schema')
     parent = None
@@ -80,120 +70,9 @@ def execute_command(command_name, selfish, **arguments):
     return result
 
 
-class OperationCancelException(Exception):
-    pass
-
-
-class ProgressPrinter(object):
-
-    def __init__(self):
-        self.job_count = 0
-        self.last_progress = []
-        self.job_start_times = []
-        self.initializing = True
-
-    def print_progress(self, progress, finished):
-        """
-        Print progress information on progress bar.
-
-        Parameters
-        ----------
-        progress : list of dictionary
-            The progresses of the jobs initiated by the command
-
-        finished : bool
-            Indicate whether the command is finished
-        """
-        if progress == False:
-            return
-
-        total_job_count = len(progress)
-        new_added_job_count = total_job_count - self.job_count
-
-        # if it was printing initializing, overwrite initializing in the same line
-        # therefore it requires 1 less new line
-        number_of_new_lines = new_added_job_count if not self.initializing else new_added_job_count - 1
-
-        if total_job_count > 0:
-            self.initializing = False
-
-        for i in range(0, new_added_job_count):
-            self.job_start_times.append(time.time())
-
-        self.job_count = total_job_count
-        self.print_progress_as_text(progress, number_of_new_lines, self.job_start_times, finished)
-
-    def print_progress_as_text(self, progress, number_of_new_lines, start_times, finished):
-        """
-        Print progress information on command line progress bar
-
-        Parameters
-        ----------
-        progress : List of dictionary
-            The progresses of the jobs initiated by the command
-        number_of_new_lines: int
-            number of new lines to print in the command line
-        start_times: List of time
-            list of observed starting time for the jobs initiated by the command
-        finished : boolean
-            Indicate whether the command is finished
-        """
-        if not progress:
-            initializing_text = "\rinitializing..."
-            sys.stdout.write(initializing_text)
-            sys.stdout.flush()
-            return len(initializing_text)
-
-        progress_summary = []
-
-        for index in range(0, len(progress)):
-            p = progress[index]['progress']
-            # Check if the Progress has tasks_info field
-            message = ''
-            if 'tasks_info' in progress[index].keys():
-                retried_tasks = progress[index]['tasks_info']['retries']
-                message = "Tasks retries:%s" %(retried_tasks)
-
-            total_bar_length = 25
-            factor = 100 / total_bar_length
-
-            num_star = int(p / factor)
-            num_dot = total_bar_length - num_star
-            number = "%3.2f" % p
-
-            time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
-            progress_summary.append("\r[%s%s] %6s%% %s Time %s" % ('=' * num_star, '.' * num_dot, number, message, time_string))
-
-        for i in range(0, number_of_new_lines):
-            # calculate the index for fetch from the list from the end
-            # if number_of_new_lines is 3, will need to take progress_summary[-4], progress_summary[-3], progress_summary[-2]
-            # index will be calculated as -4, -3 and -2 respectively
-            index = -1 - number_of_new_lines + i
-            previous_step_progress = progress_summary[index]
-            previous_step_progress = previous_step_progress + "\n"
-            sys.stdout.write(previous_step_progress)
-
-        current_step_progress = progress_summary[-1]
-
-        if finished:
-            current_step_progress = current_step_progress + "\n"
-
-        sys.stdout.write(current_step_progress)
-        sys.stdout.flush()
 
 class CommandRequest(object):
-    @staticmethod
-    def validate_arguments(parameter_types, arguments):
-        validated = {}
-        for (k, v) in arguments.items():
-            if k not in parameter_types:
-                raise ValueError("No parameter named '%s'" % k)
-            validated[k] = v
-            schema = parameter_types[k]
-            if schema.get('type') == 'array':
-                if isinstance(v, basestring) or not hasattr(v, '__iter__'):
-                    validated[k] = [v]
-        return validated
+    """Represents a command request --the command name and its arguments"""
 
     def __init__(self, name, arguments):
         self.name = name
@@ -207,6 +86,8 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
+    """Abstracts the JSON representation of the command from the server"""
+
     __commands_regex = re.compile("""^http.+/(queries|commands)/\d+""")
 
     @staticmethod
@@ -356,6 +237,9 @@ class Polling(object):
         return command_info.complete
 
 
+class OperationCancelException(Exception):
+    pass
+
 class CommandServerError(Exception):
     """
     Error for errors reported by the server when issuing a command
@@ -378,9 +262,6 @@ class Executor(object):
     """
     Executes commands
     """
-
-    __commands = []
-
 
     def get_query_response(self, id, partition):
         """
@@ -409,8 +290,9 @@ class Executor(object):
     def poll_command_info(self, response):
         """
         poll command_info until the command is completed and return results
+
         :param response: response from original command
-        :return: :raise CommandServerError:
+        :rtype: CommandInfo
         """
         command_info = CommandInfo(response.json())
         # For now, we just poll until the command completes
@@ -474,7 +356,6 @@ class Executor(object):
                     printer.print_progress(progress, finished)
         return QueryResult(data, schema)
 
-
     def cancel(self, command_id):
         """
         Tries to cancel the given command
@@ -485,33 +366,14 @@ class Executor(object):
         command_request = CommandRequest("", arguments)
         server.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
-    def fetch(self):
+    def execute(self, command_name, selfish, arguments):
         """
-        Obtains a list of all the available commands from the server
-        :return: the commands available
+        Executes command and returns the output.
+        :param command_name: command full name
+        :param selfish: the entity instance for the command
+        :param arguments: dict (json-friendly) of the arguments
         """
-        logger.info("Requesting available commands")
-        response = server.get("commands/definitions")
-        commands = response.json()
-        return commands
-
-    @property
-    def commands(self):
-        """
-        The available commands
-        """
-        if not self.__commands:
-            self.__commands = self.fetch()
-        return self.__commands
-
-    def get_command_output(self, command_type, command_name, arguments):
-        """Executes command and returns the output."""
-        command_request = CommandRequest( "%s/%s" % (command_type, command_name), arguments)
-        command_info = executor.issue(command_request)
-        if command_info.result.has_key('value') and len(command_info.result) == 1:
-            return command_info.result.get('value')
-        return command_info.result
-
+        return execute_command(command_name, selfish, **arguments)
 
 
 executor = Executor()

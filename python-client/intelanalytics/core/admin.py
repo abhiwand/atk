@@ -20,53 +20,20 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
 """
-Serialization
+Admin commands, not part of public API
 """
 
-# WIP!
-
-import json
-
-class JsonEnc(json.JSONEncoder):
-    _type_table = {}
-
-    def default(self, o):
-        try:
-            json_obj = o._as_json_obj()
-        except AttributeError:
-            json_obj = o
-        return json_obj
+from intelanalytics.rest.command import execute_command
 
 
-def to_json(o, encoder=JsonEnc):
-    try:
-        return json.dumps(o, cls=encoder)
-    except Exception as e:
-        return e.message
-
-# Need a subsystem to deserialize from the REST JSON
-# def from_json_str(s, encoder=JsonEnc):
-#     json_obj = json.loads(s)
-#     if isinstance(json_obj, list) and len(json_obj) and isinstance(json_obj[0], basestring):
-#         try:
-#             cls = dynamic_import(json_obj[0])
-#             return cls.from_json()
-#         except:
-#             pass
-#     return json_obj
-
-
-def dynamic_import(attr_path):
+def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):
     """
-    Dynamically imports and returns an attribute according to the given path.
+    Execute garbage collection out of cycle age ranges specified using the typesafe config duration format.
+    :param age_to_delete_data: Minimum age for data deletion. Defaults to server config.
+    :param age_to_delete_meta_data: Minimum age for meta data deletion. Defaults to server config.
     """
-    module_path, attr_name = attr_path.rsplit(".", 1)
-    module = __import__(module_path, fromlist=[attr_name])
-    attr = getattr(module, attr_name)
-    return attr
+    execute_command("_admin:/_explicit_garbage_collection", None,
+                    age_to_delete_data=age_to_delete_data,
+                    age_to_delete_meta_data=age_to_delete_meta_data)
 
-
-def get_class_full_name(o):
-    return o.__class__.__module__ + '.' + o.__class__.__name__

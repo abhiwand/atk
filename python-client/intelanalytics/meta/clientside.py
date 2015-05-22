@@ -55,7 +55,7 @@ class ReturnDoc(object):
 class ClientCommandDefinition(CommandDefinition):
     """CommandDefinition for functions marked as @api in the core python code"""
 
-    def __init__(self, class_name, member, is_property):
+    def __init__(self, class_name, member, is_property, override_name=None):
         # Note: this code runs during package init (before connect)
 
         self.client_member = member
@@ -65,7 +65,7 @@ class ClientCommandDefinition(CommandDefinition):
         function.command = self  # make command def accessible from function, just like functions gen'd from server info
 
         json_schema = {}  # make empty, since this command didn't come from json, and there is no need to generate it
-        full_name = self._generate_full_name(class_name, function.__name__)
+        full_name = self._generate_full_name(class_name, override_name or function.__name__)
 
         params = []
         return_info = None
