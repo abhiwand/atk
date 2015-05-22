@@ -21,8 +21,29 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Utility functions for names, entity_types, etc.
+Text utility functions for names, entity_types, etc. and the indent method
 """
+
+def indent(text, spaces=4):
+    indentation = ' ' * spaces
+    return "\n".join([indentation + line if line else line for line in text.split('\n')])
+
+
+def default_value_to_str(value):
+    """renders value to be printed in a function signature"""
+    return value if value is None or type(value) not in [str, unicode] else "'%s'" % value
+
+
+ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME = "new"
+
+
+def get_entity_constructor_command_full_name(install_path):
+    return "%s/%s" % (install_path, ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME)
+
+
+def is_entity_constructor_command_name(name):
+    return name == ENTITY_CONSTRUCTOR_COMMAND_RESERVED_NAME
+
 
 def is_name_private(name):
     return name.startswith('_') and name != "__init__"
@@ -75,7 +96,7 @@ def entity_type_to_baseclass_name(entity_type):
     parts = entity_type.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
-        from intelanalytics.meta.metaprog2 import CommandInstallable  # todo: refactor, remove circ dep
+        from intelanalytics.meta.metaprog import CommandInstallable  # todo: refactor, remove circ dep
         return CommandInstallable.__name__
     return "_Base" + term
 
@@ -92,11 +113,6 @@ def entity_type_to_entity_basetype(entity_type):
 
 def entity_type_to_collection_name(entity_type):
     return entity_type_to_entity_basetype(entity_type) + "s"
-
-
-def indent(text, spaces=4):
-    indentation = ' ' * spaces
-    return "\n".join([indentation + line if line else line for line in text.split('\n')])
 
 
 def get_type_name(data_type):

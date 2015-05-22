@@ -30,15 +30,15 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
-
+from intelanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from intelanalytics.meta.docstub import doc_stubs_import
 from intelanalytics.meta.namedobj import name_support
 import uuid
 
 from intelanalytics.meta.serialize import to_json
 from intelanalytics.core.column import Column
 
-from intelanalytics.core.deprecate import raise_deprecation_warning
+from intelanalytics.meta.clientside import raise_deprecation_warning
 
 titan_rule_deprecation = """
 EdgeRule and VertexRule graph construction objects are deprecated.
@@ -473,17 +473,15 @@ class Graph(_DocStubsGraph, _BaseGraph):
         .. code::
 
             >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
-            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id', ['movie_title])
+            >>> my_graph.vertices['movies'].add_vertices(my_frame, 'movie_id', ['movie_title'])
             >>> my_graph.edges['ratings'].add_edges(my_frame, 'user_id', 'movie_id', ['rating']
 
     .. only:: html
 
         .. code::
 
-            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id',
-            ... ['user_name'])
-            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id',
-            ... ['movie_title])
+            >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id', ['user_name'])
+            >>> my_graph.vertices['movies'].add_vertices(my_frame, 'movie_id', ['movie_title'])
             >>> my_graph.edges['ratings'].add_edges(my_frame, 'user_id',
             ... 'movie_id', ['rating'])
 
@@ -519,7 +517,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
         >>> movie_schema = [('movie_id', int32), ('movie_title', str), ('year', str)]))
         >>> movie_frame = ia.Frame(ia.CsvFile("/movie.csv", movie_schema)
 
-        >>> ratings_schema = [(ser_id', int32), ('movie_id', int32), ('rating', str)]))
+        >>> ratings_schema = [('ser_id', int32), ('movie_id', int32), ('rating', str)]))
         >>> ratings_frame = ia.Frame(ia.CsvFile("/ratings.csv", ratings_schema)
 
     Create a graph:
@@ -543,7 +541,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
         .. code::
 
             >>> my_graph.vertices['users'].add_vertices(user_frame, 'user_id', ['user_name', 'age'])
-            >>> my_graph.vertices['movies].add_vertices(movie_frame, 'movie_id') # all columns automatically added as properties
+            >>> my_graph.vertices['movies'].add_vertices(movie_frame, 'movie_id') # all columns automatically added as properties
             >>> my_graph.edges['ratings'].add_edges(ratings_frame, 'user_id', 'movie_id', ['rating'])
 
     .. only:: latex
@@ -552,7 +550,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
 
             >>> my_graph.vertices['users'].add_vertices(user_frame, 'user_id',
             ... ['user_name', 'age'])
-            >>> my_graph.vertices['movies].add_vertices(movie_frame, 'movie_id')
+            >>> my_graph.vertices['movies'].add_vertices(movie_frame, 'movie_id')
             ... # all columns automatically added as properties
             >>> my_graph.edges['ratings'].add_edges(ratings_frame, 'user_id',
             ... 'movie_id', ['rating'])
