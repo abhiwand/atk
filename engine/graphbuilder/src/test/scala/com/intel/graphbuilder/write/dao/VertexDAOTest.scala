@@ -34,6 +34,11 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
   before {
     setupTitan()
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("gbId").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+    graphManager.commit()
     vertexDAO = new VertexDAO(titanGraph)
   }
 

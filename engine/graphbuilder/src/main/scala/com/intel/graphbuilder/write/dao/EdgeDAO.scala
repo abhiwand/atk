@@ -23,9 +23,13 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property }
+import java.util
+
+import com.intel.graphbuilder.elements.{GBEdge, Property}
 import com.tinkerpop.blueprints
-import com.tinkerpop.blueprints.{ Direction, Graph }
+import com.tinkerpop.blueprints.{Direction, Graph}
+
+import scala.util.Try
 
 /**
  * Data access for Edges using Blueprints API
@@ -75,8 +79,14 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @return the Blueprints Edge
    */
   def find(tailVertex: blueprints.Vertex, headVertex: blueprints.Vertex, label: String): Option[blueprints.Edge] = {
+    val edgeIterator = Try(
+      tailVertex.query().direction(Direction.OUT).labels(label).edges.iterator()
+    ).getOrElse(
+        //Return empty iterator if label not defined in schema
+        new util.ArrayList[com.tinkerpop.blueprints.Edge]().iterator()
+      )
+
     // iterating over all of the edges seems dumb but I wasn't able to find a better way on Titan forums
-    val edgeIterator = tailVertex.query().direction(Direction.OUT).labels(label).edges.iterator()
     while (edgeIterator.hasNext) {
       val blueprintsEdge = edgeIterator.next()
       if (blueprintsEdge.getVertex(Direction.IN) == headVertex) {
