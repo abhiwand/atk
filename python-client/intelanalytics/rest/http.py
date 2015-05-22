@@ -26,13 +26,14 @@ HTTP methods
 import json
 import requests
 import logging
-import urllib3
 logger = logging.getLogger(__name__)
 
 import ssl
 
 from requests.adapters import HTTPAdapter
-from urllib3.poolmanager import PoolManager
+from requests.packages.urllib3.poolmanager import PoolManager
+
+requests.packages.urllib3.disable_warnings()
 
 class Tlsv1HttpAdapter(HTTPAdapter):
     """"Transport adapter" that allows us to use TLSv1."""
