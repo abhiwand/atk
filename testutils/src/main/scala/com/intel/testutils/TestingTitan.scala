@@ -54,6 +54,7 @@ trait TestingTitan {
 
     titanBaseConfig = new BaseConfiguration()
     titanBaseConfig.setProperty("storage.backend", "berkeleyje")
+    titanBaseConfig.setProperty("storage.batch-loading", "true")
     titanBaseConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
     //Trying to fix OutOfMemory errors during builds
