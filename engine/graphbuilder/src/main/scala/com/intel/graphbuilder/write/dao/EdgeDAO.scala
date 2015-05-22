@@ -25,9 +25,9 @@ package com.intel.graphbuilder.write.dao
 
 import java.util
 
-import com.intel.graphbuilder.elements.{GBEdge, Property}
+import com.intel.graphbuilder.elements.{ GBEdge, Property }
 import com.tinkerpop.blueprints
-import com.tinkerpop.blueprints.{Direction, Graph}
+import com.tinkerpop.blueprints.{ Direction, Graph }
 
 import scala.util.Try
 

@@ -40,6 +40,14 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
 
   before {
     setupTitan()
+
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("age").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("weight").dataType(classOf[Integer]).make()
+    graphManager.makeEdgeLabel("test").make()
+    graphManager.commit()
   }
 
   after {
@@ -61,7 +69,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
     val vertex1 = titanIdGraph.addVertex(1)
     val vertex2 = titanIdGraph.addVertex(2)
     val edge = titanIdGraph.addEdge(3, vertex1, vertex2, "test")
-    edge.setProperty("weight", 0.5f)
+    edge.setProperty("weight", 5)
 
     val json = edge.asInstanceOf[Element].toJson
 
