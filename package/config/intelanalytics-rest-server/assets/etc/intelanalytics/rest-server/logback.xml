@@ -15,7 +15,7 @@
 
     <logger name="play" level="INFO" />
     <logger name="application" level="INFO" />
-
+    <logger name="scala.slick" level="INFO" />
     <!--
         log levels
         TRACE
