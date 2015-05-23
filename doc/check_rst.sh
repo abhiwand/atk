@@ -51,7 +51,7 @@ fi
 
 if [ "$CONTINUE" == "True" ]
 then
-    for FILE in $(find /home/work/source_code/doc-api-examples/src/main/resources/python -name "*.rst")
+    for FILE in $(find /home/work/atk/doc-api-examples/src/main/resources/python -name "*.rst")
     do
         if [ "$START_AT" == "" -o "$START_AT" == "$FILE" ]
         then
