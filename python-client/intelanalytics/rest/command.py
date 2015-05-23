@@ -27,6 +27,7 @@ import time
 import json
 import logging
 import re
+import sys  # for unit tests
 
 from requests import HTTPError
 
