@@ -19,18 +19,12 @@ function build_docstubs() {
     if [ "$Return" != "0" ]; then return $Return; fi
     if [[ -f build_docs.py ]]; then
         do_this "python2.7 build_docs.py" $1 $2 $3 $4
-        return $?
+        Return=$?
     else
-        echo "The python script build_docs.py seems to be missing."
-        read -p "Abort? [Y/n] "
-        if [ -z $UserResponse ];then
-            UserResponse='y'
-        fi
-        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
-            return 1
-        fi
+        Err "The python script build_docs.py seems to be missing." $1 $2 $3 $4
+        Return=$?
     fi
-    return 0
+    return $Return
 }
 
 ###########################################################################################################
@@ -143,26 +137,48 @@ function Err() {
         echo "Failure: $1"
     fi
     if [ "$2" == "Yes" ]; then
-        read -p "View .log file? [Y/n] " UserResponse
-        if [ -z $UserResponse ];then
-            UserResponse='y'
-        fi
-        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+        get_response "View .log file?" Y
+        if [ "$?" == "0" ]; then
             less $LogFile
         fi
-        read -p "Abort? [Y/n] " UserResponse
-        if [ -z $UserResponse ];then
-            UserResponse='y'
-        fi
-        if [ ${UserResponse:0:1} == 'Y' -o ${UserResponse:0:1} == 'y' ]; then
+        get_response "Abort?" Y
+        if [ "$?" == "0" ]; then
             return 1
         fi
     else
         return 1
     fi
-    return 0
-}
+############################################################################################################
+function get_response() {
 
+    # debug: get_response\($@\)
+    Prioritize=${2:-Y}
+    Prioritize=${Prioritize:0:1}
+    Prioritize=${Prioritize^^}
+    if [ "$Prioritize" == "Y" ]; then
+        Adder="[Y|n]"
+    else
+        Adder="[y|N]"
+    fi
+    UserResponse=$Prioritize
+    Looping=True
+    while [ "$Looping" == "True" ]; do
+        read -p "$1 $Adder " UserResponse
+        UserResponse=${UserResponse:-$Prioritize}
+        UserResponse=${UserResponse:0:1}
+        UserResponse=${UserResponse^^}
+        if [ ! $(echo "YN"|grep -i ${UserResponse:0:1} ) ]; then
+            echo "Please respond with (Y)es or (N)o."
+        else
+            Looping=False
+        fi
+    done
+    if [ "$UserResponse" == "$Prioritize" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
 ############################################################################################################
 function log_step() {
     # $1 = step description, usually the full command
@@ -198,9 +214,9 @@ function main() {
     echo "doc run", $(date +%Y%m%d.%H%M), $ModifiedArguments > $LogFile
 
     # debug: Sometimes numpy chokes on these files.
-    if [[ -f ../python-client/intelanalytics/core/*.pyc ]]; then
-        rm ../python-client/intelanalytics/core/*.pyc
-    fi
+    for PYC_file in $(find ../ -name "*.pyc"); do
+        rm PYC_file
+    done
 
     # debug: Check on quiet mode
     echo $ModifiedArguments | grep -i -e "/-q/" -e "/-qq/" > /dev/null
