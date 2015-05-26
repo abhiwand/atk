@@ -52,8 +52,6 @@ def get_command_def_rst(command_def):
 
 {one_line}
 
-
-{extended}
 """.format(directive=directive, name=display_name, args_text=args_text, one_line=indent(one_line), extended=indent(extended))
 
 
@@ -61,6 +59,8 @@ def get_command_def_rst(command_def):
         rst += indent(_get_parameters_rst(command_def))
     if command_def.return_info:
         rst += indent(_get_returns_rst(command_def.return_info))
+
+    rst += indent(extended)
     return rst
 
 
@@ -128,14 +128,21 @@ def get_class_rst(cls):
     Only lists members in summary tables with hyperlinks to other rst docs, with the exception of __init__
     which is described in class rst text, below the summary tables.
     """
+    sorted_members = get_member_rst_list(cls)  # sort defs for both summary table and attribute tables
+    toctree = indent("\n".join([m.rst_name for m in sorted_members]))
 
     starter = """
+
+.. toctree::
+    :hidden:
+
+{toctree}
+
 .. class:: {name}
 
-{rst_doc}""".format(name=get_type_name(cls), rst_doc=indent(cls.__doc__))
+{rst_doc}""".format(toctree=toctree, name=get_type_name(cls), rst_doc=cls.__doc__)
 
     lines = [starter]
-    sorted_members = get_member_rst_list(cls)  # sort defs for both summary table and attribute tables
     lines.append(indent(get_attribute_summary_table(sorted_members), 4))
     lines.append(indent(get_method_summary_table(sorted_members), 4))
 
@@ -175,28 +182,29 @@ class RstInfo(object):
     """Represents a member to be rendered with .rst"""
     def __init__(self, cls, member, display_name, is_inherited):
         self.display_name = display_name
+        self.is_inherited = is_inherited
+        self.in_method_table = hasattr(member,  '__call__') and not self.is_private
+        self.args_text = '' if not self.in_method_table else "(%s)" % get_args_text_from_function(member)
+        if isinstance(member, property):
+            member = member.fget
+        command_def = getattr(member, "command") if hasattr(member, "command") else None
+
         if self.display_name[-8:] == "__init__":
             if len(self.display_name) > 8:  # mask (make private) the __init__ methods for properties (intermediates)
                 self.display_name = "__private__init__"
             self.summary_rst_name = ":ref:`__init__ <%s>`\ " % get_cls_init_rst_label(cls)
+            self.rst_name = command_def.name if command_def else ""
         else:
             self.summary_rst_name = ":doc:`%s <%s>`\ " % (self.display_name, self.display_name.replace('.', '/'))
+            self.rst_name = self.display_name.replace('.', '/')
 
         intermediate_class = get_intermediate_class(display_name, cls)
         if intermediate_class:
             self.display_name = "__private_" + self.display_name
 
-        self.is_inherited = is_inherited
-        self.in_method_table = hasattr(member,  '__call__') and not self.is_private
-        self.args_text = '' if not self.in_method_table else "(%s)" % get_args_text_from_function(member)
-
-        if isinstance(member, property):
-            member = member.fget
-        command_def = getattr(member, "command") if hasattr(member, "command") else None
         if command_def:
             command_def.rst_info = self
             self.maturity = command_def.maturity
-            #self.name = command_def.name
         else:
             self.maturity = None
             #self.name = self.display_name

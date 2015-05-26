@@ -77,10 +77,11 @@ ia.connect()
 from intelanalytics.meta.metaprog import get_installation, has_entity_collection, get_entity_collection, get_function_text
 from intelanalytics.meta.docstub import get_doc_stub_modules_text, get_doc_stub_init_text
 from intelanalytics.meta.names import upper_first, entity_type_to_class_name, indent, get_type_name
+from intelanalytics.meta.installapi import download_server_commands
 from intelanalytics.doc.pyrst import  get_command_def_rst, get_class_rst
-from intelanalytics.doc.restrst import get_command_def_rest_rst, get_rest_summary_table
+from intelanalytics.doc.restrst import get_command_def_rest_rst, get_commands_rest_index_content, get_command_rest_rst_file_name
 
-COLLECTION_MARKER_FILE_NAME = ".collection"  # an empty file with this name is created in a folder to mark it as  a collection
+COLLECTION_MARKER_FILE_NAME = ".collection"  # name of an empty file we create in a folder to mark it as a collection
 
 
 def delete_folder(path):
@@ -147,7 +148,6 @@ def get_entity_collection_name_and_install_path(obj, attr):
 
 def get_rst_folder_path(rst_root_path, obj, attr=None):
     entity_collection_name, install_path = get_entity_collection_name_and_install_path(obj, attr)
-
     collection_path = os.path.join(rst_root_path, entity_collection_name)
     if not os.path.exists(collection_path):
         raise RuntimeError("Documentation collections folder %s does not exist" % collection_path)
@@ -162,7 +162,6 @@ def get_rst_folder_path(rst_root_path, obj, attr=None):
 
 #############################################################################
 # python rst
-
 
 def get_index_ref(cls):
     installation = get_installation(cls, None)
@@ -214,24 +213,6 @@ def write_py_rst_cls_file(root_path, cls):
     write_text_to_file(file_path, [header, content])
 
 
-def write_rest_rst_attr_file(root_path, cls, attr):
-    command_def = attr.command
-    content = get_command_def_rest_rst(cls.__name__, command_def)
-    folder = get_rst_folder_path(root_path, cls, attr)
-    file_path = os.path.join(folder, command_def.name + ".rst")
-    write_text_to_file(file_path, content)
-
-
-def write_rest_rst_cls_file(root_path, cls):
-    installation = get_installation(cls)
-    entity_collection_name = installation.install_path.entity_collection_name
-    header = get_rst_cls_file_header(entity_collection_name, class_name=get_type_name(cls))
-    content = get_rest_summary_table(cls)
-    folder = get_rst_folder_path(root_path, cls)
-    file_path = os.path.join(folder, "index.rst")
-    write_text_to_file(file_path, [header, content])
-
-
 def write_py_rst_collections_file(root_path, collection_name, subfolders, files):
     # go through subfolders and find the index.rst and add to toc jazz
     # go through files and list global methods  (leave making nice "summary table" as another exercise)
@@ -239,37 +220,29 @@ def write_py_rst_collections_file(root_path, collection_name, subfolders, files)
     title_emphasis = "=" * len(title)
     # Frame <frame-/index.rst>
     toctree = indent("\n".join(["%s <%s/index.rst>" % (entity_type_to_class_name(subfolder.replace('-',':')), subfolder) for subfolder in subfolders]))
-    globs = "\n\n".join([":doc:`%s<%s>`" % (f[:-4], f[:-4]) for f in files if f[-4:] == ".rst" and f != "index.rst"])
-    content =  """
+    names =[f[:-4] for f in files if f[-4:] == ".rst" and f != "index.rst"]
+    globs = "\n\n".join([":doc:`%s<%s>`" % (name, name) for name in names])
+    hidden_toctree = indent("\n".join(names))
+    content = """
 {title}
 {title_emphasis}
 
+**Classes**
+
 .. toctree::
 {toctree}
+
+.. toctree::
+    :hidden:
+
+{hidden_toctree}
 
 -------
 
 **Global Methods**
 
 {globs}
-""".format(title=title, title_emphasis=title_emphasis, toctree=toctree, globs=globs)
-    file_path = os.path.join(root_path, "index.rst")
-    write_text_to_file(file_path, content)
-
-
-def write_rest_rst_collections_file(root_path, collection_name, subfolders, files):
-    # go through subfolders and add to toc jazz for the classes in the collections.  For REST API, we could flatten this
-    title = ":doc:`Commands <../index>`  %s" % upper_first(collection_name)
-    title_emphasis = "=" * len(title)
-    toctree = indent("\n".join(["%s <%s/index.rst>" % (entity_type_to_class_name(subfolder.replace('-',':')), subfolder) for subfolder in subfolders]))
-    content =  """
-{title}
-{title_emphasis}
-
-.. toctree::
-{toctree}
-
-""".format(title=title, title_emphasis=title_emphasis, toctree=toctree)
+""".format(title=title, title_emphasis=title_emphasis, toctree=toctree, hidden_toctree=hidden_toctree, globs=globs)
     file_path = os.path.join(root_path, "index.rst")
     write_text_to_file(file_path, content)
 
@@ -278,12 +251,6 @@ def walk_py_rst_collection_folders(root_path):
     for folder, subfolders, files in os.walk(root_path):
         if COLLECTION_MARKER_FILE_NAME in files:
             write_py_rst_collections_file(folder, os.path.split(folder)[1], subfolders, files)
-
-
-def walk_rest_rst_collection_folders(root_path):
-    for folder, subfolders, files in os.walk(root_path):
-        if COLLECTION_MARKER_FILE_NAME in files:
-            write_rest_rst_collections_file(folder, os.path.split(folder)[1], subfolders, files)
 
 
 def get_attr_py_rst(doc_root_path):
@@ -295,15 +262,6 @@ def get_attr_py_rst(doc_root_path):
     return write_command
 
 
-def get_attr_rest_rst(doc_root_path):
-    root_path = doc_root_path
-
-    def write_command(obj, attr):
-        if hasattr(attr, "command"):
-            write_rest_rst_attr_file(root_path, obj, attr)
-    return write_command
-
-
 def get_obj_py_rst(doc_root_path):
     root_path = doc_root_path
 
@@ -312,12 +270,19 @@ def get_obj_py_rst(doc_root_path):
     return write_class
 
 
-def get_obj_rest_rst(doc_root_path):
-    root_path = doc_root_path
+##############################################################################
+# REST API
 
-    def write_class(cls):
-        write_rest_rst_cls_file(root_path,  cls)
-    return write_class
+def write_command_def_rest_rst_file(root_path, command_def):
+    content = get_command_def_rest_rst(command_def)
+    file_path = os.path.join(root_path, get_command_rest_rst_file_name(command_def))
+    write_text_to_file(file_path, content)
+
+
+def write_commands_index_rest_rst_file(root_path, command_defs):
+    content = get_commands_rest_index_content(command_defs)
+    file_path = os.path.join(root_path, "index.rst")
+    write_text_to_file(file_path, content)
 
 
 ##############################################################################
@@ -356,7 +321,6 @@ def obj_spa(obj):
         doc_stub_class_to_members_text_dict[obj] = []
 
 
-
 ###################################################################
 
 # python
@@ -365,19 +329,17 @@ copy_template(python_api)
 path = dst_python_api_dir
 print "Creating rst files for Python API docs, using root_path %s" % path
 ia._walk_api(get_obj_py_rst(path), get_attr_py_rst(path), include_init=True)
-# write the index.rst files for the collection folders...
-# walk and look for .collection files
-walk_py_rst_collection_folders(path)
+walk_py_rst_collection_folders(path)  # this patches things up, writes some index.rst files
 
 # rest
 delete_folder(dst_rest_api_dir)
 copy_template(rest_api)
 path = dst_rest_api_commands_dir  # the autogen stuff is just for commands/
 print "Creating rst files for REST API docs, using root_path %s" % path
-ia._walk_api(get_obj_rest_rst(path), get_attr_rest_rst(path), include_init=True)
-# write the index.rst files for the collection folders...
-# walk and look for .collection files
-walk_rest_rst_collection_folders(path)
+server_commands = download_server_commands()  # rather than walk api, we use all the defs from the server
+for c in server_commands:
+    write_command_def_rest_rst_file(path, c)
+write_commands_index_rest_rst_file(path, server_commands)
 
 # spa
 print "Creating spa modules..."
@@ -386,4 +348,3 @@ text_1, text_2 = get_doc_stub_modules_text(doc_stub_class_to_members_text_dict, 
 write_text_to_file(spa_module1_file_name, text_1)
 write_text_to_file(spa_module2_file_name, text_2)
 print "Done."
-

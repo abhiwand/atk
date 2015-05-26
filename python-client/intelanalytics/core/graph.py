@@ -34,8 +34,8 @@ from intelanalytics.meta.metaprog import CommandInstallable as CommandLoadable
 from intelanalytics.meta.docstub import doc_stubs_import
 from intelanalytics.meta.namedobj import name_support
 import uuid
+import json
 
-from intelanalytics.meta.serialize import to_json
 from intelanalytics.core.column import Column
 
 from intelanalytics.meta.clientside import raise_deprecation_warning
@@ -215,7 +215,7 @@ class VertexRule(Rule):
         return d
 
     def __repr__(self):
-        return to_json(self)
+        return json.dumps(self._as_json_obj())
 
     def _validate(self):
         """
@@ -311,7 +311,7 @@ class EdgeRule(Rule):
         return d
 
     def __repr__(self):
-        return to_json(self)
+        return json.dumps(self._as_json_obj())
 
     def _validate(self):
         """

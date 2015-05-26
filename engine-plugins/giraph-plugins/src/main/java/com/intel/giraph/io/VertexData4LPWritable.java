@@ -68,7 +68,7 @@ public final class VertexData4LPWritable implements Writable {
         this.degree = degree;
 
         this.wasLabeled = prior.minValue() >= 0d;
-        setStatusAndUnlabeledValues();
+        setStatusAndUnlabeledValues(this.wasLabeled);
     }
 
     /**
@@ -130,8 +130,8 @@ public final class VertexData4LPWritable implements Writable {
         priorWritable.readFields(in);
         posteriorWritable.readFields(in);
         degree = in.readDouble();
+        wasLabeled = in.readBoolean();
 
-        setStatusAndUnlabeledValues();
     }
 
     @Override
@@ -139,6 +139,7 @@ public final class VertexData4LPWritable implements Writable {
         priorWritable.write(out);
         posteriorWritable.write(out);
         out.writeDouble(degree);
+        out.writeBoolean(wasLabeled);
     }
 
     /**
@@ -180,10 +181,9 @@ public final class VertexData4LPWritable implements Writable {
     /**
      * Initialize the labels on vertex
      */
-    private void setStatusAndUnlabeledValues() {
+    private void setStatusAndUnlabeledValues(boolean wasLabeled) {
 
-        this.wasLabeled = priorWritable.get().minValue() >= 0d;
-        if (!wasLabeled) {
+        if (wasLabeled == false) {
             Vector temp = priorWritable.get();
             int size = temp.size();
             for (int i = 0; i < size; i++) {
