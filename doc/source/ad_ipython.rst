@@ -25,7 +25,7 @@ Requirements
 
 A working |IAT| cluster installation is required.
 It must be configured to run with the Python2.7 executable.
-If the |IAT| is not installed, see :doc:`ad_inst_ia1` to install it.
+If the |IAT| is not installed, see :doc:`/ad_inst_ia1` to install it.
 
 Installing IPython
 ==================

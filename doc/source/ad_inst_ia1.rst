@@ -337,7 +337,7 @@ To configure the |IAT| installation, do this:
     $ sudo ./config
 
 Answer the prompts to configure the cluster.
-To see an example of the prompts see :doc:`ad_inst_ia3`.
+To see an example of the prompts see :doc:`/ad_inst_ia3`.
 
 The script goes through all the necessary configurations to get the |IAT|
 service running.
@@ -379,7 +379,7 @@ Open the file with a text editor:
     $ sudo vi application.conf
 
 All of the changes that need to be made are located at the top of the file.
-See :doc:`appendix_application_conf` for an example 'application.conf' file.
+See :doc:`/appendix_application_conf` for an example 'application.conf' file.
 
 .. _ad_inst_IA_configure_file_system_root:
 
@@ -875,7 +875,7 @@ or:
     $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
 
-More details can be found in the :doc:`section on log files <ad_log>`.
+More details can be found in the :doc:`section on log files </ad_log>`.
 
 Upgrading
 =========

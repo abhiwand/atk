@@ -18,12 +18,12 @@ References
 .. toctree::
    :maxdepth: 1
 
-* :doc:`glossary`
-* :doc:`ia_legal`
-* :doc:`genindex`
-* :doc:`appendices`
-* :doc:`errata`
-* :download:`PDF <_downloads/IntelAnalytics.pdf>`
+* :doc:`/glossary`
+* :doc:`/ia_legal`
+* :doc:`/genindex`
+* :doc:`/appendices`
+* :doc:`/errata`
+* :download:`PDF </_downloads/IntelAnalytics.pdf>`
 
 .. toctree::
     :hidden:

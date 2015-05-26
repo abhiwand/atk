@@ -385,7 +385,7 @@ It would still be accessed by Frame *my_frame1*:
         >>> objects1.append(objects2)
         >>> objects1.inspect()
 
-See also the :code:`join` method in the :doc:`API <python_api/index>` section.
+See also the :code:`join` method in the :doc:`API </python_api/index>` section.
 
 .. _example_frame.inspect:
 
@@ -516,7 +516,7 @@ not provide the same level of efficiency.
 
 In general, the following functions select rows of data based upon the data
 in the row.
-For details about row selection based upon its data see :doc:`ds_apir`.
+For details about row selection based upon its data see :doc:`/ds_apir`.
 
 Example of data cleaning:
 

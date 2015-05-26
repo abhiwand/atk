@@ -555,7 +555,7 @@ To show the log as it is generated, run ``tail -f``::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-More details can be found in the :doc:`section on log files <ad_log>`.
+More details can be found in the :doc:`section on log files </ad_log>`.
 
 --------
 Updating
