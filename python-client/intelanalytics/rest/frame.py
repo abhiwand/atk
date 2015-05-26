@@ -123,7 +123,8 @@ class FrameBackendRest(object):
            return ("[1]" for item in iterable if predicate(item))
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, where, icountwhere)}
-        return executor.get_command_output("frame", "count_where", arguments)
+        return executor.execute("frame/count_where", self, arguments)
+
 
     def get_ia_uri(self, frame):
         return self._get_frame_info(frame).ia_uri

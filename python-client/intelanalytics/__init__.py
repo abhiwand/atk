@@ -62,11 +62,11 @@ def _refresh_api_namespace():
 _refresh_api_namespace()
 
 
-def _get_api_names():
+def _get_api_info():
     """Gets the set of all the command full names in the API"""
-    from intelanalytics.meta.installapi import get_api_names
+    from intelanalytics.meta.installapi import ApiInfo
     import sys
-    return get_api_names(sys.modules[__name__])
+    return ApiInfo(sys.modules[__name__])
 
 
 def _walk_api(cls_function, attr_function, include_init=False):

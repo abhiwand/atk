@@ -20,53 +20,20 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Admin commands, not part of public API
+"""
 
-import atexit
-from multiprocessing import Process
-import multiprocessing
-from hooks import WebhookServer
+from intelanalytics.rest.command import execute_command
 
-message_queue = multiprocessing.Queue()
-web_server = WebhookServer()
 
-class _Launcher(object):
+def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):
     """
-    Webhook launcher.
+    Execute garbage collection out of cycle age ranges specified using the typesafe config duration format.
+    :param age_to_delete_data: Minimum age for data deletion. Defaults to server config.
+    :param age_to_delete_meta_data: Minimum age for meta data deletion. Defaults to server config.
     """
+    execute_command("_admin:/_explicit_garbage_collection", None,
+                    age_to_delete_data=age_to_delete_data,
+                    age_to_delete_meta_data=age_to_delete_meta_data)
 
-    def __del__(self):
-        """
-        Shutdown the webhook server on object delete
-        """
-        self.shutdown()
-
-    def launch(self, port):
-        """
-        Launch webhook server with the specified port
-
-        Parameters
-        ----------
-        port: int
-            The port that the webhook server uses to serve the request
-
-
-        Examples
-        --------
-        >>> webhook_launcher.launch(10050)
-        """
-        self.server_process = Process(target=web_server.start, args=(port, message_queue))
-        self.server_process.start()
-
-    def shutdown(self):
-        """
-        Shutdown the webhook server
-
-        Examples
-        --------
-        >>> webhook_launcher.shutdown()
-        """
-        self.server_process.terminate()
-
-
-webhook_launcher = _Launcher()
-atexit.register(webhook_launcher.shutdown)
