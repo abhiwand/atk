@@ -28,14 +28,14 @@ from intelanalytics.meta.names import upper_first, indent, get_type_name
 from intelanalytics.doc.pyrst import get_member_rst_list, get_maturity_rst, is_name_private
 
 
-def get_command_def_rest_rst(collection_name, command_def):
+def get_command_def_rest_rst(command_def):
     """return rest entry for a function or attribute described by the command def"""
     one_line = command_def.doc.one_line
     if command_def.maturity:
         one_line = get_maturity_rst(command_def.maturity) + "\n" + one_line
     extended = command_def.doc.extended
     arguments = indent("\n".join([_get_argument_rest_rst(p) for p in command_def.parameters]))
-    title = ':doc:`%s <index>` %s' % (upper_first(collection_name), command_def.full_name)
+    title = ':doc:`Commands <index>` %s' % command_def.full_name
     title_emphasis = "-" * len(title)
     return_info=_get_returns_rest_rst(command_def.return_info)
     command_rest_template = """
@@ -160,19 +160,58 @@ def _get_returns_rest_rst(return_info):
         else "<Missing Return Information>"
 
 
-def get_rest_summary_table(cls):
+def get_command_rest_rst_file_name(command_def):
+    return command_def.full_name.replace(':', '-').replace('/', '__') + ".rst"
+
+ABOUT_COMMAND_NAMES = "about_command_names"  # for about_command_names.rst
+
+def get_commands_rest_index_content(command_defs):
+    return """
+:doc:`REST API <../index>` Commands
+===================================
+
+.. toctree::
+    :maxdepth: 1
+
+    Issue Command <issue_command.rst>
+    Get Command <get_command.rst>
+
+.. toctree::
+    :hidden:
+
+{manual_hidden_toctree}
+{auto_hidden_toctree}
+
+------
+
+Command List
+------------
+
+
+""".format(manual_hidden_toctree=_get_manual_hidden_toctree(),
+           auto_hidden_toctree=_get_auto_hidden_toctree(command_defs)) + _get_commands_rest_summary_table(command_defs)
+
+
+def _get_auto_hidden_toctree(command_defs):
+    return indent("\n".join(sorted([get_command_rest_rst_file_name(c)[:-4] for c in command_defs])))
+
+
+def _get_manual_hidden_toctree():
+    return indent("\n".join([ABOUT_COMMAND_NAMES]))
+
+
+def _get_commands_rest_summary_table(command_defs):
     """Creates rst summary table for given class"""
-    members = get_member_rst_list(cls)
     name_max_len = 0
     summary_max_len = 0
     line_tuples = []
-    for m in members:
-        if not is_name_private(m.display_name) and m.display_name != "__init__":
-            display_name = m.display_name.replace('.', '/')
-            name = ":doc:`%s <%s>`\ " % (display_name, display_name)
-            summary = m.doc.one_line
-            if m.maturity:
-                summary = get_maturity_rst(m.maturity) + " " + summary
+    for c in command_defs:
+        if not is_name_private(c.name):
+            doc_ref = get_command_rest_rst_file_name(c)[:-4]  # remove the ".rst"
+            name = ":doc:`%s <%s>` " % (c.full_name, doc_ref)
+            summary = c.doc.one_line
+            if c.maturity:
+                summary = get_maturity_rst(c.maturity) + " " + summary
             if len(name) > name_max_len:
                 name_max_len = len(name)
             if len(summary) > summary_max_len:
@@ -183,8 +222,10 @@ def get_rest_summary_table(cls):
     summary_len = summary_max_len + 2
 
     table_line = ("=" * name_len) + "  " + ("=" * summary_len)
+    header_command_name = "Command Name  (explained :doc:`here <%s>`)" % ABOUT_COMMAND_NAMES
+    table_header = "\n".join([table_line, "%s%s  Description" % (header_command_name, " " * (name_len - len(header_command_name))), table_line])
 
     lines = sorted(["%s%s  %s" % (t[0], " " * (name_len - len(t[0])), t[1]) for t in line_tuples])
-    lines.insert(0, table_line)
+    lines.insert(0, table_header)
     lines.append(table_line)
     return "\n".join(lines)
