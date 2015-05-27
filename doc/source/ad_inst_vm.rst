@@ -616,5 +616,5 @@ To update::
 Common VM problems
 ------------------
 *   The VM doesn't have enough memory allocated.
-*   The IA rest server wasn't restarted after restart or boot.
+*   The IA REST server wasn't restarted after restart or boot.
 

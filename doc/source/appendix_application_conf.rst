@@ -28,7 +28,7 @@ Appendix A |EM| Sample Application Configuration File
     metastore.connection = ${intel.analytics.metastore.connection-postgresql}
 
     # This allows the use of an in memory data store.
-    # Restarting the rest server will create a fresh database and any
+    # Restarting the REST server will create a fresh database and any
     # data in the h2 DB will be lost
     //metastore.connection = ${intel.analytics.metastore.connection-h2}
 

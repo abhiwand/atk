@@ -148,6 +148,9 @@ function Err() {
     else
         return 1
     fi
+    return 0
+}
+
 ############################################################################################################
 function get_response() {
 
@@ -215,7 +218,7 @@ function main() {
 
     # debug: Sometimes numpy chokes on these files.
     for PYC_file in $(find ../ -name "*.pyc"); do
-        rm PYC_file
+        rm $PYC_file
     done
 
     # debug: Check on quiet mode
@@ -270,7 +273,7 @@ function main() {
         # debug: Check for rebuilding the scala jar routines
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
-            # Update the scala and python cmdgen
+            # Update the scala
             maven $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then return 1; fi
         fi

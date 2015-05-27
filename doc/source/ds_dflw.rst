@@ -27,7 +27,7 @@ This can be done from a shell script, like this::
     python
 
 This way, from inside Python, it is easy to load and connect to the
-rest server:
+REST server:
 
 .. code::
 
