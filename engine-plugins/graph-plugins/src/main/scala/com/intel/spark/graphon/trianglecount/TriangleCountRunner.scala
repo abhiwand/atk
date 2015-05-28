@@ -65,7 +65,12 @@ object TriangleCountRunner extends Serializable {
 
     // convert to graphX vertices
     val graphXVertices: RDD[(Long, Null)] =
-      inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], null))
+      inVertices.map(gbVertex => {
+        gbVertex.physicalId match {
+          case a: Any => (gbVertex.physicalId.asInstanceOf[Long], null)
+          case null => (gbVertex.gbId.value.asInstanceOf[Long], null)
+        }
+      })
 
     val graphXEdges: RDD[GraphXEdge[Long]] = filteredEdges.map(edge => GraphConversions.createGraphXEdgeFromGBEdge(edge, canonicalOrientation = true)).distinct()
 
@@ -83,7 +88,12 @@ object TriangleCountRunner extends Serializable {
 
     // Join the intermediate vertex/edge rdds with input vertex/edge rdd's to append the triangleCount attribute
     val outVertices: RDD[GBVertex] = inVertices
-      .map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], gbVertex))
+      .map(gbVertex => {
+        gbVertex.physicalId match {
+          case a: Any => (gbVertex.physicalId.asInstanceOf[Long], gbVertex)
+          case null => (gbVertex.gbId.value.asInstanceOf[Long], gbVertex)
+        }
+      })
       .join(intermediateVertices)
       .map({ case (_, (vertex, property)) => vertex.copy(properties = vertex.properties + property) })
 

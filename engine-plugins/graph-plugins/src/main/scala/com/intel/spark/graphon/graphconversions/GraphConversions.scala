@@ -36,8 +36,19 @@ object GraphConversions {
    * @return GraphX representation of the incoming edge.
    */
   def createGraphXEdgeFromGBEdge(gbEdge: GBEdge, canonicalOrientation: Boolean = false): GraphXEdge[Long] = {
-    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
-    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
+
+    val srcId =
+      gbEdge.tailPhysicalId match {
+        case a: Any => gbEdge.tailPhysicalId.asInstanceOf[Long]
+        case null => gbEdge.tailVertexGbId.value.asInstanceOf[Long]
+      }
+
+    val destId =
+      gbEdge.headPhysicalId match {
+        case a: Any => gbEdge.headPhysicalId.asInstanceOf[Long]
+        case null => gbEdge.headVertexGbId.value.asInstanceOf[Long]
+      }
+
     if (canonicalOrientation && srcId > destId)
       GraphXEdge[Long](destId, srcId)
     else

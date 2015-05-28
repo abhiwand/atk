@@ -23,13 +23,16 @@
 
 package com.intel.spark.graphon.beliefpropagation
 
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
@@ -79,10 +82,10 @@ object BeliefPropagationDefaults {
 /**
  * The result object
  *
- * @param log execution log
+ * @param frameDictionaryOutput dictionary with vertex label type as key and vertex's frame as the value
  * @param time execution time
  */
-case class BeliefPropagationResult(log: String, time: Double)
+case class BeliefPropagationResult(frameDictionaryOutput: Map[String, FrameEntity], time: Double)
 
 /** Json conversion for arguments and return value case classes */
 object BeliefPropagationJsonFormat {
@@ -102,9 +105,9 @@ import BeliefPropagationJsonFormat._
  * Right now it is using only Titan for graph storage. In time we will hopefully make this more flexible.
  *
  */
-class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
+class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
-  override def name: String = "graph:titan/ml/belief_propagation"
+  override def name: String = "graph/ml/belief_propagation"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
@@ -142,19 +145,33 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
-    val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
+    //    val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
+    //
+    //    // write out the graph
+    //
+    //    // Create the GraphBuilder object
+    //    // Setting true to append for updating existing graph
+    //    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
+    //    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    //    // Build the graph using spark
+    //    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
+    //
+    //    // Get the execution time and print it
+    //    val time = (System.currentTimeMillis() - start).toDouble / 1000.0val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
-    // write out the graph
-
-    // Create the GraphBuilder object
-    // Setting true to append for updating existing graph
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-    // Build the graph using spark
-    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
-
-    // Get the execution time and print it
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
+    val frameMap = frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    BeliefPropagationResult(log, time)
+
+    BeliefPropagationResult(frameMap, time)
+
+    //    BeliefPropagationResult(log, time)
+
   }
 }

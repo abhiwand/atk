@@ -157,15 +157,30 @@ object WeightedDegrees {
      */
 
     val vertexVDRs: RDD[(Any, VertexDegreeRecord)] =
-      vertexRDD.map(gbVertex => (gbVertex.physicalId, VertexDegreeRecord(Some(gbVertex), 0D)))
+      vertexRDD.map(gbVertex => {
+        gbVertex.physicalId match {
+          case a: Any => (gbVertex.physicalId, VertexDegreeRecord(Some(gbVertex), 0D))
+          case null => (gbVertex.gbId.value, VertexDegreeRecord(Some(new GBVertex(gbVertex.gbId.value, gbVertex.gbId, gbVertex.properties)), 0D))
+        }
+      })
 
     val edgeVDRs: RDD[(Any, VertexDegreeRecord)] =
-      if (calculateOutDegreeFlag)
-        edgeRDD.map(e => (e.tailPhysicalId,
-          VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
-      else
-        edgeRDD.map(e => (e.headPhysicalId,
-          VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
+      if (calculateOutDegreeFlag) {
+        edgeRDD.map(e => {
+          e.tailPhysicalId match {
+            case a: Any => (e.tailPhysicalId, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight)))
+            case null => (e.tailVertexGbId.value, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight)))
+          }
+        })
+      }
+      else {
+        edgeRDD.map(e => {
+          e.headPhysicalId match {
+            case a: Any => (e.headPhysicalId, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight)))
+            case null => (e.headVertexGbId.value, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight)))
+          }
+        })
+      }
 
     val vdrs = vertexVDRs.union(edgeVDRs)
 
