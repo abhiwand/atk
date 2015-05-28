@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 
 import com.intel.intelanalytics.engine.spark.frame.MiscFrameFunctions
+import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.commons.csv.{ CSVPrinter, CSVFormat }
 
@@ -40,7 +41,6 @@ object FrameExportHdfs extends Serializable {
    *
    * @param frameRdd input rdd containing all columns
    * @param filename file path where to store the file
-   * @return Long true or false
    */
   def exportToHdfsCsv(
     frameRdd: FrameRdd,
@@ -80,7 +80,6 @@ object FrameExportHdfs extends Serializable {
    *
    * @param frameRdd input rdd containing all columns
    * @param filename file path where to store the file
-   * @return Long true or false
    */
   def exportToHdfsJson(
     frameRdd: FrameRdd,
@@ -108,4 +107,22 @@ object FrameExportHdfs extends Serializable {
     }
     jsonRDD.saveAsTextFile(filename)
   }
+
+  /**
+   * Export to a file in Hive format
+   *
+   * @param frameRdd input rdd containing all columns
+   * @param tablename table where to store the RDD
+   */
+  def exportToHdfsHive(
+    sc: SparkContext,
+    frameRdd: FrameRdd,
+    tablename: String) {
+
+    val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
+    sqlContext.registerRDDAsTable(frameRdd, "mytable")
+    sqlContext.sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
+  }
+
 }
+

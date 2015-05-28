@@ -20,22 +20,25 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Frame entity types
+"""
 
 import logging
-
-
 logger = logging.getLogger(__name__)
+
 from intelanalytics.meta.context import api_context
 from intelanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from intelanalytics.meta.udf import has_python_user_function_arg
 from intelanalytics.core.api import api_status
 from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import Column
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.meta.udf import has_udf_arg
 from intelanalytics.meta.namedobj import name_support
-from intelanalytics.meta.metaprog2 import CommandInstallable as CommandLoadable, doc_stubs_import
+from intelanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from intelanalytics.meta.docstub import doc_stubs_import
 
 
 def _get_backend():
@@ -178,17 +181,12 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     def __hash__(self):
         return hash(self._id)
 
-
     @api
     @property
+    @returns(list, "list of names of all the frame's columns")
     def __column_names(self):
         """
         Column identifications in the current Frame.
-
-        Returns
-        -------
-        list : list of str
-            A list of the names of the columns.
 
         Examples
         --------
@@ -217,11 +215,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Number of rows in the current frame.
 
-        Returns
-        -------
-        int : quantity
-            The number of rows in the frame.
-
         Examples
         --------
         Get the number of rows:
@@ -239,9 +232,9 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_row_count(self, None)
 
-
     @api
     @property
+    @returns(list, "list of tuples of the form (<column name>, <data type>)")
     def __schema(self):
         """
         Current frame column names and types.
@@ -251,9 +244,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         It is retrieved as a list of tuples.
         Each tuple has the name and data type of one of the frame's columns.
 
-        Returns
-        -------
-        list : list of tuples
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
@@ -272,7 +262,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         """
         return self._backend.get_schema(self)
-
 
     @api
     @property
@@ -304,38 +293,26 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_status(self)
 
-
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
+    @arg('func', 'UDF', "User-Defined Function (|UDF|) which takkes the values in the row and produces a value, or "
+         "collection of values, for the new cell(s).")
+    @arg('schema', 'tuple | list of tuples', "The schema for the results of the |UDF|, indicating the new column(s) to "
+         "add.  Each tuple provides the column name and data type, and is of the form (str, type).")
+    @arg('columns_accessed', list, "List of columns which the |UDF| will access.  This adds significant performance "
+         "benefit if we know which column(s) will be needed to execute the |UDF|, especially when the frame has "
+         "significantly more columns than those being used to evaluate the |UDF|.")
     def __add_columns(self, func, schema, columns_accessed=None):
         """
         Add columns to current frame.
 
         Assigns data to column based on evaluating a function for each row.
 
-        Parameters
-        ----------
-        func : row function
-            Function (|UDF|) which takes the values in the row and produces a
-            value, or collection of values, for the new cell(s).
-
-        schema : [ tuple | list of tuples ]
-            The schema for the results of the |UDF|, indicating the new
-            column(s) to add.  Each tuple provides the column name and data
-            type, and is of the form (str, type).
-
-        columns_accessed : list of str (optional)
-            List of columns which the |UDF| will access.
-            This adds significant performance benefit if we know which
-            column(s) will be needed to execute the |UDF|, especially when the
-            frame has significantly more columns than those being used to
-            evaluate the |UDF|.
-
         Notes
         -----
         1)  The row |UDF| ('func') must return a value in the same format as
             specified by the schema.
-            See :doc:`ds_apir`.
+            See :doc:`/ds_apir`.
         2)  Unicode in column names is not supported and will likely cause the
             drop_frames() method (and others) to fail!
 
@@ -437,41 +414,24 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         columns. If not specified, columns_accessed defaults to None which implies that all columns might be accessed
         by the |UDF|.
 
-        More information on a row |UDF| can be found at :doc:`ds_apir`
+        More information on a row |UDF| can be found at :doc:`/ds_apir`
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
         self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
+    @arg('columns', 'str | list of str | dict', "If not None, the copy will only include the columns specified. "
+         "If dict, the string pairs represent a column renaming, {source_column_name: destination_column_name}")
+    @arg('where', 'function', "If not None, only those rows for which the UDF evaluates to True will be copied.")
+    @arg('name', str, "Name of the copied frame")
+    @returns('Frame', "A new Frame of the copied data.")
     def __copy(self, columns=None, where=None, name=None):
         """
         Create new frame from current frame.
 
         Copy frame or certain frame columns entirely or filtered.
         Useful for frame query.
-
-        Parameters
-        ----------
-        columns : [ str | list of str | dict ] (optional)
-            If not None, the copy will only include the columns specified.
-            If a dictionary is used, the string pairs represent a column
-            renaming, {source_column_name: destination_column_name}.
-            Default is None.
-
-        where : |UDF| (optional)
-            If not None, only those rows which evaluate to True will be copied.
-            Default is None.
-
-        name : str (optional)
-            Name of the copied frame.
-            Default is None.
-
-        Returns
-        -------
-        Frame : access to new frame
-            A new Frame object accessing data in a new frame which is a copy of
-            the original frame.
 
         Examples
         --------
@@ -524,21 +484,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.copy(self, columns, where, name)
 
     @api
+    @arg('where', 'function', "|UDF| which evaluates a row to a boolean")
+    @returns(int, "number of rows for which the where |UDF| evaluated to True.")
     def __count(self, where):
-        """
-        Counts the number of rows which meet given criteria.
-
-        Parameters
-        ----------
-        where : |UDF|
-            |UDF| or :term:`lambda` which takes a row argument and evaluates
-            to a boolean value.
-
-        Returns
-        -------
-        int : count
-            number of rows for which the where |UDF| evaluated to True.
-        """
+        """Counts the number of rows which meet given criteria."""
         return self._backend.get_row_count(self, where)
 
     @api
@@ -590,18 +539,12 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             pandas_df[[headers[i]]] = pandas_df[[headers[i]]].astype(dtype_str)
         return pandas_df
 
-
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that answer True are dropped from the Frame")
     def __drop_rows(self, predicate):
         """
-        Erase any rows in the current frame which qualify.
-
-        Parameters
-        ----------
-        predicate : |UDF|
-            |UDF| or :term:`lambda` which takes a row argument and
-            evaluates to a boolean value.
+        Erase any row in the current frame which qualifies.
 
         Examples
         --------
@@ -617,7 +560,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Now the frame only has information about ``ligers``.
 
-        More information on a |UDF| can be found at :doc:`ds_apir`.
+        More information on a |UDF| can be found at :doc:`/ds_apir`.
 
 
         """
@@ -625,19 +568,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         self._backend.drop(self, predicate)
 
     @api
-    @has_python_user_function_arg
+    @has_udf_arg
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that answer False are dropped from the Frame")
     def __filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
 
         Modifies the current frame to save defined rows and delete everything
         else.
-
-        Parameters
-        ----------
-        predicate : |UDF|
-            |UDF| definition or lambda which takes a row argument and
-            evaluates to a boolean value.
 
         Examples
         --------
@@ -656,7 +594,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         The frame now only has data about ``lizards`` and ``frogs``.
 
-        More information on a |UDF| can be found at :doc:`ds_apir`.
+        More information on a |UDF| can be found at :doc:`/ds_apir`.
 
         """
         # For further examples, see :ref:`example_frame.filter`
@@ -678,11 +616,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
 
-
     @api
     @beta
     @arg('group_by_columns', list, 'Column name or list of column names')
-    @arg('aggregation_arguments', dict, """Aggregation function based on entire row, and/or dictionaries (one or more) of { column name str : aggregation function(s) }.""")
+    @arg('aggregation_arguments', dict, "Aggregation function based on entire row, and/or dictionaries (one or more) of { column name str : aggregation function(s) }.")
+    @returns('Frame', 'A new frame with the results of the group_by')
     def __group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
@@ -859,11 +797,18 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.inspect(self, n, offset, columns)
 
     @api
+    @beta
+    @arg('right', 'Frame', "Another frame to join with")
+    @arg('left_on', str, "Name of the column in the left frame used to match up the two frames.")
+    @arg('right_on', str, "Name of the column in the right frame used to match up the two frames. "
+         "Default is the same as the left frame.")
+    @arg('how', str, "How to qualify the data to be joined together.  Must be one of the following:  "
+         "'left', 'right', 'inner', 'outer'.  Default is 'inner'")
+    @arg('name', str, "Name of the result grouped frame")
+    @returns('Frame', 'A new frame with the results of the join')
     def __join(self, right, left_on, right_on=None, how='inner', name=None):
         """
         New frame from current frame and another frame.
-
-        |BETA|
 
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
@@ -883,29 +828,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         The 'outer' option provides a frame with data from both frames where
         the left and right frames did not have the same value in the matching
         column.
-
-        Parameters
-        ----------
-        right : Frame
-            Another frame to join with.
-        left_on : str
-            Name of the column in the left frame used to match up the two
-            frames.
-        right_on : str (optional)
-            Name of the column in the right frame used to match up the two
-            frames.
-            Default is the same as the left frame.
-        how : str ['left' | 'right' | 'inner' | 'outer'] (optional)
-            How to qualify the data to be joined together.
-            Default is 'inner'.
-        name : str (optional)
-            Name for the resulting new joined frame.
-            Default is None.
-
-        Returns
-        -------
-        Frame : combined frames
-            A new object accessing a new joined frame.
 
         Notes
         -----
@@ -1004,23 +926,15 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.join(self, right, left_on, right_on, how, name)
 
     @api
+    @beta
+    @arg('columns', 'str | list of str | list of tuples', "Either a column name, a list of column names, or a "
+         "list of tuples where each tuple is a name and an ascending bool value.")
+    @arg('ascending', bool, "True for ascending, False for descending.")
     def __sort(self, columns, ascending=True):
         """
         Sort the data in a frame.
 
-        |BETA|
-
         Sort a frame by column values either ascending or descending.
-
-        Parameters
-        ----------
-        columns : [ str | list of str | list of tuples ]
-            Either a column name, a list of column names, or a list of tuples
-            where each tuple is a name and an ascending bool value.
-
-        ascending: bool (optional)
-            True for ascending, False for descending.
-            Default is True.
 
         Examples
         --------
@@ -1070,37 +984,22 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         return self._backend.sort(self, columns, ascending)
 
     @api
+    @arg('n', int, "The number of rows to copy to the client from the frame.")
+    @arg('offset', int, "The number of rows to skip before starting to copy")
+    @arg('columns', 'str | iterable of str', "If not None, only the given columns' data will be provided.  "
+         "By default, all columns are included")
+    @returns(list, "A list of lists, where each contained list is the data for one row.")
     def __take(self, n, offset=0, columns=None):
         """
         Get data subset.
 
         Take a subset of the currently active Frame.
 
-        Parameters
-        ----------
-        n : int
-            The number of rows to copy from the currently active Frame.
-
-        offset : int (optional)
-            The number of rows to skip before copying.
-            Default is 0.
-
-        columns : [ str | iterable of str ] (optional)
-            Specify the columns to be included in the result.
-            Default is None, meaning all columns are to be included.
-
         Notes
         -----
         The data is considered 'unstructured', therefore taking a certain
         number of rows, the rows obtained may be different every time the
         command is executed, even if the parameters do not change.
-
-        Returns
-        -------
-        list : list of lists of row data
-            A list composed of the data from the frame.
-            Each item of the overall list is a list of the values of the
-            columns for one row of the original frame.
 
         Examples
         --------
@@ -1217,14 +1116,10 @@ class Frame(_DocStubsFrame, _BaseFrame):
             logger.info('Created new frame "%s"', new_frame_name)
 
     @api
+    @arg('data', 'Data source', "Data source, see :doc:`Data Sources </python_api/datasources/index>`")
     def __append(self, data):
         """
         Adds more data to the current frame.
-
-        Parameters
-        ----------
-        data : Frame
-            A Frame accessing the data being added.
 
         Examples
         --------
@@ -1322,18 +1217,6 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
     @api
     def __init__(self, source=None, graph=None, label=None, _info=None):
         """
-    Parameters
-    ----------
-    source : ? (optional)
-    graph : ? (optional)
-    label : ? (optional)
-    _info : ? (optional)
-
-    Returns
-    -------
-    class : VertexFrame object
-        An object with access to the frame.
-
     Examples
     --------
     Given a data file, create a frame, move the data to graph and then define a
@@ -1399,7 +1282,9 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
             error = IaError(logger)
             raise error
 
-    def drop_vertices(self, predicate):
+    @api
+    @arg('predicate', 'function', "|UDF| which evaluates a row (vertex) to a boolean; vertices that answer True are dropped from the Frame")
+    def __drop_vertices(self, predicate):
         """
         Delete rows that qualify.
 
@@ -1431,12 +1316,14 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
         Now the frame only has information about ``ligers``.
 
-        More information on |UDF| can be found at :doc:`ds_apir`
+        More information on |UDF| can be found at :doc:`/ds_apir`
 
         """
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
-    def filter(self, predicate):
+    @api
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; vertices that answer False are dropped from the Frame")
+    def __filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 
 
@@ -1517,8 +1404,7 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
 
             >>> my_graph.vertices['users'].add_vertices(my_frame, 'user_id',
             ... ['user_name'])
-            >>> my_graph.vertices['movies].add_vertices(my_frame, 'movie_id',
-            ... ['movie_title])
+            >>> my_graph.vertices['movies'].add_vertices(my_frame, 'movie_id', ['movie_title'])
 
     Create an edge frame from the graph, and add edge data from the frame.
 

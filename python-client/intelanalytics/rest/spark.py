@@ -30,6 +30,7 @@ import base64
 import os
 import itertools
 from udfzip import UdfZip
+from types import ModuleType
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -52,11 +53,16 @@ UdfDependencies = []
 
 
 def get_file_content_as_str(filename):
-    # If the filename is a directory, zip the contents first, else fileToSerialize is same as the python file
-    if os.path.isdir(filename):
+
+    if isinstance(filename, ModuleType) and hasattr(filename, '__path__'): # Serialize modules
+        UdfZip.zipdir(filename.__path__)
+        name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
+    elif isinstance(filename, ModuleType) and hasattr(filename, '__file__'): # Serialize single file based modules
+        name, fileToSerialize = (filename.__file__, filename.__file__)
+    elif os.path.isdir(filename): # Serialize local directories
         UdfZip.zipdir(filename)
         name, fileToSerialize = ('%s.zip' % os.path.basename(filename), '/tmp/iapydependencies.zip')
-    elif not ('/' in filename) and filename.endswith('.py'):
+    elif os.path.isfile(filename) and filename.endswith('.py'): # Serialize local files
         name, fileToSerialize = (filename, filename)
     else:
         raise Exception('%s should be either local python script without any packaging structure \
