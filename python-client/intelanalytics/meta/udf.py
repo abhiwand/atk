@@ -20,12 +20,15 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Decorator for functions which take UDFs
+"""
 
 import re
 import sys
 from decorator import decorator
 
-def _has_python_user_function_arg(function, *args, **kwargs):
+def _has_udf_arg(function, *args, **kwargs):
     try:
         return function(*args, **kwargs)
     except:
@@ -34,17 +37,17 @@ def _has_python_user_function_arg(function, *args, **kwargs):
         message = str(e)
         lines = message.split("\n")
 
-        eligibal_lines = []
+        eligible_lines = []
 
         # match the server side stack trace from running python user function and remove it
         regex = re.compile(".*java:[0-9]+.*|.*scala:[0-9]+.*|Driver stacktrace.*")
         for line in lines:
             if regex.search(line) is None:
-                eligibal_lines.append(line)
+                eligible_lines.append(line)
 
-        message = "\n".join(eligibal_lines)
+        message = "\n".join(eligible_lines)
         e.args = (message,)
         raise e
 
-def has_python_user_function_arg(function):
-    return decorator(_has_python_user_function_arg, function)
+def has_udf_arg(function):
+    return decorator(_has_udf_arg, function)

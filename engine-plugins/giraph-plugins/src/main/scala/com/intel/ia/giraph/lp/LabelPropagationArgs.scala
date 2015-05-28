@@ -24,9 +24,7 @@
 package com.intel.ia.giraph.lp
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -45,6 +43,7 @@ case class LabelPropagationArgs(frame: FrameReference,
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
   require(StringUtils.isNotBlank(destColName), "destination column name property list is required")
+  require(srcColName != destColName, "source and destination column names cannot be the same")
   require(StringUtils.isNotBlank(weightColName), "edge weight property list is required")
   require(StringUtils.isNotBlank(srcLabelColName), "source label column name property list is required")
 
@@ -67,11 +66,14 @@ case class LabelPropagationArgs(frame: FrameReference,
   }
 }
 
-case class LabelPropagationResult(value: String) //TODO
+case class LabelPropagationResult(outputFrame: FrameEntity, report: String) {
+  require(outputFrame != null, "label results are required")
+  require(StringUtils.isNotBlank(report), "report is required")
+}
 
 /** Json conversion for arguments and return value case classes */
 object LabelPropagationJsonFormat {
 
   implicit val argsFormat = jsonFormat9(LabelPropagationArgs)
-  implicit val resultFormat = jsonFormat1(LabelPropagationResult)
+  implicit val resultFormat = jsonFormat2(LabelPropagationResult)
 }

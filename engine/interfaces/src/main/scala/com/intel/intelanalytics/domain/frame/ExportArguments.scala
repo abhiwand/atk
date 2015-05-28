@@ -45,3 +45,12 @@ case class ExportHdfsJsonArgs(frame: FrameReference,
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }
+
+/**
+ * Input arguments class for export to Hive
+ */
+case class ExportHdfsHiveArgs(frame: FrameReference,
+                              tableName: String) {
+  require(frame != null, "frame is required")
+  require(tableName != null, "table name is required")
+}

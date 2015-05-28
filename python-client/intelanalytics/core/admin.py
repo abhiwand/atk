@@ -20,28 +20,20 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
 """
-deprecation decorator
+Admin commands, not part of public API
 """
-import warnings
+
+from intelanalytics.rest.command import execute_command
 
 
-def deprecated(message):
-    def decorator(function):
-        def wrapper(*args, **kwargs):
-            raise_deprecation_warning(function.__name__, message)
-            return function(*args, **kwargs)
-        wrapper.__name__ = function.__name__
-        wrapper.__doc__ = function.__doc__
-        wrapper.__dict__.update(function.__dict__)
-        return wrapper
-    return decorator
+def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):
+    """
+    Execute garbage collection out of cycle age ranges specified using the typesafe config duration format.
+    :param age_to_delete_data: Minimum age for data deletion. Defaults to server config.
+    :param age_to_delete_meta_data: Minimum age for meta data deletion. Defaults to server config.
+    """
+    execute_command("_admin:/_explicit_garbage_collection", None,
+                    age_to_delete_data=age_to_delete_data,
+                    age_to_delete_meta_data=age_to_delete_meta_data)
 
-
-def raise_deprecation_warning(function_name, message):
-    with warnings.catch_warnings():
-        warnings.simplefilter('default')  # make it so Python 2.7 will still report this warning
-        warnings.warn("Call to deprecated function %s.  %s" % (function_name, message),
-                      DeprecationWarning,
-                      stacklevel=2)
