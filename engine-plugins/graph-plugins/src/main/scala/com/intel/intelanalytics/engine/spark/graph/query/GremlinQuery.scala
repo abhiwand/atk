@@ -40,6 +40,7 @@ import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Arguments for Gremlin query.
@@ -52,7 +53,8 @@ import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
  * @param graph Graph reference
  * @param gremlin Gremlin script to execute
  */
-case class QueryArgs(graph: GraphReference, gremlin: String)
+case class QueryArgs(graph: GraphReference,
+                     @ArgDoc("""The Gremlin script to execute.""") gremlin: String)
 
 /**
  * Results of Gremlin query.
@@ -84,6 +86,19 @@ import GremlinQueryFormat._
 /**
  * Command plugin for executing Gremlin queries.
  */
+@PluginDoc(oneLine = "Executes a Gremlin query.",
+  extended = """Executes a Gremlin query on an existing graph.
+The query returns a list of results in GraphSON format(for vertices or edges)
+or JSON (for other results like counts).
+GraphSON is a JSON-based format for property graphs which uses reserved keys
+that begin with underscores to encode vertex and edge metadata.
+
+Notes
+-----
+The query does not support pagination so the results of query should be limited
+using the Gremlin range filter [i..j], for example, g.V[0..9] to return the
+first 10 vertices.""",
+  returns = "Query results and runtime in seconds.")
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
   val gremlinExecutor = new GremlinGroovyScriptEngine()

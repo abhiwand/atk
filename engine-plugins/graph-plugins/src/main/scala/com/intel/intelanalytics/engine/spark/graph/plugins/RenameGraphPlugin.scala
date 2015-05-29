@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.graph.{ RenameGraphArgs, GraphEntity }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -39,6 +40,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename a graph in the database
  */
+@PluginDoc(oneLine = "Rename a graph in the database.",
+  extended = "",
+  returns = """A value of type declared as the Return type.""")
 class RenameGraphPlugin extends CommandPlugin[RenameGraphArgs, GraphEntity] {
 
   /**

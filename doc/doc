@@ -37,7 +37,7 @@ function compile_jars() {
     # debug: run maven
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
-        RunCommand="mvn install -DskipTests"
+        RunCommand="mvn compile -DskipTests=True -T 8"
         do_this "$RunCommand" $1 $2 $3 $4
         return $?
     else
