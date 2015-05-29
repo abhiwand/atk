@@ -35,15 +35,12 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
 
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins._
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.ExportToGraphPlugin
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.ia.plugins.classification._
-import com.intel.intelanalytics.engine.spark.graph.plugins.LoadGraphPlugin
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
@@ -94,21 +91,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
-
-  // Registering graph plugins
-  commandPluginRegistry.registerCommand(new LoadGraphPlugin)
-  commandPluginRegistry.registerCommand(new DefineVertexPlugin(graphs))
-  commandPluginRegistry.registerCommand(new DefineEdgePlugin(graphs))
-  val addVerticesPlugin = new AddVerticesPlugin(frames, graphs)
-  commandPluginRegistry.registerCommand(addVerticesPlugin)
-  commandPluginRegistry.registerCommand(new AddEdgesPlugin(addVerticesPlugin))
-  commandPluginRegistry.registerCommand(new VertexCountPlugin)
-  commandPluginRegistry.registerCommand(new EdgeCountPlugin)
-  commandPluginRegistry.registerCommand(new GraphInfoPlugin)
-  commandPluginRegistry.registerCommand(new FilterVerticesPlugin(graphs))
-  commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new ExportToGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new CopyGraphPlugin)
 
   //Registering model plugins
   commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)

@@ -57,7 +57,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
 
   "ExportToTitanGraph" should {
     "create an expected graphbuilder config " in {
-      val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+      val plugin = new ExportToTitanGraphPlugin
       val config = plugin.createGraphBuilderConfig("backendName")
       config.titanConfig.getProperty("storage.hbase.table").toString should include("backendName")
       config.append should be(false)
@@ -88,7 +88,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val edgeFrame = edgeFrameRdd.toGbEdgeRdd
       val edgeTaken = edgeFrame.take(10)
 
-      val plugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+      val plugin = new ExportToTitanGraphPlugin
       val config = new GraphBuilderConfig(new InputSchema(List()),
         List(),
         List(),
@@ -128,7 +128,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         val edgeSchema3 = new EdgeSchema(edgeColumns3, "label3", "srclabel", "destlabel")
         val frame3 = new FrameEntity(1, Some("name"), edgeSchema3, 0L, new DateTime, new DateTime)
 
-        val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+        val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin
         plugin.validateLabelNames(List(frame1, frame2, frame3), List("label1", "label2", "label3"))
       }
     }
@@ -139,7 +139,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val edgeSchema2 = new EdgeSchema(edgeColumns2, "label1", "srclabel", "destlabel")
       val frame2 = new FrameEntity(1, Some("name"), edgeSchema2, 0L, new DateTime, new DateTime, graphId = Some(1L))
 
-      val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin(mock[SparkFrameStorage], mock[SparkGraphStorage])
+      val plugin: ExportToTitanGraphPlugin = new ExportToTitanGraphPlugin
       plugin.validateLabelNames(List(frame1, frame2), List("notalabel1", "label2", "label3"))
 
     }
