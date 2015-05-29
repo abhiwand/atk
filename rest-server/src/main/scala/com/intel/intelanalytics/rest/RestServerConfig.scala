@@ -86,8 +86,8 @@ object RestServerConfig {
   val schemeIsHttps: Boolean = config.getBoolean("spray.can.server.ssl-encryption")
 
   /** Location of the Java keystore file */
-  val keyStoreFile: String = config.getString("intel.analytics.rest-server.key-store-file")
+  val keyStoreFile: String = config.getString("intel.analytics.component.archives.rest-server.key-store-file")
 
   /** Password for the keystore file */
-  val keyStorePassword: String = config.getString("intel.analytics.rest-server.key-store-password")
+  val keyStorePassword: String = config.getString("intel.analytics.component.archives.rest-server.key-store-password")
 }

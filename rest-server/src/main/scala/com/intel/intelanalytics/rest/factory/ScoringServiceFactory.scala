@@ -43,7 +43,7 @@ class ScoringServiceFactory(override val name: String) extends AbstractServiceFa
 }
 
 class ScoringServiceFactoryOnHttps(override val name: String)
-  extends ScoringServiceFactory(name) with RestSslConfiguration {
+    extends ScoringServiceFactory(name) with RestSslConfiguration {
   override def startInstance(serviceInstance: ActorRef): Unit = {
     IO(Http) ? Http.Bind(serviceInstance, interface = RestServerConfig.host, port = RestServerConfig.port)
   }

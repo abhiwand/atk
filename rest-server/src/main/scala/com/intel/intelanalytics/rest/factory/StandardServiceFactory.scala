@@ -56,7 +56,7 @@ class StandardServiceFactory(override val name: String) extends AbstractServiceF
 }
 
 class StandardServiceFactoryOnHttps(override val name: String)
-  extends StandardServiceFactory(name) with RestSslConfiguration {
+    extends StandardServiceFactory(name) with RestSslConfiguration {
   override def startInstance(serviceInstance: ActorRef): Unit = {
     IO(Http) ? Http.Bind(serviceInstance, interface = RestServerConfig.host, port = RestServerConfig.port)
   }
