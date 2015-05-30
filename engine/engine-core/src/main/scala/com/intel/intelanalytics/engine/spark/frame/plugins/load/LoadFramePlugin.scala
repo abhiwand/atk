@@ -35,6 +35,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkComm
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.types._
 
 import spray.json._
@@ -102,7 +103,9 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
       for (field <- array) {
         list += new Column(field.name, FrameRdd.sparkDataTypeToSchemaDataType(field.dataType))
       }
-      unionAndSave(destinationFrame, new FrameRdd(new FrameSchema(list.toList), rdd))
+      val schema = new FrameSchema(list.toList)
+      //val convertedRdd = rdd.map(row => row.zipWithIndex.map{ case (value: Any, i: Int ) => DataTypes.convertToType(value, schema.column(i).dataType)) }
+      unionAndSave(destinationFrame, new FrameRdd(schema, new SQLContext(rdd.context), FrameRdd.toATKRowRDD(schema, rdd)))
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
