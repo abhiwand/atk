@@ -13,17 +13,18 @@ if [ "$Restart" == "-H" -o "$Restart" == "--HELP" ]; then
     echo Program generates the file \"$StatusFile\" to keep track.
     echo Quit the editor with the command ':cq' to stop processing files.
 else
-    if [ -e $StatusFile ]; then
-        Last=$(cat $StatusFile)
-    fi
     if [ "$Restart" == "RESTART" ]; then
         Last=None
     elif [ "$Restart" != "NO" ]; then
         Last=$1
     else
-        Last=None
+        if [ -e $StatusFile ]; then
+            Last=$(cat $StatusFile)
+        else
+            Last=None
+        fi
     fi
-echo "Looking for $Last"
+
     for File in $(grep -ril --include=*.scala "override def name:" ../); do
         if [ "$Last" == "$File" ]; then
             Last=None
