@@ -23,21 +23,15 @@
 
 package com.intel.intelanalytics.rest
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
-import akka.io.IO
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
-import spray.can.Http
-import spray.http._
-import akka.pattern.ask
-import akka.util.Timeout
 import scala.concurrent.duration._
-import com.intel.event.{ EventLogging, EventLogger }
-import com.intel.event.adapter.SLF4JLogAdapter
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.intel.intelanalytics.engine.Engine
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
 import scala.concurrent.Await
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.rest.factory.ServiceFactoryCreator
 
 /**
  * A REST application used by client layer to communicate with the Engine.
@@ -71,16 +65,12 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
   override def start() = {
     implicit val call = Call(null)
     val engine = initializeEngine()
-
-    if (RestServerConfig.scoringEngineMode) {
-      val service = initializeScoringServiceDependencies(engine)
-      createActorSystemAndBindToHttp(service)
-    }
-    else {
-      val service = initializeApiServiceDependencies(engine)
-      createActorSystemAndBindToHttp(service)
-    }
-
+    val serviceFactory = ServiceFactoryCreator.createFactory(RestServerConfig.serviceMode, RestServerConfig.schemeIsHttps)
+    val scheme = if (RestServerConfig.schemeIsHttps) "https" else "http"
+    info(s"Binding service to $scheme://${RestServerConfig.host}:${RestServerConfig.port}")
+    // Bind the Spray Actor to an HTTP(s) Port
+    val serviceInstance = serviceFactory.createInstance(engine)
+    serviceFactory.startInstance(serviceInstance)
   }
 
   /**
@@ -95,58 +85,6 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
     engine
-  }
-
-  private def initializeApiServiceDependencies(engine: Engine)(implicit invocation: Invocation): ApiService = {
-    // setup common directives
-    val serviceAuthentication = new AuthenticationDirective(engine)
-    val commonDirectives = new CommonDirectives(serviceAuthentication)
-
-    // setup V1 Services
-    val commandService = new v1.CommandService(commonDirectives, engine)
-    val dataFrameService = new v1.FrameService(commonDirectives, engine)
-    val graphService = new v1.GraphService(commonDirectives, engine)
-    val modelService = new v1.ModelService(commonDirectives, engine)
-    val queryService = new v1.QueryService(commonDirectives, engine)
-    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, modelService, queryService)
-
-    // setup main entry point
-    new ApiService(commonDirectives, apiV1Service)
-  }
-
-  private def initializeScoringServiceDependencies(engine: Engine)(implicit invocation: Invocation): ScoringService = {
-    // setup main entry point
-    new ScoringService(engine)
-  }
-
-  /**
-   * We need an ActorSystem to host our application in and to bind it to an HTTP port
-   */
-  private def createActorSystemAndBindToHttp(apiService: ApiService): Unit = {
-    // create the system
-    implicit val system = ActorSystem("intelanalytics-api")
-    implicit val timeout = Timeout(5.seconds)
-
-    val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
-
-    // Bind the Spray Actor to an HTTP Port
-    // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = RestServerConfig.host, port = RestServerConfig.port)
-  }
-
-  /**
-   * We need an ActorSystem to host our application in and to bind it to an HTTP port
-   */
-  private def createActorSystemAndBindToHttp(scoringService: ScoringService): Unit = {
-    // create the system
-    implicit val system = ActorSystem("intelanalytics-api")
-    implicit val timeout = Timeout(5.seconds)
-
-    val service = system.actorOf(Props(new ScoringServiceActor(scoringService)), "scoring-service")
-
-    // Bind the Spray Actor to an HTTP Port
-    // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = RestServerConfig.host, port = RestServerConfig.port)
   }
 
   /**
