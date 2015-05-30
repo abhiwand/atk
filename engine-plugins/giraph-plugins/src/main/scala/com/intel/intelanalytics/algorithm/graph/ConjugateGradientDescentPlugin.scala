@@ -39,24 +39,85 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ConjugateGradientDescent(graph: GraphReference,
+                                    @ArgDoc("""The edge properties which contain the input edge values.
+A comma-separated list of property names when declaring
+more than one edge property.""")
                                     edgeValuePropertyList: List[String],
+                                    @ArgDoc("""The name of edge label.""")
                                     inputEdgeLabelList: List[String],
+                                    @ArgDoc("""The list of vertex properties to store output vertex values.""")
                                     outputVertexPropertyList: List[String],
+                                    @ArgDoc("""The name of vertex property which contains vertex type.
+Vertices must have a property to identify them as either left-side
+("L") or right-side ("R").""")
                                     vertexTypePropertyKey: String,
+                                    @ArgDoc("""The name of edge property which contains edge type.""")
                                     edgeTypePropertyKey: String,
+                                    @ArgDoc(""""True" means a vector as vertex value is supported,
+"False" means a vector as vertex value is not supported.
+Default is "False".""")
                                     vectorValue: Option[Boolean] = None,
+                                    @ArgDoc("""The maximum number of supersteps (iterations) that the algorithm
+will execute.
+Default is 20.""")
                                     maxSupersteps: Option[Int] = None,
+                                    @ArgDoc("""The amount of change in cost function that will be tolerated at
+convergence.
+If the change is less than this threshold, the algorithm exits
+before it reaches the maximum number of supersteps.
+The valid value range is all float and zero.
+Default is 0.""")
                                     convergenceThreshold: Option[Double] = None,
+                                    @ArgDoc("""The tradeoff parameter that controls the strength of regularization.
+Larger value implies stronger regularization that helps prevent
+overfitting but may cause the issue of underfitting if the value is too
+large.
+The value is usually determined by cross validation (CV).
+The valid value range is all positive float and zero.
+Default is 0.065.""")
                                     cgdLambda: Option[Float] = None,
+                                    @ArgDoc("""The length of feature vector to use in CGD model.
+Larger value in general results in more accurate parameter estimation,
+but slows down the computation.
+The valid value range is all positive int.
+Default is 3.""")
                                     featureDimension: Option[Int] = None,
+                                    @ArgDoc("""The learning curve output interval.
+Each CGD iteration is composed of 2 supersteps.
+Default is 1 (means two supersteps).""")
                                     learningCurveOutputInterval: Option[Int] = None,
+                                    @ArgDoc("""Checks if the graph meets certain structural requirements before starting
+the algorithm: at every vertex, the in-degree equals the out-degree.
+This algorithm is intended for undirected graphs.
+Therefore, this is a necessary, but insufficient, check for valid input.""")
                                     validateGraphStructure: Option[Boolean] = None,
+                                    @ArgDoc("""True means turn on the update for bias term and False means turn off
+the update for bias term.
+Turning it on often yields more accurate model with minor performance
+penalty.
+Turning it off disables term update and treats the value of
+bias term as 0.
+Default is False.""")
                                     biasOn: Option[Boolean] = None,
+                                    @ArgDoc("""The maximum edge weight value.
+If an edge weight is larger than this value, the algorithm will throw an
+exception and terminate.
+This option is mainly for graph integrity check.
+Valid value range is all float.
+Default is Infinity.""")
                                     maxValue: Option[Float] = None,
-                                    minValue: Option[Float] = None,
-                                    numIters: Option[Int] = None)
+                                    @ArgDoc("""The minimum edge weight value.
+If an edge weight is smaller than this value, the algorithm will throw an
+exception and terminate.
+This option is mainly for graph integrity check.
+Valid value range is all float.
+Default is -Infinity.""")
+                                        minValue: Option[Float] = None,
+                                        @ArgDoc("")
+                                        numIters: Option[Int] = None)
 
 case class ConjugateGradientDescentResult(value: String)
 
@@ -68,7 +129,20 @@ object ConjugateGradientDescentJsonFormat {
 }
 
 import ConjugateGradientDescentJsonFormat._
+@PluginDoc(oneLine = "Personalized suggestions relyng on Collaborating Filtering.",
+  extended = """The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering
+algorithms.
 
+CGD implementation of the algorithm presented in Y. Koren.
+Factorization Meets the Neighborhood: a Multifaceted Collaborative Filtering
+Model.
+In ACM KDD 2008. (Equation 5)
+
+Notes
+-----
+Vertices must be identified as left-side ("L") or right-side ("R").""",
+  returns = """The configuration and learning curve report for CGD in the format of a
+multiple-line string.""")
 class ConjugateGradientDescentPlugin
     extends CommandPlugin[ConjugateGradientDescent, ConjugateGradientDescentResult] {
 
