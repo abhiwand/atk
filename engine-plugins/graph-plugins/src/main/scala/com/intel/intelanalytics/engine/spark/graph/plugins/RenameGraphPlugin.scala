@@ -39,10 +39,10 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Rename a graph in the database
+ * @PluginDoc(oneLine = "Rename a graph in the database.",
+ * extended = "TBD",
+ * returns = "A value of type declared as the Return type.")
  */
-@PluginDoc(oneLine = "Rename a graph in the database.",
-  extended = "",
-  returns = """A value of type declared as the Return type.""")
 class RenameGraphPlugin extends CommandPlugin[RenameGraphArgs, GraphEntity] {
 
   /**

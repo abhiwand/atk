@@ -43,15 +43,12 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ConnectedComponentsCommand(graph: GraphReference,
                                       @ArgDoc("""The name of edge label used to for performing the connected components
-                                      calculation.""")
-                                      inputEdgeLabel: String,
+                                      calculation.""") inputEdgeLabel: String,
                                       @ArgDoc("""The vertex property which will contain the connected component id for
-                                      each vertex.""")
-                                      outputVertexProperty: String,
+                                      each vertex.""") outputVertexProperty: String,
                                       @ArgDoc("""The convergence progress output interval.
                                       The valid value range is [1, max_supersteps].
-                                      Default is 1 (output every superstep).""")
-                                      convergenceProgressOutputInterval: Option[Int] = None)
+                                      Default is 1 (output every superstep).""") convergenceProgressOutputInterval: Option[Int] = None)
 
 case class ConnectedComponentsResult(value: String) //TODO
 
