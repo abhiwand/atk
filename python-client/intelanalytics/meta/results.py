@@ -105,6 +105,12 @@ def return_lda_train(selfish, json_result):
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
+@postprocessor('frame:/label_propagation')
+def return_label_propagation(selfish, json_result):
+    from intelanalytics import get_frame
+    frame = get_frame(json_result['output_frame']['id'])
+    return { 'frame': frame, 'report': json_result['report'] }
+
 @postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_triangle_count')
 def return_connected_components(selfish, json_result):
     from intelanalytics import get_frame
@@ -113,7 +119,7 @@ def return_connected_components(selfish, json_result):
 
 @postprocessor('graph/graphx_pagerank')
 def return_page_ank(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     vertex_json = json_result["vertex_dictionary_output"]
     edge_json = json_result["edge_dictionary_output"]
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
@@ -122,7 +128,7 @@ def return_page_ank(selfish, json_result):
 
 @postprocessor('graph/ml/belief_propagation','graph/ml/kclique_percolation')
 def return_belief_propagation(selfish, json_result):
-    from intelanalytics.core.frame import get_frame
+    from intelanalytics import get_frame
     vertex_json = json_result['frame_dictionary_output']
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
     return {'vertex_dictionary': vertex_dictionary, 'time': json_result['time']}

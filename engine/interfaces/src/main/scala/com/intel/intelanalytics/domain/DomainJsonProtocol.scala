@@ -374,6 +374,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val topKFormat = jsonFormat4(TopKArgs)
   implicit val exportHdfsCsvPlugin = jsonFormat5(ExportHdfsCsvArgs)
   implicit val exportHdfsJsonPlugin = jsonFormat4(ExportHdfsJsonArgs)
+  implicit val exportHdfsHivePlugin = jsonFormat2(ExportHdfsHiveArgs)
 
   //histogram formats
   implicit val histogramArgsFormat = jsonFormat5(HistogramArgs)

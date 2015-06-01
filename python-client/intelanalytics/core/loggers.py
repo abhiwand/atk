@@ -254,7 +254,8 @@ class ApiLogFormat(object):
                 self = None
             named_args.extend(kwargs.items())
             formatted_args = '' if not named_args else "(%s)" % (", ".join([ApiLogFormat.format_kwarg(k,v) for k, v in named_args]))
-            formatted_self = ApiLogFormat.format_self(self) if function.__name__ != '__init__' else (ApiLogFormat._format_entity(self) + '.') if self is not None else '<None?>.'
+            is_constructor = function.__name__ == '__init__' or function.__name__ == 'new'
+            formatted_self = ApiLogFormat.format_self(self) if not is_constructor else (ApiLogFormat._format_entity(self) + '.') if self is not None else '<None?>.'
 
             return "%s %s%s%s" % (location, formatted_self, ApiLogFormat.format_function(function), formatted_args)
         except Exception as e:
@@ -266,7 +267,7 @@ class ApiLogFormat(object):
 
     @staticmethod
     def format_function(f):
-        return f.__name__
+        return f.__name__ if f.__name__ != '__name' else 'name'  # special case for '__name'
 
     @staticmethod
     def format_self(v):

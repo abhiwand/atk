@@ -156,8 +156,9 @@ trait AbstractEdge extends AbstractRow with Serializable {
     val srcProperty: GBProperty = GBProperty(GraphSchema.vidProperty, srcVertexId())
     val destProperty: GBProperty = GBProperty(GraphSchema.vidProperty, destVertexId())
     if (reversed)
-      GBEdge(None, null, null, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+      GBEdge(None, destProperty.value, srcProperty.value, destProperty, srcProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+
     else
-      GBEdge(None, null, null, srcProperty, destProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
+      GBEdge(None, srcProperty.value, destProperty.value, srcProperty, destProperty, schema.asInstanceOf[EdgeSchema].label, properties.toSet)
   }
 }

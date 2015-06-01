@@ -105,12 +105,7 @@ object BeliefPropagationRunner extends Serializable {
         // convert to graphX vertices
 
         val graphXVertices: RDD[(Long, VertexState)] =
-          inVertices.map(gbVertex => gbVertex.physicalId match {
-            case a: Any => (gbVertex.physicalId.asInstanceOf[Long], bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize))
-            case null => (gbVertex.gbId.value.asInstanceOf[Long], bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize))
-          })
-        //          } (gbVertex.physicalId.asInstanceOf[Long],
-        //            bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
+          inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
 
         val graphXEdges = inEdges.map(edge => bpEdgeStateFromEdge(edge, args.edgeWeightProperty, defaultEdgeWeight))
 
@@ -151,17 +146,10 @@ object BeliefPropagationRunner extends Serializable {
     else {
       defaultEdgeWeight
     }
-    val srcId =
-      gbEdge.tailPhysicalId match {
-        case a: Any => gbEdge.tailPhysicalId.asInstanceOf[Long]
-        case null => gbEdge.tailVertexGbId.value.asInstanceOf[Long]
-      }
+    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
 
-    val destId =
-      gbEdge.headPhysicalId match {
-        case a: Any => gbEdge.headPhysicalId.asInstanceOf[Long]
-        case null => gbEdge.headVertexGbId.value.asInstanceOf[Long]
-      }
+    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
+
     new Edge[Double](srcId, destId, weight)
   }
 
