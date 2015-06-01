@@ -26,6 +26,7 @@ package com.intel.intelanalytics.algorithm.model
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -33,6 +34,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Latent Dirichlet allocation - create a 'new' instance of this model
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class LdaNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

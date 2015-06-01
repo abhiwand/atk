@@ -55,7 +55,7 @@ The |IAT| Python client supports Python 2.7.
 Adding Extra Repositories
 =========================
 
-The EPEL and |IAT| repositories must be installed on the rest server node and
+The EPEL and |IAT| repositories must be installed on the REST server node and
 all spark nodes (master and worker).
 The |IAT| Dependency repository and the yum-s3 package must be installed before
 the |IAT| private repository.
@@ -282,8 +282,8 @@ Installing |IAT| Packages
 Installing On The Master Node
 -----------------------------
 
-Install the |IAT| Python rest server and its dependencies.
-Only one instance of the rest server needs to be installed.
+Install the |IAT| Python REST server and its dependencies.
+Only one instance of the REST server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
 
@@ -313,7 +313,7 @@ running the spark worker role.
 .. _rest_server_configuration:
 
 -------------------------
-Rest Server Configuration
+REST Server Configuration
 -------------------------
 
 From the postgresql client, create a new database and user in postgresql.
@@ -337,7 +337,7 @@ To configure the |IAT| installation, do this:
     $ sudo ./config
 
 Answer the prompts to configure the cluster.
-To see an example of the prompts see :doc:`ad_inst_ia3`.
+To see an example of the prompts see :doc:`/ad_inst_ia3`.
 
 The script goes through all the necessary configurations to get the |IAT|
 service running.
@@ -362,7 +362,7 @@ configuration file are needed.** (:ref:`Skip section <skip_manual_section>`).
 /etc/intelanalytics/rest-server/application.conf
 ------------------------------------------------
 
-The rest server package provides a configuration template file which must be
+The REST server package provides a configuration template file which must be
 used to create a configuration file.
 Copy the configuration template file 'application.conf.tpl' to
 'application.conf' in the same directory, like this:
@@ -379,7 +379,7 @@ Open the file with a text editor:
     $ sudo vi application.conf
 
 All of the changes that need to be made are located at the top of the file.
-See :doc:`appendix_application_conf` for an example 'application.conf' file.
+See :doc:`/appendix_application_conf` for an example 'application.conf' file.
 
 .. _ad_inst_IA_configure_file_system_root:
 
@@ -834,29 +834,29 @@ There should only be a single row per api_key:
 
 If there is more than one row for a single api key, remove one of them or
 create a new database.
-The server will not be able to validate a request from the rest client if there
+The server will not be able to validate a request from the REST client if there
 are duplicate api keys.
 
 After the confirmation of the insert, commands from the python client can be
 sent.
 
 .. index::
-    single: rest server
+    single: REST server
 
-Starting The |IAT| rest Server
+Starting The |IAT| REST Server
 ==============================
 
-Starting the rest server is very easy.
+Starting the REST server is very easy.
 It can be started like any other Linux service.
 
 .. code::
 
     $ sudo service intelanalytics start
 
-After starting the rest server, browse to the host on port 9099
+After starting the REST server, browse to the host on port 9099
 (<master node ip address>:9099) to see if the server started successfully.
 
-Troubleshooting |IAT| rest Server
+Troubleshooting |IAT| REST Server
 =================================
 
 A log gets written to '/var/log/intelanalytics/rest-server/output.log or
@@ -875,7 +875,7 @@ or:
     $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
 
-More details can be found in the :doc:`section on log files <ad_log>`.
+More details can be found in the :doc:`section on log files </ad_log>`.
 
 Upgrading
 =========

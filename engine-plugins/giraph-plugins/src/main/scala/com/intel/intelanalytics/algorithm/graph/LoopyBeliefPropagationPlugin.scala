@@ -38,6 +38,7 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class LoopyBeliefPropagation(graph: GraphReference,
                                   vertexValuePropertyList: List[String],

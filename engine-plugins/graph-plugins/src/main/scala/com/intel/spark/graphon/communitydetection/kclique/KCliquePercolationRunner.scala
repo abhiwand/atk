@@ -133,5 +133,4 @@ object KCliquePercolationRunner {
       map(e => datatypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
   }
 
-
 }

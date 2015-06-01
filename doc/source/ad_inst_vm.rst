@@ -555,7 +555,7 @@ To show the log as it is generated, run ``tail -f``::
 
     $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
-More details can be found in the :doc:`section on log files <ad_log>`.
+More details can be found in the :doc:`section on log files </ad_log>`.
 
 --------
 Updating
@@ -616,5 +616,5 @@ To update::
 Common VM problems
 ------------------
 *   The VM doesn't have enough memory allocated.
-*   The IA rest server wasn't restarted after restart or boot.
+*   The IA REST server wasn't restarted after restart or boot.
 

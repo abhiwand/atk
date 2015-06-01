@@ -104,6 +104,7 @@ class _NamedObjectsFunctionFactory(object):
         Identification names must start with a letter and are limited to
         alphanumeric characters and the ``_`` character.
 
+
         Examples
         --------
 
