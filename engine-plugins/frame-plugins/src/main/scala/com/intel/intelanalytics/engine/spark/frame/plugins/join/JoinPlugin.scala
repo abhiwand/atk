@@ -44,7 +44,7 @@ import JoinJsonFormat._
 /**
  * Join two data frames (similar to SQL JOIN)
  */
-class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs, FrameEntity] {
+class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -68,6 +68,8 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[JoinArgs,
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: JoinArgs)(implicit invocation: Invocation): FrameEntity = {
+    val frames = engine.frames
+
     val leftFrame: SparkFrameData = resolve(arguments.leftFrame.frame)
     val rightFrame: SparkFrameData = resolve(arguments.rightFrame.frame)
 
