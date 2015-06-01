@@ -29,12 +29,14 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.hadoop.io.{ Text, LongWritable }
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SchemaRDD
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, GenericRow }
 import org.apache.hadoop.io.Text
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -199,5 +201,43 @@ object LoadRddFunctions extends Serializable {
       }
       case x => throw new Exception("Unsupported parser: " + x)
     }
+  }
+
+  private[frame] def convertHiveRddToFrameRdd(rdd: SchemaRDD): FrameRdd = {
+    val array: Seq[StructField] = rdd.schema.fields
+    val list = new ListBuffer[Column]
+    for (field <- array) {
+      list += new Column(field.name, FrameRdd.sparkDataTypeToSchemaDataType(field.dataType))
+    }
+    val schema = new FrameSchema(list.toList)
+    val convertedRdd: RDD[org.apache.spark.sql.Row] = rdd.map(row => {
+      val mutableRow = new GenericMutableRow(row.length)
+      row.zipWithIndex.map {
+        case (o, i) => {
+          if (o == null) mutableRow(i) = null
+          else {
+            if (array(i).dataType.getClass == TimestampType.getClass || array(i).dataType.getClass == DateType.getClass) {
+              mutableRow(i) = o.toString
+            }
+            else if (array(i).dataType.getClass == ShortType.getClass) {
+              mutableRow(i) = row.getShort(i).toInt
+            }
+            else if (array(i).dataType.getClass == BooleanType.getClass) {
+              mutableRow(i) = row.getBoolean(i).compareTo(true)
+            }
+            else if (array(i).dataType.getClass == ByteType.getClass) {
+              mutableRow(i) = row.getByte(i).toInt
+            }
+            else {
+              val colType = schema.columnTuples(i)._2
+              mutableRow(i) = o.asInstanceOf[colType.ScalaType]
+            }
+          }
+        }
+      }
+      mutableRow
+    }
+    )
+    new FrameRdd(schema, new SQLContext(rdd.context), FrameRdd.createLogicalPlanFromSql(schema, convertedRdd))
   }
 }

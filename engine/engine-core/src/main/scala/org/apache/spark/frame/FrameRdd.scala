@@ -457,56 +457,6 @@ object FrameRdd {
   }
 
   /**
-   * Converts row object from an RDD[Array[Any]] to an RDD[Product] so that it can be used to create a SchemaRDD
-   * @return RDD[org.apache.spark.sql.Row] with values equal to row object
-   */
-  def toATKRowRDD(schema: Schema, rdd: SchemaRDD): LogicalPlan = {
-    println("toatkrowrdd")
-    val array: Seq[StructField] = rdd.schema.fields
-    val rowRDD: RDD[org.apache.spark.sql.Row] = rdd.map(row => {
-      val mutableRow = new GenericMutableRow(row.length)
-      row.zipWithIndex.map {
-        case (o, i) => {
-          o match {
-            case null => null
-            case _ => {
-              if (array(i).dataType.getClass == TimestampType.getClass || array(i).dataType.getClass == DateType.getClass) {
-                val value = o.toString
-                mutableRow(i) = value
-                println(s"here is the shorttype value ${value}")
-              }
-              else if (array(i).dataType.getClass == ShortType.getClass) {
-                val value = row.getShort(i).toInt
-                mutableRow(i) = value
-                println(s"here is the shorttype value ${value}")
-              }
-              else if (array(i).dataType.getClass == BooleanType.getClass) {
-                val value = row.getBoolean(i).compareTo(true)
-                mutableRow(i) = value
-                println(s"here is the shorttype value ${value}")
-              }
-              else if (array(i).dataType.getClass == ByteType.getClass) {
-                val value = row.getByte(i).toInt
-                mutableRow(i) = value
-                println(s"here is the shorttype value ${value}")
-              }
-              else {
-                val colType = schema.columnTuples(i)._2
-                val value = o.asInstanceOf[colType.ScalaType]
-                mutableRow(i) = value
-                println(s"here is the normal shorttype value ${value}")
-              }
-            }
-
-          }
-        }
-      }
-      mutableRow
-    })
-    createLogicalPlanFromSql(schema, rowRDD)
-  }
-
-  /**
    * Defines a VectorType "StructType" for SchemaRDDs
    */
   val VectorType = ArrayType(DoubleType, containsNull = false)

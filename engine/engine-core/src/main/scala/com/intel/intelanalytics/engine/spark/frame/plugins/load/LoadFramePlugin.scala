@@ -34,8 +34,10 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.catalyst.types._
 
 import spray.json._
@@ -98,14 +100,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     else if (arguments.source.isHiveDb) {
       val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
       val rdd = sqlContext.sql(arguments.source.uri) //use URI
-      val array: Seq[StructField] = rdd.schema.fields
-      val list = new ListBuffer[Column]
-      for (field <- array) {
-        list += new Column(field.name, FrameRdd.sparkDataTypeToSchemaDataType(field.dataType))
-      }
-      val schema = new FrameSchema(list.toList)
-      //val convertedRdd = rdd.map(row => row.zipWithIndex.map{ case (value: Any, i: Int ) => DataTypes.convertToType(value, schema.column(i).dataType)) }
-      unionAndSave(destinationFrame, new FrameRdd(schema, new SQLContext(rdd.context), FrameRdd.toATKRowRDD(schema, rdd)))
+      unionAndSave(destinationFrame, LoadRddFunctions.convertHiveRddToFrameRdd(rdd))
     }
     else if (arguments.source.isFieldDelimited || arguments.source.isClientData) {
       val parser = arguments.source.parser.get
