@@ -493,6 +493,11 @@ object FrameRdd {
     val stringType = StringType.getClass()
     val dateType = DateType.getClass()
     val timeStampType = TimestampType.getClass()
+    val byteType = ByteType.getClass()
+    val binaryType = BinaryType.getClass()
+    val booleanType = BooleanType.getClass()
+    val decimalType = DecimalType.getClass()
+    val shortType = ShortType.getClass()
 
     val a = dataType.getClass()
     a match {
@@ -500,8 +505,13 @@ object FrameRdd {
       case `longType` => int64
       case `floatType` => float32
       case `doubleType` => float64
+      case `decimalType` => float64
+      case `shortType` => int32
       case `stringType` => DataTypes.string
       case `dateType` => DataTypes.string
+      case `byteType` => int32
+      case `binaryType` => int32
+      case `booleanType` => int32
       case `timeStampType` => DataTypes.string
       case _ => throw new IllegalArgumentException(s"unsupported type $a")
     }
