@@ -247,6 +247,9 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LinearRegressionWithSGDTrainPlugin)
   commandPluginRegistry.registerCommand(new LinearRegressionWithSGDPredictPlugin)
   commandPluginRegistry.registerCommand(new LinearRegressionWithSGDNewPlugin)
+  commandPluginRegistry.registerCommand(new NaiveBayesNewPlugin)
+  commandPluginRegistry.registerCommand(new NaiveBayesTrainPlugin)
+  commandPluginRegistry.registerCommand(new NaiveBayesPredictPlugin)
 
   // Administrative Plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)

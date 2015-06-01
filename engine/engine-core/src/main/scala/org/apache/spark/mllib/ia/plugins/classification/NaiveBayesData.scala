@@ -23,14 +23,15 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.mllib.classification.NaiveBayesModel
+
 
 /**
  * Command for loading model data into existing model in the model database.
- * @param logRegModel Trained MLLib's LogisticRegressionModel object
+ * @param naiveBayesModel Trained MLLib's LinearRegressionModel object
  * @param observationColumns Handle to the observation columns of the data frame
  */
-case class LogisticRegressionData(logRegModel: LogisticRegressionModel, observationColumns: List[String]) {
+case class NaiveBayesData(naiveBayesModel: NaiveBayesModel, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
-  require(logRegModel != null, "logRegModel must not be null")
+  require(naiveBayesModel != null, "naiveBayesModel must not be null")
 }

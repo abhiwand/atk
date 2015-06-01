@@ -24,12 +24,13 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.classification.{NaiveBayesModel, LogisticRegressionModel, SVMModel}
+import org.apache.spark.mllib.ia.plugins.clustering.KMeansPredictArgs
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
+import org.apache.spark.mllib.ia.plugins.clustering._
+import org.apache.spark.mllib.ia.plugins.clustering.{KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -250,6 +251,24 @@ object MLLibJsonProtocol {
 
   }
 
+  implicit object NaiveBayesModelFormat extends JsonFormat[NaiveBayesModel] {
+
+    override def write(obj: NaiveBayesModel): JsValue = {
+
+      JsObject(
+        "labels" -> obj.labels.toJson,
+        "pi" -> obj.pi.toJson,
+        "theta" -> obj.theta.toJson
+      )
+    }
+
+    override def read(json:JsValue): NaiveBayesModel = {
+      val fields = new JsObjectFieldParser(json.asJsObject)
+      new NaiveBayesModel(fields("labels"),fields("pi"), fields("theta"))
+    }
+
+  }
+
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
@@ -260,4 +279,29 @@ object MLLibJsonProtocol {
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val linRegDataFormat = jsonFormat2(LinearRegressionData)
+  implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
 }
+
+/**
+ * Helper for parsing simple JSON objects
+ * @param jsObject
+ */
+class JsObjectFieldParser(jsObject: JsObject) {
+
+  def apply[T2: JsonReader](key: String): T2 = {
+    expectKey(jsObject.fields, key)
+  }
+
+  private def expectKey[T1 <: JsValue,T2: JsonReader](map: Map[String,T1], key: String): T2 = {
+    val json = getOrInvalid(map, key)
+    json.convertTo[T2]
+  }
+
+  private def getOrInvalid[T](map: Map[String,T], key: String): T = {
+    // throw exception if a programmer made a mistake
+    map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
+  }
+
+}
+
+class InvalidJsonException(message: String) extends RuntimeException(message)

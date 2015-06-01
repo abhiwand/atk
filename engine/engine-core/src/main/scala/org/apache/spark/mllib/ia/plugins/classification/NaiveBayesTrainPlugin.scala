@@ -23,29 +23,46 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
+import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.model.ModelReference
+
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.classification.{ SVMModel, SVMWithSGD }
+import org.apache.spark.mllib.classification.NaiveBayes
+import org.apache.spark.mllib.classification.NaiveBayesModel
+import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-/* Run the SVMWithSGD model on the test frame*/
-class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
+//Implicits needed for JSON conversion
+import spray.json._
+
+case class NaiveBayesTrainArgs(model:ModelReference,
+                               frame: FrameReference,
+                               labelColumn: String,
+                               observationColumns: List[String],
+                               lambda: Option[Double]=None){
+  require(model != null, "model is required")
+  require(frame != null, "frame is required")
+  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
+  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
+}
+
+class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, UnitReturn] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:svm/test"
+  override def name: String = "model:naive_bayes/train"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
@@ -53,10 +70,10 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
    * Number of Spark jobs that get created by running this command
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
+  override def numberOfJobs(arguments: NaiveBayesTrainArgs)(implicit invocation: Invocation) = 109
 
-  override def numberOfJobs(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation) = 9
   /**
-   * Get the predictions for observations in a test frame
+   * Run MLLib's NaiveBayes() on the training frame and create a Model for it.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -64,35 +81,26 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
-    {
-      val models = engine.models
-      val modelMeta = models.expectModel(arguments.model)
+  override def execute(arguments: NaiveBayesTrainArgs)(implicit invocation: Invocation): UnitReturn = {
+    val models = engine.models
+    val frames = engine.frames
 
-      val frame: SparkFrameData = resolve(arguments.frame)
-      // load frame as RDD
-      val testFrameRdd = frame.data
+    val inputFrame = frames.expectFrame(arguments.frame)
+    val modelMeta = models.expectModel(arguments.model)
 
-      //Extracting the model and data to run on
-      val svmJsObject = modelMeta.data.get
-      val svmData = svmJsObject.convertTo[SVMData]
-      val svmModel = svmData.svmModel
-      if (arguments.observationColumns.isDefined) {
-        require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
-      }
-      val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
+    //create RDD from the frame
+    val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
+    val labeledTrainRdd: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
-      val labeledTestRDD: RDD[LabeledPoint] = testFrameRdd.toLabeledPointRDD(arguments.labelColumn, svmColumns)
+    //Running MLLib
+    val naiveBayes = new NaiveBayes()
+    naiveBayes.setLambda(arguments.lambda.getOrElse(1.0))
 
-      //predicting and testing
-      val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
-        val prediction = svmModel.predict(point.features)
-        Array[Any](point.label, prediction)
-      }
+    val naiveBayesModel = naiveBayes.run(labeledTrainRdd)
+    val jsonModel = new NaiveBayesData(naiveBayesModel, arguments.observationColumns)
 
-      //Run Binary classification metrics
-      val posLabel: String = "1.0"
-      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRDD, 0, 1, posLabel, 1)
-
-    }
+    //TODO: Call save instead once implemented for models
+    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    new UnitReturn
+  }
 }
