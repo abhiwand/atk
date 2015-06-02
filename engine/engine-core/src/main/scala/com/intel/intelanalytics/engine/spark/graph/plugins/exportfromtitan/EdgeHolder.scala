@@ -21,29 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan
 
-import org.scalatest.{ Matchers, WordSpec }
-import org.scalatest.mock.MockitoSugar
-import com.esotericsoftware.kryo.Kryo
-import org.mockito.Mockito._
-import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
+import com.intel.graphbuilder.elements.GBEdge
 
-class EngineKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar {
-
-  "EngineKryoRegistrator" should {
-
-    "register expected classes" in {
-
-      val kryo = mock[Kryo]
-
-      // invoke method under test
-      new EngineKryoRegistrator().registerClasses(kryo)
-
-      verify(kryo).register(classOf[Row])
-      verify(kryo).register(classOf[LegacyFrameRdd])
-    }
-
-  }
-}
+/**
+ * Holds an edge plus src and dest vertex labels.
+ */
+case class EdgeHolder(edge: GBEdge, srcLabel: String, destLabel: String)
