@@ -65,8 +65,8 @@ class GBVertexRddBuilder(gbVertices: RDD[GBVertex], vertexCommunitySet: RDD[(Lon
         java.lang.Long.valueOf(vertexId),
         Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
         //Set(Property(communityPropertyLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
-      //TODO: Once we support list datatypes remove mkString
-       Set(Property(communityPropertyLabel,communitySet.mkString(","))))
+        //TODO: Once we support list datatypes remove mkString
+        Set(Property(communityPropertyLabel, communitySet.mkString(","))))
 
     })
     newGBVertices

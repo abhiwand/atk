@@ -73,20 +73,20 @@ class GBVertexRddBuilderTest extends FlatSpec with Matchers with TestingSparkCon
 
     }
 
-    //TODO: Uncomment when the fix for supportimng list datatypes encorpoarted in GBVertexRddBuilder's setVertex()
-//  "The GB vertex list" should
-//    "include empty community property, if the vertex doesn't belong to any community" in new GBVertexSetTest {
-//
-//      val rddOfGbVerticesList: RDD[GBVertex] = sparkContext.parallelize(gbVerticesList)
-//      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
-//
-//      val gbVertexSetter: GBVertexRddBuilder = new GBVertexRddBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
-//      val newGBVerticesAsGBVertexSetterOutput: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
-//
-//      val rddOfNewGBVertexList: RDD[GBVertex] = sparkContext.parallelize(newGBVertexList)
-//
-//      rddOfNewGBVertexList.collect().toSet shouldEqual newGBVerticesAsGBVertexSetterOutput.collect().toSet
-//
-//    }
+  //TODO: Uncomment when the fix for supportimng list datatypes encorpoarted in GBVertexRddBuilder's setVertex()
+  //  "The GB vertex list" should
+  //    "include empty community property, if the vertex doesn't belong to any community" in new GBVertexSetTest {
+  //
+  //      val rddOfGbVerticesList: RDD[GBVertex] = sparkContext.parallelize(gbVerticesList)
+  //      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
+  //
+  //      val gbVertexSetter: GBVertexRddBuilder = new GBVertexRddBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
+  //      val newGBVerticesAsGBVertexSetterOutput: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
+  //
+  //      val rddOfNewGBVertexList: RDD[GBVertex] = sparkContext.parallelize(newGBVertexList)
+  //
+  //      rddOfNewGBVertexList.collect().toSet shouldEqual newGBVerticesAsGBVertexSetterOutput.collect().toSet
+  //
+  //    }
 
 }
