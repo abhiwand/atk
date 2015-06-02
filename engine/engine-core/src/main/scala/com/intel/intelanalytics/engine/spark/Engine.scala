@@ -90,14 +90,14 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
-  //Registering model plugins
+  // TODO: all plugins should move out of engine-core into plugin modules
   commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPlugin)
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
 
-  // Administrative Plugins
+  // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
 
   /* This progress listener saves progress update to command table */

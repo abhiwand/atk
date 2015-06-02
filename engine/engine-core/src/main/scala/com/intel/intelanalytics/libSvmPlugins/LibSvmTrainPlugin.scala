@@ -38,6 +38,8 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 //Implicits needed for JSON conversion
 import spray.json._
 
+// TODO: all plugins should move out of engine-core into plugin modules
+
 class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] {
   /**
    * The name of the command.
