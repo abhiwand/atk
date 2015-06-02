@@ -10,6 +10,7 @@ Python API
 .. toctree::
     :maxdepth: 3
 
+    connect.rst
     datatypes/index.rst
     datasources/index.rst
     frames/index.rst

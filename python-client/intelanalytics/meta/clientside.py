@@ -273,12 +273,11 @@ def get_api_decorator(logger, parent_class_name=None):
 
 def _patch_member_name(class_name, member):
     """Patch up the name of the member.  ie. remove leading underscores"""
-    prefix = "__"
     name = member.__name__
+    prefix = "__" if name not in ['__init__', 'connect'] else ''
     if name[:len(prefix)] != prefix:
         raise RuntimeError("@api applied to incorrectly named member '%s' in object '%s'" % (name, class_name))
-    if name != '__init__':
-        member.__name__ = name[len(prefix):]
+    member.__name__ = name[len(prefix):]
 
 
 def get_clientside_api_stub(name):
