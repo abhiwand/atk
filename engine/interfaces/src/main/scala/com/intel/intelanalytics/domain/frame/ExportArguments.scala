@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import com.intel.intelanalytics.engine.ArgDocAnnotation
+import com.intel.intelanalytics.engine.plugin.ArgDoc
+
 /**
  * Input arguments class for export to CSV
  */
@@ -50,7 +53,7 @@ case class ExportHdfsJsonArgs(frame: FrameReference,
  * Input arguments class for export to Hive
  */
 case class ExportHdfsHiveArgs(frame: FrameReference,
-                              tableName: String) {
+                              @ArgDoc("The name of the hive table tat will contain the exported frame") tableName: String) {
   require(frame != null, "frame is required")
   require(tableName != null, "table name is required")
 }

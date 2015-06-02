@@ -26,13 +26,15 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs
 import java.nio.file.FileSystem
 
 import com.intel.intelanalytics.UnitReturn
+import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportHdfsHiveArgs
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.PluginDocAnnotation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, Invocation }
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.EcdfJsonFormat
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -46,6 +48,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Export a frame to csv file
  */
+@PluginDoc(oneLine = "Creates a new hive table and copies the frame data",
+  extended = """Copies the frame to a new hive table. Will fail if the table by the given name exists in hive""",
+  returns = "None")
 class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitReturn] {
 
   /**
