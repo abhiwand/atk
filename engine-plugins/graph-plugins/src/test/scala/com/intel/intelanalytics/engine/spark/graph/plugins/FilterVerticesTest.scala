@@ -21,16 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.graph.seamless
+package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.{ TestingSparkContextFlatSpec, TestingSparkContext }
-import com.intel.intelanalytics.engine.spark.graph.plugins.FilterVerticesFunctions
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.Rows._
-import scala.Some
+import org.scalatest.Matchers
 
 class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
 

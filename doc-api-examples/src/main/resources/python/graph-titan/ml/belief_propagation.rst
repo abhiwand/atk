@@ -1,43 +1,3 @@
-Classification on sparse data using belief propagation.
-
-Belief propagation by the sum-product algorithm.
-This algorithm analyzes a graphical model with prior beliefs using sum
-product message passing.
-The priors are read from a property in the graph, the posteriors are written
-to another property in the graph.
-
-This is the GraphX-based implementation of belief propagation.
-
-
-Parameters
-----------
-prior_property : str
-    Name of the vertex property which contains the prior belief for the
-    vertex.
-posterior_property : str
-    Name of the vertex property which will contain the posterior belief for
-    each vertex.
-edge_weight_property : str (optional)
-    The edge property that contains the edge weight for each edge.
-    Default is 1.
-convergence_threshold : double (optional)
-    Minimum average change in posterior beliefs between supersteps.
-    Belief propagation will terminate when the average change in posterior
-    beliefs between supersteps is less than or equal to this threshold.
-    Default is 0.
-max_iterations : int (optional)
-    The maximum number of supersteps that the algorithm will execute.
-    The valid range is all positive int.
-    Default is 20.
-
-
-Returns
--------
-str
-    Progress report for belief propagation in the format of a multiple-line
-    string.
-
-
 Examples
 --------
 .. only:: html
@@ -46,7 +6,7 @@ Examples
 
         >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True, state_space_size = 5, max_iterations = 6)
 
-        {u'log': u'Vertex Count: 80000\\nEdge Count: 318398\\nIATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\\nIATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\\nIATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\\nIATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\\nIATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\\n', u'time': 70.248999999999995}
+        {u'log': u'Vertex Count: 80000\nEdge Count: 318398\nIATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\nIATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\nIATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\nIATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\nIATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\n', u'time': 70.248999999999995}
 
         >>> graph.query.gremlin("g.V [0..4]")
 
@@ -59,13 +19,13 @@ Examples
         >>> graph.ml.belief_propagation("value", "lbp_output", string_output = True,
         ...    state_space_size = 5, max_iterations = 6)
 
-        {u'log': u'Vertex Count: 80000\\n
-        Edge Count: 318398\\n
-        IATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\\n
-        IATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\\n
-        IATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\\n
-        IATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\\n
-        IATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\\n
+        {u'log': u'Vertex Count: 80000\n
+        Edge Count: 318398\n
+        IATPregel engine has completed iteration 1  The average delta is 0.6853413553663811\n
+        IATPregel engine has completed iteration 2  The average delta is 0.38626944467366386\n
+        IATPregel engine has completed iteration 3  The average delta is 0.2365329376479823\n
+        IATPregel engine has completed iteration 4  The average delta is 0.14170840479478952\n
+        IATPregel engine has completed iteration 5  The average delta is 0.08676093923623975\n
         ', u'time': 70.248999999999995}
 
         >>> graph.query.gremlin("g.V [0..4]")

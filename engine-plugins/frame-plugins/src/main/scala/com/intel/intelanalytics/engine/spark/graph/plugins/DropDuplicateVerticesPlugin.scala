@@ -44,7 +44,7 @@ import org.apache.spark.frame.FrameRdd
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
+class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -79,6 +79,7 @@ class DropDuplicateVerticesPlugin(graphStorage: SparkGraphStorage) extends Spark
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
+    val graphStorage = engine.graphs
     val vertexFrame = frames.expectFrame(arguments.frame)
 
     require(vertexFrame.isVertexFrame, "vertex frame is required")

@@ -16,7 +16,7 @@ Prerequisites
 These instructions assume you have already installed:
 
 - Python 2.7:
-- |IAT| Python Rest Client and required dependencies.
+- |IAT| Python REST Client and required dependencies.
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_.
 
 Verify the Python plugin is enabled in IntelliJ by choosing
@@ -57,7 +57,7 @@ Setup
         *Apply*.
     #)  Choose *Libraries* in the left hand pane.
     #)  Choose the plus sign *+*.
-    #)  Choose *Java* and browse to the |IAT| Python Rest Client libraries.
+    #)  Choose *Java* and browse to the |IAT| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/intelanalytics/rest-client/python'.
     #)  Choose *classes*.

@@ -36,6 +36,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, Gra
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
 
@@ -43,24 +44,16 @@ import scala.concurrent._
  * Represents the arguments for KClique Percolation algorithm
  *
  * @param graph Reference to the graph for which communities has to be determined.
- * @param cliqueSize Parameter determining clique-size and used to find communities. Must be at least 2.
- *                   Larger values of cliqueSize result in fewer, smaller, more cohesive communities.
- * @param communityPropertyLabel Name of the community property of vertex that will be
- *                               updated/created in the input graph.
  */
-case class KClique(graph: GraphReference,
-                   cliqueSize: Int,
-                   communityPropertyLabel: String) {
+case class KCliqueArgs(graph: GraphReference,
+                       @ArgDoc("""The sizes of the cliques used to form communities.
+Larger values of clique size result in fewer, smaller communities that are more connected.
+Must be at least 2.""") cliqueSize: Int,
+                       @ArgDoc("""Name of the community property of vertex that will be updated/created in the graph.
+This property will contain for each vertex the set of communities that contain that
+vertex.""") communityPropertyLabel: String) {
   require(cliqueSize > 1, "Invalid clique size; must be at least 2")
 }
-
-/**
- * The result object.
- *
- * Note: For now it is returning the execution time
- *
- * @param time execution time
- */
 
 case class KCliqueResult(time: Double)
 
@@ -70,7 +63,7 @@ case class KCliqueResult(time: Double)
 
 object KCliquePercolationJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
-  implicit val kcliqueFormat = jsonFormat3(KClique)
+  implicit val kcliqueFormat = jsonFormat3(KCliqueArgs)
   implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
 }
 
@@ -78,7 +71,19 @@ import KCliquePercolationJsonFormat._
 /**
  * KClique Percolation plugin class.
  */
-class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
+@PluginDoc(oneLine = "Find groups of vertices with similar attributes.",
+  extended = """Notes
+-----
+Spawns a number of Spark jobs that cannot be calculated before execution
+(it is bounded by the diameter of the clique graph derived from the input graph).
+For this reason, the initial loading, clique enumeration and clique-graph
+construction steps are tracked with a single progress bar (this is most of
+the time), and then successive iterations of analysis of the clique graph
+are tracked with many short-lived progress bars, and then finally the
+result is written out.""",
+  returns = "Execution time."
+)
+class KCliquePercolation extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/kclique_percolation
@@ -93,13 +98,13 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: KClique)(implicit invocation: Invocation): Int = {
+  override def numberOfJobs(arguments: KCliqueArgs)(implicit invocation: Invocation): Int = {
     8 + 2 * arguments.cliqueSize
   }
 
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
+  override def execute(arguments: KCliqueArgs)(implicit invocation: Invocation): KCliqueResult = {
 
     val start = System.currentTimeMillis()
 
