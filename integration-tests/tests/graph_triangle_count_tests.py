@@ -33,7 +33,8 @@ if ia.server.port != 19099:
 ia.connect()
 
 class GraphTriangleCountTest(unittest.TestCase):
-    def testTriangleCount(self):
+
+    def test_triangle_count(self):
         graph_data = "/datasets/triangle_count_small.csv"
         schema = [('from_node',str),('to_node',str),('max_k',ia.int64),('cc',ia.int64)]
         frame = ia.Frame(ia.CsvFile(graph_data,schema))
