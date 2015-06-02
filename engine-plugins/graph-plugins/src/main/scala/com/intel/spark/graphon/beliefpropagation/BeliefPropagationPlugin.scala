@@ -131,9 +131,6 @@ class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, 
 
     val start = System.currentTimeMillis()
 
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)

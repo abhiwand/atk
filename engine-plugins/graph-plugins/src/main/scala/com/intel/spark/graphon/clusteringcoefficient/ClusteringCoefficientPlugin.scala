@@ -84,9 +84,6 @@ class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficie
 
   override def execute(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): ClusteringCoefficientResult = {
 
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     val frames = engine.frames
     val graphs = engine.graphs
 
