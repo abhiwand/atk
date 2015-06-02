@@ -63,7 +63,7 @@
                                 </excludes>
                             </artifactSet>
                             <filters>
-                                <filter>
+                                <filter>import javassist.bytecode.stackmap.TypeTag
                                     <artifact>org.apache.hive:hive-exec</artifact>
                                     <includes>
                                         <include>org/apache/hive/**</include>

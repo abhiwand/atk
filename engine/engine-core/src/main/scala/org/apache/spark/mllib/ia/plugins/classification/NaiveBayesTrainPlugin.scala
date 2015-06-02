@@ -32,7 +32,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.NaiveBayes
 import org.apache.spark.mllib.classification.NaiveBayesModel
-import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
+import org.apache.spark.mllib.classification.{ NaiveBayes, NaiveBayesModel }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -44,11 +44,11 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 //Implicits needed for JSON conversion
 import spray.json._
 
-case class NaiveBayesTrainArgs(model:ModelReference,
+case class NaiveBayesTrainArgs(model: ModelReference,
                                frame: FrameReference,
                                labelColumn: String,
                                observationColumns: List[String],
-                               lambda: Option[Double]=None){
+                               lambda: Option[Double] = None) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")

@@ -25,7 +25,6 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import org.apache.spark.mllib.classification.NaiveBayesModel
 
-
 /**
  * Command for loading model data into existing model in the model database.
  * @param naiveBayesModel Trained MLLib's LinearRegressionModel object
