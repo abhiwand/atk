@@ -35,17 +35,26 @@ import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class PageRank(graph: GraphReference,
-                    inputEdgeLabelList: List[String],
-                    outputVertexPropertyList: List[String],
-                    maxSupersteps: Option[Int] = None,
-                    convergenceThreshold: Option[Double] = None,
-                    resetProbability: Option[Double] = None,
-                    convergenceProgressOutputInterval: Option[Int] = None)
+                    @ArgDoc("""The name(s) of edge label(s).""") inputEdgeLabelList: List[String],
+                    @ArgDoc("""Vertex properties to store output vertex values.""") outputVertexPropertyList: List[String],
+                    @ArgDoc("""The maximum number of supersteps that the algorithm will execute.
+The valid range is all positive int.
+The default value is 20.""") maxSupersteps: Option[Int] = None,
+                    @ArgDoc("""The amount of change in cost function that will be tolerated at convergence.
+If the change is less than this threshold, the algorithm exits earlier,
+before it reaches the maximum number of supersteps.
+The valid range is all float and zero.
+The default value is 0.001.""") convergenceThreshold: Option[Double] = None,
+                    @ArgDoc("""The probability that the random walk of a page is reset.""") resetProbability: Option[Double] = None,
+                    @ArgDoc("""The convergence progress output interval.
+The valid value range is [1, max_supersteps].
+The default value is 1, which means output every superstep.""") convergenceProgressOutputInterval: Option[Int] = None)
 
 case class PageRankResult(value: String) //TODO
 
@@ -57,7 +66,10 @@ object PageRankJsonFormat {
 }
 
 import PageRankJsonFormat._
-
+@PluginDoc(oneLine = "Determining which vertices are the most important.",
+  extended = """The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.""",
+  returns = """The configuration and convergence report for Pagerank in a multiple-line
+  string.""")
 class PageRankPlugin
     extends CommandPlugin[PageRank, PageRankResult] {
 

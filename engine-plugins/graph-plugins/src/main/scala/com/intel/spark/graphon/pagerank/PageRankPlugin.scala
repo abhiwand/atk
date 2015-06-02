@@ -47,23 +47,18 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Parameters for executing page rank.
  * @param graph Reference to the graph object on which to compute pagerank.
- * @param output_property Name of the property to which pagerank value will be stored on vertex and edge.
- * @param input_edge_labels List of edge labels to consider for pagerank computation. If None, all edges are considered.
- * @param max_iterations Optional Integer. The maximum number of iterations that will be invoked. Defaults to 20.
- * @param reset_probability Optional Double. Random reset probability
- * @param convergence_tolerance Optional Double. Tolerance allowed at convergence
- *                             (smaller values tend to yield accurate results)
  */
 case class PageRankArgs(graph: GraphReference,
-                        output_property: String,
-                        input_edge_labels: Option[List[String]] = None,
-                        max_iterations: Option[Int] = None,
-                        reset_probability: Option[Double] = None,
-                        convergence_tolerance: Option[Double] = None) {
+                        @ArgDoc("""Name of the property to which pagerank value will be stored on vertex and edge.""") output_property: String,
+                        @ArgDoc("""List of edge labels to consider for pagerank computation. If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None,
+                        @ArgDoc("""The maximum number of iterations that will be invoked. Defaults to 20.""") max_iterations: Option[Int] = None,
+                        @ArgDoc("""Random reset probability.""") reset_probability: Option[Double] = None,
+                        @ArgDoc("""Tolerance allowed at convergence (smaller values tend to yield accurate results).""") convergence_tolerance: Option[Double] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
 }
 
@@ -87,14 +82,12 @@ object PageRankJsonFormat {
 
 import PageRankJsonFormat._
 
-/**
- * PageRank plugin implements the pagerank computation on a graph by invoking graphx pagerank.
- *
- * Pulls graph from underlying store, sends it off to the PageRankRunner, and then writes the output graph
- * back to the underlying store.
- *
- * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
- */
+@PluginDoc(oneLine = "The pagerank computation on a graph by invoking graphx pagerank.",
+  extended = """Pulls graph from underlying store, sends it off to the PageRankRunner, and then writes the output graph
+back to the underlying store.
+
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
+  returns = "")
 class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph/graphx_pagerank"

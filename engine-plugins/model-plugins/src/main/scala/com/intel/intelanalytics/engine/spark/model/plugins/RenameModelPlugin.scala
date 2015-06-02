@@ -36,6 +36,7 @@ import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // TODO: shouldn't be a Spark Plugin, doesn't need Spark
 

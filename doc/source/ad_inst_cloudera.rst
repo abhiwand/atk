@@ -278,6 +278,8 @@ Leave all other fields in their default values and click *Continue*.
 
 See :ref:`Fig. 11.6 <fig_11_06>` for changes to make near the top:
 
+.. _fig_11_06:
+
 .. only:: html
 
     .. figure:: ad_inst_cloudera_hbase.*
@@ -295,6 +297,8 @@ See :ref:`Fig. 11.6 <fig_11_06>` for changes to make near the top:
         Hbase
 
 See :ref:`Fig. 11.7 <fig_11_07>` for changes to make near the bottom:
+
+.. _fig_11_07:
 
 .. only:: html
 

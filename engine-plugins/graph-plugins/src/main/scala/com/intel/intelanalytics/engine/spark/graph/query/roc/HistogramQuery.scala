@@ -33,6 +33,7 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /*
  * TODO: The ROC code does not compute the standard ROC curve per 
@@ -57,7 +58,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param property_type  The type of the first and second property.
  *                       Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
  *                       The default value is VERTEX_PROPERTY
- * @param vertex_type_property_key The property name for vertex type. The default value "vertex_type".
+ * @param vertex_type_property_key The property name for vertex type. The default value \"vertex_type\".
  *                                 We need this name to know data is in train, validation or test splits
  * @param split_types The list of split types to include in the report.
  *                    A semi-colon separated string with train (TR), validation (VA), and test (TE) splits.
@@ -66,14 +67,26 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param histogram_buckets The number of buckets to plot histogram. The default value is 30.
  */
 case class HistogramParams(graph: GraphReference,
-                           prior_property_list: String,
-                           posterior_property_list: Option[String],
+                           @ArgDoc("""Name of the property containing the vector of prior probabilities.
+The prior probabilities are represented in the graph as a delimited list
+of real values between [0,1], one for each feature dimension.""") prior_property_list: String,
+                           @ArgDoc("""Name of the property containing the vector of posterior probabilities.
+The posterior probabilities are represented in the graph as a delimited
+list of real values between [0,1], one for each feature dimension.""") posterior_property_list: Option[String],
                            // enable_roc: Option[Boolean],
                            // roc_threshold: Option[List[Double]],
-                           property_type: Option[String],
-                           vertex_type_property_key: Option[String],
-                           split_types: Option[List[String]],
-                           histogram_buckets: Option[Int]) {
+                           @ArgDoc("""The type of property for the prior and posterior values.
+Valid values are either \"VERTEX_PROPERTY\" or \"EDGE_PROPERTY\".
+The default value is \"VERTEX_PROPERTY\".""") property_type: Option[String],
+                           @ArgDoc("""The property name for vertex type.
+The default value \"vertex_type\".
+This property indicates whether the data is in the train, validation, or
+test splits.""") vertex_type_property_key: Option[String],
+                           @ArgDoc("""The list of split types to include in the report.
+The default value is [\"TR\", \"VA\", \"TE\"] for train (TR), validation (VA),
+and test (TE) splits.""") split_types: Option[List[String]],
+                           @ArgDoc("""The number of buckets to plot in histograms.
+The default value is 30.""") histogram_buckets: Option[Int]) {
   // require(roc_threshold == None|| roc_threshold.get.size == 3, "Please input roc_threshold using [min, step, max] format")
 }
 
@@ -98,8 +111,25 @@ object HistogramJsonFormat {
 }
 
 import HistogramJsonFormat._
-
+@PluginDoc(oneLine = "Make histogram of probabilities.",
+  extended = """Generate histograms of prior and posterior probabilities.
+The prerequisite is that either LBP, ALS or CGD has been run before this query.""")
 class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
+  /**
+   * "dict
+   *     Dictionary containing prior histograms, and, optionally, the posterior
+   *     histograms.
+   *     The data returned is composed of multiple components:
+   * prior_histograms : array
+   *     An array of histograms of prior probabilities for each feature dimension.
+   *     The histogram is comprised of an array of buckets and corresponding counts.
+   *     The buckets are all open to the left except for the last which is closed,
+   *     for example, for the array [1,5,10] the buckets are [1, 5] [5, 10].
+   *     The size of the counts array is smaller than the buckets array by 1.
+   * posterior_histograms : array
+   *     An array of histograms of posterior probabilities for each feature
+   *     dimension.""")
+   */
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample

@@ -33,6 +33,8 @@ import libsvm.{ svm_model, svm, svm_node }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
+// TODO: all plugins should move out of engine-core into plugin modules
+
 class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
 
   /**

@@ -573,7 +573,7 @@ Glossary
         parameter and the function is coded directly in the method call.
 
         Further examples and explanations can be found at this page:
-        :doc:`ds_apir`.
+        :doc:`/ds_apir`.
 
         Related term: :term:`Python User-defined Function`.
 
@@ -728,9 +728,9 @@ Glossary
         A Python User-defined Function (UDF) is a Python function written by
         the user on the client-side which can execute in a distributed fashion
         on the cluster.
-        For further explanation, see :doc:`ds_apir`
+        For further explanation, see :doc:`/ds_apir`
 
-        Further examples and explanations can be found at :doc:`ds_apir`.
+        Further examples and explanations can be found at :doc:`/ds_apir`.
 
         Related: :term:`Lambda Function`.
 

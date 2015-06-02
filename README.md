@@ -40,6 +40,24 @@ Intel Analytics Toolkit (ATK)
   * import intelanalytics as ia
   * ia.connect()
 
+# Developer Todo
+* Most items under misc should move to separate repos
+* There are a few lingering plugins under engine-core that should move to plugin modules
+* Replace Slick with something nicer (even straight JDBC would be better)
+* Replace Spray DSL with something nicer (the DSL is confusing to use and our REST layer is too thin to make people learn a DSL)
+* Properly support directed and undirected graphs (get rid of "bi-directional")
+* Data types in graphs/frames needs to be extended greatly
+* Improve Plugins
+  * Further separation between framework and plugins (ideally these are even separate projects)
+  * Possibly separate plugin from yarn job
+  * Dependency Injection
+  * Need many more extension points for 3rd parties
+  * Meta-programming needs to be expanded to support more kinds of objects
+* Integration tests need support added to be able to test Giraph and Titan functions
+* testutils should probably merge into engine-core
+* giraph-plugins needs refactoring of packages (the current hierarchy is very poorly organized)
+* Need Maven profiles to make it easier for developers to build only part of the project
+
 # Links
 * [GAO Wiki](https://securewiki.ith.intel.com/display/GAO/Graph+Analytics+Home)
 * [JIRA](https://jira01.devtools.intel.com/secure/Dashboard.jspa)

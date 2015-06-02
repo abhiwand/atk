@@ -53,6 +53,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import DomainJsonProtocol._
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import java.util.UUID
 
@@ -62,7 +63,7 @@ import java.util.UUID
  * @param outputProperty Name of the property to which connected components value will be stored on vertex and edge.
  */
 case class ConnectedComponentsArgs(graph: GraphReference,
-                                   outputProperty: String) {
+                                   @ArgDoc("""Name of the property to which connected components value will be stored on vertex and edge.""") outputProperty: String) {
   require(!outputProperty.isEmpty, "Output property label must be provided")
 }
 
@@ -77,14 +78,12 @@ object ConnectedComponentsJsonFormat {
 
 import ConnectedComponentsJsonFormat._
 
-/**
- * ConnectedComponent plugin implements the connected components computation on a graph by invoking graphx api.
- *
- * Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault, and then writes the output graph
- * back to the underlying store.
- *
- * Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
- */
+@PluginDoc(oneLine = "Implements the connected components computation on a graph by invoking graphx api.",
+  extended = """Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault,
+and then writes the output graph back to the underlying store.
+
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
+  returns = """TBD""")
 class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsReturn] {
   override def name: String = "graph/graphx_connected_components"
 
