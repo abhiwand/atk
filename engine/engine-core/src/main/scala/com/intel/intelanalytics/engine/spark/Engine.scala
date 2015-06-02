@@ -28,115 +28,43 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
-import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.engine.spark.frame.plugins.sortedk.SortedKPlugin
 import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
-import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.AssignSamplePlugin
 
-import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.{ BinColumnEqualWidthPlugin, BinColumnEqualDepthPlugin, HistogramPlugin, BinColumnPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
-import com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct.DotProductPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.exporthdfs.{ ExportHdfsHivePlugin, ExportHdfsCsvPlugin, ExportHdfsJsonPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
-import com.intel.intelanalytics.engine.spark.frame.plugins.join.{ RddJoinParam, JoinArgs, JoinPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRddFunctions }
-import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.partitioning.{ CoalescePlugin, RepartitionPlugin, PartitionCountPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation.{ CorrelationPlugin, CorrelationMatrixPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovariancePlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance.CovarianceMatrixPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKPlugin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins._
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.ExportToGraphPlugin
-import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
-import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRdd }
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.graph.plugins.LoadGraphPlugin
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
-import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
 import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.frame.EntropyArgs
-import com.intel.intelanalytics.domain.frame.TopKArgs
-import com.intel.intelanalytics.domain.frame.AddColumnsArgs
-import com.intel.intelanalytics.domain.frame.RenameFrameArgs
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.domain.frame.DropDuplicatesArgs
 import com.intel.intelanalytics.domain.{ Status, VectorValue, CreateEntityArgs, FilterArgs }
-import com.intel.intelanalytics.domain.frame.load.LoadFrameArgs
-import com.intel.intelanalytics.domain.frame.CumulativeSumArgs
-import com.intel.intelanalytics.domain.frame.TallyArgs
-import com.intel.intelanalytics.domain.frame.TallyPercentArgs
-import com.intel.intelanalytics.domain.frame.CumulativePercentArgs
-import com.intel.intelanalytics.domain.frame.QuantilesArgs
-import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
-import com.intel.intelanalytics.domain.frame.AssignSampleArgs
-import com.intel.intelanalytics.domain.frame.GroupByArgs
-import com.intel.intelanalytics.domain.frame.RenameColumnsArgs
+
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DropColumnsArgs
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.query._
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsArgs
-import com.intel.intelanalytics.domain.frame.ColumnMedianArgs
-import com.intel.intelanalytics.domain.frame.ColumnModeArgs
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.domain.frame.ClassificationMetricArgs
-import com.intel.intelanalytics.domain.frame.BinColumnArgs
-import com.intel.intelanalytics.domain.frame.QuantileValues
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.frame.FlattenColumnArgs
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
-import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
-import com.intel.intelanalytics.domain.frame.ColumnModeReturn
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import scala.util.{ Try, Success, Failure }
-import java.util.StringTokenizer
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -162,91 +90,12 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
-  // Registering frame plugins
-  commandPluginRegistry.registerCommand(new LoadFramePlugin)
-  commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
-  commandPluginRegistry.registerCommand(new AssignSamplePlugin)
-  commandPluginRegistry.registerCommand(new GroupByPlugin)
-  commandPluginRegistry.registerCommand(new FlattenColumnPlugin())
-  commandPluginRegistry.registerCommand(new BinColumnPlugin)
-  commandPluginRegistry.registerCommand(new ColumnModePlugin)
-  commandPluginRegistry.registerCommand(new ColumnMedianPlugin)
-  commandPluginRegistry.registerCommand(new ColumnSummaryStatisticsPlugin)
-  commandPluginRegistry.registerCommand(new CopyFramePlugin)
-  commandPluginRegistry.registerCommand(new CountWherePlugin)
-  commandPluginRegistry.registerCommand(new FilterPlugin)
-  commandPluginRegistry.registerCommand(new JoinPlugin(frames))
-  commandPluginRegistry.registerCommand(new DropColumnsPlugin)
-  commandPluginRegistry.registerCommand(new AddColumnsPlugin)
-  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
-  commandPluginRegistry.registerCommand(new QuantilesPlugin)
-  commandPluginRegistry.registerCommand(new CovarianceMatrixPlugin)
-  commandPluginRegistry.registerCommand(new CovariancePlugin)
-  commandPluginRegistry.registerCommand(new ExportHdfsCsvPlugin)
-  commandPluginRegistry.registerCommand(new ExportHdfsJsonPlugin)
-  commandPluginRegistry.registerCommand(new ExportHdfsHivePlugin)
-  commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
-  commandPluginRegistry.registerCommand(new EcdfPlugin)
-  commandPluginRegistry.registerCommand(new TallyPercentPlugin)
-  commandPluginRegistry.registerCommand(new TallyPlugin)
-  commandPluginRegistry.registerCommand(new CumulativePercentPlugin)
-  commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
-  commandPluginRegistry.registerCommand(new EntropyPlugin)
-  commandPluginRegistry.registerCommand(new TopKPlugin)
-  commandPluginRegistry.registerCommand(new SortByColumnsPlugin)
-  commandPluginRegistry.registerCommand(new CorrelationMatrixPlugin)
-  commandPluginRegistry.registerCommand(new CorrelationPlugin)
-  commandPluginRegistry.registerCommand(new PartitionCountPlugin)
-  commandPluginRegistry.registerCommand(new SizeOnDiskPlugin)
-  commandPluginRegistry.registerCommand(new CoalescePlugin)
-  commandPluginRegistry.registerCommand(new RepartitionPlugin)
-  commandPluginRegistry.registerCommand(new HistogramPlugin)
-  commandPluginRegistry.registerCommand(new BinColumnEqualDepthPlugin)
-  commandPluginRegistry.registerCommand(new BinColumnEqualWidthPlugin)
-  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
-  commandPluginRegistry.registerCommand(new DotProductPlugin)
-  commandPluginRegistry.registerCommand(new SortedKPlugin)
-
-  // Registering graph plugins
-  commandPluginRegistry.registerCommand(new LoadGraphPlugin)
-  commandPluginRegistry.registerCommand(new DefineVertexPlugin(graphs))
-  commandPluginRegistry.registerCommand(new DefineEdgePlugin(graphs))
-  val addVerticesPlugin = new AddVerticesPlugin(frames, graphs)
-  commandPluginRegistry.registerCommand(addVerticesPlugin)
-  commandPluginRegistry.registerCommand(new AddEdgesPlugin(addVerticesPlugin))
-  commandPluginRegistry.registerCommand(new VertexCountPlugin)
-  commandPluginRegistry.registerCommand(new EdgeCountPlugin)
-  commandPluginRegistry.registerCommand(new GraphInfoPlugin)
-  commandPluginRegistry.registerCommand(new FilterVerticesPlugin(graphs))
-  commandPluginRegistry.registerCommand(new DropDuplicateVerticesPlugin(graphs))
-  commandPluginRegistry.registerCommand(new RenameVertexColumnsPlugin)
-  commandPluginRegistry.registerCommand(new RenameEdgeColumnsPlugin)
-  commandPluginRegistry.registerCommand(new DropVertexColumnPlugin)
-  commandPluginRegistry.registerCommand(new DropEdgeColumnPlugin)
-  commandPluginRegistry.registerCommand(new ExportToTitanGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new ExportToGraphPlugin(frames, graphs))
-  commandPluginRegistry.registerCommand(new CopyGraphPlugin)
-
   //Registering model plugins
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDPredictPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDNewPlugin)
-  commandPluginRegistry.registerCommand(new KMeansNewPlugin)
-  commandPluginRegistry.registerCommand(new KMeansPredictPlugin)
-  commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPlugin)
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDPredictPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDNewPlugin)
 
   // Administrative Plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)

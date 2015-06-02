@@ -35,13 +35,14 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class AnnotateWeightedDegreesArgs(graph: GraphReference,
-                                       outputPropertyName: String,
-                                       degreeOption: Option[String] = None,
-                                       inputEdgeLabels: Option[List[String]] = None,
-                                       edgeWeightProperty: Option[String] = None,
-                                       edgeWeightDefault: Option[Double] = None) {
+                                       @ArgDoc("") outputPropertyName: String,
+                                       @ArgDoc("") degreeOption: Option[String] = None,
+                                       @ArgDoc("") inputEdgeLabels: Option[List[String]] = None,
+                                       @ArgDoc("") edgeWeightProperty: Option[String] = None,
+                                       @ArgDoc("") edgeWeightDefault: Option[Double] = None) {
 
   // validate arguments
 
@@ -86,16 +87,12 @@ object AnnotateWeightedDegreesJsonFormat {
 
 import AnnotateWeightedDegreesJsonFormat._
 
-/**
- * Calculates the weighted degree of each vertex with respect to an (optional) set of labels.
- *
- *
- *
- * Pulls graph from underlying store, calculates weighted degrees and writes them into the property specified,
- * and then writes the output graph to the underlying store.
- *
- * Right now it uses only Titan for graph storage. Other backends will be supported later.
- */
+@PluginDoc(oneLine = "Calculates the weighted degree of each vertex with respect to an (optional) set of labels.",
+  extended = """Pulls graph from underlying store, calculates weighted degrees and writes them into the property
+specified, and then writes the output graph to the underlying store.
+
+Right now it uses only Titan for graph storage. Other backends will be supported later.""",
+  returns = "")
 class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, AnnotateWeightedDegreesReturn] {
 
   override def name: String = "graph/annotate_weighted_degrees"

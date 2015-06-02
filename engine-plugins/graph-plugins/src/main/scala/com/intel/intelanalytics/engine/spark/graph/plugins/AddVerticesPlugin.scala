@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Add Vertices to a Vertex Frame
  */
-class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] {
+class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -69,13 +69,16 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AddVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
+    val frames = engine.frames
+    val graphs = engine.graphs
+
     // validate arguments
     val sourceFrameEntity = frames.expectFrame(arguments.sourceFrame)
     sourceFrameEntity.schema.validateColumnsExist(arguments.allColumnNames)
 
     // run the operation
     val sourceRdd = frames.loadFrameData(sc, sourceFrameEntity)
-    addVertices(sc, arguments, sourceRdd)
+    addVertices(sc, frames, graphs, arguments, sourceRdd)
 
     new UnitReturn
   }
@@ -88,7 +91,7 @@ class AddVerticesPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) ex
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(sc: SparkContext, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
+  def addVertices(sc: SparkContext, frames: SparkFrameStorage, graphs: SparkGraphStorage, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
     val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
     require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")

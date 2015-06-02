@@ -66,7 +66,7 @@ class CsvFile(DataFile):
 
     Returns
     -------
-    class : CsvFile object
+    class
         A class which holds both the name and schema of a CSV file.
 
 
@@ -156,8 +156,9 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list : list of str
-            Field names
+        list
+            A list of field name strings.
+
 
         Examples
         --------
@@ -194,10 +195,12 @@ class CsvFile(DataFile):
         """
         Schema field types from the CsvFile class.
 
+
         Returns
         -------
-        list : list of types
-            Field types
+        list
+            A list of field types.
+
 
         Examples
         --------
@@ -208,7 +211,7 @@ class CsvFile(DataFile):
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema = [("col1", int32), ("col2", float32)])
                 >>> print(csv_class.field_types())
 
         .. only:: html
@@ -247,6 +250,7 @@ class LineFile(DataFile):
     """
     Define a line-separated file.
 
+
     Parameters
     ----------
     file_name : str
@@ -259,10 +263,12 @@ class LineFile(DataFile):
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
 
+
     Returns
     -------
-    class : LineFile object
-        A class which holds the name of a Line file.
+    class
+        A class which holds the name of a Line File.
+
 
     Examples
     --------
@@ -318,6 +324,7 @@ class JsonFile(MultiLineFile):
     When JSON files are loaded into the system all top level JSON objects are
     recorded into the frame as seperate elements.
 
+
     Parameters
     ----------
     file_name : str
@@ -330,10 +337,12 @@ class JsonFile(MultiLineFile):
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
 
+
     Returns
     -------
-    class : JsonFile object
+    class
         An object which holds both the name and tag of a JSON file.
+
 
     Examples
     --------
@@ -383,23 +392,23 @@ class JsonFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-        '{ "obj": {
-            "color": "blue",
-            "size": 3,
-            "shape": "square" }
-        }'
-        '{ "obj": {
-            "color": "green",
-            "size": 7,
-            "shape": "triangle" }
-        }'
-        '{ "obj": {
-            "color": "orange",
-            "size": 10,
-            "shape": "square" }
-        }'
+          '{ "obj": {
+              "color": "blue",
+              "size": 3,
+              "shape": "square" }
+          }'
+          '{ "obj": {
+              "color": "green",
+              "size": 7,
+              "shape": "triangle" }
+          }'
+          '{ "obj": {
+              "color": "orange",
+              "size": 10,
+              "shape": "square" }
+          }'
 
     Parse values out of the XML column using the add_columns method:
 
@@ -453,6 +462,7 @@ class XmlFile(MultiLineFile):
     into the highest level elements found with the specified tag name and
     places them into a column called data_lines.
 
+
     Parameters
     ----------
     file_name : str
@@ -467,10 +477,12 @@ class XmlFile(MultiLineFile):
     tag_name : str
         Tag name used to determine the split of elements into separate records.
 
+
     Returns
     -------
-    class : XmlFile object
+    class
         An object which holds both the name and tag of a XML file.
+
 
     Examples
     --------
@@ -524,25 +536,25 @@ class XmlFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-         '<square>
+          '<square>
                 <name>left</name>
                 <size>3</size>
-            </square>'
-         '<square color="blue">
+           </square>'
+          '<square color="blue">
                 <name>right</name>
                 <size>5</size>
-            </square>'
+           </square>'
 
     Parse values out of the XML column using the add_columns method:
 
     .. code::
 
         >>> def parse_my_xml(row):
-        ...    import xml.etree.ElementTree as ET
-        ...    ele = ET.fromstring(row[0])
-        ...    return (ele.get("color"), ele.find("name").text, ele.find("size").text)
+        ...     import xml.etree.ElementTree as ET
+        ...     ele = ET.fromstring(row[0])
+        ...     return (ele.get("color"), ele.find("name").text, ele.find("size").text)
 
         >>> my_frame.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
@@ -595,7 +607,7 @@ class HiveQuery(DataFile):
 
     Examples
     --------
-    Given a hive table named person having name and age among other columns.
+    Given a hive table *person* having *name* and *age* among other columns.
     A simple query could be to get the query for the name and age
     .. code::
 

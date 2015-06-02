@@ -27,6 +27,7 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema.{ Column, VertexSchema, _ }
+import com.intel.intelanalytics.engine.{ FrameStorage, GraphStorage }
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameStorage }
@@ -52,11 +53,6 @@ import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 /**
- * Holds an edge plus src and dest vertex labels.
- */
-case class EdgeHolder(edge: GBEdge, srcLabel: String, destLabel: String)
-
-/**
  * holds 3 labels
  * @param edgeLabel the label of the edge
  * @param srcLabel the label (or type) of the source vertex
@@ -67,7 +63,7 @@ case class LabelTriplet(edgeLabel: String, srcLabel: String, destLabel: String)
 /**
  * Export from ia.TitanGraph to ia.Graph
  */
-class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
+class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
 
   override def name: String = "graph:titan/export_to_graph"
 
@@ -86,7 +82,9 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
    */
   override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): GraphEntity = {
 
-    val titanGraphEntity = graphs.expectGraph(arguments.graph)
+    val graphs = engine.graphs
+
+    val titanGraphEntity = engine.graphs.expectGraph(arguments.graph)
     require(titanGraphEntity.isTitan, "Titan graph is required for this operation")
 
     val (vertices, edges) = graphs.loadFromTitan(sc, titanGraphEntity)
@@ -117,8 +115,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
     vertexSchemas.foreach(schema => graphs.defineVertexType(targetGraph.toReference, schema))
     edgeSchemas.foreach(schema => graphs.defineEdgeType(targetGraph.toReference, schema))
 
-    saveVertices(labeledVertices, targetGraph.toReference)
-    saveEdges(edgesWithCorrectedLabels.map(_.edge), targetGraph.toReference)
+    saveVertices(graphs, engine.frames.asInstanceOf[SparkFrameStorage], labeledVertices, targetGraph.toReference)
+    saveEdges(graphs, engine.frames, edgesWithCorrectedLabels.map(_.edge), targetGraph.toReference)
 
     vertices.unpersist()
     edges.unpersist()
@@ -171,8 +169,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
    * @param edges edge rdd
    * @param targetGraph destination graph instance
    */
-  def saveEdges(edges: RDD[GBEdge], targetGraph: GraphReference)(implicit invocation: Invocation) {
-    graphs.expectSeamless(targetGraph.id).edgeFrames.foreach(edgeFrame => {
+  def saveEdges(graphs: GraphStorage, frames: SparkFrameStorage, edges: RDD[GBEdge], targetGraph: GraphReference)(implicit invocation: Invocation) {
+    graphs.expectSeamless(targetGraph).edgeFrames.foreach(edgeFrame => {
       val schema = edgeFrame.schema.asInstanceOf[EdgeSchema]
       val filteredEdges: RDD[GBEdge] = edges.filter(e => e.label == schema.label)
 
@@ -188,8 +186,8 @@ class ExportToGraphPlugin(frames: SparkFrameStorage, graphs: SparkGraphStorage) 
    * @param vertices vertices rdd
    * @param targetGraph destination graph instance
    */
-  def saveVertices(vertices: RDD[GBVertex], targetGraph: GraphReference)(implicit invocation: Invocation) {
-    graphs.expectSeamless(targetGraph.id).vertexFrames.foreach(vertexFrame => {
+  def saveVertices(graphs: GraphStorage, frames: SparkFrameStorage, vertices: RDD[GBVertex], targetGraph: GraphReference)(implicit invocation: Invocation) {
+    graphs.expectSeamless(targetGraph).vertexFrames.foreach(vertexFrame => {
       val schema = vertexFrame.schema.asInstanceOf[VertexSchema]
 
       val filteredVertices: RDD[GBVertex] = vertices.filter(v => {

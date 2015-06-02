@@ -90,4 +90,4 @@ where "<SCRIPT_NAME>" is any of the scripts.
 Logs
 ====
 
-Details about logs can be found in the section on :doc:`log files <ad_log>`.
+Details about logs can be found in the section on :doc:`log files </ad_log>`.

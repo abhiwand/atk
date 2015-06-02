@@ -77,10 +77,12 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
 
     val sparkContext = new SparkContext(sparkConf)
     if (!SparkEngineConfig.isSparkOnYarn) {
-      val path = jarPath("engine-core")
-      info(s"addJar() path=$path")
-      sparkContext.addJar(path)
+      // TODO: plugin jars should be added based on the jar the plugin is coming from instead of all of them like this
+      val paths = List(jarPath("engine-core"), jarPath("frame-plugins"), jarPath("graph-plugins"), jarPath("model-plugins"))
+      info(s"addJar() paths=$paths")
+      paths.foreach(sparkContext.addJar)
     }
+
     sparkContext
   }
 

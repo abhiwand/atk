@@ -135,7 +135,7 @@ For the time being, plugin authors may implement specific interfaces that
 declare their need for a particular service, for example,
 SparkSupport for direct access to a SparkContext.
 
-See also :doc:`ad_bkm`.
+See also :doc:`/ad_bkm`.
 
 ------------------------
 Creating a CommandPlugin

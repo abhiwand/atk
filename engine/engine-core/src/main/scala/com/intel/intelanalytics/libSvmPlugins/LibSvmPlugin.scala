@@ -27,7 +27,6 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class LibSvmPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {

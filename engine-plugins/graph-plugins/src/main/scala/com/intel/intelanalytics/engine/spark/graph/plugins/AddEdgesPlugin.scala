@@ -45,7 +45,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Add Vertices to a Vertex Frame
  */
-class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
+class AddEdgesPlugin extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
 
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
@@ -81,6 +81,7 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     // dependencies (later to be replaced with dependency injection)
     val graphs = engine.graphs.asInstanceOf[SparkGraphStorage]
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
+
     // validate arguments
     val edgeFrameEntity = frames.expectFrame(arguments.edgeFrame)
     require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
@@ -111,11 +112,12 @@ class AddEdgesPlugin(addVerticesPlugin: AddVerticesPlugin) extends SparkCommandP
     if (arguments.isCreateMissingVertices) {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
-      addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      val addVerticesPlugin = new AddVerticesPlugin
+      addVerticesPlugin.addVertices(sc, frames, graphs, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
 
       // refresh graph from DB for building self-to-self graph edge
       graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
-      addVerticesPlugin.addVertices(sc, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(sc, frames, graphs, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids
