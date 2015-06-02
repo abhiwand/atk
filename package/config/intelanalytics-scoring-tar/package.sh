@@ -22,13 +22,12 @@ rm $package-source.tar.gz
 mkdir -p  tarballs/$package/bin
 mkdir -p  tarballs/$package/conf
 mkdir -p  tarballs/$package/lib
+mkdir -p  tarballs/$package/data
 
-
-cp -v  config/$package/application.conf tarballs/$package/conf
-cp -v  config/$package/logback.xml tarballs/$package/conf
-#cp -Rv config/$package/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
-cp -v  config/$package/socring-server.sh tarballs/$package/bin/
-
+cp -v  config/intelanalytics-scoring-tar/logback.xml tarballs/$package/conf
+#cp -Rv config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
+cp -v config/intelanalytics-scoring-tar/scoring-server.sh tarballs/$package/bin/
+cp -v config/intelanalytics-scoring-tar/application.conf tarballs/$package/conf
 
 
 jars="scoring-models.jar  interfaces.jar"
