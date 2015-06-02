@@ -23,14 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
-import java.io.File
-
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{ TestingTitan, TestingSparkContextWordSpec, DirectoryUtils, LogUtils }
-import com.thinkaurelius.titan.core.util.TitanCleanup
-import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
+import com.intel.testutils.{ LogUtils, TestingSparkContextWordSpec, TestingTitan }
 import com.tinkerpop.blueprints.Graph
-import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
 import org.scalatest.BeforeAndAfter
 
 trait TestingTitanWithSparkWordSpec extends TestingSparkContextWordSpec with BeforeAndAfter with TestingTitan {

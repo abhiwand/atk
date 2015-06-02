@@ -39,11 +39,16 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ConnectedComponentsCommand(graph: GraphReference,
-                                      inputEdgeLabel: String,
-                                      outputVertexProperty: String,
-                                      convergenceProgressOutputInterval: Option[Int] = None)
+                                      @ArgDoc("""The name of edge label used to for performing the connected components
+                                      calculation.""") inputEdgeLabel: String,
+                                      @ArgDoc("""The vertex property which will contain the connected component id for
+                                      each vertex.""") outputVertexProperty: String,
+                                      @ArgDoc("""The convergence progress output interval.
+                                      The valid value range is [1, max_supersteps].
+                                      Default is 1 (output every superstep).""") convergenceProgressOutputInterval: Option[Int] = None)
 
 case class ConnectedComponentsResult(value: String) //TODO
 
@@ -55,7 +60,16 @@ object ConnectedComponentsJsonFormat {
 }
 
 import ConnectedComponentsJsonFormat._
+@PluginDoc(oneLine = "Make sub-graph of interconnected but isolated vertices.",
+  extended = """Label vertices by their connected component in the graph induced by a given
+edge label.
 
+Notes
+-----
+It is prerequisite that the edge label in the property graph must be
+bidirectional.""",
+  returns = """The configuration and convergence report for Connected Components in the
+format of a multiple-line string.""")
 class ConnectedComponentsPlugin
     extends CommandPlugin[ConnectedComponentsCommand, ConnectedComponentsResult] {
 

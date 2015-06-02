@@ -17,6 +17,12 @@ JsonFile
     :members:
     :inherited-members:
 
+HiveQuery
+--------
+.. autoclass:: intelanalytics.HiveQuery
+    :members:
+    :inherited-members:
+
 LineFile
 --------
 .. autoclass:: intelanalytics.LineFile

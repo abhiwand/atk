@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphEntity, LoadGraphArgs, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphReference, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
 
 /**
@@ -36,6 +36,8 @@ trait GraphStorage {
 
   /** Lookup a Graph, throw an Exception if not found */
   def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity
+
+  def expectSeamless(graphRef: GraphReference): SeamlessGraphMeta
 
   @deprecated("please use expectGraph() instead")
   def lookup(id: Long)(implicit invocation: Invocation): Option[GraphEntity]
@@ -55,5 +57,9 @@ trait GraphStorage {
   def getGraphByName(name: Option[String])(implicit invocation: Invocation): Option[GraphEntity]
 
   def scheduleDeletion(graph: GraphEntity)(implicit invocation: Invocation): Unit
+
+  def defineVertexType(graphRef: GraphReference, vertexSchema: VertexSchema)(implicit invocation: Invocation): SeamlessGraphMeta
+
+  def defineEdgeType(graphRef: GraphReference, edgeSchema: EdgeSchema)(implicit invocation: Invocation): SeamlessGraphMeta
 
 }

@@ -43,13 +43,14 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.Await
 
 case class AnnotateDegreesArgs(graph: GraphReference,
-                               outputPropertyName: String,
-                               degreeOption: Option[String] = None,
-                               inputEdgeLabels: Option[List[String]] = None) {
+                               @ArgDoc("") outputPropertyName: String,
+                               @ArgDoc("") degreeOption: Option[String] = None,
+                               @ArgDoc("") inputEdgeLabels: Option[List[String]] = None) {
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
 
   // validate arguments
@@ -85,16 +86,12 @@ object AnnotateDegreesJsonFormat {
 
 import AnnotateDegreesJsonFormat._
 
-/**
- * Calculates the degree of each vertex with respect to an (optional) set of labels.
- *
- *
- *
- * Pulls graph from underlying store, calculates degrees and writes them into the property specified,
- * and then writes the output graph to the underlying store.
- *
- * Right now it uses only Titan for graph storage. Other backends will be supported later.
- */
+@PluginDoc(oneLine = "Calculates the degree of each vertex with respect to an (optional) set of labels.",
+  extended = """Pulls graph from underlying store, calculates degrees and writes them into the property specified,
+and then writes the output graph to the underlying store.
+
+Right now it uses only Titan for graph storage. Other backends will be supported later.""",
+  returns = "")
 class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDegreesReturn] {
 
   override def name: String = "graph/annotate_degrees"

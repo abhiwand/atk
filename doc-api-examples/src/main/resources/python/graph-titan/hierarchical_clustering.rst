@@ -1,21 +1,3 @@
-Build hierarchical clustering over an initial titan graph.
-
-Parameter
----------
-dist:str    column name for the edge distance.
-
-Returns
--------
-A set of titan vertices and edges representing the internal clustering of the
-graph.
-
-
-Notes
------
-The internal vertices and edges are for graph navigation and are added to the
-initial graph.
-
-
 Examples
 --------
 The data file sample_graph.txt is a file in the following format: src, dest,
