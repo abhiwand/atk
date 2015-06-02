@@ -33,6 +33,8 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
+// TODO: all plugins should move out of engine-core into plugin modules
+
 class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEntity] {
   /**
    * The name of the command.
