@@ -34,6 +34,7 @@ import ru._
 import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class Mixed(frameId: Int, frame: FrameReference, graphId: Int, graph: GraphReference) {
 }

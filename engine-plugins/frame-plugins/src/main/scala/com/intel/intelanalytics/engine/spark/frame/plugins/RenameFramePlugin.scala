@@ -30,14 +30,24 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
+ * Parameters
+ * ----------
+ * new_name : str
+ *   the new name of the frame.
+ */
+
+/**
  * Rename a frame
  */
+@PluginDoc(oneLine = "Change the name of the current frame.",
+  extended = """Set the name of this frame.""")
 class RenameFramePlugin extends CommandPlugin[RenameFrameArgs, FrameEntity] {
 
   /**

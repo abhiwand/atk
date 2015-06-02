@@ -47,24 +47,6 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
  * Get histogram and optionally ROC curve on property values
  *
  * @param graph The graph reference
- * @param prior_property_list The property name on which users want to get histogram.
- *                            When used without second_property_name, this property name can from either prior
- *                            or posterior properties. When used together with second_property_name, expect the
- *                            first_property_name is from prior properties, and the second_property_name is from
- *                            posterior properties.
- *
- * @param posterior_property_list The property name on which users want to get histogram.
- *                                The default value is empty string.
- * @param property_type  The type of the first and second property.
- *                       Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
- *                       The default value is VERTEX_PROPERTY
- * @param vertex_type_property_key The property name for vertex type. The default value \"vertex_type\".
- *                                 We need this name to know data is in train, validation or test splits
- * @param split_types The list of split types to include in the report.
- *                    A semi-colon separated string with train (TR), validation (VA), and test (TE) splits.
- *                    The default value is "TR;VA;TE"
- *
- * @param histogram_buckets The number of buckets to plot histogram. The default value is 30.
  */
 case class HistogramParams(graph: GraphReference,
                            @ArgDoc("""Name of the property containing the vector of prior probabilities.

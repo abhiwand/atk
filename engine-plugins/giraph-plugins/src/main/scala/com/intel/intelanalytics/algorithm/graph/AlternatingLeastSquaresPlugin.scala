@@ -37,23 +37,68 @@ import scala.concurrent.duration._
 import scala.concurrent._
 
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class AlternatingLeastSquares(graph: GraphReference,
-                                   edgeValuePropertyList: List[String],
-                                   inputEdgeLabelList: List[String],
-                                   outputVertexPropertyList: List[String],
-                                   vertexTypePropertyKey: String,
-                                   edgeTypePropertyKey: String,
-                                   vectorValue: Option[Boolean] = None,
-                                   maxSupersteps: Option[Int] = None,
-                                   convergenceThreshold: Option[Double] = None,
-                                   alsLambda: Option[Float] = None,
-                                   featureDimension: Option[Int] = None,
-                                   learningCurveOutputInterval: Option[Int] = None,
-                                   validateGraphStructure: Option[Boolean] = None,
-                                   biasOn: Option[Boolean] = None,
-                                   maxValue: Option[Float] = None,
-                                   minValue: Option[Float] = None)
+                                   @ArgDoc("""The edge properties which contain the input edge values.
+This is a single str.
+If more than one edge property is used, this str is a comma-separated list of property names.""") edgeValuePropertyList: List[String],
+                                   @ArgDoc("""Name of edge label.""") inputEdgeLabelList: List[String],
+                                   @ArgDoc("""The list of vertex properties to store output vertex values.""") outputVertexPropertyList: List[String],
+                                   @ArgDoc("""The name of vertex property which contains vertex type.
+Vertices must have a property to identify them as either left-side (\"L\") or right-side (\"R\").""") vertexTypePropertyKey: String,
+                                   @ArgDoc("""The name of edge property which contains edge type.""") edgeTypePropertyKey: String,
+                                   @ArgDoc("""\"True\" means a vector as vertex value is supported,
+\"False\" means a vector as vertex value is not supported.
+Default is \"False\".""") vectorValue: Option[Boolean] = None,
+                                   @ArgDoc("""The maximum number of supersteps (iterations) that the
+algorithm will execute.
+Default is 20.""") maxSupersteps: Option[Int] = None,
+                                   @ArgDoc("""The amount of change in cost function that will be tolerated at
+convergence.
+If the change is less than this threshold, the algorithm exits earlier
+before it reaches the maximum number of supersteps.
+The valid value range is all float and zero.
+Default is 0.""") convergenceThreshold: Option[Double] = None,
+                                   @ArgDoc("""The tradeoff parameter that controls the strength of
+regularization.
+Larger value implies stronger regularization that helps prevent
+overfitting but may cause the issue of underfitting if the value is
+too large.
+The value is usually determined by cross validation (CV).
+The valid value range is all positive float and zero.
+Default is 0.065.""") alsLambda: Option[Float] = None,
+                                   @ArgDoc("""The length of feature vector to use in ALS model.
+Larger value in general results in more accurate parameter estimation,
+but slows down the computation.
+The valid value range is all positive int.
+Default is 3.""") featureDimension: Option[Int] = None,
+                                   @ArgDoc("""The learning curve output interval.
+Each ALS iteration is composed of 2 supersteps.
+Default is 1 (2 supersteps).""") learningCurveOutputInterval: Option[Int] = None,
+                                   @ArgDoc("""Checks if the graph meets certain structural requirements
+before starting
+the algorithm: at every vertex, the in-degree equals the out-degree.
+ALS expects an undirected graph, so this is a necessary
+but insufficient indication of validity.""") validateGraphStructure: Option[Boolean] = None,
+                                   @ArgDoc("""True means turn on the update for bias term and False means turn off
+the update for bias term.
+Turning it on often yields more accurate model with minor performance
+penalty; turning it off disables term update and leaves the value of
+the bias term at zero.
+Default is False.""") biasOn: Option[Boolean] = None,
+                                   @ArgDoc("""The maximum edge weight value.
+If an edge weight is larger than this
+value, the algorithm will throw an exception and terminate.
+This option is mainly for graph integrity check.
+Valid value range is all float.
+Default is Infinity.""") maxValue: Option[Float] = None,
+                                   @ArgDoc("""The minimum edge weight value.
+If an edge weight is smaller than this value,
+the algorithm will throw an exception and terminate.
+This option is mainly for graph integrity check.
+Valid value range is all float.
+Default is -Infinity.""") minValue: Option[Float] = None)
 
 case class AlternatingLeastSquaresResult(value: String)
 
@@ -66,6 +111,23 @@ object AlternatingLeastSquaresJsonFormat {
 
 import AlternatingLeastSquaresJsonFormat._
 
+@PluginDoc(oneLine = "Minimizing goodness-of-fit data measure in a series of steps.",
+  extended = """The Alternating Least Squares with Bias for collaborative filtering algorithms.
+The algorithms presented in:
+
+1.  Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan.
+    Large-Scale Parallel Collaborative Filtering for the Netflix Prize.
+    2008.
+2.  Y. Koren.
+    Factorization Meets the Neighborhood: a Multifaceted Collaborative
+    Filtering Model.
+    In ACM KDD 2008. (Equation 5)
+
+Notes
+-----
+Vertices must be identified as left-side (\"L\") or right-side (\"R\").""",
+  returns = """The configuration and learning curve report for ALS in the format of a
+multiple-line string.""")
 class AlternatingLeastSquaresPlugin
     extends CommandPlugin[AlternatingLeastSquares, AlternatingLeastSquaresResult] {
 

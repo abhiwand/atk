@@ -35,6 +35,7 @@ import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.vector
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -42,7 +43,18 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate covariance matrix for the specified columns
+ * Parameters
+ * ----------
+ * columns : [ str | list of str ]
+ *   The names of the column from which to compute the matrix.
+ *   Names should refer to a single column of type vector, or two or more
+ *   columns of numeric scalars.
  */
+@PluginDoc(oneLine = "Calculate covariance matrix for two or more columns.",
+  extended = """Notes
+-----
+This function applies only to columns containing numerical data.""",
+  returns = "A matrix with the covariance values for the columns.")
 class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, FrameEntity] {
 
   /**
