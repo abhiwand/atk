@@ -50,4 +50,7 @@
 #         output = graph.ml.kclique_percolation(clique_size = 3, community_property_label = "community")
 #         output_dictionary = output['vertex_dictionary']
 #
-#         self.assertEqual('source' in output_dictionary)
+#         self.assertTrue('source' in output_dictionary)
+#
+# if __name__ == "__main__":
+#     unittest.main()

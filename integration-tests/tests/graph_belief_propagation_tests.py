@@ -33,7 +33,7 @@
 # ia.connect()
 #
 # class GraphBeliefPropagationTest(unittest.TestCase):
-#     def testBeliefPropagation(self):
+#     def test_belief_propagation(self):
 #         lbp_graphlab_input_data ="/datasets/lbp_graphlab_small.csv"
 #         extra_vertex="/datasets/lbp_graphlab_append.csv"
 #
@@ -51,7 +51,10 @@
 #         graph.define_edge_type("edge","nodes","nodes",directed= False)
 #         graph.edges["edge"].add_edges(lbp_frame,"id1","id2")
 #
-#         result = graph.ml.belief_propagation(prior_property="prior",posterior_property="lbp_output",max_iterations=2)
+#         result = graph.ml.belief_propagation(prior_property="prior",posterior_property="lbp_output",max_iterations=1)
 #
 #         frame_result = result['vertex_dictionary']
-#         self.assertEqual(dict(frame_result['nodes'].schema).has_key('lbp_output'))
+#         self.assertTrue(dict(frame_result['nodes'].schema).has_key('lbp_output'))
+#
+# if __name__ == "__main__":
+#     unittest.main()

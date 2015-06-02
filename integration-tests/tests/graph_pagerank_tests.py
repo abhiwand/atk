@@ -51,8 +51,9 @@
 #         vertex_dict = result['vertex_dictionary']
 #         edge_dict = result['edge_dictionary']
 #
-#         self.assertEqual(dict(vertex_dict['node'].schema).has_key('PageRank'))
+#         self.assertTrue(dict(vertex_dict['node'].schema).has_key('PageRank'))
 #
-#         self.assertEqual(dict(edge_dict['node'].schema).has_key('PageRank'))
+#         self.assertTrue(dict(edge_dict['node'].schema).has_key('PageRank'))
 #
-#
+#if __name__ == "__main__":
+#   unittest.main()
