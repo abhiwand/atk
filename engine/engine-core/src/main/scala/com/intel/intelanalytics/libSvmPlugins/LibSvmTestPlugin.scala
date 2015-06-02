@@ -34,6 +34,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
 
+// TODO: all plugins should move out of engine-core into plugin modules
+
 class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.

@@ -40,7 +40,6 @@ import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
-import org.apache.spark.mllib.ia.plugins.classification._
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
@@ -65,7 +64,6 @@ import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.engine.spark.user.UserStorage
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansNewPlugin, KMeansPredictPlugin, KMeansTrainPlugin }
 import scala.util.{ Try, Success, Failure }
 
 object SparkEngine {
@@ -92,28 +90,14 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
-  //Registering model plugins
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDTestPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDPredictPlugin)
-  commandPluginRegistry.registerCommand(new LogisticRegressionWithSGDNewPlugin)
-  commandPluginRegistry.registerCommand(new KMeansNewPlugin)
-  commandPluginRegistry.registerCommand(new KMeansPredictPlugin)
-  commandPluginRegistry.registerCommand(new KMeansTrainPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDTestPlugin)
-  commandPluginRegistry.registerCommand(new SVMWithSGDPredictPlugin)
+  // TODO: all plugins should move out of engine-core into plugin modules
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
   commandPluginRegistry.registerCommand(new LibSvmPlugin)
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDTrainPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDPredictPlugin)
-  commandPluginRegistry.registerCommand(new LinearRegressionWithSGDNewPlugin)
 
-  // Administrative Plugins
+  // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
 
   /* This progress listener saves progress update to command table */
