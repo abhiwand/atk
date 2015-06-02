@@ -101,10 +101,6 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // get the input graph object
     val graph = engine.graphs.expectGraph(arguments.graph)
 
-    // get SparkContext and add the graph-plugins jar
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // convert graph name and get the graph vertex and edge RDDs
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
 

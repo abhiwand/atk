@@ -92,10 +92,6 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
 
   override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
 
-    if (!SparkEngineConfig.isSparkOnYarn) {
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-    }
-
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)
 

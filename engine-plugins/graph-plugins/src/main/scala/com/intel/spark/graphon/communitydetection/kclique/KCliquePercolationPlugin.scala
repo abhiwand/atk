@@ -113,10 +113,6 @@ class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueRe
 
     val start = System.currentTimeMillis()
 
-    // Get the SparkContext as one the input parameters for Driver
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // Titan Settings for input
     val config = configuration
 
