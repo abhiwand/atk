@@ -223,10 +223,13 @@ object LoadRddFunctions extends Serializable {
               mutableRow(i) = row.getShort(i).toInt
             }
             else if (array(i).dataType.getClass == BooleanType.getClass) {
-              mutableRow(i) = row.getBoolean(i).compareTo(true)
+              mutableRow(i) = row.getBoolean(i).compareTo(false)
             }
             else if (array(i).dataType.getClass == ByteType.getClass) {
               mutableRow(i) = row.getByte(i).toInt
+            }
+            else if (array(i).dataType.getClass == classOf[org.apache.spark.sql.catalyst.types.DecimalType]) {
+              mutableRow(i) = row.getAs[BigDecimal](i).doubleValue()
             }
             else {
               val colType = schema.columnTuples(i)._2
