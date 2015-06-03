@@ -593,7 +593,7 @@ class XmlFile(MultiLineFile):
 
 class HiveQuery(DataFile):
     """
-    Define the query to read in the data from a hive table.
+    Define the sql query to retrieve the data from a Hive table.
 
     Only a subset of Hive data types are supported.
 
@@ -606,16 +606,16 @@ class HiveQuery(DataFile):
     Parameters
     ----------
     query : str
-        The sql query of the data we want to read in
+        The sql query to retrieve the data
 
     Returns
     -------
     class : HiveQuery object
-        An object which holds hive sql query.
+        An object which holds Hive sql query.
 
     Examples
     --------
-    Given a hive table *person* having *name* and *age* among other columns.
+    Given a Hive table *person* having *name* and *age* among other columns.
     A simple query could be to get the query for the name and age
     .. code::
 
