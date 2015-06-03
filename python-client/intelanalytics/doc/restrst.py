@@ -24,8 +24,8 @@
 Library for creating pieces of rst text for the REST API, based on metaprog
 """
 
-from intelanalytics.meta.names import upper_first, indent, get_type_name
-from intelanalytics.doc.pyrst import get_member_rst_list, get_maturity_rst, is_name_private
+from intelanalytics.meta.names import indent, get_type_name
+from intelanalytics.doc.pyrst import get_maturity_rst, is_name_private
 
 
 def get_command_def_rest_rst(command_def):
@@ -37,7 +37,7 @@ def get_command_def_rest_rst(command_def):
     arguments = indent("\n".join([_get_argument_rest_rst(p) for p in command_def.parameters]))
     title = ':doc:`Commands <index>` %s' % command_def.full_name
     title_emphasis = "-" * len(title)
-    return_info=_get_returns_rest_rst(command_def.return_info)
+    return_info = _get_returns_rest_rst(command_def.return_info)
     command_rest_template = """
 
 {title_emphasis}
@@ -60,6 +60,8 @@ Request
   POST /v1/commands/
 
 **Body**
+
+{args_warning}
 
 :name:
 
@@ -130,6 +132,7 @@ Response
            title_emphasis=title_emphasis,
            one_line=one_line,
            full_name=command_def.full_name,
+           args_warning=_get_args_warning(command_def),
            arguments=arguments,
            extended=extended,
            return_info=return_info)
@@ -163,7 +166,9 @@ def _get_returns_rest_rst(return_info):
 def get_command_rest_rst_file_name(command_def):
     return command_def.full_name.replace(':', '-').replace('/', '__') + ".rst"
 
+
 ABOUT_COMMAND_NAMES = "about_command_names"  # for about_command_names.rst
+
 
 def get_commands_rest_index_content(command_defs):
     return """
@@ -223,9 +228,28 @@ def _get_commands_rest_summary_table(command_defs):
 
     table_line = ("=" * name_len) + "  " + ("=" * summary_len)
     header_command_name = "Command Name  (explained :doc:`here <%s>`)" % ABOUT_COMMAND_NAMES
-    table_header = "\n".join([table_line, "%s%s  Description" % (header_command_name, " " * (name_len - len(header_command_name))), table_line])
+    table_header = "\n".join([table_line, "%s%s  Description" % (header_command_name,
+                                                                 " " * (name_len - len(header_command_name))),
+                              table_line])
 
     lines = sorted(["%s%s  %s" % (t[0], " " * (name_len - len(t[0])), t[1]) for t in line_tuples])
     lines.insert(0, table_header)
     lines.append(table_line)
     return "\n".join(lines)
+
+
+# need special-case handling for API methods which take Python UDF
+# so that a note appears in the REST API documentation...
+_commands_with_udf_arg = ["add_columns", "copy", "filter", "drop_rows", "count_where"]
+
+
+def _get_args_warning(command_def):
+    if command_def.name in _commands_with_udf_arg:
+        return indent("""
+**Note** - An argument for this command requires a Python User-Defined Function (UDF).
+This function must be especially prepared (wrapped/serialized) in order for it to run
+in the engine.  **If this argument is needed for your call (i.e. it may be optional),
+then this particular command usage is NOT practically available as a REST API.**
+Today, the intelanalytics Python client does the special function preparation and calls this API.
+""")
+    return ''
