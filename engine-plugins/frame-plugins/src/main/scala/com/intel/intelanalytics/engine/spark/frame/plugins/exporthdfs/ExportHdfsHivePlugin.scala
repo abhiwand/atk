@@ -49,7 +49,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Export a frame to csv file
  */
 @PluginDoc(oneLine = "Creates a new hive table and copies the frame data",
-  extended = """Copies the frame to a new hive table. Will fail if the table by the given name exists in hive""",
+  extended = """Export of Vectors is not supported. Will fail if the table by the given name exists in hive""",
   returns = "None")
 class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitReturn] {
 
