@@ -53,7 +53,7 @@ case class ExportHdfsJsonArgs(frame: FrameReference,
  * Input arguments class for export to Hive
  */
 case class ExportHdfsHiveArgs(frame: FrameReference,
-                              @ArgDoc("The name of the hive table that will contain the exported frame") tableName: String) {
+                              @ArgDoc("The name of the Hive table that will contain the exported frame") tableName: String) {
   require(frame != null, "frame is required")
   require(tableName != null, "table name is required")
 }
