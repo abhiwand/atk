@@ -29,11 +29,11 @@ setup(
     name="intelanalytics",
 
     # Version number (initial):
-    version=u"#VERSION#b#BUILD_NUMBER#",
+    version=u"#VERSION#-#BUILD_NUMBER#",
 
     # Application author details:
     author="Intel",
-    author_email="bleh@intel.com",
+    author_email="iatsupport@intel.com",
 
     # Packages
     packages=["intelanalytics","intelanalytics/core","intelanalytics/rest","intelanalytics/tests"],
