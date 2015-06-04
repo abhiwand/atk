@@ -32,33 +32,24 @@ if ia.server.port != 19099:
     ia.server.port = 19099
 ia.connect()
 
-class ModelSmokeTest(unittest.TestCase):
-    """
-    Smoke test basic frame operations to verify functionality that will be needed by all other tests.
+class ModelNaiveBayesTest(unittest.TestCase):
+    def test_naive_bayes(self):
+        print "define csv file"
+        schema = [("Class", ia.int32),("Dim_1", ia.int32),("Dim_2", ia.int32),("Dim_3",ia.int32)]
+        train_file = ia.CsvFile("/datasets/naivebayes_spark_data.csv", schema= schema)
+        print "creating the frame"
+        train_frame = ia.Frame(train_file)
 
-    If these tests don't pass, there is no point in running other tests.
-
-    This is a build-time test so it needs to be written to be as fast as possible:
-    - Only use the absolutely smallest toy data sets, e.g 20 rows rather than 500 rows
-    - Tests are ran in parallel
-    - Tests should be short and isolated.
-    """
-    def test_model(self):
-        print "Initialize KMeansModel object with name"
-        k1 = ia.KMeansModel(name='mykMeansModel1')
-        name = k1.name
-
-        print "Initialize KMeansModel object"
-        k2 = ia.KMeansModel()
-
-        print "Initialize LogisticRegressionModel object with name"
-        l1= ia.LogisticRegressionModel(name='myLogisticRegressionModel1')
-
-        print "Initialize LogisticRegressionModel object"
-        l2 = ia.LogisticRegressionModel()
-
-        print "Initialize NaiveBayesModel object"
+        print "initializing the naivebayes model"
         n = ia.NaiveBayesModel()
+
+        print "training the model on the frame"
+        n.train(train_frame, 'Class', ['Dim_1', 'Dim_2', 'Dim_3'])
+
+        print "predicting the class using the model and the frame"
+        output = n.predict(train_frame)
+        self.assertEqual(output.column_names, ['Class', 'Dim_1', 'Dim_2', 'Dim_3','predicted_class'])
+
 
 if __name__ == "__main__":
     unittest.main()

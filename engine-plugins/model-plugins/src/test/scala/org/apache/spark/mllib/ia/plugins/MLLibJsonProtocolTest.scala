@@ -27,11 +27,11 @@ package org.apache.spark.mllib.ia.plugins
 
 import com.intel.intelanalytics.libSvmPlugins.LibSvmData
 import libsvm.{ svm_node, svm_parameter, svm_model }
-import org.apache.spark.mllib.classification.{ SVMModel, LogisticRegressionModel }
+import org.apache.spark.mllib.classification.{ NaiveBayesModel, SVMModel, LogisticRegressionModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.classification.{ LinearRegressionData, SVMData, LogisticRegressionData }
+import org.apache.spark.mllib.ia.plugins.classification.{ NaiveBayesData, LinearRegressionData, SVMData, LogisticRegressionData }
 import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
@@ -176,5 +176,6 @@ class MLLibJsonProtocolTest extends WordSpec {
       assert(l.observationColumns.length == 2)
     }
   }
+
 }
 
