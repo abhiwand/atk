@@ -27,6 +27,7 @@ class LibSvmModelReaderPlugin() extends ModelLoader {
         inputStream.close()
     }
 
+    libsvmModel.name = "AnjaliModel"
     libsvmModel.asInstanceOf[Model]
   }
 }
