@@ -31,8 +31,10 @@ import scala.concurrent.Future
 trait Model {
 
   /**
-   * Called for scoring a vector
+   * Called for scoring
    */
-  def score(values: String): Future[Double]
+  def score(data: Seq[Any]): Future[Seq[Any]]
+
+  def name: String
 
 }
