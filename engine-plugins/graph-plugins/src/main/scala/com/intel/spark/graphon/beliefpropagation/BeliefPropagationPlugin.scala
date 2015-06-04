@@ -109,7 +109,7 @@ This algorithm analyzes a graphical model with prior beliefs using sum product m
 The priors are read from a property in the graph, the posteriors are written to another property in the graph.
 This is the GraphX-based implementation of belief propagation.""",
   returns = "Progress report for belief propagation in the format of a multiple-line string.")
-class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
+class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
