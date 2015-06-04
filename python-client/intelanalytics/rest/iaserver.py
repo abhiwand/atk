@@ -195,13 +195,21 @@ class IaServer(Server):
         """
         Connect to the intelanalytics server.
 
-        Calling this method is required before invoking any server activity.  After the client has
-        connected to the server, the server config cannot be changed or refreshed.  User must restart
-        Python in order to change connection info.
+        This method calls the server, downloads its API information and dynamically generates and adds
+        the appropriate Python code to this Python package.  Calling this method is required before
+        invoking any server activity.
+
+        After the client has connected to the server, the server config cannot be changed or refreshed.
+        User must restart Python in order to change connection info.
 
         Subsequent calls to this method invoke no action.
 
         If user credentials are supplied, they will override the settings in the server's configuration
+
+        There is no "connection" object or notion of being continuously "connected".  The call to
+        connect is just a one-time process to download the API and prepare the client.  If the server
+        goes down and comes back up, this client will not recognize any difference from a connection
+        point of view, and will still be operating with the API information originally downloaded.
         """
 
         if api_status.is_installed:

@@ -494,9 +494,8 @@ object FrameRdd {
     val dateType = DateType.getClass()
     val timeStampType = TimestampType.getClass()
     val byteType = ByteType.getClass()
-    val binaryType = BinaryType.getClass()
     val booleanType = BooleanType.getClass()
-    val decimalType = DecimalType.getClass()
+    val decimalType = classOf[org.apache.spark.sql.catalyst.types.DecimalType]
     val shortType = ShortType.getClass()
 
     val a = dataType.getClass()
@@ -510,7 +509,6 @@ object FrameRdd {
       case `stringType` => DataTypes.string
       case `dateType` => DataTypes.string
       case `byteType` => int32
-      case `binaryType` => int32
       case `booleanType` => int32
       case `timeStampType` => DataTypes.string
       case _ => throw new IllegalArgumentException(s"unsupported type $a")
