@@ -27,11 +27,14 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.model.{ KMeansNewArgs, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+@PluginDoc(oneLine = "",
+  extended = "")
 class KMeansNewPlugin extends SparkCommandPlugin[KMeansNewArgs, ModelEntity] {
 
   override def name: String = "model:k_means/new"

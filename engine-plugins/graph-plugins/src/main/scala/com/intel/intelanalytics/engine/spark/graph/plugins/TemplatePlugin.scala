@@ -28,6 +28,7 @@
 //import com.intel.intelanalytics.domain.graph.Graph
 //import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 //import com.intel.intelanalytics.security.UserPrincipal
+//import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 //
 //import scala.concurrent.ExecutionContext
 //
@@ -38,6 +39,9 @@
 ///**
 //* Template to follow when writing plugins
 //*/
+//@PluginDoc(oneLine = "",
+//  extended = "",
+//  returns = "")
 //class TemplatePlugin extends SparkCommandPlugin[Args, Graph] {
 //
 //  /**

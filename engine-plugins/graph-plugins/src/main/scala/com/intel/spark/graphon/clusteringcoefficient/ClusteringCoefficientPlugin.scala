@@ -72,7 +72,9 @@ Pulls graph from underlying store, calculates degrees and writes them into the p
 and then writes the output graph to the underlying store.
 
 Right now it uses only Titan for graph storage. Other backends will be supported later.""",
-  returns = """Dictionary of the global clustering coefficient of the graph or, if local clustering coefficients are requested, a reference to the frame with local clustering coefficients stored at properties at each vertex.""")
+  returns = """Dictionary of the global clustering coefficient of the graph or,
+if local clustering coefficients are requested, a reference to the frame with local
+clustering coefficients stored at properties at each vertex.""")
 class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficientArgs, ClusteringCoefficientResult] {
 
   override def name: String = "graph/clustering_coefficient"

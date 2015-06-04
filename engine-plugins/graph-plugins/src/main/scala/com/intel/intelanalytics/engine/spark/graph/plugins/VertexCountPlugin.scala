@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -40,6 +41,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Vertex Count for a "seamless graph"
  */
+@PluginDoc(oneLine = "Get the total number of vertices in the graph.",
+  extended = "")
 class VertexCountPlugin extends CommandPlugin[GraphNoArgs, LongValue] {
 
   /**

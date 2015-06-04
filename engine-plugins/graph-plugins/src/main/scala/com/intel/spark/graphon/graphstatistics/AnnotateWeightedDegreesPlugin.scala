@@ -91,8 +91,7 @@ import AnnotateWeightedDegreesJsonFormat._
   extended = """Pulls graph from underlying store, calculates weighted degrees and writes them into the property
 specified, and then writes the output graph to the underlying store.
 
-Right now it uses only Titan for graph storage. Other backends will be supported later.""",
-  returns = "")
+Right now it uses only Titan for graph storage. Other backends will be supported later.""")
 class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedDegreesArgs, AnnotateWeightedDegreesReturn] {
 
   override def name: String = "graph/annotate_weighted_degrees"
