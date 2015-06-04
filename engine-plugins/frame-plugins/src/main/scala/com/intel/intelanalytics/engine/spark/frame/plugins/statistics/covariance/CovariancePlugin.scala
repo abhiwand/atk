@@ -31,6 +31,7 @@ import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -38,7 +39,17 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate covariance for the specified columns
+ * Parameters
+ * ----------
+ * columns : [ str | list of str ]
+ *     The names 2 columns from which to compute the covariance.
  */
+
+@PluginDoc(oneLine = "Calculate covariance for exactly two columns.",
+  extended = """Notes
+-----
+This method applies only to columns containing numerical data.""",
+  returns = "Covariance of the two columns.")
 class CovariancePlugin extends SparkCommandPlugin[CovarianceArgs, DoubleValue] {
 
   /**

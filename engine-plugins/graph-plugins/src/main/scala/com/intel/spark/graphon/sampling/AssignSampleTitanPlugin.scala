@@ -69,8 +69,7 @@ floating point values, which add up to 1.
 The labels are non-negative integers drawn from the range
 :math:`[ 0, len(S) - 1]`, where :math:`S` is the sample_percentages.
 Optionally, the user can specify a list of strings to be used as the labels.
-If the number of labels is 3, the labels will default to 'TR', 'TE' and 'VA'.""",
-  returns = "")
+If the number of labels is 3, the labels will default to 'TR', 'TE' and 'VA'.""")
 class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, UnitReturn] {
 
   /**

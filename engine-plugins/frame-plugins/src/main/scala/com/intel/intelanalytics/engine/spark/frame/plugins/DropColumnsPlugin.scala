@@ -31,6 +31,7 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
@@ -39,7 +40,20 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Remove columns from a frame
+ *
+ * Parameters
+ * ----------
+ * columns: [ str | list of str ]
+ *   Column name OR list of column names to be removed from the frame.
  */
+@PluginDoc(oneLine = "Remove columns from the frame.",
+  extended = """The data from the columns is lost.
+
+Notes
+-----
+It is not possible to delete all columns from a frame.
+At least one column needs to remain.
+If it is necessary to delete all columns, then delete the frame.""")
 class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity] {
 
   /**

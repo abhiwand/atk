@@ -41,6 +41,7 @@ import org.apache.spark.ia.graph.{ VertexWrapper, EdgeWrapper }
 import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.Map
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -60,9 +61,8 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
  */
 case class LabelTriplet(edgeLabel: String, srcLabel: String, destLabel: String)
 
-/**
- * Export from ia.TitanGraph to ia.Graph
- */
+@PluginDoc(oneLine = "Export from ia.TitanGraph to ia.Graph.",
+  extended = "")
 class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
 
   override def name: String = "graph:titan/export_to_graph"

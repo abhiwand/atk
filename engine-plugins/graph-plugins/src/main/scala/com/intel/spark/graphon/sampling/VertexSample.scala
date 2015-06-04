@@ -77,15 +77,15 @@ object VertexSampleJsonFormat {
 import VertexSampleJsonFormat._
 @PluginDoc(oneLine = "Make subgraph from vertex sampling.",
   extended = """Create a vertex induced subgraph obtained by vertex sampling.
-  Three types of vertex sampling are provided: 'uniform', 'degree', and
-  'degreedist'.
-  A 'uniform' vertex sample is obtained by sampling vertices uniformly at random.
-  For 'degree' vertex sampling, each vertex is weighted by its out-degree.
-  For 'degreedist' vertex sampling, each vertex is weighted by the total
-  number of vertices that have the same out-degree as it.
-  That is, the weight applied to each vertex for 'degreedist' vertex sampling
-  is given by the out-degree histogram bin size.""",
-  returns = """A new Graph object representing the vertex induced subgraph.""")
+Three types of vertex sampling are provided: 'uniform', 'degree', and
+'degreedist'.
+A 'uniform' vertex sample is obtained by sampling vertices uniformly at random.
+For 'degree' vertex sampling, each vertex is weighted by its out-degree.
+For 'degreedist' vertex sampling, each vertex is weighted by the total
+number of vertices that have the same out-degree as it.
+That is, the weight applied to each vertex for 'degreedist' vertex sampling
+is given by the out-degree histogram bin size.""",
+  returns = "A new Graph object representing the vertex induced subgraph.")
 class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
 
   /**

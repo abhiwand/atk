@@ -33,6 +33,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ PythonRddStorage, SparkFram
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.sql
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -41,6 +42,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
 
   /**

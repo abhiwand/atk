@@ -39,10 +39,6 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-/**
- *
- * @param graph
- */
 case class HierarchicalClusteringArgs(graph: GraphReference,
                                       @ArgDoc("""Column name for the edge distance.""") edgeDistance: String)
 
@@ -59,7 +55,7 @@ import HierarchicalClusteringFormat._
  */
 @PluginDoc(oneLine = "Build hierarchical clustering over an initial titan graph.",
   extended = "",
-  returns = """A set of titan vertices and edges representing the internal clustering of the graph.""")
+  returns = "A set of titan vertices and edges representing the internal clustering of the graph.")
 class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
 
   override def name: String = "graph:titan/hierarchical_clustering"

@@ -49,6 +49,7 @@ import com.intel.intelanalytics.domain.schema.FrameSchema
 import com.intel.intelanalytics.domain.command.CommandDoc
 import scala.Some
 import com.intel.intelanalytics.domain.schema.Column
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -56,7 +57,16 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation matrix for the specified columns
+ * Parameters
+ * ----------
+ * columns : [ str | list of str ]
+ *   The names of the column from which to compute the matrix.
  */
+@PluginDoc(oneLine = "Calculate correlation matrix for two or more columns.",
+  extended = """Notes
+-----
+This method applies only to columns containing numerical data.""",
+  returns = "A matrix with the correlation values for the columns.")
 class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, FrameEntity] {
 
   /**

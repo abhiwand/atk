@@ -55,8 +55,10 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
  */
 case class PageRankArgs(graph: GraphReference,
                         @ArgDoc("""Name of the property to which pagerank value will be stored on vertex and edge.""") output_property: String,
-                        @ArgDoc("""List of edge labels to consider for pagerank computation. If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None,
-                        @ArgDoc("""The maximum number of iterations that will be invoked. Defaults to 20.""") max_iterations: Option[Int] = None,
+                        @ArgDoc("""List of edge labels to consider for pagerank computation.
+If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None,
+                        @ArgDoc("""The maximum number of iterations that will be invoked.
+Defaults to 20.""") max_iterations: Option[Int] = None,
                         @ArgDoc("""Random reset probability.""") reset_probability: Option[Double] = None,
                         @ArgDoc("""Tolerance allowed at convergence (smaller values tend to yield accurate results).""") convergence_tolerance: Option[Double] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
@@ -86,8 +88,7 @@ import PageRankJsonFormat._
   extended = """Pulls graph from underlying store, sends it off to the PageRankRunner, and then writes the output graph
 back to the underlying store.
 
-Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
-  returns = "")
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""")
 class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph/graphx_pagerank"
