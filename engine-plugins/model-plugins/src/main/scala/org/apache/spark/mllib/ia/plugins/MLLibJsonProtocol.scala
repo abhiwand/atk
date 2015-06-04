@@ -268,7 +268,6 @@ object MLLibJsonProtocol {
 
   }
 
-
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
