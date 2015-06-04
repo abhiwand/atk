@@ -34,6 +34,7 @@ import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.UnitReturn
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 
@@ -41,8 +42,17 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
+ * Parameters
+ * ----------
+ * label : str
+ *   label of the vertex type
+ */
+
+/**
  * Define a vertex type for a seamless graph
  */
+@PluginDoc(oneLine = "Define a vertex type by label.",
+  extended = "")
 class DefineVertexPlugin extends CommandPlugin[DefineVertexArgs, UnitReturn] {
 
   /**

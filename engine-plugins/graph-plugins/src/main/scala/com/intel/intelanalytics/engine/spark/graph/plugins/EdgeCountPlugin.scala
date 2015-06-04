@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -40,6 +41,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Edge Count for a "seamless graph"
  */
+@PluginDoc(oneLine = "Get the total number of edges in the graph.",
+  extended = "")
 class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
 
   /**

@@ -40,9 +40,34 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.VectorUtils._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.collection.mutable.ListBuffer
 
+/**
+ * Parameters
+ * ----------
+ * predict_frame : Frame
+ *   A frame whose labels are to be predicted.
+ *   By default, predict is run on the same columns over which the model is
+ *   trained.
+ *   The user could specify column names too if needed.
+ * observation_columns : list of str (optional)
+ *   Column(s) containing the observations whose clusters are to be predicted.
+ *   By default, we predict the clusters over columns the KMeansModel was
+ *   trained on.
+ *   The columns are scaled using the same values used when training the model.
+ */
+
+@PluginDoc(oneLine = "Predict the cluster assignments for the data points.",
+  extended = "",
+  returns = """Frame
+    A new frame consisting of the existing columns of the frame and new columns.
+    The data returned is composed of multiple components:
+'k' columns : double
+    Containing squared distance of each point to every cluster center.
+predicted_cluster : int
+    Integer containing the cluster assignment.""")
 class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEntity] {
 
   /**

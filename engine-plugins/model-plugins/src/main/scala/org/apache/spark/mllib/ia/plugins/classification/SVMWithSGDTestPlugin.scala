@@ -36,8 +36,33 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+
+/**
+ * Parameters
+ * ----------
+ * predict_frame : Frame
+ *   frame whose labels are to be predicted.
+ * label_column : str
+ *   Column containing the actual label for each observation.
+ * observation_column : list of str (Optional)
+ *   Column(s) containing the observations whose labels are to be predicted and
+ *   tested.
+ *   By default, we test over the columns the SvmModel was trained on.
+ */
 
 /* Run the SVMWithSGD model on the test frame*/
+@PluginDoc(oneLine = "Predict test frame labels and return metrics.",
+  extended = """Predict the labels for a test frame and run classification metrics on predicted
+and target labels.""",
+  returns = """object
+    An object with binary classification metrics.
+    The data returned is composed of multiple components:
+  <object>.accuracy : double
+  <object>.confusion_matrix : table
+  <object>.f_measure : double
+  <object>.precision : double
+  <object>.recall : double""")
 class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.

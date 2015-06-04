@@ -29,6 +29,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -39,6 +40,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Debug information for a graph
  */
+@PluginDoc(oneLine = "Get debug info about a graph.",
+  extended = "")
 class GraphInfoPlugin extends CommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
 
   /**

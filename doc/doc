@@ -37,7 +37,7 @@ function compile_jars() {
     # debug: run maven
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
-        RunCommand="mvn compile -DskipTests=True -T 8"
+        RunCommand="mvn clean package -P compile,test,events,modules-all,\!scala-coverage,\!integration-tests -Dcheckstyle.skip=true -DskipTests"
         do_this "$RunCommand" $1 $2 $3 $4
         return $?
     else
