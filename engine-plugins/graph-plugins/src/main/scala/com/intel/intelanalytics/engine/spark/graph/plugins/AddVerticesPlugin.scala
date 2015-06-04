@@ -35,14 +35,28 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
+ * Parameters
+ * ----------
+ * source_frame : Frame
+ *   frame that will be the source of the vertex data
+ * id_column_name : str
+ *   column name for a unique id for each vertex
+ * column_names : list of str
+ *   column names that will be turned into properties for each vertex
+ */
+
+/**
  * Add Vertices to a Vertex Frame
  */
+@PluginDoc(oneLine = "Add vertices to a graph.",
+  extended = "Includes appending to a list of existing vertices.")
 class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] {
 
   /**

@@ -33,6 +33,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.LongValue
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -41,6 +42,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Counts rows which meet criteria specified by a UDF predicate
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
 
   override def name: String = "frame/count_where"

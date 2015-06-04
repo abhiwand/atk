@@ -37,14 +37,36 @@ import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+/**
+ * Parameters
+ * ----------
+ * source_frame : Frame
+ *   frame that will be the source of the edge data
+ * column_name_for_src_vertex_id : str
+ *   column name for a unique id for each source vertex (this is not the system
+ *   defined _vid)
+ * column_name_for_dest_vertex_id : str
+ *   column name for a unique id for each destination vertex (this is not the
+ *   system defined _vid)
+ * column_names : list of str
+ *   column names that will be turned into properties for each edge
+ * create_missing_vertices : Boolean (optional)
+ *   True to create missing vertices for edge (slightly slower), False to drop
+ *   edges pointing to missing vertices.
+ *   Defaults to False.
+ */
 
 /**
  * Add Vertices to a Vertex Frame
  */
+@PluginDoc(oneLine = "Add edges to a graph.",
+  extended = "Includes appending to a list of existing edges.",
+  returns = "")
 class AddEdgesPlugin extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
 
   /**

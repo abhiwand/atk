@@ -34,9 +34,6 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Latent Dirichlet allocation - create a 'new' instance of this model
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
 class LdaNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

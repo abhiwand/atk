@@ -33,14 +33,29 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.UnitReturn
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
+ * Parameters
+ * ----------
+ * label : str
+ *   label of the edge type
+ * source_vertex_label : str
+ *   label of the source vertex type
+ * destination_vertex_label : str
+ *   label of the destination vertex type
+ * directed : bool
+ *   is the edge directed
+ */
+/**
  * Define an edge type for a seamless graph
  */
+@PluginDoc(oneLine = "Define an edge type.",
+  extended = "")
 class DefineEdgePlugin extends CommandPlugin[DefineEdgeArgs, UnitReturn] {
 
   /**

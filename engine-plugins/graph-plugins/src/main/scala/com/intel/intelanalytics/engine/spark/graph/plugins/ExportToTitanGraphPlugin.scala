@@ -41,15 +41,28 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+/**
+ * Parameters
+ * ----------
+ * new_graph_name : str (optional)
+ *   The name of the new graph.
+ *   Default is None.
+ */
 
 /**
  * Plugin responsible for exporting a Seamless Graph to a Titan Graph.
  */
+@PluginDoc(oneLine = "Convert current graph to TitanGraph.",
+  extended = """Convert this Graph into a TitanGraph object.
+This will be a new graph backed by Titan with all of the data found in this
+graph.""",
+  returns = "A new TitanGraph.")
 class ExportToTitanGraphPlugin extends SparkCommandPlugin[ExportGraph, GraphEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
