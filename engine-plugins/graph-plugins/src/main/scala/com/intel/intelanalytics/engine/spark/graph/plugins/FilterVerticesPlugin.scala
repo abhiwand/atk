@@ -43,6 +43,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import scala.Some
 import com.intel.intelanalytics.domain.FilterVerticesArgs
 import org.apache.spark.api.python.EnginePythonRdd
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //implicit conversion for PairRDD
 
@@ -51,6 +52,8 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+@PluginDoc(oneLine = "",
+  extended = "")
 class FilterVerticesPlugin extends SparkCommandPlugin[FilterVerticesArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

@@ -82,8 +82,7 @@ import ConnectedComponentsJsonFormat._
   extended = """Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault,
 and then writes the output graph back to the underlying store.
 
-Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
-  returns = """TBD""")
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""")
 class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsReturn] {
   override def name: String = "graph/graphx_connected_components"
 

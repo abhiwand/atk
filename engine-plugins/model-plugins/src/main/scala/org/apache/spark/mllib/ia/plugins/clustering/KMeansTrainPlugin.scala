@@ -37,7 +37,45 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
+/**
+ * Parameters
+ * ----------
+ * frame : Frame
+ *   A frame to train the model on.
+ * observation_columns : list of str
+ *   Columns containing the observations.
+ * column_scalings : list of double
+ *   Column scalings for each of the observation columns.
+ *   The scaling value is multiplied by the corresponding value in the
+ *   observation column.
+ * k : int (Optional)
+ *   Desired number of clusters.
+ *   This is an optional paramter with default value 2.
+ * maxIterations : int (Optional)
+ *   Number of iterations for which the algorithm should run.
+ *   This is an optional paramter with default value 20.
+ * epsilon : double (Optional)
+ *   Distance threshold within which we consider k-means to have converged.
+ *   This is an optional parameter with default value 1e-4.
+ * initializationMode : str (Optional)
+ *   The initialization technique for the algorithm.
+ *   It could be either "random" or "k-means||".
+ *   Default is "k-means||".
+ */
+
+@PluginDoc(oneLine = "Creates KMeans Model from train frame.",
+  extended = "Upon training the 'k' cluster centers are computed.",
+  returns = """dict
+    Results.
+    The data returned is composed of multiple components:
+cluster_size : dict
+    Cluster size
+ClusterId : int
+    Number of elements in the cluster 'ClusterId'.
+within_set_sum_of_squared_error : double
+    The set of sum of squared error for the model.""")
 class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainReturn] {
   /**
    * The name of the command.

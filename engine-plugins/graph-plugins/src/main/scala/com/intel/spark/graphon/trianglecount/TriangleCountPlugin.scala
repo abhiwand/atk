@@ -61,7 +61,8 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
  */
 case class TriangleCountArgs(graph: GraphReference,
                              @ArgDoc("""Name of the property to which triangle count value will be stored on vertex.""") output_property: String,
-                             @ArgDoc("""List of edge labels to consider for computation. If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None) {
+                             @ArgDoc("""List of edge labels to consider for computation.
+If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
 }
 
@@ -82,7 +83,7 @@ import TriangleCountJsonFormat._
 
 @PluginDoc(oneLine = "TriangleCount plugin implements the triangle count computation on a graph by invoking graphx TriangleCount.",
   extended = """Pulls graph from underlying store, sends it off to the TriangleCountRunner.""",
-  returns = """Dictionary of vertex label and frame.""")
+  returns = "Dictionary of vertex label and frame.")
 class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
   override def name: String = "graph/graphx_triangle_count"

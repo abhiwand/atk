@@ -95,24 +95,19 @@ object HistogramJsonFormat {
 import HistogramJsonFormat._
 @PluginDoc(oneLine = "Make histogram of probabilities.",
   extended = """Generate histograms of prior and posterior probabilities.
-The prerequisite is that either LBP, ALS or CGD has been run before this query.""")
+The prerequisite is that either LBP, ALS or CGD has been run before this query.""",
+  returns = """dict
+    Dictionary containing prior histograms, and, optionally, the posterior histograms.
+    The data returned is composed of multiple components:
+prior_histograms : array
+    An array of histograms of prior probabilities for each feature dimension.
+    The histogram is comprised of an array of buckets and corresponding counts.
+    The buckets are all open to the left except for the last which is closed,
+    for example, for the array [1,5,10] the buckets are [1, 5] [5, 10].
+    The size of the counts array is smaller than the buckets array by 1.
+posterior_histograms : array
+    An array of histograms of posterior probabilities for each feature dimension.""")
 class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
-  /**
-   * "dict
-   *     Dictionary containing prior histograms, and, optionally, the posterior
-   *     histograms.
-   *     The data returned is composed of multiple components:
-   * prior_histograms : array
-   *     An array of histograms of prior probabilities for each feature dimension.
-   *     The histogram is comprised of an array of buckets and corresponding counts.
-   *     The buckets are all open to the left except for the last which is closed,
-   *     for example, for the array [1,5,10] the buckets are [1, 5] [5, 10].
-   *     The size of the counts array is smaller than the buckets array by 1.
-   * posterior_histograms : array
-   *     An array of histograms of posterior probabilities for each feature
-   *     dimension.""")
-   */
-
   /**
    * The name of the command, e.g. graph/sampling/vertex_sample
    */
