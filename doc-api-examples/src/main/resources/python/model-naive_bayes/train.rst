@@ -10,7 +10,7 @@ label_column : str
     Column containing the label for each observation.
 observation_column : list of str
     Column(s) containing the observations.
-lambdaParameter : double (Optional)
+lambdaParameter : float64 (Optional)
     Additive smoothing parameter
     Default is 1.0
 

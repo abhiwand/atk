@@ -183,8 +183,6 @@ object MLLibJsonProtocol {
 
   implicit object KmeansModelFormat extends JsonFormat[KMeansModel] {
     /**
-     *           <groupId></groupId>
-     * <artifactId></artifactId>
      * The write methods converts from KMeans to JsValue
      * @param obj KMeansModel. Where KMeansModel's format is
      *            val clusterCenters: Array[Vector]
@@ -253,7 +251,6 @@ object MLLibJsonProtocol {
   implicit object NaiveBayesModelFormat extends JsonFormat[NaiveBayesModel] {
 
     override def write(obj: NaiveBayesModel): JsValue = {
-
       JsObject(
         "labels" -> obj.labels.toJson,
         "pi" -> obj.pi.toJson,
@@ -263,21 +260,14 @@ object MLLibJsonProtocol {
 
     override def read(json: JsValue): NaiveBayesModel = {
       val fields = json.asJsObject.fields
-
-      //val fields = new JsObjectFieldParser(json.asJsObject)
       val labels = getOrInvalid(fields, "labels").convertTo[Array[Double]]
       val pi = getOrInvalid(fields, "pi").convertTo[Array[Double]]
       val theta = getOrInvalid(fields, "theta").convertTo[Array[Array[Double]]]
-      //val f : Array[Double]= expectKey(fields,"pi")
       new NaiveBayesModel(labels, pi, theta)
     }
 
   }
 
-  //  def expectKey[T1 <: JsValue, T3 : JsonReader](map: Map[String, T1], key: String): T3 = {
-  //    val json = getOrInvalid(map, key)
-  //    json.convertTo[T3]
-  //  }
 
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
@@ -298,19 +288,5 @@ object MLLibJsonProtocol {
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
 }
-
-///**
-// * Helper for parsing simple JSON objects
-// * @param jsObject
-// */
-//class JsObjectFieldParser(jsObject: JsObject) {
-//
-//  def apply[T2: JsonReader](key: String): T2 = {
-//    expectKey(jsObject.fields, key)
-//  }
-//
-//
-//
-//}
 
 class InvalidJsonException(message: String) extends RuntimeException(message)
