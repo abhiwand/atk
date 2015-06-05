@@ -145,11 +145,11 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
                 throw new IllegalArgumentException("This vertex can only have one type.");
             }
             String vs = valueVector.getString(0).toLowerCase();
-            VertexType vt = null;
+            VertexType vt;
             if (vs.equals("l")) {
-                vt = VertexType.LEFT;
+                vt = VertexType.User;
             } else if (vs.equals("r")) {
-                vt = VertexType.RIGHT;
+                vt = VertexType.Item;
             } else {
                 throw new IllegalArgumentException(String.format("Vertex type string: %s isn't supported.", vs));
             }
