@@ -61,27 +61,20 @@ object PythonRddStorage {
 
   //TODO: Use config + UUID rather than hard coded paths.
   private def uploadUdfDependencies(udf: Udf): List[String] = {
-    val filesToUpload = udf.dependencies.map(f => f.fileName)
-    val fileData = udf.dependencies.map(f => f.fileContent)
-    var includes = List[String]()
-
-    if (filesToUpload != null) {
+    udf.dependencies.map(d => {
       val path = new File(SparkEngineConfig.pythonUdfDependenciesDirectory)
-      if (!path.exists()) {
-        if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+      path.mkdirs() // no check --if false, dirs may already exist; if other problem, will catch during write
+      val data = decodePythonBase64EncodedStrToBytes(d.fileContent)
+      val fileName = d.fileName.split("/").last
+      val fullFileName = SparkEngineConfig.pythonUdfDependenciesDirectory + fileName
+      try {
+        Files.write(data, new File(fullFileName))
       }
-
-      for {
-        i <- 0 until filesToUpload.size
-      } {
-        val fileToUpload = filesToUpload(i)
-        val data = decodePythonBase64EncodedStrToBytes(fileData(i))
-        val fileName = fileToUpload.split("/").last
-        Files.write(data, new File(SparkEngineConfig.pythonUdfDependenciesDirectory + fileName))
-        includes ::= fileName
+      catch {
+        case e: Exception => throw new Exception(s"Unable to upload UDF dependency '$fullFileName'  $e")
       }
-    }
-    includes
+      fileName
+    })
   }
 
   def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, sc: SparkContext): FrameRdd = {

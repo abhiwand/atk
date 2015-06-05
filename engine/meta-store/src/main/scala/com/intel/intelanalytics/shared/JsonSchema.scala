@@ -118,11 +118,13 @@ private[intelanalytics] object JsonSchemaExtractor {
             case y => Some(y)
           }
         }
-        //JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> (func(sym, i, description, defaultValue), optional)
         val (name, (schema, isTypeOption)) = JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> func(sym, i, description, defaultValue)
-        if (isTypeOption && !optional) {
-          println(s"WARNING - Argument ${sym.name} in $typ is type Option with no default value")
-        }
+        // todo: turn this check on to print out offenders, and fix them
+        //if (isTypeOption && !optional) {
+        //  println(s"WARNING - Argument ${sym.name} in $typ is type Option with no default value")
+        //}
+        // then use this line...
+        //JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> (func(sym, i, description, defaultValue), optional)
         (name, (schema, isTypeOption))
     })
 

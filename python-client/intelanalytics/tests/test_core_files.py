@@ -87,13 +87,6 @@ class TestCsvFile(unittest.TestCase):
         except Exception as e:
             self.assertTrue(str(e).startswith("delimiter must be a non-empty string"))
 
-'''
-    def test_to_json(self):
-        csv, schema = self.get_csv_and_schema()
-        json_str = to_json(csv)
-        self.assertEqual('["csv_file", "myfile.csv", [["A", "int32"], ["B", "int64"], ["C", "float32"]], ",", 0]', json_str)
-'''
-'''
 class TestJsonFile(unittest.TestCase):
 
     def test_json_file(self):
@@ -106,14 +99,11 @@ class TestXmlFile(unittest.TestCase):
 
     def test_xml_file(self):
         file_name = 'ugly.xml'
-        x = XmlFile(file_name)
-        self.assertEqual(x.file_name, file_name)
-        self.assertIsNone(x.tag_name)
         tag_name = 'YouKnow'
         y = XmlFile(file_name, tag_name)
         self.assertEqual(y.file_name, file_name)
-        self.assertEqual(y.tag_name, tag_name)
-'''
+        self.assertTrue("<%s>" % tag_name in y.start_tag)
+        self.assertTrue("<%s " % tag_name in y.start_tag)
 
 if __name__ == "__main__":
     unittest.main()

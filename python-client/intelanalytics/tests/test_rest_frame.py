@@ -23,30 +23,20 @@
 
 import iatest
 iatest.init()
-#iatest.set_logging("intelanalytics.rest.connection", 20)
 
 import unittest
 
 from intelanalytics.core.iatypes import *
 from intelanalytics.rest.frame import FrameSchema, FrameData
 
+class TestConnect(unittest.TestCase):
+
+    def test_meta(self):
+        import intelanalytics as ia
+        ia.connect()
 
 class TestInspectionTable(unittest.TestCase):
-    pass
 
-#    def test_inspect(self):
-#        schema = OrderedDict([('dec', int32), ('float', float32), ('roman', str)])
-#        rows = [(1, 2.0, 'iii'),
-#                (4, 5.0, 'vi'),
-#                (7, 8.0, 'ix')]
-#        it = FrameBackendRest.InspectionTable(schema, rows)
-#        expected = """dec:int32   float:float32   roman:unicode
-#---------------------------------------------
-#          1             2.0   iii
-#          4             5.0   vi
-#          7             8.0   ix""".replace(" ", "")
-#        #print repr(it)
-#        self.assertEquals(expected, repr(it).replace(" ", ""))
     def test_get_schema_for_selected_columns(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
         selected_schema = FrameSchema.get_schema_for_columns(schema, ['user_id', 'splits'])
@@ -67,8 +57,6 @@ class TestInspectionTable(unittest.TestCase):
         data = [[1, 'a', '3'], [2, 'b', '2'], [3, 'c', '5'], [4, 'd', '-10']]
         result = FrameData.extract_data_from_selected_columns(data, indices)
         self.assertEqual(result, [[1, '3'], [2, '2'], [3, '5'], [4, '-10']])
-
-
 
 
 if __name__ == '__main__':
