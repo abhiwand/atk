@@ -77,18 +77,6 @@ def get_numbers(cmd_name, selfish, **args):
     return "%s, %s" % (numbers[args['a']], numbers[args['b']])
 
 
-# class TestCommandsLoadable(unittest.TestCase):
-#
-#     #@mock.patch("intelanalytics.meta.api.check_api_is_loaded", mock.Mock())
-#     def test_loadable_with_intermediates(self):
-#         #loggers.set(10, 'intelanalytics.meta.metaprog')
-#         for cmd_def in cmd_defs:
-#             install_command_def(Numbers, cmd_def, get_numbers)
-#         n = Numbers('A')
-#         help(n.lang.spanish)
-#         self.assertEqual("uno, dos", n.lang.spanish(1, 2))
-#         self.assertEqual("deux, zero", n.lang.french(2, 0))
-
 class TestNaming(unittest.TestCase):
 
     def test_upper_first(self):
