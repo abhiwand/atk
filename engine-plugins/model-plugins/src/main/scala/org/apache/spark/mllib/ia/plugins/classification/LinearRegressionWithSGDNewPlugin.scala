@@ -32,10 +32,15 @@ import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Create a 'new' instance of this model
  */
+
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class LinearRegressionWithSGDNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

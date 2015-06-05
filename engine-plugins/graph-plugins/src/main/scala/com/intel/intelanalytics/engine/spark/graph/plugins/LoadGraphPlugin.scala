@@ -36,14 +36,14 @@ import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.Status
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-/**
- * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
- */
+@PluginDoc(oneLine = "Loads graph data into a graph in the database.",
+  extended = "The source is tabular data interpreted by user-specified rules.")
 class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
 
   /**

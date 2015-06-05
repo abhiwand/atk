@@ -75,17 +75,17 @@ The valid value is either 'L' or 'R'.""") vertex_type: String,
 When bias is enabled, the last property name in the output_vertex_property_list is for bias.
 The default value is 'als_result'.""") output_vertex_property_list: Option[String],
                            @ArgDoc("""The property name for vertex type.
-The default value is "vertex_type"""") vertex_type_property_key: Option[String],
+The default value is \"vertex_type\".""") vertex_type_property_key: Option[String],
                            @ArgDoc("""The property name for edge type.
 We need this name to know data is in train, validation or test splits.
-The default value is "splits".""") edge_type_property_key: Option[String],
+The default value is \"splits\".""") edge_type_property_key: Option[String],
                            @ArgDoc("""Whether ALS/CDG results are saved in a vector for each vertex.
-The default value is "true".""") vector_value: Option[String],
+The default value is \"true\".""") vector_value: Option[String],
                            @ArgDoc("""Whether bias turned on/off for ALS/CDG calculation.
 When bias is enabled,
-The default value is "false".""") bias_on: Option[String],
+The default value is \"false\".""") bias_on: Option[String],
                            @ArgDoc("""The label for training data.
-The default value is "TR".""") train_str: Option[String],
+The default value is \"TR\".""") train_str: Option[String],
                            @ArgDoc("""The number of recommendations to output.
 The default value is 10.""") num_output_results: Option[Int],
                            @ArgDoc("""The real name for left side vertex.""") left_vertex_name: Option[String],

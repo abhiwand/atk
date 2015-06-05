@@ -30,10 +30,21 @@ import com.intel.intelanalytics.domain.graph.{ GraphEntity, CopyGraphArgs }
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
+/**
+ * Parameters
+ * ----------
+ * name : str (optional)
+ *   The name for the copy of the graph.
+ *   Default is None.
+ */
 /**
  * Makes a copy of the existing graph
  */
+@PluginDoc(oneLine = "Make a copy of the current graph.",
+  extended = "",
+  returns = "A copy of the original graph.")
 class CopyGraphPlugin extends SparkCommandPlugin[CopyGraphArgs, GraphEntity] {
 
   /**

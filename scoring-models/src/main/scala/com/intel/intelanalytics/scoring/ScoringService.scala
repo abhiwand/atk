@@ -91,22 +91,22 @@ class ScoringService(model: Model) extends Directives {
     path("") {
       get { homepage }
     } ~
-      path("v1" / prefix / "score") {
+      path("v1" / prefix / model.name) {
         requestUri { uri =>
-          get {
+          post {
             parameters('data.?) {
-              implicit val format = DomainJsonProtocol.vectorValueFormat
-              (data) => data match {
-                case Some(x) => {
-                  onComplete(model.score(x)) {
-                    case Success(scored) => complete(scored.toString)
-                    case Failure(ex) => ctx => {
-                      ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+              (data) =>
+                data match {
+                  case Some(x) => {
+                    onComplete(model.score(Seq(x))) {
+                      case Success(scored) => complete(scored.toString)
+                      case Failure(ex) => ctx => {
+                        ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
+                      }
                     }
                   }
+                  case None => reject()
                 }
-                case None => reject()
-              }
             }
           }
         }

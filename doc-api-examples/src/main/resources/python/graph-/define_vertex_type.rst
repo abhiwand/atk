@@ -1,12 +1,3 @@
-Define a vertex type by label
-
-
-Parameters
-----------
-label : str
-    label of the vertex type
-
-
 Examples
 --------
 .. code::

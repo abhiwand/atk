@@ -4,7 +4,7 @@
 Restart=${1:-NO}
 Restart=${Restart^^}
 ProgramName=$(basename $0)
-StatusFile=.$ProgramName.~
+StatusFile=.$ProgramName
 
 if [ "$Restart" == "-H" -o "$Restart" == "--HELP" ]; then
     echo Program to edit the scala documentation content and the associated .rst files.

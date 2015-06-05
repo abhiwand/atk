@@ -108,3 +108,4 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
     }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

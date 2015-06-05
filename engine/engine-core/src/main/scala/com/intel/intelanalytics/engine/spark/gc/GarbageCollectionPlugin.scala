@@ -33,6 +33,7 @@ import com.typesafe.config.ConfigFactory
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Plugin that executes a single instance of garbage collection with user timespans specified at runtime
