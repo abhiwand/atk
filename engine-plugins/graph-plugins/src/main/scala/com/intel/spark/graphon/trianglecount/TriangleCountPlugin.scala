@@ -51,16 +51,18 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Parameters for executing triangle count.
  * @param graph Reference to the graph object on which to compute triangle count.
- * @param output_property Name of the property to which triangle count value will be stored on vertex.
- * @param input_edge_labels List of edge labels to consider for computation. If None, all edges are considered.
+ * @param output_property
+ * @param input_edge_labels
  */
 case class TriangleCountArgs(graph: GraphReference,
-                             output_property: String,
-                             input_edge_labels: Option[List[String]] = None) {
+                             @ArgDoc("""Name of the property to which triangle count value will be stored on vertex.""") output_property: String,
+                             @ArgDoc("""List of edge labels to consider for computation.
+If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
 }
 
@@ -79,12 +81,9 @@ object TriangleCountJsonFormat {
 
 import TriangleCountJsonFormat._
 
-/**
- * TriangleCount plugin implements the triangle count computation on a graph by invoking graphx TriangleCount.
- *
- * Pulls graph from underlying store, sends it off to the TriangleCountRunner, and then writes the output as a dictionary of vertex label and frame
- *
- */
+@PluginDoc(oneLine = "TriangleCount plugin implements the triangle count computation on a graph by invoking graphx TriangleCount.",
+  extended = """Pulls graph from underlying store, sends it off to the TriangleCountRunner.""",
+  returns = "Dictionary of vertex label and frame.")
 class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, TriangleCountResult] {
 
   override def name: String = "graph/graphx_triangle_count"

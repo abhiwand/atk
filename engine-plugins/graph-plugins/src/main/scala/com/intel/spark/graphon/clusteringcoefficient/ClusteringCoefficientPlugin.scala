@@ -30,10 +30,11 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ClusteringCoefficientArgs(graph: GraphReference,
-                                     outputPropertyName: Option[String],
-                                     inputEdgeLabels: Option[List[String]] = None) {
+                                     @ArgDoc("") outputPropertyName: Option[String],
+                                     @ArgDoc("") inputEdgeLabels: Option[List[String]] = None) {
 
   require(graph != null, "graph is required")
   require(outputPropertyName != null, "output property name should not be null")
@@ -64,14 +65,16 @@ object ClusteringCoefficientJsonFormat {
 }
 import ClusteringCoefficientJsonFormat._
 
-/**
- * Calculates the clustering coefficient of the graph with repect to an (optional) set of labels.
- *
- * Pulls graph from underlying store, calculates degrees and writes them into the property specified,
- * and then writes the output graph to the underlying store.
- *
- * Right now it uses only Titan for graph storage. Other backends will be supported later.
- */
+@PluginDoc(oneLine = "Coefficient of graph with respect to labels.",
+  extended = """Calculates the clustering coefficient of the graph with repect to an (optional) set of labels.
+
+Pulls graph from underlying store, calculates degrees and writes them into the property specified,
+and then writes the output graph to the underlying store.
+
+Right now it uses only Titan for graph storage. Other backends will be supported later.""",
+  returns = """Dictionary of the global clustering coefficient of the graph or,
+if local clustering coefficients are requested, a reference to the frame with local
+clustering coefficients stored at properties at each vertex.""")
 class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficientArgs, ClusteringCoefficientResult] {
 
   override def name: String = "graph/clustering_coefficient"

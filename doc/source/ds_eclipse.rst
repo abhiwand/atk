@@ -16,7 +16,7 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   :ref:`Python 2.7 <windows_python_setup>`.
--   |IAT| :ref:`Python Rest Client <installing_IA_packages>` and required
+-   |IAT| :ref:`Python REST Client <installing_IA_packages>` and required
     dependencies.
 -   Eclipse Standard.
 
@@ -78,7 +78,7 @@ Setup
     #)  Choose *PyDev - PYTHONPATH* in the left hand pane.
     #)  Choose the *External Libraries* tab.
     #)  Choose *Add source folder* button.
-    #)  Browse for the |IAT| Python Rest Client libraries.
+    #)  Browse for the |IAT| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/intelanalytics/rest-client/python'.
     #)  Choose the *OK* button.

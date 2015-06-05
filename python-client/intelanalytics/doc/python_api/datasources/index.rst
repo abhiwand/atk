@@ -11,6 +11,12 @@ CsvFile
     :members:
     :inherited-members:
 
+HiveQuery
+--------
+.. autoclass:: intelanalytics.HiveQuery
+    :members:
+    :inherited-members:
+
 JsonFile
 --------
 .. autoclass:: intelanalytics.JsonFile
@@ -20,5 +26,11 @@ JsonFile
 LineFile
 --------
 .. autoclass:: intelanalytics.LineFile
+    :members:
+    :inherited-members:
+
+Pandas
+------
+.. autoclass:: intelanalytics.Pandas
     :members:
     :inherited-members:

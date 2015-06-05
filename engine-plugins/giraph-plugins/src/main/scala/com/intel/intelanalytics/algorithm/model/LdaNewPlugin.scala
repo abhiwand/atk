@@ -26,6 +26,7 @@ package com.intel.intelanalytics.algorithm.model
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

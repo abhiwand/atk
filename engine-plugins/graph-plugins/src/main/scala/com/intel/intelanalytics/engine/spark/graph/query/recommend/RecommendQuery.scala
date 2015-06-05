@@ -33,6 +33,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Get recommendation to either left-side or right-side vertices
@@ -65,19 +66,30 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param right_vertex_name The real name for right side vertex.
  */
 case class RecommendParams(graph: GraphReference,
-                           vertex_id: String,
-                           vertex_type: String,
-                           left_vertex_id_property_key: String,
-                           right_vertex_id_property_key: String,
-                           output_vertex_property_list: Option[String],
-                           vertex_type_property_key: Option[String],
-                           edge_type_property_key: Option[String],
-                           vector_value: Option[String],
-                           bias_on: Option[String],
-                           train_str: Option[String],
-                           num_output_results: Option[Int],
-                           left_vertex_name: Option[String],
-                           right_vertex_name: Option[String]) {
+                           @ArgDoc("""The vertex id to get recommendation for.""") vertex_id: String,
+                           @ArgDoc("""The vertex type to get recommendation for.
+The valid value is either 'L' or 'R'.""") vertex_type: String,
+                           @ArgDoc("""The property name for left side vertex id.""") left_vertex_id_property_key: String,
+                           @ArgDoc("""The property name for right side vertex id.""") right_vertex_id_property_key: String,
+                           @ArgDoc("""The property name for ALS/CGD results.
+When bias is enabled, the last property name in the output_vertex_property_list is for bias.
+The default value is 'als_result'.""") output_vertex_property_list: Option[String],
+                           @ArgDoc("""The property name for vertex type.
+The default value is \"vertex_type\".""") vertex_type_property_key: Option[String],
+                           @ArgDoc("""The property name for edge type.
+We need this name to know data is in train, validation or test splits.
+The default value is \"splits\".""") edge_type_property_key: Option[String],
+                           @ArgDoc("""Whether ALS/CDG results are saved in a vector for each vertex.
+The default value is \"true\".""") vector_value: Option[String],
+                           @ArgDoc("""Whether bias turned on/off for ALS/CDG calculation.
+When bias is enabled,
+The default value is \"false\".""") bias_on: Option[String],
+                           @ArgDoc("""The label for training data.
+The default value is \"TR\".""") train_str: Option[String],
+                           @ArgDoc("""The number of recommendations to output.
+The default value is 10.""") num_output_results: Option[Int],
+                           @ArgDoc("""The real name for left side vertex.""") left_vertex_name: Option[String],
+                           @ArgDoc("""The real name for right side vertex.""") right_vertex_name: Option[String]) {
 }
 
 /**
@@ -99,6 +111,22 @@ object RecommendQueryFormat {
 
 import RecommendQueryFormat._
 
+@PluginDoc(oneLine = "Trained model recommendation.",
+  extended = """Get recommendation to either left-side or right-side vertices.
+The prerequisite is at least one of two algorithms (ALS or CGD) has
+been run before this query.
+
+Notes
+-----
+**Vertex Type **|EM|** "L" Versus "R"**
+
+"L" stands for left-side vertices of a bipartite graph.
+"R" stands for right-side vertices of a bipartite graph.
+For example, if your input data is "user,movie,rating" and you want to get
+recommendations on user, input "L" because user is your left-side vertex.
+Similarly, input "R" if you want to get recommendations for movie.""",
+  returns = """List of rank and corresponding recommendation.
+Recommendations for the input vertex.""")
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
   /**

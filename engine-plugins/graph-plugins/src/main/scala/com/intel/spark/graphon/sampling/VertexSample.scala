@@ -40,16 +40,17 @@ import scala.concurrent._
 import java.util.UUID
 import com.intel.spark.graphon.sampling.VertexSampleSparkOps._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Represents the arguments for vertex sampling
  *
  * @param graph reference to the graph to be sampled
- * @param size the requested sample size
- * @param sampleType type of vertex sampling to use
- * @param seed optional random seed value
  */
-case class VertexSampleArguments(graph: GraphReference, size: Int, sampleType: String, seed: Option[Long] = None) {
+case class VertexSampleArguments(graph: GraphReference,
+                                 @ArgDoc("The number of vertices to sample from the graph.") size: Int,
+                                 @ArgDoc("The type of vertex sample among: ['uniform', 'degree', 'degreedist'].") sampleType: String,
+                                 @ArgDoc("Random seed value.") seed: Option[Long] = None) {
   require(size >= 1, "Invalid sample size")
   require(sampleType.equals("uniform") ||
     sampleType.equals("degree") ||
@@ -74,7 +75,17 @@ object VertexSampleJsonFormat {
 }
 
 import VertexSampleJsonFormat._
-
+@PluginDoc(oneLine = "Make subgraph from vertex sampling.",
+  extended = """Create a vertex induced subgraph obtained by vertex sampling.
+Three types of vertex sampling are provided: 'uniform', 'degree', and
+'degreedist'.
+A 'uniform' vertex sample is obtained by sampling vertices uniformly at random.
+For 'degree' vertex sampling, each vertex is weighted by its out-degree.
+For 'degreedist' vertex sampling, each vertex is weighted by the total
+number of vertices that have the same out-degree as it.
+That is, the weight applied to each vertex for 'degreedist' vertex sampling
+is given by the out-degree histogram bin size.""",
+  returns = "A new Graph object representing the vertex induced subgraph.")
 class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
 
   /**

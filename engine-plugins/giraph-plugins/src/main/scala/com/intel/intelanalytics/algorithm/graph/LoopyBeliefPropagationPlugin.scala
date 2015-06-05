@@ -38,22 +38,23 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class LoopyBeliefPropagation(graph: GraphReference,
-                                  vertexValuePropertyList: List[String],
-                                  edgeValuePropertyList: List[String],
-                                  inputEdgeLabelList: List[String],
-                                  outputVertexPropertyList: List[String],
-                                  vertexType: String,
-                                  vectorValue: Boolean,
-                                  maxSupersteps: Option[Int] = None,
-                                  convergenceThreshold: Option[Double] = None,
-                                  anchorThreshold: Option[Double] = None,
-                                  smoothing: Option[Double] = None,
-                                  validateGraphStructure: Option[Boolean] = None,
-                                  ignoreVertexType: Option[Boolean] = None,
-                                  maxProduct: Option[Boolean] = None,
-                                  power: Option[Double] = None)
+                                  @ArgDoc("") vertexValuePropertyList: List[String],
+                                  @ArgDoc("") edgeValuePropertyList: List[String],
+                                  @ArgDoc("") inputEdgeLabelList: List[String],
+                                  @ArgDoc("") outputVertexPropertyList: List[String],
+                                  @ArgDoc("") vertexType: String,
+                                  @ArgDoc("") vectorValue: Boolean,
+                                  @ArgDoc("") maxSupersteps: Option[Int] = None,
+                                  @ArgDoc("") convergenceThreshold: Option[Double] = None,
+                                  @ArgDoc("") anchorThreshold: Option[Double] = None,
+                                  @ArgDoc("") smoothing: Option[Double] = None,
+                                  @ArgDoc("") validateGraphStructure: Option[Boolean] = None,
+                                  @ArgDoc("") ignoreVertexType: Option[Boolean] = None,
+                                  @ArgDoc("") maxProduct: Option[Boolean] = None,
+                                  @ArgDoc("") power: Option[Double] = None)
 
 case class LoopyBeliefPropagationResult(value: String) //TODO
 
@@ -66,6 +67,9 @@ object LoopyBeliefPropagationJsonFormat {
 
 import LoopyBeliefPropagationJsonFormat._
 
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class LoopyBeliefPropagationPlugin
     extends CommandPlugin[LoopyBeliefPropagation, LoopyBeliefPropagationResult] {
 

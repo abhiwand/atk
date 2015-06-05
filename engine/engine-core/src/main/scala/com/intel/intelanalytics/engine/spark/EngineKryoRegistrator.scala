@@ -28,14 +28,6 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByAggregationFunctions, GroupByAggregateByKey }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ CsvRowParser, LoadRddFunctions, RowParseResult }
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRddFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRddFunctions
-import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRddFunctions, FlattenColumnFunctions }
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
 import org.apache.spark.frame.FrameRdd
 
@@ -62,21 +54,10 @@ class EngineKryoRegistrator extends KryoRegistrator {
     // frame related classes
     kryo.register(classOf[Row])
     kryo.register(classOf[Schema])
-    kryo.register(classOf[CsvRowParser])
-    kryo.register(classOf[RowParseResult])
     kryo.register(classOf[LegacyFrameRdd])
     kryo.register(classOf[FrameRdd])
     kryo.register(ClassificationMetrics.getClass)
-    kryo.register(CumulativeDistFunctions.getClass)
     kryo.register(MiscFrameFunctions.getClass)
-    kryo.register(LoadRddFunctions.getClass)
-    kryo.register(FlattenColumnFunctions.getClass)
-    kryo.register(ColumnStatistics.getClass)
-    kryo.register(StatisticsRddFunctions.getClass)
-    kryo.register(QuantilesFunctions.getClass)
-    kryo.register(TopKRddFunctions.getClass)
-    kryo.register(EntropyRddFunctions.getClass)
-    kryo.register(GroupByAggregationFunctions.getClass)
 
     // register GraphBuilder classes
     val gbRegistrator = new GraphBuilderKryoRegistrator()

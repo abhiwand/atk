@@ -18,7 +18,7 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   Python 2.7.
--   |IAT| Python Rest Client and required dependencies.
+-   |IAT| Python REST Client and required dependencies.
 -   `PyCharm <http://www.jetbrains.com/pycharm/>`_.
 
 The |IAT| should work with any version of PyCharm but these instructions were
@@ -46,7 +46,7 @@ Setup
 #)  Choose :menuselection:`File --> Settings`.
 
     a)  Choose *Project Structure*.
-    #)  Choose *Add Content Root* and browse to the |IAT| Python Rest Client
+    #)  Choose *Add Content Root* and browse to the |IAT| Python REST Client
         libraries.
         On RedHat or Centos these are found under
         '/usr/lib/intelanalytics/rest-client/python'.
@@ -68,7 +68,7 @@ Setup
         setup correctly.
 
         i)  You may not have installed all of the Python dependencies for the
-            |IAT| Rest Client correctly.
+            |IAT| REST Client correctly.
         #)  You may have chosen the wrong Python interpreter.
 
 

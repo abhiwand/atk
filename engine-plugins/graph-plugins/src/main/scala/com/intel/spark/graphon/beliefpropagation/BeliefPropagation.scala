@@ -44,25 +44,23 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Parameters for executing belief propagation.
  * @param graph Reference to the graph object on which to propagate beliefs.
- * @param priorProperty Name of the property that stores the prior beliefs.
- * @param posteriorProperty Name of the property to which posterior beliefs will be stored.
- * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
- *                           If none is supplied, edge weights default to 1.0
- * @param convergenceThreshold Optional Double. BP will terminate when average change in posterior beliefs between
- *                             supersteps is less than or equal to this threshold. Defaults to 0.
- * @param maxIterations Optional integer. The maximum number of iterations of message passing that will be invoked.
- *                      Defaults to 20.
  */
 case class BeliefPropagationArgs(graph: GraphReference,
-                                 priorProperty: String,
-                                 posteriorProperty: String,
-                                 edgeWeightProperty: Option[String] = None,
-                                 convergenceThreshold: Option[Double] = None,
-                                 maxIterations: Option[Int] = None)
+                                 @ArgDoc("""Name of the vertex property which contains the prior belief
+for the vertex.""") priorProperty: String,
+                                 @ArgDoc("""Name of the vertex property which will contain the posterior
+ belief for each vertex.""") posteriorProperty: String,
+                                 @ArgDoc("""Name of the edge property that contains the edge weight for each edge.""") edgeWeightProperty: Option[String] = None,
+                                 @ArgDoc("""Minimum average change in posterior beliefs between supersteps.
+Belief propagation will terminate when the average change in posterior beliefs between supersteps is
+less than or equal to this threshold.""") convergenceThreshold: Option[Double] = None,
+                                 @ArgDoc("""The maximum number of supersteps that the algorithm will execute.
+The valid range is all positive int.""") maxIterations: Option[Int] = None)
 
 /**
  * Companion object holds the default values.
@@ -102,6 +100,12 @@ import BeliefPropagationJsonFormat._
  * Right now it is using only Titan for graph storage. In time we will hopefully make this more flexible.
  *
  */
+@PluginDoc(oneLine = "Classification on sparse data using belief propagation.",
+  extended = """Belief propagation by the sum-product algorithm.
+This algorithm analyzes a graphical model with prior beliefs using sum product message passing.
+The priors are read from a property in the graph, the posteriors are written to another property in the graph.
+This is the GraphX-based implementation of belief propagation.""",
+  returns = "Progress report for belief propagation in the format of a multiple-line string.")
 class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
   override def name: String = "graph:titan/ml/belief_propagation"
