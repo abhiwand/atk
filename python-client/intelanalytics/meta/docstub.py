@@ -156,19 +156,6 @@ def get_doc_stub_class_name(class_name):
     return DOC_STUB_LOADABLE_CLASS_PREFIX + class_name
 
 
-# def set_doc_stub_class_text(cls):
-#     doc_stub_text = '''@{doc_stub}
-# class {name}({base}):
-#     """
-# {doc}
-#     """
-#     pass'''.format(doc_stub=doc_stub.__name__,
-#                    name=cls.__name__,
-#                    base=DOC_STUB_LOADABLE_CLASS_PREFIX + cls.__name__,
-#                    doc=cls.__doc__)
-#     _set_doc_stub_text(cls, doc_stub_text)
-
-
 def get_doc_stubs_class_text(class_name, baseclass_name, doc, members_text, decoration="@doc_stub"):
     """
     Produces code text for a loadable class definition
@@ -182,29 +169,6 @@ class {name}({baseclass}):
 
 {members}
 '''.format(decoration=decoration, name=class_name, baseclass=baseclass_name, doc=indent(doc), members=members_text)
-
-# def get_doc_stub_class_text(loaded_class):
-#     """
-#     Produces code text for the base class from which the main loadable class
-#     will inherit the commands --i.e. the main class of the doc stub *.py file
-#     """
-#     if not has_installation(loaded_class):
-#         return ''
-#
-#     members_text = get_members_text(loaded_class) or indent("return None")
-#     installation = get_installation(loaded_class)
-#     class_name, baseclass_name = installation.install_path.get_class_and_baseclass_names()
-#     if class_name != loaded_class.__name__:
-#         raise RuntimeError("Internal Error: class name mismatch generating docstubs (%s != %s)" % (class_name, loaded_class.__name__))
-#     if not installation.host_class_was_created:
-#         class_name = get_doc_stub_class_name(class_name)
-#         if baseclass_name != CommandInstallable.__name__:
-#             baseclass_name = get_doc_stub_class_name(baseclass_name)
-#     class_text = get_doc_stubs_loadable_class_text(class_name,
-#                                          baseclass_name,
-#                                          "Contains commands for %s provided by the server" % class_name,
-#                                          members_text)
-#     return class_text
 
 
 ATTR_DOC_STUB_TEXT = '_doc_stub_text'  # attribute for a function to hold on to its own doc stub text
@@ -284,25 +248,6 @@ def get_file_footer_text():
     """removes the imports brought in by the header from the namespace"""
     return "\n".join(["del %s" % name for name in DOCSTUB_FILE_IMPORT_NAMES])
 
-
-
-
-# def get_members_text(cls):
-#     """
-#     Produces code text for all the commands (both functions and properties)
-#     that have been loaded into the loadable class
-#     """
-#     lines = []
-#     installation = get_installation(cls)
-#     #for command in get_loaded_commands(loaded_class):
-#     for command in installation.commands:
-#         if command.is_constructor:
-#             lines.append(indent(get_doc_stub_init_text(command)))
-#         else:
-#             lines.append(indent(get_function_text(command, decorator_text='@' + doc_stub.__name__)))
-#     for name, cls in installation.intermediates.items():
-#         lines.append(indent(get_doc_stub_property_text(name, cls.__name__)))
-#     return "\n".join(lines)
 
 def get_doc_stub_modules_text(class_to_member_text_dict, import_return_types):
     """creates spa text for two different modules, returning the content in a tuple"""

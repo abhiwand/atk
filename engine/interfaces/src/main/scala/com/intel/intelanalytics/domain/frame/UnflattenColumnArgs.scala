@@ -21,20 +21,20 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.scoring
+package com.intel.intelanalytics.domain.frame
 
-import scala.concurrent.Future
+import org.apache.commons.lang.StringUtils
 
 /**
- * Base interface for a Model loader.
+ * Command to unflatten a frame and store the result to a new data frame.
+ * @param frame FrameReference of the data frame to perform column unflattening
+ * @param compositeKeyColumnNames name of the user column to be used as keys for unflattening
+ * @param delimiter separator for the data in the result columns
  */
-trait Model {
-
-  /**
-   * Called for scoring
-   */
-  def score(data: Seq[Any]): Future[Seq[Any]]
-
-  def name: String
-
+case class UnflattenColumnArgs(frame: FrameReference,
+                               compositeKeyColumnNames: List[String],
+                               delimiter: Option[String] = None) {
+  require(frame != null, "frame is required")
+  require(compositeKeyColumnNames != null && compositeKeyColumnNames.length > 0, "column list is required for key")
+  compositeKeyColumnNames.foreach(x => require(StringUtils.isNotBlank(x), "non empty column names required for composite key"))
 }

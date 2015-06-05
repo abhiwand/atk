@@ -164,49 +164,12 @@ class TestJsonSchema(unittest.TestCase):
         print repr(cmd)
 
     def test1(self):
+        # tests only running the code without error
         self.cmd_repr(json_schema_cum_dist)
 
     def test2(self):
-        self.cmd_repr(json_schema_cum_dist)
-
-    # def atest2(self):
-    #     schema = json.loads(func1_json_str)
-    #     func = js.get_command_def(schema)
-    #     print "#################################################################"
-    #     x = make_function2(func)
-    #     show_func(x)
-    #
-    #     print "#################################################################"
-    #
-    # # def atest3(self):
-    #     #from test_core_makefunc import make_function2, show_func
-    #     schema = json.loads(join_def)
-    #     func = js.CommandDefinition(schema)
-    #     print "#################################################################"
-    #     x = func.make_execute_command_function()
-    #     print "11111111111111111111111111111111111111111111111111111111111111111"
-    #     x('self', 'cola', 'colb')
-    #     print "2" * 79
-    #     x('self', 'cola')
-    #     print "3" * 79
-    #     x('self', 'cola', how='right')
-    #     #print help(x)
-    #     print "#################################################################"
-    #     print x.__doc__
-
-    # def test_load_real_file(self):
-    #     with open("/tmp/iat/command_dump.json") as f:
-    #         commands = json.load(f)['commands']
-    #
-    #     for command in commands:
-    #         #print "command type: %s" % type(command)
-    #         command_def = js.get_command_def(command)
-    #         #print command_def.name
-    #         func = command_def.make_function()
-    #         if func.__doc__:
-    #             print func.__name__
-    #             print func.__doc__
-    #         #print func.__doc__
+        # tests only running the code without error
+        self.cmd_repr(json_schema_join)
 
 
 if __name__ == '__main__':
