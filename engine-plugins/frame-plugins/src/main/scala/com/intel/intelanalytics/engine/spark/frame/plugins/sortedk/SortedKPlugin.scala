@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 object SortedKJsonFormat {
@@ -44,7 +45,43 @@ import SortedKJsonFormat._
  * K is much smaller than the total number of rows in a frame.
  *
  * The results of this plugin are stored in a new frame.
+ * Parameters
+ * ----------
+ * k : int
+ *   The number of sorted rows to copy from the currently active Frame.
+ * columns : list of tuples
+ *   Each tuple is a column name, and a boolean value that indicates
+ *   whether to sort the column in ascending or descending order.
+ * reduce_tree_depth : int (optional)
+ *   Advanced tuning parameter which determines the depth of the
+ *   reduce-tree for the sorted_k plugin. This plugin uses Spark's treeReduce()
+ *   for scalability. The default depth is 2.
  */
+
+@PluginDoc(oneLine = "Get a sorted subset of the data.",
+  extended = """Take the first k (sorted) rows for the currently active Frame.
+Rows are sorted by column values in either ascending or descending order.
+
+Returning the first k (sorted) rows is more efficient than sorting the
+entire frame when k is much smaller than the number of rows in the frame.
+
+Notes
+-----
+The number of sorted rows (k) should be much smaller than the number of rows
+in the original frame.
+
+In particular:
+
+1) The number of sorted rows (k) returned should fit in Spark driver memory.
+  The maximum size of serialized results that can fit in the Spark driver is
+  set by the Spark configuration parameter *spark.driver.maxResultSize*.
+
+2) If you encounter a Kryo buffer overflow exception, increase the Spark
+  configuration parameter *spark.kryoserializer.buffer.max.mb*.
+
+3) Use Frame.sort() instead if the number of sorted rows (k) is
+  very large (i.e., cannot fit in Spark driver memory).""",
+  returns = "A new frame with the first k sorted rows from the original frame.")
 class SortedKPlugin extends SparkCommandPlugin[SortedKArgs, FrameEntity] {
 
   /**

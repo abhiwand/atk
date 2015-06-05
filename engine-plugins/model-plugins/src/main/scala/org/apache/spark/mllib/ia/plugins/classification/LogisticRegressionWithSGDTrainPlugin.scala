@@ -35,10 +35,43 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //Implicits needed for JSON conversion
 import spray.json._
 
+/**
+ * Parameters
+ * ----------
+ * frame : Frame
+ *   A frame to train the model on.
+ * label_column : str
+ *   Column containing the label for each observation.
+ * observation_column : list of str
+ *   Column(s) containing the observations.
+ * intercept : bool (Optional)
+ *   Intercept value.
+ *   Default is true.
+ * num_iterations: int (Optional)
+ *   Number of iterations.
+ *   Default is 100.
+ * step_size: int (Optional)
+ *   Step size for optimizer.
+ *   Default is 1.0.
+ * reg_type: str (Optional)
+ *   Regularization L1 or L2.
+ *   Default is L2.
+ * reg_param: double (Optional)
+ *   Regularization parameter.
+ *   Default is 0.01.
+ * mini_batch_fraction : double (Optional)
+ *   Mini batch fraction parameter.
+ *   Default is 1.0.
+ */
+
+@PluginDoc(oneLine = "Build logistic regression model.",
+  extended = """Creating a LogisticRegression Model using the observation column and label
+column of the train frame.""")
 class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrainArgs, UnitReturn] {
   /**
    * The name of the command.

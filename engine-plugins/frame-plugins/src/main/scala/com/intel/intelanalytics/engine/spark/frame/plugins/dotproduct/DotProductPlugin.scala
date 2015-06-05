@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /** Json conversion for arguments and return value case classes */
 object DotProductJsonFormat {
@@ -43,7 +44,40 @@ import DotProductJsonFormat._
  *
  * This is an experimental plugin used by the Netflow POC for scoring. The plugin should be revisited
  * once we support lists as data types.
+ *
+ * Parameters
+ * ----------
+ * left_column_names : [ str | list of str ]
+ *   Names of columns used to create the left vector (A) for each row.
+ *   Names should refer to a single column of type vector, or two or more
+ *   columns of numeric scalars.
+ * right_column_names : [ str | list of str ]
+ *   Names of columns used to create right vector (B) for each row.
+ *   Names should refer to a single column of type vector, or two or more
+ *   columns of numeric scalars.
+ * dot_product_column_name : str
+ *   Name of column used to store the dot product.
+ * default_left_values : list of double (optional)
+ *   Default values used to substitute null values in left vector.
+ *   Default is None.
+ * default_right_values : list of double (optional)
+ *   Default values used to substitute null values in right vector.
+ *   Default is None.
  */
+@PluginDoc(oneLine = "Calculate dot product for each row in current frame.",
+  extended = "Calculate the dot product for each row in a frame using values from two
+equal-length sequences of columns.
+
+Dot product is computed by the following formula:
+
+The dot product of two vectors ``A=[a_1, a_2, ..., a_n]`` and
+``B =[b_1, b_2, ..., b_n]`` is ``a_1*b_1 + a_2*b_2 + ...+ a_n*b_n``.
+The dot product for each row is stored in a new column in the existing frame.
+
+Notes
+-----
+If default_left_values or default_right_values are not specified, any null
+values will be replaced by zeros.")
 class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

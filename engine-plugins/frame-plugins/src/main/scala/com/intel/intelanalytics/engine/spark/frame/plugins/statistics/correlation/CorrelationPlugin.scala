@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -41,7 +42,16 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation for the specified columns
+ * Parameters
+ * ----------
+ * columns : [ str | list of str ]
+ *   The names of 2 columns from which to compute the correlation.
  */
+@PluginDoc(oneLine = "Calculate correlation for two columns of current frame.",
+  extended = """Notes
+-----
+This method applies only to columns containing numerical data.""",
+  returns = "Correlation of the two columns.")
 class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue] {
 
   /**

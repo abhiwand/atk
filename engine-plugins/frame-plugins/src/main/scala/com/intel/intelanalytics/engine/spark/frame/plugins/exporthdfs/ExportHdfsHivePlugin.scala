@@ -39,6 +39,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.hadoop.fs.Path
 
 // Implicits needed for JSON conversion
@@ -48,9 +49,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Export a frame to csv file
  */
-@PluginDoc(oneLine = "Creates a new Hive table and copies the frame data",
-  extended = """Export of Vectors is not currently supported. Table must not exist in Hive""",
-  returns = "None")
+@PluginDoc(oneLine = "Creates a new Hive table and copies the frame data.",
+  extended = """Export of Vectors is not currently supported. Table must not exist in Hive.""")
 class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitReturn] {
 
   /**

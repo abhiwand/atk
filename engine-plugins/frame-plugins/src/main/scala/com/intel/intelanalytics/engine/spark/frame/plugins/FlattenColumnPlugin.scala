@@ -152,3 +152,4 @@ object FlattenColumnFunctions extends Serializable {
     })
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

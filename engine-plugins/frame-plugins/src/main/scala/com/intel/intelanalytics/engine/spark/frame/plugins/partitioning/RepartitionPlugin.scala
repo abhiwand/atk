@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.RepartitionArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
@@ -39,6 +40,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Template to follow when writing plugins
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity] {
 
   /**

@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -40,7 +41,18 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Remove duplicate rows, keeping only one row per uniqueness criteria match
+ *
+ * Parameters
+ * ----------
+ * columns : [str | list of str] (optional)
+ *   Column name(s) to identify duplicates.
+ *   Default is the entire row is compared.
  */
+@PluginDoc(oneLine = "Modify the current frame, removing duplicate rows.",
+  extended = """Remove data rows which are the same as other rows.
+The entire row can be checked for duplication, or the search for duplicates
+can be limited to one or more columns.
+This modifies the current frame.""")
 class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**
