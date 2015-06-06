@@ -104,6 +104,13 @@ def return_label_propagation(selfish, json_result):
     frame = get_frame(json_result['output_frame']['id'])
     return { 'frame': frame, 'report': json_result['report'] }
 
+@postprocessor('frame:/collaborative_filtering')
+def return_collaborative_filtering(selfish, json_result):
+    from intelanalytics import get_frame
+    user_frame = get_frame(json_result['user_frame']['id'])
+    item_frame= get_frame(json_result['item_frame']['id'])
+    return { 'user_frame': user_frame, 'item_frame': item_frame, 'report': json_result['report'] }
+
 @postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_triangle_count')
 def return_connected_components(selfish, json_result):
     from intelanalytics import get_frame
