@@ -17,6 +17,7 @@
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.print.DocFlavor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -155,7 +156,7 @@ public class HeaderProcessor {
     {
         try {
             String scalaBuffer = FileUtils.readFileToString(new File(sourceFilename));
-            String newHeaderBuffer = FileUtils.readFileToString(newHeader);
+            String newHeaderBuffer = cleanInvalidCharacters(FileUtils.readFileToString(newHeader));
             String replaceWithBuffer = newHeaderBuffer + newLine;
             File sourceFile = new File(sourceFilename);
 
@@ -179,6 +180,16 @@ public class HeaderProcessor {
         catch (Exception e)
         {
             Log("Error processing: " + sourceFilename + newLine);
+        }
+    }
+
+
+    String cleanInvalidCharacters(String in) {
+        if (StringUtils.isEmpty(in)) {
+            return StringUtils.EMPTY;
+        }
+        else {
+            return in.replaceAll("[^\\x00-\\x7f]", StringUtils.SPACE);
         }
     }
 
