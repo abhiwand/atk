@@ -14,17 +14,17 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
-case class HierarchicalClusteringStorageFactory(dbConnectionConfig: SerializableBaseConfiguration)
-    extends HierarchicalClusteringStorageFactoryInterface {
+case class GraphClusteringStorageFactory(dbConnectionConfig: SerializableBaseConfiguration)
+    extends GraphClusteringStorageFactoryInterface {
 
-  override def newStorage(): HierarchicalClusteringStorage = {
+  override def newStorage(): GraphClusteringStorage = {
     val titanConnector = new TitanGraphConnector(dbConnectionConfig)
     val titanGraph = titanConnector.connect()
-    new HierarchicalClusteringStorage(titanGraph)
+    new GraphClusteringStorage(titanGraph)
   }
 }

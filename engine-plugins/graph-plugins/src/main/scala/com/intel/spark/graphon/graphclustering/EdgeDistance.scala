@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import java.io.Serializable
 
@@ -28,11 +28,11 @@ object EdgeDistance extends Serializable {
    * @param edgeList a list of active edges
    * @return a vertex distance class (vertex id, min distance edge, non-min distance edges)
    */
-  def min(edgeList: Iterable[HierarchicalClusteringEdge]): (HierarchicalClusteringEdge, VertexOutEdges) = {
+  def min(edgeList: Iterable[GraphClusteringEdge]): (GraphClusteringEdge, VertexOutEdges) = {
 
     var dist: Float = Int.MaxValue
-    var edgeWithMinDist: HierarchicalClusteringEdge = null
-    var nonMinDistEdges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
+    var edgeWithMinDist: GraphClusteringEdge = null
+    var nonMinDistEdges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
 
     if ((null != edgeList) && (!edgeList.isEmpty)) {
       for (edge <- edgeList) {
@@ -103,7 +103,7 @@ object EdgeDistance extends Serializable {
    * @param edges a list of active edges
    * @return the average distance, as per formula above
    */
-  def weightedAvg(edges: Iterable[HierarchicalClusteringEdge]): Float = {
+  def weightedAvg(edges: Iterable[GraphClusteringEdge]): Float = {
     var dist: Float = 0
     var nodeCount: Long = 0
 
@@ -125,7 +125,7 @@ object EdgeDistance extends Serializable {
    * @param edges a list of active edges
    * @return the head of the input list with the distance adjusted as per formula
    */
-  def simpleAvg(edges: Iterable[HierarchicalClusteringEdge], swapInfo: Boolean): HierarchicalClusteringEdge = {
+  def simpleAvg(edges: Iterable[GraphClusteringEdge], swapInfo: Boolean): GraphClusteringEdge = {
     var dist: Float = 0
     var edgeCount = 0
 
@@ -152,7 +152,7 @@ object EdgeDistance extends Serializable {
 
   }
 
-  def swapEdgeInfo(edge: HierarchicalClusteringEdge): Unit = {
+  def swapEdgeInfo(edge: GraphClusteringEdge): Unit = {
 
     val tmpName = edge.src
     val tmpNodeCount = edge.srcNodeCount

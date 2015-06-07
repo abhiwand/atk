@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import com.intel.event.EventLogging
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.spark.graphon.hierarchicalclustering.HierarchicalClusteringStorage
+import com.intel.spark.graphon.graphclustering.GraphClusteringStorage
 import org.apache.spark.rdd.RDD
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -32,56 +32,56 @@ import org.apache.spark.storage.StorageLevel
  * This is the main clustering class.
  * @param dbConnectionConfig serializable configuration file
  */
-class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) extends Serializable with EventLogging {
+class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) extends Serializable with EventLogging {
 
-  private val hierarchicalClusteringReport = new StringBuilder
+  private val graphClusteringReport = new StringBuilder
 
   /**
-   * Convert the storage graph into a hierarchical edge RDD
+   * Convert the storage graph into a graph edge RDD
    * @param vertices the list of vertices for the initial graph
    * @param edges the list of edges for the initial graph
    */
   def execute(vertices: RDD[GBVertex], edges: RDD[GBEdge], edgeDistanceProperty: String): String = {
 
-    val hierarchicalClusteringFactory: HierarchicalClusteringStorageFactoryInterface = HierarchicalClusteringStorageFactory(dbConnectionConfig)
-    val hcRdd: RDD[HierarchicalClusteringEdge] = edges.map {
+    val clusteringFactory: GraphClusteringStorageFactoryInterface = GraphClusteringStorageFactory(dbConnectionConfig)
+    val hcRdd: RDD[GraphClusteringEdge] = edges.map {
       case edge =>
         val edgeDistProperty = edge.getProperty(edgeDistanceProperty)
           .getOrElse(throw new Exception(s"Edge does not have ${edgeDistanceProperty} property"))
 
-        HierarchicalClusteringEdge(edge.headPhysicalId.asInstanceOf[Number].longValue,
-          HierarchicalClusteringConstants.DefaultNodeCount,
+        GraphClusteringEdge(edge.headPhysicalId.asInstanceOf[Number].longValue,
+          GraphClusteringConstants.DefaultNodeCount,
           edge.tailPhysicalId.asInstanceOf[Number].longValue,
-          HierarchicalClusteringConstants.DefaultNodeCount,
+          GraphClusteringConstants.DefaultNodeCount,
           1 - edgeDistProperty.value.asInstanceOf[Float], false)
     }.distinct()
 
-    configStorage(hierarchicalClusteringFactory)
-    clusterGraph(hcRdd, hierarchicalClusteringFactory)
-    hierarchicalClusteringReport.toString()
+    configStorage(clusteringFactory)
+    clusterGraph(hcRdd, clusteringFactory)
+    graphClusteringReport.toString()
   }
 
   /**
    * This is the main loop of the algorithm
-   * @param graph initial in memory graph as RDD of hierarchical clustering edges
+   * @param graph initial in memory graph as RDD of graph clustering edges
    */
-  def clusterGraph(graph: RDD[HierarchicalClusteringEdge],
-                   hcFactory: HierarchicalClusteringStorageFactoryInterface): String = {
+  def clusterGraph(graph: RDD[GraphClusteringEdge],
+                   hcFactory: GraphClusteringStorageFactoryInterface): String = {
 
-    var currentGraph: RDD[HierarchicalClusteringEdge] = graph
+    var currentGraph: RDD[GraphClusteringEdge] = graph
     var iteration = 0
 
     while (currentGraph != null) {
       iteration = iteration + 1
       currentGraph = clusterNewLayer(currentGraph, iteration, hcFactory)
     }
-    hierarchicalClusteringReport.toString()
+    graphClusteringReport.toString()
   }
 
   /**
    * Add schema to the storage configuration
    */
-  private def configStorage(hcFactory: HierarchicalClusteringStorageFactoryInterface): Unit = {
+  private def configStorage(hcFactory: GraphClusteringStorageFactoryInterface): Unit = {
 
     val storage = hcFactory.newStorage()
     storage.addSchema()
@@ -90,13 +90,13 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
 
   /**
    * Creates a set of meta-node and a set of internal nodes and edges (saved to storage)
-   * @param graph (n-1) in memory graph (as an RDD of hierarchical clustering edges)
+   * @param graph (n-1) in memory graph (as an RDD of clustering edges)
    * @param iteration current iteration, testing purposes only
-   * @return (n) in memory graph (as an RDD of hierarchical clustering edges)
+   * @return (n) in memory graph (as an RDD of graph clustering edges)
    */
-  private def clusterNewLayer(graph: RDD[HierarchicalClusteringEdge],
+  private def clusterNewLayer(graph: RDD[GraphClusteringEdge],
                               iteration: Int,
-                              hcFactory: HierarchicalClusteringStorageFactoryInterface): RDD[HierarchicalClusteringEdge] = {
+                              hcFactory: GraphClusteringStorageFactoryInterface): RDD[GraphClusteringEdge] = {
 
     // the list of edges to be collapsed and removed from the active graph
     val collapsableEdges = createCollapsableEdges(graph)
@@ -111,31 +111,31 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
     val activeEdges = createActiveEdges(nonSelectedEdges, internalEdges)
     activeEdges.persist(StorageLevel.MEMORY_AND_DISK)
 
-    val iterationCountLog = HierarchicalClusteringConstants.IterationMarker + " " + iteration
-    hierarchicalClusteringReport.append(iterationCountLog + "\n")
+    val iterationCountLog = GraphClusteringConstants.IterationMarker + " " + iteration
+    graphClusteringReport.append(iterationCountLog + "\n")
     info(iterationCountLog)
 
     val collapsableEdgesCount = collapsableEdges.count()
     if (collapsableEdges.count() > 0) {
       val log = "Collapsed edges " + collapsableEdgesCount
-      hierarchicalClusteringReport.append(log + "\n")
+      graphClusteringReport.append(log + "\n")
       info(log)
     }
     else {
       val log = "No new collapsed edges"
-      hierarchicalClusteringReport.append(log + "\n")
+      graphClusteringReport.append(log + "\n")
       info(log)
     }
 
     val internalEdgesCount = internalEdges.count()
     if (internalEdgesCount > 0) {
       val log = "Internal edges " + internalEdgesCount
-      hierarchicalClusteringReport.append(log + "\n")
+      graphClusteringReport.append(log + "\n")
       info(log)
     }
     else {
       val log = "No new internal edges"
-      hierarchicalClusteringReport.append(log + "\n")
+      graphClusteringReport.append(log + "\n")
       info(log)
     }
 
@@ -144,11 +144,11 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       internalEdges.unpersist()
 
       val activeEdgesLog = "Active edges " + activeEdgesCount
-      hierarchicalClusteringReport.append(activeEdgesLog + "\n")
+      graphClusteringReport.append(activeEdgesLog + "\n")
       info(activeEdgesLog)
 
       // create a key-value pair list of edges from the current graph (for subtractByKey)
-      val currentGraphAsKVPair = graph.map((e: HierarchicalClusteringEdge) => (e.src, e))
+      val currentGraphAsKVPair = graph.map((e: GraphClusteringEdge) => (e.src, e))
 
       // create a key-value pair list of edges from the list of edges to be collapsed for subtractByKey)
       val collapsedEdgesAsKVPair = collapsableEdges.flatMap {
@@ -160,7 +160,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       val newGraphReducedBySrc = currentGraphAsKVPair.subtractByKey(collapsedEdgesAsKVPair).values
 
       //double the edges for edge selection algorithm
-      val activeEdgesBothDirections = activeEdges.flatMap((e: HierarchicalClusteringEdge) => Seq(e, HierarchicalClusteringEdge(e.dest,
+      val activeEdgesBothDirections = activeEdges.flatMap((e: GraphClusteringEdge) => Seq(e, GraphClusteringEdge(e.dest,
         e.destNodeCount,
         e.src,
         e.srcNodeCount,
@@ -168,7 +168,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       activeEdges.unpersist()
 
       //remove collapsed edges from the active graph - by dest node
-      val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: HierarchicalClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
+      val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: GraphClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
       val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, true)
       val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
 
@@ -176,14 +176,14 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       collapsableEdges.unpersist()
 
       val nextItLog = "Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count()
-      hierarchicalClusteringReport.append(nextItLog + "\n")
+      graphClusteringReport.append(nextItLog + "\n")
       info(nextItLog)
 
       distinctNewGraphWithoutInternalEdges
     }
     else {
       val log = "No new active edges - terminating..."
-      hierarchicalClusteringReport.append(log + "\n")
+      graphClusteringReport.append(log + "\n")
       info(log)
 
       null
@@ -197,8 +197,8 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * @param internalEdges - the set of internal edges (previously calculated from collapsed ones)
    * @return a list of new edges (containing meta-nodes) to be added to the active graph. The edge distance is updated/calculated for the new edges
    */
-  private def createActiveEdges(nonSelectedEdges: RDD[HierarchicalClusteringEdge],
-                                internalEdges: RDD[HierarchicalClusteringEdge]): RDD[HierarchicalClusteringEdge] = {
+  private def createActiveEdges(nonSelectedEdges: RDD[GraphClusteringEdge],
+                                internalEdges: RDD[GraphClusteringEdge]): RDD[GraphClusteringEdge] = {
 
     val activeEdges = nonSelectedEdges.map {
       case (e) => ((e.src, e.dest, e.destNodeCount), e)
@@ -209,7 +209,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
       case ((srcNode, destNode, destNodeCount), newEdges) =>
         val tempEdgeForMetaNode = newEdges.head
 
-        HierarchicalClusteringEdge(tempEdgeForMetaNode.src,
+        GraphClusteringEdge(tempEdgeForMetaNode.src,
           tempEdgeForMetaNode.srcNodeCount,
           destNode,
           destNodeCount,
@@ -217,7 +217,7 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
     }.distinct()
 
     val newEdges = (internalEdges union activeEdgesWithWeightedAvgDistance).coalesce(internalEdges.partitions.length, true).map(
-      (e: HierarchicalClusteringEdge) => (e.dest, e)
+      (e: GraphClusteringEdge) => (e.dest, e)
     ).groupByKey()
 
     // update the dest node with meta-node in the list
@@ -226,14 +226,14 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
     }.flatMap(identity)
 
     val newEdgesWithMetaNodeGrouped = newEdgesWithMetaNodeForDest.map(
-      (e: HierarchicalClusteringEdge) => ((e.src, e.dest), e)
+      (e: GraphClusteringEdge) => ((e.src, e.dest), e)
     ).groupByKey()
 
     // recalculate the edge distance if several outgoing edges go into the same meta-node
     val newEdgesWithMetaNodesAndDistUpdated = newEdgesWithMetaNodeGrouped.map {
       case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, true)
     }.map {
-      (e: HierarchicalClusteringEdge) => ((e.src, e.dest), e)
+      (e: GraphClusteringEdge) => ((e.src, e.dest), e)
     }.groupByKey()
 
     newEdgesWithMetaNodesAndDistUpdated.map {
@@ -247,12 +247,12 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * @return 2 RDDs - one with internal edges and a second with non-minimal distance edges. The RDDs will be used
    *         to calculate the new active edges for the current iteration.
    */
-  private def createInternalEdges(collapsedEdges: RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])],
+  private def createInternalEdges(collapsedEdges: RDD[(GraphClusteringEdge, Iterable[GraphClusteringEdge])],
                                   iteration: Int,
-                                  hcFactory: HierarchicalClusteringStorageFactoryInterface): (RDD[HierarchicalClusteringEdge], RDD[HierarchicalClusteringEdge]) = {
+                                  hcFactory: GraphClusteringStorageFactoryInterface): (RDD[GraphClusteringEdge], RDD[GraphClusteringEdge]) = {
 
     val internalEdges = collapsedEdges.mapPartitions {
-      case edges: Iterator[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] => {
+      case edges: Iterator[(GraphClusteringEdge, Iterable[GraphClusteringEdge])] => {
         val hcStorage = hcFactory.newStorage()
 
         val result = edges.map {
@@ -277,9 +277,9 @@ class HierarchicalClusteringWorker(dbConnectionConfig: SerializableBaseConfigura
    * @param graph the active graph at ith iteration
    * @return a list of edges to be collapsed at this iteration
    */
-  private def createCollapsableEdges(graph: RDD[HierarchicalClusteringEdge]): RDD[(HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge])] = {
+  private def createCollapsableEdges(graph: RDD[GraphClusteringEdge]): RDD[(GraphClusteringEdge, Iterable[GraphClusteringEdge])] = {
 
-    val edgesBySourceIdWithMinEdge = graph.map((e: HierarchicalClusteringEdge) => (e.src, e)).groupByKey().map {
+    val edgesBySourceIdWithMinEdge = graph.map((e: GraphClusteringEdge) => (e.src, e)).groupByKey().map {
       case (minEdge, allEdges) => EdgeDistance.min(allEdges)
     }.groupByKey().filter {
       case (minEdge,

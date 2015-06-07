@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -23,12 +23,12 @@ class EdgeManagerTest extends FlatSpec with Matchers {
   val metaNodeId = 10
   val metaNodeCount = 100
 
-  val basicEdgeList: List[HierarchicalClusteringEdge] = List(
-    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
-    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  val basicEdgeList: List[GraphClusteringEdge] = List(
+    GraphClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    GraphClusteringEdge(2, 1, 3, 1, 1.2f, false)
   )
 
-  val minEdge = HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false)
+  val minEdge = GraphClusteringEdge(1, 1, 2, 1, 1.1f, false)
   val nonCollapsableEdgeList: List[VertexOutEdges] = List(
     VertexOutEdges(minEdge, basicEdgeList)
   )
@@ -38,24 +38,24 @@ class EdgeManagerTest extends FlatSpec with Matchers {
   )
 
   val metaNodeEdgeList = List(
-    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
-    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false),
-    HierarchicalClusteringEdge(metaNodeId, metaNodeCount, 3, 1, 1.2f, true)
+    GraphClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    GraphClusteringEdge(2, 1, 3, 1, 1.2f, false),
+    GraphClusteringEdge(metaNodeId, metaNodeCount, 3, 1, 1.2f, true)
   )
 
   "edgeManager::createActiveEdgesForMetaNode" should "return valid active edge list" in {
-    val result: List[((Long, Long), HierarchicalClusteringEdge)] =
+    val result: List[((Long, Long), GraphClusteringEdge)] =
       EdgeManager.createActiveEdgesForMetaNode(metaNodeId, metaNodeCount, basicEdgeList)
     result.foreach(item =>
       {
-        val ((id: Long, count: Long), edge: HierarchicalClusteringEdge) = item
+        val ((id: Long, count: Long), edge: GraphClusteringEdge) = item
         assert(edge.src == metaNodeId)
         assert(edge.srcNodeCount == metaNodeCount)
       })
   }
 
   "edgeManager::createOutgoingEdgesForMetaNode" should "return valid outgoing edge list" in {
-    val (edge, outgoingEdges): (HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge]) =
+    val (edge, outgoingEdges): (GraphClusteringEdge, Iterable[GraphClusteringEdge]) =
       EdgeManager.createOutgoingEdgesForMetaNode(outgoingEdgeList)
 
     assert(edge == minEdge)
@@ -63,14 +63,14 @@ class EdgeManagerTest extends FlatSpec with Matchers {
   }
 
   "edgeManager::replaceWithMetaNode" should "return the input edge list if no internal edge is present" in {
-    val edges: Iterable[HierarchicalClusteringEdge] =
+    val edges: Iterable[GraphClusteringEdge] =
       EdgeManager.replaceWithMetaNode(basicEdgeList)
 
     assert(edges == basicEdgeList)
   }
 
   "edgeManager::replaceWithMetaNode" should "return valid edge list with meta-node inserted" in {
-    val edges: Iterable[HierarchicalClusteringEdge] =
+    val edges: Iterable[GraphClusteringEdge] =
       EdgeManager.replaceWithMetaNode(metaNodeEdgeList)
 
     assert(edges.size == 2)

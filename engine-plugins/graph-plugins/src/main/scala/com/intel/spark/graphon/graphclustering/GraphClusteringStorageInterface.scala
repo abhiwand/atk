@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import java.io.Serializable
 
@@ -26,7 +26,7 @@ import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }
 
-trait HierarchicalClusteringStorageInterface extends Serializable {
+trait GraphClusteringStorageInterface extends Serializable {
 
   def addSchema(): Unit
 

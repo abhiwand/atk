@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import org.mockito.Mockito._
 import org.mockito.Matchers._
@@ -24,16 +24,16 @@ import org.scalatest.{ FlatSpec, Matchers }
 class EdgeManagerInternalEdgeTest extends FlatSpec with Matchers with MockitoSugar {
 
   val mockNodeId = 100
-  val minEdge = HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false)
+  val minEdge = GraphClusteringEdge(1, 1, 2, 1, 1.1f, false)
 
-  val mockInstance = mock[HierarchicalClusteringStorageInterface]
+  val mockInstance = mock[GraphClusteringStorageInterface]
   when(mockInstance.addVertexAndEdges(1, 2, 2, "1_2", 1)).thenReturn(mockNodeId)
 
   "edgeManager::createInternalEdgesForMetaNode" should "return default internal edges on null" in {
     val (metanode, metanodeCount, metaEdges) = EdgeManager.createInternalEdgesForMetaNode(null, mockInstance, 1)
 
-    assert(HierarchicalClusteringConstants.DefaultVertextId == metanode)
-    assert(HierarchicalClusteringConstants.DefaultNodeCount == metanodeCount)
+    assert(GraphClusteringConstants.DefaultVertextId == metanode)
+    assert(GraphClusteringConstants.DefaultNodeCount == metanodeCount)
     assert(metaEdges.size == 0)
   }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import java.io.Serializable
 import com.thinkaurelius.titan.core.TitanGraph
@@ -39,10 +39,10 @@ object EdgeManager extends Serializable {
    *                 tail - a list of edges whose destination nodes will need to be replaced
    * @return the edge list (less the head element) with the destination node replaced by head.source
    */
-  def replaceWithMetaNode(edgeList: Iterable[HierarchicalClusteringEdge]): Iterable[HierarchicalClusteringEdge] = {
+  def replaceWithMetaNode(edgeList: Iterable[GraphClusteringEdge]): Iterable[GraphClusteringEdge] = {
 
     if (edgeList.toArray.length > 1) {
-      var internalEdge: HierarchicalClusteringEdge = null
+      var internalEdge: GraphClusteringEdge = null
       for (edge <- edgeList) {
         if (edge.isInternal) {
           internalEdge = edge
@@ -67,10 +67,10 @@ object EdgeManager extends Serializable {
    * @param list a list of (lists of) edges. The source node of the head element of each list is the metanode
    * @return a flat list of outgoing edges for metanode
    */
-  def createOutgoingEdgesForMetaNode(list: Iterable[VertexOutEdges]): (HierarchicalClusteringEdge, Iterable[HierarchicalClusteringEdge]) = {
+  def createOutgoingEdgesForMetaNode(list: Iterable[VertexOutEdges]): (GraphClusteringEdge, Iterable[GraphClusteringEdge]) = {
 
-    var outgoingEdges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
-    var edge: HierarchicalClusteringEdge = null
+    var outgoingEdges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
+    var edge: GraphClusteringEdge = null
 
     if ((null != list) && (!list.isEmpty)) {
       for (edgeList <- list) {
@@ -89,11 +89,11 @@ object EdgeManager extends Serializable {
    * @param edge a collapsed edge
    * @return 2 internal edges replacing the collapsed edge in the graph
    */
-  def createInternalEdgesForMetaNode(edge: HierarchicalClusteringEdge,
-                                     storage: HierarchicalClusteringStorageInterface,
-                                     iteration: Int): (Long, Long, List[HierarchicalClusteringEdge]) = {
+  def createInternalEdgesForMetaNode(edge: GraphClusteringEdge,
+                                     storage: GraphClusteringStorageInterface,
+                                     iteration: Int): (Long, Long, List[GraphClusteringEdge]) = {
 
-    var edges: List[HierarchicalClusteringEdge] = List[HierarchicalClusteringEdge]()
+    var edges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
 
     if (null != edge) {
       val metaNodeVertexId = storage.addVertexAndEdges(
@@ -103,22 +103,22 @@ object EdgeManager extends Serializable {
         edge.src.toString + "_" + edge.dest.toString,
         iteration)
 
-      edges = edges :+ HierarchicalClusteringEdge(metaNodeVertexId,
+      edges = edges :+ GraphClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,
         edge.src,
         edge.srcNodeCount,
-        HierarchicalClusteringConstants.DefaultNodeCount, true)
-      edges = edges :+ HierarchicalClusteringEdge(metaNodeVertexId,
+        GraphClusteringConstants.DefaultNodeCount, true)
+      edges = edges :+ GraphClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,
         edge.dest,
         edge.destNodeCount,
-        HierarchicalClusteringConstants.DefaultNodeCount, true)
+        GraphClusteringConstants.DefaultNodeCount, true)
 
       (metaNodeVertexId, edge.getTotalNodeCount, edges)
     }
     else {
-      (HierarchicalClusteringConstants.DefaultVertextId,
-        HierarchicalClusteringConstants.DefaultNodeCount,
+      (GraphClusteringConstants.DefaultVertextId,
+        GraphClusteringConstants.DefaultNodeCount,
         edges)
     }
 
@@ -132,10 +132,10 @@ object EdgeManager extends Serializable {
    * @return
    */
   def createActiveEdgesForMetaNode(metaNode: Long, count: Long,
-                                   nonSelectedEdges: Iterable[HierarchicalClusteringEdge]): List[((Long, Long), HierarchicalClusteringEdge)] = {
+                                   nonSelectedEdges: Iterable[GraphClusteringEdge]): List[((Long, Long), GraphClusteringEdge)] = {
 
     nonSelectedEdges.map(e => ((e.dest, e.destNodeCount),
-      HierarchicalClusteringEdge(
+      GraphClusteringEdge(
         metaNode,
         count,
         e.dest,

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import org.scalatest.{ Matchers, FlatSpec }
 
@@ -24,15 +24,15 @@ class EdgeDistanceMinTest extends FlatSpec with Matchers {
 
   val emptyEdgeList = List()
 
-  val basicEdgeList: List[HierarchicalClusteringEdge] = List(
-    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
-    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  val basicEdgeList: List[GraphClusteringEdge] = List(
+    GraphClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    GraphClusteringEdge(2, 1, 3, 1, 1.2f, false)
   )
 
-  val reversedEdgeList: List[HierarchicalClusteringEdge] = List(
-    HierarchicalClusteringEdge(1, 1, 2, 1, 1.1f, false),
-    HierarchicalClusteringEdge(2, 1, 1, 1, 1.1f, false),
-    HierarchicalClusteringEdge(2, 1, 3, 1, 1.2f, false)
+  val reversedEdgeList: List[GraphClusteringEdge] = List(
+    GraphClusteringEdge(1, 1, 2, 1, 1.1f, false),
+    GraphClusteringEdge(2, 1, 1, 1, 1.1f, false),
+    GraphClusteringEdge(2, 1, 3, 1, 1.2f, false)
   )
 
   "edgeDistance::min" should "return null for null inputs" in {

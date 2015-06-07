@@ -14,14 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
-object HierarchicalClusteringConstants {
-  val DefaultVertextId = 0
-  val DefaultNodeCount = 1
-  val VertexNodeCountProperty = "count"
-  val VertexNodeNameProperty = "name"
-  val VertexIterationProperty = "iteration"
-  val LabelPropertyValue = "cluster"
-  val IterationMarker = "------------- Iteration"
+import java.io.Serializable
+
+trait GraphClusteringStorageFactoryInterface extends Serializable {
+
+  def newStorage(): GraphClusteringStorageInterface
 }

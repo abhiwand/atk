@@ -14,15 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
-/**
- * List of Edges from a source Vertex
- * @param minDistanceEdge - the minimum distance edge associated with the vertex
- * @param higherDistanceEdgeList - the remainder of the vertex edges (the non-minimum diatance)
- */
-case class VertexOutEdges(minDistanceEdge: HierarchicalClusteringEdge,
-                          higherDistanceEdgeList: Iterable[HierarchicalClusteringEdge]) {
-
-  def sourceVId: Long = minDistanceEdge.src
+object GraphClusteringConstants {
+  val DefaultVertextId = 0
+  val DefaultNodeCount = 1
+  val VertexNodeCountProperty = "count"
+  val VertexNodeNameProperty = "name"
+  val VertexIterationProperty = "iteration"
+  val LabelPropertyValue = "cluster"
+  val IterationMarker = "------------- Iteration"
 }

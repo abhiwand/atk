@@ -14,11 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
-import java.io.Serializable
+/**
+ * List of Edges from a source Vertex
+ * @param minDistanceEdge - the minimum distance edge associated with the vertex
+ * @param higherDistanceEdgeList - the remainder of the vertex edges (the non-minimum distance)
+ */
+case class VertexOutEdges(minDistanceEdge: GraphClusteringEdge,
+                          higherDistanceEdgeList: Iterable[GraphClusteringEdge]) {
 
-trait HierarchicalClusteringStorageFactoryInterface extends Serializable {
-
-  def newStorage(): HierarchicalClusteringStorageInterface
+  def sourceVId: Long = minDistanceEdge.src
 }
