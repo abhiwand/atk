@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import java.io.Serializable
 
-trait HierarchicalClusteringStorageFactoryInterface extends Serializable {
+trait GraphClusteringStorageFactoryInterface extends Serializable {
 
-  def newStorage(): HierarchicalClusteringStorageInterface
+  def newStorage(): GraphClusteringStorageInterface
 }

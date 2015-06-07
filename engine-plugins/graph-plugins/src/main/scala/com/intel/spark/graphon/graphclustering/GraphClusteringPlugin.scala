@@ -14,15 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.{ GraphNoArgs, GraphReference }
+import com.intel.intelanalytics.domain.graph.{ GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -32,29 +30,29 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-case class HierarchicalClusteringArgs(graph: GraphReference,
-                                      @ArgDoc("""Column name for the edge distance.""") edgeDistance: String)
+case class GraphClusteringArgs(graph: GraphReference,
+                               @ArgDoc("""Column name for the edge distance.""") edgeDistance: String)
 
 /** Json conversion for arguments and return value case classes */
-object HierarchicalClusteringFormat {
+object GraphClusteringFormat {
   import DomainJsonProtocol._
-  implicit val hFormat = jsonFormat2(HierarchicalClusteringArgs)
+  implicit val hFormat = jsonFormat2(GraphClusteringArgs)
 }
 
-import HierarchicalClusteringFormat._
+import GraphClusteringFormat._
 
 /**
- * HierarchicalClusteringPlugin implements the hierarchical clustering algorithm on a graph.
+ * GraphClusteringPlugin implements the graph clustering algorithm on a graph.
  */
-@PluginDoc(oneLine = "Build hierarchical clustering over an initial titan graph.",
+@PluginDoc(oneLine = "Build graph clustering over an initial titan graph.",
   extended = "",
   returns = "A set of titan vertices and edges representing the internal clustering of the graph.")
-class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalClusteringArgs, UnitReturn] {
+class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, UnitReturn] {
 
-  override def name: String = "graph:titan/hierarchical_clustering"
+  override def name: String = "graph:titan/graph_clustering"
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: HierarchicalClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
     if (!SparkEngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
@@ -62,7 +60,7 @@ class HierarchicalClusteringPlugin extends SparkCommandPlugin[HierarchicalCluste
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
-    new HierarchicalClusteringWorker(titanConfig).execute(vertices, edges, arguments.edgeDistance)
+    new GraphClusteringWorker(titanConfig).execute(vertices, edges, arguments.edgeDistance)
     new UnitReturn
   }
 }

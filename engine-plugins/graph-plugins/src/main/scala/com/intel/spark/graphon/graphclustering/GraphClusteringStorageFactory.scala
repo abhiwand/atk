@@ -14,15 +14,17 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
-/**
- * List of Edges from a source Vertex
- * @param minDistanceEdge - the minimum distance edge associated with the vertex
- * @param higherDistanceEdgeList - the remainder of the vertex edges (the non-minimum diatance)
- */
-case class VertexOutEdges(minDistanceEdge: HierarchicalClusteringEdge,
-                          higherDistanceEdgeList: Iterable[HierarchicalClusteringEdge]) {
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
-  def sourceVId: Long = minDistanceEdge.src
+case class GraphClusteringStorageFactory(dbConnectionConfig: SerializableBaseConfiguration)
+    extends GraphClusteringStorageFactoryInterface {
+
+  override def newStorage(): GraphClusteringStorage = {
+    val titanConnector = new TitanGraphConnector(dbConnectionConfig)
+    val titanGraph = titanConnector.connect()
+    new GraphClusteringStorage(titanGraph)
+  }
 }

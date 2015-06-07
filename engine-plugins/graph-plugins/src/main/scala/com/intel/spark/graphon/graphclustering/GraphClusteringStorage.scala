@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.hierarchicalclustering
+package com.intel.spark.graphon.graphclustering
 
 import java.io.Serializable
 
@@ -24,17 +24,17 @@ import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }
 
-case class HierarchicalClusteringStorage(titanStorage: TitanGraph)
-    extends HierarchicalClusteringStorageInterface {
+case class GraphClusteringStorage(titanStorage: TitanGraph)
+    extends GraphClusteringStorageInterface {
 
   override def addSchema(): Unit = {
 
     val schema = new GraphSchema(
-      List(EdgeLabelDef(HierarchicalClusteringConstants.LabelPropertyValue)),
+      List(EdgeLabelDef(GraphClusteringConstants.LabelPropertyValue)),
       List(PropertyDef(PropertyType.Vertex, GraphSchema.labelProperty, classOf[String]),
-        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeCountProperty, classOf[Long]),
-        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexNodeNameProperty, classOf[String]),
-        PropertyDef(PropertyType.Vertex, HierarchicalClusteringConstants.VertexIterationProperty, classOf[Int]))
+        PropertyDef(PropertyType.Vertex, GraphClusteringConstants.VertexNodeCountProperty, classOf[Long]),
+        PropertyDef(PropertyType.Vertex, GraphClusteringConstants.VertexNodeNameProperty, classOf[String]),
+        PropertyDef(PropertyType.Vertex, GraphClusteringConstants.VertexIterationProperty, classOf[Int]))
     )
     val schemaWriter = new TitanSchemaWriter(titanStorage)
 
@@ -61,18 +61,18 @@ case class HierarchicalClusteringStorage(titanStorage: TitanGraph)
   private def addVertex(vertexCount: Long, vertexName: String, iteration: Int): Vertex = {
 
     val vertex = titanStorage.addVertex(null)
-    vertex.setProperty(GraphSchema.labelProperty, HierarchicalClusteringConstants.LabelPropertyValue)
+    vertex.setProperty(GraphSchema.labelProperty, GraphClusteringConstants.LabelPropertyValue)
     vertex.setProperty(GraphSchema.labelProperty, vertexCount)
 
     // TODO: this is testing only, remove later.
-    vertex.setProperty(HierarchicalClusteringConstants.VertexNodeNameProperty, vertexName)
-    vertex.setProperty(HierarchicalClusteringConstants.VertexIterationProperty, iteration)
+    vertex.setProperty(GraphClusteringConstants.VertexNodeNameProperty, vertexName)
+    vertex.setProperty(GraphClusteringConstants.VertexIterationProperty, iteration)
 
     vertex
   }
 
   private def addEdge(src: Vertex, dest: Long): Edge = {
-    titanStorage.addEdge(null, src, titanStorage.getVertex(dest), HierarchicalClusteringConstants.LabelPropertyValue)
+    titanStorage.addEdge(null, src, titanStorage.getVertex(dest), GraphClusteringConstants.LabelPropertyValue)
   }
 
 }
