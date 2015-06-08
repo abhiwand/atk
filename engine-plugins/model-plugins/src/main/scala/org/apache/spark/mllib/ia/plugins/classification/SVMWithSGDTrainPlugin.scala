@@ -43,23 +43,23 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Parameters
  * ----------
  * frame : Frame
-    A frame to train the model on.
+ * A frame to train the model on.
  * label_column : str
-    Column name containing the label for each observation.
+ * Column name containing the label for each observation.
  * observation_column : list of str
-    Column(s) containing the observations.
+ * Column(s) containing the observations.
  * intercept : bool (Optional)
-    The algorithm adds an intercept. Default is true.
+ * The algorithm adds an intercept. Default is true.
  * num_iterations: int (Optional)
-    Number of iterations. Default is 100.
+ * Number of iterations. Default is 100.
  * step_size: int (Optional)
-    Step size for optimizer. Default is 1.0.
+ * Step size for optimizer. Default is 1.0.
  * reg_type: str (Optional)
-    Regularization L1 or L2. Default is L2.
+ * Regularization L1 or L2. Default is L2.
  * reg_param: double (Optional)
-    Regularization parameter. Default is 0.01.
+ * Regularization parameter. Default is 0.01.
  * mini_batch_fraction : double (Optional)
-    Mini batch fraction parameter. Default is 1.0.
+ * Mini batch fraction parameter. Default is 1.0.
  */
 
 @PluginDoc(oneLine = "Train SVM model based on another frame.",

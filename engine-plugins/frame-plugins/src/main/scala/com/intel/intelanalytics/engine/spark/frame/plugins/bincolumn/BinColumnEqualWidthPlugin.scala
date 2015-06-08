@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -115,4 +116,3 @@ class BinColumnEqualWidthPlugin extends ComputedBinColumnPlugin {
     DiscretizationFunctions.binEqualWidth(columnIndex, numBins, rdd)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

@@ -27,10 +27,10 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /** Json conversion for arguments and return value case classes */
 object DotProductJsonFormat {
@@ -65,7 +65,7 @@ import DotProductJsonFormat._
  *   Default is None.
  */
 @PluginDoc(oneLine = "Calculate dot product for each row in current frame.",
-  extended = "Calculate the dot product for each row in a frame using values from two
+  extended = """Calculate the dot product for each row in a frame using values from two
 equal-length sequences of columns.
 
 Dot product is computed by the following formula:
@@ -77,7 +77,7 @@ The dot product for each row is stored in a new column in the existing frame.
 Notes
 -----
 If default_left_values or default_right_values are not specified, any null
-values will be replaced by zeros.")
+values will be replaced by zeros.""")
 class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

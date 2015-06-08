@@ -31,64 +31,59 @@ import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Column, FrameSchema }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
+/**
+ * Represents the arguments for Latent Dirichlet allocation
+ *
+ * @param graph Reference to the graph for which communities has to be determined.
+ */
 case class LdaTrainArgs(graph: GraphReference,
-                        @ArgDoc("""Input frame data.""")
-                        frame: Frame
+                        @ArgDoc("""Input frame data.""") frame: Frame,
                         @ArgDoc("""Column Name for documents.
-Column should contain a str value.""")
-                        doc: str
+Column should contain a str value.""") doc: str,
                         @ArgDoc("""Column name for words.
-Column should contain a str value.""")
-                        word: str
+Column should contain a str value.""") word: str,
                         @ArgDoc("""Column name for word count.
-Column should contain an int64 value.""")
-                        word_count: str
+Column should contain an int64 value.""") word_count: str,
                         @ArgDoc("""The maximum number of iterations that the algorithm will execute.
 The valid value range is all positive int.
-Default is 20.""")
-                        max_interations: int (optional)
+Default is 20.""") max_interations: int,
                         @ArgDoc("""The hyper-parameter for document-specific distribution over topics.
 Mainly used as a smoothing parameter in :term:`Bayesian inference`.
 Larger value implies that documents are assumed to cover all topics
 more uniformly; smaller value implies that documents are more
 concentrated on a small subset of topics.
 Valid value range is all positive float.
-Default is 0.1.""")
-                        alpha: float (optional)
+Default is 0.1.""") alpha: float,
                         @ArgDoc("""The hyper-parameter for word-specific distribution over topics.
 Mainly used as a smoothing parameter in :term:`Bayesian inference`.
 Larger value implies that topics contain all words more uniformly and
 smaller value implies that topics are more concentrated on a small
 subset of words.
 Valid value range is all positive float.
-Default is 0.1.""")
-                        beta: float (optional)
+Default is 0.1.""") beta: float,
                         @ArgDoc("""The amount of change in LDA model parameters that will be tolerated
 at convergence.
 If the change is less than this threshold, the algorithm exits
 before it reaches the maximum number of supersteps.
 Valid value range is all positive float and 0.0.
-Default is 0.001.""")
-                        convergence_threshold: float (optional)
-                        @ArgDoc(""""True" means turn on cost evaluation and "False" means turn off
+Default is 0.001.""") convergence_threshold: float,
+                        @ArgDoc("""\"True\" means turn on cost evaluation and \"False\" means turn off
 cost evaluation.
 It's relatively expensive for LDA to evaluate cost function.
 For time-critical applications, this option allows user to turn off cost
 function evaluation.
-Default is "False".""")
-                        evaluate_cost: bool (optional)
+Default is \"False\".""") evaluate_cost: bool,
                         @ArgDoc("""The number of topics to identify in the LDA model.
 Using fewer topics will speed up the computation, but the extracted topics
 might be more abstract or less specific; using more topics will
 result in more computation but lead to more specific topics.
 Valid value range is all positive int.
-Default is 10.""")
-                        num_topics: int (optional) {
+Default is 10.""") num_topics: int) {
 }
 
 /**

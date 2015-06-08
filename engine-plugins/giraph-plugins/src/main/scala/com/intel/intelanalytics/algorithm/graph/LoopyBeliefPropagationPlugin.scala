@@ -41,34 +41,20 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class LoopyBeliefPropagationArgs(graph: GraphReference,
-                                  @ArgDoc("")
-                                  vertexValuePropertyList: List[String],
-                                  @ArgDoc("")
-                                  edgeValuePropertyList: List[String],
-                                  @ArgDoc("")
-                                  inputEdgeLabelList: List[String],
-                                  @ArgDoc("")
-                                  outputVertexPropertyList: List[String],
-                                  @ArgDoc("")
-                                  vertexType: String,
-                                  @ArgDoc("")
-                                  vectorValue: Boolean,
-                                  @ArgDoc("")
-                                  maxSupersteps: Option[Int] = None,
-                                  @ArgDoc("")
-                                  convergenceThreshold: Option[Double] = None,
-                                  @ArgDoc("")
-                                  anchorThreshold: Option[Double] = None,
-                                  @ArgDoc("")
-                                  smoothing: Option[Double] = None,
-                                  @ArgDoc("")
-                                  validateGraphStructure: Option[Boolean] = None,
-                                  @ArgDoc("")
-                                  ignoreVertexType: Option[Boolean] = None,
-                                  @ArgDoc("")
-                                  maxProduct: Option[Boolean] = None,
-                                  @ArgDoc("")
-                                  power: Option[Double] = None) {
+                                      @ArgDoc("") vertexValuePropertyList: List[String],
+                                      @ArgDoc("") edgeValuePropertyList: List[String],
+                                      @ArgDoc("") inputEdgeLabelList: List[String],
+                                      @ArgDoc("") outputVertexPropertyList: List[String],
+                                      @ArgDoc("") vertexType: String,
+                                      @ArgDoc("") vectorValue: Boolean,
+                                      @ArgDoc("") maxSupersteps: Option[Int] = None,
+                                      @ArgDoc("") convergenceThreshold: Option[Double] = None,
+                                      @ArgDoc("") anchorThreshold: Option[Double] = None,
+                                      @ArgDoc("") smoothing: Option[Double] = None,
+                                      @ArgDoc("") validateGraphStructure: Option[Boolean] = None,
+                                      @ArgDoc("") ignoreVertexType: Option[Boolean] = None,
+                                      @ArgDoc("") maxProduct: Option[Boolean] = None,
+                                      @ArgDoc("") power: Option[Double] = None) {
 }
 
 case class LoopyBeliefPropagationResult(value: String) //TODO

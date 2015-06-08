@@ -65,3 +65,4 @@ class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] 
     frames.renameColumns(frame, arguments.names.toSeq)
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
