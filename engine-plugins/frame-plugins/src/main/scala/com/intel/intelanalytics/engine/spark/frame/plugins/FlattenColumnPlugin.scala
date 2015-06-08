@@ -48,7 +48,7 @@ import java.util.regex.Pattern
  * delimiter : str (optional)
  *   The delimiter string.
  *   Default is comma (,).
-*/
+ */
 @PluginDoc(oneLine = "Spread data to multiple rows based on cell data.",
   extended = """Splits cells in the specified column into multiple rows according to a string
 delimiter.

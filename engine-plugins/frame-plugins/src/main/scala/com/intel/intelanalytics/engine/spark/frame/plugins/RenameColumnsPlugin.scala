@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ RenameColumnsArgs, FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -38,6 +39,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename columns of a frame
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] {
 
   /**
@@ -65,4 +69,3 @@ class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] 
     frames.renameColumns(frame, arguments.names.toSeq)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
