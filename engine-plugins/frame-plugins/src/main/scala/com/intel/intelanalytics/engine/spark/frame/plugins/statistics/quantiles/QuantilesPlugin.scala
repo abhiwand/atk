@@ -22,6 +22,7 @@ import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import org.apache.spark.frame.FrameRdd
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -36,7 +37,16 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate quantiles on the given column
+ * Parameters
+ * ----------
+ * column_name : str
+ *   The column to calculate quantiles.
+ * quantiles : [ float | list of float ]
+ *   What is being requested.
  */
+@PluginDoc(oneLine = "New frame with Quantiles and their values.",
+  extended = "Calculate quantiles on the given column.",
+  returns = "A new frame with two columns (float64): requested Quantiles and their respective values.")
 class QuantilesPlugin extends SparkCommandPlugin[QuantilesArgs, FrameEntity] {
 
   /**

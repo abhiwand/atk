@@ -20,6 +20,7 @@
 //import com.intel.intelanalytics.domain.command.CommandDoc
 //import com.intel.intelanalytics.domain.frame.DataFrame
 //import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+//import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 //import com.intel.intelanalytics.security.UserPrincipal
 //
 //import scala.concurrent.ExecutionContext
@@ -31,6 +32,9 @@
 ///**
 //* Template to follow when writing plugins
 //*/
+//@PluginDoc(oneLine = "",
+//  extended = "",
+//  returns = "")
 //class TemplatePlugin extends SparkCommandPlugin[Args, DataFrame] {
 //
 //  /**

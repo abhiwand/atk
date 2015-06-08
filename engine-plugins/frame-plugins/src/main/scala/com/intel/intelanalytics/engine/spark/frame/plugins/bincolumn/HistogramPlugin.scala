@@ -25,6 +25,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.Row
@@ -35,6 +36,46 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.SparkContext._
 
+/**
+ * Parameters
+ * ----------
+ * column_name : str
+ *   Name of column to be evaluated.
+ * num_bins : int (optional)
+ *   Number of bins in histogram.
+ *   If omitted the system will use the Square-root choice
+ *   `math.floor(math.sqrt(frame.row_count))`.
+ * weight_column_name : str (optional)
+ *   Name of column containing weights.
+ *   If omitted the system will weigh all observations equally.
+ * bin_type : str (optional)
+ *   The binning algorithm to use ['equalwidth' | 'equaldepth'].
+ *   If omitted defaults to equalwidth.
+ */
+@PluginDoc(oneLine = "Compute the histogram for a column in a frame.",
+  extended = """Compute the histogram of the data in a column.
+The returned value is a Histogram object containing 3 lists one each for:
+the cutoff points of the bins, size of each bin, and density of each bin.
+
+Notes
+-----
+The num_bins parameter is considered to be the maximum permissible number
+of bins because the data may dictate fewer bins.
+With equal depth binning, for example, if the column to be binned has 10
+elements with only 2 distinct values and the *num_bins* parameter is
+greater than 2, then the number of actual number of bins will only be 2.
+This is due to a restriction that elements with an identical value must
+belong to the same bin.""",
+  returns = """histogram
+    A Histogram object containing the result set.
+    The data returned is composed of multiple components:
+cutoffs : array of float
+    A list containing the edges of each bin.
+hist : array of float
+    A list containing count of the weighted observations found in each bin.
+density : array of float
+    A list containing a decimal containing the percentage of
+    observations found in the total set per bin.""")
 class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
   override def name: String = "frame/histogram"

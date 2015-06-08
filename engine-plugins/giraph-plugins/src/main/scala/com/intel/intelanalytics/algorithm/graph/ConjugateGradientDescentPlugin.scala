@@ -94,7 +94,8 @@ exception and terminate.
 This option is mainly for graph integrity check.
 Valid value range is all float.
 Default is -Infinity.""") minValue: Option[Float] = None,
-                                    @ArgDoc("") numIters: Option[Int] = None)
+                                    @ArgDoc("") numIters: Option[Int] = None) {
+}
 
 case class ConjugateGradientDescentResult(value: String)
 
