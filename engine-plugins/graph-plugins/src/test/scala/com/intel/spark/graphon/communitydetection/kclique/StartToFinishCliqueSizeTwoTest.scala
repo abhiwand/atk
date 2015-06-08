@@ -70,16 +70,13 @@ class StartToFinishCliqueSizeTwoTest extends FlatSpec with Matchers with Testing
     outEdgesSet shouldBe gbEdgeSet
 
     val testVerticesToCommunities = outVertexSet.map(v => (v.gbId.value.asInstanceOf[Long],
-      v.getProperty(communityProperty).get.value.asInstanceOf[java.util.Set[Long]])).toMap
+            v.getProperty(communityProperty).get.value.asInstanceOf[String])).toMap
 
     // vertex 7 gets no community (poor lonley little guy)
     testVerticesToCommunities(7) should be('empty)
 
     // no vertex gets more than one two-clique community (this is a general property of two-clique communities...
     // they're just the connected components of the non-isolated vertices)
-
-    testVerticesToCommunities(1).size() shouldBe 1
-    testVerticesToCommunities(2).size() shouldBe 1
 
     // vertex 1 and vertex 2 get distinct two-clique communities
     testVerticesToCommunities(1) should not be testVerticesToCommunities(2)
