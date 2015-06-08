@@ -19,7 +19,7 @@ The edge column name should be passed in as an argument to the plug-in.
     >>> import intelanalytics as ia
     >>> ia.connect()
     >>> my_graph = ia.TitanGraph([src, dest, dist], "sample_graph")
-    >>> my_graph.hierarchical_clustering("dist")
+    >>> my_graph.graph_clustering("dist")
 
 The expected output (new vertices) can be queried:
 
