@@ -47,7 +47,8 @@ The default value is 0.001.""") convergenceThreshold: Option[Double] = None,
                     @ArgDoc("""The probability that the random walk of a page is reset.""") resetProbability: Option[Double] = None,
                     @ArgDoc("""The convergence progress output interval.
 The valid value range is [1, max_supersteps].
-The default value is 1, which means output every superstep.""") convergenceProgressOutputInterval: Option[Int] = None)
+The default value is 1, which means output every superstep.""") convergenceProgressOutputInterval: Option[Int] = None) {
+}
 
 case class PageRankResult(value: String) //TODO
 

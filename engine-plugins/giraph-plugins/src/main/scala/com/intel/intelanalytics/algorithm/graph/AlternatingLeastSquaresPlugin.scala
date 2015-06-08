@@ -91,8 +91,8 @@ If an edge weight is smaller than this value,
 the algorithm will throw an exception and terminate.
 This option is mainly for graph integrity check.
 Valid value range is all float.
-Default is -Infinity.""") minValue: Option[Float] = None)
-
+Default is -Infinity.""") minValue: Option[Float] = None) {
+}
 case class AlternatingLeastSquaresResult(value: String)
 
 /** Json conversion for arguments and return value case classes */

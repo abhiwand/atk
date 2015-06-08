@@ -24,6 +24,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.frame.FrameRdd
 
 /** Json conversion for arguments and return value case classes */
@@ -37,6 +38,9 @@ import JoinJsonFormat._
 /**
  * Join two data frames (similar to SQL JOIN)
  */
+@PluginDoc(oneLine = "Join two data frames (similar to SQL JOIN).",
+  extended = "",
+  returns = "")
 class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
 
   /**
