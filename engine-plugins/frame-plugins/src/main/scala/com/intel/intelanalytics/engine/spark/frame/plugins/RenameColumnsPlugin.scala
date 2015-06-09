@@ -18,6 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.frame.{ RenameColumnsArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -26,6 +27,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename columns of a frame
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] {
 
   /**

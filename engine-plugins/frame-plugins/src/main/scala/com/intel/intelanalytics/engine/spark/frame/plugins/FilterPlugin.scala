@@ -21,6 +21,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, PythonRddStorage }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -29,6 +30,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Select all rows which satisfy a predicate
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
 
   /**

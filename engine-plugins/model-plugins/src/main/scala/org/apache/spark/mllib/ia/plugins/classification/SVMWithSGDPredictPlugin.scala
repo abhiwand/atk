@@ -32,7 +32,26 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
+/**
+ * Parameters
+ * ----------
+ * predict_frame : Frame
+ *   A frame whose labels are to be predicted.
+ *   By default, predict is run on the same columns over which the model is
+ *   trained.
+ *   The user could specify column names too if needed.
+ * observation_column : list of str (Optional)
+ *   Column(s) containing the observations whose labels are to be predicted.
+ *   By default, we predict the labels over columns the SvmModel was trained on.
+ */
+
+@PluginDoc(oneLine = "Make new frame with additional column for predicted label.",
+  extended = """Predict the labels for a test frame and create a new frame revision with
+existing columns and a new predicted label's column.""",
+  returns = """A frame containing the original frame's columns and a column with the
+predicted label""")
 class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
@@ -101,4 +120,3 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
     }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

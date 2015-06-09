@@ -1,23 +1,3 @@
-New frame with Quantiles and their values.
-
-Calculate quantiles on the given column.
-
-
-Parameters
-----------
-column_name : str
-    The column to calculate quantiles.
-quantiles : [ float | list of float ]
-    What is being requested.
-
-
-Returns
--------
-Frame
-    A new frame with two columns (float64): requested Quantiles and their
-    respective values.
-
-
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single

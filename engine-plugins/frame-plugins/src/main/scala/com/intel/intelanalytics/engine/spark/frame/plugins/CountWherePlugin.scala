@@ -21,12 +21,9 @@ import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.domain.frame.CountWhereArgs
 import org.bson.BSON
 import org.bson.types.BasicBSONList
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.LongValue
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

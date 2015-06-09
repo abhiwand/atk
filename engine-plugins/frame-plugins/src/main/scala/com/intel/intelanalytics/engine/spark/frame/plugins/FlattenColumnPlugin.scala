@@ -19,6 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
@@ -29,7 +30,21 @@ import java.util.regex.Pattern
 
 /**
  * Take a row with multiple values in a column and 'flatten' it into multiple rows.
+ *
+ * Parameters
+ * ----------
+ * column : str
+ *   The column to be flattened.
+ * delimiter : str (optional)
+ *   The delimiter string.
+ *   Default is comma (,).
  */
+@PluginDoc(oneLine = "Spread data to multiple rows based on cell data.",
+  extended = """Splits cells in the specified column into multiple rows according to a string
+delimiter.
+New rows are a full copy of the original row, but the specified column only
+contains one value.
+The original row is deleted.""")
 class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEntity] {
 
   /**

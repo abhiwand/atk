@@ -33,28 +33,29 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
-case class LoopyBeliefPropagation(graph: GraphReference,
-                                  @ArgDoc("") vertexValuePropertyList: List[String],
-                                  @ArgDoc("") edgeValuePropertyList: List[String],
-                                  @ArgDoc("") inputEdgeLabelList: List[String],
-                                  @ArgDoc("") outputVertexPropertyList: List[String],
-                                  @ArgDoc("") vertexType: String,
-                                  @ArgDoc("") vectorValue: Boolean,
-                                  @ArgDoc("") maxSupersteps: Option[Int] = None,
-                                  @ArgDoc("") convergenceThreshold: Option[Double] = None,
-                                  @ArgDoc("") anchorThreshold: Option[Double] = None,
-                                  @ArgDoc("") smoothing: Option[Double] = None,
-                                  @ArgDoc("") validateGraphStructure: Option[Boolean] = None,
-                                  @ArgDoc("") ignoreVertexType: Option[Boolean] = None,
-                                  @ArgDoc("") maxProduct: Option[Boolean] = None,
-                                  @ArgDoc("") power: Option[Double] = None)
+case class LoopyBeliefPropagationArgs(graph: GraphReference,
+                                      @ArgDoc("") vertexValuePropertyList: List[String],
+                                      @ArgDoc("") edgeValuePropertyList: List[String],
+                                      @ArgDoc("") inputEdgeLabelList: List[String],
+                                      @ArgDoc("") outputVertexPropertyList: List[String],
+                                      @ArgDoc("") vertexType: String,
+                                      @ArgDoc("") vectorValue: Boolean,
+                                      @ArgDoc("") maxSupersteps: Option[Int] = None,
+                                      @ArgDoc("") convergenceThreshold: Option[Double] = None,
+                                      @ArgDoc("") anchorThreshold: Option[Double] = None,
+                                      @ArgDoc("") smoothing: Option[Double] = None,
+                                      @ArgDoc("") validateGraphStructure: Option[Boolean] = None,
+                                      @ArgDoc("") ignoreVertexType: Option[Boolean] = None,
+                                      @ArgDoc("") maxProduct: Option[Boolean] = None,
+                                      @ArgDoc("") power: Option[Double] = None) {
+}
 
 case class LoopyBeliefPropagationResult(value: String) //TODO
 
 /** Json conversion for arguments and return value case classes */
 object LoopyBeliefPropagationJsonFormat {
   import DomainJsonProtocol._
-  implicit val lbpFormat = jsonFormat15(LoopyBeliefPropagation)
+  implicit val lbpFormat = jsonFormat15(LoopyBeliefPropagationArgs)
   implicit val lbpResultFormat = jsonFormat1(LoopyBeliefPropagationResult)
 }
 
@@ -64,7 +65,7 @@ import LoopyBeliefPropagationJsonFormat._
   extended = "",
   returns = "")
 class LoopyBeliefPropagationPlugin
-    extends CommandPlugin[LoopyBeliefPropagation, LoopyBeliefPropagationResult] {
+    extends CommandPlugin[LoopyBeliefPropagationArgs, LoopyBeliefPropagationResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -74,7 +75,7 @@ class LoopyBeliefPropagationPlugin
    */
   override def name: String = "graph/ml/loopy_belief_propagation"
 
-  override def execute(arguments: LoopyBeliefPropagation)(implicit invocation: Invocation): LoopyBeliefPropagationResult = {
+  override def execute(arguments: LoopyBeliefPropagationArgs)(implicit invocation: Invocation): LoopyBeliefPropagationResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")

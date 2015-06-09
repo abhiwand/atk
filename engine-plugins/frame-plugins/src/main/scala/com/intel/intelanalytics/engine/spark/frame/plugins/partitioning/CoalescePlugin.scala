@@ -20,6 +20,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.CoalesceArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
@@ -30,6 +31,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Runs RDD#coalesce (useful for debugging)
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
 
   /**

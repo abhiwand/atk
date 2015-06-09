@@ -20,6 +20,7 @@ import com.intel.intelanalytics.domain.IntValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -29,6 +30,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class PartitionCountPlugin extends SparkCommandPlugin[FrameNoArgs, IntValue] {
 
   /**
