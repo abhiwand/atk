@@ -80,3 +80,5 @@ if autoconnect is not None and autoconnect.lower() not in [None, '', '0', 'false
     connect()
 del os
 del autoconnect
+
+build_id='<Unknown>'  # Auto-filled during packaging
