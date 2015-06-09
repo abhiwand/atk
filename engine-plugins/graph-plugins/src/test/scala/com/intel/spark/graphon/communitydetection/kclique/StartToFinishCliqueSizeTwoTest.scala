@@ -70,7 +70,7 @@ class StartToFinishCliqueSizeTwoTest extends FlatSpec with Matchers with Testing
     outEdgesSet shouldBe gbEdgeSet
 
     val testVerticesToCommunities = outVertexSet.map(v => (v.gbId.value.asInstanceOf[Long],
-            v.getProperty(communityProperty).get.value.asInstanceOf[String])).toMap
+      v.getProperty(communityProperty).get.value.asInstanceOf[String])).toMap
 
     // vertex 7 gets no community (poor lonley little guy)
     testVerticesToCommunities(7) should be('empty)
