@@ -17,10 +17,14 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.schema.GraphSchema
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Rename columns for edge frame.
  */
+@PluginDoc(oneLine = "Rename columns for edge frame.",
+  extended = "",
+  returns = "")
 class RenameEdgeColumnsPlugin extends RenameVertexColumnsPlugin {
   override def name: String = "frame:edge/rename_columns"
   override val systemFields = Set(GraphSchema.edgeProperty, GraphSchema.srcVidProperty, GraphSchema.destVidProperty, GraphSchema.labelProperty)

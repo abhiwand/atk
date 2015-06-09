@@ -17,6 +17,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropDuplicatesPlugin
@@ -37,6 +38,19 @@ import org.apache.spark.frame.FrameRdd
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+/*
+Parameters
+----------
+columns : [str | list of str]
+    Column name(s) to identify duplicates.
+    If empty, the method will remove duplicates that have the whole row of
+    data identical (not including the _vid column that is already unique per
+    row).
+*/
+@PluginDoc(oneLine = "Remove duplicate vertex rows.",
+  extended = """Remove duplicate vertex rows, keeping only one vertex row per uniqueness
+criteria match.
+Edges that were connected to removed vertices are also automatically dropped.""")
 class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameEntity] {
 
   /**

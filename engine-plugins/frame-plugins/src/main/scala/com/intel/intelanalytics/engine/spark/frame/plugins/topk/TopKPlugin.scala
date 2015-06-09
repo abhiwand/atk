@@ -21,6 +21,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, Top
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -35,7 +36,25 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate the top (or bottom) K distinct values by count for specified data column.
+ *
+ * Parameters
+ * ----------
+ * data_column : str
+ * The column whose top (or bottom) K distinct values are to be calculated.
+ * k : int
+ * Number of entries to return (If k is negative, return bottom k).
+ * weights_column : str (optional)
+ * The column that provides weights (frequencies) for the topK calculation.
+ * Must contain numerical data.
+ * Default is 1 for all items.
  */
+@PluginDoc(oneLine = "Most or least frequent column values.",
+  extended = """Calculate the top (or bottom) K distinct values by count of a column.
+The column can be weighted.
+All data elements of weight <= 0 are excluded from the calculation, as are
+all data elements whose weight is NaN or infinite.
+If there are no data elements of finite weight > 0, then topK is empty.""",
+  returns = "An object with access to the frame of data.")
 class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
 
   /**

@@ -20,6 +20,7 @@ import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 import scala.concurrent.ExecutionContext
@@ -31,6 +32,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
+@PluginDoc(oneLine = "Get the RDD partition count after loading a frame.",
+  extended = "",
+  returns = "")
 class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
 
   /**

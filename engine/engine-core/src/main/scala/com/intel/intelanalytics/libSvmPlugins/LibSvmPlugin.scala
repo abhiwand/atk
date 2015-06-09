@@ -19,9 +19,13 @@ package com.intel.intelanalytics.libSvmPlugins
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class LibSvmPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

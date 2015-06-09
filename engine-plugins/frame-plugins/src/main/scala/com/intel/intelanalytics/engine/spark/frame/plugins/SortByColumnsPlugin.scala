@@ -20,6 +20,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ SortByColumnsArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -33,6 +34,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Sort by one or more columns
  */
+@PluginDoc(oneLine = "Sort by one or more columns.",
+  extended = "",
+  returns = "")
 class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumnsArgs, FrameEntity] {
 
   /**

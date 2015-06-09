@@ -18,6 +18,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.plugins.RenameColumnsPlugin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, RenameColumnsArgs }
@@ -27,6 +28,9 @@ import scala.concurrent.ExecutionContext
 /**
  * Rename columns for vertex frame.
  */
+@PluginDoc(oneLine = "Rename columns for vertex frame.",
+  extended = "",
+  returns = "")
 class RenameVertexColumnsPlugin extends RenameColumnsPlugin {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

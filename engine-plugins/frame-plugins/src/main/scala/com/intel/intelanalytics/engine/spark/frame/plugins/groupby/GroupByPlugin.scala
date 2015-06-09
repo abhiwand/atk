@@ -21,6 +21,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, Gro
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -35,6 +36,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
  */
+@PluginDoc(oneLine = "Summarized Frame with Aggregations.",
+  extended = "Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...).",
+  returns = "")
 class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
 
   /**

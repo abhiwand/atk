@@ -19,6 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetric
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -31,7 +32,96 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Computes Model accuracy, precision, recall, confusion matrix and f_measure
+ *
+ * Parameters
+ * ----------
+ * label_column : str
+ * The name of the column containing the correct label for each instance.
+ * pred_column : str
+ * The name of the column containing the predicted label for each instance.
+ * pos_label : [ str | int | Null ] (optional)
+ * This is a str or int for binary classifiers, and Null for multi-class
+ * classifiers.
+ * The value to be interpreted as a positive instance.
+ * beta : double (optional)
+ * This is the beta value to use for :math:`F_{ \beta}` measure (default F1
+ * measure is computed); must be greater than zero.
+ * Defaults to 1.
  */
+@PluginDoc(oneLine = "Model statistics of accuracy, precision, and others.",
+  extended = """Calculate the accuracy, precision, confusion_matrix, recall and
+:math:`F_{ \beta}` measure for a classification model.
+
+*   The **f_measure** result is the :math:`F_{ \beta}` measure for a
+    classification model.
+    The :math:`F_{ \beta}` measure of a binary classification model is the
+    harmonic mean of precision and recall.
+    If we let:
+
+    * beta :math:`\equiv \beta`,
+    * :math:`T_{P}` denote the number of true positives,
+    * :math:`F_{P}` denote the number of false positives, and
+    * :math:`F_{N}` denote the number of false negatives
+
+    then:
+
+    .. math::
+
+        F_{ \beta} = (1 + \beta ^ 2) * \frac{ \frac{T_{P}}{T_{P} + F_{P}} * \
+        \frac{T_{P}}{T_{P} + F_{N}}}{ \beta ^ 2 * \frac{T_{P}}{T_{P} + \
+        F_{P}}  + \frac{T_{P}}{T_{P} + F_{N}}}
+
+    The :math:`F_{ \beta}` measure for a multi-class classification model is
+    computed as the weighted average of the :math:`F_{ \beta}` measure for
+    each label, where the weight is the number of instances of each label.
+    The determination of binary vs. multi-class is automatically inferred
+    from the data.
+
+*   The **recall** result of a binary classification model is the proportion
+    of positive instances that are correctly identified.
+    If we let :math:`T_{P}` denote the number of true positives and
+    :math:`F_{N}` denote the number of false negatives, then the model
+    recall is given by :math:`\frac {T_{P}} {T_{P} + F_{N}}`.
+
+    For multi-class classification models, the recall measure is computed as
+    the weighted average of the recall for each label, where the weight is
+    the number of instances of each label.
+    The determination of binary vs. multi-class is automatically inferred
+    from the data.
+
+*   The **precision** of a binary classification model is the proportion of
+    predicted positive instances that are correct.
+    If we let :math:`T_{P}` denote the number of true positives and
+    :math:`F_{P}` denote the number of false positives, then the model
+    precision is given by: :math:`\frac {T_{P}} {T_{P} + F_{P}}`.
+
+    For multi-class classification models, the precision measure is computed
+    as the weighted average of the precision for each label, where the
+    weight is the number of instances of each label.
+    The determination of binary vs. multi-class is automatically inferred
+    from the data.
+
+*   The **accuracy** of a classification model is the proportion of
+    predictions that are correct.
+    If we let :math:`T_{P}` denote the number of true positives,
+    :math:`T_{N}` denote the number of true negatives, and :math:`K` denote
+    the total number of classified instances, then the model accuracy is
+    given by: :math:`\frac{T_{P} + T_{N}}{K}`.
+
+    This measure applies to binary and multi-class classifiers.
+
+*   The **confusion_matrix** result is a confusion matrix for a
+    binary classifier model, formatted for human readability.
+
+Notes
+-----
+The **confusion_matrix** is not yet implemented for multi-class classifiers.""",
+  returns = """object
+<object>.accuracy : double
+<object>.confusion_matrix : table
+<object>.f_measure : double
+<object>.precision : double
+<object>.recall : double""")
 class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetricArgs, ClassificationMetricValue] {
 
   /**
