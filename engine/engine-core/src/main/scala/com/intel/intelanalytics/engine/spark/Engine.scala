@@ -89,6 +89,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)

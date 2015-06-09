@@ -16,7 +16,7 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import org.apache.spark.mllib.classification.{ LogisticRegressionModel }
+import org.apache.spark.mllib.classification.LogisticRegressionModel
 
 /**
  * Command for loading model data into existing model in the model database.

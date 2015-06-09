@@ -26,11 +26,37 @@ import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+/**
+ * Parameters
+ * ----------
+ * frame : Frame
+ * A frame to train the model on.
+ * label_column : str
+ * Column name containing the label for each observation.
+ * observation_column : list of str
+ * Column(s) containing the observations.
+ * intercept : bool (Optional)
+ * The algorithm adds an intercept. Default is true.
+ * num_iterations: int (Optional)
+ * Number of iterations. Default is 100.
+ * step_size: int (Optional)
+ * Step size for optimizer. Default is 1.0.
+ * reg_type: str (Optional)
+ * Regularization L1 or L2. Default is L2.
+ * reg_param: double (Optional)
+ * Regularization parameter. Default is 0.01.
+ * mini_batch_fraction : double (Optional)
+ * Mini batch fraction parameter. Default is 1.0.
+ */
+
+@PluginDoc(oneLine = "Train SVM model based on another frame.",
+  extended = """Creating a SVM Model using the observation column and label column of the train frame.""")
 class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrainArgs, UnitReturn] {
   /**
    * The name of the command.

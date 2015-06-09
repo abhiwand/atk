@@ -22,6 +22,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportHdfsJsonArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -35,7 +36,19 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Export a frame to json file
+ * Parameters
+ * ----------
+ * folderName : str
+ *   The HDFS folder path where the files will be created.
+ * count : int (optional)
+ *   The number of records you want.
+ *   Default, or value less than 1, is the whole frame.
+ * offset : int (optional)
+ *   The number of rows to skip before exporting to the file.
+ *   Default is zero (0).
  */
+@PluginDoc(oneLine = "Write current frame to HDFS in JSON format.",
+  extended = "Export the frame to a file in JSON format as a Hadoop file.")
 class ExportHdfsJsonPlugin extends SparkCommandPlugin[ExportHdfsJsonArgs, UnitReturn] {
 
   /**

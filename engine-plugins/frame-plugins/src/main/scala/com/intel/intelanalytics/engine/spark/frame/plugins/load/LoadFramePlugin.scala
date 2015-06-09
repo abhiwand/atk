@@ -26,6 +26,7 @@ import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
@@ -41,6 +42,9 @@ import scala.collection.mutable.ListBuffer
 /**
  * Parsing data to load and append to data frames
  */
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
 
   /**

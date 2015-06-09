@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.hadoop.fs.Path
 
 // Implicits needed for JSON conversion
