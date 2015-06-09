@@ -18,7 +18,6 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

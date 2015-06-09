@@ -50,5 +50,8 @@ class ModelSmokeTest(unittest.TestCase):
         print "Initialize LogisticRegressionModel object"
         l2 = ia.LogisticRegressionModel()
 
+        print "Initialize NaiveBayesModel object"
+        n = ia.NaiveBayesModel()
+
 if __name__ == "__main__":
     unittest.main()
