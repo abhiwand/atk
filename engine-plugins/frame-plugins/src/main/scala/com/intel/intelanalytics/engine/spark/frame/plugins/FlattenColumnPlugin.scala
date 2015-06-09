@@ -16,16 +16,13 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.{ DataTypes }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import java.util.regex.Pattern

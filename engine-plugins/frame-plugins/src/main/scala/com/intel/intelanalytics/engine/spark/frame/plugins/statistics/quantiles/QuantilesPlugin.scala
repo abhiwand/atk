@@ -23,13 +23,6 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import org.apache.spark.frame.FrameRdd
 
-//implicit conversion for PairRDD
-import org.apache.spark.SparkContext._
-
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.ExecutionContext
-
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

@@ -22,7 +22,6 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkComm
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsonFormat
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 /**

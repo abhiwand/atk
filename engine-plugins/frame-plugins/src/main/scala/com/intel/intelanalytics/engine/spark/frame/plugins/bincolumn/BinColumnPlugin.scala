@@ -16,18 +16,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.frame.FrameRdd
-
-import scala.concurrent.{ Await, ExecutionContext }
 
 // Implicits needed for JSON conversion
 import spray.json._

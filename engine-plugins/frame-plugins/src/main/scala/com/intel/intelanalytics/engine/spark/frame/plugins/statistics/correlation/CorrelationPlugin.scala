@@ -17,16 +17,10 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation
 
 import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ CorrelationArgs, CovarianceArgs }
+import com.intel.intelanalytics.domain.frame.{ CorrelationArgs }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._

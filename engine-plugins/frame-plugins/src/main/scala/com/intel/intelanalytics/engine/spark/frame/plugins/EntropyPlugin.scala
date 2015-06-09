@@ -22,14 +22,11 @@ import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext._
-
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 // Implicits needed for JSON conversion
