@@ -20,7 +20,7 @@ References
 
 * :doc:`glossary`
 * :doc:`ia_legal`
-* :ref:`genindex`
+* :doc:`Index <genindex>`
 * :doc:`appendices`
 * :doc:`errata`
 * :download:`PDF <_downloads/IntelAnalytics.pdf>`

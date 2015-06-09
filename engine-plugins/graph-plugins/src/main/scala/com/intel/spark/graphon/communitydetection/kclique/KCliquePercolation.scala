@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.spark.graphon.communitydetection.kclique
 
@@ -36,6 +29,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, Gra
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
 
@@ -43,24 +37,16 @@ import scala.concurrent._
  * Represents the arguments for KClique Percolation algorithm
  *
  * @param graph Reference to the graph for which communities has to be determined.
- * @param cliqueSize Parameter determining clique-size and used to find communities. Must be at least 2.
- *                   Larger values of cliqueSize result in fewer, smaller, more cohesive communities.
- * @param communityPropertyLabel Name of the community property of vertex that will be
- *                               updated/created in the input graph.
  */
-case class KClique(graph: GraphReference,
-                   cliqueSize: Int,
-                   communityPropertyLabel: String) {
+case class KCliqueArgs(graph: GraphReference,
+                       @ArgDoc("""The sizes of the cliques used to form communities.
+Larger values of clique size result in fewer, smaller communities that are more connected.
+Must be at least 2.""") cliqueSize: Int,
+                       @ArgDoc("""Name of the community property of vertex that will be updated/created in the graph.
+This property will contain for each vertex the set of communities that contain that
+vertex.""") communityPropertyLabel: String) {
   require(cliqueSize > 1, "Invalid clique size; must be at least 2")
 }
-
-/**
- * The result object.
- *
- * Note: For now it is returning the execution time
- *
- * @param time execution time
- */
 
 case class KCliqueResult(time: Double)
 
@@ -70,7 +56,7 @@ case class KCliqueResult(time: Double)
 
 object KCliquePercolationJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
-  implicit val kcliqueFormat = jsonFormat3(KClique)
+  implicit val kcliqueFormat = jsonFormat3(KCliqueArgs)
   implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
 }
 
@@ -78,7 +64,19 @@ import KCliquePercolationJsonFormat._
 /**
  * KClique Percolation plugin class.
  */
-class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
+@PluginDoc(oneLine = "Find groups of vertices with similar attributes.",
+  extended = """Notes
+-----
+Spawns a number of Spark jobs that cannot be calculated before execution
+(it is bounded by the diameter of the clique graph derived from the input graph).
+For this reason, the initial loading, clique enumeration and clique-graph
+construction steps are tracked with a single progress bar (this is most of
+the time), and then successive iterations of analysis of the clique graph
+are tracked with many short-lived progress bars, and then finally the
+result is written out.""",
+  returns = "Execution time."
+)
+class KCliquePercolation extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/kclique_percolation
@@ -93,13 +91,13 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    * @param arguments command arguments: used if a command can produce variable number of jobs
    * @return number of jobs in this command
    */
-  override def numberOfJobs(arguments: KClique)(implicit invocation: Invocation): Int = {
+  override def numberOfJobs(arguments: KCliqueArgs)(implicit invocation: Invocation): Int = {
     8 + 2 * arguments.cliqueSize
   }
 
   override def kryoRegistrator: Option[String] = None
 
-  override def execute(arguments: KClique)(implicit invocation: Invocation): KCliqueResult = {
+  override def execute(arguments: KCliqueArgs)(implicit invocation: Invocation): KCliqueResult = {
 
     val start = System.currentTimeMillis()
 

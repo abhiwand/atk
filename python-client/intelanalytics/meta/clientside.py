@@ -1,25 +1,19 @@
-##############################################################################
-# INTEL CONFIDENTIAL
 #
-# Copyright 2015 Intel Corporation All Rights Reserved.
+# Copyright (c) 2015 Intel Corporation 
 #
-# The source code contained or described herein and all documents related to
-# the source code (Material) are owned by Intel Corporation or its suppliers
-# or licensors. Title to the Material remains with Intel Corporation or its
-# suppliers and licensors. The Material may contain trade secrets and
-# proprietary and confidential information of Intel Corporation and its
-# suppliers and licensors, and is protected by worldwide copyright and trade
-# secret laws and treaty provisions. No part of the Material may be used,
-# copied, reproduced, modified, published, uploaded, posted, transmitted,
-# distributed, or disclosed in any way without Intel's prior express written
-# permission.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# No license under any patent, copyright, trade secret or other intellectual
-# property right is granted to or conferred upon you by disclosure or
-# delivery of the Materials, either expressly, by implication, inducement,
-# estoppel or otherwise. Any license under such intellectual property rights
-# must be express and approved by Intel in writing.
-##############################################################################
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 """
 Decoration and installation for the API objects defined in the python core code
 """
@@ -273,12 +267,11 @@ def get_api_decorator(logger, parent_class_name=None):
 
 def _patch_member_name(class_name, member):
     """Patch up the name of the member.  ie. remove leading underscores"""
-    prefix = "__"
     name = member.__name__
+    prefix = "__" if name not in ['__init__', 'connect'] else ''
     if name[:len(prefix)] != prefix:
         raise RuntimeError("@api applied to incorrectly named member '%s' in object '%s'" % (name, class_name))
-    if name != '__init__':
-        member.__name__ = name[len(prefix):]
+    member.__name__ = name[len(prefix):]
 
 
 def get_clientside_api_stub(name):
@@ -304,4 +297,3 @@ class DocStubCalledError(RuntimeError):
                                     "which is just a placeholder for the real function.  "
                                     "This usually indicates that you have not yet connected to the server.  "
                                     "Otherwise there was a problem with a API installed from server." % func_name)
-

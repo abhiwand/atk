@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package org.apache.spark.frame
 
@@ -27,21 +20,18 @@ import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan._
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.execution.LogicalRDD
 import org.apache.spark.{ TaskContext, Partition, SparkContext, sql }
-import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.{ types => SparkType }
 import SparkType.{ ArrayType, DateType, DoubleType, FloatType }
-import SparkType.{ IntegerType, LongType, StringType, StructField, StructType, TimestampType }
+import SparkType.{ IntegerType, LongType, StringType, StructField, StructType, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
 import org.apache.spark.sql.{ SQLContext, DataFrame }
 import SparkContext._
 import parquet.hadoop.ParquetInputSplit
@@ -477,6 +467,10 @@ object FrameRdd {
     val stringType = StringType.getClass()
     val dateType = DateType.getClass()
     val timeStampType = TimestampType.getClass()
+    val byteType = ByteType.getClass()
+    val booleanType = BooleanType.getClass()
+    val decimalType = DecimalType.getClass()
+    val shortType = ShortType.getClass()
 
     val a = dataType.getClass()
     a match {
@@ -484,8 +478,12 @@ object FrameRdd {
       case `longType` => int64
       case `floatType` => float32
       case `doubleType` => float64
+      case `decimalType` => float64
+      case `shortType` => int32
       case `stringType` => DataTypes.string
       case `dateType` => DataTypes.string
+      case `byteType` => int32
+      case `booleanType` => int32
       case `timeStampType` => DataTypes.string
       case _ => throw new IllegalArgumentException(s"unsupported type $a")
     }

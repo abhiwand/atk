@@ -1,43 +1,30 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.rest
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
-import akka.io.IO
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
-import spray.can.Http
-import spray.http._
-import akka.pattern.ask
-import akka.util.Timeout
 import scala.concurrent.duration._
-import com.intel.event.{ EventLogging, EventLogger }
-import com.intel.event.adapter.SLF4JLogAdapter
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.intel.intelanalytics.engine.Engine
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
 import scala.concurrent.Await
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.rest.factory.ServiceFactoryCreator
 
 /**
  * A REST application used by client layer to communicate with the Engine.
@@ -71,16 +58,12 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
   override def start() = {
     implicit val call = Call(null)
     val engine = initializeEngine()
-
-    if (RestServerConfig.scoringEngineMode) {
-      val service = initializeScoringServiceDependencies(engine)
-      createActorSystemAndBindToHttp(service)
-    }
-    else {
-      val service = initializeApiServiceDependencies(engine)
-      createActorSystemAndBindToHttp(service)
-    }
-
+    val serviceFactory = ServiceFactoryCreator.createFactory(RestServerConfig.serviceMode, RestServerConfig.schemeIsHttps)
+    val scheme = if (RestServerConfig.schemeIsHttps) "https" else "http"
+    info(s"Binding service to $scheme://${RestServerConfig.host}:${RestServerConfig.port}")
+    // Bind the Spray Actor to an HTTP(s) Port
+    val serviceInstance = serviceFactory.createInstance(engine)
+    serviceFactory.startInstance(serviceInstance)
   }
 
   /**
@@ -95,58 +78,6 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
     engine
-  }
-
-  private def initializeApiServiceDependencies(engine: Engine)(implicit invocation: Invocation): ApiService = {
-    // setup common directives
-    val serviceAuthentication = new AuthenticationDirective(engine)
-    val commonDirectives = new CommonDirectives(serviceAuthentication)
-
-    // setup V1 Services
-    val commandService = new v1.CommandService(commonDirectives, engine)
-    val dataFrameService = new v1.FrameService(commonDirectives, engine)
-    val graphService = new v1.GraphService(commonDirectives, engine)
-    val modelService = new v1.ModelService(commonDirectives, engine)
-    val queryService = new v1.QueryService(commonDirectives, engine)
-    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, modelService, queryService)
-
-    // setup main entry point
-    new ApiService(commonDirectives, apiV1Service)
-  }
-
-  private def initializeScoringServiceDependencies(engine: Engine)(implicit invocation: Invocation): ScoringService = {
-    // setup main entry point
-    new ScoringService(engine)
-  }
-
-  /**
-   * We need an ActorSystem to host our application in and to bind it to an HTTP port
-   */
-  private def createActorSystemAndBindToHttp(apiService: ApiService): Unit = {
-    // create the system
-    implicit val system = ActorSystem("intelanalytics-api")
-    implicit val timeout = Timeout(5.seconds)
-
-    val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
-
-    // Bind the Spray Actor to an HTTP Port
-    // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = RestServerConfig.host, port = RestServerConfig.port)
-  }
-
-  /**
-   * We need an ActorSystem to host our application in and to bind it to an HTTP port
-   */
-  private def createActorSystemAndBindToHttp(scoringService: ScoringService): Unit = {
-    // create the system
-    implicit val system = ActorSystem("intelanalytics-api")
-    implicit val timeout = Timeout(5.seconds)
-
-    val service = system.actorOf(Props(new ScoringServiceActor(scoringService)), "scoring-service")
-
-    // Bind the Spray Actor to an HTTP Port
-    // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = RestServerConfig.host, port = RestServerConfig.port)
   }
 
   /**

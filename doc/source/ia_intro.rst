@@ -48,7 +48,7 @@ Machine learning algorithms are also invoked as higher-level data science API
 (such as creating parallel recommender systems or training classifier and
 clustering models) accessible to a broad population of researchers possessing
 mainstream data science programming skills.
-For more information, see the section on :doc:`process flow <ds_dflw>`
+For more information, see the section on :doc:`process flow </ds_dflw>`
 and the `Python website <http://www.python.org>`__.
 
 
@@ -101,8 +101,8 @@ Examples of other machine learning capabilities provided include recommender
 systems using alternating least squares and conjugate gradient descent, topic
 modeling using Latent Dirchelet Allocation, clustering using K-means, and
 classification using logistic regression.
-See the section on :doc:`machine learning <ds_ml>` and the
-:doc:`API <python_api/index>` for further information.
+See the section on :doc:`machine learning </ds_ml>` and the
+:doc:`API </python_api/index>` for further information.
 
 
 ---------------
@@ -120,7 +120,7 @@ Plug-ins can be used for a range of purposes, such as developing custom
 algorithms for specialized data types, building custom transformations for
 commonly used functions to get higher performance than a |UDF|, or integrating
 other tools to further unify the workflow.
-See the :doc:`Plugin Authoring Guide <ad_plug>` for more information.
+See the :doc:`Plugin Authoring Guide </ad_plug>` for more information.
 
 
 --------------------
@@ -133,5 +133,5 @@ This version of the |IAT| supports installation onto the Cloudera distribution
 to ensure compatibility with the underlying Spark and Hadoop engines.
 This also allows the use of the Cloudera Manager to install the necessary
 parcels and to provide the metadata store.
-See the section on :doc:`ad_inst_ia1` for more information.
+See the section on :doc:`/ad_inst_ia1` for more information.
 

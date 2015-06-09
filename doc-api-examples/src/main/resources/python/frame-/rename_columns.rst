@@ -1,18 +1,3 @@
-Rename one or more columns in current frame.
-
-
-Parameters
-----------
-column_names : dictionary of str pairs
-    The name pair (existing name, new name).
-
-
-Notes
------
-Unicode in column names is not supported and will likely cause the
-drop_frames() method (and others) to fail!
-
-
 Examples
 --------
 Start with a frame with columns *Wrong* and *Wong*.

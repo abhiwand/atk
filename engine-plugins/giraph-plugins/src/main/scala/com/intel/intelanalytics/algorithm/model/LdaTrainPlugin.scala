@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.algorithm.model
 
@@ -34,10 +27,82 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, CommandInvocatio
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+/**
+ * Represents the arguments for Latent Dirichlet allocation
+ *
+ * @param graph Reference to the graph for which communities has to be determined.
+ *
+ * case class LdaTrainArgs(graph: GraphReference,
+ *                         @ArgDoc("""Input frame data.""")
+ *                         frame: Frame
+ *                         @ArgDoc("""Column Name for documents.
+ * Column should contain a str value.""")
+ *                         doc: str
+ *                         @ArgDoc("""Column name for words.
+ * Column should contain a str value.""")
+ *                         word: str
+ *                         @ArgDoc("""Column name for word count.
+ * Column should contain an int64 value.""")
+ *                         word_count: str
+ *                         @ArgDoc("""The maximum number of iterations that the algorithm will execute.
+ * The valid value range is all positive int.
+ * Default is 20.""")
+ *                         max_interations: int (optional)
+ *                         @ArgDoc("""The hyper-parameter for document-specific distribution over topics.
+ * Mainly used as a smoothing parameter in :term:`Bayesian inference`.
+ * Larger value implies that documents are assumed to cover all topics
+ * more uniformly; smaller value implies that documents are more
+ * concentrated on a small subset of topics.
+ * Valid value range is all positive float.
+ * Default is 0.1.""")
+ *                         alpha: float (optional)
+ *                         @ArgDoc("""The hyper-parameter for word-specific distribution over topics.
+ * Mainly used as a smoothing parameter in :term:`Bayesian inference`.
+ * Larger value implies that topics contain all words more uniformly and
+ * smaller value implies that topics are more concentrated on a small
+ * subset of words.
+ * Valid value range is all positive float.
+ * Default is 0.1.""")
+ *                         beta: float (optional)
+ *                         @ArgDoc("""The amount of change in LDA model parameters that will be tolerated
+ * at convergence.
+ * If the change is less than this threshold, the algorithm exits
+ * before it reaches the maximum number of supersteps.
+ * Valid value range is all positive float and 0.0.
+ * Default is 0.001.""")
+ *                         convergence_threshold: float (optional)
+ *                         @ArgDoc(""""True" means turn on cost evaluation and "False" means turn off
+ * cost evaluation.
+ * It's relatively expensive for LDA to evaluate cost function.
+ * For time-critical applications, this option allows user to turn off cost
+ * function evaluation.
+ * Default is "False".""")
+ *                         evaluate_cost: bool (optional)
+ *                         @ArgDoc("""The number of topics to identify in the LDA model.
+ * Using fewer topics will speed up the computation, but the extracted topics
+ * might be more abstract or less specific; using more topics will
+ * result in more computation but lead to more specific topics.
+ * Valid value range is all positive int.
+ * Default is 10.""")
+ *                         num_topics: int (optional)
+ *
+ */
 
 /**
  * Latent Dirichlet allocation
  */
+@PluginDoc(oneLine = "Creates Latent Dirichlet Allocation model.",
+  extended = """The `Latent Dirichlet Allocation <http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation>`""",
+  returns = """dict
+    The data returned is composed of multiple components:
+doc_results : Frame
+    Frame with LDA results.
+word_results : Frame
+    Frame with LDA results.
+report : str
+   The configuration and learning curve report for Latent Dirichlet
+   Allocation as a multiple line str.""")
 class LdaTrainPlugin
     extends CommandPlugin[LdaTrainArgs, LdaTrainResult] {
 

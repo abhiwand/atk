@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
@@ -33,6 +26,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Get recommendation to either left-side or right-side vertices
@@ -65,19 +59,30 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param right_vertex_name The real name for right side vertex.
  */
 case class RecommendParams(graph: GraphReference,
-                           vertex_id: String,
-                           vertex_type: String,
-                           left_vertex_id_property_key: String,
-                           right_vertex_id_property_key: String,
-                           output_vertex_property_list: Option[String],
-                           vertex_type_property_key: Option[String],
-                           edge_type_property_key: Option[String],
-                           vector_value: Option[String],
-                           bias_on: Option[String],
-                           train_str: Option[String],
-                           num_output_results: Option[Int],
-                           left_vertex_name: Option[String],
-                           right_vertex_name: Option[String]) {
+                           @ArgDoc("""The vertex id to get recommendation for.""") vertex_id: String,
+                           @ArgDoc("""The vertex type to get recommendation for.
+The valid value is either 'L' or 'R'.""") vertex_type: String,
+                           @ArgDoc("""The property name for left side vertex id.""") left_vertex_id_property_key: String,
+                           @ArgDoc("""The property name for right side vertex id.""") right_vertex_id_property_key: String,
+                           @ArgDoc("""The property name for ALS/CGD results.
+When bias is enabled, the last property name in the output_vertex_property_list is for bias.
+The default value is 'als_result'.""") output_vertex_property_list: Option[String],
+                           @ArgDoc("""The property name for vertex type.
+The default value is \"vertex_type\".""") vertex_type_property_key: Option[String],
+                           @ArgDoc("""The property name for edge type.
+We need this name to know data is in train, validation or test splits.
+The default value is \"splits\".""") edge_type_property_key: Option[String],
+                           @ArgDoc("""Whether ALS/CDG results are saved in a vector for each vertex.
+The default value is \"true\".""") vector_value: Option[String],
+                           @ArgDoc("""Whether bias turned on/off for ALS/CDG calculation.
+When bias is enabled,
+The default value is \"false\".""") bias_on: Option[String],
+                           @ArgDoc("""The label for training data.
+The default value is \"TR\".""") train_str: Option[String],
+                           @ArgDoc("""The number of recommendations to output.
+The default value is 10.""") num_output_results: Option[Int],
+                           @ArgDoc("""The real name for left side vertex.""") left_vertex_name: Option[String],
+                           @ArgDoc("""The real name for right side vertex.""") right_vertex_name: Option[String]) {
 }
 
 /**
@@ -99,6 +104,22 @@ object RecommendQueryFormat {
 
 import RecommendQueryFormat._
 
+@PluginDoc(oneLine = "Trained model recommendation.",
+  extended = """Get recommendation to either left-side or right-side vertices.
+The prerequisite is at least one of two algorithms (ALS or CGD) has
+been run before this query.
+
+Notes
+-----
+**Vertex Type **|EM|** "L" Versus "R"**
+
+"L" stands for left-side vertices of a bipartite graph.
+"R" stands for right-side vertices of a bipartite graph.
+For example, if your input data is "user,movie,rating" and you want to get
+recommendations on user, input "L" because user is your left-side vertex.
+Similarly, input "R" if you want to get recommendations for movie.""",
+  returns = """List of rank and corresponding recommendation.
+Recommendations for the input vertex.""")
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
   /**

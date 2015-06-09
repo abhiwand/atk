@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.graph.query
 
@@ -40,19 +33,19 @@ import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Arguments for Gremlin query.
- *
- * Examples of Gremlin queries:
- * g.V[0..9] - Returns the first 10 vertices in graph
- * g.V.userId - Returns the userId property from vertices
- * g.V('name','hercules').out('father').out('father').name - Returns the name of Hercules' grandfather
- *
- * @param graph Graph reference
- * @param gremlin Gremlin script to execute
  */
-case class QueryArgs(graph: GraphReference, gremlin: String)
+case class QueryArgs(graph: GraphReference,
+                     @ArgDoc("""The Gremlin script to execute.
+
+Examples of Gremlin queries::
+
+g.V[0..9] - Returns the first 10 vertices in graph
+g.V.userId - Returns the userId property from vertices
+g.V('name','hercules').out('father').out('father').name - Returns the name of Hercules' grandfather""") gremlin: String)
 
 /**
  * Results of Gremlin query.
@@ -84,6 +77,25 @@ import GremlinQueryFormat._
 /**
  * Command plugin for executing Gremlin queries.
  */
+@PluginDoc(oneLine = "Executes a Gremlin query.",
+  extended = """Executes a Gremlin query on an existing graph.
+
+Notes
+-----
+The query does not support pagination so the results of query should be limited
+using the Gremlin range filter [i..j], for example, g.V[0..9] to return the
+first 10 vertices.""",
+  returns = """List of query results serialized to JSON and runtime of Gremlin query in seconds.
+The list of results is in GraphSON format(for vertices or edges) or JSON (for other results like counts).
+GraphSON is a JSON-based format for property graphs which uses reserved keys
+that begin with underscores to encode vertex and edge metadata.
+
+Examples of valid GraphSON::
+
+    { \"name\": \"lop\", \"lang\": \"java\",\"_id\": \"3\", \"_type\": \"vertex\" }
+    { \"weight\": 1, \"_id\": \"8\", \"_type\": \"edge\", \"_outV\": \"1\", \"_inV\": \"4\", \"_label\": \"knows\" }
+
+See https://github.com/tinkerpop/blueprints/wiki/GraphSON-Reader-and-Writer-Library""")
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
   val gremlinExecutor = new GremlinGroovyScriptEngine()

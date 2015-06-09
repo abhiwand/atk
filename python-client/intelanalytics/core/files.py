@@ -1,25 +1,18 @@
-##############################################################################
-# INTEL CONFIDENTIAL
 #
-# Copyright 2015 Intel Corporation All Rights Reserved.
+# Copyright (c) 2015 Intel Corporation 
 #
-# The source code contained or described herein and all documents related to
-# the source code (Material) are owned by Intel Corporation or its suppliers
-# or licensors. Title to the Material remains with Intel Corporation or its
-# suppliers and licensors. The Material may contain trade secrets and
-# proprietary and confidential information of Intel Corporation and its
-# suppliers and licensors, and is protected by worldwide copyright and trade
-# secret laws and treaty provisions. No part of the Material may be used,
-# copied, reproduced, modified, published, uploaded, posted, transmitted,
-# distributed, or disclosed in any way without Intel's prior express written
-# permission.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# No license under any patent, copyright, trade secret or other intellectual
-# property right is granted to or conferred upon you by disclosure or
-# delivery of the Materials, either expressly, by implication, inducement,
-# estoppel or otherwise. Any license under such intellectual property rights
-# must be express and approved by Intel in writing.
-##############################################################################
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 from intelanalytics.core.iatypes import valid_data_types
 
@@ -66,7 +59,7 @@ class CsvFile(DataFile):
 
     Returns
     -------
-    class : CsvFile object
+    class
         A class which holds both the name and schema of a CSV file.
 
 
@@ -156,8 +149,9 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        list : list of str
-            Field names
+        list
+            A list of field name strings.
+
 
         Examples
         --------
@@ -194,10 +188,12 @@ class CsvFile(DataFile):
         """
         Schema field types from the CsvFile class.
 
+
         Returns
         -------
-        list : list of types
-            Field types
+        list
+            A list of field types.
+
 
         Examples
         --------
@@ -208,7 +204,7 @@ class CsvFile(DataFile):
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ia.CsvFile("raw_data.csv", schema = [("col1", int32), ("col2", float32)])
                 >>> print(csv_class.field_types())
 
         .. only:: html
@@ -247,6 +243,7 @@ class LineFile(DataFile):
     """
     Define a line-separated file.
 
+
     Parameters
     ----------
     file_name : str
@@ -259,10 +256,12 @@ class LineFile(DataFile):
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
 
+
     Returns
     -------
-    class : LineFile object
-        A class which holds the name of a Line file.
+    class
+        A class which holds the name of a Line File.
+
 
     Examples
     --------
@@ -318,6 +317,7 @@ class JsonFile(MultiLineFile):
     When JSON files are loaded into the system all top level JSON objects are
     recorded into the frame as seperate elements.
 
+
     Parameters
     ----------
     file_name : str
@@ -330,10 +330,12 @@ class JsonFile(MultiLineFile):
         See :ref:`Configure File System Root
         <ad_inst_IA_configure_file_system_root>`.
 
+
     Returns
     -------
-    class : JsonFile object
+    class
         An object which holds both the name and tag of a JSON file.
+
 
     Examples
     --------
@@ -383,23 +385,23 @@ class JsonFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-        '{ "obj": {
-            "color": "blue",
-            "size": 3,
-            "shape": "square" }
-        }'
-        '{ "obj": {
-            "color": "green",
-            "size": 7,
-            "shape": "triangle" }
-        }'
-        '{ "obj": {
-            "color": "orange",
-            "size": 10,
-            "shape": "square" }
-        }'
+          '{ "obj": {
+              "color": "blue",
+              "size": 3,
+              "shape": "square" }
+          }'
+          '{ "obj": {
+              "color": "green",
+              "size": 7,
+              "shape": "triangle" }
+          }'
+          '{ "obj": {
+              "color": "orange",
+              "size": 10,
+              "shape": "square" }
+          }'
 
     Parse values out of the XML column using the add_columns method:
 
@@ -453,6 +455,7 @@ class XmlFile(MultiLineFile):
     into the highest level elements found with the specified tag name and
     places them into a column called data_lines.
 
+
     Parameters
     ----------
     file_name : str
@@ -467,10 +470,12 @@ class XmlFile(MultiLineFile):
     tag_name : str
         Tag name used to determine the split of elements into separate records.
 
+
     Returns
     -------
-    class : XmlFile object
+    class
         An object which holds both the name and tag of a XML file.
+
 
     Examples
     --------
@@ -524,25 +529,25 @@ class XmlFile(MultiLineFile):
 
     .. code::
 
-         data_lines
+          data_lines
         /------------------------/
-         '<square>
+          '<square>
                 <name>left</name>
                 <size>3</size>
-            </square>'
-         '<square color="blue">
+           </square>'
+          '<square color="blue">
                 <name>right</name>
                 <size>5</size>
-            </square>'
+           </square>'
 
     Parse values out of the XML column using the add_columns method:
 
     .. code::
 
         >>> def parse_my_xml(row):
-        ...    import xml.etree.ElementTree as ET
-        ...    ele = ET.fromstring(row[0])
-        ...    return (ele.get("color"), ele.find("name").text, ele.find("size").text)
+        ...     import xml.etree.ElementTree as ET
+        ...     ele = ET.fromstring(row[0])
+        ...     return (ele.get("color"), ele.find("name").text, ele.find("size").text)
 
         >>> my_frame.add_columns(parse_my_xml, [("color", str), ("name", str), ("size", str)])
 
@@ -581,21 +586,29 @@ class XmlFile(MultiLineFile):
 
 class HiveQuery(DataFile):
     """
-    Define the query to read in the data from a hive table.
+    Define the sql query to retrieve the data from a Hive table.
+
+    Only a subset of Hive data types are supported.
+
+    The supported data types are tinyint(cast to int), smallint(cast to int),
+    int, bigint, float, double , decimal(cast to float, may lose precision), timestamp(cast to string),
+    date(cast to string), string, varchar(cast to string) and boolean(cast to int)
+
+    There is no support currently for char, arrays, maps, binary, structs and union
 
     Parameters
     ----------
     query : str
-        The sql query of the data we want to read in
+        The sql query to retrieve the data
 
     Returns
     -------
     class : HiveQuery object
-        An object which holds hive sql query.
+        An object which holds Hive sql query.
 
     Examples
     --------
-    Given a hive table named person having name and age among other columns.
+    Given a Hive table *person* having *name* and *age* among other columns.
     A simple query could be to get the query for the name and age
     .. code::
 

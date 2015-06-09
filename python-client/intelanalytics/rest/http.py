@@ -1,25 +1,19 @@
-##############################################################################
-# INTEL CONFIDENTIAL
 #
-# Copyright 2015 Intel Corporation All Rights Reserved.
+# Copyright (c) 2015 Intel Corporation 
 #
-# The source code contained or described herein and all documents related to
-# the source code (Material) are owned by Intel Corporation or its suppliers
-# or licensors. Title to the Material remains with Intel Corporation or its
-# suppliers and licensors. The Material may contain trade secrets and
-# proprietary and confidential information of Intel Corporation and its
-# suppliers and licensors, and is protected by worldwide copyright and trade
-# secret laws and treaty provisions. No part of the Material may be used,
-# copied, reproduced, modified, published, uploaded, posted, transmitted,
-# distributed, or disclosed in any way without Intel's prior express written
-# permission.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# No license under any patent, copyright, trade secret or other intellectual
-# property right is granted to or conferred upon you by disclosure or
-# delivery of the Materials, either expressly, by implication, inducement,
-# estoppel or otherwise. Any license under such intellectual property rights
-# must be express and approved by Intel in writing.
-##############################################################################
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 """
 HTTP methods
 """
@@ -28,6 +22,31 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
+import ssl
+
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+
+requests.packages.urllib3.disable_warnings()
+
+class Tlsv1HttpAdapter(HTTPAdapter):
+    """"Transport adapter" that allows us to use TLSv1."""
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=ssl.PROTOCOL_TLSv1)
+
+# A simple http session wrapper over requests given a scheme (http or https)
+class httpSession(object):
+    def __init__(self, scheme):
+        self.scheme = scheme
+        self.session = requests.Session()
+        self.session.mount('%s://' % self.scheme, Tlsv1HttpAdapter())
+    def __enter__(self):
+        return self.session
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
 
 # Helper methods
 
@@ -56,7 +75,8 @@ def get(server, uri_path, **kwargs):
         if logger.level <= logging.DEBUG:
             details += "\nheaders=%s" % headers
         logger.info("[HTTP Get] %s", details)
-    response = requests.get(uri, headers=headers, timeout=timeout, **kwargs)
+    with httpSession(server.scheme) as session:
+        response = session.get(uri, headers=headers, timeout=timeout, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Get Response] %s\nheaders=%s", response.text, response.headers)
     return response
@@ -66,7 +86,8 @@ def delete(server, uri_path, **kwargs):
     uri = server.create_full_uri(uri_path)
     headers = _get_headers(server, kwargs)
     logger.info("[HTTP Delete] %s", uri)
-    response = requests.delete(uri, headers=headers, **kwargs)
+    with httpSession(server.scheme) as session:
+        response = session.delete(uri, headers=headers, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Delete Response] %s", response.text)
     return response
@@ -81,8 +102,8 @@ def post(server, uri_path, data, **kwargs):
         except:
             pretty_data = data
         logger.info("[HTTP Post] %s\n%s\nheaders=%s", uri, pretty_data, headers)
-    response = requests.post(uri, headers=headers, data=data, **kwargs)
+    with httpSession(server.scheme) as session:
+            response = session.post(uri, headers=headers, data=data, verify=False, **kwargs)
     if logger.level <= logging.DEBUG:
         logger.debug("[HTTP Post Response] %s", response.text)
     return response
-

@@ -8,6 +8,7 @@ BUILD
 *.class
 .classpath
 *clean*.sh
+.coverage
 cscope*
 data
 dependency-reduced-pom.xml
