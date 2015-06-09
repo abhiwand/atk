@@ -201,7 +201,7 @@ trait AbstractRow {
    */
   private def setValueIgnoreType(name: String, value: Any): Row = {
     val position = schema.columnIndex(name)
-    val content = row.toArray
+    val content = row.toSeq.toArray
     content(position) = value
     //TODO: what is the right way to introduce GenericMutableRow?
     row = new GenericRow(content)
@@ -230,7 +230,7 @@ trait AbstractRow {
    * @return the row (with a different schema)
    */
   def addValue(value: Any): Row = {
-    val content = row.toArray :+ value
+    val content = row.toSeq.toArray :+ value
     //TODO: what is the right way to introduce GenericMutableRow?
     row = new GenericRow(content)
     row

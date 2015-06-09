@@ -29,7 +29,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.{ Row, SQLContext }
 
@@ -42,15 +42,9 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class VertexFrameRdd(schema: VertexSchema,
-                     sqlContext: SQLContext,
-                     logicalPlan: LogicalPlan) extends FrameRdd(schema, sqlContext, logicalPlan) {
+class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(schema, prev) {
 
-  def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[VertexSchema], frameRdd.sqlContext, frameRdd.logicalPlan)
-
-  def this(schema: VertexSchema, frameRdd: FrameRdd) = this(schema, frameRdd.sqlContext, frameRdd.logicalPlan)
-
-  def this(schema: VertexSchema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlanFromSql(schema, rowRDD))
+  def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[VertexSchema], frameRdd)
 
   /** Vertex wrapper provides richer API for working with Vertices */
   val vertexWrapper = new VertexWrapper(schema)
@@ -69,7 +63,7 @@ class VertexFrameRdd(schema: VertexSchema,
    * Drop duplicates based on user defined id
    */
   def dropDuplicates(): VertexFrameRdd = {
-    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row.toArray, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
+    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row.toSeq.toArray, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
     new VertexFrameRdd(FrameRdd.toFrameRdd(schema, duplicatesRemoved))
   }

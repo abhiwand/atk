@@ -104,7 +104,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
     //get the size of each observation in the rdd. if it is negative do not count the observation
     //todo: warn user if a negative weight appears
-    val pairedRDD: RDD[(Int, Double)] = binnedResults.rdd.map(row => (DataTypes.toInt(row.last),
+    val pairedRDD: RDD[(Int, Double)] = binnedResults.rdd.map(row => (DataTypes.toInt(row.toSeq.last),
       weightColumnIndex match {
         case Some(i) => math.max(DataTypes.toDouble(row(i)), 0.0)
         case None => HistogramPlugin.UNWEIGHTED_OBSERVATION_SIZE
