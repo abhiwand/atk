@@ -42,7 +42,7 @@ class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
       val rdd = FrameRdd.toFrameRdd(schema, rows)
       rdd.frameSchema should be(schema)
-      rdd.first should equal(rows.first)
+      rdd.first.toSeq.toArray should equal(rows.first)
     }
 
     "be convertible into a LegacyFrameRdd" in {
@@ -52,7 +52,7 @@ class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
       val legacy = rdd.toLegacyFrameRdd
       legacy.getClass should be(classOf[LegacyFrameRdd])
       legacy.schema should equal(schema)
-      legacy.first should equal(rdd.first)
+      legacy.first should equal(rdd.first.toSeq.toArray)
     }
 
     "create unique ids in a new column" in {

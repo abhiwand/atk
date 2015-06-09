@@ -43,7 +43,7 @@ class LegacyFrameRddTest extends TestingSparkContextWordSpec with Matchers {
 
       frameRdd.getClass should be(classOf[FrameRdd])
       frameRdd.frameSchema should be(schema)
-      frameRdd.first should equal(rdd.first)
+      frameRdd.first.toSeq.toArray should equal(rdd.first)
     }
 
     // ignoring because of OutOfMemory errors, these weren't showing up in engine until most of shared was merged in
